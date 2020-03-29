@@ -1,0 +1,3 @@
+r_codechecker:
+    url: http://localhost:9001/exec
+    timeout_seconds: 30

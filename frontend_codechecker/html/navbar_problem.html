@@ -1,0 +1,25 @@
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link" href="/problem/{{ this_course }}/{{ this_assignment }}/{{ this_problem }}">
+                    Problem {{ this_problem }}
+                </a>
+
+                <div id="moreDropdown" class="navbar-dropdown is-size-4">
+                    {% for problem in problems %}
+                        <a class="navbar-item " href="/problem/{{ this_course }}/{{ this_assignment }}/{{ problem[0] }}">
+                            Problem {{ problem[0] }} - {{ problem[1] }}
+                        </a>
+                    {% end %}
+                </div>
+            </div>
+            <div class="navbar-end">
+            {% if "prev_problem" in globals() and prev_problem %}
+                <a class="navbar-item" href="/problem/{{ this_course }}/{{ this_assignment }}/{{ prev_problem }}">
+                    Previous Problem
+                </a>
+            {% end %}
+            {% if "next_problem" in globals() and next_problem %}
+                <a class="navbar-item" href="/problem/{{ this_course }}/{{ this_assignment }}/{{ next_problem }}">
+                    Next Problem
+                </a>
+            {% end %}
+            </div>

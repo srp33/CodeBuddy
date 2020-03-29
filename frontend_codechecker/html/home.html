@@ -1,0 +1,23 @@
+<section class="section section-padding-medium">
+<div class="content is-medium">
+
+<p class="title is-size-2 is-spaced">
+    Welcome to the Code Checker!
+</p>
+
+<p class="subtitle is-size-4">
+    Use this tool to test your code on assignments.
+</p>
+
+<hr />
+
+Please select one of the following courses:
+
+<ul>
+    {% for course in courses %}
+        <li><a href="/course/{{ course[0] }}">{{ course[1] }}</a></li>
+    {% end %}
+</ul>
+
+</div>
+</section>

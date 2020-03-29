@@ -1,0 +1,66 @@
+title: "Graphing Assignment"
+introduction: "This is the introduction. This is **bold**."
+problems:
+  - title: "Histogram"
+    environment: r_codechecker
+    instructions: |
+      Here's the answer:
+        
+      ```library(tidyverse)
+      
+      set.seed(1)
+      plot_data = tibble(x = rnorm(1000))
+
+      ggplot(plot_data, aes(x = x)) +
+        geom_histogram()```
+    output_type: jpg
+    answer: |
+      library(tidyverse)
+      
+      set.seed(1)
+      plot_data = tibble(x = rnorm(1000))
+
+      ggplot(plot_data, aes(x = x)) +
+        geom_histogram()
+  - title: "Density plot"
+    environment: r_codechecker
+    instructions: |
+      Here's the answer:
+
+      ```library(tidyverse)
+
+      set.seed(1)
+      plot_data = tibble(x = rnorm(1000))
+
+      ggplot(plot_data, aes(x = x)) +
+        geom_density()```
+    output_type: jpg
+    answer: |
+      library(tidyverse)
+
+      set.seed(1)
+      plot_data = tibble(x = rnorm(1000))
+
+      ggplot(plot_data, aes(x = x)) +
+        geom_density()
+  - title: "Histogram after download"
+    environment: r_codechecker
+    instructions: |
+      Here's the answer:
+        
+      ```library(tidyverse)
+
+        plot_data = read_csv("https://vincentarelbundock.github.io/Rdatasets/csv/boot/beaver.csv")
+
+        ggplot(plot_data, aes(x = temp)) +
+          geom_histogram()```
+    output_type: jpg
+    answer: |
+        library(tidyverse)
+
+        plot_data = read_csv("https://vincentarelbundock.github.io/Rdatasets/csv/boot/beaver.csv")
+
+        ggplot(plot_data, aes(x = temp)) +
+          geom_histogram()
+    data_urls:
+        - https://vincentarelbundock.github.io/Rdatasets/csv/boot/beaver.csv

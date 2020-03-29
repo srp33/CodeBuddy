@@ -1,0 +1,19 @@
+<section class="section section-padding-medium">
+<div class="content is-medium">
+
+<h2>{{ this_course_title }}</h2>
+
+<p>{{ introduction }}</p>
+
+{% if len(assignments) > 0 %}
+  <h2>Assignments</h2>
+
+  <ul>
+  {% for assignment in assignments %}
+    <li><a href="/assignment/{{ this_course }}/{{ assignment[0] }}">{{ assignment[0] }} - {{ assignment[1] }}</a></li>
+  {% end %}
+  </ul>
+{% end %}
+
+</div>
+</section>

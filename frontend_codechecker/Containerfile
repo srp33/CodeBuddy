@@ -1,0 +1,29 @@
+FROM continuumio/miniconda3
+
+#ENV USER codechecker
+
+RUN apt-get update \
+ && apt-get install -y bzip2 \
+ && apt-get -y autoremove \
+ && apt-get clean \
+ && conda install -y tornado requests PyYAML arrow Pillow \
+ && mkdir -p /app /conda /course /static
+
+ADD Environments.yaml /
+ADD frontend_codechecker/*css* /static/
+ADD frontend_codechecker/*.js /static/
+ADD frontend_codechecker/startup.sh /
+ADD frontend_codechecker/html/* /tmp/
+ADD frontend_codechecker/build_html.sh /
+ADD frontend_codechecker/*.py /app/
+
+RUN bash /build_html.sh
+
+#RUN groupadd -r $USER \
+# && useradd -r -s /bin/false -g $USER $USER \
+# && chown -R $USER:$USER /app /conda /course /tmp/img /static \
+# && chmod -R 400 /app /conda \
+# && chmod -R 700 /course /img /static
+
+#USER $USER
+ENTRYPOINT ["bash", "/startup.sh"]

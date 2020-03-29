@@ -1,0 +1,17 @@
+<section class="section section-padding-medium">
+<div class="content is-medium">
+    <h2>{{ this_assignment_title }}</h2>
+
+    <p>{{ introduction }}</p>
+
+    {% if len(problems) > 0 %}
+        <h4>Problems</h4>
+
+        <ul>
+        {% for problem in problems %}
+        <li><a href="/problem/{{ this_course }}/{{ this_assignment }}/{{ problem[0] }}">Problem {{ problem[0] }} - {{ problem[1] }}</a></li>
+        {% end %}
+        </ul>
+    {% end %}
+</div>
+</section>

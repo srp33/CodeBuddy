@@ -1,0 +1,6 @@
+#! /bin/bash
+
+mkdir -p course
+
+./run_container frontend_codechecker "-e NUM_PROCESSES=4 -e PORT=9000 -v $(pwd)/course:/course --tmpfs /data" ""
+#--tmpfs /tmp

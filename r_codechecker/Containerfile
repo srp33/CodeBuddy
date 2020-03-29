@@ -1,0 +1,14 @@
+FROM rocker/tidyverse:3.6.1
+
+RUN apt-get update -qq && apt-get install -y \
+  git-core \
+  libssl-dev \
+  libcurl4-gnutls-dev \
+  libjemalloc-dev \
+  libmagick++-dev
+
+ADD r_codechecker/libraries /
+RUN R -e "packages <- c('plumber', scan('/libraries', what=character(), quiet=TRUE)); install.packages(packages)"
+
+ADD r_codechecker/*.R /
+ENTRYPOINT ["Rscript", "/app.R"]

@@ -1,0 +1,35 @@
+#! /bin/bash
+
+image_name="$1"
+run_args="$2"
+tag="$3"
+
+if [[ "${image_name}" == "" ]]
+then
+  echo "No image name was specified."
+  exit 1
+fi
+
+if [[ "${tag}" == "" ]]
+then
+  tag=version$(cat VERSION)
+fi
+
+docker rm $(docker stop $(docker ps -a -q --filter ancestor=${image_name} --format="{{.ID}}") 2> /dev/null) 2> /dev/null
+
+set -o errexit
+
+docker build -t ${image_name} -f ${image_name}/Containerfile .
+
+#docker run -d \
+docker run -i -t \
+  --rm \
+  --read-only \
+  --network host \
+  ${run_args} \
+  ${image_name}
+
+#--name=name
+#--security-opt=option
+#  no-new-privileges
+#-u=user

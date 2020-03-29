@@ -1,0 +1,41 @@
+title: "Exam"
+introduction: "You should **only** see the expected output on the graph problem."
+problems:
+  - title: "A text problem"
+    environment: r_codechecker
+    instructions: |
+        Use R to write a function called `problem1` that returns "Exams are fun".
+    output_type: txt
+    answer: |
+      problem1 = function() {
+        return("Exams are fun")
+      }
+    test: |
+      print(problem1())
+    show_expected: False
+    show_tests: False
+  - title: "A graph problem"
+    environment: r_codechecker
+    instructions: |
+      Here's the answer:
+
+      ```library(tidyverse)
+
+      set.seed(1)
+      plot_data = tibble(x = rnorm(1000))
+
+      ggplot(plot_data, aes(x = x)) +
+        geom_density()```
+    output_type: jpg
+    answer: |
+      library(tidyverse)
+
+      set.seed(1)
+      plot_data = tibble(x = rnorm(1000))
+
+      ggplot(plot_data, aes(x = x)) +
+        geom_density()
+    test: |
+      print("Placeholder test code.")
+    show_expected: False
+    show_tests: False

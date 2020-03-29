@@ -1,0 +1,13 @@
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link" href="/course/{{ this_course }}">
+                    {{ this_course_title }}
+                </a>
+
+                <div id="moreDropdown" class="navbar-dropdown is-size-4">
+                    {% for course in courses %}
+                    <a class="navbar-item is-active" href="/course/{{ course[0] }}">
+                        {{ course[1] }}
+                    </a>
+                    {% end %}
+                </div>
+            </div>
