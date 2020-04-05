@@ -74,7 +74,7 @@ class EditCourseHandler(RequestHandler):
                         result = "Error: Missing title or introduction."
                     else:
                         course_dict = {"id": course_id, "title": course_title, "introduction": introduction}
-                        write_file(convert_dict_to_yaml(course_dict), get_course_file_path(course, "yaml"))
+                        write_file(convert_dict_to_yaml(course_dict), get_course_file_path(course_id, "yaml"))
 
                         result = "Success: Course information updated!"
             else:

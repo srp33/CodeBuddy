@@ -26,7 +26,11 @@
 
   <form method="post" />
 
-  <p><strong>Assignment identifier: </strong><input name="assignment_id" class="input is-info is-normal is-medium" placeholder="Please specify a unique identifier for this assignment. Only alphanumeric characters may be used."  value="{{ this_assignment }}" /></p>
+  <p><strong>Assignment identifier: </strong><input name="assignment_id" class="input is-info is-normal is-medium" placeholder="Please specify a unique identifier for this assignment. Only alphanumeric characters may be used."  value="{{ this_assignment }}" 
+  {% if assignment_exists %}
+    disabled
+  {% end %}
+  /></p>
 
   <p><strong>Title: </strong><input name="assignment_title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this assignment." value="{{ this_assignment_title }}" /></p>
 
