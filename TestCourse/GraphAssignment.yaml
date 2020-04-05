@@ -22,6 +22,9 @@ problems:
 
       ggplot(plot_data, aes(x = x)) +
         geom_histogram()
+    credit: |
+      Thanks to all those who contributed to writing this problem. We couldn't have done it without you!!
+      This is another line of text in which people are credited.
   - title: "Density plot"
     environment: r_codechecker
     instructions: |

@@ -1,6 +1,10 @@
             <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link" href="/course/{{ this_course }}">
-                    {{ this_course_title }}
+                    {% if len(this_course_title) > 0 %}
+                      {{ this_course_title }}
+                    {% else %}
+                      New Course
+                    {% end %}
                 </a>
 
                 <div id="moreDropdown" class="navbar-dropdown is-size-4">

@@ -86,6 +86,10 @@ function check_code()
 <h2>{{ this_problem_title }}</h2>
 <p>{{ instructions }}</p>
 
+{% if len(credit) > 0 %}
+  <p><i>{{ credit }}</i></p>
+{% end %}
+
 {% if len(data_urls_dict) > 0 %}
   <h5>
     {% if len(data_urls_dict) > 1 %}

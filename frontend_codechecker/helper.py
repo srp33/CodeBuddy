@@ -14,10 +14,19 @@ import shutil
 import stat
 import sys
 import time
+import yaml
 from yaml import load
 from yaml import Loader
 
 timeout_seconds = 60
+
+def rm_dir_recursively(dir_path):
+    if os.path.exists(dir_path):
+        for x in glob.glob("{}/*".format(dir_path)):
+            if os.path.isdir(x):
+                shutil.rmtree(x)
+            else:
+                os.remove(x)
 
 def make_dir(dir_path):
     if not os.path.exists(dir_path):
@@ -96,28 +105,26 @@ def get_courses():
 
     courses = []
     for course_id in course_ids:
-        title = get_course_file(course_id, "title")
-        introduction = get_course_file(course_id, "introduction")
-        courses.append((course_id, title, introduction))
+        exists, course_dict = get_course_info(course_id)
+        courses.append((course_id, course_dict["title"], course_dict["introduction"]))
 
     return courses
 
-def get_course_info(courses, course_id):
-    course_exists = False
-    title = "This course has not yet been created."
-    introduction = "This course has not yet been created."
+def get_course_info(course_id, default_title=""):
+    yaml_file_path = "{}/yaml".format(get_course_dir_path(course_id))
 
-    for course in courses:
-        if course_id == course[0]:
-            course_exists = True
-            title = course[1]
-            introduction = course[2]
-            break
+    yaml_dict = {}
+    if os.path.exists(yaml_file_path):
+        exists = True
+        yaml_dict = load_yaml_dict(read_file(yaml_file_path))
+    else:
+        yaml_dict = {"title": default_title, "introduction": ""}
+        exists = False
 
-    return course_exists, title, introduction
+    return exists, yaml_dict
 
-def get_course_dir_path(course):
-    return "/course/{}/".format(course)
+def get_course_dir_path(course_id):
+    return "/course/{}/".format(course_id)
 
 def get_course_file_path(course, file_name):
     return get_course_dir_path(course) + file_name
@@ -131,14 +138,23 @@ def get_assignments(course):
     for assignment_dir_path in sorted_nicely(glob.glob(get_course_dir_path(course) + "*")):
         if os.path.isdir(assignment_dir_path):
             assignment = os.path.basename(assignment_dir_path)
-            assignment_title = read_file("{}/assignment_title".format(assignment_dir_path))
-            assignments.append((assignment, assignment_title))
+            exists, assignment_dict = get_assignment_info(course, assignment)
+            if exists:
+                assignments.append((assignment, assignment_dict["title"]))
 
     #assignments.reverse()
     return assignments
 
-def check_assignment_exists(assignment, assignments):
-    return len([x for x in assignments if x[0] == assignment]) > 0
+def get_assignment_info(course, assignment, default_title=""):
+    yaml_file_path = "{}/yaml".format(get_assignment_dir_path(course, assignment))
+
+    if assignment == "" or not os.path.exists(yaml_file_path):
+        return False, {"title": default_title, "introduction": ""}
+    else:
+        return True, load_yaml_dict(read_file(yaml_file_path))
+
+#def check_assignment_exists(assignment, assignments):
+#    return len([x for x in assignments if x[0] == assignment]) > 0
 
 def get_assignment_dir_path(course, assignment):
     return "/course/{}/{}".format(course, assignment)
@@ -261,6 +277,9 @@ def test_code_jpg(settings_dict, course, assignment, problem, code, test_code, s
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
+
+def convert_dict_to_yaml(the_dict):
+    return yaml.dump(the_dict)
 
 def load_yaml_dict(yaml_text):
     return load(yaml_text, Loader=Loader)

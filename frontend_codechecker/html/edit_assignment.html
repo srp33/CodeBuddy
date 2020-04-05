@@ -1,68 +1,47 @@
 <script src="/js/jquery.min.js"></script>
 
-<script>
-function submit_yaml()
-{
-    yaml_content = document.getElementById("yaml_content").value;
-    password = document.getElementById("password").value;
-
-    if (yaml_content.trim() == "")
-        return false;
-
-    result_div = document.getElementById("result");
-    result_div.innerHTML = "<div class='notification is-warning'>Please wait while your YAML is being parsed...</div>";
-    result_div.scrollIntoView();
-
-    post_data = { "yaml_content": yaml_content, "password": password };
-
-    $.post("/edit_assignment/{{ this_course }}/{{ this_assignment }}",
-        post_data,
-        function(data, status){
-            var json_data = JSON.parse(data);
-
-            if (json_data.error == "")
-            {
-                document.getElementById("title").innerHTML = json_data.title;
-                document.getElementById("introduction").innerHTML = json_data.introduction;
-                result_div.innerHTML = "<div class='notification is-success'><p><strong>The YAML was parsed successfully!</strong></p></div>\n\n<p>" + json_data.expected_output + "</p>\n\n";
-            }
-            else
-            {
-                result_div.innerHTML = "<div class='notification is-danger'><p><strong>An error occurred.</strong></p></div>\n\n<pre>" + json_data.error + "</pre>\n\n";
-            }
-        });
-
-    return false;
-}
-</script>
-
 <section class="section section-padding-medium">
 <div class="content is-medium">
 
 <h2>
 {% if course_exists %}
   {% if assignment_exists %}
-    Edit
+    Edit Assignment
   {% else %}
-    Create
+    Create Assignment
   {% end %}
-  {{ this_course }} - {{ this_assignment }}
 {% else %}
   This course has not been created yet.
 {% end %}
 </h2>
 
 {% if course_exists %}
-  <p><strong>Title: </strong><div id="title">{{ this_assignment_title }}</div></p>
-  <p><strong>Introduction: </strong><div id="introduction">{{ introduction }}</div></p>
+  {% if result %}
+    {% if result.startswith("Error:") %}
+      <p><div class='notification is-danger'><strong>{{ result }}</strong></div></p>
+    {% else %}
+      <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
+    {% end %}
+  {% end %}
 
-  <p><strong>YAML:</strong></p>
-  <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your YAML here" rows="15" id="yaml_content" style="font-family:monospace">{{ yaml_content }}</textarea></p>
-  <p><input id="password" class="input is-info is-normal is-medium" type="password" placeholder="Password" /></p>
-  <p><a class="button is-info is-large is-fullwidth" onclick='submit_yaml()'>Save</a></p>
-  <p><a href="/assignment/{{ this_course }}/{{ this_assignment }}">Done editing</a></p>
+  <form method="post" />
 
-  <p><div id="result"></div></p>
+  <p><strong>Assignment identifier: </strong><input name="assignment_id" class="input is-info is-normal is-medium" placeholder="Please specify a unique identifier for this assignment. Only alphanumeric characters may be used."  value="{{ this_assignment }}" /></p>
+
+  <p><strong>Title: </strong><input name="assignment_title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this assignment." value="{{ this_assignment_title }}" /></p>
+
+  <p><strong>Introduction: </strong><br />
+  <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" name="assignment_introduction">{{ this_assignment_introduction }}</textarea></p>
+
+  <p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
+
+  <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
+
+  {% if this_assignment != "" %}
+    <p><a href="/assignment/{{ this_course }}/{{ this_assignment }}">Done editing</a></p>
+  {% end %}
+
+  </form>
 {% end %}
 
 </div>

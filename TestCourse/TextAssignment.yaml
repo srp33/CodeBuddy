@@ -18,6 +18,9 @@ problems:
       print("Hello, world")
     test: |
       print("Placeholder test code.")
+    credit: |
+      Thanks to all those who contributed to writing this problem. We couldn't have done it without you!!
+      This is another line of text in which people are credited.
   - title: "Goodbye"
     environment: r_codechecker
     instructions: |
@@ -25,3 +28,11 @@ problems:
     output_type: txt
     answer: |
       print("Goodbye")
+  - title: "Hidden"
+    environment: r_codechecker
+    instructions: |
+      This problem should be hidden by default.
+    output_type: txt
+    answer: |
+      print("Goodbye")
+    hidden: True

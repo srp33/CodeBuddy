@@ -5,15 +5,25 @@
 
 <p>{{ introduction }}</p>
 
-{% if len(assignments) > 0 %}
-  <h2>Assignments</h2>
+{% if course_exists %}
+  <p><a href="/edit_course/{{ this_course }}">Edit Course</a></p>
+{% else %}
+  <p><a href="/edit_course/{{ this_course }}">Create Course</a></p>
+{% end %}
 
+<h2>Assignments</h2>
+
+{% if len(assignments) == 0 %}
+  <p>No assignments have yet been created.</p>
+{% else %}
   <ul>
   {% for assignment in assignments %}
     <li><a href="/assignment/{{ this_course }}/{{ assignment[0] }}">{{ assignment[0] }} - {{ assignment[1] }}</a></li>
   {% end %}
   </ul>
 {% end %}
+
+<p><a href="/edit_assignment/{{ this_course }}/">Create Assignment</a></p>
 
 </div>
 </section>
