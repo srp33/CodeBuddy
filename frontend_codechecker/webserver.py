@@ -16,9 +16,9 @@ def make_app():
     return Application([
         url(r"/", HomeHandler),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
-        url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
+        url(r"\/edit_course\/([^\/]+)", EditCourseHandler, name="edit_course"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
-        url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
+        url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)", EditAssignmentHandler, name="edit_assignment"),
         url(r"\/problem\/([^\/]+)\/([^\/]+)/([^\/]+)", ProblemHandler, name="problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
         url(r"/img\/([^\/]+)\/([^\/]+)/([^\/]+)", ImageHandler, name="img"),
@@ -30,57 +30,60 @@ def make_app():
 class HomeHandler(RequestHandler):
     def get(self):
         try:
-            self.render("home.html", courses=get_courses())
+            self.render("home.html", courses=get_courses(), new_course_id=create_id())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class CourseHandler(RequestHandler):
     def get(self, course):
         try:
-            exists, yaml_dict = get_course_info(course, default_title="This course has not yet been created")
+            exists, yaml_dict = get_course_info(course)
             assignments = []
             if exists:
                 assignments = get_assignments(course)
 
-            self.render("course.html", courses=get_courses(), course_exists=exists, this_course=course, this_course_title=convert_markdown_to_html(yaml_dict["title"]), introduction=convert_markdown_to_html(yaml_dict["introduction"]), assignments=assignments)
+            self.render("course.html", courses=get_courses(), course_exists=exists, this_course=course, this_course_title=convert_markdown_to_html(yaml_dict["title"]), introduction=convert_markdown_to_html(yaml_dict["introduction"]), assignments=assignments, new_assignment_id=create_id())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditCourseHandler(RequestHandler):
-    def get(self, course):
+    def get(self, course_id):
         try:
-            if not course:
-                course = ""
+            course_exists, course_dict = get_course_info(course_id)
 
-            course_exists, course_dict = get_course_info(course)
-
-            self.render("edit_course.html", courses=get_courses(), this_course=course, course_exists=course_exists, this_course_title=course_dict["title"], introduction=course_dict["introduction"], result=None)
+            self.render("edit_course.html", courses=get_courses(), this_course=course_id, course_exists=course_exists, this_course_title=course_dict["title"], introduction=course_dict["introduction"], result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def post(self, course):
+    def post(self, course_id):
         try:
             submitted_password = self.get_body_argument("password")
-            course_id = self.get_body_argument("course_id").strip()
-            course_title = self.get_body_argument("course_title").strip()
+            title = self.get_body_argument("course_title").strip()
             introduction = self.get_body_argument("introduction").strip()
             result = ""
+            courses = get_courses()
 
             if submitted_password == password:
-                if course_id == "" or re.search(r"\W", course_id):
-                    result = "Error: Invalid course identifier."
+                if title == "" or introduction == "":
+                    result = "Error: Missing title or introduction."
                 else:
-                    if course_title == "" or introduction == "":
-                        result = "Error: Missing title or introduction."
+                    # Make sure we don't have a course with a duplicate title
+                    duplicate = False
+                    for course in courses:
+                        if course[0] != course_id and course[1] == title:
+                            duplicate = True
+                            break
+                    if duplicate:
+                        result = "Error: A course with that title already exists."
                     else:
-                        course_dict = {"id": course_id, "title": course_title, "introduction": introduction}
+                        course_dict = {"id": course_id, "title": title, "introduction": introduction}
                         write_file(convert_dict_to_yaml(course_dict), get_course_file_path(course_id, "yaml"))
 
                         result = "Success: Course information updated!"
             else:
                 result = "Error: Invalid password."
 
-            self.render("edit_course.html", courses=get_courses(), this_course=course_id, course_exists=True, this_course_title=course_title, introduction=introduction, result=result)
+            self.render("edit_course.html", courses=courses, this_course=course_id, course_exists=True, this_course_title=title, introduction=introduction, result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -90,24 +93,21 @@ class AssignmentHandler(RequestHandler):
             course_exists, course_dict = get_course_info(course)
 
             problems = []
-            assignment_exists, assignment_dict = get_assignment_info(course, assignment, "This assignment has not yet been created.")
+            assignment_exists, assignment_dict = get_assignment_info(course, assignment)
             if course_exists and assignment_exists:
                 problems = get_assignment_problems(course, assignment)
 
-            self.render("assignment.html", introduction=convert_markdown_to_html(assignment_dict["introduction"]), courses=get_courses(), course_exists=course_exists, this_course=course, this_course_title=convert_markdown_to_html(course_dict["title"]), assignments=get_assignments(course), assignment_exists=assignment_exists, this_assignment=assignment, this_assignment_title=convert_markdown_to_html(assignment_dict["title"]), problems=problems)
+            self.render("assignment.html", introduction=convert_markdown_to_html(assignment_dict["introduction"]), courses=get_courses(), course_exists=course_exists, this_course=course, this_course_title=convert_markdown_to_html(course_dict["title"]), assignments=get_assignments(course), assignment_exists=assignment_exists, this_assignment=assignment, this_assignment_title=convert_markdown_to_html(assignment_dict["title"]), problems=problems, new_problem_id=create_id())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditAssignmentHandler(RequestHandler):
     def get(self, course, assignment):
         try:
-            if not assignment:
-                assignment = ""
-
             course_exists, course_dict = get_course_info(course)
 
             if course_exists:
-                assignment_exists, assignment_dict = get_assignment_info(course, assignment, "")
+                assignment_exists, assignment_dict = get_assignment_info(course, assignment)
                 result = None
             else:
                 result = f"A course with this identifier [{course}] does not exist."
@@ -118,33 +118,40 @@ class EditAssignmentHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def post(self, course, assignment):
+    def post(self, course_id, assignment_id):
         try:
             submitted_password = self.get_body_argument("password")
-            assignment_id = self.get_body_argument("assignment_id").strip()
             title = self.get_body_argument("assignment_title").strip()
             introduction = self.get_body_argument("assignment_introduction").strip()
+
             result = ""
-            course_exists, course_dict = get_course_info(course)
+            course_exists, course_dict = get_course_info(course_id)
+            assignments = get_assignments(course_id)
 
             if submitted_password == password:
                 if not course_exists:
                     result = "Error: Invalid course identifier."
                 else:
-                    if assignment_id == "" or re.search(r"\W", assignment_id):
-                        result = "Error: Invalid assignment identifier."
+                    if title == "" or introduction == "":
+                        result = "Error: Missing title or introduction."
                     else:
-                        if title == "" or introduction == "":
-                            result = "Error: Missing title or introduction."
+                        # Make sure we don't have an assignment with a duplicate title
+                        duplicate = False
+                        for assignment in assignments:
+                            if assignment[0] != assignment_id and assignment[1] == title:
+                                duplicate = True
+                                break
+                        if duplicate:
+                            result = "Error: An assignment with that title already exists."
                         else:
                             assignment_dict = {"id": assignment_id, "title": title, "introduction": introduction}
-                            write_file(convert_dict_to_yaml(assignment_dict), get_assignment_file_path(course, assignment_id, "yaml"))
+                            write_file(convert_dict_to_yaml(assignment_dict), get_assignment_file_path(course_id, assignment_id, "yaml"))
 
                             result = "Success: Assignment information updated!"
             else:
                 result = "Error: Invalid password."
 
-            self.render("edit_assignment.html", courses=get_courses(), this_course=course, course_exists=course_exists, this_course_title=course_dict["title"], assignments=get_assignments(course), this_assignment=assignment_id, assignment_exists=True, this_assignment_title=title, this_assignment_introduction=introduction, result=result)
+            self.render("edit_assignment.html", courses=get_courses(), this_course=course_id, course_exists=course_exists, this_course_title=course_dict["title"], assignments=assignments, this_assignment=assignment_id, assignment_exists=True, this_assignment_title=title, this_assignment_introduction=introduction, result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

@@ -5,12 +5,6 @@
 
 <p>{{ introduction }}</p>
 
-{% if course_exists %}
-  <p><a href="/edit_course/{{ this_course }}">Edit Course</a></p>
-{% else %}
-  <p><a href="/edit_course/{{ this_course }}">Create Course</a></p>
-{% end %}
-
 <h2>Assignments</h2>
 
 {% if len(assignments) == 0 %}
@@ -18,12 +12,16 @@
 {% else %}
   <ul>
   {% for assignment in assignments %}
-    <li><a href="/assignment/{{ this_course }}/{{ assignment[0] }}">{{ assignment[0] }} - {{ assignment[1] }}</a></li>
+    <li><a href="/assignment/{{ this_course }}/{{ assignment[0] }}">{{ assignment[1] }}</a></li>
   {% end %}
   </ul>
 {% end %}
 
-<p><a href="/edit_assignment/{{ this_course }}/">Create Assignment</a></p>
+<p>
+  <a href="/">Home</a> |
+  <a href="/edit_course/{{ this_course }}">Edit course</a> |
+  <a href="/edit_assignment/{{ this_course }}/{{ new_assignment_id }}">Create assignment</a>
+</p>
 
 </div>
 </section>

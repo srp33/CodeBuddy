@@ -14,19 +14,20 @@ import shutil
 import stat
 import sys
 import time
+import uuid
 import yaml
 from yaml import load
 from yaml import Loader
 
 timeout_seconds = 60
 
-def rm_dir_recursively(dir_path):
-    if os.path.exists(dir_path):
-        for x in glob.glob("{}/*".format(dir_path)):
-            if os.path.isdir(x):
-                shutil.rmtree(x)
-            else:
-                os.remove(x)
+#def rm_dir_recursively(dir_path):
+#    if os.path.exists(dir_path):
+#        for x in glob.glob("{}/*".format(dir_path)):
+#            if os.path.isdir(x):
+#                shutil.rmtree(x)
+#            else:
+#                os.remove(x)
 
 def make_dir(dir_path):
     if not os.path.exists(dir_path):
@@ -73,10 +74,21 @@ def format_output_as_html(output):
     return html.escape(output).replace(" ", "&nbsp;").replace("\t", "&emsp;").replace("\n", "<br />")
 
 # Kudos: https://arcpy.wordpress.com/2012/05/11/sorting-alphanumeric-strings-in-python/
-def sorted_nicely(l):
+def sort_nicely(l):
     convert = lambda text: int(text) if text.isdigit() else text
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key = alphanum_key)
+
+def sort_nested_by_index(nested_list, index):
+    l_dict = {}
+    for row in nested_list:
+        l_dict[row[index]] = row
+
+    sorted_list = []
+    for key in sort_nicely(l_dict):
+        sorted_list.append(l_dict[key])
+
+    return sorted_list
 
 # From https://stackoverflow.com/questions/12485666/python-deleting-all-files-in-a-folder-older-than-x-days
 #import arrow
@@ -101,27 +113,22 @@ def is_valid_password(handler):
     return True
 
 def get_courses():
-    course_ids = sorted_nicely([os.path.basename(x) for x in glob.glob("/course/*")])
+    course_ids = [os.path.basename(x) for x in glob.glob("/course/*")]
 
     courses = []
     for course_id in course_ids:
         exists, course_dict = get_course_info(course_id)
         courses.append((course_id, course_dict["title"], course_dict["introduction"]))
 
-    return courses
+    return sort_nested_by_index(courses, 1)
 
-def get_course_info(course_id, default_title=""):
+def get_course_info(course_id):
     yaml_file_path = "{}/yaml".format(get_course_dir_path(course_id))
 
-    yaml_dict = {}
     if os.path.exists(yaml_file_path):
-        exists = True
-        yaml_dict = load_yaml_dict(read_file(yaml_file_path))
+        return True, load_yaml_dict(read_file(yaml_file_path))
     else:
-        yaml_dict = {"title": default_title, "introduction": ""}
-        exists = False
-
-    return exists, yaml_dict
+        return False, {"title": "", "introduction": ""}
 
 def get_course_dir_path(course_id):
     return "/course/{}/".format(course_id)
@@ -135,21 +142,20 @@ def get_course_file(course, file_name):
 
 def get_assignments(course):
     assignments = []
-    for assignment_dir_path in sorted_nicely(glob.glob(get_course_dir_path(course) + "*")):
+    for assignment_dir_path in glob.glob(get_course_dir_path(course) + "*"):
         if os.path.isdir(assignment_dir_path):
             assignment = os.path.basename(assignment_dir_path)
             exists, assignment_dict = get_assignment_info(course, assignment)
             if exists:
                 assignments.append((assignment, assignment_dict["title"]))
 
-    #assignments.reverse()
-    return assignments
+    return sort_nested_by_index(assignments, 1)
 
-def get_assignment_info(course, assignment, default_title=""):
+def get_assignment_info(course, assignment):
     yaml_file_path = "{}/yaml".format(get_assignment_dir_path(course, assignment))
 
-    if assignment == "" or not os.path.exists(yaml_file_path):
-        return False, {"title": default_title, "introduction": ""}
+    if not os.path.exists(yaml_file_path):
+        return False, {"title": "", "introduction": ""}
     else:
         return True, load_yaml_dict(read_file(yaml_file_path))
 
@@ -167,7 +173,7 @@ def get_assignment_file(course, assignment, file_name):
 
 def get_assignment_problems(course, assignment):
     problems = []
-    for problem_num in sorted_nicely([os.path.basename(x) for x in glob.glob("/course/{}/{}/test/*".format(course, assignment))]):
+    for problem_num in sort_nicely([os.path.basename(x) for x in glob.glob("/course/{}/{}/test/*".format(course, assignment))]):
         problem_title = get_problem_file(course, assignment, problem_num, "title")
         problems.append((problem_num, problem_title))
 
@@ -324,6 +330,9 @@ def diff_strings(expected, actual):
 
 def render_error(handler, exception):
     handler.render("error.html", error_title="An internal error occurred", error_message=format_output_as_html(exception))
+
+def create_id():
+    return str(uuid.uuid1()).replace("-", "")
 
 def create_md5_hash(my_string):
     return hashlib.md5(my_string.encode("utf-8")).hexdigest()

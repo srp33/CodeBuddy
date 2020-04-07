@@ -16,9 +16,12 @@
         </ul>
       {% end %}
 
-      <p><a href="/edit_assignment/{{ this_course }}/{{ this_assignment }}">Edit Assignment</a></p>
-    {% else %}
-      <p><a href="/edit_assignment/{{ this_course }}/{{ this_assignment }}">Create Assignment</a></p>
+      <p>
+        <a href="/">Home</a> |
+        <a href="/course/{{ this_course }}">Course home</a> |
+        <a href="/edit_assignment/{{ this_course }}/{{ this_assignment }}">Edit assignment</a> |
+        <a href="/edit_problem/{{ this_course }}/{{ this_assignment }}/{{ new_problem_id }}">New problem</a>
+      </p>
     {% end %}
   {% else %}
     <p>This course does not exist.</p>

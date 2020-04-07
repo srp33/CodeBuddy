@@ -6,20 +6,22 @@
 </p>
 
 <p class="subtitle is-size-4">
-    Use this tool to test your code on assignments.
+    Use this tool to create coding assignments.
 </p>
 
 <hr />
 
-Please select one of the following courses:
+{% if len(courses) > 0 %}
+  Please select one of the following courses:
 
-<ul>
+  <ul>
     {% for course in courses %}
         <li><a href="/course/{{ course[0] }}">{{ course[1] }}</a></li>
     {% end %}
-</ul>
+  </ul>
+{% end %}
 
-<p><a href="/edit_course/">Create new course</a></p>
+<p><a href="/edit_course/{{ new_course_id }}">Create course</a></p>
 
 </div>
 </section>

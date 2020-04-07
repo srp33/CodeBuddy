@@ -3,34 +3,24 @@
 <section class="section section-padding-medium">
 <div class="content is-medium">
 
-<h2>
 {% if course_exists %}
   {% if assignment_exists %}
-    Edit Assignment
+    <h2>Edit Assignment</h2>
   {% else %}
-    Create Assignment
+    <h2>Create Assignment</h2>
   {% end %}
-{% else %}
-  This course has not been created yet.
 {% end %}
-</h2>
+
+{% if result %}
+  {% if result.startswith("Error:") %}
+    <p><div class='notification is-danger'><strong>{{ result }}</strong></div></p>
+  {% else %}
+    <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
+  {% end %}
+{% end %}
 
 {% if course_exists %}
-  {% if result %}
-    {% if result.startswith("Error:") %}
-      <p><div class='notification is-danger'><strong>{{ result }}</strong></div></p>
-    {% else %}
-      <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
-    {% end %}
-  {% end %}
-
   <form method="post" />
-
-  <p><strong>Assignment identifier: </strong><input name="assignment_id" class="input is-info is-normal is-medium" placeholder="Please specify a unique identifier for this assignment. Only alphanumeric characters may be used."  value="{{ this_assignment }}" 
-  {% if assignment_exists %}
-    disabled
-  {% end %}
-  /></p>
 
   <p><strong>Title: </strong><input name="assignment_title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this assignment." value="{{ this_assignment_title }}" /></p>
 
@@ -41,11 +31,13 @@
 
   <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
-  {% if this_assignment != "" %}
+  {% if assignment_exists %}
     <p><a href="/assignment/{{ this_course }}/{{ this_assignment }}">Done editing</a></p>
   {% end %}
 
   </form>
+{% else %}
+  This course has not been created yet.
 {% end %}
 
 </div>
