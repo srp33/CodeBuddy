@@ -16,12 +16,12 @@
 
   <ul>
     {% for course in courses %}
-        <li><a href="/course/{{ course[0] }}">{{ course[1] }}</a></li>
+        <li><a href="/course/{{ course[0] }}">{{ course[1]["title"] }}</a></li>
     {% end %}
   </ul>
 {% end %}
 
-<p><a href="/edit_course/{{ new_course_id }}">Create course</a></p>
+<p><a href="/edit_course/">Create course</a></p>
 
 </div>
 </section>

@@ -1,17 +1,19 @@
             <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link" href="/course/{{ this_course }}">
-                    {% if len(this_course_title) > 0 %}
-                      {{ this_course_title }}
-                    {% else %}
-                      New Course
-                    {% end %}
-                </a>
+                {% if len(course_basics["title"]) > 0 %}
+                  <a class="navbar-link" href="/course/{{ course_basics["id"] }}">
+                    {{ course_basics["title"] }}
+                  </a>
+                {% else %}
+                  New Course
+                {% end %}
 
-                <div id="moreDropdown" class="navbar-dropdown is-size-4">
+                {% if len(courses) > 0 %}
+                  <div id="moreDropdown" class="navbar-dropdown is-size-4">
                     {% for course in courses %}
-                    <a class="navbar-item is-active" href="/course/{{ course[0] }}">
-                        {{ course[1] }}
-                    </a>
+                      <a class="navbar-item is-active" href="/course/{{ course[0] }}">
+                        {{ course[1]["title"] }}
+                      </a>
                     {% end %}
-                </div>
+                  </div>
+                {% end %}
             </div>

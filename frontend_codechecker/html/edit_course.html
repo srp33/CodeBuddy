@@ -1,10 +1,8 @@
-<script src="/js/jquery.min.js"></script>
-
 <section class="section section-padding-medium">
 <div class="content is-medium">
 
 <h2>
-{% if course_exists %}
+{% if course_basics["exists"] %}
     Edit Course
 {% else %}
     Create Course
@@ -19,19 +17,19 @@
   {% end %}
 {% end %}
 
-<form method="post" />
+<form method="post" action="/edit_course/{{ course_basics["id"] }}">
 
-<p><strong>Title: </strong><input name="course_title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this course." value="{{ this_course_title }}" /></p>
+<p><strong>Title: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this course." value="{{ course_basics["title"] }}" /></p>
 
 <p><strong>Introduction: </strong><br />
-<textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this course." rows="8" name="introduction">{{ introduction }}</textarea></p>
+<textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this course." rows="8" name="introduction">{{ course_details["introduction"] }}</textarea></p>
 
 <p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
 
 <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
-{% if course_exists %}
-  <p><a href="/course/{{ this_course }}">Done editing</a></p>
+{% if course_basics["exists"] %}
+  <p><a href="/course/{{ course_basics["id"] }}">Done editing</a></p>
 {% end %}
 
 </form>

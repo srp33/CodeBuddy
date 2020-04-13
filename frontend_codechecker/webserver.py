@@ -1,4 +1,5 @@
 from helper import *
+from content import *
 import json
 import re
 import tornado.ioloop
@@ -7,19 +8,15 @@ import traceback
 import urllib.request
 import uuid
 
-error_title = "An error occurred."
-#TODO: Store this securely or have a better way of authenticating.
-password = "abc"
-env_dict = get_env_yaml()
-
 def make_app():
     return Application([
         url(r"/", HomeHandler),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
-        url(r"\/edit_course\/([^\/]+)", EditCourseHandler, name="edit_course"),
+        url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
-        url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)", EditAssignmentHandler, name="edit_assignment"),
+        url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
         url(r"\/problem\/([^\/]+)\/([^\/]+)/([^\/]+)", ProblemHandler, name="problem"),
+        url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
         url(r"/img\/([^\/]+)\/([^\/]+)/([^\/]+)", ImageHandler, name="img"),
         url(r"/css/([^\/]+)", CssHandler, name="css"),
@@ -30,60 +27,49 @@ def make_app():
 class HomeHandler(RequestHandler):
     def get(self):
         try:
-            self.render("home.html", courses=get_courses(), new_course_id=create_id())
+            self.render("home.html", courses=get_courses())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class CourseHandler(RequestHandler):
     def get(self, course):
         try:
-            exists, yaml_dict = get_course_info(course)
-            assignments = []
-            if exists:
-                assignments = get_assignments(course)
-
-            self.render("course.html", courses=get_courses(), course_exists=exists, this_course=course, this_course_title=convert_markdown_to_html(yaml_dict["title"]), introduction=convert_markdown_to_html(yaml_dict["introduction"]), assignments=assignments, new_assignment_id=create_id())
+            self.render("course.html", courses=get_courses(), course_basics=get_course_basics(course), course_details=get_course_details(course, True))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditCourseHandler(RequestHandler):
-    def get(self, course_id):
+    def get(self, course):
         try:
-            course_exists, course_dict = get_course_info(course_id)
-
-            self.render("edit_course.html", courses=get_courses(), this_course=course_id, course_exists=course_exists, this_course_title=course_dict["title"], introduction=course_dict["introduction"], result=None)
+            self.render("edit_course.html", courses=get_courses(), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def post(self, course_id):
+    def post(self, course):
         try:
             submitted_password = self.get_body_argument("password")
-            title = self.get_body_argument("course_title").strip()
+            title = self.get_body_argument("title").strip()
             introduction = self.get_body_argument("introduction").strip()
-            result = ""
+
             courses = get_courses()
+            course_basics = get_course_basics(course)
+            course_basics["title"] = title
+            course_details = {"introduction": introduction}
 
             if submitted_password == password:
                 if title == "" or introduction == "":
                     result = "Error: Missing title or introduction."
                 else:
-                    # Make sure we don't have a course with a duplicate title
-                    duplicate = False
-                    for course in courses:
-                        if course[0] != course_id and course[1] == title:
-                            duplicate = True
-                            break
-                    if duplicate:
+                    if has_duplicate_title(courses, course, title):
                         result = "Error: A course with that title already exists."
                     else:
-                        course_dict = {"id": course_id, "title": title, "introduction": introduction}
-                        write_file(convert_dict_to_yaml(course_dict), get_course_file_path(course_id, "yaml"))
-
-                        result = "Success: Course information updated!"
+                        save_course(course_basics, course_details)
+                        course_basics["exists"] = True
+                        result = "Success: Course information saved!"
             else:
                 result = "Error: Invalid password."
 
-            self.render("edit_course.html", courses=courses, this_course=course_id, course_exists=True, this_course_title=title, introduction=introduction, result=result)
+            self.render("edit_course.html", courses=courses, course_basics=course_basics, course_details=course_details, result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -91,13 +77,9 @@ class AssignmentHandler(RequestHandler):
     def get(self, course, assignment):
         try:
             course_exists, course_dict = get_course_info(course)
-
-            problems = []
             assignment_exists, assignment_dict = get_assignment_info(course, assignment)
-            if course_exists and assignment_exists:
-                problems = get_assignment_problems(course, assignment)
 
-            self.render("assignment.html", introduction=convert_markdown_to_html(assignment_dict["introduction"]), courses=get_courses(), course_exists=course_exists, this_course=course, this_course_title=convert_markdown_to_html(course_dict["title"]), assignments=get_assignments(course), assignment_exists=assignment_exists, this_assignment=assignment, this_assignment_title=convert_markdown_to_html(assignment_dict["title"]), problems=problems, new_problem_id=create_id())
+            self.render("assignment.html", introduction=convert_markdown_to_html(assignment_dict["introduction"]), courses=get_courses(), course_exists=course_exists, this_course=course, this_course_title=convert_markdown_to_html(course_dict["title"]), assignments=get_assignments(course, course_exists), assignment_exists=assignment_exists, this_assignment=assignment, this_assignment_title=convert_markdown_to_html(assignment_dict["title"]), problems=get_assignment_problems(course, assignment, course_exists, assignment_exists), new_problem_id=create_id())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -111,10 +93,9 @@ class EditAssignmentHandler(RequestHandler):
                 result = None
             else:
                 result = f"A course with this identifier [{course}] does not exist."
-                assignment_exists = False
-                assignment_dict = {"title": "", "introduction": ""}
+                assignment_exists = get_default_assignment_info()
 
-            self.render("edit_assignment.html", courses=get_courses(), this_course=course, course_exists=course_exists, this_course_title=course_dict["title"], assignments=get_assignments(course), this_assignment=assignment, assignment_exists=assignment_exists, this_assignment_title=assignment_dict["title"], this_assignment_introduction=assignment_dict["introduction"], result=result)
+            self.render("edit_assignment.html", courses=get_courses(), this_course=course, course_exists=course_exists, this_course_title=course_dict["title"], assignments=get_assignments(course, course_exists), this_assignment=assignment, assignment_exists=assignment_exists, this_assignment_title=assignment_dict["title"], this_assignment_introduction=assignment_dict["introduction"], result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -123,10 +104,9 @@ class EditAssignmentHandler(RequestHandler):
             submitted_password = self.get_body_argument("password")
             title = self.get_body_argument("assignment_title").strip()
             introduction = self.get_body_argument("assignment_introduction").strip()
-
             result = ""
             course_exists, course_dict = get_course_info(course_id)
-            assignments = get_assignments(course_id)
+            assignments = get_assignments(course_id, course_exists)
 
             if submitted_password == password:
                 if not course_exists:
@@ -147,7 +127,7 @@ class EditAssignmentHandler(RequestHandler):
                             assignment_dict = {"id": assignment_id, "title": title, "introduction": introduction}
                             write_file(convert_dict_to_yaml(assignment_dict), get_assignment_file_path(course_id, assignment_id, "yaml"))
 
-                            result = "Success: Assignment information updated!"
+                            result = "Success: Assignment information saved!"
             else:
                 result = "Error: Invalid password."
 
@@ -159,20 +139,20 @@ class ProblemHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
             course_exists, course_dict = get_course_info(course)
-            assignments = get_assignments(course)
+            assignments = get_assignments(course, course_exists)
             assignment_title = get_assignment_file(course, assignment, "assignment_title")
             assignment_instructions = convert_markdown_to_html(get_problem_file(course, assignment, problem, "instructions"))
             problem_title = get_problem_file(course, assignment, problem, "title")
             output_type = get_problem_file(course, assignment, problem, "output_type")
             show_expected = get_problem_file_bool(course, assignment, problem, "show_expected")
-            show_tests = get_problem_file_bool(course, assignment, problem, "show_tests")
+            show_test_code = get_problem_file_bool(course, assignment, problem, "show_test_code")
             credit = get_problem_file(course, assignment, problem, "credit")
 
             data_urls_dict = {}
             if os.path.exists(get_problem_file_path(course, assignment, problem, "data_urls")):
                 data_urls_dict = get_problem_file_dict(course, assignment, problem, "data_urls", 0, 1)
 
-            problems = get_assignment_problems(course, assignment)
+            problems = get_assignment_problems(course, assignment, course_exists, assignment_exists)
             prev_problem = get_prev_problem(course, assignment, problem, problems)
             next_problem = get_next_problem(course, assignment, problem, problems)
 
@@ -184,65 +164,100 @@ class ProblemHandler(RequestHandler):
                     expected_output = "/img/{}/{}/{}".format(course, assignment, problem)
 
             test_code = ""
-            if show_tests:
-                test_code = format_output_as_html(get_problem_file(course, assignment, problem, "test"))
+            if show_test_code:
+                test_code = format_output_as_html(get_problem_file(course, assignment, problem, "test_code"))
 
             self.render("problem.html", courses=get_courses(), this_course=course, this_course_title=course_dict["title"], this_assignment=assignment, this_assignment_title=assignment_title, instructions=assignment_instructions, data_urls_dict=data_urls_dict, assignments=assignments, this_problem=problem, this_problem_title=problem_title, problems=problems, output_type=output_type, test_code=test_code, expected_output=expected_output, prev_problem=prev_problem, next_problem=next_problem, credit=credit)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-######################################################################
-######################################################################
-######################################################################
-#            all_expected_output = ""
-#            problem_number = 0
-#            error = ""
-#            for problem_dict in yaml_dict["problems"]:
-#                problem_number += 1
-#                if "title" not in problem_dict:
-#                    problem_dict["test"] = "No title"
-#                if "test" not in problem_dict:
-#                    problem_dict["test"] = ""
-#                if "show_expected" not in problem_dict:
-#                    problem_dict["show_expected"] = True
-#                if "show_tests" not in problem_dict:
-#                    problem_dict["show_tests"] = True
-#                if "credit" not in problem_dict:
-#                    problem_dict["credit"] = ""
-#
-#                if "data_urls" in problem_dict:
-#                    data_url_output = ""
-#                    for data_url in set(problem_dict["data_urls"]):
-#                        contents, content_type = download_file(data_url)
-#                        data_url_output += "{}\t{}\t{}\n".format(data_url, create_md5_hash(data_url), content_type)
-#
-#                    write_file(data_url_output, "{}/data_urls/{}".format(assignment_dir_path, problem_number))
-#
-#                expected_output, error_occurred = exec_code(env_dict[problem_dict["environment"]], problem_dict["answer"], problem_dict["test"], problem_dict["output_type"], course, assignment, problem_number, self.request)
-#
-#                if error_occurred:
-#                    error = expected_output.decode()
-#
-#                all_expected_output += str(problem_number) + ":\n"
-#                if problem_dict["output_type"] == "txt":
-#                    all_expected_output += "<p><pre>" + expected_output.decode() + "</pre></p>\n"
-#                else:
-#                    all_expected_output += "<p><figure class='img'><img src='data:image/jpg;base64," + encode_image_bytes(expected_output) + "' width='95%' /></figure></p>\n"
-#
-#                write_file(expected_output, "{}/expected/{}".format(assignment_dir_path, str(problem_number)), "wb")
-#                for x in ("title", "instructions", "environment", "output_type", "test", "show_expected", "show_tests", "credit"):
-#                    write_file(str(problem_dict[x]).strip(), "{}/{}/{}".format(assignment_dir_path, x, str(problem_number)))
-#
-#                all_expected_output += "\n"
-######################################################################
-######################################################################
-######################################################################
+class EditProblemHandler(RequestHandler):
+    def get(self, course, assignment, problem):
+        try:
+            problem_exists = False
+            problems = []
+            environments = sort_nicely(env_dict.keys())
+            output_types = ["txt"]
+            course_exists, course_dict = get_course_info(course)
+
+            if course_exists:
+                assignment_exists, assignment_dict = get_assignment_info(course, assignment)
+
+                if assignment_exists:
+                    problem_exists, problem_dict = get_problem_info(course, assignment, problem)
+                    problems = get_assignment_problems(course, assignment, course_exists, assignment_exists)
+                    result = None
+                else:
+                    result = f"An assignment with this identifier [{assignment}] does not exist."
+            else:
+                result = f"A course with this identifier [{course}] does not exist."
+
+            self.render("edit_problem.html", courses=get_courses(), this_course=course, course_exists=course_exists, this_course_title=course_dict["title"], assignments=get_assignments(course, course_exists), this_assignment=assignment, assignment_exists=assignment_exists, this_assignment_title=assignment_dict["title"], this_assignment_introduction=assignment_dict["introduction"], this_problem=problem, problem_exists=problem_exists, this_problem_title=problem_dict["title"], problem_dict=problem_dict, problems=problems, prev_problem=None, next_problem=None, environments=environments, output_types=output_types, result=result)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, assignment, problem):
+        try:
+            submitted_password = self.get_body_argument("password")
+            problem_dict = {}
+            problem_dict["title"] = self.get_body_argument("title").strip() #required
+            problem_dict["instructions"] = self.get_body_argument("instructions").strip() #required
+            problem_dict["environment"] = self.get_body_argument("environment")
+            problem_dict["output_type"] = self.get_body_argument("output_type")
+            problem_dict["answer_code"] = self.get_body_argument("answer_code").strip() #required
+            problem_dict["test_code"] = self.get_body_argument("test_code").strip()
+            problem_dict["credit"] = self.get_body_argument("credit").strip()
+            problem_dict["data_urls"] = self.get_body_argument("data_urls").strip()
+            problem_dict["show_expected"] = self.get_body_argument("show_expected") == "Yes"
+            problem_dict["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
+
+            course_exists, course_dict = get_course_info(course)
+            assignment_exists, assignment_dict = get_assignment_info(course, assignment)
+            problems = []
+            environments = sort_nicely(env_dict.keys())
+            output_types = ["txt"]
+            result = "Error: Invalid password."
+
+            if submitted_password == password:
+                if not course_exists or not assignment_exists:
+                    result = "Error: Invalid course identifier or invalid assignment identifier."
+                else:
+                    if problem_dict["title"] == "" or problem_dict["instructions"] == "" or problem_dict["answer_code"] == "":
+                        result = "Error: One of the required fields is missing."
+                    else:
+                        problems = get_assignment_problems(course, assignment, True, True)
+
+                        problem_dict["data_urls_info"] = []
+                        for data_url in set(problem_dict["data_urls"].split("\n")):
+                            data_url = data_url.strip()
+                            if data_url != "":
+                                contents, content_type = download_file(data_url)
+                                md5_hash = create_md5_hash(data_url)
+                                write_data_file(contents, md5_hash)
+                                problem_dict["data_urls_info"].append([data_url, md5_hash, content_type])
+
+                        expected_output, error_occurred = exec_code(env_dict[problem_dict["environment"]], problem_dict["answer_code"], problem_dict["test_code"], problem_dict["output_type"], course, assignment, problem, self.request)
+
+                        if error_occurred:
+                            result = "Error: {}".format(expected_output.decode())
+                        else:
+                            if problem_dict["output_type"] == "txt":
+                                problem_dict["expected_output"] = expected_output.decode()
+                            else:
+                                problem_dict["expected_output"] = encode_image_bytes(expected_output)
+
+                            write_file(convert_dict_to_yaml(problem_dict), get_problem_file_path(course, assignment, problem, "yaml"))
+                            result = "Success: The problem was saved!"
+
+            self.render("edit_problem.html", courses=get_courses(), this_course=course, course_exists=course_exists, this_course_title=course_dict["title"], assignments=get_assignments(course, course_exists), this_assignment=assignment, assignment_exists=assignment_exists, this_assignment_title=assignment_dict["title"], this_assignment_introduction=assignment_dict["introduction"], this_problem=problem, problem_exists=True, this_problem_title=problem_dict["title"], problem_dict=problem_dict, problems=problems, prev_problem=None, next_problem=None, environments=environments, output_types=output_types, result=result)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class CheckProblemHandler(RequestHandler):
     async def post(self, course, assignment, problem):
         code = self.get_body_argument("code")
         environment = get_problem_file(course, assignment, problem, "environment")
-        test_code = get_problem_file(course, assignment, problem, "test")
+        test_code = get_problem_file(course, assignment, problem, "test_code")
         output_type = get_problem_file(course, assignment, problem, "output_type")
         show_expected = get_problem_file_bool(course, assignment, problem, "show_expected")
         out_dict = {"error_occurred": True, "passed": False, "diff_output": ""}
@@ -288,7 +303,7 @@ class JavascriptHandler(RequestHandler):
 
 class DataHandler(RequestHandler):
     async def get(self, course, assignment, problem, md5_hash):
-        data_file_path = "/data/{}".format(md5_hash)
+        data_file_path = get_downloaded_file_path(md5_hash)
 
         content_type = get_problem_file_dict(course, assignment, problem, "data_urls", 1, 2)[md5_hash]
         self.set_header('Content-type', content_type)
@@ -313,6 +328,10 @@ class DataHandler(RequestHandler):
 if __name__ == "__main__":
     if "PORT" in os.environ:
         application = make_app()
+
+        #TODO: Store this securely or have a better way of authenticating.
+        password = "abc"
+        env_dict = get_environments()
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))

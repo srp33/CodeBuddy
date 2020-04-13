@@ -1,27 +1,31 @@
 <section class="section section-padding-medium">
 <div class="content is-medium">
 
-<h2>{{ this_course_title }}</h2>
+{% if course_basics["exists"] %}
+  <h2>{{ course_basics["title"] }}</h2>
 
-<p>{{ introduction }}</p>
+  <p>{{ course_details["introduction"] }}</p>
 
-<h2>Assignments</h2>
+  <h3>Assignments</h3>
 
-{% if len(assignments) == 0 %}
-  <p>No assignments have yet been created.</p>
-{% else %}
-  <ul>
-  {% for assignment in assignments %}
-    <li><a href="/assignment/{{ this_course }}/{{ assignment[0] }}">{{ assignment[1] }}</a></li>
+  {% if len(course_basics["assignments"]) == 0 %}
+    <p>No assignments have been created.</p>
+  {% else %}
+    <ul>
+    {% for assignment in course_basics["assignments"] %}
+      <li><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></li>
+    {% end %}
+    </ul>
   {% end %}
-  </ul>
-{% end %}
 
-<p>
-  <a href="/">Home</a> |
-  <a href="/edit_course/{{ this_course }}">Edit course</a> |
-  <a href="/edit_assignment/{{ this_course }}/{{ new_assignment_id }}">Create assignment</a>
-</p>
+  <p>
+    <a href="/">Home</a> |
+    <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a> |
+    <a href="/edit_assignment/{{ course_basics["id"] }}/">Create assignment</a>
+  </p>
+{% else %}
+  <h2>This course does not exist.</h2>
+{% end %}
 
 </div>
 </section>

@@ -1,0 +1,114 @@
+<section class="section section-padding-medium">
+<div class="content is-medium">
+
+{% if problem_exists %}
+  <h2>Edit Problem</h2>
+{% else %}
+  <h2>Create Problem</h2>
+{% end %}
+
+{% if result %}
+  {% if result.startswith("Error:") %}
+    <p><div class='notification is-danger'><strong>{{ result }}</strong></div></p>
+  {% else %}
+    <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
+
+    {% if problem_dict["output_type"] == "txt" %}
+      <p><pre>{{ problem_dict["expected_output"] }} + </pre></p>
+    {% else %}
+      <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_dict["expected_output"] }}' width='95%' /></figure></p>"
+    {% end %}
+  {% end %}
+{% end %}
+
+{% if course_exists %}
+  {% if assignment_exists %}
+    <form method="post" />
+
+    <p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this problem." value="{{ this_problem_title }}" /></p>
+
+    <p><strong>Instructions*: </strong><br />
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions">{{ problem_dict["instructions"] }}</textarea></p>
+
+    <p><strong>Environment: </strong>
+      <div class="select is-info">
+        <select name="environment">
+        {% for environment in environments %}
+          <option
+            {% if environment == problem_dict["environment"] %}
+              selected
+            {% end %}
+          >{{ environment }}</option>
+        {% end %}
+        </select>
+      </div>
+    </p>
+
+    <p><strong>Output type: </strong>
+      <div class="select is-info">
+        <select name="output_type">
+        {% for output_type in output_types %}
+          <option
+            {% if environment == problem_dict["output_type"] %}
+              selected
+            {% end %}
+          >{{ output_type }}</option>
+        {% end %}
+        </select>
+      </div>
+    </p>
+
+    <p><strong>Answer code*: </strong><br />
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code">{{ problem_dict["answer_code"] }}</textarea></p>
+
+    <p><strong>Test code: </strong><br />
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code">{{ problem_dict["test_code"] }}</textarea></p>
+
+    <p><strong>Credit: </strong><br />
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If anyone should be given credit for creating this problem, please indicate that." rows="4" name="credit">{{ problem_dict["credit"] }}</textarea></p>
+
+    <p><strong>Data URLs: </strong><br />
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls">{{ problem_dict["data_urls"] }}</textarea></p>
+
+    <p><strong>Show expected output: </strong>
+      <div class="select is-info">
+        <select name="show_expected">
+          {% if problem_dict["show_expected"] %}
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+            <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
+
+    <p><strong>Show test code: </strong>
+      <div class="select is-info">
+        <select name="show_test_code">
+          {% if problem_dict["show_test_code"] %}
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+            <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
+
+    <p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
+
+    <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
+
+    </form>
+  {% else %}
+    This assignment has not been created yet.
+  {% end %}
+{% else %}
+  This course has not been created yet.
+{% end %}
+
+</div>
+</section>
