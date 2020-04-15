@@ -1,8 +1,8 @@
 <section class="section section-padding-medium">
 <div class="content is-medium">
 
-{% if course_exists %}
-  {% if assignment_exists %}
+{% if course_basics["exists"] %}
+  {% if assignment_basics["exists"] %}
     <h2>Edit Assignment</h2>
   {% else %}
     <h2>Create Assignment</h2>
@@ -17,26 +17,29 @@
   {% end %}
 {% end %}
 
-{% if course_exists %}
+{% if course_basics["exists"] %}
   <form method="post" />
 
-  <p><strong>Title: </strong><input name="assignment_title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this assignment." value="{{ this_assignment_title }}" /></p>
+  <p><strong>Title: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this assignment." value="{{ assignment_basics["title"] }}" /></p>
 
   <p><strong>Introduction: </strong><br />
-  <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" name="assignment_introduction">{{ this_assignment_introduction }}</textarea></p>
+  <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" name="introduction">{{ assignment_details["introduction"] }}</textarea></p>
 
   <p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
 
   <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
-  {% if assignment_exists %}
-    <p><a href="/assignment/{{ this_course }}/{{ this_assignment }}">Done editing</a></p>
-  {% end %}
-
-  </form>
+  <p>
+      <a href="/">Home</a> |
+      <a href="/course/{{ course_basics["id"] }}">Course home</a>
+      {% if assignment_basics["exists"] %}
+          | <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a>
+      {% end %}
+  </p>
 {% else %}
   This course has not been created yet.
 {% end %}
 
+  </form>
 </div>
 </section>
