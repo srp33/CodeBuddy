@@ -63,7 +63,7 @@ def get_problem_basics(course, assignment, problem):
 
     file_path = get_problem_dir_path(course, assignment, problem) + "basics"
     exists = os.path.exists(file_path)
-    problem_dict = {"title": "", "exists": exists, "assignment": get_assignment_basics(course, assignment, False)}
+    problem_dict = {"title": "", "exists": exists, "assignment": get_assignment_basics(course, assignment, False), "prev_problem": None, "next_problem": None}
 
     if exists:
         problem_dict["title"] = read_file(file_path)
@@ -125,7 +125,8 @@ def get_problem_details(course, assignment, problem, format_output=False):
     else:
         problem_dict = {"instructions": "", "environment": "r_codechecker",
             "output_type": "txt", "answer_code": "", "test_code": "", "credit": "",
-            "data_urls": "", "show_expected": True, "show_test_code": True}
+            "data_urls": "", "show_expected": True, "show_test_code": True,
+            "expected_output": ""}
 
     return problem_dict
 

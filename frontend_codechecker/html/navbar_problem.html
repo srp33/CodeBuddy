@@ -1,30 +1,32 @@
             <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link" href="/problem/{{ this_course }}/{{ this_assignment }}/{{ this_problem }}">
-                    {% if problem_exists %}
-                      {{ this_problem_title }}
-                    {% else %}
-                      New Problem
-                    {% end %}
-                </a>
+                {% if problem_exists %}
+                    <a class="navbar-link" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">
+                        {{ this_problem_title }}
+                    </a>
+                {% else %}
+                    <a class="navbar-link">
+                        New Problem
+                    </a>
+                {% end %}
 
-                {% if len(problems) > 0 %}
-                  <div id="moreDropdown" class="navbar-dropdown is-size-4">
-                    {% for problem in problems %}
-                        <a class="navbar-item " href="/problem/{{ this_course }}/{{ this_assignment }}/{{ problem[0] }}">
-                            Problem {{ problem[0] }} - {{ problem[1] }}
-                        </a>
-                    {% end %}
-                  </div>
+                {% if len(assignment_basics["problems"]) > 0 %}
+                    <div id="moreDropdown" class="navbar-dropdown is-size-4">
+                        {% for problem in assignment_basics["problems"] %}
+                            <a class="navbar-item " href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">
+                                {{ problem[1]["title"] }}
+                            </a>
+                        {% end %}
+                    </div>
                 {% end %}
             </div>
             <div class="navbar-end">
-            {% if "prev_problem" in globals() and prev_problem %}
-                <a class="navbar-item" href="/problem/{{ this_course }}/{{ this_assignment }}/{{ prev_problem }}">
+            {% if problem_basics["prev_problem"] %}
+                <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["prev_problem"] }}">
                     Previous Problem
                 </a>
             {% end %}
-            {% if "next_problem" in globals() and next_problem %}
-                <a class="navbar-item" href="/problem/{{ this_course }}/{{ this_assignment }}/{{ next_problem }}">
+            {% if problem_basics["next_problem"] %}
+                <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}">
                     Next Problem
                 </a>
             {% end %}

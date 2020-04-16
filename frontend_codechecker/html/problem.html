@@ -1,138 +1,149 @@
-<script src="/js/jquery.min.js"></script>
-
-<script>
-function check_code()
-{
-    the_code = document.getElementById("code").value;
-
-    if (the_code.trim() == "")
-        return false;
-
-    result_div = document.getElementById("result");
-    result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
-    result_div.scrollIntoView();
-    document.getElementById("code_output").innerHTML = "";
-    document.getElementById("diff_output").innerHTML = "";
-
-    post_data = { "code": the_code };
-
-    $.post("/check_problem/{{ this_course }}/{{ this_assignment }}/{{ this_problem }}",
-        post_data,
-        function(data, status){
-            var json_data = JSON.parse(data);
-            var code_output = "<h2>Your output:</h2>\n\n";
-            var diff_output = "";
-            var result = "";
-
-            {% if output_type == "txt" %}
-                if (json_data.code_output == "")
-                {
-                    code_output += "<p><pre>[Your code produced no output.]</pre></p>";
-                }
-                else
-                {
-                    code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
-                }
-            {% else %}
-                if (json_data.error_occurred)
-                {
-                    code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
-                }
-                else
-                {
-                    code_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.code_output + "' width='100%' /></figure></p>";
-                }
-            {% end %}
-
-            if (json_data.passed)
-            {
-                result = "<div class='notification is-success'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
-
-                {% if "next_problem" in globals() and next_problem %}
-                    result += "<p><strong><a href='/problem/{{ this_course }}/{{ this_assignment }}/{{ next_problem }}'>Next Problem</a></strong></p>\n\n";
-                {% end %}
-
-                result += "</div>\n\n"
-            }
-            else
-            {
-                result = "<div class='notification is-danger'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
-
-                {% if len(expected_output) > 0 %}
-                  diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
-
-                  {% if output_type == "txt" %}
-                    if (json_data.diff_output.length > 0)
-                      diff_output += "<p><pre>" + json_data.diff_output + "</pre>\n\n<em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                  {% else %}
-                    if (json_data.diff_output.length > 0)
-                      diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
-                  {% end %}
-                {% end %}
-            }
-
-            document.getElementById("code_output").innerHTML = code_output;
-            document.getElementById("diff_output").innerHTML = diff_output;
-            document.getElementById("result").innerHTML = result;
-        });
-
-    return false;
-}
-</script>
-
 <section class="section section-padding-medium">
 <div class="content is-medium">
 
-<h2>{{ this_problem_title }}</h2>
-<p>{{ instructions }}</p>
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        {% if problem_basics["exists"] %}
+            <script src="/js/jquery.min.js"></script>
 
-{% if len(credit) > 0 %}
-  <p><i>{{ credit }}</i></p>
-{% end %}
+            <script>
+            function check_code()
+            {
+                the_code = document.getElementById("code").value;
 
-{% if len(data_urls_dict) > 0 %}
-  <h5>
-    {% if len(data_urls_dict) > 1 %}
-      Data files:
+                if (the_code.trim() == "")
+                    return false;
+
+                result_div = document.getElementById("result");
+                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
+                result_div.scrollIntoView();
+                document.getElementById("code_output").innerHTML = "";
+                document.getElementById("diff_output").innerHTML = "";
+
+                post_data = { "code": the_code };
+
+                $.post("/check_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                    post_data,
+                    function(data, status){
+                        var json_data = JSON.parse(data);
+                        var code_output = "<h2>Your output:</h2>\n\n";
+                        var diff_output = "";
+                        var result = "";
+
+                        {% if output_type == "txt" %}
+                            if (json_data.code_output == "")
+                            {
+                                code_output += "<p><pre>[Your code produced no output.]</pre></p>";
+                            }
+                            else
+                            {
+                                code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
+                            }
+                        {% else %}
+                            if (json_data.error_occurred)
+                            {
+                                code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
+                            }
+                            else
+                            {
+                                code_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.code_output + "' width='100%' /></figure></p>";
+                            }
+                        {% end %}
+
+                        if (json_data.passed)
+                        {
+                            result = "<div class='notification is-success'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
+
+                            {% if "next_problem" in globals() and next_problem %}
+                                result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
+                            {% end %}
+
+                            result += "</div>\n\n"
+                        }
+                            else
+                        {
+                            result = "<div class='notification is-danger'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
+
+                            {% if len(expected_output) > 0 %}
+                              diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
+
+                              {% if output_type == "txt" %}
+                                if (json_data.diff_output.length > 0)
+                                  diff_output += "<p><pre>" + json_data.diff_output + "</pre>\n\n<em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                              {% else %}
+                                if (json_data.diff_output.length > 0)
+                                  diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
+                              {% end %}
+                            {% end %}
+                        }
+
+                        document.getElementById("code_output").innerHTML = code_output;
+                        document.getElementById("diff_output").innerHTML = diff_output;
+                        document.getElementById("result").innerHTML = result;
+                    });
+
+                return false;
+            }
+            </script>
+
+            <h2>{{ problem_basics["title"] }}</h2>
+            <p>{{ problem_details["instructions"] }}</p>
+
+            {% if len(problem_details["credit"]) > 0 %}
+              <p><i>{{ problem_details["credit"] }}</i></p>
+            {% end %}
+
+            {% if len(data_urls) > 0 %}
+              <h5>
+                {% if len(data_urls) > 1 %}
+                  Data files:
+                {% else %}
+                  Data file:
+                {% end %}
+              </h5>
+
+              <ul>
+              {% for url, data_id in data_urls.items() %}
+                  <li><a href="{{ url }}">{{ url }}</a> (<a href="/data/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ data_id }}">cached version</a>)</li>
+              {% end %}
+              </ul>
+            {% end %}
+
+            {% if len(problem_details["test_code"]) > 0 %}
+              <h4>Test code (to be executed after your code):</h4>
+
+              <pre>{{ problem_details["test_code"] }}</pre>
+            {% end %}
+
+            <h2>Your code:</h2>
+
+            <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="code" style="font-family:monospace"></textarea></p>
+
+            <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
+
+            <h2>Expected output:</h2>
+            {% if len(problem_details["expected_output"]) > 0 %}
+              {% if problem_details["output_type"] == "txt" %}
+                <pre>{{ problem_details["expected_output"] }}</pre>
+              {% else %}
+                <p><figure class="img"><img src="{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
+              {% end %}
+            {% else %}
+              <p>This problem is configured so that the expected output is not shown.</p>
+            {% end %}
+
+            <p><div id="result"></div></p>
+
+            <span id="code_output"></span>
+            <span id="diff_output"></span>
+        {% else %}
+          <p>This problem does not exist.</p>
+        {% end %}
     {% else %}
-      Data file:
+      <p>This assignment does not exist.</p>
     {% end %}
-  </h5>
-
-  <ul>
-  {% for url, data_id in data_urls_dict.items() %}
-  <li><a href="{{ url }}">{{ url }}</a> (<a href="/data/{{ this_course }}/{{ this_assignment }}/{{ this_problem }}/{{ data_id }}">cached version</a>)</li>
-  {% end %}
-  </ul>
-{% end %}
-
-{% if len(test_code) > 0 %}
-  <h4>Test code (to be executed after your code):</h4>
-
-  <pre>{{ test_code }}</pre>
-{% end %}
-
-<h2>Your code:</h2>
-
-<p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="code" style="font-family:monospace"></textarea></p>
-
-<p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
-
-<h2>Expected output:</h2>
-{% if len(expected_output) > 0 %}
-  {% if output_type == "txt" %}
-    <pre>{{ expected_output }}</pre>
-  {% else %}
-    <p><figure class="img"><img src="{{ expected_output }}" width="100%"/></figure></p>
-  {% end %}
 {% else %}
-  <p>This problem is configured so that the expected output is not shown.</p>
+  <p>This course does not exist.</p>
 {% end %}
-
-<p><div id="result"></div></p>
-
-<span id="code_output"></span>
-<span id="diff_output"></span>
-
 </div>
 </section>

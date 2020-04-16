@@ -1,7 +1,7 @@
 <section class="section section-padding-medium">
 <div class="content is-medium">
 
-{% if problem_exists %}
+{% if problem_basics["exists"] %}
   <h2>Edit Problem</h2>
 {% else %}
   <h2>Create Problem</h2>
@@ -13,29 +13,29 @@
   {% else %}
     <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
 
-    {% if problem_dict["output_type"] == "txt" %}
-      <p><pre>{{ problem_dict["expected_output"] }} + </pre></p>
+    {% if problem_details["output_type"] == "txt" %}
+      <p><pre>{{ problem_details["expected_output"] }} + </pre></p>
     {% else %}
-      <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_dict["expected_output"] }}' width='95%' /></figure></p>"
+      <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_details["expected_output"] }}' width='95%' /></figure></p>"
     {% end %}
   {% end %}
 {% end %}
 
-{% if course_exists %}
-  {% if assignment_exists %}
+{% if course_basics["exists"] %}
+  {% if assignment_basics["exists"] %}
     <form method="post" />
 
-    <p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this problem." value="{{ this_problem_title }}" /></p>
+    <p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this problem." value="{{ problem_basics["title"] }}" /></p>
 
     <p><strong>Instructions*: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions">{{ problem_dict["instructions"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions">{{ problem_details["instructions"] }}</textarea></p>
 
     <p><strong>Environment: </strong>
       <div class="select is-info">
         <select name="environment">
         {% for environment in environments %}
           <option
-            {% if environment == problem_dict["environment"] %}
+            {% if environment == problem_details["environment"] %}
               selected
             {% end %}
           >{{ environment }}</option>
@@ -49,7 +49,7 @@
         <select name="output_type">
         {% for output_type in output_types %}
           <option
-            {% if environment == problem_dict["output_type"] %}
+            {% if environment == problem_details["output_type"] %}
               selected
             {% end %}
           >{{ output_type }}</option>
@@ -59,21 +59,21 @@
     </p>
 
     <p><strong>Answer code*: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code">{{ problem_dict["answer_code"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code">{{ problem_details["answer_code"] }}</textarea></p>
 
     <p><strong>Test code: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code">{{ problem_dict["test_code"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code">{{ problem_details["test_code"] }}</textarea></p>
 
     <p><strong>Credit: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If anyone should be given credit for creating this problem, please indicate that." rows="4" name="credit">{{ problem_dict["credit"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If anyone should be given credit for creating this problem, please indicate that." rows="4" name="credit">{{ problem_details["credit"] }}</textarea></p>
 
     <p><strong>Data URLs: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls">{{ problem_dict["data_urls"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls">{{ problem_details["data_urls"] }}</textarea></p>
 
     <p><strong>Show expected output: </strong>
       <div class="select is-info">
         <select name="show_expected">
-          {% if problem_dict["show_expected"] %}
+          {% if problem_details["show_expected"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
           {% else %}
@@ -87,7 +87,7 @@
     <p><strong>Show test code: </strong>
       <div class="select is-info">
         <select name="show_test_code">
-          {% if problem_dict["show_test_code"] %}
+          {% if problem_details["show_test_code"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
           {% else %}

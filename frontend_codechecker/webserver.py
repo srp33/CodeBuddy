@@ -122,61 +122,67 @@ class EditAssignmentHandler(RequestHandler):
 class ProblemHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
-            course_exists, course_dict = get_course_info(course)
-            assignments = get_assignments(course, course_exists)
-            assignment_title = get_assignment_file(course, assignment, "assignment_title")
-            assignment_instructions = convert_markdown_to_html(get_problem_file(course, assignment, problem, "instructions"))
-            problem_title = get_problem_file(course, assignment, problem, "title")
-            output_type = get_problem_file(course, assignment, problem, "output_type")
-            show_expected = get_problem_file_bool(course, assignment, problem, "show_expected")
-            show_test_code = get_problem_file_bool(course, assignment, problem, "show_test_code")
-            credit = get_problem_file(course, assignment, problem, "credit")
+            #course_exists, course_dict = get_course_info(course)
+            #assignments = get_assignments(course, course_exists)
+            #assignment_title = get_assignment_file(course, assignment, "assignment_title")
+            #assignment_instructions = convert_markdown_to_html(get_problem_file(course, assignment, problem, "instructions"))
+            #problem_title = get_problem_file(course, assignment, problem, "title")
+            #output_type = get_problem_file(course, assignment, problem, "output_type")
+            #show_expected = get_problem_file_bool(course, assignment, problem, "show_expected")
+            #show_test_code = get_problem_file_bool(course, assignment, problem, "show_test_code")
+            #credit = get_problem_file(course, assignment, problem, "credit")
 
-            data_urls_dict = {}
-            if os.path.exists(get_problem_file_path(course, assignment, problem, "data_urls")):
-                data_urls_dict = get_problem_file_dict(course, assignment, problem, "data_urls", 0, 1)
+            #data_urls_dict = {}
+            #if os.path.exists(get_problem_file_path(course, assignment, problem, "data_urls")):
+            #    data_urls_dict = get_problem_file_dict(course, assignment, problem, "data_urls", 0, 1)
 
-            problems = get_assignment_problems(course, assignment, course_exists, assignment_exists)
-            prev_problem = get_prev_problem(course, assignment, problem, problems)
-            next_problem = get_next_problem(course, assignment, problem, problems)
+            #problems = get_assignment_problems(course, assignment, course_exists, assignment_exists)
+            #prev_problem = get_prev_problem(course, assignment, problem, problems)
+            #next_problem = get_next_problem(course, assignment, problem, problems)
 
-            expected_output = ""
-            if show_expected:
-                if output_type == "txt":
-                    expected_output = format_output_as_html(read_file(get_expected_path(course, assignment, problem)))
-                else:
-                    expected_output = "/img/{}/{}/{}".format(course, assignment, problem)
+            #expected_output = ""
+            #if show_expected:
+            #    if output_type == "txt":
+            #        expected_output = format_output_as_html(read_file(get_expected_path(course, assignment, problem)))
+            #    else:
+            #        expected_output = "/img/{}/{}/{}".format(course, assignment, problem)
 
-            test_code = ""
-            if show_test_code:
-                test_code = format_output_as_html(get_problem_file(course, assignment, problem, "test_code"))
+            #test_code = ""
+            #if show_test_code:
+            #    test_code = format_output_as_html(get_problem_file(course, assignment, problem, "test_code"))
 
-            self.render("problem.html", courses=get_courses(), this_course=course, this_course_title=course_dict["title"], this_assignment=assignment, this_assignment_title=assignment_title, instructions=assignment_instructions, data_urls_dict=data_urls_dict, assignments=assignments, this_problem=problem, this_problem_title=problem_title, problems=problems, output_type=output_type, test_code=test_code, expected_output=expected_output, prev_problem=prev_problem, next_problem=next_problem, credit=credit)
+            problem_basics = get_problem_basics(course, assignment, problem)
+
+            self.render("problem.html", courses=get_courses(), course_basics=problem_basics["assignment"]["course"], assignment_basics=problem_basics["assignment"], problem_basics=problem_basics, problem_details=get_problem_details(course, assignment, problem))
+                    #this_course=course, this_course_title=course_dict["title"], this_assignment=assignment, this_assignment_title=assignment_title, instructions=assignment_instructions, data_urls_dict=data_urls_dict, assignments=assignments, this_problem=problem, this_problem_title=problem_title, problems=problems, output_type=output_type, test_code=test_code, expected_output=expected_output, prev_problem=prev_problem, next_problem=next_problem, credit=credit)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditProblemHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
-            problem_exists = False
-            problems = []
+            #problem_exists = False
+            #problems = []
             environments = sort_nicely(env_dict.keys())
             output_types = ["txt"]
-            course_exists, course_dict = get_course_info(course)
+            #course_exists, course_dict = get_course_info(course)
 
-            if course_exists:
-                assignment_exists, assignment_dict = get_assignment_info(course, assignment)
+            #if course_exists:
+            #    assignment_exists, assignment_dict = get_assignment_info(course, assignment)
+#
+#                if assignment_exists:
+#                    problem_exists, problem_dict = get_problem_info(course, assignment, problem)
+#                    problems = get_assignment_problems(course, assignment, course_exists, assignment_exists)
+#                    result = None
+#                else:
+#                    result = f"An assignment with this identifier [{assignment}] does not exist."
+#            else:
+#                result = f"A course with this identifier [{course}] does not exist."
 
-                if assignment_exists:
-                    problem_exists, problem_dict = get_problem_info(course, assignment, problem)
-                    problems = get_assignment_problems(course, assignment, course_exists, assignment_exists)
-                    result = None
-                else:
-                    result = f"An assignment with this identifier [{assignment}] does not exist."
-            else:
-                result = f"A course with this identifier [{course}] does not exist."
+            problem_basics = get_problem_basics(course, assignment, problem)
 
-            self.render("edit_problem.html", courses=get_courses(), this_course=course, course_exists=course_exists, this_course_title=course_dict["title"], assignments=get_assignments(course, course_exists), this_assignment=assignment, assignment_exists=assignment_exists, this_assignment_title=assignment_dict["title"], this_assignment_introduction=assignment_dict["introduction"], this_problem=problem, problem_exists=problem_exists, this_problem_title=problem_dict["title"], problem_dict=problem_dict, problems=problems, prev_problem=None, next_problem=None, environments=environments, output_types=output_types, result=result)
+            self.render("edit_problem.html", courses=get_courses(), course_basics=problem_basics["assignment"]["problem"], assignment_basics=problem_basics["assignment"], problem_basics=problem_basics, problem_details=get_problem_details(course, assignment, problem), environments=environments, output_types=output_types, result=None)
+            #self.render("edit_problem.html", courses=get_courses(), this_course=course, course_exists=course_exists, this_course_title=course_dict["title"], assignments=get_assignments(course, course_exists), this_assignment=assignment, assignment_exists=assignment_exists, this_assignment_title=assignment_dict["title"], this_assignment_introduction=assignment_dict["introduction"], this_problem=problem, problem_exists=problem_exists, this_problem_title=problem_dict["title"], problem_dict=problem_dict, problems=problems, prev_problem=None, next_problem=None, environments=environments, output_types=output_types, result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
