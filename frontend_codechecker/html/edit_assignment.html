@@ -18,7 +18,7 @@
 {% end %}
 
 {% if course_basics["exists"] %}
-  <form method="post" />
+  <form method="post" action="/edit_assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}" />
 
   <p><strong>Title: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this assignment." value="{{ assignment_basics["title"] }}" /></p>
 

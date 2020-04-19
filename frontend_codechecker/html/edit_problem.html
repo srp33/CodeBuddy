@@ -14,7 +14,7 @@
     <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
 
     {% if problem_details["output_type"] == "txt" %}
-      <p><pre>{{ problem_details["expected_output"] }} + </pre></p>
+      <p><pre><code>{{ problem_details["expected_output"] }}</code></pre></p>
     {% else %}
       <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_details["expected_output"] }}' width='95%' /></figure></p>"
     {% end %}
@@ -23,7 +23,7 @@
 
 {% if course_basics["exists"] %}
   {% if assignment_basics["exists"] %}
-    <form method="post" />
+    <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
 
     <p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this problem." value="{{ problem_basics["title"] }}" /></p>
 
@@ -46,17 +46,30 @@
 
     <p><strong>Output type: </strong>
       <div class="select is-info">
-        <select name="output_type">
-        {% for output_type in output_types %}
-          <option
-            {% if environment == problem_details["output_type"] %}
-              selected
-            {% end %}
-          >{{ output_type }}</option>
-        {% end %}
+        <select name="output_type" id="output_types">
         </select>
       </div>
     </p>
+
+    <script>
+        ot_select = document.getElementById("output_types");
+
+        $.get('/output_types/{{ problem_details["environment"] }}', function( data ) {
+          output_types = data.toString().split(" ");
+
+          var i;
+          for (i = 0; i < output_types.length; i++) {
+            var opt = document.createElement('option');
+            opt.innerHTML = output_types[i];
+            opt.value = output_types[i];
+
+            if (output_types[i] == "{{ problem_details["output_type"] }}")
+              opt.selected = true;
+
+            ot_select.appendChild(opt);
+          }
+        });
+    </script>
 
     <p><strong>Answer code*: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code">{{ problem_details["answer_code"] }}</textarea></p>
@@ -101,6 +114,13 @@
     <p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
 
     <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
+
+    <p>
+      <a href="/">Home</a> |
+      <a href="/course/{{ course_basics["id"] }}">Course home</a> |
+      <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a> |
+      <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a>
+    </p>
 
     </form>
   {% else %}

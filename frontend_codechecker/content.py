@@ -51,8 +51,8 @@ def get_assignment_basics(course, assignment, get_problems=True):
         if get_problems:
             for problem_dir_path in glob.glob(f"/course/{course}/{assignment}/*"):
                 if os.path.isdir(problem_dir_path):
-                    assignment_id = os.path.basename(problem_dir_path)
-                    assignment_dict["problems"].append([problem_id, get_problem_basics(problem_id)])
+                    problem_id = os.path.basename(problem_dir_path)
+                    assignment_dict["problems"].append([problem_id, get_problem_basics(course, assignment, problem_id)])
             assignment_dict["problems"] = sort_by_title(assignment_dict["problems"])
 
     return assignment_dict
@@ -63,7 +63,7 @@ def get_problem_basics(course, assignment, problem):
 
     file_path = get_problem_dir_path(course, assignment, problem) + "basics"
     exists = os.path.exists(file_path)
-    problem_dict = {"title": "", "exists": exists, "assignment": get_assignment_basics(course, assignment, False), "prev_problem": None, "next_problem": None}
+    problem_dict = {"id": problem, "title": "", "exists": exists, "assignment": get_assignment_basics(course, assignment, False), "prev_problem": None, "next_problem": None}
 
     if exists:
         problem_dict["title"] = read_file(file_path)
@@ -122,11 +122,14 @@ def get_problem_details(course, assignment, problem, format_output=False):
 
     if os.path.exists(file_path):
         problem_dict = load_yaml_dict(read_file(file_path))
+        if format_output:
+            problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
+            problem_dict["credit"] = convert_markdown_to_html(problem_dict["credit"])
     else:
         problem_dict = {"instructions": "", "environment": "r_codechecker",
             "output_type": "txt", "answer_code": "", "test_code": "", "credit": "",
             "data_urls": "", "show_expected": True, "show_test_code": True,
-            "expected_output": ""}
+            "expected_output": "", "data_urls_info": []}
 
     return problem_dict
 
@@ -143,7 +146,7 @@ def sort_by_title(nested_list):
 
 def has_duplicate_title(entries, this_entry, proposed_title):
     for entry in entries:
-        if entry[0] != this_entry and  entry[1]["title"] == proposed_title:
+        if entry[0] != this_entry and entry[1]["title"] == proposed_title:
             return True
     return False
 
@@ -154,3 +157,8 @@ def save_course(course_basics, course_details):
 def save_assignment(assignment_basics, assignment_details):
     write_file(assignment_basics["title"], get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(assignment_details), get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"]) + "details")
+
+def save_problem(problem_basics, problem_details):
+    write_file(problem_basics["title"], get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "basics")
+    write_file(convert_dict_to_yaml(problem_details), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "details")
+

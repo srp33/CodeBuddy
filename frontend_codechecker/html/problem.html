@@ -4,8 +4,6 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if problem_basics["exists"] %}
-            <script src="/js/jquery.min.js"></script>
-
             <script>
             function check_code()
             {
@@ -30,7 +28,7 @@
                         var diff_output = "";
                         var result = "";
 
-                        {% if output_type == "txt" %}
+                        {% if problem_details["output_type"] == "txt" %}
                             if (json_data.code_output == "")
                             {
                                 code_output += "<p><pre>[Your code produced no output.]</pre></p>";
@@ -64,10 +62,10 @@
                         {
                             result = "<div class='notification is-danger'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
 
-                            {% if len(expected_output) > 0 %}
+                            {% if problem_details["show_expected"] and len(problem_details["expected_output"]) > 0 %}
                               diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
 
-                              {% if output_type == "txt" %}
+                              {% if problem_details["output_type"] == "txt" %}
                                 if (json_data.diff_output.length > 0)
                                   diff_output += "<p><pre>" + json_data.diff_output + "</pre>\n\n<em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
                               {% else %}
@@ -87,15 +85,12 @@
             </script>
 
             <h2>{{ problem_basics["title"] }}</h2>
+
             <p>{{ problem_details["instructions"] }}</p>
 
-            {% if len(problem_details["credit"]) > 0 %}
-              <p><i>{{ problem_details["credit"] }}</i></p>
-            {% end %}
-
-            {% if len(data_urls) > 0 %}
+            {% if len(problem_details["data_urls_info"]) > 0 %}
               <h5>
-                {% if len(data_urls) > 1 %}
+                {% if len(problem_details["data_urls_info"]) > 1 %}
                   Data files:
                 {% else %}
                   Data file:
@@ -103,13 +98,13 @@
               </h5>
 
               <ul>
-              {% for url, data_id in data_urls.items() %}
+              {% for url, data_id in problem_details["data_urls_info"].items() %}
                   <li><a href="{{ url }}">{{ url }}</a> (<a href="/data/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ data_id }}">cached version</a>)</li>
               {% end %}
               </ul>
             {% end %}
 
-            {% if len(problem_details["test_code"]) > 0 %}
+            {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
               <h4>Test code (to be executed after your code):</h4>
 
               <pre>{{ problem_details["test_code"] }}</pre>
@@ -121,21 +116,32 @@
 
             <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
 
-            <h2>Expected output:</h2>
-            {% if len(problem_details["expected_output"]) > 0 %}
-              {% if problem_details["output_type"] == "txt" %}
-                <pre>{{ problem_details["expected_output"] }}</pre>
-              {% else %}
-                <p><figure class="img"><img src="{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
-              {% end %}
+            {% if problem_details["show_expected"] %}
+              <h2>Expected output:</h2>
+                {% if problem_details["output_type"] == "txt" %}
+                  <pre>{{ problem_details["expected_output"] }}</pre>
+                {% else %}
+                  <p><figure class="img"><img src="{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
+                {% end %}
             {% else %}
-              <p>This problem is configured so that the expected output is not shown.</p>
+              <p><em>This problem is configured so that the expected output is not shown.</em></p>
             {% end %}
 
             <p><div id="result"></div></p>
 
             <span id="code_output"></span>
             <span id="diff_output"></span>
+
+            {% if len(problem_details["credit"]) > 0 %}
+              <p><em>{{ problem_details["credit"] }}</em></p>
+            {% end %}
+
+            <p>
+              <a href="/">Home</a> |
+              <a href="/course/{{ course_basics["id"] }}">Course home</a> |
+              <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a> |
+              <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
+            </p>
         {% else %}
           <p>This problem does not exist.</p>
         {% end %}

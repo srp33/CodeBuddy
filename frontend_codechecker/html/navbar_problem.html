@@ -1,7 +1,7 @@
             <div class="navbar-item has-dropdown is-hoverable">
-                {% if problem_exists %}
+                {% if problem_basics["exists"] %}
                     <a class="navbar-link" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">
-                        {{ this_problem_title }}
+                        {{ problem_basics["title"] }}
                     </a>
                 {% else %}
                     <a class="navbar-link">

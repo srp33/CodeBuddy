@@ -102,53 +102,54 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(settings_dict, code, problem_dict, request):
+def exec_code(env_dict, code, problem_basics, problem_details, request):
     try:
-        code = code + "\n\n" + problem_dict["test_code"]
+        code = code + "\n\n" + problem_details["test_code"]
+        settings_dict = env_dict[problem_details["environment"]]
 
-        for url, md5_hash in get_columns_dict(problem_dict["data_urls_info"], 0, 1).items():
+        for url, md5_hash in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
             cache_url = "{}://{}/data/{}/{}/{}/{}".format(
                 request.protocol,
                 request.host,
-                problem_dict["assignment"]["course"]["id"],
-                problem_dict["assignment"]["id"],
-                problem_dict["id"],
+                problem_basics["assignment"]["course"]["id"],
+                problem_basics["assignment"]["id"],
+                problem_basics["id"],
                 md5_hash)
             code = code.replace(url, cache_url)
 
         timeout = settings_dict["timeout_seconds"] + 2
-        data_dict = {"code": code, "timeout_seconds": timeout, "output_type": problem_dict["output_type"]}
+        data_dict = {"code": code, "timeout_seconds": timeout, "output_type": problem_details["output_type"]}
         response = requests.post(settings_dict["url"], json.dumps(data_dict), timeout=timeout)
 
         return response.content, response.status_code != 200
     except ReadTimeout as inst:
         return "Your code did not finish executing before the time limit: {} seconds.".format(timeout).encode(), True
 
-def test_code_txt(settings_dict, code, problem_dict, request):
-    code_output, error_occurred = exec_code(settings_dict, code, problem_dict, request)
+def test_code_txt(settings_dict, code, problem_basics, problem_details, request):
+    code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
     code_output = code_output.decode()
 
     if error_occurred:
         return code_output, True, False, ""
 
-    passed = problem_dict["expected_output"] == code_output
+    passed = problem_details["expected_output"] == code_output
 
     diff_output = ""
-    if not passed and problem_dict["show_expected"]:
-        diff_output = diff_strings(problem_dict["expected_output"], code_output)
+    if not passed and problem_details["show_expected"]:
+        diff_output = diff_strings(problem_details["expected_output"], code_output)
 
     return code_output, error_occurred, passed, diff_output
 
-def test_code_jpg(settings_dict, code, problem_dict, request):
-    code_output, error_occurred = exec_code(settings_dict, code, problem_dict, request)
+def test_code_jpg(settings_dict, code, problem_basics, problem_details, request):
+    code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
 
     if error_occurred:
         return code_output.decode(), True, False, ""
 
-    passed, diff_image = are_images_similar(problem_dict["expected_output"], code_output)
+    passed, diff_image = are_images_similar(problem_details["expected_output"], code_output)
 
     diff_output = ""
-    if not passed and problem_dict["show_expected"]:
+    if not passed and problem_details["show_expected"]:
         diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
 
     code_output = encode_image_bytes(code_output)
