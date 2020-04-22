@@ -166,3 +166,13 @@ def delete_problem(problem_basics):
     dir_path = get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"])
     if os.path.exists(dir_path):
         shutil.rmtree(dir_path)
+
+def delete_assignment(assignment_basics):
+    dir_path = get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"])
+    if os.path.exists(dir_path):
+        shutil.rmtree(dir_path)
+
+def delete_course(course_basics):
+    dir_path = get_course_dir_path(course_basics["id"])
+    if os.path.exists(dir_path):
+        shutil.rmtree(dir_path)

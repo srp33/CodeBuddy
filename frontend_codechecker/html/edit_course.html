@@ -31,7 +31,8 @@
 <p>
     <a href="/">Home</a>
     {% if course_basics["exists"] %}
-      | <a href="/course/{{ course_basics["id"] }}">Course home</a>
+      | <a href="/course/{{ course_basics["id"] }}">Done editing</a>
+      | <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
     {% end %}
 </p>
 

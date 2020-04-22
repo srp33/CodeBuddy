@@ -13,8 +13,10 @@ def make_app():
         url(r"/", HomeHandler),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
+        url(r"\/delete_course\/([^\/]+)?", DeleteCourseHandler, name="delete_course"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
         url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
+        url(r"\/delete_assignment\/([^\/]+)\/([^\/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
         url(r"\/problem\/([^\/]+)\/([^\/]+)/([^\/]+)", ProblemHandler, name="problem"),
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
@@ -75,6 +77,28 @@ class EditCourseHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+class DeleteCourseHandler(RequestHandler):
+    def get(self, course):
+        try:
+            self.render("delete_course.html", courses=get_courses(), course_basics=get_course_basics(course), result=None)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course):
+        try:
+            #submitted_password = self.get_body_argument("password")
+            submitted_password = password
+
+            if submitted_password == password:
+                delete_course(get_course_basics(course))
+                result = "Success: Course deleted."
+            else:
+                result = "Error: Invalid password."
+
+            self.render("delete_course.html", courses=get_courses(), course_basics=get_course_basics(course), result=result)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 class AssignmentHandler(RequestHandler):
     def get(self, course, assignment):
         try:
@@ -112,6 +136,28 @@ class EditAssignmentHandler(RequestHandler):
                 result = "Error: Invalid password."
 
             self.render("edit_assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, result=result)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class DeleteAssignmentHandler(RequestHandler):
+    def get(self, course, assignment):
+        try:
+            self.render("delete_assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, assignment):
+        try:
+            #submitted_password = self.get_body_argument("password")
+            submitted_password = password
+
+            if submitted_password == password:
+                delete_assignment(get_assignment_basics(course, assignment))
+                result = "Success: Assignment deleted."
+            else:
+                result = "Error: Invalid password."
+
+            self.render("delete_assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

@@ -1,21 +1,17 @@
             <div class="navbar-item has-dropdown is-hoverable">
-                {% if len(assignment_basics["title"]) > 0 %}
+                {% if assignment_basics["exists"] %}
                     <a class="navbar-link" href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">
                         {{ assignment_basics["title"] }}
                     </a>
-                {% else %}
-                    <a class="navbar-link">
-                        New Assignment
-                    </a>
-                {% end %}
 
-                {% if len(course_basics["assignments"]) > 0 %}
-                  <div id="moreDropdown" class="navbar-dropdown is-size-4">
-                    {% for assignment in course_basics["assignments"] %}
-                        <a class="navbar-item " href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">
-                            {{ assignment[1]["title"] }}
-                        </a>
+                    {% if len(course_basics["assignments"]) > 0 %}
+                      <div id="moreDropdown" class="navbar-dropdown is-size-4">
+                        {% for assignment in course_basics["assignments"] %}
+                            <a class="navbar-item " href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">
+                                {{ assignment[1]["title"] }}
+                            </a>
+                        {% end %}
+                      </div>
                     {% end %}
-                  </div>
                 {% end %}
             </div>
