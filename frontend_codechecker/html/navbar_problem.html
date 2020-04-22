@@ -3,20 +3,16 @@
                     <a class="navbar-link" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">
                         {{ problem_basics["title"] }}
                     </a>
-                {% else %}
-                    <a class="navbar-link">
-                        New Problem
-                    </a>
-                {% end %}
 
-                {% if len(assignment_basics["problems"]) > 0 %}
-                    <div id="moreDropdown" class="navbar-dropdown is-size-4">
-                        {% for problem in assignment_basics["problems"] %}
-                            <a class="navbar-item " href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">
-                                {{ problem[1]["title"] }}
-                            </a>
-                        {% end %}
-                    </div>
+                    {% if len(assignment_basics["problems"]) > 0 %}
+                        <div id="moreDropdown" class="navbar-dropdown is-size-4">
+                            {% for problem in assignment_basics["problems"] %}
+                                <a class="navbar-item " href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">
+                                    {{ problem[1]["title"] }}
+                                </a>
+                            {% end %}
+                        </div>
+                    {% end %}
                 {% end %}
             </div>
             <div class="navbar-end">

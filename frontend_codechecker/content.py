@@ -162,3 +162,7 @@ def save_problem(problem_basics, problem_details):
     write_file(problem_basics["title"], get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(problem_details), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "details")
 
+def delete_problem(problem_basics):
+    dir_path = get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"])
+    if os.path.exists(dir_path):
+        shutil.rmtree(dir_path)

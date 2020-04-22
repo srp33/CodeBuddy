@@ -72,16 +72,16 @@
     </script>
 
     <p><strong>Answer code*: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code">{{ problem_details["answer_code"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea></p>
 
     <p><strong>Test code: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code">{{ problem_details["test_code"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea></p>
 
     <p><strong>Credit: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If anyone should be given credit for creating this problem, please indicate that." rows="4" name="credit">{{ problem_details["credit"] }}</textarea></p>
 
     <p><strong>Data URLs: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls">{{ problem_details["data_urls"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls" style="font-family:monospace">{{ problem_details["data_urls"] }}</textarea></p>
 
     <p><strong>Show expected output: </strong>
       <div class="select is-info">
@@ -120,6 +120,10 @@
       <a href="/course/{{ course_basics["id"] }}">Course home</a> |
       <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a> |
       <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a>
+
+      {% if problem_basics["exists"] %}
+        | <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a>
+      {% end %}
     </p>
 
     </form>

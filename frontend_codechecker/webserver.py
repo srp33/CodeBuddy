@@ -17,6 +17,7 @@ def make_app():
         url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
         url(r"\/problem\/([^\/]+)\/([^\/]+)/([^\/]+)", ProblemHandler, name="problem"),
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
+        url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/img\/([^\/]+)\/([^\/]+)/([^\/]+)", ImageHandler, name="img"),
@@ -84,7 +85,7 @@ class AssignmentHandler(RequestHandler):
 class EditAssignmentHandler(RequestHandler):
     def get(self, course, assignment):
         try:
-            self.render("edit_assignment.html", courses=get_courses(), course_basics=assignment_basics["course"], assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment), result=None)
+            self.render("edit_assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment), result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -208,6 +209,28 @@ class EditProblemHandler(RequestHandler):
                         result = "Success: The problem was saved!"
 
             self.render("edit_problem.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, environments=sort_nicely(env_dict.keys()), result=result)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class DeleteProblemHandler(RequestHandler):
+    def get(self, course, assignment, problem):
+        try:
+            self.render("delete_problem.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), result=None)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, assignment, problem):
+        try:
+            #submitted_password = self.get_body_argument("password")
+            submitted_password = password
+
+            if submitted_password == password:
+                delete_problem(get_problem_basics(course, assignment, problem))
+                result = "Success: Problem deleted."
+            else:
+                result = "Error: Invalid password."
+
+            self.render("delete_problem.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
