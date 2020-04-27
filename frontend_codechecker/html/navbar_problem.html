@@ -4,9 +4,9 @@
                         {{ problem_basics["title"] }}
                     </a>
 
-                    {% if len(assignment_basics["problems"]) > 0 %}
+                    {% if len(problems) > 0 %}
                         <div id="moreDropdown" class="navbar-dropdown is-size-4">
-                            {% for problem in assignment_basics["problems"] %}
+                            {% for problem in problems %}
                                 <a class="navbar-item " href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">
                                     {{ problem[1]["title"] }}
                                 </a>
@@ -16,13 +16,13 @@
                 {% end %}
             </div>
             <div class="navbar-end">
-            {% if problem_basics["prev_problem"] %}
-                <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["prev_problem"] }}">
+            {% if next_prev_problems["previous"] %}
+                <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_prev_problems["previous"]["id"] }}">
                     Previous Problem
                 </a>
             {% end %}
-            {% if problem_basics["next_problem"] %}
-                <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}">
+            {% if next_prev_problems["next"] %}
+                <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_prev_problems["next"]["id"] }}">
                     Next Problem
                 </a>
             {% end %}

@@ -13,11 +13,6 @@
   {% else %}
     <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
 
-    {% if problem_details["output_type"] == "txt" %}
-      <p><pre><code>{{ problem_details["expected_output"] }}</code></pre></p>
-    {% else %}
-      <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_details["expected_output"] }}' width='95%' /></figure></p>"
-    {% end %}
   {% end %}
 {% end %}
 
@@ -25,7 +20,7 @@
   {% if assignment_basics["exists"] %}
     <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
 
-    <p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this problem." value="{{ problem_basics["title"] }}" /></p>
+    <p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this problem." value="{{ problem_basics["title"] }}" autofocus /></p>
 
     <p><strong>Instructions*: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions">{{ problem_details["instructions"] }}</textarea></p>
@@ -76,6 +71,15 @@
 
     <p><strong>Test code: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea></p>
+
+    {% if problem_basics["exists"] %}
+      <p><strong>Expected output:</strong><br />
+      {% if problem_details["output_type"] == "txt" %}
+        <p><pre><code>{{ problem_details["expected_output"] }}</code></pre></p>
+      {% else %}
+        <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_details["expected_output"] }}' width='95%' /></figure></p>
+      {% end %}
+    {% end %}
 
     <p><strong>Credit: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If anyone should be given credit for creating this problem, please indicate that." rows="4" name="credit">{{ problem_details["credit"] }}</textarea></p>

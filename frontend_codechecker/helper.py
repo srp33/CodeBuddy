@@ -7,11 +7,13 @@ from imgcompare import *
 import json
 import os
 from pathlib import Path
+import random
 import re
 import requests
 from requests.exceptions import ReadTimeout
 import shutil
 import stat
+import string
 import sys
 import time
 import uuid
@@ -102,20 +104,21 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(env_dict, code, problem_basics, problem_details, request):
+def exec_code(env_dict, code, problem_basics, problem_details, request=None):
     try:
         code = code + "\n\n" + problem_details["test_code"]
         settings_dict = env_dict[problem_details["environment"]]
 
-        for url, md5_hash in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
-            cache_url = "{}://{}/data/{}/{}/{}/{}".format(
-                request.protocol,
-                request.host,
-                problem_basics["assignment"]["course"]["id"],
-                problem_basics["assignment"]["id"],
-                problem_basics["id"],
-                md5_hash)
-            code = code.replace(url, cache_url)
+        if request:
+            for url, md5_hash in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
+                cache_url = "{}://{}/data/{}/{}/{}/{}".format(
+                    request.protocol,
+                    request.host,
+                    problem_basics["assignment"]["course"]["id"],
+                    problem_basics["assignment"]["id"],
+                    problem_basics["id"],
+                    md5_hash)
+                code = code.replace(url, cache_url)
 
         timeout = settings_dict["timeout_seconds"] + 2
         data_dict = {"code": code, "timeout_seconds": timeout, "output_type": problem_details["output_type"]}
@@ -203,8 +206,14 @@ def diff_strings(expected, actual):
 def render_error(handler, exception):
     handler.render("error.html", error_title="An internal error occurred", error_message=format_output_as_html(exception))
 
-def create_id():
-    return str(uuid.uuid1()).replace("-", "")
+def create_id(current_objects, num_characters=4):
+    current_ids = set([x[0] for x in current_objects])
+
+    new_id = ''.join(random.choice(string.ascii_letters) for i in range(num_characters))
+    while new_id in current_ids:
+        new_id = ''.join(random.choice(string.ascii_letters) for i in range(num_characters))
+
+    return new_id
 
 def create_md5_hash(my_string):
     return hashlib.md5(my_string.encode("utf-8")).hexdigest()

@@ -6,11 +6,11 @@
     {% if assignment_basics["exists"] %}
       <p>{{ assignment_details["introduction"] }}</p>
 
-      {% if len(assignment_basics["problems"]) > 0 %}
+      {% if len(problems) > 0 %}
         <h4>Problems</h4>
 
         <ul>
-        {% for problem in assignment_basics["problems"] %}
+        {% for problem in problems %}
           <li><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></li>
         {% end %}
         </ul>

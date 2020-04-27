@@ -41,9 +41,9 @@ def are_images_similar(expected_bytes, answer_bytes):
 
     return diff_percent < 0.1, diff_image
 
-def convert_image_to_bytes(diff_image):
+def convert_image_to_bytes(the_image):
     with io.BytesIO() as output:
-        diff_image.save(output, format="JPEG")
+        the_image.save(output, format="JPEG")
         return output.getvalue()
 
 def pixel_diff(image_a, image_b):

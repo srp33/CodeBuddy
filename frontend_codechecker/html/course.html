@@ -8,11 +8,11 @@
 
   <h3>Assignments</h3>
 
-  {% if len(course_basics["assignments"]) == 0 %}
+  {% if len(assignments) == 0 %}
     <p>No assignments have been created.</p>
   {% else %}
     <ul>
-    {% for assignment in course_basics["assignments"] %}
+    {% for assignment in assignments %}
       <li><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></li>
     {% end %}
     </ul>

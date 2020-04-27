@@ -22,7 +22,6 @@ def make_app():
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
-        url(r"/img\/([^\/]+)\/([^\/]+)/([^\/]+)", ImageHandler, name="img"),
         url(r"/css/([^\/]+)", CssHandler, name="css"),
         url(r"/js/([^\/]+)", JavascriptHandler, name="javascript"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
@@ -38,14 +37,14 @@ class HomeHandler(RequestHandler):
 class CourseHandler(RequestHandler):
     def get(self, course):
         try:
-            self.render("course.html", courses=get_courses(), course_basics=get_course_basics(course), course_details=get_course_details(course, True))
+            self.render("course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course, True))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditCourseHandler(RequestHandler):
     def get(self, course):
         try:
-            self.render("edit_course.html", courses=get_courses(), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None)
+            self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -73,14 +72,14 @@ class EditCourseHandler(RequestHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("edit_course.html", courses=courses, course_basics=course_basics, course_details=course_details, result=result)
+            self.render("edit_course.html", courses=courses, assignments=get_assignments(course), course_basics=course_basics, course_details=course_details, result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class DeleteCourseHandler(RequestHandler):
     def get(self, course):
         try:
-            self.render("delete_course.html", courses=get_courses(), course_basics=get_course_basics(course), result=None)
+            self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -95,21 +94,21 @@ class DeleteCourseHandler(RequestHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("delete_course.html", courses=get_courses(), course_basics=get_course_basics(course), result=result)
+            self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class AssignmentHandler(RequestHandler):
     def get(self, course, assignment):
         try:
-            self.render("assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True))
+            self.render("assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditAssignmentHandler(RequestHandler):
     def get(self, course, assignment):
         try:
-            self.render("edit_assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment), result=None)
+            self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment), result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -126,7 +125,7 @@ class EditAssignmentHandler(RequestHandler):
                 if assignment_basics["title"] == "" or assignment_details["introduction"] == "":
                     result = "Error: Missing title or introduction."
                 else:
-                    if has_duplicate_title(assignment_basics["course"]["assignments"], assignment, assignment_basics["title"]):
+                    if has_duplicate_title(get_assignments(course), assignment, assignment_basics["title"]):
                         result = "Error: An assignment with that title already exists."
                     else:
                         save_assignment(assignment_basics, assignment_details)
@@ -135,14 +134,14 @@ class EditAssignmentHandler(RequestHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("edit_assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, result=result)
+            self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class DeleteAssignmentHandler(RequestHandler):
     def get(self, course, assignment):
         try:
-            self.render("delete_assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None)
+            self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -157,51 +156,23 @@ class DeleteAssignmentHandler(RequestHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("delete_assignment.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result)
+            self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class ProblemHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
-            #course_exists, course_dict = get_course_info(course)
-            #assignments = get_assignments(course, course_exists)
-            #assignment_title = get_assignment_file(course, assignment, "assignment_title")
-            #assignment_instructions = convert_markdown_to_html(get_problem_file(course, assignment, problem, "instructions"))
-            #problem_title = get_problem_file(course, assignment, problem, "title")
-            #output_type = get_problem_file(course, assignment, problem, "output_type")
-            #show_expected = get_problem_file_bool(course, assignment, problem, "show_expected")
-            #show_test_code = get_problem_file_bool(course, assignment, problem, "show_test_code")
-            #credit = get_problem_file(course, assignment, problem, "credit")
-
-            #data_urls_dict = {}
-            #if os.path.exists(get_problem_file_path(course, assignment, problem, "data_urls")):
-            #    data_urls_dict = get_problem_file_dict(course, assignment, problem, "data_urls", 0, 1)
-
-            #problems = get_assignment_problems(course, assignment, course_exists, assignment_exists)
-            #prev_problem = get_prev_problem(course, assignment, problem, problems)
-            #next_problem = get_next_problem(course, assignment, problem, problems)
-
-            #expected_output = ""
-            #if show_expected:
-            #    if output_type == "txt":
-            #        expected_output = format_output_as_html(read_file(get_expected_path(course, assignment, problem)))
-            #    else:
-            #        expected_output = "/img/{}/{}/{}".format(course, assignment, problem)
-
-            #test_code = ""
-            #if show_test_code:
-            #    test_code = format_output_as_html(get_problem_file(course, assignment, problem, "test_code"))
-
-            self.render("problem.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, True))
-                    #this_course=course, this_course_title=course_dict["title"], this_assignment=assignment, this_assignment_title=assignment_title, instructions=assignment_instructions, data_urls_dict=data_urls_dict, assignments=assignments, this_problem=problem, this_problem_title=problem_title, problems=problems, output_type=output_type, test_code=test_code, expected_output=expected_output, prev_problem=prev_problem, next_problem=next_problem, credit=credit)
+            problems = get_problems(course, assignment)
+            self.render("problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditProblemHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
-            self.render("edit_problem.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem), environments=sort_nicely(env_dict.keys()), result=None)
+            problems = get_problems(course, assignment)
+            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -213,55 +184,60 @@ class EditProblemHandler(RequestHandler):
             problem_basics = get_problem_basics(course, assignment, problem)
             problem_basics["title"] = self.get_body_argument("title").strip() #required
             problem_details = {}
-            problem_details["instructions"] = self.get_body_argument("instructions").strip() #required
+            problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
             problem_details["environment"] = self.get_body_argument("environment")
             problem_details["output_type"] = self.get_body_argument("output_type")
-            problem_details["answer_code"] = self.get_body_argument("answer_code").strip() #required
-            problem_details["test_code"] = self.get_body_argument("test_code").strip()
-            problem_details["credit"] = self.get_body_argument("credit").strip()
-            problem_details["data_urls"] = self.get_body_argument("data_urls").strip()
+            problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "") #required
+            problem_details["test_code"] = self.get_body_argument("test_code").strip().replace("\r", "")
+            problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
+            problem_details["data_urls"] = self.get_body_argument("data_urls").strip().replace("\r", "")
             problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
             problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
+            problem_details["expected_output"] = ""
+            problem_details["data_urls_info"] = []
 
-            #environments = sort_nicely(env_dict.keys())
-            #output_types = ["txt"]
             result = "Error: Invalid password."
 
             if submitted_password == password:
                 if problem_basics["title"] == "" or problem_details["instructions"] == "" or problem_details["answer_code"] == "":
                     result = "Error: One of the required fields is missing."
                 else:
-                    problem_details["data_urls_info"] = []
-                    for data_url in set(problem_details["data_urls"].split("\n")):
-                        data_url = data_url.strip()
-                        if data_url != "":
-                            contents, content_type = download_file(data_url)
-                            md5_hash = create_md5_hash(data_url)
-                            write_data_file(contents, md5_hash)
-                            problem_details["data_urls_info"].append([data_url, md5_hash, content_type])
-
-                    expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details, self.request)
-
-                    if error_occurred:
-                        result = "Error: {}".format(expected_output.decode())
+                    if has_duplicate_title(get_problems(course, assignment), problem, problem_basics["title"]):
+                        result = "Error: A problem with that title already exists in this assignment."
                     else:
-                        if problem_details["output_type"] == "txt":
-                            problem_details["expected_output"] = expected_output.decode()
+                        for data_url in set(problem_details["data_urls"].split("\n")):
+                            data_url = data_url.strip()
+                            if data_url != "":
+                                contents, content_type = download_file(data_url)
+                                md5_hash = create_md5_hash(data_url)
+                                write_data_file(contents, md5_hash)
+                                problem_details["data_urls_info"].append([data_url, md5_hash, content_type])
+
+                        expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
+
+                        if error_occurred:
+                            result = expected_output.decode()
                         else:
-                            problem_details["expected_output"] = encode_image_bytes(expected_output)
+                            if problem_details["output_type"] == "txt":
+                                problem_details["expected_output"] = expected_output.decode()
+                            else:
+                                problem_details["expected_output"] = expected_output
 
-                        save_problem(problem_basics, problem_details)
-                        problem_basics = get_problem_basics(course, assignment, problem)
-                        result = "Success: The problem was saved!"
+                            save_problem(problem_basics, problem_details)
+                            problem_basics = get_problem_basics(course, assignment, problem)
+                            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
+                            result = "Success: The problem was saved!"
 
-            self.render("edit_problem.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, environments=sort_nicely(env_dict.keys()), result=result)
+            problems = get_problems(course, assignment)
+            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class DeleteProblemHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
-            self.render("delete_problem.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), result=None)
+            problems = get_problems(course, assignment)
+            self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -276,24 +252,24 @@ class DeleteProblemHandler(RequestHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("delete_problem.html", courses=get_courses(), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), result=result)
+            problems = get_problems(course, assignment)
+            self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=result)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class CheckProblemHandler(RequestHandler):
     async def post(self, course, assignment, problem):
-        code = self.get_body_argument("code")
-        environment = get_problem_file(course, assignment, problem, "environment")
-        test_code = get_problem_file(course, assignment, problem, "test_code")
-        output_type = get_problem_file(course, assignment, problem, "output_type")
-        show_expected = get_problem_file_bool(course, assignment, problem, "show_expected")
+        code = self.get_body_argument("code").replace("\r", "")
+
+        problem_basics = get_problem_basics(course, assignment, problem)
+        problem_details = get_problem_details(course, assignment, problem)
         out_dict = {"error_occurred": True, "passed": False, "diff_output": ""}
 
         try:
-            if output_type == "txt":
-                code_output, error_occurred, passed, diff_output = test_code_txt(env_dict[environment], course, assignment, problem, code, test_code, show_expected, self.request)
+            if problem_details["output_type"] == "txt":
+                code_output, error_occurred, passed, diff_output = test_code_txt(env_dict, code, problem_basics, problem_details, self.request)
             else:
-                code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict[environment], course, assignment, problem, code, test_code, show_expected, self.request)
+                code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict, code, problem_basics, problem_details, self.request)
 
             out_dict["code_output"] = format_output_as_html(code_output)
             out_dict["error_occurred"] = error_occurred
@@ -311,14 +287,6 @@ class OutputTypesHandler(RequestHandler):
         except Exception as inst:
             print(self, traceback.format_exc())
             self.write("\n".join(["txt"]))
-
-class ImageHandler(RequestHandler):
-    async def get(self, course, assignment, problem):
-        image_bytes = read_file(get_expected_path(course, assignment, problem), mode="rb")
-
-        self.set_header('Content-type', 'image/jpg')
-        self.set_header('Content-length', len(image_bytes))
-        self.write(image_bytes)
 
 class CssHandler(RequestHandler):
     async def get(self, filename):
@@ -340,11 +308,13 @@ class DataHandler(RequestHandler):
     async def get(self, course, assignment, problem, md5_hash):
         data_file_path = get_downloaded_file_path(md5_hash)
 
-        content_type = get_problem_file_dict(course, assignment, problem, "data_urls", 1, 2)[md5_hash]
+        problem_details = get_problem_details(course, assignment, problem)
+
+        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[md5_hash]
         self.set_header('Content-type', content_type)
 
         if not os.path.exists(data_file_path) or is_old_file(data_file_path, days=7):
-            url = get_problem_file_dict(course, assignment, problem, "data_urls", 1, 0)[md5_hash]
+            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[md5_hash]
 
             ## Check to see whether the request came from the server or the user's computer
             #this_host = self.request.headers.get("Host")

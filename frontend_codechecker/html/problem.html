@@ -4,6 +4,32 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if problem_basics["exists"] %}
+            <h2>{{ problem_basics["title"] }}</h2>
+
+            <p>{{ problem_details["instructions"] }}</p>
+
+            {% if len(problem_details["data_urls_info"]) > 0 %}
+              <h5>
+                {% if len(problem_details["data_urls_info"]) > 1 %}
+                  Data files:
+                {% else %}
+                  Data file:
+                {% end %}
+              </h5>
+
+              <ul>
+              {% for item in problem_details["data_urls_info"] %}
+                  <li><a href="{{ item[0] }}">{{ item[0] }}</a> (<a href="/data/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ item[1] }}">cached version</a>)</li>
+              {% end %}
+              </ul>
+            {% end %}
+
+            {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
+              <h4>Test code (to be executed after your code):</h4>
+
+              <pre>{{ problem_details["test_code"] }}</pre>
+            {% end %}
+
             <script>
             function check_code()
             {
@@ -84,35 +110,9 @@
             }
             </script>
 
-            <h2>{{ problem_basics["title"] }}</h2>
-
-            <p>{{ problem_details["instructions"] }}</p>
-
-            {% if len(problem_details["data_urls_info"]) > 0 %}
-              <h5>
-                {% if len(problem_details["data_urls_info"]) > 1 %}
-                  Data files:
-                {% else %}
-                  Data file:
-                {% end %}
-              </h5>
-
-              <ul>
-              {% for url, data_id in problem_details["data_urls_info"].items() %}
-                  <li><a href="{{ url }}">{{ url }}</a> (<a href="/data/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ data_id }}">cached version</a>)</li>
-              {% end %}
-              </ul>
-            {% end %}
-
-            {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
-              <h4>Test code (to be executed after your code):</h4>
-
-              <pre>{{ problem_details["test_code"] }}</pre>
-            {% end %}
-
             <h2>Your code:</h2>
 
-            <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="code" style="font-family:monospace"></textarea></p>
+            <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="code" style="font-family:monospace" autofocus></textarea></p>
 
             <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
 
@@ -121,7 +121,7 @@
                 {% if problem_details["output_type"] == "txt" %}
                   <pre>{{ problem_details["expected_output"] }}</pre>
                 {% else %}
-                  <p><figure class="img"><img src="{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
+                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
                 {% end %}
             {% else %}
               <p><em>This problem is configured so that the expected output is not shown.</em></p>
@@ -136,7 +136,7 @@
               <p><em>{{ problem_details["credit"] }}</em></p>
             {% end %}
 
-            <p>
+            <p><br />
               <a href="/">Home</a> |
               <a href="/course/{{ course_basics["id"] }}">Course home</a> |
               <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a> |
