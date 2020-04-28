@@ -67,6 +67,7 @@
                             if (json_data.error_occurred)
                             {
                                 code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
+                                code_output += "<div class='notification has-text-danger has-background-grey-lighter'><p><strong>Tip from a buddy:</strong></p><p>Other students have experienced error messages that appear to be similar. In those cases, the solution was to surround the URLs of the data files with quotation marks. Consider giving that a try.</p></div>";
                             }
                             else
                             {
@@ -84,7 +85,7 @@
 
                             result += "</div>\n\n"
                         }
-                        else
+                            else
                         {
                             result = "<div class='notification is-danger'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
 
@@ -93,7 +94,7 @@
 
                               {% if problem_details["output_type"] == "txt" %}
                                 if (json_data.diff_output.length > 0)
-                                  diff_output += "<p><pre>" + json_data.diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                  diff_output += "<p><pre>" + json_data.diff_output + "</pre>\n\n<em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
                               {% else %}
                                 if (json_data.diff_output.length > 0)
                                   diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
@@ -119,24 +120,22 @@
             {% if problem_details["show_expected"] %}
               <h2>Expected output:</h2>
                 {% if problem_details["output_type"] == "txt" %}
-                  <p><pre>{{ problem_details["expected_output"] }}</pre></p>
+                  <pre>{{ problem_details["expected_output"] }}</pre>
                 {% else %}
                   <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
                 {% end %}
-            {% else %}
-              <p><em>This problem is configured so that the expected output is not shown.</em></p>
             {% end %}
 
             <p><div id="result"></div></p>
 
-            <p><span id="code_output"></span></p>
-            <p><span id="diff_output"></span></p>
+            <span id="code_output"></span>
+            <span id="diff_output"></span>
 
             {% if len(problem_details["credit"]) > 0 %}
               <p><em>{{ problem_details["credit"] }}</em></p>
             {% end %}
 
-            <p>
+            <p><br />
               <a href="/">Home</a> |
               <a href="/course/{{ course_basics["id"] }}">Course home</a> |
               <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a> |
