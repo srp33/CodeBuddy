@@ -89,15 +89,18 @@
                             result = "<div class='notification is-danger'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
 
                             {% if problem_details["show_expected"] and len(problem_details["expected_output"]) > 0 %}
-                              diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
+                              if (!json_data.error_occurred)
+                              {
+                                diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
 
-                              {% if problem_details["output_type"] == "txt" %}
-                                if (json_data.diff_output.length > 0)
-                                  diff_output += "<p><pre>" + json_data.diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                              {% else %}
-                                if (json_data.diff_output.length > 0)
-                                  diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
-                              {% end %}
+                                {% if problem_details["output_type"] == "txt" %}
+                                  if (json_data.diff_output.length > 0)
+                                    diff_output += "<p><pre>" + json_data.diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                {% else %}
+                                  if (json_data.diff_output.length > 0)
+                                    diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
+                                {% end %}
+                              }
                             {% end %}
                         }
 
