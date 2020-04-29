@@ -12,13 +12,15 @@
 <hr />
 
 {% if len(courses) > 0 %}
-  Please select one of the following courses:
+  <p>Please select one of the following courses:</p>
 
   <ul>
     {% for course in courses %}
         <li><a href="/course/{{ course[0] }}">{{ course[1]["title"] }}</a></li>
     {% end %}
   </ul>
+{% else %}
+  <p>No courses have been created yet.</p>
 {% end %}
 
 <p><a href="/edit_course/">Create course</a></p>

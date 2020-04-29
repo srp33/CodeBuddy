@@ -8,32 +8,38 @@ from yaml import Loader
 def get_environments():
     return load_yaml_dict(read_file("/Environments.yaml"))
 
-def get_courses():
+def get_courses(show_hidden=True):
     course_ids = [os.path.basename(x) for x in glob.glob("/course/*")]
 
     courses = []
     for course_id in course_ids:
-        courses.append([course_id, get_course_basics(course_id)])
+        course_basics = get_course_basics(course_id)
+        if course_basics["visible"] or show_hidden:
+            courses.append([course_id, course_basics])
 
     return sort_by_title(courses)
 
-def get_assignments(course):
+def get_assignments(course, show_hidden=True):
     assignments = []
 
     for assignment_dir_path in glob.glob(get_course_dir_path(course) + "*"):
         if os.path.isdir(assignment_dir_path):
             assignment_id = os.path.basename(assignment_dir_path)
-            assignments.append([assignment_id, get_assignment_basics(course, assignment_id)])
+            assignment_basics = get_assignment_basics(course, assignment_id)
+            if assignment_basics["visible"] or show_hidden:
+                assignments.append([assignment_id, assignment_basics])
 
     return sort_by_title(assignments)
 
-def get_problems(course, assignment):
+def get_problems(course, assignment, show_hidden=True):
     problems = []
 
     for problem_dir_path in glob.glob(f"/course/{course}/{assignment}/*"):
         if os.path.isdir(problem_dir_path):
             problem_id = os.path.basename(problem_dir_path)
-            problems.append([problem_id, get_problem_basics(course, assignment, problem_id)])
+            problem_basics = get_problem_basics(course, assignment, problem_id)
+            if problem_basics["visible"] or show_hidden:
+                problems.append([problem_id, problem_basics])
 
     return sort_by_title(problems)
 
@@ -51,7 +57,7 @@ def get_course_basics(course):
         course = create_id(get_courses())
 
     file_path = get_course_dir_path(course) + "basics"
-    course_dict = {"id": course, "title": "", "exists": False}
+    course_dict = {"id": course, "title": "", "visible": False, "exists": False}
 
     if os.path.exists(file_path):
         course_dict = load_yaml_dict(read_file(file_path))
@@ -65,7 +71,7 @@ def get_assignment_basics(course, assignment):
 
     file_path = get_assignment_dir_path(course, assignment) + "basics"
     course_basics = get_course_basics(course)
-    assignment_dict = {"id": assignment, "title": "", "exists": False, "course": course_basics}
+    assignment_dict = {"id": assignment, "title": "", "visible": False, "exists": False, "course": course_basics}
 
     if os.path.exists(file_path):
         assignment_dict = load_yaml_dict(read_file(file_path))
@@ -80,7 +86,7 @@ def get_problem_basics(course, assignment, problem):
 
     file_path = get_problem_dir_path(course, assignment, problem) + "basics"
     assignment_basics = get_assignment_basics(course, assignment)
-    problem_dict = {"id": problem, "title": "", "exists": False, "assignment": assignment_basics}
+    problem_dict = {"id": problem, "title": "", "visible": False, "exists": False, "assignment": assignment_basics}
 
     if os.path.exists(file_path):
         problem_dict = load_yaml_dict(read_file(file_path))
@@ -171,12 +177,12 @@ def has_duplicate_title(entries, this_entry, proposed_title):
     return False
 
 def save_course(course_basics, course_details):
-    basics_to_save = {"id": course_basics["id"], "title": course_basics["title"]}
+    basics_to_save = {"id": course_basics["id"], "title": course_basics["title"], "visible": course_basics["visible"]}
     write_file(convert_dict_to_yaml(basics_to_save), get_course_dir_path(course_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(course_details), get_course_dir_path(course_basics["id"]) + "details")
 
 def save_assignment(assignment_basics, assignment_details):
-    basics_to_save = {"id": assignment_basics["id"], "title": assignment_basics["title"]}
+    basics_to_save = {"id": assignment_basics["id"], "title": assignment_basics["title"], "visible": assignment_basics["visible"]}
     write_file(convert_dict_to_yaml(basics_to_save), get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(assignment_details), get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"]) + "details")
 
@@ -184,7 +190,7 @@ def save_problem(problem_basics, problem_details):
     if "data_urls" in problem_details:
         del problem_details["data_urls"]
 
-    basics_to_save = {"id": problem_basics["id"], "title": problem_basics["title"]}
+    basics_to_save = {"id": problem_basics["id"], "title": problem_basics["title"], "visible": problem_basics["visible"]}
     write_file(convert_dict_to_yaml(basics_to_save), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(problem_details), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "details")
 

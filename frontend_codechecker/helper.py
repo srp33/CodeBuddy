@@ -232,3 +232,8 @@ def get_downloaded_file_path(md5_hash):
 
 def write_data_file(contents, md5_hash):
     write_file(contents, get_downloaded_file_path(md5_hash), "wb")
+
+def show_hidden(request_handler):
+    if "show_hidden" not in request_handler.request.query_arguments:
+        return False
+    return request_handler.request.query_arguments["show_hidden"][0].decode().lower() == "true"

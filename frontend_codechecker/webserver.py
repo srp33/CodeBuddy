@@ -30,14 +30,15 @@ def make_app():
 class HomeHandler(RequestHandler):
     def get(self):
         try:
-            self.render("home.html", courses=get_courses())
+            self.render("home.html", courses=get_courses(show_hidden(self)))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class CourseHandler(RequestHandler):
     def get(self, course):
         try:
-            self.render("course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course, True))
+            show = show_hidden(self)
+            self.render("course.html", courses=get_courses(show), assignments=get_assignments(course, show), course_basics=get_course_basics(course), course_details=get_course_details(course, True))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -56,6 +57,7 @@ class EditCourseHandler(RequestHandler):
             courses = get_courses()
             course_basics = get_course_basics(course)
             course_basics["title"] = self.get_body_argument("title").strip()
+            course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             course_details = {"introduction": self.get_body_argument("introduction").strip()}
 
             if submitted_password == password:
@@ -101,7 +103,8 @@ class DeleteCourseHandler(RequestHandler):
 class AssignmentHandler(RequestHandler):
     def get(self, course, assignment):
         try:
-            self.render("assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True))
+            show = show_hidden(self)
+            self.render("assignment.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=get_problems(course, assignment, show), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -119,6 +122,7 @@ class EditAssignmentHandler(RequestHandler):
 
             assignment_basics = get_assignment_basics(course, assignment)
             assignment_basics["title"] = self.get_body_argument("title").strip()
+            assignment_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             assignment_details = {"introduction": self.get_body_argument("introduction").strip()}
 
             if submitted_password == password:
@@ -163,8 +167,10 @@ class DeleteAssignmentHandler(RequestHandler):
 class ProblemHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
-            problems = get_problems(course, assignment)
-            self.render("problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems))
+            show = show_hidden(self)
+            problems = get_problems(course, assignment, show)
+
+            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -183,6 +189,7 @@ class EditProblemHandler(RequestHandler):
 
             problem_basics = get_problem_basics(course, assignment, problem)
             problem_basics["title"] = self.get_body_argument("title").strip() #required
+            problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes" #required
             problem_details = {}
             problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
             problem_details["environment"] = self.get_body_argument("environment")
