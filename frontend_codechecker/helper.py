@@ -48,7 +48,7 @@ def read_file(file_path, mode="r"):
 #        if itemTime < criticalTime:
 #            shutil.rmtree(item)
 
-def is_old_file(file_path, days):
+def is_old_file(file_path, days=30):
     age_in_seconds = time.time() - os.stat(file_path)[stat.ST_MTIME]
     age_in_years = age_in_seconds / 60 / 60 / 24
 
@@ -231,6 +231,11 @@ def get_downloaded_file_path(md5_hash):
     return "/data/{}".format(md5_hash)
 
 def write_data_file(contents, md5_hash):
+    # First delete any old files to prevent stale file buildup
+    for f in glob.glob("/data/*"):
+        if is_old_file(f):
+            os.remove(f)
+
     write_file(contents, get_downloaded_file_path(md5_hash), "wb")
 
 def show_hidden(request_handler):

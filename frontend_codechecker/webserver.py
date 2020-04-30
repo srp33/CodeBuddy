@@ -22,8 +22,7 @@ def make_app():
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
-        url(r"/css/([^\/]+)", CssHandler, name="css"),
-        url(r"/js/([^\/]+)", JavascriptHandler, name="javascript"),
+        url(r"/static/([^\/]+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
     ], autoescape=None)
 
@@ -295,20 +294,19 @@ class OutputTypesHandler(RequestHandler):
             print(self, traceback.format_exc())
             self.write("\n".join(["txt"]))
 
-class CssHandler(RequestHandler):
-    async def get(self, filename):
-        file_path = "/static/{}".format(filename)
-        file_contents = read_file(file_path)
+class StaticFileHandler(RequestHandler):
+    async def get(self, file_name):
+        content_type = "text/css"
+        read_mode = "r"
+        if file_name.endswith(".js"):
+            content_type = "text/javascript"
+        elif file_name.endswith(".jpg"):
+            content_type = "image/jpeg"
+            read_mode = "rb"
 
-        self.set_header('Content-type', 'text/css')
-        self.write(file_contents)
+        file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
 
-class JavascriptHandler(RequestHandler):
-    async def get(self, filename):
-        file_path = "/static/{}".format(filename)
-        file_contents = read_file(file_path)
-
-        self.set_header('Content-type', 'text/javascript')
+        self.set_header('Content-type', content_type)
         self.write(file_contents)
 
 class DataHandler(RequestHandler):
@@ -320,7 +318,7 @@ class DataHandler(RequestHandler):
         content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[md5_hash]
         self.set_header('Content-type', content_type)
 
-        if not os.path.exists(data_file_path) or is_old_file(data_file_path, days=7):
+        if not os.path.exists(data_file_path) or is_old_file(data_file_path):
             url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[md5_hash]
 
             ## Check to see whether the request came from the server or the user's computer
