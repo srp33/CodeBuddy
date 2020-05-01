@@ -300,8 +300,8 @@ class StaticFileHandler(RequestHandler):
         read_mode = "r"
         if file_name.endswith(".js"):
             content_type = "text/javascript"
-        elif file_name.endswith(".jpg"):
-            content_type = "image/jpeg"
+        elif file_name.endswith(".png"):
+            content_type = "image/png"
             read_mode = "rb"
 
         file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
