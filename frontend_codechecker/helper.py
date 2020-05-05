@@ -206,7 +206,7 @@ def diff_strings(expected, actual):
 def render_error(handler, exception):
     handler.render("error.html", error_title="An internal error occurred", error_message=format_output_as_html(exception))
 
-def create_id(current_objects, num_characters=4):
+def create_id(current_objects=[], num_characters=4):
     current_ids = set([x[0] for x in current_objects])
 
     new_id = ''.join(random.choice(string.ascii_letters) for i in range(num_characters))

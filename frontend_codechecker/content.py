@@ -1,15 +1,20 @@
 import glob
 from helper import *
+import io
 import os
 import yaml
 from yaml import load
 from yaml import Loader
+import zipfile
 
 def get_environments():
     return load_yaml_dict(read_file("/Environments.yaml"))
 
+def get_root_dir_path():
+    return "/course"
+
 def get_courses(show_hidden=True):
-    course_ids = [os.path.basename(x) for x in glob.glob("/course/*")]
+    course_ids = [os.path.basename(x) for x in glob.glob("{}/*".format(get_root_dir_path()))]
 
     courses = []
     for course_id in course_ids:
@@ -34,7 +39,7 @@ def get_assignments(course, show_hidden=True):
 def get_problems(course, assignment, show_hidden=True):
     problems = []
 
-    for problem_dir_path in glob.glob(f"/course/{course}/{assignment}/*"):
+    for problem_dir_path in glob.glob(get_root_dir_path() + f"/{course}/{assignment}/*"):
         if os.path.isdir(problem_dir_path):
             problem_id = os.path.basename(problem_dir_path)
             problem_basics = get_problem_basics(course, assignment, problem_id)
@@ -44,13 +49,13 @@ def get_problems(course, assignment, show_hidden=True):
     return sort_by_title(problems)
 
 def get_course_dir_path(course):
-    return f"/course/{course}/"
+    return get_root_dir_path() + f"/{course}/"
 
 def get_assignment_dir_path(course, assignment):
-    return f"/course/{course}/{assignment}/"
+    return get_root_dir_path() + f"/{course}/{assignment}/"
 
 def get_problem_dir_path(course, assignment, problem):
-    return f"/course/{course}/{assignment}/{problem}/"
+    return get_root_dir_path() + f"/{course}/{assignment}/{problem}/"
 
 def get_course_basics(course):
     if not course:

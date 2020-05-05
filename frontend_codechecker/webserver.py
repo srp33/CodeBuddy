@@ -14,6 +14,7 @@ def make_app():
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
         url(r"\/delete_course\/([^\/]+)?", DeleteCourseHandler, name="delete_course"),
+        url(r"\/export_course\/([^\/]+)?", ExportCourseHandler, name="export_course"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
         url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
         url(r"\/delete_assignment\/([^\/]+)\/([^\/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
@@ -66,10 +67,13 @@ class EditCourseHandler(RequestHandler):
                     if has_duplicate_title(courses, course, course_basics["title"]):
                         result = "Error: A course with that title already exists."
                     else:
-                        save_course(course_basics, course_details)
-                        course_basics = get_course_basics(course)
-                        courses = get_courses()
-                        result = "Success: Course information saved!"
+                        if re.search(r"[^\w ]", course_basics["title"]):
+                            result = "Error: The title can only contain alphanumeric characters and spaces."
+                        else:
+                            save_course(course_basics, course_details)
+                            course_basics = get_course_basics(course)
+                            courses = get_courses()
+                            result = "Success: Course information saved!"
             else:
                 result = "Error: Invalid password."
 
@@ -96,6 +100,26 @@ class DeleteCourseHandler(RequestHandler):
                 result = "Error: Invalid password."
 
             self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=result)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class ExportCourseHandler(RequestHandler):
+    def get(self, course):
+        try:
+            temp_dir_path = "/tmp/{}".format(create_id())
+            zip_file_name = "{}.zip".format(get_course_basics(course)["title"].replace(" ", "_"))
+            zip_file_path = "{}/{}".format(temp_dir_path, zip_file_name)
+            command = "cd {}; zip -r -qq {} {}".format(get_root_dir_path(), zip_file_path, get_course_dir_path(course).replace(get_root_dir_path() + "/", ""))
+
+            os.makedirs(temp_dir_path)
+            os.system(command)
+            zip_bytes = read_file(zip_file_path, "rb")
+
+            self.set_header('Content-type', 'application/zip')
+            self.set_header('Content-Disposition', 'attachment; filename=' + zip_file_name)
+            self.write(zip_bytes)
+            self.finish()
+            os.remove(zip_file_path)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -303,6 +327,11 @@ class StaticFileHandler(RequestHandler):
         elif file_name.endswith(".png"):
             content_type = "image/png"
             read_mode = "rb"
+        elif file_name.endswith(".ico"):
+            content_type = "image/x-icon"
+            read_mode = "rb"
+        elif file_name.endswith(".webmanifest"):
+            content_type = "application/json"
 
         file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
 

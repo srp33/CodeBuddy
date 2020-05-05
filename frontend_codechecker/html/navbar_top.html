@@ -1,5 +1,20 @@
-<nav id="navbar" class="navbar is-spaced">
-    <div class="navbar-brand">
+<script>
+    const toggleBurger = () => {
+    let burgerIcon = document.getElementById('burger');
+    let dropMenu = document.getElementById('the_menu');
+    burgerIcon.classList.toggle('is-active');
+    dropMenu.classList.toggle('is-active');
+  };
+</script>
+
+<nav id="navbar" class="navbar is-spaced" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand" style="padding: 3px 30px 0px 0px">
         <a href="/"><img src="/static/Logo.png" width="112" alt="CodeBuddy" /></a>
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" id="burger" onclick="toggleBurger()">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
     </div>
-    <div class="navbar-menu is-active is-size-4">
+    <div class="navbar-menu is-size-4" id="the_menu">
+        <div class="navbar-start">

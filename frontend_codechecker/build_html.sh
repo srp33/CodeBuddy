@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cat /tmp/header.html /tmp/home.html /tmp/footer.html > /app/home.html
+cat /tmp/header.html /tmp/navbar_top.html /tmp/navbar_bottom.html /tmp/home.html /tmp/footer.html > /app/home.html
 cat /tmp/header.html /tmp/navbar_top.html /tmp/navbar_course.html /tmp/navbar_bottom.html /tmp/course.html /tmp/footer.html > /app/course.html
 cat /tmp/header.html /tmp/navbar_top.html /tmp/navbar_course.html /tmp/navbar_bottom.html /tmp/edit_course.html /tmp/footer.html > /app/edit_course.html
 cat /tmp/header.html /tmp/navbar_top.html /tmp/navbar_course.html /tmp/navbar_bottom.html /tmp/delete_course.html /tmp/footer.html > /app/delete_course.html

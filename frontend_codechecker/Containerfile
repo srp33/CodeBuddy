@@ -3,7 +3,7 @@ FROM continuumio/miniconda3
 #ENV USER codechecker
 
 RUN apt-get update \
- && apt-get install -y bzip2 \
+ && apt-get install -y bzip2 zip \
  && apt-get -y autoremove \
  && apt-get clean \
  && conda install -y tornado requests PyYAML arrow Pillow \
@@ -12,7 +12,9 @@ RUN apt-get update \
 ADD Environments.yaml /
 ADD frontend_codechecker/*css* /static/
 ADD frontend_codechecker/*.js /static/
-ADD frontend_codechecker/Logo.png /static/
+ADD frontend_codechecker/*.png /static/
+ADD frontend_codechecker/favicon.ico /static/
+ADD frontend_codechecker/site.webmanifest /static/
 ADD frontend_codechecker/startup.sh /
 ADD frontend_codechecker/html/* /tmp/
 ADD frontend_codechecker/build_html.sh /
