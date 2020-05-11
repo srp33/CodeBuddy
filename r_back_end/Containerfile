@@ -7,8 +7,8 @@ RUN apt-get update -qq && apt-get install -y \
   libjemalloc-dev \
   libmagick++-dev
 
-ADD r_codechecker/libraries /
+ADD r_back_end/libraries /
 RUN R -e "packages <- c('plumber', scan('/libraries', what=character(), quiet=TRUE)); install.packages(packages)"
 
-ADD r_codechecker/*.R /
+ADD r_back_end/*.R /
 ENTRYPOINT ["Rscript", "/app.R"]

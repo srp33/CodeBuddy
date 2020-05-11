@@ -1,0 +1,59 @@
+<section class="section section-padding-medium">
+<div class="content is-medium">
+
+<p class="title is-size-2 is-spaced">
+    Import a course
+</p>
+
+<p>
+    Use this page to import a course that has previously been exported from this tool. The file must be zipped.
+</p>
+
+{% if result %}
+  {% if result.startswith("Error:") %}
+    <p><div class='notification is-danger'><strong>{{ result }}</strong></div></p>
+  {% else %}
+    <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
+  {% end %}
+{% end %}
+
+<form method="post" action="/import_course" enctype="multipart/form-data">
+
+<p>
+<div id="file-js" class="file has-name">
+  <label class="file-label">
+    <input class="file-input" type="file" name="zip_file">
+    <span class="file-cta">
+      <span class="file-icon">
+        <i class="fas fa-upload"></i>
+      </span>
+      <span class="file-label">
+        Choose a file...
+      </span>
+    </span>
+    <span class="file-name">
+      No file uploaded
+    </span>
+  </label>
+</div>
+
+<script>
+  const fileInput = document.querySelector('#file-js input[type=file]');
+  fileInput.onchange = () => {
+    if (fileInput.files.length > 0) {
+      const fileName = document.querySelector('#file-js .file-name');
+      fileName.textContent = fileInput.files[0].name;
+    }
+  }
+</script>
+</p>
+
+<p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
+
+<p><input type="submit" class="button is-info is-large is-fullwidth" value="Import" /></p>
+
+<p><a href="/">Home</a></p>
+
+</form>
+</div>
+</section>

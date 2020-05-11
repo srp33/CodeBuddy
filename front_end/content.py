@@ -157,7 +157,7 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
         if parse_data_urls:
             problem_dict["data_urls"] = "\n".join([x[0] for x in problem_dict["data_urls_info"]])
     else:
-        problem_dict = {"instructions": "", "environment": "r_codechecker",
+        problem_dict = {"instructions": "", "environment": "r_back_end",
             "output_type": "txt", "answer_code": "", "test_code": "", "credit": "",
             "show_expected": True, "show_test_code": True,
             "expected_output": "", "data_urls": "", "data_urls_info": []}

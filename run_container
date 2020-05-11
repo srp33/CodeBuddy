@@ -1,12 +1,12 @@
 #! /bin/bash
 
-image_name="$1"
+subdir_name="$1"
 run_args="$2"
 tag="$3"
 
-if [[ "${image_name}" == "" ]]
+if [[ "${subdir_name}" == "" ]]
 then
-  echo "No image name was specified."
+  echo "No subdirectory name was specified."
   exit 1
 fi
 
@@ -19,7 +19,9 @@ docker rm $(docker stop $(docker ps -a -q --filter ancestor=${image_name} --form
 
 set -o errexit
 
-docker build -t ${image_name} -f ${image_name}/Containerfile .
+image_name=srp33/codebuddy_${subdir_name}
+
+docker build -t ${image_name} -f ${subdir_name}/Containerfile .
 
 #docker run -d \
 docker run -i -t \

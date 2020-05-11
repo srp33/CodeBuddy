@@ -1,4 +1,4 @@
-r_codechecker:
+r_back_end:
     url: http://localhost:9001/exec
     timeout_seconds: 30
     output_types:

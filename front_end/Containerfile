@@ -1,6 +1,6 @@
 FROM continuumio/miniconda3
 
-#ENV USER codechecker
+#ENV USER codebuddy
 
 RUN apt-get update \
  && apt-get install -y bzip2 zip \
@@ -10,15 +10,16 @@ RUN apt-get update \
  && mkdir -p /app /conda /course /static
 
 ADD Environments.yaml /
-ADD frontend_codechecker/*css* /static/
-ADD frontend_codechecker/*.js /static/
-ADD frontend_codechecker/*.png /static/
-ADD frontend_codechecker/favicon.ico /static/
-ADD frontend_codechecker/site.webmanifest /static/
-ADD frontend_codechecker/startup.sh /
-ADD frontend_codechecker/html/* /tmp/
-ADD frontend_codechecker/build_html.sh /
-ADD frontend_codechecker/*.py /app/
+ADD VERSION /
+ADD front_end/*css* /static/
+ADD front_end/*.js /static/
+ADD front_end/*.png /static/
+ADD front_end/favicon.ico /static/
+ADD front_end/site.webmanifest /static/
+ADD front_end/startup.sh /
+ADD front_end/html/* /tmp/
+ADD front_end/build_html.sh /
+ADD front_end/*.py /app/
 
 RUN bash /build_html.sh
 

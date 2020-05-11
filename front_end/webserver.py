@@ -14,6 +14,7 @@ def make_app():
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
         url(r"\/delete_course\/([^\/]+)?", DeleteCourseHandler, name="delete_course"),
+        url(r"\/import_course", ImportCourseHandler, name="import_course"),
         url(r"\/export_course\/([^\/]+)?", ExportCourseHandler, name="export_course"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
         url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
@@ -103,16 +104,69 @@ class DeleteCourseHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+class ImportCourseHandler(RequestHandler):
+    def get(self):
+        try:
+            self.render("import_course.html", result=None)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self):
+        try:
+            submitted_password = password
+
+            result = ""
+            if self.request.files["zip_file"][0]["content_type"] == 'application/zip':
+                zip_file_name = self.request.files["zip_file"][0]["filename"]
+                zip_file_contents = self.request.files["zip_file"][0]["body"]
+
+                import io
+                import zipfile
+                zip_data = BytesIO()
+                zip_data.write(zip_file_contents)
+                zip_file = zipfile.ZipFile(zip_data)
+                version = int(zip_file.read("VERSION"))
+
+                for file_path in zip_file.namelist():
+                    file_info = zip_file.getinfo(file_path)
+
+                    # Prevent the use of absolute paths within the zip file.
+                    # Ignore directories and VERSION file.
+                    if file_path.startswith("/") or file_info.is_dir() or file_path == "VERSION":
+                        continue
+
+                    out_path = "{}/{}".format(get_root_dir_path(), file_info.filename)
+
+                    if os.path.exists(out_path):
+                        result = "Error: A file or directory called {} already exists, so this import is not allowed. This course must first be deleted if you want to import.".format(out_path)
+                        break
+
+                    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+                    with open(out_path, 'wb') as out_file:
+                        out_file.write(zip_file.read(file_path))
+
+                if not result.startswith("Error:"):
+                    result = "Success: The course was imported!"
+            else:
+                result = "Error: The uploaded file was not recognized as a zip file."
+
+            self.render("import_course.html", result=result)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 class ExportCourseHandler(RequestHandler):
     def get(self, course):
         try:
             temp_dir_path = "/tmp/{}".format(create_id())
             zip_file_name = "{}.zip".format(get_course_basics(course)["title"].replace(" ", "_"))
             zip_file_path = "{}/{}".format(temp_dir_path, zip_file_name)
-            command = "cd {}; zip -r -qq {} {}".format(get_root_dir_path(), zip_file_path, get_course_dir_path(course).replace(get_root_dir_path() + "/", ""))
 
             os.makedirs(temp_dir_path)
-            os.system(command)
+
+            os.system("cp -r {} {}/".format(get_course_dir_path(course), temp_dir_path))
+            os.system("cp VERSION {}/".format(temp_dir_path))
+            os.system("cd {}; zip -r -qq {} .".format(temp_dir_path, zip_file_path))
+
             zip_bytes = read_file(zip_file_path, "rb")
 
             self.set_header('Content-type', 'application/zip')
