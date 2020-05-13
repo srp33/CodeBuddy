@@ -2,13 +2,20 @@ libraries <- scan('/libraries', what=character(), quiet=TRUE)
 for (l in libraries)
   library(l, character.only = TRUE)
 
+#* This function can get used to test connectivity to the API.
+#* @get /hello
+#' @html
+function(res) {
+    return(paste0("Hello, world"))
+}
+
 #* Execute code to generate text output.
 #* @param code The code to execute
 #* @param timeout_seconds How long the code should execute before timing out
 #* @param output_type The type of output to create (txt, jpg)
 #* @post /exec
 #' @html
-function(res, code, timeout_seconds, output_type){
+function(res, code, timeout_seconds, output_type) {
     clean_temp()
     env = environment()
 
@@ -61,10 +68,6 @@ clean_temp = function(keep_minutes=10) {
     for (name in rownames(file_info))
     {
       value = unlink(name, recursive = TRUE, force=TRUE)
-
-      print("Deleting:")
-      print(name)
-      print(value)
     }
   }, warning = function(war) {
     #print(war$message)

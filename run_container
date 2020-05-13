@@ -27,7 +27,6 @@ docker build -t ${image_name} -f ${subdir_name}/Containerfile .
 docker run -i -t \
   --rm \
   --read-only \
-  --network host \
   ${run_args} \
   ${image_name}
 

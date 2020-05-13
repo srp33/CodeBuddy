@@ -1,15 +1,19 @@
 from helper import *
 from content import *
 import json
+import Logger
 import re
 import tornado.ioloop
 from tornado.web import *
+from tornado.log import enable_pretty_logging
 import traceback
 import urllib.request
 import uuid
 
 def make_app():
-    return Application([
+    enable_pretty_logging()
+
+    app = Application([
         url(r"/", HomeHandler),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
@@ -27,6 +31,8 @@ def make_app():
         url(r"/static/([^\/]+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
     ], autoescape=None)
+
+    return app
 
 class HomeHandler(RequestHandler):
     def get(self):
