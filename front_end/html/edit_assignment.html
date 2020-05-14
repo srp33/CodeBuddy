@@ -1,6 +1,3 @@
-<section class="section section-padding-medium">
-<div class="content is-medium">
-
 {% if course_basics["exists"] %}
   {% if assignment_basics["exists"] %}
     <h2>Edit Assignment</h2>
@@ -51,10 +48,7 @@
           | <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
       {% end %}
   </p>
+  </form>
 {% else %}
   This course has not been created yet.
 {% end %}
-
-  </form>
-</div>
-</section>

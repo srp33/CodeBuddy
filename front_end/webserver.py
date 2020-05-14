@@ -1,17 +1,22 @@
 from helper import *
 from content import *
 import json
-import Logger
 import re
 import tornado.ioloop
-from tornado.web import *
 from tornado.log import enable_pretty_logging
+from tornado.options import options
+from tornado.options import parse_command_line
+from tornado.web import *
 import traceback
 import urllib.request
 import uuid
 
 def make_app():
     enable_pretty_logging()
+    options.log_file_prefix = "/logs/codebuddy.log"
+    options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
+    options.log_file_num_backups = 10
+    parse_command_line()
 
     app = Application([
         url(r"/", HomeHandler),

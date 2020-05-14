@@ -3,3 +3,4 @@ course
 data
 frontend_codechecker/*css*
 frontend_codechecker/*.js
+logs

@@ -5,13 +5,13 @@
                     </a>
 
                     {% if len(courses) > 0 %}
-                      <div id="moreDropdown" class="navbar-dropdown is-size-4">
-                        {% for course in courses %}
-                          <a class="navbar-item is-active" href="/course/{{ course[0] }}">
-                            {{ course[1]["title"] }}
-                          </a>
-                        {% end %}
-                      </div>
+                        <div id="moreDropdown" class="navbar-dropdown is-size-4">
+                            {% for course in courses %}
+                                <a class="navbar-item is-active" href="/course/{{ course[0] }}">
+                                    {{ course[1]["title"] }}
+                                </a>
+                            {% end %}
+                        </div>
                     {% end %}
                 {% end %}
             </div>
