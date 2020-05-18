@@ -1,9 +1,11 @@
 from helper import *
 from content import *
 import json
+import logging
 import re
 import tornado.ioloop
 from tornado.log import enable_pretty_logging
+from tornado.log import LogFormatter
 from tornado.options import options
 from tornado.options import parse_command_line
 from tornado.web import *
@@ -12,10 +14,16 @@ import urllib.request
 import uuid
 
 def make_app():
+    # Configure logging
     enable_pretty_logging()
     options.log_file_prefix = "/logs/codebuddy.log"
     options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
     options.log_file_num_backups = 10
+    my_log_format = '%(levelname)s %(asctime)s %(module)s %(message)s'
+    my_log_formatter = LogFormatter(fmt=my_log_format)
+    root_logger = logging.getLogger()
+    root_streamhandler = root_logger.handlers[0]
+    root_streamhandler.setFormatter(my_log_formatter)
     parse_command_line()
 
     app = Application([
@@ -380,7 +388,7 @@ class OutputTypesHandler(RequestHandler):
         try:
             self.write(" ".join(sort_nicely(env_dict[environment]["output_types"])))
         except Exception as inst:
-            print(self, traceback.format_exc())
+            logging.error(self, traceback.format_exc())
             self.write("\n".join(["txt"]))
 
 class StaticFileHandler(RequestHandler):
@@ -440,8 +448,8 @@ if __name__ == "__main__":
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))
         server.start(int(os.environ['NUM_PROCESSES']))
-        print("Starting on port {}...".format(os.environ['PORT']))
+        logging.info("Starting on port {}...".format(os.environ['PORT']))
         tornado.ioloop.IOLoop.instance().start()
     else:
-        print("No PORT environment variable was specified.")
+        logging.error("No PORT environment variable was specified.")
         sys.exit(1)
