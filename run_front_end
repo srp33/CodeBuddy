@@ -1,6 +1,6 @@
 #! /bin/bash
 
-mkdir -p course logs
+mkdir -p course logs/summarized
 
 # Use this if you want to run the front end on your local computer
 #./run_container front_end "-p 9001:9001 -e NUM_PROCESSES=4 -e PORT=9001 -v $(pwd)/course:/course -v $(pwd)/data:/data -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
