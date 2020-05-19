@@ -62,7 +62,7 @@ def get_course_basics(course):
         course = create_id(get_courses())
 
     file_path = get_course_dir_path(course) + "basics"
-    course_dict = {"id": course, "title": "", "visible": False, "exists": False}
+    course_dict = {"id": course, "title": "", "visible": True, "exists": False}
 
     if os.path.exists(file_path):
         course_dict = load_yaml_dict(read_file(file_path))
@@ -76,7 +76,7 @@ def get_assignment_basics(course, assignment):
 
     file_path = get_assignment_dir_path(course, assignment) + "basics"
     course_basics = get_course_basics(course)
-    assignment_dict = {"id": assignment, "title": "", "visible": False, "exists": False, "course": course_basics}
+    assignment_dict = {"id": assignment, "title": "", "visible": True, "exists": False, "course": course_basics}
 
     if os.path.exists(file_path):
         assignment_dict = load_yaml_dict(read_file(file_path))
@@ -91,7 +91,7 @@ def get_problem_basics(course, assignment, problem):
 
     file_path = get_problem_dir_path(course, assignment, problem) + "basics"
     assignment_basics = get_assignment_basics(course, assignment)
-    problem_dict = {"id": problem, "title": "", "visible": False, "exists": False, "assignment": assignment_basics}
+    problem_dict = {"id": problem, "title": "", "visible": True, "exists": False, "assignment": assignment_basics}
 
     if os.path.exists(file_path):
         problem_dict = load_yaml_dict(read_file(file_path))
