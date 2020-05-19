@@ -291,6 +291,7 @@ class EditProblemHandler(RequestHandler):
             problem_details["environment"] = self.get_body_argument("environment")
             problem_details["output_type"] = self.get_body_argument("output_type")
             problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "") #required
+            problem_details["answer_url"] = self.get_body_argument("answer_url").strip().strip()
             problem_details["test_code"] = self.get_body_argument("test_code").strip().replace("\r", "")
             problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
             problem_details["data_urls"] = self.get_body_argument("data_urls").strip().replace("\r", "")
@@ -316,20 +317,23 @@ class EditProblemHandler(RequestHandler):
                                 write_data_file(contents, md5_hash)
                                 problem_details["data_urls_info"].append([data_url, md5_hash, content_type])
 
-                        expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
+                        if re.search(r"^https:\/\/", problem_details["answer_url"]):
+                            expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
 
-                        if error_occurred:
-                            result = expected_output.decode()
-                        else:
-                            if problem_details["output_type"] == "txt":
-                                problem_details["expected_output"] = expected_output.decode()
+                            if error_occurred:
+                                result = expected_output.decode()
                             else:
-                                problem_details["expected_output"] = expected_output
+                                if problem_details["output_type"] == "txt":
+                                    problem_details["expected_output"] = expected_output.decode()
+                                else:
+                                    problem_details["expected_output"] = expected_output
 
-                            save_problem(problem_basics, problem_details)
-                            problem_basics = get_problem_basics(course, assignment, problem)
-                            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
-                            result = "Success: The problem was saved!"
+                                save_problem(problem_basics, problem_details)
+                                problem_basics = get_problem_basics(course, assignment, problem)
+                                problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
+                                result = "Success: The problem was saved!"
+                        else:
+                            result = "Error: The answer URL must start with https://"
 
             problems = get_problems(course, assignment)
             self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=result)
