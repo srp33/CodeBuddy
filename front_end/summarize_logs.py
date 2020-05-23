@@ -11,7 +11,7 @@ temp_file_path = sys.argv[3]
 
 # This indicates the directory names of hits we want to log.
 # We use a set rather than a list because it's much faster.
-root_dirs_to_log = set(["", "course", "assignment", "problem", "check_problem"])
+root_dirs_to_log = set(["", "course", "assignment", "problem", "check_problem", "edit_course", "edit_assignment", "edit_problem", "delete_course", "delete_assignment", "delete_problem", "import_course", "export_course"])
 
 def update_summary_dict(summary_dict, timestamp, key, value):
     summary_dict[timestamp] = summary_dict.setdefault(timestamp, {})

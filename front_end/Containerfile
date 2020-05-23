@@ -32,3 +32,4 @@ RUN bash /app/build_html.sh
 
 #USER $USER
 ENTRYPOINT ["bash", "/app/startup.sh"]
+#ENTRYPOINT ["bash", "/etc/cron.hourly/summarize_logs.sh"]
