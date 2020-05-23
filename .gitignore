@@ -4,3 +4,4 @@ data
 frontend_codechecker/*css*
 frontend_codechecker/*.js
 logs
+__pycache__

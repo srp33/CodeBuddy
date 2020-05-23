@@ -15,16 +15,15 @@ import uuid
 
 def make_app():
     # Configure logging
-    enable_pretty_logging()
+    #enable_pretty_logging()
     options.log_file_prefix = "/logs/codebuddy.log"
     options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
     options.log_file_num_backups = 10
-    my_log_format = '%(levelname)s %(asctime)s %(module)s %(message)s'
-    my_log_formatter = LogFormatter(fmt=my_log_format)
+    parse_command_line()
+    my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s')
     root_logger = logging.getLogger()
     root_streamhandler = root_logger.handlers[0]
     root_streamhandler.setFormatter(my_log_formatter)
-    parse_command_line()
 
     app = Application([
         url(r"/", HomeHandler),
@@ -317,7 +316,7 @@ class EditProblemHandler(RequestHandler):
                                 write_data_file(contents, md5_hash)
                                 problem_details["data_urls_info"].append([data_url, md5_hash, content_type])
 
-                        if re.search(r"^https:\/\/", problem_details["answer_url"]):
+                        if problem_details["answer_url"] == "" or re.search(r"^https:\/\/", problem_details["answer_url"]):
                             expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
 
                             if error_occurred:
@@ -333,7 +332,7 @@ class EditProblemHandler(RequestHandler):
                                 problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
                                 result = "Success: The problem was saved!"
                         else:
-                            result = "Error: The answer URL must start with https://"
+                            result = "Error: The answer URL must either be blank or start with https://"
 
             problems = get_problems(course, assignment)
             self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=result)

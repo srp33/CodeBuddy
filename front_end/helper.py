@@ -50,9 +50,9 @@ def read_file(file_path, mode="r"):
 
 def is_old_file(file_path, days=30):
     age_in_seconds = time.time() - os.stat(file_path)[stat.ST_MTIME]
-    age_in_years = age_in_seconds / 60 / 60 / 24
+    age_in_days = age_in_seconds / 60 / 60 / 24
 
-    return age_in_years > days
+    return age_in_days > days
 
 def convert_markdown_to_html(text):
     html = text

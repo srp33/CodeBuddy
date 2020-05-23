@@ -1,12 +1,12 @@
 #! /bin/bash
 
-mkdir -p course logs/summarized
+mkdir -p course logs/summarized logs/archive
 
 # Use this if you want to run the front end on your local computer
 #./run_container front_end "-p 9001:9001 -e NUM_PROCESSES=4 -e PORT=9001 -v $(pwd)/course:/course -v $(pwd)/data:/data -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
 
 # Use this if you want to be able to run front end and back end on a Linux server
-./run_container front_end "--network host -e NUM_PROCESSES=4 -e PORT=9001 -v $(pwd)/course:/course -v $(pwd)/data:/data -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
+./run_container front_end "--network host -e NUM_PROCESSES=4 -e PORT=8008 -v $(pwd)/course:/course -v $(pwd)/data:/data -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
 
 
 ##--tmpfs /tmp

@@ -1,11 +1,13 @@
 #! /bin/bash
 
-in_file_pattern="/logs/codebuddy.log*"
-out_file=/logs/summarized/access.log.gz
+in_file_prefix="/logs/codebuddy.log"
+touch ${in_file_prefix}
+#num_rows_newest_file="$(wc -l ${in_file_prefix} | cut -d' ' -f1)"
+out_dir=/logs/summarized
+temp_file=$(mktemp)
 
-# This approach is not guaranteed to summarize every entry.
-# It might miss a few that are logged while the temp file is being created.
-cat ${in_file_pattern} | gzip > /logs/temp.log.gz
-rm -fv ${in_file_pattern}
+python /app/summarize_logs.py ${in_file_prefix} ${out_dir} ${temp_file}
+rm -f ${temp_file}
 
-python /app/summarize_logs.py /logs/temp.log.gz ${out_file}
+cat ${in_file_prefix}* | gzip > /logs/archive/$(date +"%y-%m-%d-%H").log.gz
+rm -f ${in_file_prefix}*
