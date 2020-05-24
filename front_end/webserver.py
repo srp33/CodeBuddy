@@ -365,7 +365,7 @@ class DeleteProblemHandler(RequestHandler):
 
 class CheckProblemHandler(RequestHandler):
     async def post(self, course, assignment, problem):
-        code = self.get_body_argument("code").replace("\r", "")
+        code = self.get_body_argument("user_code").replace("\r", "")
 
         problem_basics = get_problem_basics(course, assignment, problem)
         problem_details = get_problem_details(course, assignment, problem)
@@ -440,12 +440,32 @@ class DataHandler(RequestHandler):
 
         self.write(read_file(data_file_path))
 
+#class GoogleOAuth2LoginHandler(RequestHandler, tornado.auth.GoogleOAuth2Mixin):
+#    async def get(self):
+#        if self.get_argument('code', False):
+#            user = await self.get_authenticated_user(
+#                redirect_uri='http://your.site.com/auth/google',
+#                code=self.get_argument('code'))
+#
+#            if not self.get_secure_cookie("user_cookie"):
+#                self.set_secure_cookie("user_cookie", user, expires_days=30)
+#                self.write("Your cookie was not set yet!")
+#        else:
+#            await self.authorize_redirect(
+#                redirect_uri='http://your.site.com/auth/google',
+#                client_id=self.settings['google_oauth']['key'],
+#                scope=['profile', 'email'],
+#                response_type='code',
+#                extra_params={'approval_prompt': 'auto'})
+
 if __name__ == "__main__":
     if "PORT" in os.environ:
         application = make_app()
 
         #TODO: Store this securely or have a better way of authenticating.
         password = "abc"
+        #TODO: Use something other than the password. Store in a file?
+        application.settings["cookie_secret"] = password
         env_dict = get_environments()
 
         server = tornado.httpserver.HTTPServer(application)

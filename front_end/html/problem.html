@@ -30,9 +30,9 @@
             <script>
             function check_code()
             {
-                the_code = document.getElementById("code").value;
+                user_code = document.getElementById("user_code").value;
 
-                if (the_code.trim() == "")
+                if (user_code.trim() == "")
                     return false;
 
                 result_div = document.getElementById("result");
@@ -41,7 +41,7 @@
                 document.getElementById("code_output").innerHTML = "";
                 document.getElementById("diff_output").innerHTML = "";
 
-                post_data = { "code": the_code };
+                post_data = { "user_code": user_code };
 
                 $.post("/check_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
                     post_data,
@@ -112,7 +112,7 @@
 
             <h2>Your code:</h2>
 
-            <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="code" style="font-family:monospace" autofocus></textarea></p>
+            <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace" autofocus></textarea></p>
 
             <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
 
