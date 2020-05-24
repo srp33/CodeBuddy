@@ -10,7 +10,7 @@ from pathlib import Path
 import random
 import re
 import requests
-from requests.exceptions import ReadTimeout
+from requests.exceptions import *
 import shutil
 import stat
 import string
@@ -127,6 +127,8 @@ def exec_code(env_dict, code, problem_basics, problem_details, request=None):
         return response.content, response.status_code != 200
     except ReadTimeout as inst:
         return "Your code did not finish executing before the time limit: {} seconds.".format(timeout).encode(), True
+    except ConnectionError as inst:
+        return "The front-end server was unable to contact the back-end server to check your code.\n\nIf you are running your own instance of this app, please make sure the back-end server is running.".encode(), True
 
 def test_code_txt(settings_dict, code, problem_basics, problem_details, request):
     code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
