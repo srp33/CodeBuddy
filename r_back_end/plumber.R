@@ -26,6 +26,11 @@ function(res, code, timeout_seconds, output_type) {
 
             lockEnvironment(env, binding=TRUE)
 
+            tmp_dir_path = paste0("/tmp/", create_id())
+            on.exit(unlink(tmp_dir_path, recursive=TRUE, force=TRUE))
+            dir.create(tmp_dir_path)
+            setwd(tmp_dir_path)
+
             if (output_type == "txt") {
               res$body <- suppressMessages(suppressWarnings(exec_text(code)))
             } else {
@@ -60,7 +65,19 @@ exec_jpg <- function(code) {
   return(image_write(fig, path=NULL, format="jpg", flatten=FALSE))
 }
 
-clean_temp = function(keep_minutes=10) {
+create_id <- function(){
+  pool <- c(letters, LETTERS, 0:9)
+  
+  n <- 20
+  res <- character(n)
+  for(i in seq(n)){
+    res[i] <- sample(pool, 1)
+  }
+
+  paste(res, collapse="")
+}
+
+clean_temp = function(keep_minutes=30) {
   file_info = file.info(list.files("/tmp", pattern=glob2rx("*"), full.names=TRUE, include.dirs=TRUE), extra_cols =    FALSE)
   file_info = file_info[difftime(Sys.time(), file_info[,"mtime"], units = "mins") > keep_minutes, 1:2]
   
