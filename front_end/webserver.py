@@ -10,6 +10,7 @@ from tornado.options import options
 from tornado.options import parse_command_line
 from tornado.web import *
 import traceback
+from urllib.parse import urlencode
 import urllib.request
 import uuid
 
@@ -42,6 +43,8 @@ def make_app():
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/([^\/]+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
+        url(r"/login(/.+)", LoginHandler, name="login"),
+        url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
 
     return app
@@ -53,7 +56,15 @@ class HomeHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class CourseHandler(RequestHandler):
+class BaseUserHandler(RequestHandler):
+    def prepare(self):
+        if not self.get_current_user():
+            self.redirect("/login{}".format(self.request.path))
+
+    def get_current_user(self):
+        return self.get_secure_cookie("user_id")
+
+class CourseHandler(BaseUserHandler):
     def get(self, course):
         try:
             show = show_hidden(self)
@@ -61,7 +72,7 @@ class CourseHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class EditCourseHandler(RequestHandler):
+class EditCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
             self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None)
@@ -100,7 +111,7 @@ class EditCourseHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class DeleteCourseHandler(RequestHandler):
+class DeleteCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
             self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=None)
@@ -122,7 +133,7 @@ class DeleteCourseHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class ImportCourseHandler(RequestHandler):
+class ImportCourseHandler(BaseUserHandler):
     def get(self):
         try:
             self.render("import_course.html", result=None)
@@ -172,7 +183,7 @@ class ImportCourseHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class ExportCourseHandler(RequestHandler):
+class ExportCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
             temp_dir_path = "/tmp/{}".format(create_id())
@@ -195,7 +206,7 @@ class ExportCourseHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class AssignmentHandler(RequestHandler):
+class AssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
             show = show_hidden(self)
@@ -203,7 +214,7 @@ class AssignmentHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class EditAssignmentHandler(RequestHandler):
+class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
             self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment), result=None)
@@ -237,7 +248,7 @@ class EditAssignmentHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class DeleteAssignmentHandler(RequestHandler):
+class DeleteAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
             self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None)
@@ -259,7 +270,7 @@ class DeleteAssignmentHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class ProblemHandler(RequestHandler):
+class ProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             show = show_hidden(self)
@@ -269,7 +280,7 @@ class ProblemHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class EditProblemHandler(RequestHandler):
+class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             problems = get_problems(course, assignment)
@@ -339,7 +350,7 @@ class EditProblemHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class DeleteProblemHandler(RequestHandler):
+class DeleteProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             problems = get_problems(course, assignment)
@@ -363,7 +374,7 @@ class DeleteProblemHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class CheckProblemHandler(RequestHandler):
+class CheckProblemHandler(BaseUserHandler):
     async def post(self, course, assignment, problem):
         code = self.get_body_argument("user_code").replace("\r", "")
 
@@ -385,6 +396,32 @@ class CheckProblemHandler(RequestHandler):
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
+
+class DataHandler(BaseUserHandler):
+    async def get(self, course, assignment, problem, md5_hash):
+        data_file_path = get_downloaded_file_path(md5_hash)
+
+        problem_details = get_problem_details(course, assignment, problem)
+
+        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[md5_hash]
+        self.set_header('Content-type', content_type)
+
+        if not os.path.exists(data_file_path) or is_old_file(data_file_path):
+            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[md5_hash]
+
+            ## Check to see whether the request came from the server or the user's computer
+            #this_host = self.request.headers.get("Host")
+            #referer = self.request.headers.get("Referer")
+            #referer_url_parts = urllib.parse.urlparse(referer)
+            #referer_host = referer_url_parts[1]
+            #referer_path = referer_url_parts[2]
+
+            #if referer_host == this_host and referer_path.startswith("/problem") and content_type.startswith("text/"):
+            #    self.write("Please wait while the file is downloaded...\n\n")
+
+            urllib.request.urlretrieve(url, data_file_path)
+
+        self.write(read_file(data_file_path))
 
 class OutputTypesHandler(RequestHandler):
     def get(self, environment):
@@ -414,41 +451,52 @@ class StaticFileHandler(RequestHandler):
         self.set_header('Content-type', content_type)
         self.write(file_contents)
 
-class DataHandler(RequestHandler):
-    async def get(self, course, assignment, problem, md5_hash):
-        data_file_path = get_downloaded_file_path(md5_hash)
+class LoginHandler(RequestHandler):
+    async def get(self, target_path):
+        self.render("login.html", courses=get_courses(show_hidden(self)), target_path=target_path)
 
-        problem_details = get_problem_details(course, assignment, problem)
+    def post(self, target_path):
+        user_id = self.get_body_argument("user_id")
 
-        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[md5_hash]
-        self.set_header('Content-type', content_type)
+        if user_id == "":
+            self.write("Invalid user ID.")
+        else:
+            self.set_secure_cookie("user_id", user_id, expires_days=30)
+            self.redirect(target_path)
 
-        if not os.path.exists(data_file_path) or is_old_file(data_file_path):
-            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[md5_hash]
+class LogoutHandler(BaseUserHandler):
+    def get(self):
+        self.write(self.get_current_user())
+        self.clear_cookie("user_id")
+        self.redirect("/")
 
-            ## Check to see whether the request came from the server or the user's computer
-            #this_host = self.request.headers.get("Host")
-            #referer = self.request.headers.get("Referer")
-            #referer_url_parts = urllib.parse.urlparse(referer)
-            #referer_host = referer_url_parts[1]
-            #referer_path = referer_url_parts[2]
-
-            #if referer_host == this_host and referer_path.startswith("/problem") and content_type.startswith("text/"):
-            #    self.write("Please wait while the file is downloaded...\n\n")
-
-            urllib.request.urlretrieve(url, data_file_path)
-
-        self.write(read_file(data_file_path))
-
-#class GoogleOAuth2LoginHandler(RequestHandler, tornado.auth.GoogleOAuth2Mixin):
+#from tornado.auth import GoogleOAuth2Mixin
+#class LoginHandler(BaseUserHandler, GoogleOAuth2Mixin):
+#    async def get(self):
+#        if self.get_argument("code", None):
+#            authorization_code = self.get_argument("code", None)
+#            self.get_authenticated_user(authorization_code, self.async_callback(self._on_auth))
+#            return
+#        self.authorize_redirect(self.settings['google_permissions'])
+#
+#    def _on_auth(self, response):
+#        print(response.body)
+#        print(response.request.headers)
+#        if response.error:
+#            raise tornado.web.HTTPError(500, "Google auth failed")
+#        #self.set_secure_cookie("user_id", tornado.escape.json_encode(user))
+#        #self.redirect("/")
+#
+#from tornado.auth import GoogleOAuth2Mixin
+#class GoogleOAuth2LoginHandler(BaseUserHandler, GoogleOAuth2Mixin):
 #    async def get(self):
 #        if self.get_argument('code', False):
 #            user = await self.get_authenticated_user(
 #                redirect_uri='http://your.site.com/auth/google',
 #                code=self.get_argument('code'))
 #
-#            if not self.get_secure_cookie("user_cookie"):
-#                self.set_secure_cookie("user_cookie", user, expires_days=30)
+#            if not self.get_secure_cookie("user"):
+#                self.set_secure_cookie("user", user, expires_days=30)
 #                self.write("Your cookie was not set yet!")
 #        else:
 #            await self.authorize_redirect(
