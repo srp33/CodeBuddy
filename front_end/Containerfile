@@ -12,6 +12,7 @@ RUN apt-get update \
 ADD Environments.yaml /
 ADD VERSION /
 ADD front_end/summarize_logs.sh /etc/cron.hourly/
+ADD front_end/ace-builds/src-min-noconflict /static/
 ADD front_end/*css* /static/
 ADD front_end/*.js /static/
 ADD front_end/*.png /static/

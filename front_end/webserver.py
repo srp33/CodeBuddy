@@ -39,6 +39,7 @@ def make_app():
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
+        url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/([^\/]+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
@@ -385,6 +386,13 @@ class CheckProblemHandler(RequestHandler):
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
+
+class ViewAnswerHandler(RequestHandler):
+    def get(self, course, assignment, problem):
+        try:
+            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class OutputTypesHandler(RequestHandler):
     def get(self, environment):

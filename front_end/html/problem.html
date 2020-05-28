@@ -30,7 +30,7 @@
             <script>
             function check_code()
             {
-                user_code = document.getElementById("user_code").value;
+                user_code = editor.getValue();
 
                 if (user_code.trim() == "")
                     return false;
@@ -74,7 +74,8 @@
                         if (json_data.passed)
                         {
                             result = "<div class='notification is-success'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
-
+                            result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'> here </a> to view the instructor's answer.</p>"; 
+                             
                             {% if "next_problem" in globals() and next_problem %}
                                 result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
                             {% end %}
@@ -112,7 +113,17 @@
 
             <h2>Your code:</h2>
 
-            <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace" autofocus></textarea></p>
+              <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace" autofocus></textarea></p>
+
+            <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
+            <script>
+              var editor = ace.edit("user_code", {
+                theme: "ace/theme/tomorrow",
+                mode: "ace/mode/r",
+                autoScrollEditorIntoView: true,
+                minLines: 20
+              });
+            </script>
 
             <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
 
