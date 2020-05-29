@@ -423,6 +423,7 @@ class DataHandler(BaseUserHandler):
             urllib.request.urlretrieve(url, data_file_path)
 
         self.write(read_file(data_file_path))
+        
 class ViewAnswerHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
