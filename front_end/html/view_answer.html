@@ -15,9 +15,14 @@
             </pre>
           </p>
 
+          <h4>View the Explanation Here</h4>
           {% if len(problem_details["answer_url"]) > 0 %}
-            <h4>View the Explanation Here</h4>
-            <iframe style="width:560px;height:315px;" src="{{ problem_details["answer_url"] }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <p><a href="{{ problem_details["answer_url"] }}">{{ problem_details["answer_url"] }}</a></p>
+            <!--<iframe style="width:560px;height:315px;" src="{{ problem_details["answer_url"] }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
+          {% end %}
+
+          {% if len(problem_details["answer_description"]) > 0 %}
+            <p>{{ problem_details["answer_description"] }}</p>> <!--FIX ME, needs to be converted to HTML-->
           {% end %}
 
       {% else %}

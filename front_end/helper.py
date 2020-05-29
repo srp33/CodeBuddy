@@ -56,7 +56,7 @@ def is_old_file(file_path, days=30):
 
 def convert_markdown_to_html(text):
     html = text
-
+    #converting code blocks
     for match in re.findall(r"```[^`]+?```", html):
         #html = html.replace(match, "<code>" + match[3:-3].strip().replace("\n", "<br />") + "</code>")
         html = html.replace(match, "<pre>" + match[3:-3].strip() + "</pre>")
@@ -64,9 +64,12 @@ def convert_markdown_to_html(text):
     html = re.sub(r"`(.+?)`", r"<code>\1</code>", html)
     html = html.replace("\n\n", "<p>")
 #    html = re.sub(r"## ([^#.]+?)\n", r"<h2>\1</h2>\n", html)
-#    html = re.sub(r"\* (.+?)", r"<li>\1", html)
-#    html = re.sub(r"1\. (.+?)", r"<li>\1", html)
-#    html = re.sub(r"\d+\. (.+?)", r"<li>\1", html)
+    #converting lists
+    html = re.sub(r"\* (.+?)", r"<li>\1</li>", html)                         #asterisk 
+    html = re.sub(r"\- (.+?)", r"<li>\1</li>", html)                         #dash
+    html = re.sub(r"\+ (.+?)", r"<li>\1</li>", html)                         #plus sign
+    html = re.sub(r"\d+\. (.+?)", r"<li>\1</li>", html)                      #any digit with a period
+
     html = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", html)
     html = re.sub(r"\*(.+?)\*", r"<em>\1</em>", html)
     html = re.sub(r"\[([^\[]+?)\]\((.+?)\)", r"<a href='\2'>\1</a>", html)

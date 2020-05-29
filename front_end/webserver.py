@@ -302,6 +302,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["environment"] = self.get_body_argument("environment")
             problem_details["output_type"] = self.get_body_argument("output_type")
             problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "") #required
+            problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
             problem_details["answer_url"] = self.get_body_argument("answer_url").strip().strip()
             problem_details["test_code"] = self.get_body_argument("test_code").strip().replace("\r", "")
             problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
