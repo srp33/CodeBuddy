@@ -5,6 +5,7 @@ import hashlib
 import html
 from imgcompare import *
 import json
+from markdown2 import Markdown
 import os
 from pathlib import Path
 import random
@@ -56,30 +57,48 @@ def is_old_file(file_path, days=30):
 
 def convert_markdown_to_html(text):
     html = text
+    markdown = Markdown()
+    html2 = markdown.convert(text)
+    html2 = re.sub(r"<a href=\"(.+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html2)
+
     #converting code blocks
-    for match in re.findall(r"```[^`]+?```", html):
+#    for match in re.findall(r"```[^`]+?```", html):
         #html = html.replace(match, "<code>" + match[3:-3].strip().replace("\n", "<br />") + "</code>")
-        html = html.replace(match, "<pre>" + match[3:-3].strip() + "</pre>")
+#        html = html.replace(match, "<pre>" + match[3:-3].strip() + "</pre>")
 
-    html = re.sub(r"`(.+?)`", r"<code>\1</code>", html)
-    html = html.replace("\n\n", "<p>")
-#    html = re.sub(r"## ([^#.]+?)\n", r"<h2>\1</h2>\n", html)
-    #converting lists
-    html = re.sub(r"\* (.+?)", r"<li>\1</li>", html)                         #asterisk 
-    html = re.sub(r"\- (.+?)", r"<li>\1</li>", html)                         #dash
-    html = re.sub(r"\+ (.+?)", r"<li>\1</li>", html)                         #plus sign
-    html = re.sub(r"\d+\. (.+?)", r"<li>\1</li>", html)                      #any digit with a period
+#    html = re.sub(r"`(.+?)`", r"<code>\1</code>", html)
+#    html = html.replace("\n\n", "<p>")
+#    html = re.sub(r"(((http|https)\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z]){2,6}([a-zA-Z0-9\.\&\/\?\:@\-_=#])*)", r"<a href='\1' target='_blank' rel='noopener noreferrer'>\1</a>", html)
+    #converting headings
+#    html = re.sub(r"^#\s*([^#.\n]+)?\n", r"<h1>\1</h1>\n", html)
+#    html = re.sub(r"^##\s*([^#.\n]+)?\n", r"<h2>\1</h2>\n", html)
+#    html = re.sub(r"^###\s*([^#.\n]+)?\n", r"<h3>\1</h3>\n", html)
+#    html = re.sub(r"^####\s*([^#.\n]+)?\n", r"<h4>\1</h4>\n", html)
+#    html = re.sub(r"^#####\s*([^#.\n]+)?\n", r"<h5>\1</h5>\n", html)
+#    html = re.sub(r"^######\s*([^#.\n]+)?\n", r"<h6>\1</h6>\n", html)
+    #converting unordered lists
+#    html = re.sub(r"^\-\s*(.+)", r"<ul><li>\1</li></ul>", html)
+#    html = re.sub(r"^\*\s*(.+)", r"<ul><li>\1</li></ul>", html)
+#    html = re.sub(r"^\+\s*(.+)", r"<ul><li>\1</li></ul>", html)
+#    html = re.sub(r"\<\/ul\>\n(.*)\<ul\>","", html)   
+    #converting ordered lists
+#    html = re.sub(r"\d+\.\s*(.+)?", r"<ol><li>\1</li></ol>", html)
+#    html = re.sub(r"\<\/ol\>\n(.*)\<ol\>","", html)
+    #converting bold and italics
+#    html = re.sub(r"^\*\*(.+?)\*\*$", r"<strong>\1</strong>", html)
+#    html = re.sub(r"^\*(.+?)\*$", r"<em>\1</em>", html)
+    #converting links and images
+#    html = re.sub(r"\[([^\[]+?)\]\((.+?)\)", r"<a href='\2'>\1</a>", html)
+#    html = re.sub(r"\!\[(.+)\]\((.+)\)", r"<a href='\2'>\1</a>", html)
 
-    html = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", html)
-    html = re.sub(r"\*(.+?)\*", r"<em>\1</em>", html)
-    html = re.sub(r"\[([^\[]+?)\]\((.+?)\)", r"<a href='\2'>\1</a>", html)
+#    html = re.sub(r"\\\*(.+)\\\*", r"*\1*", html)
 
     #html = markdown.markdown(html)
 
 #    for tag in ("p", "h1", "h2", "h3", "h4", "h5", "h6", "li"):
 #        html = html.replace("<{}>".format(tag), "<{}{}>".format(tag, font))
 
-    return html
+    return html2
 
 def format_output_as_html(output):
     return html.escape(output).replace(" ", "&nbsp;").replace("\t", "&emsp;").replace("\n", "<br />")
