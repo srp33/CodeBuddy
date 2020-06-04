@@ -116,12 +116,22 @@
               <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace" autofocus></textarea></p>
 
             <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
+            <script src="/static/mode-r.js" type="text/javascript"></script>
+            <script src="/static/ext-language_tools.js"></script>
             <script>
+              ace.require("ace/ext/language_tools");
               var editor = ace.edit("user_code", {
                 theme: "ace/theme/tomorrow",
                 mode: "ace/mode/r",
                 autoScrollEditorIntoView: true,
                 minLines: 20
+              });
+              editor.getSession().setMode("ace/mode/python");
+              editor.setOptions({
+                fontSize: "12pt",
+                enableBasicAutocompletion: true,
+                enableSnippets: true,
+                enableLiveAutocompletion: false
               });
             </script>
 
