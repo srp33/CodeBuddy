@@ -83,11 +83,9 @@ for in_file_path in in_file_paths:
                 hour = line_items[2].split(":")[0]
                 day_timestamp = create_timestamp(year, month, day)
                 hour_timestamp = create_timestamp(year, month, day, hour)
-                ip_address = line_items[7].replace("(", "").replace(")", "")
+                #ip_address = line_items[7].replace("(", "").replace(")", "")
                 processing_milliseconds = float(line_items[8].replace("ms", ""))
                 user_id = line_items[9] # Will be IP address if user not logged in.
-                #if user_id == "-":
-                #    user_id = ip_address
 
                 # Aggregated by hour:
                 #   Total number of hits per specific page from *any* user.
