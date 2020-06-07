@@ -1,5 +1,6 @@
 from helper import *
 from content import *
+import contextvars
 import json
 import logging
 import re
@@ -15,17 +16,6 @@ import urllib.request
 import uuid
 
 def make_app():
-    # Configure logging
-    #enable_pretty_logging()
-    options.log_file_prefix = "/logs/codebuddy.log"
-    options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
-    options.log_file_num_backups = 10
-    parse_command_line()
-    my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s')
-    root_logger = logging.getLogger()
-    root_streamhandler = root_logger.handlers[0]
-    root_streamhandler.setFormatter(my_log_formatter)
-
     app = Application([
         url(r"/", HomeHandler),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
@@ -50,15 +40,34 @@ def make_app():
     return app
 
 class HomeHandler(RequestHandler):
+    def prepare(self):
+        user_id_var.set(self.get_current_user().replace("user: ", ""))
+
     def get(self):
         try:
-            self.render("home.html", courses=get_courses(show_hidden(self)))
+            user_logged_in = False
+            if self.get_current_user().startswith("user: "):
+                user_logged_in = True
+
+            self.render("home.html", courses=get_courses(show_hidden(self)), user_logged_in=user_logged_in)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+    def get_current_user(self):
+        user_id = self.get_secure_cookie("user_id")
+
+        if user_id:
+            return "user: {}".format(user_id.decode())
+        else:
+            return self.request.remote_ip
+
 class BaseUserHandler(RequestHandler):
     def prepare(self):
-        if not self.get_current_user():
+        user_id = self.get_current_user()
+
+        if user_id:
+            user_id_var.set(user_id.decode())
+        else:
             self.redirect("/login{}".format(self.request.path))
 
     def get_current_user(self):
@@ -506,6 +515,12 @@ class LogoutHandler(BaseUserHandler):
 #                response_type='code',
 #                extra_params={'approval_prompt': 'auto'})
 
+# See https://quanttype.net/posts/2020-02-05-request-id-logging.html
+class LoggingFilter(logging.Filter):
+    def filter(self, record):
+        record.user_id = user_id_var.get("-")
+        return True
+
 if __name__ == "__main__":
     if "PORT" in os.environ:
         application = make_app()
@@ -519,6 +534,21 @@ if __name__ == "__main__":
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))
         server.start(int(os.environ['NUM_PROCESSES']))
+
+        # Set up logging
+        options.log_file_prefix = "/logs/codebuddy.log"
+        options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
+        options.log_file_num_backups = 10
+        parse_command_line()
+        user_id_var = contextvars.ContextVar("user_id")
+        my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s %(user_id)s')
+        logging_filter = LoggingFilter()
+        for handler in logging.getLogger().handlers:
+            handler.addFilter(logging_filter)
+        root_logger = logging.getLogger()
+        root_streamhandler = root_logger.handlers[0]
+        root_streamhandler.setFormatter(my_log_formatter)
+
         logging.info("Starting on port {}...".format(os.environ['PORT']))
         tornado.ioloop.IOLoop.instance().start()
     else:
