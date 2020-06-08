@@ -122,11 +122,11 @@
               ace.require("ace/ext/language_tools");
               var editor = ace.edit("user_code", {
                 theme: "ace/theme/tomorrow",
-                mode: "ace/mode/r",
+                //mode: "ace/mode/r",
                 autoScrollEditorIntoView: true,
                 minLines: 20
               });
-              editor.getSession().setMode("ace/mode/r");
+              editor.getSession().setMode("{{ code_completion_path }}");
               editor.setOptions({
                 fontSize: "12pt",
                 enableBasicAutocompletion: false,

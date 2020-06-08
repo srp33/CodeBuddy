@@ -276,8 +276,9 @@ class ProblemHandler(BaseUserHandler):
         try:
             show = show_hidden(self)
             problems = get_problems(course, assignment, show)
+            problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True)
 
-            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems))
+            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"])
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
