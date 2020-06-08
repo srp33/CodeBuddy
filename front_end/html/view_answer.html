@@ -1,13 +1,11 @@
 <section class="section section-padding-medium">
     <div class="content is-medium">
       {% if problem_basics["exists"] %}
-        <h2>{{ problem_basics["title"] }}</h2>
-    
-          <p>
-            <a href="/">Home</a> |
-            <a href="/course/{{ course_basics["id"] }}">Course Home</a> |
-            <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to Problem</a>
-          </p>
+
+      <p>
+        <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to Problem</a>
+      </p>
+        <h4>Answer Code:</h4>
 
           <p>
             <pre>
