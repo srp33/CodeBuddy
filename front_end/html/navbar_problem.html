@@ -15,3 +15,16 @@
                     {% end %}
                 {% end %}
             </div>
+
+            <div class="navbar-end">
+            {% if "next_prev_problems" in globals() and next_prev_problems["previous"] %}
+                <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_prev_problems["previous"]["id"] }}">
+                    Previous Problem
+                </a>
+            {% end %}
+            {% if "next_prev_problems" in globals() and next_prev_problems["next"] %}
+                <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_prev_problems["next"]["id"] }}">
+                    Next Problem
+                </a>
+            {% end %}
+            </div>
