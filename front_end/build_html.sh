@@ -21,6 +21,6 @@ cat header.html container_top.html error.html container_bottom_other.html contai
 
 # Static pages
 
-cat header.html container_top.html about.html container_bottom_all.html footer.html > /app/about.html
+cat header.html navbar_top.html navbar_bottom.html container_top.html about.html container_bottom_all.html footer.html > /static/about.html
 
 cd -
