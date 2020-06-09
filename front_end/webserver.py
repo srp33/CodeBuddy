@@ -444,7 +444,9 @@ class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         content_type = "text/css"
         read_mode = "r"
-        if file_name.endswith(".js"):
+        if file_name.endswith(".html"):
+            content_type = "text/html"
+        elif file_name.endswith(".js"):
             content_type = "text/javascript"
         elif file_name.endswith(".png"):
             content_type = "image/png"
