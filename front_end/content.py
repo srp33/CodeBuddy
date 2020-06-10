@@ -22,7 +22,7 @@ def get_courses(show_hidden=True):
         if course_basics["visible"] or show_hidden:
             courses.append([course_id, course_basics])
 
-    return sort_by_title(courses)
+    return sort_nested_list(courses)
 
 def get_assignments(course, show_hidden=True):
     assignments = []
@@ -34,7 +34,7 @@ def get_assignments(course, show_hidden=True):
             if assignment_basics["visible"] or show_hidden:
                 assignments.append([assignment_id, assignment_basics])
 
-    return sort_by_title(assignments)
+    return sort_nested_list(assignments)
 
 def get_problems(course, assignment, show_hidden=True):
     problems = []
@@ -46,7 +46,7 @@ def get_problems(course, assignment, show_hidden=True):
             if problem_basics["visible"] or show_hidden:
                 problems.append([problem_id, problem_basics])
 
-    return sort_by_title(problems)
+    return sort_nested_list(problems)
 
 def get_course_dir_path(course):
     return get_root_dir_path() + f"/{course}/"
@@ -168,7 +168,7 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
 
     return problem_dict
 
-def sort_by_title(nested_list):
+def sort_nested_list(nested_list):
     l_dict = {}
     for row in nested_list:
         l_dict[row[1]["title"]] = row
@@ -202,6 +202,19 @@ def save_problem(problem_basics, problem_details):
     basics_to_save = {"id": problem_basics["id"], "title": problem_basics["title"], "visible": problem_basics["visible"]}
     write_file(convert_dict_to_yaml(basics_to_save), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(problem_details), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "details")
+
+def get_next_submission_title(course, assignment, problem, user):
+    submissions_path = f"/submissions/{course}/{assignment}/{problem}/{user}/*"
+    num_submissions = 0
+    for submission in glob.glob(submissions_path):
+        num_submissions += 1
+    return num_submissions + 1
+
+def save_submission(course, assignment, problem, user, code, output, passed, date):
+    title = get_next_submission_title(course, assignment, problem, user)
+    submission_dict = {"title": title, "code": code, "output": output, "passed": passed, "date": date}
+    file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{title}.yaml"
+    write_file(convert_dict_to_yaml(submission_dict), file_path)
 
 def delete_problem(problem_basics):
     dir_path = get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"])
