@@ -66,10 +66,8 @@
     <p><strong>Answer code*: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea></p>
     
-    <p><strong>Answer Description:</strong></string></p>  
+    <p><strong>Answer description:</strong></string></p>  
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
-
-    <p><strong>Answer URL: </strong><input name="answer_url" class="input is-info is-normal is-medium" placeholder="Please enter the URL of a YouTube video that explains how to solve this problem." value="{{ problem_details["answer_url"] }}" /></p>
 
     <p><strong>Test code: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea></p>

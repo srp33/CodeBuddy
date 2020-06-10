@@ -1,3 +1,0 @@
-#! /bin/bash
-
-./run_container r_back_end "-d --network host -e PORT=9002 -v /tmp:/tmp" ""
