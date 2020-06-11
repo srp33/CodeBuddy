@@ -74,8 +74,9 @@
                         if (json_data.passed)
                         {
                             result = "<div class='notification is-success'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
-                            result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'> here </a> to view the instructor's answer.</p>"; 
-                             
+                            {% if problem_details["show_answer"] %}
+                                result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'> here </a> to view the instructor's answer.</p>"; 
+                            {% end %}
                             {% if "next_problem" in globals() and next_problem %}
                                 result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
                             {% end %}

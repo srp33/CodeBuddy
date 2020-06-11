@@ -318,6 +318,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["data_urls"] = self.get_body_argument("data_urls").strip().replace("\r", "")
             problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
             problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
+            problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             problem_details["expected_output"] = ""
             problem_details["data_urls_info"] = []
 
