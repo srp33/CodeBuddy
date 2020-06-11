@@ -6,12 +6,13 @@ RUN apt-get update \
  && apt-get install -y bzip2 zip \
  && apt-get -y autoremove \
  && apt-get clean \
- && conda install -y tornado requests PyYAML arrow Pillow \
+ && conda install -y tornado requests PyYAML arrow Pillow markdown2 \
  && mkdir -p /app /conda /course /static
 
 ADD Environments.yaml /
 ADD VERSION /
 ADD front_end/summarize_logs.sh /etc/cron.hourly/
+ADD front_end/ace-builds/src-min-noconflict /static/
 ADD front_end/*css* /static/
 ADD front_end/*.js /static/
 ADD front_end/*.png /static/

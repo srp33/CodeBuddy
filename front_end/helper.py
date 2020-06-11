@@ -5,6 +5,7 @@ import hashlib
 import html
 from imgcompare import *
 import json
+from markdown2 import Markdown
 import os
 from pathlib import Path
 import random
@@ -51,31 +52,12 @@ def read_file(file_path, mode="r"):
 def is_old_file(file_path, days=30):
     age_in_seconds = time.time() - os.stat(file_path)[stat.ST_MTIME]
     age_in_days = age_in_seconds / 60 / 60 / 24
-
     return age_in_days > days
 
 def convert_markdown_to_html(text):
-    html = text
-
-    for match in re.findall(r"```[^`]+?```", html):
-        #html = html.replace(match, "<code>" + match[3:-3].strip().replace("\n", "<br />") + "</code>")
-        html = html.replace(match, "<pre>" + match[3:-3].strip() + "</pre>")
-
-    html = re.sub(r"`(.+?)`", r"<code>\1</code>", html)
-    html = html.replace("\n\n", "<p>")
-#    html = re.sub(r"## ([^#.]+?)\n", r"<h2>\1</h2>\n", html)
-#    html = re.sub(r"\* (.+?)", r"<li>\1", html)
-#    html = re.sub(r"1\. (.+?)", r"<li>\1", html)
-#    html = re.sub(r"\d+\. (.+?)", r"<li>\1", html)
-    html = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", html)
-    html = re.sub(r"\*(.+?)\*", r"<em>\1</em>", html)
-    html = re.sub(r"\[([^\[]+?)\]\((.+?)\)", r"<a href='\2'>\1</a>", html)
-
-    #html = markdown.markdown(html)
-
-#    for tag in ("p", "h1", "h2", "h3", "h4", "h5", "h6", "li"):
-#        html = html.replace("<{}>".format(tag), "<{}{}>".format(tag, font))
-
+    markdown = Markdown()
+    html = markdown.convert(text)
+    html = re.sub(r"<a href=\"(.+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html)
     return html
 
 def format_output_as_html(output):

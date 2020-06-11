@@ -151,6 +151,11 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
             problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
             problem_dict["credit"] = convert_markdown_to_html(problem_dict["credit"])
 
+            if "answer_description" not in problem_dict:
+                problem_dict["answer_description"] = ""
+            else:
+                problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
+
         if format_expected_output and problem_dict["output_type"] == "jpeg":
             problem_dict["expected_output"] = encode_image_bytes(problem_dict["expected_output"])
 
@@ -158,11 +163,13 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
             problem_dict["data_urls"] = "\n".join([x[0] for x in problem_dict["data_urls_info"]])
 
         # This was added later, so adding it for backward compatibility
-        if "answer_url" not in problem_dict:
-            problem_dict["answer_url"] = ""
+        
+        if "answer_description" not in problem_dict:
+            problem_dict["answer_description"] = ""
+
     else:
         problem_dict = {"instructions": "", "environment": "r_back_end",
-            "output_type": "txt", "answer_code": "", "answer_url": "", "test_code": "",
+            "output_type": "txt", "answer_code": "", "answer_description": "", "test_code": "",
             "credit": "", "show_expected": True, "show_test_code": True,
             "expected_output": "", "data_urls": "", "data_urls_info": []}
 
