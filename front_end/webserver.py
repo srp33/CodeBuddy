@@ -32,6 +32,7 @@ def make_app():
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
+        url(r"\/edit_permissions\/([^\/]+)", EditPermissionsHandler, name="edit_permissions"),
         url(r"/static/([^\/]+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
         url(r"/login(/.+)", LoginHandler, name="login"),
@@ -447,6 +448,13 @@ class OutputTypesHandler(RequestHandler):
             logging.error(self, traceback.format_exc())
             self.write("\n".join(["txt"]))
 
+class EditPermissionsHandler(RequestHandler):
+    def get(self, course):
+        try:
+            self.render("permissions.html", courses=get_courses(), course_basics=get_course_basics(course), administrators=admin_dict["administrators"], instructor_dict=inst_dict )
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         content_type = "text/css"
@@ -539,6 +547,8 @@ if __name__ == "__main__":
         #TODO: Use something other than the password. Store in a file?
         application.settings["cookie_secret"] = password
         env_dict = get_environments()
+        admin_dict = get_administrators()
+        inst_dict = get_instructors()
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))

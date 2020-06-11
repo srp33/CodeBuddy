@@ -9,7 +9,7 @@ RUN apt-get update \
  && conda install -y tornado requests PyYAML arrow Pillow markdown2 \
  && mkdir -p /app /conda /course /static
 
-ADD Environments.yaml /
+ADD *.yaml /
 ADD VERSION /
 ADD front_end/summarize_logs.sh /etc/cron.hourly/
 ADD front_end/ace-builds/src-min-noconflict /static/
