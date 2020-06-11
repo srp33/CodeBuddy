@@ -125,15 +125,36 @@
                 theme: "ace/theme/tomorrow",
                 //mode: "ace/mode/r",
                 autoScrollEditorIntoView: true,
-                minLines: 20
+                minLines: 20,
+                fontSize: "12pt"
               });
               editor.getSession().setMode("{{ code_completion_path }}");
-              editor.setOptions({
-                fontSize: "12pt",
+            </script>
+
+            <form>
+              <div>
+                <input type="checkbox" id="auto" name="auto_complete" value="true">
+                <label for="auto"> Enable auto-complete</label>
+              </div>
+            </form>
+
+            <script>
+            document.getElementById('auto').onclick= function() {
+              if (this.checked) {
+                editor.setOptions({
                 enableBasicAutocompletion: false,
                 enableSnippets: true,
                 enableLiveAutocompletion: true
-              });
+                });
+              }
+              else {
+                editor.setOptions({
+                enableBasicAutocompletion: false,
+                enableSnippets: false,
+                enableLiveAutocompletion: false
+                });
+              }
+            };
             </script>
 
             <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
