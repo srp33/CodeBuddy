@@ -28,9 +28,57 @@
             {% end %}
 
             <script>
+            function run_code()
+            {
+              user_code = document.getElementById("user_code").value;
+              if (user_code.trim() == "")
+                    return false;
+
+              result_div = document.getElementById("result");
+              result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
+              result_div.scrollIntoView();
+              document.getElementById("code_output").innerHTML = "";
+              document.getElementById("diff_output").innerHTML = "";
+
+              post_data = { "user_code": user_code };
+
+              $.post("/run_code/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                  post_data,
+                  function(data, status){
+                        var json_data = JSON.parse(data);
+                        var code_output = "<h2>Your output:</h2>\n\n";
+                        var result = "";
+
+                        {% if problem_details["output_type"] == "txt" %}
+                            if (json_data.code_output == "")
+                            {
+                                code_output += "<p><pre>[Your code produced no output.]</pre></p>";
+                            }
+                            else
+                            {
+                                code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
+                            }
+                        {% else %}
+                            if (json_data.error_occurred)
+                            {
+                                code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
+                            }
+                            else
+                            {
+                                code_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.code_output + "' width='100%' /></figure></p>";
+                            }
+                        {% end %}
+
+                        document.getElementById("code_output").innerHTML = code_output;
+                        document.getElementById("result").innerHTML = result;
+                  })
+                  return false;
+            }
+
             function check_code()
             {
                 user_code = editor.getValue();
+                user_code = document.getElementById("user_code").value;
 
                 if (user_code.trim() == "")
                     return false;
@@ -41,7 +89,7 @@
                 document.getElementById("code_output").innerHTML = "";
                 document.getElementById("diff_output").innerHTML = "";
 
-                post_data = { "user_code": user_code };
+                post_data = { "user_code": user_code, "date": new Date() };
 
                 $.post("/check_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
                     post_data,
@@ -106,9 +154,10 @@
                         document.getElementById("diff_output").innerHTML = diff_output;
                         document.getElementById("result").innerHTML = result;
                     });
-
+                document.getElementById("user_code").value = ""
                 return false;
             }
+
             </script>
 
             <h2>Your code:</h2>
@@ -134,6 +183,8 @@
                 enableLiveAutocompletion: true
               });
             </script>
+
+            <p><a class="button is-info is-large is-fullwidth" onclick='run_code()'>Run Code</a></p>
 
             <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
 

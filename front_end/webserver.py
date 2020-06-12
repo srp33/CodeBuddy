@@ -30,6 +30,7 @@ def make_app():
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
+        url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
@@ -57,6 +58,12 @@ class HomeHandler(RequestHandler):
             self.render("home.html", courses=get_courses(show_hidden(self)), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
+    def get_current_user(self):
+        user_id = self.get_secure_cookie("user_id")
+        if user_id:
+            return "user: {}".format(user_id.decode())
+        else:
+            return self.request.remote_ip
 
 class BaseUserHandler(RequestHandler):
     def prepare(self):
@@ -283,6 +290,7 @@ class DeleteAssignmentHandler(BaseUserHandler):
 class ProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
+            user = self.get_current_user()
             show = show_hidden(self)
             problems = get_problems(course, assignment, show)
             problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True)
@@ -384,10 +392,13 @@ class DeleteProblemHandler(BaseUserHandler):
 
 class CheckProblemHandler(BaseUserHandler):
     async def post(self, course, assignment, problem):
+        user = self.get_current_user()
         code = self.get_body_argument("user_code").replace("\r", "")
+        date = self.get_body_argument("date")
 
         problem_basics = get_problem_basics(course, assignment, problem)
         problem_details = get_problem_details(course, assignment, problem)
+
         out_dict = {"error_occurred": True, "passed": False, "diff_output": ""}
 
         try:
@@ -400,6 +411,31 @@ class CheckProblemHandler(BaseUserHandler):
             out_dict["error_occurred"] = error_occurred
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
+
+            save_submission(course, assignment, problem, user, code, code_output, passed, date)
+            
+        except Exception as inst:
+            out_dict["code_output"] = format_output_as_html(traceback.format_exc())
+
+        self.write(json.dumps(out_dict))
+
+class RunCodeHandler(BaseUserHandler):
+    async def post(self, course, assignment, problem):
+        user = self.get_current_user()
+        code = self.get_body_argument("user_code").replace("\r", "")
+
+        problem_basics = get_problem_basics(course, assignment, problem)
+        problem_details = get_problem_details(course, assignment, problem)
+
+        out_dict = {"error_occurred": True}
+
+        try:
+            code_output, error_occurred = exec_code(env_dict, code, problem_basics, problem_details, request=None)
+            code_output = code_output.decode()
+
+            out_dict["code_output"] = format_output_as_html(code_output)
+            out_dict["error_occurred"] = error_occurred
+        
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -526,6 +562,12 @@ class LogoutHandler(BaseUserHandler):
 #                scope=['profile', 'email'],
 #                response_type='code',
 #                extra_params={'approval_prompt': 'auto'})
+	
+# See https://quanttype.net/posts/2020-02-05-request-id-logging.html
+class LoggingFilter(logging.Filter):
+    def filter(self, record):
+        record.user_id = user_id_var.get("-")
+        return True
 
 # See https://quanttype.net/posts/2020-02-05-request-id-logging.html
 class LoggingFilter(logging.Filter):
