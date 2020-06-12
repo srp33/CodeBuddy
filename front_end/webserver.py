@@ -448,25 +448,29 @@ class OutputTypesHandler(RequestHandler):
 
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
-        content_type = "text/css"
-        read_mode = "r"
+        file_path = f"/static/{file_name}"
+
         if file_name.endswith(".html"):
-            content_type = "text/html"
-        elif file_name.endswith(".js"):
-            content_type = "text/javascript"
-        elif file_name.endswith(".png"):
-            content_type = "image/png"
-            read_mode = "rb"
-        elif file_name.endswith(".ico"):
-            content_type = "image/x-icon"
-            read_mode = "rb"
-        elif file_name.endswith(".webmanifest"):
-            content_type = "application/json"
+            self.render(file_path, user_logged_in=False)
+        else:
+            content_type = "text/css"
+            read_mode = "r"
 
-        file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
+            if file_name.endswith(".js"):
+                content_type = "text/javascript"
+            elif file_name.endswith(".png"):
+                content_type = "image/png"
+                read_mode = "rb"
+            elif file_name.endswith(".ico"):
+                content_type = "image/x-icon"
+                read_mode = "rb"
+            elif file_name.endswith(".webmanifest"):
+                content_type = "application/json"
 
-        self.set_header('Content-type', content_type)
-        self.write(file_contents)
+            file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
+
+            self.set_header('Content-type', content_type)
+            self.write(file_contents)
 
 class LoginHandler(RequestHandler):
     async def get(self, target_path):
