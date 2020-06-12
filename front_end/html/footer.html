@@ -1,11 +1,16 @@
 <footer class="footer">
-  <div class="columns">
-    <div class="column is-1">
-      <p><a href="/">Home</a></p>
-    </div>
-    <div class="column is-1">
-      <p><a href="/static/about.html">About</a></p>
-    </div>
+    <div class="columns">
+        <div class="column is-1">
+            <p><a href="/">Home</a></p>
+        </div>
+        <div class="column is-1">
+            <p><a href="/static/about.html">About</a></p>
+        </div>
+        {% if "user_logged_in" in globals() and user_logged_in %}
+            <div class="column is-1">
+                <p><a href="/logout">Log out</a></p>
+            </div>
+    {% end %}
   </div>
 </footer>
 
