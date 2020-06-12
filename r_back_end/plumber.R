@@ -21,8 +21,8 @@ function(res, code, timeout_seconds, output_type) {
 
     local({
         tryCatch({
-            setTimeLimit(elapsed = timeout_seconds, transient = TRUE)
-            on.exit(setTimeLimit(Inf, Inf, FALSE))
+            #setTimeLimit(elapsed = timeout_seconds, transient = TRUE)
+            #on.exit(setTimeLimit(Inf, Inf, FALSE))
 
             lockEnvironment(env, binding=TRUE)
 
