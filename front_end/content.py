@@ -166,11 +166,13 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
         
         if "answer_description" not in problem_dict:
             problem_dict["answer_description"] = ""
+        if "show_answer" not in problem_dict:
+            problem_dict["show_answer"] = ""
 
     else:
         problem_dict = {"instructions": "", "environment": "r_back_end",
             "output_type": "txt", "answer_code": "", "answer_description": "", "test_code": "",
-            "credit": "", "show_expected": True, "show_test_code": True,
+            "credit": "", "show_expected": True, "show_test_code": True, "show_answer": True,
             "expected_output": "", "data_urls": "", "data_urls_info": []}
 
     return problem_dict

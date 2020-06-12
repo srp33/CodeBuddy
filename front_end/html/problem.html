@@ -122,8 +122,9 @@
                         if (json_data.passed)
                         {
                             result = "<div class='notification is-success'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
-                            result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'> here </a> to view the instructor's answer.</p>"; 
-                             
+                            {% if problem_details["show_answer"] %}
+                                result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'> here </a> to view the instructor's answer.</p>"; 
+                            {% end %}
                             {% if "next_problem" in globals() and next_problem %}
                                 result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
                             {% end %}
@@ -173,15 +174,37 @@
                 theme: "ace/theme/tomorrow",
                 //mode: "ace/mode/r",
                 autoScrollEditorIntoView: true,
-                minLines: 20
+                minLines: 20,
+                fontSize: "12pt"
               });
+              editor.focus();
               editor.getSession().setMode("{{ code_completion_path }}");
-              editor.setOptions({
-                fontSize: "12pt",
+            </script>
+
+            <form>
+              <div>
+                <input type="checkbox" id="auto" name="auto_complete" value="true">
+                <label for="auto"> Enable auto-complete</label>
+              </div>
+            </form>
+
+            <script>
+            document.getElementById('auto').onclick= function() {
+              if (this.checked) {
+                editor.setOptions({
                 enableBasicAutocompletion: false,
                 enableSnippets: true,
                 enableLiveAutocompletion: true
-              });
+                });
+              }
+              else {
+                editor.setOptions({
+                enableBasicAutocompletion: false,
+                enableSnippets: false,
+                enableLiveAutocompletion: false
+                });
+              }
+            };
             </script>
 
             <p><a class="button is-info is-large is-fullwidth" onclick='run_code()'>Run Code</a></p>
