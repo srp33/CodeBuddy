@@ -1,11 +1,8 @@
 {% if problem_basics["exists"] %}
     <h4>Answer Code:</h4>
 
-    <p>
-        <pre>
-            {{ problem_details["answer_code"]}}
-        </pre>
-    </p>
+    <pre>{{ problem_details["answer_code"]}}</pre>
+
 
     {% if len(problem_details["answer_description"]) > 0 %}
         <h4>Instructor's comments</h4>
