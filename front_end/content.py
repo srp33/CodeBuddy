@@ -219,7 +219,6 @@ def get_next_submission_id(course, assignment, problem, user):
 
 def save_submission(course, assignment, problem, user, code, output, passed, date):
     id = get_next_submission_id(course, assignment, problem, user)
-    user = user.decode()
     submission_dict = {"id": id, "code": code, "output": output, "passed": passed, "date": date, "user": user}
     file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{id}.yaml"
     write_file(convert_dict_to_yaml(submission_dict), file_path)

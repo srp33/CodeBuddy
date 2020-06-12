@@ -30,7 +30,7 @@
             <script>
             function run_code()
             {
-              user_code = document.getElementById("user_code").value;
+              user_code = editor.getValue();
               if (user_code.trim() == "")
                     return false;
 
@@ -78,7 +78,6 @@
             function check_code()
             {
                 user_code = editor.getValue();
-                user_code = document.getElementById("user_code").value;
 
                 if (user_code.trim() == "")
                     return false;
