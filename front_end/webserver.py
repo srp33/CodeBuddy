@@ -58,12 +58,6 @@ class HomeHandler(RequestHandler):
             self.render("home.html", courses=get_courses(show_hidden(self)), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
-    def get_current_user(self):
-        user_id = self.get_secure_cookie("user_id")
-        if user_id:
-            return "user: {}".format(user_id.decode())
-        else:
-            return self.request.remote_ip
 
 class BaseUserHandler(RequestHandler):
     def prepare(self):
@@ -413,7 +407,7 @@ class CheckProblemHandler(BaseUserHandler):
             out_dict["diff_output"] = diff_output
 
             save_submission(course, assignment, problem, user, code, code_output, passed, date)
-            
+
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -435,7 +429,7 @@ class RunCodeHandler(BaseUserHandler):
 
             out_dict["code_output"] = format_output_as_html(code_output)
             out_dict["error_occurred"] = error_occurred
-        
+
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -562,7 +556,7 @@ class LogoutHandler(BaseUserHandler):
 #                scope=['profile', 'email'],
 #                response_type='code',
 #                extra_params={'approval_prompt': 'auto'})
-	
+
 # See https://quanttype.net/posts/2020-02-05-request-id-logging.html
 class LoggingFilter(logging.Filter):
     def filter(self, record):
