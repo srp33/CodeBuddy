@@ -31,6 +31,7 @@ def make_app():
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
+        url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/([^\/]+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
@@ -43,11 +44,13 @@ def make_app():
 class HomeHandler(RequestHandler):
     def prepare(self):
         user_id_var.set(self.get_current_user().replace("user: ", ""))
+
     def get(self):
         try:
             user_logged_in = False
             if self.get_current_user().startswith("user: "):
                 user_logged_in = True
+
             self.render("home.html", courses=get_courses(show_hidden(self)), user_logged_in=user_logged_in)
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -58,9 +61,18 @@ class HomeHandler(RequestHandler):
         else:
             return self.request.remote_ip
 
+    def get_current_user(self):
+        user_id = self.get_secure_cookie("user_id")
+
+        if user_id:
+            return "user: {}".format(user_id.decode())
+        else:
+            return self.request.remote_ip
+
 class BaseUserHandler(RequestHandler):
     def prepare(self):
         user_id = self.get_current_user()
+
         if user_id:
             user_id_var.set(user_id.decode())
         else:
@@ -278,11 +290,12 @@ class DeleteAssignmentHandler(BaseUserHandler):
 class ProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
+            user = self.get_current_user()
             show = show_hidden(self)
             problems = get_problems(course, assignment, show)
+            problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True)
 
-            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem), format_content=True, format_expected_output=True, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems))
-
+            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"])
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -307,7 +320,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["environment"] = self.get_body_argument("environment")
             problem_details["output_type"] = self.get_body_argument("output_type")
             problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "") #required
-            problem_details["answer_url"] = self.get_body_argument("answer_url").strip().strip()
+            problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
             problem_details["test_code"] = self.get_body_argument("test_code").strip().replace("\r", "")
             problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
             problem_details["data_urls"] = self.get_body_argument("data_urls").strip().replace("\r", "")
@@ -333,23 +346,20 @@ class EditProblemHandler(BaseUserHandler):
                                 write_data_file(contents, md5_hash)
                                 problem_details["data_urls_info"].append([data_url, md5_hash, content_type])
 
-                        if problem_details["answer_url"] == "" or re.search(r"^https:\/\/", problem_details["answer_url"]):
-                            expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
+                        expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
 
-                            if error_occurred:
-                                result = expected_output.decode()
-                            else:
-                                if problem_details["output_type"] == "txt":
-                                    problem_details["expected_output"] = expected_output.decode()
-                                else:
-                                    problem_details["expected_output"] = expected_output
-
-                                save_problem(problem_basics, problem_details)
-                                problem_basics = get_problem_basics(course, assignment, problem)
-                                problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
-                                result = "Success: The problem was saved!"
+                        if error_occurred:
+                            result = expected_output.decode()
                         else:
-                            result = "Error: The answer URL must either be blank or start with https://"
+                            if problem_details["output_type"] == "txt":
+                                problem_details["expected_output"] = expected_output.decode()
+                            else:
+                                problem_details["expected_output"] = expected_output
+
+                            save_problem(problem_basics, problem_details)
+                            problem_basics = get_problem_basics(course, assignment, problem)
+                            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
+                            result = "Success: The problem was saved!"
 
             problems = get_problems(course, assignment)
             self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=result)
@@ -456,6 +466,13 @@ class DataHandler(BaseUserHandler):
             urllib.request.urlretrieve(url, data_file_path)
 
         self.write(read_file(data_file_path))
+        
+class ViewAnswerHandler(RequestHandler):
+    def get(self, course, assignment, problem):
+        try:
+            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class OutputTypesHandler(RequestHandler):
     def get(self, environment):
@@ -469,7 +486,9 @@ class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         content_type = "text/css"
         read_mode = "r"
-        if file_name.endswith(".js"):
+        if file_name.endswith(".html"):
+            content_type = "text/html"
+        elif file_name.endswith(".js"):
             content_type = "text/javascript"
         elif file_name.endswith(".png"):
             content_type = "image/png"
@@ -540,6 +559,12 @@ class LogoutHandler(BaseUserHandler):
 #                response_type='code',
 #                extra_params={'approval_prompt': 'auto'})
 	
+# See https://quanttype.net/posts/2020-02-05-request-id-logging.html
+class LoggingFilter(logging.Filter):
+    def filter(self, record):
+        record.user_id = user_id_var.get("-")
+        return True
+
 # See https://quanttype.net/posts/2020-02-05-request-id-logging.html
 class LoggingFilter(logging.Filter):
     def filter(self, record):

@@ -151,6 +151,11 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
             problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
             problem_dict["credit"] = convert_markdown_to_html(problem_dict["credit"])
 
+            if "answer_description" not in problem_dict:
+                problem_dict["answer_description"] = ""
+            else:
+                problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
+
         if format_expected_output and problem_dict["output_type"] == "jpeg":
             problem_dict["expected_output"] = encode_image_bytes(problem_dict["expected_output"])
 
@@ -158,11 +163,13 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
             problem_dict["data_urls"] = "\n".join([x[0] for x in problem_dict["data_urls_info"]])
 
         # This was added later, so adding it for backward compatibility
-        if "answer_url" not in problem_dict:
-            problem_dict["answer_url"] = ""
+        
+        if "answer_description" not in problem_dict:
+            problem_dict["answer_description"] = ""
+
     else:
         problem_dict = {"instructions": "", "environment": "r_back_end",
-            "output_type": "txt", "answer_code": "", "answer_url": "", "test_code": "",
+            "output_type": "txt", "answer_code": "", "answer_description": "", "test_code": "",
             "credit": "", "show_expected": True, "show_test_code": True,
             "expected_output": "", "data_urls": "", "data_urls_info": []}
 
@@ -203,7 +210,7 @@ def save_problem(problem_basics, problem_details):
     write_file(convert_dict_to_yaml(basics_to_save), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(problem_details), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "details")
 
-def get_next_submission_title(course, assignment, problem, user):
+def get_next_submission_id(course, assignment, problem, user):
     submissions_path = f"/submissions/{course}/{assignment}/{problem}/{user}/*"
     num_submissions = 0
     for submission in glob.glob(submissions_path):
@@ -211,9 +218,10 @@ def get_next_submission_title(course, assignment, problem, user):
     return num_submissions + 1
 
 def save_submission(course, assignment, problem, user, code, output, passed, date):
-    title = get_next_submission_title(course, assignment, problem, user)
-    submission_dict = {"title": title, "code": code, "output": output, "passed": passed, "date": date}
-    file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{title}.yaml"
+    id = get_next_submission_id(course, assignment, problem, user)
+    user = user.decode()
+    submission_dict = {"id": id, "code": code, "output": output, "passed": passed, "date": date, "user": user}
+    file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{id}.yaml"
     write_file(convert_dict_to_yaml(submission_dict), file_path)
 
 def delete_problem(problem_basics):

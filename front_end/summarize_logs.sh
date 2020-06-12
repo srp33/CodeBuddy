@@ -1,8 +1,6 @@
 #! /bin/bash
 
 in_file_prefix="/logs/codebuddy.log"
-touch ${in_file_prefix}
-#num_rows_newest_file="$(wc -l ${in_file_prefix} | cut -d' ' -f1)"
 out_dir=/logs/summarized
 temp_file=$(mktemp)
 
