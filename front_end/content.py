@@ -163,7 +163,6 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
             problem_dict["data_urls"] = "\n".join([x[0] for x in problem_dict["data_urls_info"]])
 
         # This was added later, so adding it for backward compatibility
-        
         if "answer_description" not in problem_dict:
             problem_dict["answer_description"] = ""
         if "show_answer" not in problem_dict:
@@ -220,10 +219,9 @@ def get_next_submission_id(course, assignment, problem, user):
     return num_submissions + 1
 
 def save_submission(course, assignment, problem, user, code, output, passed, date):
-    id = get_next_submission_id(course, assignment, problem, user)
-    user = user.decode()
-    submission_dict = {"id": id, "code": code, "output": output, "passed": passed, "date": date, "user": user}
-    file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{id}.yaml"
+    submission_id = get_next_submission_id(course, assignment, problem, user)
+    submission_dict = {"id": submission_id, "code": code, "output": output, "passed": passed, "date": date, "user": user}
+    file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{submission_id}.yaml"
     write_file(convert_dict_to_yaml(submission_dict), file_path)
 
 def delete_problem(problem_basics):
