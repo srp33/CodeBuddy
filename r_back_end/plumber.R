@@ -20,14 +20,15 @@ function(res, code, timeout_seconds, output_type) {
     env = environment()
 
     local({
+        tmp_dir_path = paste0("/tmp/", create_id())
+
         tryCatch({
-            #setTimeLimit(elapsed = timeout_seconds, transient = TRUE)
+            setTimeLimit(elapsed = timeout_seconds, transient = TRUE)
             #on.exit(setTimeLimit(Inf, Inf, FALSE))
 
             lockEnvironment(env, binding=TRUE)
 
-            tmp_dir_path = paste0("/tmp/", create_id())
-            on.exit(unlink(tmp_dir_path, recursive=TRUE, force=TRUE))
+            #on.exit(unlink(tmp_dir_path, recursive=TRUE, force=TRUE))
             dir.create(tmp_dir_path)
             setwd(tmp_dir_path)
 
@@ -42,6 +43,9 @@ function(res, code, timeout_seconds, output_type) {
             res$body <- paste0("Error: ", err$message)
             res$status <- 400
         }, finally = {
+            setwd("/")
+            unlink(tmp_dir_path, recursive=TRUE, force=TRUE)
+            setTimeLimit(Inf, Inf, FALSE)
         })
     })
 

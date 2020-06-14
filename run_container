@@ -15,7 +15,8 @@ then
   tag=version$(cat VERSION)
 fi
 
-docker rm $(docker stop $(docker ps -a -q --filter ancestor=${image_name} --format="{{.ID}}") 2> /dev/null) 2> /dev/null
+#docker rm $(docker stop $(docker ps -a -q --filter ancestor=${image_name} --format="{{.ID}}") 2> /dev/null) 2> /dev/null
+docker container stop ${subdir_name} 2> /dev/null
 
 set -o errexit
 
@@ -27,6 +28,7 @@ docker build -t ${image_name} -f ${subdir_name}/Containerfile .
 docker run -i -t \
   --rm \
   --read-only \
+  --name ${subdir_name} \
   ${run_args} \
   ${image_name}
 
