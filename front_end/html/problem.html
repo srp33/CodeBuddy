@@ -16,7 +16,7 @@
 
               <ul>
               {% for item in problem_details["data_urls_info"] %}
-                  <li><a href="{{ item[0] }}">{{ item[0] }}</a> (<a href="/data/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ item[1] }}">cached version</a>)</li>
+                <li><a href="{{ item[0] }}">{{ item[0] }}</a> (<a href="/data/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ item[1] }}">cached version</a>)</li>
               {% end %}
               </ul>
             {% end %}
@@ -125,7 +125,7 @@
                         {
                             result = "<div class='notification is-success'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
                             {% if problem_details["show_answer"] %}
-                                result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'> here </a> to view the instructor's answer.</p>"; 
+                                result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p>"; 
                             {% end %}
                             {% if "next_problem" in globals() and next_problem %}
                                 result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
@@ -213,6 +213,8 @@
                 <p class="control"><button class="button is-primary is-large is-halfwidth" onclick='check_code()'>Submit</button></p>
             </div>
 
+            <p><div id="result"></div></p>
+
             {% if problem_details["show_expected"] %}
               <h2>Expected output:</h2>
                 {% if problem_details["output_type"] == "txt" %}
@@ -224,8 +226,6 @@
               <p><em>This problem is configured so that the expected output is not shown.</em></p>
             {% end %}
 
-            <p><div id="result"></div></p>
-
             <p><span id="code_output"></span></p>
             <p><span id="diff_output"></span></p>
 
@@ -234,8 +234,6 @@
             {% end %}
 
             <p>
-              <a href="/course/{{ course_basics["id"] }}">Course home</a> |
-              <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a> |
               <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
             </p>
         {% else %}

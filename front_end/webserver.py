@@ -34,7 +34,7 @@ def make_app():
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
-        url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
+        url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
         url(r"/login(/.+)", LoginHandler, name="login"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
@@ -336,10 +336,10 @@ class EditProblemHandler(BaseUserHandler):
                         for data_url in set(problem_details["data_urls"].split("\n")):
                             data_url = data_url.strip()
                             if data_url != "":
-                                contents, content_type = download_file(data_url)
-                                md5_hash = create_md5_hash(data_url)
-                                write_data_file(contents, md5_hash)
-                                problem_details["data_urls_info"].append([data_url, md5_hash, content_type])
+                                contents, content_type, extension = download_file(data_url)
+                                file_name = create_md5_hash(data_url) + extension
+                                write_data_file(contents, file_name)
+                                problem_details["data_urls_info"].append([data_url, file_name, content_type])
 
                         expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
 
@@ -408,7 +408,6 @@ class CheckProblemHandler(BaseUserHandler):
             out_dict["diff_output"] = diff_output
 
             save_submission(course, assignment, problem, user, code, code_output, passed, date)
-
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -436,17 +435,17 @@ class RunCodeHandler(BaseUserHandler):
 
         self.write(json.dumps(out_dict))
 
-class DataHandler(BaseUserHandler):
-    async def get(self, course, assignment, problem, md5_hash):
-        data_file_path = get_downloaded_file_path(md5_hash)
+class DataHandler(RequestHandler):
+    async def get(self, course, assignment, problem, file_name):
+        data_file_path = get_downloaded_file_path(file_name)
 
         problem_details = get_problem_details(course, assignment, problem)
 
-        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[md5_hash]
+        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
         self.set_header('Content-type', content_type)
 
         if not os.path.exists(data_file_path) or is_old_file(data_file_path):
-            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[md5_hash]
+            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[file_name]
 
             ## Check to see whether the request came from the server or the user's computer
             #this_host = self.request.headers.get("Host")
@@ -462,7 +461,7 @@ class DataHandler(BaseUserHandler):
 
         self.write(read_file(data_file_path))
 
-class ViewAnswerHandler(RequestHandler):
+class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))

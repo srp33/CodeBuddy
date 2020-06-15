@@ -6,7 +6,7 @@ for (l in libraries)
 #* @get /hello
 #' @html
 function(res) {
-    return(paste0("Hello, world"))
+    return("Hello, world")
 }
 
 #* Execute code to generate text output.

@@ -55,6 +55,9 @@ def is_old_file(file_path, days=30):
     return age_in_days > days
 
 def convert_markdown_to_html(text):
+    if len(text) == 0:
+        return ""
+
     markdown = Markdown()
     html = markdown.convert(text)
     html = re.sub(r"<a href=\"(.+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html)
@@ -92,14 +95,14 @@ def exec_code(env_dict, code, problem_basics, problem_details, request=None):
         settings_dict = env_dict[problem_details["environment"]]
 
         if request:
-            for url, md5_hash in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
+            for url, file_name in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
                 cache_url = "{}://{}/data/{}/{}/{}/{}".format(
                     request.protocol,
                     request.host,
                     problem_basics["assignment"]["course"]["id"],
                     problem_basics["assignment"]["id"],
                     problem_basics["id"],
-                    md5_hash)
+                    file_name)
                 code = code.replace(url, cache_url)
 
         timeout = settings_dict["timeout_seconds"] + 2
@@ -204,23 +207,30 @@ def create_md5_hash(my_string):
 
 def download_file(url):
     response = requests.get(url)
+
     if 'Content-type' in response.headers:
         content_type = response.headers['Content-type']
     else:
         content_type = "text/plain"
 
-    return response.content, content_type
+    return response.content, content_type, get_url_extension(url)
 
-def get_downloaded_file_path(md5_hash):
-    return "/data/{}".format(md5_hash)
+def get_url_extension(url):
+    file_name = os.path.basename(url)
+    if "." in file_name:
+        return "." + file_name.split(".")[-1]
+    return ""
 
-def write_data_file(contents, md5_hash):
+def get_downloaded_file_path(file_name):
+    return "/data/{}".format(file_name)
+
+def write_data_file(contents, file_name):
     # First delete any old files to prevent stale file buildup
     for f in glob.glob("/data/*"):
         if is_old_file(f):
             os.remove(f)
 
-    write_file(contents, get_downloaded_file_path(md5_hash), "wb")
+    write_file(contents, get_downloaded_file_path(file_name), "wb")
 
 def show_hidden(request_handler):
     if "show_hidden" not in request_handler.request.query_arguments:
