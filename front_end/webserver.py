@@ -34,7 +34,7 @@ def make_app():
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
-        url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
+        url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
         url(r"/login(/.+)", LoginHandler, name="login"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
@@ -58,12 +58,6 @@ class HomeHandler(RequestHandler):
             self.render("home.html", courses=get_courses(show_hidden(self)), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
-    def get_current_user(self):
-        user_id = self.get_secure_cookie("user_id")
-        if user_id:
-            return "user: {}".format(user_id.decode())
-        else:
-            return self.request.remote_ip
 
 class BaseUserHandler(RequestHandler):
     def prepare(self):
@@ -326,6 +320,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["data_urls"] = self.get_body_argument("data_urls").strip().replace("\r", "")
             problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
             problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
+            problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             problem_details["expected_output"] = ""
             problem_details["data_urls_info"] = []
 
@@ -341,10 +336,10 @@ class EditProblemHandler(BaseUserHandler):
                         for data_url in set(problem_details["data_urls"].split("\n")):
                             data_url = data_url.strip()
                             if data_url != "":
-                                contents, content_type = download_file(data_url)
-                                md5_hash = create_md5_hash(data_url)
-                                write_data_file(contents, md5_hash)
-                                problem_details["data_urls_info"].append([data_url, md5_hash, content_type])
+                                contents, content_type, extension = download_file(data_url)
+                                file_name = create_md5_hash(data_url) + extension
+                                write_data_file(contents, file_name)
+                                problem_details["data_urls_info"].append([data_url, file_name, content_type])
 
                         expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
 
@@ -413,7 +408,6 @@ class CheckProblemHandler(BaseUserHandler):
             out_dict["diff_output"] = diff_output
 
             save_submission(course, assignment, problem, user, code, code_output, passed, date)
-            
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -435,23 +429,23 @@ class RunCodeHandler(BaseUserHandler):
 
             out_dict["code_output"] = format_output_as_html(code_output)
             out_dict["error_occurred"] = error_occurred
-        
+
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
 
-class DataHandler(BaseUserHandler):
-    async def get(self, course, assignment, problem, md5_hash):
-        data_file_path = get_downloaded_file_path(md5_hash)
+class DataHandler(RequestHandler):
+    async def get(self, course, assignment, problem, file_name):
+        data_file_path = get_downloaded_file_path(file_name)
 
         problem_details = get_problem_details(course, assignment, problem)
 
-        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[md5_hash]
+        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
         self.set_header('Content-type', content_type)
 
         if not os.path.exists(data_file_path) or is_old_file(data_file_path):
-            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[md5_hash]
+            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[file_name]
 
             ## Check to see whether the request came from the server or the user's computer
             #this_host = self.request.headers.get("Host")
@@ -467,7 +461,7 @@ class DataHandler(BaseUserHandler):
 
         self.write(read_file(data_file_path))
 
-class ViewAnswerHandler(RequestHandler):
+class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
@@ -484,25 +478,29 @@ class OutputTypesHandler(RequestHandler):
 
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
-        content_type = "text/css"
-        read_mode = "r"
+        file_path = f"/static/{file_name}"
+
         if file_name.endswith(".html"):
-            content_type = "text/html"
-        elif file_name.endswith(".js"):
-            content_type = "text/javascript"
-        elif file_name.endswith(".png"):
-            content_type = "image/png"
-            read_mode = "rb"
-        elif file_name.endswith(".ico"):
-            content_type = "image/x-icon"
-            read_mode = "rb"
-        elif file_name.endswith(".webmanifest"):
-            content_type = "application/json"
+            self.render(file_path, user_logged_in=False)
+        else:
+            content_type = "text/css"
+            read_mode = "r"
 
-        file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
+            if file_name.endswith(".js"):
+                content_type = "text/javascript"
+            elif file_name.endswith(".png"):
+                content_type = "image/png"
+                read_mode = "rb"
+            elif file_name.endswith(".ico"):
+                content_type = "image/x-icon"
+                read_mode = "rb"
+            elif file_name.endswith(".webmanifest"):
+                content_type = "application/json"
 
-        self.set_header('Content-type', content_type)
-        self.write(file_contents)
+            file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
+
+            self.set_header('Content-type', content_type)
+            self.write(file_contents)
 
 class LoginHandler(RequestHandler):
     async def get(self, target_path):
@@ -558,7 +556,7 @@ class LogoutHandler(BaseUserHandler):
 #                scope=['profile', 'email'],
 #                response_type='code',
 #                extra_params={'approval_prompt': 'auto'})
-	
+
 # See https://quanttype.net/posts/2020-02-05-request-id-logging.html
 class LoggingFilter(logging.Filter):
     def filter(self, record):

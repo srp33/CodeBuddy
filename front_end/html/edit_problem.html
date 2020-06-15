@@ -20,7 +20,8 @@
     <p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this problem." value="{{ problem_basics["title"] }}" autofocus /></p>
 
     <p><strong>Instructions*: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions">{{ problem_details["instructions"] }}</textarea></p>
+    <p>Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this problem.</p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
 
     <p><strong>Environment: </strong>
       <div class="select is-info">
@@ -66,8 +67,9 @@
     <p><strong>Answer code*: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea></p>
     
-    <p><strong>Answer description:</strong></string></p>  
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
+    <p><strong>Answer description:</strong></string></p> 
+    <p>Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide a description." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
 
     <p><strong>Test code: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea></p>
@@ -82,7 +84,8 @@
     {% end %}
 
     <p><strong>Credit: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If anyone should be given credit for creating this problem, please indicate that." rows="4" name="credit">{{ problem_details["credit"] }}</textarea></p>
+    <p>If anyone should be given credit for creating this problem, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write the credit statement here." rows="4" name="credit" style="font-family:monospace">{{ problem_details["credit"] }}</textarea></p>
 
     <p><strong>Data URLs: </strong><br />
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls" style="font-family:monospace">{{ problem_details["data_urls"] }}</textarea></p>
@@ -115,6 +118,20 @@
       </div>
     </p>
 
+    <p><strong>Allow students to view answer code once they correctly solve the problem: </strong>
+      <div class="select is-info">
+        <select name="show_answer">
+          {% if problem_details["show_answer"] %}
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+            <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
+
     <p><strong>Visible: </strong>
       <div class="select is-info">
         <select name="is_visible">
@@ -134,13 +151,9 @@
     <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
     <p>
-      <a href="/">Home</a> |
-      <a href="/course/{{ course_basics["id"] }}">Course home</a> |
-      <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a>
-
       {% if problem_basics["exists"] %}
-        | <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a>
-        | <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a>
+        <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a> |
+        <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a>
       {% end %}
     </p>
 

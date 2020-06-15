@@ -16,7 +16,7 @@
 
               <ul>
               {% for item in problem_details["data_urls_info"] %}
-                  <li><a href="{{ item[0] }}">{{ item[0] }}</a> (<a href="/data/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ item[1] }}">cached version</a>)</li>
+                <li><a href="{{ item[0] }}">{{ item[0] }}</a> (<a href="/data/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ item[1] }}">cached version</a>)</li>
               {% end %}
               </ul>
             {% end %}
@@ -30,21 +30,21 @@
             <script>
             function run_code()
             {
-              user_code = editor.getValue();
-              if (user_code.trim() == "")
+                user_code = editor.getValue();
+                if (user_code.trim() == "")
                     return false;
 
-              result_div = document.getElementById("result");
-              result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
-              result_div.scrollIntoView();
-              document.getElementById("code_output").innerHTML = "";
-              document.getElementById("diff_output").innerHTML = "";
+                result_div = document.getElementById("result");
+                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
+                result_div.scrollIntoView();
+                document.getElementById("code_output").innerHTML = "";
+                document.getElementById("diff_output").innerHTML = "";
 
-              post_data = { "user_code": user_code };
+                post_data = { "user_code": user_code };
 
-              $.post("/run_code/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
-                  post_data,
-                  function(data, status){
+                $.post("/run_code/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                    post_data,
+                    function(data, status){
                         var json_data = JSON.parse(data);
                         var code_output = "<h2>Your output:</h2>\n\n";
                         var result = "";
@@ -71,8 +71,11 @@
 
                         document.getElementById("code_output").innerHTML = code_output;
                         document.getElementById("result").innerHTML = result;
-                  })
-                  return false;
+                    })
+
+                editor.focus();
+
+                return false;
             }
 
             function check_code()
@@ -88,7 +91,7 @@
                 document.getElementById("code_output").innerHTML = "";
                 document.getElementById("diff_output").innerHTML = "";
 
-                post_data = { "user_code": user_code, "date": new Date() };
+                post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
 
                 $.post("/check_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
                     post_data,
@@ -121,8 +124,9 @@
                         if (json_data.passed)
                         {
                             result = "<div class='notification is-success'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
-                            result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'> here </a> to view the instructor's answer.</p>"; 
-                             
+                            {% if problem_details["show_answer"] %}
+                                result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p>"; 
+                            {% end %}
                             {% if "next_problem" in globals() and next_problem %}
                                 result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
                             {% end %}
@@ -153,15 +157,40 @@
                         document.getElementById("diff_output").innerHTML = diff_output;
                         document.getElementById("result").innerHTML = result;
                     });
-                document.getElementById("user_code").value = ""
+
+                editor.focus();
+
                 return false;
             }
 
+            function modify_auto_complete() {
+              ac_box = document.getElementById("auto_complete");
+
+              if (ac_box.checked) {
+                editor.setOptions({
+                enableBasicAutocompletion: false,
+                enableSnippets: true,
+                enableLiveAutocompletion: true
+                });
+              }
+              else {
+                editor.setOptions({
+                enableBasicAutocompletion: false,
+                enableSnippets: false,
+                enableLiveAutocompletion: false
+                });
+              }
+            }
             </script>
 
             <h2>Your code:</h2>
 
-            <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace" autofocus></textarea></p>
+            <p>
+                <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
+                <label class="checkbox is-pulled-right">
+                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="modify_auto_complete()">
+                </label>
+            </p>
 
             <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
             <script src="/static/mode-r.js" type="text/javascript"></script>
@@ -170,22 +199,21 @@
               ace.require("ace/ext/language_tools");
               var editor = ace.edit("user_code", {
                 theme: "ace/theme/tomorrow",
-                //mode: "ace/mode/r",
                 autoScrollEditorIntoView: true,
-                minLines: 20
+                minLines: 20,
+                fontSize: "12pt"
               });
+              editor.focus();
               editor.getSession().setMode("{{ code_completion_path }}");
-              editor.setOptions({
-                fontSize: "12pt",
-                enableBasicAutocompletion: false,
-                enableSnippets: true,
-                enableLiveAutocompletion: true
-              });
+              modify_auto_complete();
             </script>
 
-            <p><a class="button is-info is-large is-fullwidth" onclick='run_code()'>Run Code</a></p>
+            <div class="field is-grouped">
+                <p class="control"><button class="button is-primary is-light is-large is-halfwidth" onclick='run_code()'>Run Code</button></p>
+                <p class="control"><button class="button is-primary is-large is-halfwidth" onclick='check_code()'>Submit</button></p>
+            </div>
 
-            <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
+            <p><div id="result"></div></p>
 
             {% if problem_details["show_expected"] %}
               <h2>Expected output:</h2>
@@ -198,8 +226,6 @@
               <p><em>This problem is configured so that the expected output is not shown.</em></p>
             {% end %}
 
-            <p><div id="result"></div></p>
-
             <p><span id="code_output"></span></p>
             <p><span id="diff_output"></span></p>
 
@@ -208,9 +234,6 @@
             {% end %}
 
             <p>
-              <a href="/">Home</a> |
-              <a href="/course/{{ course_basics["id"] }}">Course home</a> |
-              <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Assignment home</a> |
               <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
             </p>
         {% else %}
