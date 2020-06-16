@@ -17,10 +17,10 @@
   {% if assignment_basics["exists"] %}
     <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
 
-    <p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this problem." value="{{ problem_basics["title"] }}" autofocus /></p>
+    <p><strong>Title*: </strong></p>
+    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1" style="font-family:monospace">{{ problem_basics["title"] }}</textarea></p>
 
-    <p><strong>Instructions*: </strong><br />
-    <p>Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this problem.</p>
+    <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this problem.</p>
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
 
     <p><strong>Environment: </strong>
@@ -64,15 +64,14 @@
         });
     </script>
 
-    <p><strong>Answer code*: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea></p>
+    <p><strong>Answer code*: </strong></p>
+    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea></p>
     
-    <p><strong>Answer description:</strong></string></p> 
-    <p>Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
+    <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide a description." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
 
-    <p><strong>Test code: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea></p>
+    <p><strong>Test code: </strong></p>
+    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea></p>
 
     {% if problem_basics["exists"] %}
       <p><strong>Expected output:</strong><br />
@@ -83,12 +82,11 @@
       {% end %}
     {% end %}
 
-    <p><strong>Credit: </strong><br />
-    <p>If anyone should be given credit for creating this problem, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a></p>
+    <p><strong>Credit: </strong><br />If anyone should be given credit for creating this problem, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a></p>
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write the credit statement here." rows="4" name="credit" style="font-family:monospace">{{ problem_details["credit"] }}</textarea></p>
 
-    <p><strong>Data URLs: </strong><br />
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls" style="font-family:monospace">{{ problem_details["data_urls"] }}</textarea></p>
+    <p><strong>Data URLs: </strong></p>
+    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls" style="font-family:monospace">{{ problem_details["data_urls"] }}</textarea></p>
 
     <p><strong>Show expected output: </strong>
       <div class="select is-info">
@@ -146,7 +144,8 @@
       </div>
     </p>
 
-    <p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
+    <p><strong>Password: </strong></p>
+    <p><textarea name="password" class="textarea is-info is-normal is-medium is-fullwidth" type="password" placeholder="Please enter password" rows="1" style="font-family:monospace"></textarea></p>
 
     <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
