@@ -1,0 +1,13 @@
+<h4>Users with administrator status for this course:</h4>
+{% for user in administrators %}
+    <li>{{ user }}</li>
+{% end %}
+<p><a class="button is-info is-medium" onclick='add_administrator()'>Add User</a>
+<a class="button is-info is-medium" onclick='remove_administrator()'>Remove User</a></p>
+
+<h4>Users with instructor status for this course:</h4>
+{% for user in instructors %}
+    <li>{{ user }}</li>
+{% end %}
+<p><a class="button is-info is-medium" onclick='add_instructor()'>Add User</a>
+    <a class="button is-info is-medium" onclick='remove_instructor()'>Remove User</a></p>

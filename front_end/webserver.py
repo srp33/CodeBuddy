@@ -33,6 +33,7 @@ def make_app():
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"\/edit_permissions\/([^\/]+)", EditPermissionsHandler, name="edit_permissions"),
+        url(r"\/permissions\/([^\/]+)", PermissionsHandler, name="permissions"),
         url(r"/static/([^\/]+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
         url(r"/login(/.+)", LoginHandler, name="login"),
@@ -79,14 +80,14 @@ class CourseHandler(BaseUserHandler):
     def get(self, course):
         try:
             show = show_hidden(self)
-            self.render("course.html", courses=get_courses(show), assignments=get_assignments(course, show), course_basics=get_course_basics(course), course_details=get_course_details(course, True))
+            self.render("course.html", courses=get_courses(show), assignments=get_assignments(course, show), course_basics=get_course_basics(course), course_details=get_course_details(course, True), administrators=admin_dict["administrators"], instructor_dict=inst_dict, user_id = self.get_current_user())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
-            self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None)
+            self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None, administrators=admin_dict["administrators"], instructor_dict=inst_dict)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -449,6 +450,13 @@ class OutputTypesHandler(RequestHandler):
             self.write("\n".join(["txt"]))
 
 class EditPermissionsHandler(RequestHandler):
+    def get(self, course):
+        try:
+            self.render("edit_permissions.html", courses=get_courses(), course_basics=get_course_basics(course), administrators=admin_dict["administrators"], instructor_dict=inst_dict )
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class PermissionsHandler(RequestHandler):
     def get(self, course):
         try:
             self.render("permissions.html", courses=get_courses(), course_basics=get_course_basics(course), administrators=admin_dict["administrators"], instructor_dict=inst_dict )
