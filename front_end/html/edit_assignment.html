@@ -17,10 +17,11 @@
 {% if course_basics["exists"] %}
   <form method="post" action="/edit_assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}" />
 
-  <p><strong>Title: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this assignment." value="{{ assignment_basics["title"] }}" autofocus /></p>
+  <p><strong>Title: </strong></p>
+  <textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this assignment." rows="1">{{ assignment_basics["title"] }}</textarea></p>
 
-  <p><strong>Introduction: </strong><br />
-  <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" name="introduction">{{ assignment_details["introduction"] }}</textarea></p>
+  <p><strong>Introduction: </strong></p>
+  <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" name="introduction">{{ assignment_details["introduction"] }}</textarea></p>
 
   <p><strong>Visible: </strong>
     <div class="select is-info">
@@ -36,7 +37,8 @@
     </div>
   </p>
 
-  <p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
+  <p><strong>Password: </strong></p>
+  <p><textarea name="password" class="textarea is-info is-normal is-medium is-fullwidth" type="password" placeholder="Please enter password" rows="1"></textarea></p>
 
   <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
