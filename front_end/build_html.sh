@@ -18,6 +18,7 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html delete_problem.html container_bottom_other.html container_bottom_all.html footer.html > /app/delete_problem.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html view_answer.html container_bottom_other.html container_bottom_all.html footer.html > /app/view_answer.html
 cat header.html navbar_top.html navbar_course.html navbar_bottom.html container_top.html permissions.html container_bottom_other.html container_bottom_all.html footer.html > /app/permissions.html
+cat header.html navbar_top.html navbar_course.html navbar_bottom.html container_top.html edit_permissions.html container_bottom_other.html container_bottom_all.html footer.html > /app/edit_permissions.html
 
 cat header.html container_top.html error.html container_bottom_other.html container_bottom_all.html footer.html > /app/error.html
 

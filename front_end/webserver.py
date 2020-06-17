@@ -33,8 +33,7 @@ def make_app():
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
-        url(r"\/edit_permissions\/([^\/]+)", EditPermissionsHandler, name="edit_permissions"),
-        url(r"\/permissions\/([^\/]+)", PermissionsHandler, name="permissions"),
+        #url(r"\/edit_permissions\/([^\/]+)", EditPermissionsHandler, name="edit_permissions"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
         url(r"/login(/.+)", LoginHandler, name="login"),
@@ -81,16 +80,31 @@ class CourseHandler(BaseUserHandler):
     def get(self, course):
         try:
             show = show_hidden(self)
-            self.render("course.html", courses=get_courses(show), assignments=get_assignments(course, show), course_basics=get_course_basics(course), course_details=get_course_details(course, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("course.html", courses=get_courses(show), assignments=get_assignments(course, show), course_basics=get_course_basics(course), course_details=get_course_details(course, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), administrators=admin_dict, instructor_dict=inst_dict)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
-        try:
-            self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
+        is_instructor = False
+        is_admin = False
+        user_id = inst_dict["user_id"]
+        if user_id in admin_dict:
+            is_admin = True
+        elif inst_dict["role"] == "instructor":
+            is_instructor = True
+        
+        if is_admin == True or is_instructor == True:
+            try:
+                self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            except Exception as inst:
+                render_error(self, traceback.format_exc())
+        else:
+            try:
+                show = show_hidden(self)
+                self.render("permissions.html", courses=get_courses(show), course_basics=get_course_basics(course))
+            except Exception as inst:
+                render_error(self, traceback.format_exc())
 
     def post(self, course):
         try:
@@ -580,6 +594,8 @@ if __name__ == "__main__":
         #TODO: Use something other than the password. Store in a file?
         application.settings["cookie_secret"] = password
         env_dict = get_environments()
+        admin_dict = get_administrators()
+        inst_dict = get_instructors()
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))
