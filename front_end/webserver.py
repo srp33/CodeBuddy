@@ -30,12 +30,13 @@ def make_app():
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
+        url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"\/edit_permissions\/([^\/]+)", EditPermissionsHandler, name="edit_permissions"),
         url(r"\/permissions\/([^\/]+)", PermissionsHandler, name="permissions"),
-        url(r"/static/([^\/]+)", StaticFileHandler, name="static_file"),
-        url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DataHandler, name="data"),
+        url(r"/static/(.+)", StaticFileHandler, name="static_file"),
+        url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
         url(r"/login(/.+)", LoginHandler, name="login"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
@@ -44,50 +45,50 @@ def make_app():
 
 class HomeHandler(RequestHandler):
     def prepare(self):
-        user_id_var.set(self.get_current_user().replace("user: ", ""))
+        raw_current_user_id = self.get_secure_cookie("user_id")
+
+        # Set context variables depending on whether the user is logged in.
+        if raw_current_user_id:
+            user_id_var.set(raw_current_user_id.decode())
+            user_logged_in_var.set(True)
+        else:
+            user_id_var.set(self.request.remote_ip)
+            user_logged_in_var.set(False)
 
     def get(self):
         try:
-            user_logged_in = False
-            if self.get_current_user().startswith("user: "):
-                user_logged_in = True
-
-            self.render("home.html", courses=get_courses(show_hidden(self)), user_logged_in=user_logged_in)
+            self.render("home.html", courses=get_courses(show_hidden(self)), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def get_current_user(self):
+class BaseUserHandler(RequestHandler):
+    def prepare(self):
         user_id = self.get_secure_cookie("user_id")
 
         if user_id:
-            return "user: {}".format(user_id.decode())
-        else:
-            return self.request.remote_ip
-
-class BaseUserHandler(RequestHandler):
-    def prepare(self):
-        user_id = self.get_current_user()
-
-        if user_id:
             user_id_var.set(user_id.decode())
+            user_logged_in_var.set(True)
         else:
+            user_id_var.set(self.request.remote_ip)
+            user_logged_in_var.set(False)
+
             self.redirect("/login{}".format(self.request.path))
 
     def get_current_user(self):
-        return self.get_secure_cookie("user_id")
+        return user_id_var.get()
 
 class CourseHandler(BaseUserHandler):
     def get(self, course):
         try:
             show = show_hidden(self)
-            self.render("course.html", courses=get_courses(show), assignments=get_assignments(course, show), course_basics=get_course_basics(course), course_details=get_course_details(course, True), administrators=admin_dict["administrators"], instructor_dict=inst_dict, user_id = self.get_current_user())
+            self.render("course.html", courses=get_courses(show), assignments=get_assignments(course, show), course_basics=get_course_basics(course), course_details=get_course_details(course, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
-            self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None, administrators=admin_dict["administrators"], instructor_dict=inst_dict)
+            self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -119,14 +120,14 @@ class EditCourseHandler(BaseUserHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("edit_course.html", courses=courses, assignments=get_assignments(course), course_basics=course_basics, course_details=course_details, result=result)
+            self.render("edit_course.html", courses=courses, assignments=get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class DeleteCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
-            self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=None)
+            self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -141,14 +142,14 @@ class DeleteCourseHandler(BaseUserHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=result)
+            self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class ImportCourseHandler(BaseUserHandler):
     def get(self):
         try:
-            self.render("import_course.html", result=None)
+            self.render("import_course.html", result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -191,7 +192,7 @@ class ImportCourseHandler(BaseUserHandler):
             else:
                 result = "Error: The uploaded file was not recognized as a zip file."
 
-            self.render("import_course.html", result=result)
+            self.render("import_course.html", result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -222,14 +223,14 @@ class AssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
             show = show_hidden(self)
-            self.render("assignment.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=get_problems(course, assignment, show), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True))
+            self.render("assignment.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=get_problems(course, assignment, show), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
-            self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment), result=None)
+            self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -256,14 +257,14 @@ class EditAssignmentHandler(BaseUserHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, result=result)
+            self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class DeleteAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
-            self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None)
+            self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -278,18 +279,19 @@ class DeleteAssignmentHandler(BaseUserHandler):
             else:
                 result = "Error: Invalid password."
 
-            self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result)
+            self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class ProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
+            user = self.get_current_user()
             show = show_hidden(self)
             problems = get_problems(course, assignment, show)
             problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True)
 
-            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"])
+            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -297,7 +299,7 @@ class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             problems = get_problems(course, assignment)
-            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=None)
+            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -336,10 +338,10 @@ class EditProblemHandler(BaseUserHandler):
                         for data_url in set(problem_details["data_urls"].split("\n")):
                             data_url = data_url.strip()
                             if data_url != "":
-                                contents, content_type = download_file(data_url)
-                                md5_hash = create_md5_hash(data_url)
-                                write_data_file(contents, md5_hash)
-                                problem_details["data_urls_info"].append([data_url, md5_hash, content_type])
+                                contents, content_type, extension = download_file(data_url)
+                                file_name = create_md5_hash(data_url) + extension
+                                write_data_file(contents, file_name)
+                                problem_details["data_urls_info"].append([data_url, file_name, content_type])
 
                         expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
 
@@ -357,7 +359,7 @@ class EditProblemHandler(BaseUserHandler):
                             result = "Success: The problem was saved!"
 
             problems = get_problems(course, assignment)
-            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=result)
+            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -365,7 +367,7 @@ class DeleteProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             problems = get_problems(course, assignment)
-            self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=None)
+            self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -381,16 +383,19 @@ class DeleteProblemHandler(BaseUserHandler):
                 result = "Error: Invalid password."
 
             problems = get_problems(course, assignment)
-            self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=result)
+            self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class CheckProblemHandler(BaseUserHandler):
     async def post(self, course, assignment, problem):
+        user = self.get_current_user()
         code = self.get_body_argument("user_code").replace("\r", "")
+        date = self.get_body_argument("date")
 
         problem_basics = get_problem_basics(course, assignment, problem)
         problem_details = get_problem_details(course, assignment, problem)
+
         out_dict = {"error_occurred": True, "passed": False, "diff_output": ""}
 
         try:
@@ -403,22 +408,46 @@ class CheckProblemHandler(BaseUserHandler):
             out_dict["error_occurred"] = error_occurred
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
+
+            save_submission(course, assignment, problem, user, code, code_output, passed, date)
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
 
-class DataHandler(BaseUserHandler):
-    async def get(self, course, assignment, problem, md5_hash):
-        data_file_path = get_downloaded_file_path(md5_hash)
+class RunCodeHandler(BaseUserHandler):
+    async def post(self, course, assignment, problem):
+        user = self.get_current_user()
+        code = self.get_body_argument("user_code").replace("\r", "")
+
+        problem_basics = get_problem_basics(course, assignment, problem)
+        problem_details = get_problem_details(course, assignment, problem)
+
+        out_dict = {"error_occurred": True}
+
+        try:
+            code_output, error_occurred = exec_code(env_dict, code, problem_basics, problem_details, request=None)
+            code_output = code_output.decode()
+
+            out_dict["code_output"] = format_output_as_html(code_output)
+            out_dict["error_occurred"] = error_occurred
+
+        except Exception as inst:
+            out_dict["code_output"] = format_output_as_html(traceback.format_exc())
+
+        self.write(json.dumps(out_dict))
+
+class DataHandler(RequestHandler):
+    async def get(self, course, assignment, problem, file_name):
+        data_file_path = get_downloaded_file_path(file_name)
 
         problem_details = get_problem_details(course, assignment, problem)
 
-        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[md5_hash]
+        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
         self.set_header('Content-type', content_type)
 
         if not os.path.exists(data_file_path) or is_old_file(data_file_path):
-            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[md5_hash]
+            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[file_name]
 
             ## Check to see whether the request came from the server or the user's computer
             #this_host = self.request.headers.get("Host")
@@ -433,8 +462,8 @@ class DataHandler(BaseUserHandler):
             urllib.request.urlretrieve(url, data_file_path)
 
         self.write(read_file(data_file_path))
-        
-class ViewAnswerHandler(RequestHandler):
+
+class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
@@ -449,41 +478,31 @@ class OutputTypesHandler(RequestHandler):
             logging.error(self, traceback.format_exc())
             self.write("\n".join(["txt"]))
 
-class EditPermissionsHandler(RequestHandler):
-    def get(self, course):
-        try:
-            self.render("edit_permissions.html", courses=get_courses(), course_basics=get_course_basics(course), administrators=admin_dict["administrators"], instructor_dict=inst_dict )
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-class PermissionsHandler(RequestHandler):
-    def get(self, course):
-        try:
-            self.render("permissions.html", courses=get_courses(), course_basics=get_course_basics(course), administrators=admin_dict["administrators"], instructor_dict=inst_dict )
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
-        content_type = "text/css"
-        read_mode = "r"
+        file_path = f"/static/{file_name}"
+
         if file_name.endswith(".html"):
-            content_type = "text/html"
-        elif file_name.endswith(".js"):
-            content_type = "text/javascript"
-        elif file_name.endswith(".png"):
-            content_type = "image/png"
-            read_mode = "rb"
-        elif file_name.endswith(".ico"):
-            content_type = "image/x-icon"
-            read_mode = "rb"
-        elif file_name.endswith(".webmanifest"):
-            content_type = "application/json"
+            self.render(file_path, user_logged_in=False)
+        else:
+            content_type = "text/css"
+            read_mode = "r"
 
-        file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
+            if file_name.endswith(".js"):
+                content_type = "text/javascript"
+            elif file_name.endswith(".png"):
+                content_type = "image/png"
+                read_mode = "rb"
+            elif file_name.endswith(".ico"):
+                content_type = "image/x-icon"
+                read_mode = "rb"
+            elif file_name.endswith(".webmanifest"):
+                content_type = "application/json"
 
-        self.set_header('Content-type', content_type)
-        self.write(file_contents)
+            file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
+
+            self.set_header('Content-type', content_type)
+            self.write(file_contents)
 
 class LoginHandler(RequestHandler):
     async def get(self, target_path):
@@ -546,6 +565,12 @@ class LoggingFilter(logging.Filter):
         record.user_id = user_id_var.get("-")
         return True
 
+# See https://quanttype.net/posts/2020-02-05-request-id-logging.html
+class LoggingFilter(logging.Filter):
+    def filter(self, record):
+        record.user_id = user_id_var.get("-")
+        return True
+
 if __name__ == "__main__":
     if "PORT" in os.environ:
         application = make_app()
@@ -555,19 +580,19 @@ if __name__ == "__main__":
         #TODO: Use something other than the password. Store in a file?
         application.settings["cookie_secret"] = password
         env_dict = get_environments()
-        admin_dict = get_administrators()
-        inst_dict = get_instructors()
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))
         server.start(int(os.environ['NUM_PROCESSES']))
+
+        user_logged_in_var = contextvars.ContextVar("user_logged_in")
+        user_id_var = contextvars.ContextVar("user_id")
 
         # Set up logging
         options.log_file_prefix = "/logs/codebuddy.log"
         options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
         options.log_file_num_backups = 10
         parse_command_line()
-        user_id_var = contextvars.ContextVar("user_id")
         my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s %(user_id)s')
         logging_filter = LoggingFilter()
         for handler in logging.getLogger().handlers:
