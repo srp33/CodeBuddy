@@ -20,8 +20,9 @@
   <p><strong>Title: </strong></p>
   <textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this assignment." rows="1">{{ assignment_basics["title"] }}</textarea></p>
 
-  <p><strong>Introduction: </strong></p>
-  <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" name="introduction">{{ assignment_details["introduction"] }}</textarea></p>
+  <p><strong>Introduction: </strong><br />
+  <p>Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
+  <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" name="introduction" style="font-family:monospace">{{ assignment_details["introduction"] }}</textarea></p>
 
   <p><strong>Visible: </strong>
     <div class="select is-info">
@@ -43,11 +44,9 @@
   <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
   <p>
-      <a href="/">Home</a> |
-      <a href="/course/{{ course_basics["id"] }}">Course home</a>
       {% if assignment_basics["exists"] %}
-          | <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Done editing</a>
-          | <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
+          <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Done editing</a> |
+          <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
       {% end %}
   </p>
   </form>

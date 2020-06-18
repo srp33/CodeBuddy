@@ -1,24 +1,19 @@
-<section class="section section-padding-medium">
-    <div class="content is-medium">
-      {% if problem_basics["exists"] %}
-        <p>
-          <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to Problem</a>
-        </p>
-        <h4>Answer Code:</h4>
+{% if problem_basics["exists"] %}
+    <h2>Answer code:</h2>
 
-        <p>
-          <pre>
-            {{ problem_details["answer_code"]}}
-          </pre>
-        </p>
+    <pre>{{ problem_details["answer_code"]}}</pre>
 
-        {% if len(problem_details["answer_description"]) > 0 %}
-          <h4>Instructor's comments</h4>
-          <p>{{ problem_details["answer_description"] }}</p>
-        {% end %}
 
-      {% else %}
-        <p>This problem does not have a solution from the instructor.</p>
-      {% end %}
-    </div>
-</section>
+    {% if len(problem_details["answer_description"]) > 0 %}
+        <h2>Instructor's comments:</h2>
+
+        <p>{{ problem_details["answer_description"] }}</p>
+    {% end %}
+
+    <p>
+        <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to problem</a>
+    </p>
+
+{% else %}
+    <p>This problem does not exist.</p>
+{% end %}

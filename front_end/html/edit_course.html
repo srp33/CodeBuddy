@@ -19,8 +19,9 @@
 <p><strong>Title: </strong></p>
 <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this course." rows="1">{{ course_basics["title"] }}</textarea><br /><font color="gray">The title can only contain alphanumeric characters and spaces.</font></p>
 
-<p><strong>Introduction: </strong></p>
-<p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this course." rows="8" name="introduction">{{ course_details["introduction"] }}</textarea></p>
+<p><strong>Introduction*: </strong><br />
+<p>Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this course.</p>
+<textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this course." rows="8" name="introduction" style="font-family:monospace">{{ course_details["introduction"] }}</textarea></p>
 
 <p><strong>Visible: </strong>
   <div class="select is-info">
@@ -42,11 +43,10 @@
 <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
 <p>
-    <a href="/">Home</a>
     {% if course_basics["exists"] %}
-      | <a href="/course/{{ course_basics["id"] }}">Done editing</a>
-      | <a href="/export_course/{{ course_basics["id"] }}">Export course</a>
-      | <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
+      <a href="/course/{{ course_basics["id"] }}">Done editing</a> |
+      <a href="/export_course/{{ course_basics["id"] }}">Export course</a> |
+      <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
     {% end %}
 </p>
 
