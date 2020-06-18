@@ -23,6 +23,8 @@
 {% end %}
 
 <p>
+  {% if user_id in administrators["administrators"] %}
     <a href="/edit_course/">Create course</a>
     | <a href="/import_course">Import course</a>
+  {% end %}
 </p>

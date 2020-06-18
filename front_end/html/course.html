@@ -16,7 +16,7 @@
   {% end %}
 
   <p>
-    {% if user_id in administrators %}
+    {% if user_id in administrators["administrators"] %}
       <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a>
       | <a href="/edit_permissions/{{ course_basics["id"] }}" id="per">Edit Course Permissions</a>
     {% else %}
