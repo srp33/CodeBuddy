@@ -16,6 +16,22 @@ def get_administrators():
 def get_instructors():
     return load_yaml_dict(read_file("/Instructors.yaml"))
 
+def is_administrator():
+    admins = get_administrators()
+    instructors = get_instructors()
+    user_id = instructors["user_id"]
+    if user_id in admins["administrators"]:
+        return True
+    else:
+        return False
+
+def is_instructor():
+    instructors = get_instructors()
+    if instructors["role"] == "instructor":
+        return True
+    else:
+        return False
+
 def get_root_dir_path():
     return "/course"
 
