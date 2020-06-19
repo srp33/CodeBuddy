@@ -86,18 +86,14 @@ class CourseHandler(BaseUserHandler):
 
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
-        admin = is_administrator()
-        instructor = is_instructor()
-        
-        if admin or instructor:
+        if is_administrator() or is_instructor():
             try:
                 self.render("edit_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), course_details=get_course_details(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
             try:
-                show = show_hidden(self)
-                self.render("permissions.html", courses=get_courses(show), course_basics=get_course_basics(course))
+                self.render("permissions.html")
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -134,17 +130,15 @@ class EditCourseHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class DeleteCourseHandler(BaseUserHandler):
-    def get(self, course):
-        admin = is_administrator()    
-        if admin:
+    def get(self, course):   
+        if is_administrator():
             try:
                 self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
             try: 
-                show = show_hidden(self)
-                self.render("permissions.html", courses=get_courses(show), course_basics=get_course_basics(course))
+                self.render("permissions.html")
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -164,17 +158,15 @@ class DeleteCourseHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class ImportCourseHandler(BaseUserHandler):
-    def get(self):
-        admin = is_administrator()      
-        if admin:
+    def get(self):    
+        if is_administrator():
             try:
                 self.render("import_course.html", result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
             try: 
-                show = show_hidden(self)
-                self.render("permissions.html", courses=get_courses(show), course_basics=get_course_basics(course))
+                self.render("permissions.html")
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -254,18 +246,14 @@ class AssignmentHandler(BaseUserHandler):
 
 class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
-        admin = is_administrator()
-        instructor = is_instructor()
-        
-        if admin or instructor:
+        if is_administrator() or is_instructor():
             try:
                 self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
             try: 
-                show = show_hidden(self)
-                self.render("permissions.html", courses=get_courses(show), course_basics=get_course_basics(course))
+                self.render("permissions.html")
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -299,18 +287,14 @@ class EditAssignmentHandler(BaseUserHandler):
 
 class DeleteAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
-        admin = is_administrator()
-        instructor = is_instructor()
-        
-        if admin or instructor:
+        if is_administrator() or is_instructor():
             try:
                 self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
             try: 
-                show = show_hidden(self)
-                self.render("permissions.html", courses=get_courses(show), course_basics=get_course_basics(course))
+                self.render("permissions.html")
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -343,10 +327,7 @@ class ProblemHandler(BaseUserHandler):
 
 class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
-        admin = is_administrator()
-        instructor = is_instructor()
-        
-        if admin or instructor:
+        if is_administrator() or is_instructor():
             try:
                 problems = get_problems(course, assignment)
                 self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
@@ -354,8 +335,7 @@ class EditProblemHandler(BaseUserHandler):
                 render_error(self, traceback.format_exc())
         else:
             try: 
-                show = show_hidden(self)
-                self.render("permissions.html", courses=get_courses(show), course_basics=get_course_basics(course))
+                self.render("permissions.html")
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -421,10 +401,7 @@ class EditProblemHandler(BaseUserHandler):
 
 class DeleteProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
-        admin = is_administrator()
-        instructor = is_instructor()
-        
-        if admin or instructor:
+        if is_administrator() or is_instructor():
             try:
                 problems = get_problems(course, assignment)
                 self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
@@ -432,8 +409,7 @@ class DeleteProblemHandler(BaseUserHandler):
                 render_error(self, traceback.format_exc())
         else:
             try: 
-                show = show_hidden(self)
-                self.render("permissions.html", courses=get_courses(show), course_basics=get_course_basics(course))
+                self.render("permissions.html")
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 

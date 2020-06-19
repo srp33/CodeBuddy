@@ -2,4 +2,17 @@ administrators:
   - tuft
   - johnson
   - piccolo
-  - e171505
+courses:
+  Yhqi:
+    instructors:
+      - e171505
+    instructor_assistants:
+      - yo_mama
+
+
+instructors:
+  Yhqi:
+    - e171505
+
+instructor_assistant:
+  Yhqi:
