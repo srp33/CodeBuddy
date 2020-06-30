@@ -1,3 +1,4 @@
+from content import *
 import glob
 import gzip
 import json
@@ -42,12 +43,13 @@ def save_summaries(summary_dict, out_dir_path):
         else:
             # Write header for output file
             with gzip.open(out_file_path, 'w') as out_file:
-                out_file.write("Timestamp\tKey\tValue\n".encode())
+                out_file.write("Timestamp\tKey\tName\tValue\n".encode())
 
         with gzip.open(out_file_path, 'a') as out_file:
             for timestamp, value_dict in sorted(statistic_dict.items()):
                 for key, value in sorted(value_dict.items()):
-                    out_file.write(f"{timestamp}\t{key}\t{value:.1f}\n".encode())
+                    names = get_titles(key)
+                    out_file.write(f"{timestamp}\t{key}\t{names}\t{value:.1f}\n".encode())
 
 # We want the newest file (with no number at the end) to come list in the list.
 in_file_paths = glob.glob(in_file_prefix + ".*") + [in_file_prefix]

@@ -183,6 +183,42 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
 
     return problem_dict
 
+def get_titles(file_path):
+    regex = re.compile(r"^\/([^\/]*)\/([^\/]*)\/?([^\/]*)\/?([^\/]*)")
+    re_match = regex.match(file_path)
+    name = re_match.group(1)
+    course_id = re_match.group(2)
+    assignment_id = re_match.group(3)
+    problem_id = re_match.group(4)
+
+    course_title = ""
+    assignment_title = ""
+    problem_title = ""
+    
+    courses = get_courses()
+    for course in courses:
+        course_basics = get_course_basics(course)
+        if course_id == course_basics["id"]:
+            course_title = course_basics["title"]
+        assignments = get_assignments(course)
+        for assignment in assignments:
+            assignment_basics = get_assignment_basics(course, assignment)
+            if assignment_id == assignment_basics["id"]:
+                assignment_title = assignment_basics["title"]
+            problems = get_problems(course, assignment)
+            for problem in problems:
+                problem_basics = get_problem_basics(course, assignment, problem)
+                if problem_id == problem_basics["id"]:
+                    problem_title = problem_basics["title"]
+      
+    new_path = name + "/" + course_title
+    if assignment_title != "":
+        new_path += "/" + assignment_title
+    if problem_title != "":
+        new_path += "/" + problem_title
+
+    return new_path
+
 def sort_by_title(nested_list):
     l_dict = {}
     for row in nested_list:
