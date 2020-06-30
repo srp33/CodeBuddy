@@ -547,8 +547,6 @@ if __name__ == "__main__":
         #TODO: Use something other than the password. Store in a file?
         application.settings["cookie_secret"] = password
         env_dict = get_environments()
-        admin_dict = get_administrators()
-        inst_dict = get_instructors()
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))
