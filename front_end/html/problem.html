@@ -28,8 +28,70 @@
             {% end %}
 
             <script>
-            function run_code()
-            {
+            function build_code_output(json_output, error_occurred) {
+              code_output = ""
+
+              {% if problem_details["output_type"] == "txt" %}
+                  if (json_output == "") {
+                      code_output += "<p><pre>[Your code produced no output.]</pre></p>";
+                  }
+                  else {
+                      code_output += "<p><pre>" + json_output + "</pre></p>";
+                  }
+              {% else %}
+                  if (error_occurred) {
+                      code_output += "<p><pre>" + json_output + "</pre></p>";
+                  }
+                  else {
+                      code_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
+                  }
+              {% end %}
+
+              return code_output;
+            }
+
+            function display_check_code(json_data) {
+              var code_output = "<h2>Your output:</h2>\n\n";
+              var diff_output = "";
+              var result = "";
+
+              code_output += build_code_output(json_data.code_output, json_data.error_occurred);
+
+              if (json_data.passed) {
+                  result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
+                  {% if problem_details["show_answer"] %}
+                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p>"; 
+                  {% end %}
+                  {% if "next_problem" in globals() and next_problem %}
+                      result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
+                  {% end %}
+
+                  result += "</div>\n\n"
+              }
+              else {
+                  result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
+
+                  {% if problem_details["show_expected"] and len(problem_details["expected_output"]) > 0 %}
+                      if (!json_data.error_occurred) {
+                          diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
+
+                          {% if problem_details["output_type"] == "txt" %}
+                              if (json_data.diff_output.length > 0)
+                                  diff_output += "<p><pre>" + json_data.diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                          {% else %}
+                              if (json_data.diff_output.length > 0)
+                                  diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
+                          {% end %}
+                      }
+                  {% end %}
+              }
+
+              document.getElementById("code_output").innerHTML = code_output;
+              document.getElementById("diff_output").innerHTML = diff_output;
+              document.getElementById("result").innerHTML = result;
+            }
+
+            function run_code() {
                 user_code = editor.getValue();
                 if (user_code.trim() == "")
                     return false;
@@ -44,31 +106,12 @@
 
                 $.post("/run_code/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
                     post_data,
-                    function(data, status){
+                    function(data, status) {
                         var json_data = JSON.parse(data);
                         var code_output = "<h2>Your output:</h2>\n\n";
                         var result = "";
 
-                        {% if problem_details["output_type"] == "txt" %}
-                            if (json_data.code_output == "")
-                            {
-                                code_output += "<p><pre>[Your code produced no output.]</pre></p>";
-                            }
-                            else
-                            {
-                                code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
-                            }
-                        {% else %}
-                            if (json_data.error_occurred)
-                            {
-                                code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
-                            }
-                            else
-                            {
-                                code_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.code_output + "' width='100%' /></figure></p>";
-                            }
-                        {% end %}
-
+                        code_output += build_code_output(json_data.code_output, json_data.error_occurred);
                         document.getElementById("code_output").innerHTML = code_output;
                         document.getElementById("result").innerHTML = result;
                     })
@@ -78,8 +121,7 @@
                 return false;
             }
 
-            function check_code()
-            {
+            function check_code() {
                 user_code = editor.getValue();
 
                 if (user_code.trim() == "")
@@ -95,67 +137,10 @@
 
                 $.post("/check_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
                     post_data,
-                    function(data, status){
+                    function(data, status) {
                         var json_data = JSON.parse(data);
-                        var code_output = "<h2>Your output:</h2>\n\n";
-                        var diff_output = "";
-                        var result = "";
 
-                        {% if problem_details["output_type"] == "txt" %}
-                            if (json_data.code_output == "")
-                            {
-                                code_output += "<p><pre>[Your code produced no output.]</pre></p>";
-                            }
-                            else
-                            {
-                                code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
-                            }
-                        {% else %}
-                            if (json_data.error_occurred)
-                            {
-                                code_output += "<p><pre>" + json_data.code_output + "</pre></p>";
-                            }
-                            else
-                            {
-                                code_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.code_output + "' width='100%' /></figure></p>";
-                            }
-                        {% end %}
-
-                        if (json_data.passed)
-                        {
-                            result = "<div class='notification is-success'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
-                            {% if problem_details["show_answer"] %}
-                                result += "<p>Click <a href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p>"; 
-                            {% end %}
-                            {% if "next_problem" in globals() and next_problem %}
-                                result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
-                            {% end %}
-
-                            result += "</div>\n\n"
-                        }
-                        else
-                        {
-                            result = "<div class='notification is-danger'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
-
-                            {% if problem_details["show_expected"] and len(problem_details["expected_output"]) > 0 %}
-                              if (!json_data.error_occurred)
-                              {
-                                diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
-
-                                {% if problem_details["output_type"] == "txt" %}
-                                  if (json_data.diff_output.length > 0)
-                                    diff_output += "<p><pre>" + json_data.diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                                {% else %}
-                                  if (json_data.diff_output.length > 0)
-                                    diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
-                                {% end %}
-                              }
-                            {% end %}
-                        }
-
-                        document.getElementById("code_output").innerHTML = code_output;
-                        document.getElementById("diff_output").innerHTML = diff_output;
-                        document.getElementById("result").innerHTML = result;
+                        display_check_code(json_data);
                     });
 
                 editor.focus();
@@ -163,7 +148,26 @@
                 return false;
             }
 
-            function modify_auto_complete() {
+              function get_submission(submission_id) {
+                  result_div = document.getElementById("result");
+                  result_div.scrollIntoView();
+                  document.getElementById("code_output").innerHTML = "";
+                  document.getElementById("diff_output").innerHTML = "";
+
+                  $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
+                      function (data, status) {
+                          var json_data = JSON.parse(data);
+                          editor.setValue(json_data.code);
+
+                          display_check_code(json_data);
+                      });   
+
+                  editor.focus();
+
+                  return false;
+              }
+
+              function modify_auto_complete() {
               ac_box = document.getElementById("auto_complete");
 
               if (ac_box.checked) {
@@ -231,6 +235,21 @@
 
             {% if len(problem_details["credit"]) > 0 %}
               <p><em>{{ problem_details["credit"] }}</em></p>
+            {% end %}  
+
+            <h2>Past submissions:</h2>
+            {% if len(submissions) > 0 %}
+                  <div class="buttons">
+                    {% for submission in submissions %}
+                        {% if submission[1]["passed"] %}
+                            <button style="background-color: #80cdc1; display: block; color: #34495e; width: 315px" class="button is-primary is-medium" onclick='get_submission("{{ submission[0] }}")'><b>{{ submission[0] }}.</b>   {{ submission[1]["date"] }}</button>
+                        {% else %}
+                            <button style="background-color: #f4a582; display: block; color: #34495e; width: 315px" class="button is-primary is-medium" onclick='get_submission("{{ submission[0] }}")'><b>{{ submission[0] }}.</b>   {{ submission[1]["date"] }}</button>
+                        {% end %}
+                    {% end %}
+                  </div>
+            {% else %}
+                <p>You have not made any submissions for this problem.</p>
             {% end %}
 
             <p>

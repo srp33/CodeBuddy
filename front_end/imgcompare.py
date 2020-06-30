@@ -30,7 +30,7 @@ from PIL import ImageChops
 class ImageCompareException(Exception):
     pass
 
-def are_images_similar(expected_bytes, answer_bytes):
+def diff_jpg(expected_bytes, answer_bytes):
     expected_image = Image.open(io.BytesIO(expected_bytes))
     answer_image = Image.open(io.BytesIO(answer_bytes))
     expected_image = expected_image.convert("L")
@@ -39,7 +39,10 @@ def are_images_similar(expected_bytes, answer_bytes):
     diff_image = pixel_diff(expected_image, answer_image)
     diff_percent = image_diff_percent(expected_image.size, diff_image)
 
-    return diff_percent < 0.1, diff_image
+    return diff_percent, diff_image
+
+def does_image_pass(diff_percent):
+    return diff_percent < 0.1
 
 def convert_image_to_bytes(the_image):
     with io.BytesIO() as output:
