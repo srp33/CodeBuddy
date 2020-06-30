@@ -423,6 +423,15 @@ class RunCodeHandler(BaseUserHandler):
 
         out_dict = {"error_occurred": True}
 
+class ViewAnswerHandler(RequestHandler):
+    def get(self, course, assignment, problem):
+        try:
+            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class OutputTypesHandler(RequestHandler):
+    def get(self, environment):
         try:
             code_output, error_occurred = exec_code(env_dict, code, problem_basics, problem_details, request=None)
             code_output = code_output.decode()
