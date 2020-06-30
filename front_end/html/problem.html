@@ -159,6 +159,8 @@
 
             <p><a class="button is-info is-large is-fullwidth" onclick='check_code()'>Submit</a></p>
 
+            <p><div id="result"></div></p>
+
             {% if problem_details["show_expected"] %}
               <h2>Expected output:</h2>
                 {% if problem_details["output_type"] == "txt" %}
