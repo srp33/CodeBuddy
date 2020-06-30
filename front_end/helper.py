@@ -124,11 +124,7 @@ def test_code_txt(settings_dict, code, problem_basics, problem_details, request)
 
     passed = problem_details["expected_output"] == code_output
 
-    diff_output = ""
-    if not passed and problem_details["show_expected"]:
-        diff_output = diff_strings(problem_details["expected_output"], code_output)
-
-    return code_output, error_occurred, passed, diff_output
+    return code_output, error_occurred, passed, find_differences_txt(problem_details, code_output, passed)
 
 def test_code_jpg(settings_dict, code, problem_basics, problem_details, request):
     code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
@@ -136,15 +132,24 @@ def test_code_jpg(settings_dict, code, problem_basics, problem_details, request)
     if error_occurred:
         return code_output.decode(), True, False, ""
 
-    passed, diff_image = are_images_similar(problem_details["expected_output"], code_output)
+    diff_percent, diff_image = diff_jpg(problem_details["expected_output"], code_output)
+    passed = does_image_pass(diff_percent)
 
+    return code_output, error_occurred, passed, find_differences_jpg(problem_details, passed, diff_image)
+
+def find_differences_txt(problem_details, code_output, passed):
+    diff_output = ""
+
+    if not passed and problem_details["show_expected"]:
+        diff_output = diff_strings(problem_details["expected_output"], code_output)
+
+    return diff_output
+
+def find_differences_jpg(problem_details, passed, diff_image):
     diff_output = ""
     if not passed and problem_details["show_expected"]:
         diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
-
-    code_output = encode_image_bytes(code_output)
-
-    return code_output, error_occurred, passed, diff_output
+    return diff_output
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
