@@ -48,6 +48,18 @@ def get_problems(course, assignment, show_hidden=True):
 
     return sort_nested_list(problems)
 
+def get_submissions(course, assignment, problem, user):
+    submissions = []
+
+    for submission_path in glob.glob(get_submission_dir_path(course, assignment, problem, user)):
+        id = int(os.path.basename(submission_path)[:-5])
+        submission_dict = load_yaml_dict(read_file(submission_path))
+        submissions.append([id, submission_dict])
+
+    submissions = sorted(submissions, key = lambda x: x[0])
+
+    return submissions
+
 def get_course_dir_path(course):
     return get_root_dir_path() + f"/{course}/"
 
@@ -56,6 +68,12 @@ def get_assignment_dir_path(course, assignment):
 
 def get_problem_dir_path(course, assignment, problem):
     return get_root_dir_path() + f"/{course}/{assignment}/{problem}/"
+
+def get_submission_dir_path(course, assignment, problem, user):
+    return f"/submissions/{course}/{assignment}/{problem}/{user}/*"
+
+def get_submission_file_path(course, assignment, problem, user, submission_id):
+    return f"/submissions/{course}/{assignment}/{problem}/{user}/{submission_id}.yaml"
 
 def get_course_basics(course):
     if not course:
@@ -117,6 +135,22 @@ def get_next_prev_problems(course, assignment, problem, problems):
 
     return {"previous": prev_problem, "next": next_problem}
 
+def get_next_submission_id(course, assignment, problem, user):
+    num_submissions = 0
+    for submission in glob.glob(get_submission_dir_path(course, assignment, problem, user)):
+        num_submissions += 1
+    return num_submissions + 1
+
+def get_last_submission(course, assignment, problem, user):
+    last_submission_id = get_next_submission_id(course, assignment, problem, user) - 1
+    file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{last_submission_id}.yaml"
+    last_submission = load_yaml_dict(read_file(file_path))
+
+    return last_submission
+
+def get_submission_info(course, assignment, problem, user, submission_id):
+    return load_yaml_dict(read_file(get_submission_file_path(course, assignment, problem, user, submission_id)))
+
 def get_course_details(course, format_output=False):
     file_path = get_course_dir_path(course) + "details"
     exists = os.path.exists(file_path)
@@ -176,10 +210,10 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
 
     return problem_dict
 
-def sort_nested_list(nested_list):
+def sort_nested_list(nested_list, key="title"):
     l_dict = {}
     for row in nested_list:
-        l_dict[row[1]["title"]] = row
+        l_dict[row[1][key]] = row
 
     sorted_list = []
     for key in sort_nicely(l_dict):
@@ -211,18 +245,10 @@ def save_problem(problem_basics, problem_details):
     write_file(convert_dict_to_yaml(basics_to_save), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(problem_details), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "details")
 
-def get_next_submission_id(course, assignment, problem, user):
-    submissions_path = f"/submissions/{course}/{assignment}/{problem}/{user}/*"
-    num_submissions = 0
-    for submission in glob.glob(submissions_path):
-        num_submissions += 1
-    return num_submissions + 1
-
-def save_submission(course, assignment, problem, user, code, output, passed, date):
+def save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred):
     submission_id = get_next_submission_id(course, assignment, problem, user)
-    submission_dict = {"id": submission_id, "code": code, "output": output, "passed": passed, "date": date, "user": user}
-    file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{submission_id}.yaml"
-    write_file(convert_dict_to_yaml(submission_dict), file_path)
+    submission_dict = {"code": code, "code_output": code_output, "passed": passed, "date": date, "error_occurred": error_occurred}
+    write_file(convert_dict_to_yaml(submission_dict), get_submission_file_path(course, assignment, problem, user, submission_id))
 
 def delete_problem(problem_basics):
     dir_path = get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"])
