@@ -18,10 +18,10 @@
     <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
 
     <p><strong>Title*: </strong></p>
-    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1" style="font-family:monospace">{{ problem_basics["title"] }}</textarea></p>
+    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
 
     <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this problem.</p>
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
+    <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
 
     <p><strong>Environment: </strong>
       <div class="select is-info">
