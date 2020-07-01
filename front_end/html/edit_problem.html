@@ -62,10 +62,54 @@
             ot_select.appendChild(opt);
           }
         });
+
+        function modify_auto_complete() {
+              ac_box = document.getElementById("auto_complete");
+
+              if (ac_box.checked) {
+                editor.setOptions({
+                enableBasicAutocompletion: false,
+                enableSnippets: true,
+                enableLiveAutocompletion: true
+                });
+              }
+              else {
+                editor.setOptions({
+                enableBasicAutocompletion: false,
+                enableSnippets: false,
+                enableLiveAutocompletion: false
+                });
+              }
+            }
     </script>
 
     <p><strong>Answer code*: </strong></p>
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea></p>
+    <p>
+      <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" id="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea>
+      <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
+        <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+      </label>
+      <label class="checkbox is-pulled-right">
+          Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="modify_auto_complete()">
+      </label>
+    </p>
+    
+    <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/static/mode-r.js" type="text/javascript"></script>
+    <script src="/static/ext-language_tools.js"></script>
+    <script>
+      ace.require("ace/ext/language_tools");
+      var editor = ace.edit("answer_code", {
+        theme: "ace/theme/tomorrow",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        fontSize: "12pt"
+      });
+      editor.focus();
+      editor.getSession().setMode("{{ code_completion_path }}");
+      modify_auto_complete();
+    </script>
+    
     
     <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide a description." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
