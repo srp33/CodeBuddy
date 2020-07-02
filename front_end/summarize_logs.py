@@ -37,7 +37,7 @@ def save_summaries(summary_dict, out_dir_path):
                         line_items = line.decode().rstrip("\n").split("\t")
                         timestamp = int(line_items[0])
                         if timestamp in recent_timestamps:
-                            update_summary_dict(summary_dict, statistic, timestamp, line_items[1], float(line_items[2]))
+                            update_summary_dict(summary_dict, statistic, timestamp, line_items[1], float(line_items[3]))
                         else:
                             out_file.write(line)
         else:

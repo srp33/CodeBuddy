@@ -2,6 +2,7 @@ import glob
 from helper import *
 import io
 import os
+import re
 import yaml
 from yaml import load
 from yaml import Loader
@@ -19,38 +20,49 @@ def get_instructors():
 def get_root_dir_path():
     return "/course"
 
-def get_courses(show_hidden=True):
-    course_ids = [os.path.basename(x) for x in glob.glob("{}/*".format(get_root_dir_path()))]
+def get_course_ids():
+    return [os.path.basename(x) for x in glob.glob("{}/*".format(get_root_dir_path()))]
 
+def get_assignment_ids(course_id):
+    assignment_ids = []
+    for assignment_dir_path in glob.glob(get_course_dir_path(course_id) + "*"):
+        if os.path.isdir(assignment_dir_path):
+            assignment_ids.append(os.path.basename(assignment_dir_path))
+    return assignment_ids
+
+def get_problem_ids(course_id, assignment_id):
+    problem_ids = []
+    for problem_dir_path in glob.glob(get_root_dir_path() + f"/{course_id}/{assignment_id}/*"):
+        if os.path.isdir(problem_dir_path):
+            problem_ids.append(os.path.basename(problem_dir_path))
+    return problem_ids
+
+
+def get_courses(show_hidden=True):
     courses = []
-    for course_id in course_ids:
+    for course_id in get_course_ids():
         course_basics = get_course_basics(course_id)
         if course_basics["visible"] or show_hidden:
             courses.append([course_id, course_basics])
 
-    return sort_by_title(courses)
+    return sort_by_title(courses)   
 
-def get_assignments(course, show_hidden=True):
+def get_assignments(course_id, show_hidden=True):
     assignments = []
-
-    for assignment_dir_path in glob.glob(get_course_dir_path(course) + "*"):
-        if os.path.isdir(assignment_dir_path):
-            assignment_id = os.path.basename(assignment_dir_path)
-            assignment_basics = get_assignment_basics(course, assignment_id)
-            if assignment_basics["visible"] or show_hidden:
-                assignments.append([assignment_id, assignment_basics])
+    for assignment_id in get_assignment_ids(course_id):
+        assignment_basics = get_assignment_basics(course_id, assignment_id)
+        if assignment_basics["visible"] or show_hidden:
+            assignments.append([assignment_id, assignment_basics])
 
     return sort_by_title(assignments)
 
-def get_problems(course, assignment, show_hidden=True):
+def get_problems(course_id, assignment_id, show_hidden=True):
     problems = []
 
-    for problem_dir_path in glob.glob(get_root_dir_path() + f"/{course}/{assignment}/*"):
-        if os.path.isdir(problem_dir_path):
-            problem_id = os.path.basename(problem_dir_path)
-            problem_basics = get_problem_basics(course, assignment, problem_id)
-            if problem_basics["visible"] or show_hidden:
-                problems.append([problem_id, problem_basics])
+    for problem_id in get_problem_ids(course_id, assignment_id):
+        problem_basics = get_problem_basics(course_id, assignment_id, problem_id)
+        if problem_basics["visible"] or show_hidden:
+            problems.append([problem_id, problem_basics])
 
     return sort_by_title(problems)
 
@@ -184,38 +196,44 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
     return problem_dict
 
 def get_titles(file_path):
-    regex = re.compile(r"^\/([^\/]*)\/([^\/]*)\/?([^\/]*)\/?([^\/]*)")
-    re_match = regex.match(file_path)
-    name = re_match.group(1)
-    course_id = re_match.group(2)
-    assignment_id = re_match.group(3)
-    problem_id = re_match.group(4)
+    new_path = ""
+    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
+    if re_match:
+        id_dict = re_match.groupdict()
+        #for key, value in id_dict.items():
+            #print (key)
+            #print (value)
 
-    course_title = ""
-    assignment_title = ""
-    problem_title = ""
+        course_title = ""
+        assignment_title = ""
+        problem_title = ""
     
-    courses = get_courses()
-    for course in courses:
-        course_basics = get_course_basics(course)
-        if course_id == course_basics["id"]:
-            course_title = course_basics["title"]
-        assignments = get_assignments(course)
-        for assignment in assignments:
-            assignment_basics = get_assignment_basics(course, assignment)
-            if assignment_id == assignment_basics["id"]:
-                assignment_title = assignment_basics["title"]
-            problems = get_problems(course, assignment)
-            for problem in problems:
-                problem_basics = get_problem_basics(course, assignment, problem)
-                if problem_id == problem_basics["id"]:
-                    problem_title = problem_basics["title"]
+        #courses = get_courses()
+        #for course in courses:
+        for course_id in get_course_ids():
+            #print (course)
+            course_basics = get_course_basics(course_id)
+            #print (course_basics)
+            if id_dict["course_id"] == course_id:
+                course_title = course_basics["title"]
+
+            for assignment_id in get_assignment_ids(course_id):
+                assignment_basics = get_assignment_basics(course_id, assignment_id)
+                if id_dict["assignment_id"] == assignment_id:
+                    assignment_title = assignment_basics["title"]
+
+                for problem_id in get_problem_ids(course_id, assignment_id):
+                    problem_basics = get_problem_basics(course_id, assignment_id, problem_id)
+                    if id_dict["problem_id"] == problem_id:
+                        problem_title = problem_basics["title"]
       
-    new_path = name + "/" + course_title
-    if assignment_title != "":
-        new_path += "/" + assignment_title
-    if problem_title != "":
-        new_path += "/" + problem_title
+        new_path = id_dict["name"]
+        if course_title != "":
+            new_path += "/" + course_title
+            if assignment_title != "":
+                new_path += "/" + assignment_title
+                if problem_title != "":
+                    new_path += "/" + problem_title
 
     return new_path
 
