@@ -63,9 +63,8 @@ def exec(info: ExecInfo):
     except Exception as inst:
         error_occurred = True
         output = traceback.format_exc()
-    #TODO
-    #finally:
-    #    shutil.rmtree(tmp_dir_path, ignore_errors=True)
+    finally:
+        shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
     return {"output": output, "error_occurred": error_occurred}
 
