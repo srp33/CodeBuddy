@@ -241,18 +241,3 @@ def show_hidden(request_handler):
     if "show_hidden" not in request_handler.request.query_arguments:
         return False
     return request_handler.request.query_arguments["show_hidden"][0].decode().lower() == "true"
-
-def get_course_name(course):
-    course_basics = get_course_basics(course)
-    name = course_basics("title")
-    return name
-
-def get_assignment_name(course, assignment):
-    assignment_basics = get_assignment_basics(course, assignment)
-    name = assignment_basics("title")
-    return name
-
-def get_problem_name(course, assignment, problem):
-    problem_basics = get_problem_basics(course, assignment, problem)
-    name = problem_basics("title")
-    return name
