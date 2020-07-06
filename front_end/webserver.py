@@ -4,6 +4,7 @@ import contextvars
 import json
 import logging
 import re
+import sys
 import tornado.ioloop
 from tornado.log import enable_pretty_logging
 from tornado.log import LogFormatter
@@ -601,7 +602,7 @@ class LoggingFilter(logging.Filter):
         return True
 
 if __name__ == "__main__":
-    if "PORT" in os.environ:
+    if "PORT" in os.environ and "MPORT" in os.environ:
         application = make_app()
 
         #TODO: Store this securely or have a better way of authenticating.
@@ -633,5 +634,5 @@ if __name__ == "__main__":
         logging.info("Starting on port {}...".format(os.environ['PORT']))
         tornado.ioloop.IOLoop.instance().start()
     else:
-        logging.error("No PORT environment variable was specified.")
+        logging.error("Values must be specified for the PORT and MPORT environment variables.")
         sys.exit(1)

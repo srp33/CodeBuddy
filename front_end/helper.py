@@ -110,7 +110,10 @@ def exec_code(env_dict, code, problem_basics, problem_details, request=None):
                  "memory_allowed_mb": settings_dict["memory_allowed_mb"],
                  "timeout_seconds": timeout,
                  "output_type": problem_details["output_type"]}
-    response = requests.post(settings_dict["url"], json.dumps(data_dict), timeout=timeout)
+
+    middle_layer_port = os.environ['MPORT']
+    response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
+
     response_dict = json.loads(response.content)
 
     return response_dict["output"].strip(), response_dict["error_occurred"]

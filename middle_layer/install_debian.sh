@@ -2,4 +2,4 @@
 
 #sudo apt update
 #sudo apt install python3-pip
-pip3 install fastapi pydantic uvicorn
+sudo pip3 install fastapi pydantic uvicorn
