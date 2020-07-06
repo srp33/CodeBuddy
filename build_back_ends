@@ -1,0 +1,11 @@
+#! /bin/bash
+
+set -o errexit
+
+for container_dir in $(pwd)/back_ends/*
+do
+  image_name=srp33/codebuddy_$(basename $container_dir)
+
+  cd $container_dir
+  docker build -t ${image_name} -f Containerfile .
+done

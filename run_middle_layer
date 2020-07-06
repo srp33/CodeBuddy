@@ -1,0 +1,9 @@
+#! /bin/bash
+
+export PATH=$PATH:~/.local/bin
+
+cd middle_layer
+
+mkdir -p /tmp/codebuddy_backend
+
+uvicorn main:app --port 9799 --reload

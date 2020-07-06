@@ -106,18 +106,20 @@ def exec_code(env_dict, code, problem_basics, problem_details, request=None):
                 code = code.replace(url, cache_url)
 
         timeout = settings_dict["timeout_seconds"] + 2
-        data_dict = {"code": code, "timeout_seconds": timeout, "output_type": problem_details["output_type"]}
+        data_dict = {"image_name": settings_dict["image_name"],
+                     "code": code,
+                     "memory_allowed_mb": settings_dict["memory_allowed_mb"],
+                     "timeout_seconds": timeout,
+                     "output_type": problem_details["output_type"]}
         response = requests.post(settings_dict["url"], json.dumps(data_dict), timeout=timeout)
+        response_dict = json.loads(response.content)
 
-        return response.content, response.status_code != 200
-    except ReadTimeout as inst:
-        return "Your code did not finish executing before the time limit: {} seconds.".format(timeout).encode(), True
+        return response_dict["output"].strip(), response_dict["error_occurred"]
     except ConnectionError as inst:
-        return "The front-end server was unable to contact the back-end server to check your code.\n\nIf you are running your own instance of this app, please make sure the back-end server is running.".encode(), True
+        return "The front-end server was unable to contact the back-end server to check your code.\n\nIf you are running your own instance of this app, please make sure the back-end server is running.", True
 
 def test_code_txt(settings_dict, code, problem_basics, problem_details, request):
     code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
-    code_output = code_output.decode()
 
     if error_occurred:
         return code_output, True, False, ""
@@ -130,9 +132,9 @@ def test_code_jpg(settings_dict, code, problem_basics, problem_details, request)
     code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
 
     if error_occurred:
-        return code_output.decode(), True, False, ""
+        return format_output_as_html(code_output), True, False, ""
 
-    diff_percent, diff_image = diff_jpg(problem_details["expected_output"], code_output)
+    diff_percent, diff_image = diff_jpg(decode_image_string(problem_details["expected_output"]), decode_image_string(code_output))
     passed = does_image_pass(diff_percent)
 
     return code_output, error_occurred, passed, find_differences_jpg(problem_details, passed, diff_image)
@@ -150,6 +152,9 @@ def find_differences_jpg(problem_details, passed, diff_image):
     if not passed and problem_details["show_expected"]:
         diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
     return diff_output
+
+def decode_image_string(s):
+    return base64.b64decode(s)
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")

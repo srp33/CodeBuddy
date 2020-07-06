@@ -175,7 +175,7 @@ def get_assignment_details(course, assignment, format_output=False):
 
     return assignment_dict
 
-def get_problem_details(course, assignment, problem, format_content=False, format_expected_output=False, parse_data_urls=False):
+def get_problem_details(course, assignment, problem, format_content=False, parse_data_urls=False):
     file_path = get_problem_dir_path(course, assignment, problem) + "details"
 
     if os.path.exists(file_path):
@@ -189,9 +189,6 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
                 problem_dict["answer_description"] = ""
             else:
                 problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
-
-        if format_expected_output and problem_dict["output_type"] == "jpeg":
-            problem_dict["expected_output"] = encode_image_bytes(problem_dict["expected_output"])
 
         if parse_data_urls:
             problem_dict["data_urls"] = "\n".join([x[0] for x in problem_dict["data_urls_info"]])

@@ -1,7 +1,9 @@
 r_back_end:
-    url: http://localhost:9002/exec
+    url: http://127.0.0.1:9799/exec/
+    image_name: srp33/codebuddy_r
+    memory_allowed_mb: 100
     timeout_seconds: 30
     code_completion_path: ace/mode/r
     output_types:
-        - jpeg
+        - jpg
         - txt
