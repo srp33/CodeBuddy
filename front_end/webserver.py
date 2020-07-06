@@ -298,7 +298,9 @@ class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             problems = get_problems(course, assignment)
-            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, parse_data_urls=True), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
+
+            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -416,6 +418,15 @@ class CheckProblemHandler(BaseUserHandler):
 
         out_dict = {"error_occurred": True, "passed": False, "diff_output": ""}
 
+class ViewAnswerHandler(RequestHandler):
+    def get(self, course, assignment, problem):
+        try:
+            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class OutputTypesHandler(RequestHandler):
+    def get(self, environment):
         try:
             if problem_details["output_type"] == "txt":
                 code_output, error_occurred, passed, diff_output = test_code_txt(env_dict, code, problem_basics, problem_details, self.request)

@@ -16,11 +16,11 @@
 
 <form method="post" action="/edit_course/{{ course_basics["id"] }}">
 
-<p><strong>Title*: </strong><input name="title" class="input is-info is-normal is-medium" placeholder="Please specify a descriptive title for this course." value="{{ course_basics["title"] }}" autofocus /><br /><font color="gray">The title can only contain alphanumeric characters and spaces.</font></p>
+<p><strong>Title*: </strong></p>
+<p><textarea name="title" class="textarea is-info is-normal is-medium" placeholder="Please specify a descriptive title for this course." rows="1" style="font-family:monospace" autofocus>{{ course_basics["title"] }}</textarea><br /><font color="gray">The title can only contain alphanumeric characters and spaces.</font></p>
 
-<p><strong>Introduction*: </strong><br />
-<p>Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this course.</p>
-<textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this course." rows="8" name="introduction" style="font-family:monospace">{{ course_details["introduction"] }}</textarea></p>
+<p><strong>Introduction*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this course.</p>
+<p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this course." rows="8" style="font-family:monospace">{{ course_details["introduction"] }}</textarea></p>
 
 <p><strong>Visible: </strong>
   <div class="select is-info">
@@ -36,7 +36,8 @@
   </div>
 </p>
 
-<p><strong>Password: </strong><input name="password" class="input is-info is-normal is-medium" type="password" placeholder="Please enter password" /></p>
+<p><strong>Password: </strong></p>
+<p><textarea name="password" class="textarea is-info is-normal is-medium is-fullwidth" type="password" placeholder="Please enter password" rows="1" style="font-family:monospace"></textarea></p>
 
 <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
