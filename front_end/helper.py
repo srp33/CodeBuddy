@@ -90,33 +90,30 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
     return columns_dict
 
 def exec_code(env_dict, code, problem_basics, problem_details, request=None):
-    try:
-        code = code + "\n\n" + problem_details["test_code"]
-        settings_dict = env_dict[problem_details["environment"]]
+    code = code + "\n\n" + problem_details["test_code"]
+    settings_dict = env_dict[problem_details["environment"]]
 
-        if request:
-            for url, file_name in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
-                cache_url = "{}://{}/data/{}/{}/{}/{}".format(
-                    request.protocol,
-                    request.host,
-                    problem_basics["assignment"]["course"]["id"],
-                    problem_basics["assignment"]["id"],
-                    problem_basics["id"],
-                    file_name)
-                code = code.replace(url, cache_url)
+    if request:
+        for url, file_name in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
+            cache_url = "{}://{}/data/{}/{}/{}/{}".format(
+                request.protocol,
+                request.host,
+                problem_basics["assignment"]["course"]["id"],
+                problem_basics["assignment"]["id"],
+                problem_basics["id"],
+                file_name)
+            code = code.replace(url, cache_url)
 
-        timeout = settings_dict["timeout_seconds"] + 2
-        data_dict = {"image_name": settings_dict["image_name"],
-                     "code": code,
-                     "memory_allowed_mb": settings_dict["memory_allowed_mb"],
-                     "timeout_seconds": timeout,
-                     "output_type": problem_details["output_type"]}
-        response = requests.post(settings_dict["url"], json.dumps(data_dict), timeout=timeout)
-        response_dict = json.loads(response.content)
+    timeout = settings_dict["timeout_seconds"] + 2
+    data_dict = {"image_name": settings_dict["image_name"],
+                 "code": code,
+                 "memory_allowed_mb": settings_dict["memory_allowed_mb"],
+                 "timeout_seconds": timeout,
+                 "output_type": problem_details["output_type"]}
+    response = requests.post(settings_dict["url"], json.dumps(data_dict), timeout=timeout)
+    response_dict = json.loads(response.content)
 
-        return response_dict["output"].strip(), response_dict["error_occurred"]
-    except ConnectionError as inst:
-        return "The front-end server was unable to contact the back-end server to check your code.\n\nIf you are running your own instance of this app, please make sure the back-end server is running.", True
+    return response_dict["output"].strip(), response_dict["error_occurred"]
 
 def test_code_txt(settings_dict, code, problem_basics, problem_details, request):
     code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)

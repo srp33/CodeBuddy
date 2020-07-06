@@ -429,11 +429,9 @@ class CheckProblemHandler(BaseUserHandler):
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
 
-            if problem_details["output_type"] == "txt":
-                save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
-            else:
-                save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
-
+            save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
+        except ConnectionError as inst:
+            out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -445,32 +443,6 @@ class ViewAnswerHandler(RequestHandler):
             self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
         except Exception as inst:
             render_error(self, traceback.format_exc())
-
-class OutputTypesHandler(RequestHandler):
-    def get(self, environment):
-        try:
-            if problem_details["output_type"] == "txt":
-                code_output, error_occurred, passed, diff_output = test_code_txt(env_dict, code, problem_basics, problem_details, self.request)
-                code_output = format_output_as_html(code_output)
-            else:
-                code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict, code, problem_basics, problem_details, self.request)
-
-            out_dict["code_output"] = code_output
-            out_dict["error_occurred"] = error_occurred
-            out_dict["passed"] = passed
-            out_dict["diff_output"] = diff_output
-
-            save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
-        except Exception as inst:
-            out_dict["code_output"] = format_output_as_html(traceback.format_exc())
-            out_dict["error_occurred"] = True
-            out_dict["passed"] = False
-            out_dict["diff_output"] = ""
-
-        try:
-            self.write(json.dumps(out_dict))
-        except Exception as inst:
-            print(traceback.format_exc())
 
 class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, problem, submission_id):
