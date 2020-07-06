@@ -418,6 +418,27 @@ class CheckProblemHandler(BaseUserHandler):
 
         out_dict = {"error_occurred": True, "passed": False, "diff_output": ""}
 
+        try:
+            if problem_details["output_type"] == "txt":
+                code_output, error_occurred, passed, diff_output = test_code_txt(env_dict, code, problem_basics, problem_details, self.request)
+            else:
+                code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict, code, problem_basics, problem_details, self.request)
+
+            out_dict["code_output"] = format_output_as_html(code_output)
+            out_dict["error_occurred"] = error_occurred
+            out_dict["passed"] = passed
+            out_dict["diff_output"] = diff_output
+
+            if problem_details["output_type"] == "txt":
+                save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
+            else:
+                save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
+
+        except Exception as inst:
+            out_dict["code_output"] = format_output_as_html(traceback.format_exc())
+
+        self.write(json.dumps(out_dict))
+
 class ViewAnswerHandler(RequestHandler):
     def get(self, course, assignment, problem):
         try:
