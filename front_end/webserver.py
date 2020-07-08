@@ -14,6 +14,7 @@ import traceback
 from urllib.parse import urlencode
 import urllib.request
 import uuid
+import sqlite3
 
 def make_app():
     app = Application([
@@ -41,6 +42,48 @@ def make_app():
     ], autoescape=None)
 
     return app
+
+# def create_table(db, table_name):
+#     """Create database table given a database connection 'db'.
+#     Removes any existing data that might be in the
+#     table."""
+
+#     cursor = db.cursor()
+#     cursor.execute("DROP TABLE IF EXISTS " + table_name)
+#     cursor.execute("""
+#     CREATE TABLE table_name (
+#        thing text
+#     )
+#     """)
+
+# def store_value(db, value):                   #incorporate this function into other functions that save stuff
+#     """Store a new value in the database"""
+
+#     cursor = db.cursor()
+#     cursor.execute("INSERT INTO table_name (thing) VALUES (?)", [value])
+#     db.commit()
+
+# def get_values(db):                           #incorporate this function into other functions that save stuff
+#    """Return a list of values from the database"""
+
+#    cursor = db.cursor()
+#    cursor.execute("SELECT thing FROM values")
+#    result = []
+#    for row in cursor:
+#        result.append(row['thing'])
+#    return result
+
+# @app.route('/')                                   #not sure what this does
+# def index(db):
+#     """Home page"""
+
+#     info = {
+#         'title': 'Welcome Home!',
+#         'values': get_values(db)
+#     }
+
+#     return template('dbvalues.tpl', info)             #not sure what template does
+
 
 class HomeHandler(RequestHandler):
     def prepare(self):
@@ -288,7 +331,7 @@ class ProblemHandler(BaseUserHandler):
             user = self.get_current_user()
             show = show_hidden(self)
             problems = get_problems(course, assignment, show)
-            problem_details=get_problem_details(course, assignment, problem, format_content=True)
+            problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True)
 
             self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, submissions=get_submissions(course, assignment, problem, user), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -347,13 +390,16 @@ class EditProblemHandler(BaseUserHandler):
                         expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
 
                         if error_occurred:
-                            result = expected_output
+                            result = expected_output.decode()
                         else:
-                            problem_details["expected_output"] = expected_output
+                            if problem_details["output_type"] == "txt":
+                                problem_details["expected_output"] = expected_output.decode()
+                            else:
+                                problem_details["expected_output"] = expected_output
 
                             save_problem(problem_basics, problem_details)
                             problem_basics = get_problem_basics(course, assignment, problem)
-                            problem_details = get_problem_details(course, assignment, problem, parse_data_urls=True)
+                            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
                             result = "Success: The problem was saved!"
 
             problems = get_problems(course, assignment)
@@ -397,12 +443,16 @@ class RunCodeHandler(BaseUserHandler):
 
         try:
             code_output, error_occurred = exec_code(env_dict, code, problem_basics, problem_details, request=None)
+            if problem_details["output_type"] == "txt" or problem_details["output_type"] == "jpeg" and error_occurred:
+                code_output = code_output.decode()
+            else:
+                code_output = encode_image_bytes(code_output)
 
             out_dict["code_output"] = format_output_as_html(code_output)
             out_dict["error_occurred"] = error_occurred
+
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
-            out_dict["error_occurred"] = True
 
         self.write(json.dumps(out_dict))
 
@@ -424,25 +474,19 @@ class CheckProblemHandler(BaseUserHandler):
             else:
                 code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict, code, problem_basics, problem_details, self.request)
 
-            out_dict["code_output"] = format_output_as_html(code_output)
+            out_dict["code_output"] = format_output_as_html(encode_image_bytes(code_output))
             out_dict["error_occurred"] = error_occurred
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
 
             save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
+
         except ConnectionError as inst:
             out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
-
-class ViewAnswerHandler(RequestHandler):
-    def get(self, course, assignment, problem):
-        try:
-            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
 
 class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, problem, submission_id):
@@ -456,11 +500,13 @@ class GetSubmissionHandler(BaseUserHandler):
             elif problem_details["output_type"] == "txt":
                 submission_info["diff_output"] =  find_differences_txt(problem_details, submission_info["code_output"], submission_info["passed"])
             else:
-                diff_percent, diff_image = diff_jpg(decode_image_string(problem_details["expected_output"]), decode_image_string(submission_info["code_output"]))
+                diff_percent, diff_image = diff_jpg(problem_details["expected_output"], submission_info["code_output"])
                 submission_info["diff_output"] =  find_differences_jpg(problem_details, submission_info["passed"], diff_image)
+                submission_info["code_output"] = format_output_as_html(encode_image_bytes(submission_info["code_output"]))
+
         except Exception as inst:
-            submission_info["error_occurred"] = True
-            submission_info["diff_output"] = ""
+            #submission_info["error_occurred"] = True
+            #submission_info["diff_output"] = ""
             submission_info["code_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(submission_info))
@@ -495,7 +541,7 @@ class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
-            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem), last_submission = get_last_submission(course, assignment, problem, user), format_content=True)
+            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem), last_submission = get_last_submission(course, assignment, problem, user), format_content=True, format_expected_output=True)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -594,15 +640,24 @@ class LoggingFilter(logging.Filter):
         record.user_id = user_id_var.get("-")
         return True
 
-# See https://quanttype.net/posts/2020-02-05-request-id-logging.html
-class LoggingFilter(logging.Filter):
-    def filter(self, record):
-        record.user_id = user_id_var.get("-")
-        return True
-
 if __name__ == "__main__":
     if "PORT" in os.environ:
         application = make_app()
+
+
+        # If you wanted to maintain the contents of the database between runs, you would arrange to run create_table only once or write it so that 
+        # it doesn't remove any existing data. One common solution is to put the database creation code into a separate module that you can run once 
+        # to create or reset the database. You could then remove that code from the main web application module.
+
+        # # code to connect to the database and create the tables
+        #if not sqlite3.connect("test.db"):
+        #create_database()
+
+        # # code to run our web application
+        # plugin = bottle.ext.sqlite.Plugin(dbfile=DATABASE_NAME)
+        # #app.install(plugin)
+        # application.install(plugin)
+
 
         #TODO: Store this securely or have a better way of authenticating.
         password = "abc"
