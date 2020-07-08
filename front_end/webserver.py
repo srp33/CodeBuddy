@@ -331,7 +331,7 @@ class ProblemHandler(BaseUserHandler):
             user = self.get_current_user()
             show = show_hidden(self)
             problems = get_problems(course, assignment, show)
-            problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True)
+            problem_details=get_problem_details(course, assignment, problem, format_content=True)
 
             self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, submissions=get_submissions(course, assignment, problem, user), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -341,7 +341,7 @@ class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             problems = get_problems(course, assignment)
-            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
+            problem_details = get_problem_details(course, assignment, problem, parse_data_urls=True)
 
             self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -399,7 +399,7 @@ class EditProblemHandler(BaseUserHandler):
 
                             save_problem(problem_basics, problem_details)
                             problem_basics = get_problem_basics(course, assignment, problem)
-                            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
+                            problem_details = get_problem_details(course, assignment, problem, parse_data_urls=True)
                             result = "Success: The problem was saved!"
 
             problems = get_problems(course, assignment)
@@ -541,7 +541,7 @@ class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
-            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem), last_submission = get_last_submission(course, assignment, problem, user), format_content=True, format_expected_output=True)
+            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem), last_submission = get_last_submission(course, assignment, problem, user), format_content=True)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
