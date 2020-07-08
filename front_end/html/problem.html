@@ -149,6 +149,11 @@
             }
 
               function get_submission(submission_id) {
+                  var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
+                  for (var i = submission_buttons.length - 1; i >= 0; i--) {
+                    submission_buttons[i].style.border = "none";
+                  }
+                  submission_buttons[submission_id - 1].style.border = "solid #34495e";
                   result_div = document.getElementById("result");
                   result_div.scrollIntoView();
                   document.getElementById("code_output").innerHTML = "";

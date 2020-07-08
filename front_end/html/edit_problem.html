@@ -87,6 +87,7 @@
     </script>
 
     <p><strong>Answer code*: </strong></p>
+    <p>Please note that if the answer code for this problem changes after students have already submitted answers, only the most recent answer code will appear when students view past submissions. Please use caution when changing the answer code; consider creating a new problem instead.</p>
     <p>
       <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" id="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea>
       <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
@@ -112,7 +113,6 @@
       editor.getSession().setMode("{{ code_completion_path }}");
       modify_auto_complete();
     </script>
-    
     
     <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide a description." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
