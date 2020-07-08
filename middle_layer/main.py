@@ -1,5 +1,6 @@
 import base64
 from fastapi import FastAPI, HTTPException
+import getpass
 import os
 from pydantic import BaseModel
 import shutil
@@ -22,7 +23,9 @@ def hello():
 
 @app.post("/exec/")
 def exec(info: ExecInfo):
-    tmp_dir_path = tempfile.mkdtemp(dir="/tmp/codebuddy_backend")
+    base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
+    os.makedirs(base_tmp_dir_path, exist_ok=True)
+    tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
     cpus = 1
 
     try:

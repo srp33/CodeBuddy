@@ -34,6 +34,7 @@ def make_app():
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
+        url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
@@ -334,7 +335,7 @@ class ProblemHandler(BaseUserHandler):
             problems = get_problems(course, assignment, show)
             problem_details=get_problem_details(course, assignment, problem, format_content=True)
 
-            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, submissions=get_submissions(course, assignment, problem, user), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -444,12 +445,11 @@ class RunCodeHandler(BaseUserHandler):
 
         try:
             code_output, error_occurred = exec_code(env_dict, code, problem_basics, problem_details, request=None)
-            if problem_details["output_type"] == "txt" or problem_details["output_type"] == "jpeg" and error_occurred:
-                code_output = code_output.decode()
-            else:
-                code_output = encode_image_bytes(code_output)
 
-            out_dict["code_output"] = format_output_as_html(code_output)
+            if problem_details["output_type"] == "txt" or error_occurred:
+                code_output = format_output_as_html(code_output)
+
+            out_dict["code_output"] = code_output
             out_dict["error_occurred"] = error_occurred
 
         except Exception as inst:
@@ -475,13 +475,15 @@ class CheckProblemHandler(BaseUserHandler):
             else:
                 code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict, code, problem_basics, problem_details, self.request)
 
-            out_dict["code_output"] = format_output_as_html(encode_image_bytes(code_output))
+            if problem_details["output_type"] == "txt" or error_occurred:
+                code_output = format_output_as_html(code_output)
+
+            out_dict["code_output"] = code_output
             out_dict["error_occurred"] = error_occurred
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
 
             save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
-
         except ConnectionError as inst:
             out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except Exception as inst:
@@ -491,11 +493,11 @@ class CheckProblemHandler(BaseUserHandler):
 
 class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, problem, submission_id):
-        user = self.get_current_user()
-        problem_details = get_problem_details(course, assignment, problem)
-        submission_info = get_submission_info(course, assignment, problem, user, submission_id)
-
         try:
+            user = self.get_current_user()
+            problem_details = get_problem_details(course, assignment, problem)
+            submission_info = get_submission_info(course, assignment, problem, user, submission_id)
+
             if submission_info["error_occurred"]:
                 submission_info["diff_output"] = ""
             elif problem_details["output_type"] == "txt":
@@ -503,14 +505,25 @@ class GetSubmissionHandler(BaseUserHandler):
             else:
                 diff_percent, diff_image = diff_jpg(problem_details["expected_output"], submission_info["code_output"])
                 submission_info["diff_output"] =  find_differences_jpg(problem_details, submission_info["passed"], diff_image)
-                submission_info["code_output"] = format_output_as_html(encode_image_bytes(submission_info["code_output"]))
+                submission_info["code_output"] = format_output_as_html(submission_info["code_output"])
 
         except Exception as inst:
-            #submission_info["error_occurred"] = True
-            #submission_info["diff_output"] = ""
+            submission_info["error_occurred"] = True
+            submission_info["diff_output"] = ""
             submission_info["code_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(submission_info))
+
+class GetSubmissionsHandler(BaseUserHandler):
+    def get(self, course, assignment, problem):
+        try:
+            user = self.get_current_user()
+            problem_details = get_problem_details(course, assignment, problem)
+            submissions = get_submissions_basic(course, assignment, problem, user)
+        except Exception as inst:
+            submissions = []
+
+        self.write(json.dumps(submissions))
 
 class DataHandler(RequestHandler):
     async def get(self, course, assignment, problem, file_name):
@@ -646,8 +659,8 @@ if __name__ == "__main__":
         application = make_app()
 
 
-        # If you wanted to maintain the contents of the database between runs, you would arrange to run create_table only once or write it so that 
-        # it doesn't remove any existing data. One common solution is to put the database creation code into a separate module that you can run once 
+        # If you wanted to maintain the contents of the database between runs, you would arrange to run create_table only once or write it so that
+        # it doesn't remove any existing data. One common solution is to put the database creation code into a separate module that you can run once
         # to create or reset the database. You could then remove that code from the main web application module.
 
         # # code to connect to the database and create the tables

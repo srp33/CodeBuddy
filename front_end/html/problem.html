@@ -27,6 +27,57 @@
               <pre>{{ problem_details["test_code"] }}</pre>
             {% end %}
 
+            <h2>Your code:</h2>
+
+            <p>
+                <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
+                <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
+                  <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+                </label>
+                <label class="checkbox is-pulled-right">
+                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="modify_auto_complete()">
+                </label>
+            </p>
+
+            <div class="field is-grouped">
+              <p class="control"><button class="button is-primary is-light is-large is-halfwidth" onclick='run_code()'>Run Code</button></p>
+              <p class="control"><button class="button is-primary is-large is-halfwidth" onclick='check_code()'>Submit</button></p>
+              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Hit 'Run Code' to run your current code and view the output. Once you're ready to submit your code, hit 'Submit' to compare your output with the expected output.">
+                <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
+              </p>
+            </div>
+
+            <p><div id="result"></div></p>
+
+            {% if problem_details["show_expected"] %}
+              <div>
+                <h2 style="display: inline">Expected output:</h2>
+                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your code with the expected output to find and fix errors in your code.">
+                  <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
+                </label>
+              </div>  
+                {% if problem_details["output_type"] == "txt" %}
+                  <p><pre>{{ problem_details["expected_output"] }}</pre></p>
+                {% else %}
+                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
+                {% end %}
+            {% else %}
+              <p><em>This problem is configured so that the expected output is not shown.</em></p>
+            {% end %}
+
+            <p><span id="code_output"></span></p>
+            <p><span id="diff_output"></span></p>
+
+            {% if len(problem_details["credit"]) > 0 %}
+                <p><em>{{ problem_details["credit"] }}</em></p>
+            {% end %}  
+
+            <div id="submissions"></div>
+
+            <p>
+              <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
+            </p>
+
             <script>
             function build_code_output(json_output, error_occurred) {
               code_output = ""
@@ -146,7 +197,7 @@
                 editor.focus();
 
                 return false;
-            }
+              }
 
               function get_submission(submission_id) {
                   var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
@@ -159,20 +210,20 @@
                   document.getElementById("code_output").innerHTML = "";
                   document.getElementById("diff_output").innerHTML = "";
 
-                  $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
-                      function (data, status) {
-                          var json_data = JSON.parse(data);
-                          editor.setValue(json_data.code);
+                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
+                    function (data, status) {
+                        var json_data = JSON.parse(data);
+                        editor.setValue(json_data.code);
 
-                          display_check_code(json_data);
-                      });   
+                        display_check_code(json_data);
+                });   
 
-                  editor.focus();
+                editor.focus();
 
-                  return false;
-              }
+                return false;
+            }
 
-              function modify_auto_complete() {
+            function modify_auto_complete() {
               ac_box = document.getElementById("auto_complete");
 
               if (ac_box.checked) {
@@ -192,18 +243,6 @@
             }
             </script>
 
-            <h2>Your code:</h2>
-
-            <p>
-                <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
-                <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-                  <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
-                </label>
-                <label class="checkbox is-pulled-right">
-                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="modify_auto_complete()">
-                </label>
-            </p>
-
             <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
             <script src="/static/mode-r.js" type="text/javascript"></script>
             <script src="/static/ext-language_tools.js"></script>
@@ -220,57 +259,49 @@
               modify_auto_complete();
             </script>
 
-            <div class="field is-grouped">
-              <p class="control"><button class="button is-primary is-light is-large is-halfwidth" onclick='run_code()'>Run Code</button></p>
-              <p class="control"><button class="button is-primary is-large is-halfwidth" onclick='check_code()'>Submit</button></p>
-              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Hit 'Run Code' to run your current code and view the output. Once you're ready to submit your code, hit 'Submit' to compare your output with the expected output.">
-                <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
-              </p>
-            </div>
+            <script>
+                submissions_div = document.getElementById("submissions");
 
-            <p><div id="result"></div></p>
+                $.get("/get_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                    function (data, status) {
+                        var json_data = JSON.parse(data);
+                        var submission_html = "";
 
-            {% if problem_details["show_expected"] %}
-              <div>
-                <h2 style="display: inline">Expected output:</h2>
-                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your code with the expected output to find and fix errors in your code.">
-                  <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
-                </label>
-              </div>  
-                {% if problem_details["output_type"] == "txt" %}
-                  <p><pre>{{ problem_details["expected_output"] }}</pre></p>
-                {% else %}
-                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
-                {% end %}
-            {% else %}
-              <p><em>This problem is configured so that the expected output is not shown.</em></p>
-            {% end %}
+                        if (json_data.length > 0) {
+                            submission_html += "<h2>Past submissions:</h2>\n";
+                            submission_html += "<div class='buttons'>\n";
 
-            <p><span id="code_output"></span></p>
-            <p><span id="diff_output"></span></p>
+                            var submission_id;
+                            for (submission_id = 1; submission_id < json_data.length; submission_id++) {
+                                the_date = json_data[submission_id][1];
+                                passed = json_data[submission_id][2];
 
-            {% if len(problem_details["credit"]) > 0 %}
-              <p><em>{{ problem_details["credit"] }}</em></p>
-            {% end %}  
+                                if (passed)
+                                    submission_html += "<button style='background-color: #80cdc1; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' onclick='get_submission(" + submission_id + ")'><b>" + submission_id + ".</b> " + the_date + "</button>";
+                                else
+                                    submission_html += "<button style='background-color: #f4a582; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' onclick='get_submission(" + submission_id + ")'><b>" + submission_id + ".</b> " + the_date + "</button>";
+                            }
 
-            <h2>Past submissions:</h2>
-            {% if len(submissions) > 0 %}
-                  <div class="buttons">
-                    {% for submission in submissions %}
-                        {% if submission[1]["passed"] %}
-                            <button style="background-color: #80cdc1; display: block; color: #34495e; width: 315px" class="button is-primary is-medium" onclick='get_submission("{{ submission[0] }}")'><b>{{ submission[0] }}.</b>   {{ submission[1]["date"] }}</button>
-                        {% else %}
-                            <button style="background-color: #f4a582; display: block; color: #34495e; width: 315px" class="button is-primary is-medium" onclick='get_submission("{{ submission[0] }}")'><b>{{ submission[0] }}.</b>   {{ submission[1]["date"] }}</button>
-                        {% end %}
-                    {% end %}
-                  </div>
-            {% else %}
-                <p>You have not made any submissions for this problem.</p>
-            {% end %}
+                            submission_html += "</div>\n";
+                        }
 
-            <p>
-              <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
-            </p>
+                        submissions_div.innerHTML = submission_html;
+                });   
+
+
+//            if len(submissions) > 0
+//                <h2>Past submissions:</h2>
+//                <div class="buttons">
+//                    for submission in submissions
+//                        if submission[1]["passed"]
+//                            <button style="background-color: #80cdc1; display: block; color: #34495e; width: 315px" class="button is-primary is-medium" onclick='get_submission(" submission[0] ")'><b> submission[0] .</b>    submission[1]["date"] </button>
+//                        else 
+//                            <button style="background-color: #f4a582; display: block; color: #34495e; width: 315px" class="button is-primary is-medium" onclick='get_submission(" submission[0] ")'><b> submission[0] .</b>    submission[1]["date"] </button>
+//                         end 
+//                     end 
+//                </div>
+//             end 
+            </script>
         {% else %}
           <p>This problem does not exist.</p>
         {% end %}

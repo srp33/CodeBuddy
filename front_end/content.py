@@ -28,7 +28,7 @@ def create_database():
 
     except sqlite3.Error as error:
         print("Error while connecting to sqlite", error)
-        
+
     finally:
         if (sqliteConnection):
             sqliteConnection.close()
@@ -91,17 +91,15 @@ def get_problems(course, assignment, show_hidden=True):
 
     return sort_nested_list(problems)
 
-def get_submissions(course, assignment, problem, user):
+def get_submissions_basic(course, assignment, problem, user):
     submissions = []
 
     for submission_path in glob.glob(get_submission_dir_path(course, assignment, problem, user)):
-        id = int(os.path.basename(submission_path)[:-5])
+        submission_id = int(os.path.basename(submission_path)[:-5])
         submission_dict = load_yaml_dict(read_file(submission_path))
-        submissions.append([id, submission_dict])
+        submissions.append([submission_id, submission_dict["date"], submission_dict["passed"]])
 
-    submissions = sorted(submissions, key = lambda x: x[0])
-
-    return submissions
+    return sorted(submissions, key = lambda x: x[0])
 
 def get_course_dir_path(course):
     return get_root_dir_path() + f"/{course}/"
@@ -232,9 +230,6 @@ def get_problem_details(course, assignment, problem, format_content=False, parse
                 problem_dict["answer_description"] = ""
             else:
                 problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
-
-        if problem_dict["output_type"] == "jpeg":
-            problem_dict["expected_output"] = encode_image_bytes(problem_dict["expected_output"])
 
         if parse_data_urls:
             problem_dict["data_urls"] = "\n".join([x[0] for x in problem_dict["data_urls_info"]])

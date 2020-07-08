@@ -23,6 +23,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import base64
 import io
 from PIL import Image
 from PIL import ImageChops
@@ -30,7 +31,10 @@ from PIL import ImageChops
 class ImageCompareException(Exception):
     pass
 
-def diff_jpg(expected_bytes, answer_bytes):
+def diff_jpg(expected_image_string, answer_image_string):
+    expected_bytes = decode_image_string(expected_image_string)
+    answer_bytes = decode_image_string(answer_image_string)
+
     expected_image = Image.open(io.BytesIO(expected_bytes))
     answer_image = Image.open(io.BytesIO(answer_bytes))
     expected_image = expected_image.convert("L")
@@ -40,6 +44,9 @@ def diff_jpg(expected_bytes, answer_bytes):
     diff_percent = image_diff_percent(expected_image.size, diff_image)
 
     return diff_percent, diff_image
+
+def decode_image_string(s):
+    return base64.b64decode(s)
 
 def does_image_pass(diff_percent):
     return diff_percent < 0.1
