@@ -271,10 +271,11 @@
                             submission_html += "<h2>Past submissions:</h2>\n";
                             submission_html += "<div class='buttons'>\n";
 
-                            var submission_id;
-                            for (submission_id = 1; submission_id < json_data.length; submission_id++) {
-                                the_date = json_data[submission_id][1];
-                                passed = json_data[submission_id][2];
+                            var i;
+                            for (i = 0; i < json_data.length; i++) {
+                                submission_id = json_data[i][0];
+                                the_date = json_data[i][1];
+                                passed = json_data[i][2];
 
                                 if (passed)
                                     submission_html += "<button style='background-color: #80cdc1; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' onclick='get_submission(" + submission_id + ")'><b>" + submission_id + ".</b> " + the_date + "</button>";
@@ -287,21 +288,6 @@
 
                         submissions_div.innerHTML = submission_html;
                 });   
-
-
-//            if len(submissions) > 0
-//                <h2>Past submissions:</h2>
-//                <div class="buttons">
-//                    for submission in submissions
-//                        if submission[1]["passed"]
-//                            <button style="background-color: #80cdc1; display: block; color: #34495e; width: 315px" class="button is-primary is-medium" onclick='get_submission(" submission[0] ")'><b> submission[0] .</b>    submission[1]["date"] </button>
-//                        else 
-//                            <button style="background-color: #f4a582; display: block; color: #34495e; width: 315px" class="button is-primary is-medium" onclick='get_submission(" submission[0] ")'><b> submission[0] .</b>    submission[1]["date"] </button>
-//                         end 
-//                     end 
-//                </div>
-//             end 
-            </script>
         {% else %}
           <p>This problem does not exist.</p>
         {% end %}
