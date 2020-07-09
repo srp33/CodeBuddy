@@ -1,3 +1,4 @@
+
 code_file_path = commandArgs()[9]
 output_type = commandArgs()[10]
 
@@ -10,6 +11,8 @@ exec_text <- function(code) {
 
 exec_jpg <- function(code) {
   suppressPackageStartupMessages(library(magick))
+  suppressPackageStartupMessages(library(ggplot2))
+
   fig <- image_graph(bg="white", res=150, clip=FALSE)
 
   eval(parse(text=code))
