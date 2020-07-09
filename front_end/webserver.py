@@ -392,12 +392,9 @@ class EditProblemHandler(BaseUserHandler):
                         expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
 
                         if error_occurred:
-                            result = expected_output.decode()
+                            result = expected_output
                         else:
-                            if problem_details["output_type"] == "txt":
-                                problem_details["expected_output"] = expected_output.decode()
-                            else:
-                                problem_details["expected_output"] = expected_output
+                            problem_details["expected_output"] = expected_output
 
                             save_problem(problem_basics, problem_details)
                             problem_basics = get_problem_basics(course, assignment, problem)
