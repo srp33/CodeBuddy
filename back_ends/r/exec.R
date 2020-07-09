@@ -17,8 +17,8 @@ exec_jpg <- function(code) {
 
   eval(parse(text=code))
 
-  if (!is.null(last_plot()))
-    print(last_plot())
+  if (!is.null(ggplot2::last_plot()))
+    print(ggplot2::last_plot())
 
   dev.off()
 
