@@ -27,7 +27,7 @@
               <pre>{{ problem_details["test_code"] }}</pre>
             {% end %}
 
-            <h2>Your code:</h2>
+            <h2 id="your_code_header">Your code:</h2>
 
             <p>
                 <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
@@ -74,9 +74,9 @@
 
             <div id="submissions"></div>
 
-            <p>
+            <div>
               <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
-            </p>
+            </div>
 
             <script>
             function build_code_output(json_output, error_occurred) {
@@ -168,7 +168,6 @@
                     })
 
                 editor.focus();
-
                 return false;
             }
 
@@ -189,26 +188,23 @@
                 $.post("/check_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
                     post_data,
                     function(data, status) {
-                        var json_data = JSON.parse(data);
-
-                        display_check_code(json_data);
+                        display_check_code(JSON.parse(data));
+                        show_past_submissions();
                     });
 
                 editor.focus();
-
                 return false;
-              }
+            }
 
-              function get_submission(submission_id) {
-                  var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                  for (var i = submission_buttons.length - 1; i >= 0; i--) {
+            function get_submission(submission_id) {
+                var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
+                for (var i = submission_buttons.length - 1; i >= 0; i--) {
                     submission_buttons[i].style.border = "none";
-                  }
-                  submission_buttons[submission_id - 1].style.border = "solid #34495e";
-                  result_div = document.getElementById("result");
-                  result_div.scrollIntoView();
-                  document.getElementById("code_output").innerHTML = "";
-                  document.getElementById("diff_output").innerHTML = "";
+                }
+                submission_buttons[submission_id - 1].style.border = "solid #34495e";
+
+                document.getElementById("code_output").innerHTML = "";
+                document.getElementById("diff_output").innerHTML = "";
 
                 $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
                     function (data, status) {
@@ -216,50 +212,34 @@
                         editor.setValue(json_data.code);
 
                         display_check_code(json_data);
-                });   
+                });
 
+                document.getElementById("your_code_header").scrollIntoView();
                 editor.focus();
 
                 return false;
             }
 
             function modify_auto_complete() {
-              ac_box = document.getElementById("auto_complete");
+                ac_box = document.getElementById("auto_complete");
 
-              if (ac_box.checked) {
-                editor.setOptions({
-                enableBasicAutocompletion: false,
-                enableSnippets: true,
-                enableLiveAutocompletion: true
-                });
-              }
-              else {
-                editor.setOptions({
-                enableBasicAutocompletion: false,
-                enableSnippets: false,
-                enableLiveAutocompletion: false
-                });
-              }
+                if (ac_box.checked) {
+                    editor.setOptions({
+                    enableBasicAutocompletion: false,
+                    enableSnippets: true,
+                    enableLiveAutocompletion: true
+                    });
+                }
+                else {
+                    editor.setOptions({
+                    enableBasicAutocompletion: false,
+                    enableSnippets: false,
+                    enableLiveAutocompletion: false
+                    });
+                }
             }
-            </script>
 
-            <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
-            <script src="/static/mode-r.js" type="text/javascript"></script>
-            <script src="/static/ext-language_tools.js"></script>
-            <script>
-              ace.require("ace/ext/language_tools");
-              var editor = ace.edit("user_code", {
-                theme: "ace/theme/tomorrow",
-                autoScrollEditorIntoView: true,
-                minLines: 20,
-                fontSize: "12pt"
-              });
-              editor.focus();
-              editor.getSession().setMode("{{ code_completion_path }}");
-              modify_auto_complete();
-            </script>
-
-            <script>
+            function show_past_submissions() {
                 submissions_div = document.getElementById("submissions");
 
                 $.get("/get_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
@@ -278,16 +258,39 @@
                                 passed = json_data[i][2];
 
                                 if (passed)
-                                    submission_html += "<button style='background-color: #80cdc1; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' onclick='get_submission(" + submission_id + ")'><b>" + submission_id + ".</b> " + the_date + "</button>";
+                                    button_bg_color = "#80cdc1";
                                 else
-                                    submission_html += "<button style='background-color: #f4a582; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' onclick='get_submission(" + submission_id + ")'><b>" + submission_id + ".</b> " + the_date + "</button>";
+                                    button_bg_color = "#f4a582";
+
+                                submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' id='button_submission_${submission_id}' onclick='get_submission(${submission_id})'><b>${submission_id}.</b> ${the_date}</button>`;
                             }
 
-                            submission_html += "</div>\n";
+                            submission_html += "</div><br />\n";
                         }
 
                         submissions_div.innerHTML = submission_html;
-                });   
+                    });
+            }
+            </script>
+
+            <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
+            <script src="/static/mode-r.js" type="text/javascript"></script>
+            <script src="/static/ext-language_tools.js"></script>
+
+            <script>
+            ace.require("ace/ext/language_tools");
+            var editor = ace.edit("user_code", {
+                theme: "ace/theme/tomorrow",
+                autoScrollEditorIntoView: true,
+                minLines: 20,
+                fontSize: "12pt"
+            });
+            editor.focus();
+            editor.getSession().setMode("{{ code_completion_path }}");
+            modify_auto_complete();
+
+            show_past_submissions();
+            </script>
         {% else %}
           <p>This problem does not exist.</p>
         {% end %}
