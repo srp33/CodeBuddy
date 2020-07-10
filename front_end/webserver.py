@@ -138,31 +138,25 @@ class EditCourseHandler(BaseUserHandler):
 
     def post(self, course):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
             courses = get_courses()
             course_basics = get_course_basics(course)
             course_basics["title"] = self.get_body_argument("title").strip()
             course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             course_details = {"introduction": self.get_body_argument("introduction").strip()}
 
-            if submitted_password == password:
-                if course_basics["title"] == "" or course_details["introduction"] == "":
-                    result = "Error: Missing title or introduction."
-                else:
-                    if has_duplicate_title(courses, course, course_basics["title"]):
-                        result = "Error: A course with that title already exists."
-                    else:
-                        if re.search(r"[^\w ]", course_basics["title"]):
-                            result = "Error: The title can only contain alphanumeric characters and spaces."
-                        else:
-                            save_course(course_basics, course_details)
-                            course_basics = get_course_basics(course)
-                            courses = get_courses()
-                            result = "Success: Course information saved!"
+            if course_basics["title"] == "" or course_details["introduction"] == "":
+                result = "Error: Missing title or introduction."
             else:
-                result = "Error: Invalid password."
+                if has_duplicate_title(courses, course, course_basics["title"]):
+                    result = "Error: A course with that title already exists."
+                else:
+                    if re.search(r"[^\w ]", course_basics["title"]):
+                        result = "Error: The title can only contain alphanumeric characters and spaces."
+                    else:
+                        save_course(course_basics, course_details)
+                        course_basics = get_course_basics(course)
+                        courses = get_courses()
+                        result = "Success: Course information saved!"
 
             self.render("edit_course.html", courses=courses, assignments=get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -177,14 +171,8 @@ class DeleteCourseHandler(BaseUserHandler):
 
     def post(self, course):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
-            if submitted_password == password:
-                delete_course(get_course_basics(course))
-                result = "Success: Course deleted."
-            else:
-                result = "Error: Invalid password."
+            delete_course(get_course_basics(course))
+            result = "Success: Course deleted."
 
             self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -199,8 +187,6 @@ class ImportCourseHandler(BaseUserHandler):
 
     def post(self):
         try:
-            submitted_password = password
-
             result = ""
             if self.request.files["zip_file"][0]["content_type"] == 'application/zip':
                 zip_file_name = self.request.files["zip_file"][0]["filename"]
@@ -280,26 +266,20 @@ class EditAssignmentHandler(BaseUserHandler):
 
     def post(self, course, assignment):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
             assignment_basics = get_assignment_basics(course, assignment)
             assignment_basics["title"] = self.get_body_argument("title").strip()
             assignment_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             assignment_details = {"introduction": self.get_body_argument("introduction").strip()}
 
-            if submitted_password == password:
-                if assignment_basics["title"] == "" or assignment_details["introduction"] == "":
-                    result = "Error: Missing title or introduction."
-                else:
-                    if has_duplicate_title(get_assignments(course), assignment, assignment_basics["title"]):
-                        result = "Error: An assignment with that title already exists."
-                    else:
-                        save_assignment(assignment_basics, assignment_details)
-                        assignment_basics = get_assignment_basics(course, assignment)
-                        result = "Success: Assignment information saved!"
+            if assignment_basics["title"] == "" or assignment_details["introduction"] == "":
+                result = "Error: Missing title or introduction."
             else:
-                result = "Error: Invalid password."
+                if has_duplicate_title(get_assignments(course), assignment, assignment_basics["title"]):
+                    result = "Error: An assignment with that title already exists."
+                else:
+                    save_assignment(assignment_basics, assignment_details)
+                    assignment_basics = get_assignment_basics(course, assignment)
+                    result = "Success: Assignment information saved!"
 
             self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -314,14 +294,8 @@ class DeleteAssignmentHandler(BaseUserHandler):
 
     def post(self, course, assignment):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
-            if submitted_password == password:
-                delete_assignment(get_assignment_basics(course, assignment))
-                result = "Success: Assignment deleted."
-            else:
-                result = "Error: Invalid password."
+            delete_assignment(get_assignment_basics(course, assignment))
+            result = "Success: Assignment deleted."
 
             self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -351,9 +325,6 @@ class EditProblemHandler(BaseUserHandler):
 
     def post(self, course, assignment, problem):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
             problem_basics = get_problem_basics(course, assignment, problem)
             problem_basics["title"] = self.get_body_argument("title").strip() #required
             problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes" #required
@@ -372,34 +343,31 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["expected_output"] = ""
             problem_details["data_urls_info"] = []
 
-            result = "Error: Invalid password."
-
-            if submitted_password == password:
-                if problem_basics["title"] == "" or problem_details["instructions"] == "" or problem_details["answer_code"] == "":
-                    result = "Error: One of the required fields is missing."
+            if problem_basics["title"] == "" or problem_details["instructions"] == "" or problem_details["answer_code"] == "":
+                result = "Error: One of the required fields is missing."
+            else:
+                if has_duplicate_title(get_problems(course, assignment), problem, problem_basics["title"]):
+                    result = "Error: A problem with that title already exists in this assignment."
                 else:
-                    if has_duplicate_title(get_problems(course, assignment), problem, problem_basics["title"]):
-                        result = "Error: A problem with that title already exists in this assignment."
+                    for data_url in set(problem_details["data_urls"].split("\n")):
+                        data_url = data_url.strip()
+                        if data_url != "":
+                            contents, content_type, extension = download_file(data_url)
+                            file_name = create_md5_hash(data_url) + extension
+                            write_data_file(contents, file_name)
+                            problem_details["data_urls_info"].append([data_url, file_name, content_type])
+
+                    expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
+
+                    if error_occurred:
+                        result = expected_output
                     else:
-                        for data_url in set(problem_details["data_urls"].split("\n")):
-                            data_url = data_url.strip()
-                            if data_url != "":
-                                contents, content_type, extension = download_file(data_url)
-                                file_name = create_md5_hash(data_url) + extension
-                                write_data_file(contents, file_name)
-                                problem_details["data_urls_info"].append([data_url, file_name, content_type])
+                        problem_details["expected_output"] = expected_output
 
-                        expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
-
-                        if error_occurred:
-                            result = expected_output
-                        else:
-                            problem_details["expected_output"] = expected_output
-
-                            save_problem(problem_basics, problem_details)
-                            problem_basics = get_problem_basics(course, assignment, problem)
-                            problem_details = get_problem_details(course, assignment, problem, parse_data_urls=True)
-                            result = "Success: The problem was saved!"
+                        save_problem(problem_basics, problem_details)
+                        problem_basics = get_problem_basics(course, assignment, problem)
+                        problem_details = get_problem_details(course, assignment, problem, parse_data_urls=True)
+                        result = "Success: The problem was saved!"
 
             problems = get_problems(course, assignment)
             self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
@@ -416,14 +384,8 @@ class DeleteProblemHandler(BaseUserHandler):
 
     def post(self, course, assignment, problem):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
-            if submitted_password == password:
-                delete_problem(get_problem_basics(course, assignment, problem))
-                result = "Success: Problem deleted."
-            else:
-                result = "Error: Invalid password."
+            delete_problem(get_problem_basics(course, assignment, problem))
+            result = "Success: Problem deleted."
 
             problems = get_problems(course, assignment)
             self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
@@ -670,10 +632,8 @@ if __name__ == "__main__":
         # application.install(plugin)
 
 
-        #TODO: Store this securely or have a better way of authenticating.
-        password = "abc"
         #TODO: Use something other than the password. Store in a file?
-        application.settings["cookie_secret"] = password
+        application.settings["cookie_secret"] = "abc"
         env_dict = get_environments()
 
         server = tornado.httpserver.HTTPServer(application)
