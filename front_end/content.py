@@ -195,25 +195,39 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
 
     return problem_dict
 
-def get_titles(file_path):
-    new_path = ""
+def split_url(file_path):
+
+    id_dict = {}
+    id_dict["name"] = ""
+    id_dict["course_id"] = ""
+    id_dict["assignment_id"] = ""
+    id_dict["problem_id"] = ""
     re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
     if re_match:
         id_dict = re_match.groupdict()
-        #for key, value in id_dict.items():
-            #print (key)
-            #print (value)
+        for key, value in id_dict.items():
+            if value == None:
+                id_dict[key] = ""
+    return id_dict
+
+def get_titles(file_path):
+
+    new_dict = {}
+    new_dict[0] = ""
+    new_dict[1] = ""
+    new_dict[2] = ""
+    new_dict[3] = ""
+
+    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
+    if re_match:
+        id_dict = re_match.groupdict()
 
         course_title = ""
         assignment_title = ""
         problem_title = ""
-    
-        #courses = get_courses()
-        #for course in courses:
+
         for course_id in get_course_ids():
-            #print (course)
             course_basics = get_course_basics(course_id)
-            #print (course_basics)
             if id_dict["course_id"] == course_id:
                 course_title = course_basics["title"]
 
@@ -227,15 +241,15 @@ def get_titles(file_path):
                     if id_dict["problem_id"] == problem_id:
                         problem_title = problem_basics["title"]
       
-        new_path = id_dict["name"]
-        if course_title != "":
-            new_path += "/" + course_title
-            if assignment_title != "":
-                new_path += "/" + assignment_title
-                if problem_title != "":
-                    new_path += "/" + problem_title
+        new_dict[0] = id_dict["name"]
+        new_dict[1] = course_title
+        new_dict[2] = assignment_title
+        new_dict[3] = problem_title
 
-    return new_path
+    if new_dict[0] == "":
+        new_dict[0] = "home"
+
+    return new_dict
 
 def sort_by_title(nested_list):
     l_dict = {}
