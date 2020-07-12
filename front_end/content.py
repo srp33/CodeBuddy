@@ -99,7 +99,7 @@ def get_submissions_basic(course, assignment, problem, user):
         submission_dict = load_yaml_dict(read_file(submission_path))
         submissions.append([submission_id, submission_dict["date"], submission_dict["passed"]])
 
-    return sorted(submissions, key = lambda x: x[0])
+    return sorted(submissions, key = lambda x: x[0], reverse=True)
 
 def get_course_dir_path(course):
     return get_root_dir_path() + f"/{course}/"
