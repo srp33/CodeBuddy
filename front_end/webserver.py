@@ -32,7 +32,7 @@ def make_app():
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
-        url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
+        url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
@@ -309,7 +309,7 @@ class ProblemHandler(BaseUserHandler):
             problems = get_problems(course, assignment, show)
             problem_details=get_problem_details(course, assignment, problem, format_content=True)
 
-            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], num_submissions=get_num_submissions(course, assignment, problem, user), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -416,7 +416,7 @@ class RunCodeHandler(BaseUserHandler):
 
         self.write(json.dumps(out_dict))
 
-class CheckProblemHandler(BaseUserHandler):
+class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, problem):
         user = self.get_current_user()
         code = self.get_body_argument("user_code").replace("\r", "")
@@ -426,7 +426,7 @@ class CheckProblemHandler(BaseUserHandler):
         problem_basics = get_problem_basics(course, assignment, problem)
         problem_details = get_problem_details(course, assignment, problem)
 
-        out_dict = {"error_occurred": True, "passed": False, "diff_output": ""}
+        out_dict = {"error_occurred": True, "passed": False, "diff_output": "", "submission_id": ""}
 
         try:
             if problem_details["output_type"] == "txt":
@@ -441,8 +441,7 @@ class CheckProblemHandler(BaseUserHandler):
             out_dict["error_occurred"] = error_occurred
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
-
-            save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
+            out_dict["submission_id"] = save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
         except ConnectionError as inst:
             out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except Exception as inst:
@@ -455,6 +454,7 @@ class GetSubmissionHandler(BaseUserHandler):
         try:
             user = self.get_current_user()
             problem_details = get_problem_details(course, assignment, problem)
+
             submission_info = get_submission_info(course, assignment, problem, user, submission_id)
 
             if submission_info["error_occurred"]:

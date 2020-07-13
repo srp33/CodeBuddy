@@ -40,9 +40,12 @@
             </p>
 
             <div class="field is-grouped">
-              <p class="control"><button class="button is-primary is-light is-large is-halfwidth" onclick='run_code()'>Run Code</button></p>
-              <p class="control"><button class="button is-primary is-large is-halfwidth" onclick='check_code()'>Submit</button></p>
-              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Hit 'Run Code' to run your current code and view the output. Once you're ready to submit your code, hit 'Submit' to compare your output with the expected output.">
+              <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()'>Submit</button></p>
+              <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
+              {% if num_submissions > 0 %}
+                <p class="control"><button class="button is-primary is-light is-large is-half" onclick='get_submission(last_submission_id)'>Revert to previous submission</button></p>
+              {% end %}
+              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run Code'. {% if num_submissions > 0 %}At any time, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.{% end %}">
                 <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
               </p>
             </div>
@@ -101,7 +104,7 @@
               return code_output;
             }
 
-            function display_check_code(json_data) {
+            function check_code(json_data) {
               var code_output = "<h2>Your output:</h2>\n\n";
               var diff_output = "";
               var result = "";
@@ -171,7 +174,7 @@
                 return false;
             }
 
-            function check_code() {
+            function submit() {
                 user_code = editor.getValue();
 
                 if (user_code.trim() == "")
@@ -185,11 +188,15 @@
 
                 post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
 
-                $.post("/check_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                $.post("/submit/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
                     post_data,
                     function(data, status) {
-                        display_check_code(JSON.parse(data));
+                        json_data = JSON.parse(data);
+                        check_code(json_data);
+
                         show_past_submissions();
+                        if (json_data.submission_id != "")
+                            last_submission_id = json_data.submission_id;
                     });
 
                 editor.focus();
@@ -210,8 +217,7 @@
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         editor.setValue(json_data.code);
-
-                        display_check_code(json_data);
+                        check_code(json_data);
                 });
 
                 document.getElementById("your_code_header").scrollIntoView();
@@ -290,6 +296,7 @@
             modify_auto_complete();
 
             show_past_submissions();
+            last_submission_id = {{ num_submissions }};
             </script>
         {% else %}
           <p>This problem does not exist.</p>

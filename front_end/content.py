@@ -177,17 +177,17 @@ def get_next_prev_problems(course, assignment, problem, problems):
     return {"previous": prev_problem, "next": next_problem}
 
 def get_next_submission_id(course, assignment, problem, user):
-    num_submissions = 0
-    for submission in glob.glob(get_submission_dir_path(course, assignment, problem, user)):
-        num_submissions += 1
-    return num_submissions + 1
+    return get_num_submissions(course, assignment, problem, user) + 1
 
 def get_last_submission(course, assignment, problem, user):
-    last_submission_id = get_next_submission_id(course, assignment, problem, user) - 1
+    last_submission_id = get_num_submissions(course, assignment, problem, user)
     file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{last_submission_id}.yaml"
     last_submission = load_yaml_dict(read_file(file_path))
 
     return last_submission
+
+def get_num_submissions(course, assignment, problem, user):
+    return len(glob.glob(f"{get_submission_dir_path(course, assignment, problem, user)}"))
 
 def get_submission_info(course, assignment, problem, user, submission_id):
     return load_yaml_dict(read_file(get_submission_file_path(course, assignment, problem, user, submission_id)))
@@ -287,6 +287,8 @@ def save_submission(course, assignment, problem, user, code, code_output, passed
     submission_id = get_next_submission_id(course, assignment, problem, user)
     submission_dict = {"code": code, "code_output": code_output, "passed": passed, "date": date, "error_occurred": error_occurred}
     write_file(convert_dict_to_yaml(submission_dict), get_submission_file_path(course, assignment, problem, user, submission_id))
+
+    return submission_id
 
 def delete_problem(problem_basics):
     dir_path = get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"])
