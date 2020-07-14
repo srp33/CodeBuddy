@@ -217,7 +217,8 @@
     <p>
       {% if problem_basics["exists"] %}
         <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a> |
-        <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a>
+        <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a> |
+        <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem submissions</a>
       {% end %}
     </p>
 

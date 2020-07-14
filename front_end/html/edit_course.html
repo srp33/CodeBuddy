@@ -42,7 +42,8 @@
     {% if course_basics["exists"] %}
       <a href="/course/{{ course_basics["id"] }}">Done editing</a> |
       <a href="/export_course/{{ course_basics["id"] }}">Export course</a> |
-      <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
+      <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a> |
+      <a href="/delete_course_submissions/{{ course_basics["id"] }}">Delete course submissions</a>
     {% end %}
 </p>
 

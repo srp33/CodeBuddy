@@ -23,14 +23,17 @@ def make_app():
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
         url(r"\/delete_course\/([^\/]+)?", DeleteCourseHandler, name="delete_course"),
+        url(r"\/delete_course_submissions\/([^\/]+)?", DeleteCourseSubmissionsHandler, name="delete_course_submissions"),
         url(r"\/import_course", ImportCourseHandler, name="import_course"),
         url(r"\/export_course\/([^\/]+)?", ExportCourseHandler, name="export_course"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
         url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
         url(r"\/delete_assignment\/([^\/]+)\/([^\/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
+        url(r"\/delete_assignment_submissions\/([^\/]+)\/([^\/]+)?", DeleteAssignmentSubmissionsHandler, name="delete_assignment_submissions"),
         url(r"\/problem\/([^\/]+)\/([^\/]+)/([^\/]+)", ProblemHandler, name="problem"),
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
+        url(r"\/delete_problem_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemSubmissionsHandler, name="delete_problem_submissions"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
@@ -178,6 +181,22 @@ class DeleteCourseHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+class DeleteCourseSubmissionsHandler(BaseUserHandler):
+    def get(self, course):
+        try:
+            self.render("delete_course_submissions.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course):
+        try:
+            delete_course_submissions(get_course_basics(course))
+            result = "Success: Course submissions deleted."
+
+            self.render("delete_course_submissions.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 class ImportCourseHandler(BaseUserHandler):
     def get(self):
         try:
@@ -301,6 +320,22 @@ class DeleteAssignmentHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+class DeleteAssignmentSubmissionsHandler(BaseUserHandler):
+    def get(self, course, assignment):
+        try:
+            self.render("delete_assignment_submissions.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, assignment):
+        try:
+            delete_assignment_submissions(get_assignment_basics(course, assignment))
+            result = "Success: Assignment submissions deleted."
+
+            self.render("delete_assignment_submissions.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 class ProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
@@ -389,6 +424,24 @@ class DeleteProblemHandler(BaseUserHandler):
 
             problems = get_problems(course, assignment)
             self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class DeleteProblemSubmissionsHandler(BaseUserHandler):
+    def get(self, course, assignment, problem):
+        try:
+            problems = get_problems(course, assignment)
+            self.render("delete_problem_submissions.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, assignment, problem):
+        try:
+            delete_problem_submissions(get_problem_basics(course, assignment, problem))
+            result = "Success: Problem submissions deleted."
+
+            problems = get_problems(course, assignment)
+            self.render("delete_problem_submissions.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
