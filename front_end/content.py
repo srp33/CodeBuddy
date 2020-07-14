@@ -292,15 +292,14 @@ def save_submission(course, assignment, problem, user, code, code_output, passed
 
 def delete_problem(problem_basics):
     dir_path = get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"])
-    if os.path.exists(dir_path):
-        shutil.rmtree(dir_path)
+    shutil.rmtree(dir_path, ignore_errors=True)
+    shutil.rmtree(f"/submissions/{problem_basics['assignment']['course']['id']}/{problem_basics['assignment']['id']}/{problem_basics['id']}", ignore_errors=True)
 
 def delete_assignment(assignment_basics):
     dir_path = get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"])
-    if os.path.exists(dir_path):
-        shutil.rmtree(dir_path)
+    shutil.rmtree(dir_path, ignore_errors=True)
+    shutil.rmtree(f"/submissions/{assignment_basics['course']['id']}/{assignment_basics['id']}", ignore_errors=True)
 
 def delete_course(course_basics):
-    dir_path = get_course_dir_path(course_basics["id"])
-    if os.path.exists(dir_path):
-        shutil.rmtree(dir_path)
+    shutil.rmtree(get_course_dir_path(course_basics["id"]), ignore_errors=True)
+    shutil.rmtree(f"/submissions/{course_basics['id']}", ignore_errors=True)

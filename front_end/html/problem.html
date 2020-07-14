@@ -43,7 +43,7 @@
               <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()'>Submit</button></p>
               <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
               {% if num_submissions > 0 %}
-                <p class="control"><button class="button is-primary is-light is-large is-half" onclick='get_submission(last_submission_id)'>Revert to previous submission</button></p>
+                <p class="control"><button class="button is-primary is-light is-large is-half" onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button></p>
               {% end %}
               <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run Code'. {% if num_submissions > 0 %}At any time, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.{% end %}">
                 <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
@@ -203,12 +203,14 @@
                 return false;
             }
 
-            function get_submission(submission_id) {
+            function get_submission(submission_id, scroll) {
                 var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                for (var i = submission_buttons.length - 1; i >= 0; i--) {
-                    submission_buttons[i].style.border = "none";
-                }
-                submission_buttons[submission_id - 1].style.border = "solid #34495e";
+                var i;
+                for (i = 0; i < submission_buttons.length; i++)
+                    if (submission_buttons[i].id == submission_id)
+                        submission_buttons[i].style.border = "solid #34495e";
+                    else
+                        submission_buttons[i].style.border = "none";
 
                 document.getElementById("code_output").innerHTML = "";
                 document.getElementById("diff_output").innerHTML = "";
@@ -220,7 +222,8 @@
                         check_code(json_data);
                 });
 
-                document.getElementById("your_code_header").scrollIntoView();
+                if (scroll)
+                    document.getElementById("your_code_header").scrollIntoView();
                 editor.focus();
 
                 return false;
@@ -268,7 +271,7 @@
                                 else
                                     button_bg_color = "#f4a582";
 
-                                submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' id='button_submission_${submission_id}' onclick='get_submission(${submission_id})'><b>${submission_id}.</b> ${the_date}</button>`;
+                                submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${the_date}</button>`;
                             }
 
                             submission_html += "</div><br />\n";
