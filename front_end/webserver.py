@@ -45,48 +45,6 @@ def make_app():
 
     return app
 
-# def create_table(db, table_name):
-#     """Create database table given a database connection 'db'.
-#     Removes any existing data that might be in the
-#     table."""
-
-#     cursor = db.cursor()
-#     cursor.execute("DROP TABLE IF EXISTS " + table_name)
-#     cursor.execute("""
-#     CREATE TABLE table_name (
-#        thing text
-#     )
-#     """)
-
-# def store_value(db, value):                   #incorporate this function into other functions that save stuff
-#     """Store a new value in the database"""
-
-#     cursor = db.cursor()
-#     cursor.execute("INSERT INTO table_name (thing) VALUES (?)", [value])
-#     db.commit()
-
-# def get_values(db):                           #incorporate this function into other functions that save stuff
-#    """Return a list of values from the database"""
-
-#    cursor = db.cursor()
-#    cursor.execute("SELECT thing FROM values")
-#    result = []
-#    for row in cursor:
-#        result.append(row['thing'])
-#    return result
-
-# @app.route('/')                                   #not sure what this does
-# def index(db):
-#     """Home page"""
-
-#     info = {
-#         'title': 'Welcome Home!',
-#         'values': get_values(db)
-#     }
-
-#     return template('dbvalues.tpl', info)             #not sure what template does
-
-
 class HomeHandler(RequestHandler):
     def prepare(self):
         raw_current_user_id = self.get_secure_cookie("user_id")
@@ -95,6 +53,14 @@ class HomeHandler(RequestHandler):
         if raw_current_user_id:
             user_id_var.set(raw_current_user_id.decode())
             user_logged_in_var.set(True)
+
+            # conn = create_sqlite_connection()
+            # add_row_user_info(conn, user_id_var.get())
+            # add_row_permissions(conn, user_id_var.get(), "student")
+            # print_rows(conn, "user_info")
+            # print_rows(conn, "permissions")
+            # close_sqlite_connection(conn)
+
         else:
             user_id_var.set(self.request.remote_ip)
             user_logged_in_var.set(False)
@@ -154,8 +120,8 @@ class EditCourseHandler(BaseUserHandler):
                         result = "Error: The title can only contain alphanumeric characters and spaces."
                     else:
                         save_course(course_basics, course_details)
-                        course_basics = get_course_basics(course)
-                        courses = get_courses()
+                        course_basics = get_course_basics(course) #sqlite query?
+                        courses = get_courses() #sqlite query?
                         result = "Success: Course information saved!"
 
             self.render("edit_course.html", courses=courses, assignments=get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
@@ -617,19 +583,13 @@ if __name__ == "__main__":
     if "PORT" in os.environ and "MPORT" in os.environ:
         application = make_app()
 
-
-        # If you wanted to maintain the contents of the database between runs, you would arrange to run create_table only once or write it so that
-        # it doesn't remove any existing data. One common solution is to put the database creation code into a separate module that you can run once
-        # to create or reset the database. You could then remove that code from the main web application module.
-
-        # # code to connect to the database and create the tables
-        #if not sqlite3.connect("test.db"):
-        #create_database()
-
-        # # code to run our web application
-        # plugin = bottle.ext.sqlite.Plugin(dbfile=DATABASE_NAME)
-        # #app.install(plugin)
-        # application.install(plugin)
+        try:
+            conn = create_sqlite_connection()
+            create_sqlite_tables(conn)
+        except Error as e:
+            print(e)
+        finally:
+            close_sqlite_connection(conn)
 
 
         #TODO: Use something other than the password. Store in a file?

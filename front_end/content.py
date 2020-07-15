@@ -7,51 +7,233 @@ from yaml import load
 from yaml import Loader
 import zipfile
 import sqlite3
+from sqlite3 import Error
+import atexit
 
 def get_environments():
     return load_yaml_dict(read_file("/Environments.yaml"))
 
-def create_database():
-    print(os.access("/submissions", os.W_OK))
-    print("directory: " + os.getcwd())
-    sqliteConnection = sqlite3.connect("/submissions/test.db")
+def create_sqlite_connection():
+    conn = None
     try:
-        #sqliteConnection = sqlite3.connect("test.db")
-        cursor = sqliteConnection.cursor()
-        print("Database created and successfully connected to SQLite")
+        conn = sqlite3.connect(r"/submissions/test.db")
+        print("SQLite connection established")
+        return conn
+    except Error as e:
+        print(e)
+    return conn
 
-        #sqlite_select_Query = "select sqlite_version();"
-        cursor.execute("select sqlite_version();")
-        record = cursor.fetchall()
-        print("SQLite database version is: ", record)
-        cursor.close()
+def close_sqlite_connection(conn):
+    conn.close()
+    print("The SQLite connection is closed")
 
-    except sqlite3.Error as error:
-        print("Error while connecting to sqlite", error)
+def create_table(conn, create_table_sql):
+    try:
+        c = conn.cursor()
+        c.execute(create_table_sql)
+    except Error as e:
+        print(e)
 
-    finally:
-        if (sqliteConnection):
-            sqliteConnection.close()
-            print("The SQLite connection is closed")
-    # db = sqlite3.connect("test.db")
-    # if not db:
-    #     create_table(db)
+def print_tables(conn):
+    c = conn.cursor()
+    c.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    #print(c.fetchall())
+    for row in c.fetchall():
+        print(row)
 
-#  def create_table(table_name):
-#      db = sqlite3.connect("test.db")
-#      #if not db:
-#      #    create_table(db)
-#      #Create database table given a database connection 'db'.
+def print_rows(conn, table):
+    c = conn.cursor()
+    c.execute(''' SELECT * FROM ''' + table + ''';''')
+    rows = c.fetchall()
+    for row in rows:
+        print(row)
 
-#      cursor = db.cursor()
-#      cursor.execute("DROP TABLE IF EXISTS " + table_name)
-#      cursor.execute("""
-#      CREATE TABLE table_name (
-#         thing text
-#      )
-#      """)
+def delete_row_with_attribute(conn, row_name, row_value, table):
+    sql = 'DELETE FROM ' + table + ' WHERE ' + row_name + '=?'
+    c = conn.cursor()
+    c.execute(sql, (row_value,))
+    conn.commit()
 
+def delete_col(conn, table, cols_to_keep): #only works if not deleting primary key, works for multiple rows I think
+    cur = conn.cursor()
 
+    sql_new_table_cols = ""
+    new_col_list = ""
+
+    for col in cols_to_keep:
+        if row == cols_to_keep[0]:
+            sql_new_table_cols += col + " text PRIMARY KEY, "
+            new_col_list += col + ", "
+        elif col == cols_to_keep[-1]:
+            sql_new_table_cols += col + " text NOT NULL"
+            new_col_list += col
+        else:
+            sql_new_table_cols += col + " text NOT NULL, "
+            new_col_list += col + ", "
+
+    sql = """ PRAGMA foreign_keys=off;
+                BEGIN TRANSACTION;
+
+                CREATE TABLE IF NOT EXISTS new_table (""" + sql_new_table_cols + """);
+
+                INSERT INTO new_table(""" + new_col_list + """)
+                SELECT """ + new_col_list + """
+                FROM """ + table + """;
+
+                DROP TABLE """ + table + """;
+
+                ALTER TABLE new_table RENAME TO """ + table + """; 
+
+                COMMIT;
+
+                PRAGMA foreign_keys=on; """
+
+    #cur.execute() #need to have a separate execute statement for each sqlite command
+
+    cur.execute(sql)
+
+def delete_all_rows(conn, table):
+    sql = 'DELETE FROM ' + table
+    cur = conn.cursor()
+    cur.execute(sql)
+    conn.commit()
+
+def delete_table(conn, table):
+    sql = 'DROP TABLE ' + table
+    cur = conn.cursor()
+    cur.execute(sql)
+    conn.commit()
+
+def add_row(conn, table, col_list, row_info): #only works if there are 3 columns :/
+    sql = ''' INSERT INTO ''' + table + ''' (''' + col_list + ''')
+              VALUES(?,?,?) '''
+    cur = conn.cursor()
+    row = (row_info)
+    cur.execute(sql, row)
+    conn.commit()
+    return cur.lastrowid
+
+def add_row_user_info(conn, user_id):
+    c = conn.cursor()
+    c.execute(''' INSERT INTO user_info (user_id) VALUES (?)''', [user_id])
+    conn.commit()
+
+def add_row_permissions(conn, user_id, role):
+    c = conn.cursor()
+    c.execute(''' INSERT INTO permissions (user_id, role) VALUES (?, ?)''', [user_id, role])
+    conn.commit()
+
+def add_row_courses(conn, course_id, title, visible, introduction):
+    c = conn.cursor()
+    c.execute(''' INSERT INTO courses (course_id, title, visible, introduction) VALUES (?, ?, ?, ?)''', [course_id, title, visible, introduction])
+    conn.commit()
+
+def add_row_assignments(conn, course_id, assignment_id, title, visible, introduction):
+    c = conn.cursor()
+    c.execute(''' INSERT INTO courses (course_id, assignment_id, title, visible, introduction) VALUES (?, ?, ?, ?, ?)''', [course_id, assignment_id, title, visible, introduction])
+    conn.commit()
+
+def add_row_problems(conn, course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_urls_info, environment, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code):
+    c = conn.cursor()
+    c.execute(''' INSERT INTO courses (course_id, assignment_id, title, visible, introduction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', [course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_urls_info, environment, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code])
+    conn.commit()
+
+def add_row_submissions(conn, course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred):
+    c = conn.cursor()
+    c.execute(''' INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', [course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred])
+    conn.commit()
+
+def create_sqlite_tables(conn): #make id's integers?
+    create_user_info_table = """ CREATE TABLE IF NOT EXISTS user_info (
+                                        user_id text PRIMARY KEY
+                                    ); """
+
+    create_permissions_table = """ CREATE TABLE IF NOT EXISTS permissions (
+                                        user_id	text NOT NULL, 
+                                        role text NOT NULL,
+                                        FOREIGN KEY (user_id) REFERENCES user_info (user_id),
+                                        PRIMARY KEY (user_id)
+                                    ); """
+
+    create_courses_table = """ CREATE TABLE IF NOT EXISTS courses (
+                                    course_id text NOT NULL,
+                                    title text NOT NULL,
+                                    visible integer NOT NULL,
+                                    introduction text,
+                                    PRIMARY KEY (course_id)
+                                ); """
+
+    create_assignments_table = """ CREATE TABLE IF NOT EXISTS assignments (
+                                        course_id text NOT NULL,
+                                        assignment_id text NOT NULL,
+                                        title text NOT NULL,
+                                        visible integer NOT NULL,
+                                        introduction text,
+                                        FOREIGN KEY (course_id) REFERENCES courses (course_id),
+                                        PRIMARY KEY (assignment_id)
+                                    ); """
+
+    create_problems_table = """ CREATE TABLE IF NOT EXISTS problems (
+                                    course_id text NOT NULL,
+                                    assignment_id text NOT NULL,
+                                    problem_id text NOT NULL,
+                                    title text NOT NULL,
+                                    visible integer NOT NULL,
+                                    answer_code text NOT NULL,
+                                    answer_description text,
+                                    credit text,
+                                    data_urls_info text,
+                                    environment text NOT NULL,
+                                    expected_output text NOT NULL,
+                                    instructions text NOT NULL,
+                                    output_type text NOT NULL,
+                                    show_answer integer NOT NULL,
+                                    show_expected integer NOT NULL,
+                                    show_test_code integer NOT NULL,
+                                    test_code text,
+                                    FOREIGN KEY (course_id) REFERENCES courses (course_id),
+                                    FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id),
+                                    PRIMARY KEY (problem_id)
+                                ); """
+
+    create_submissions_table = """ CREATE TABLE IF NOT EXISTS submissions (
+                                        course_id text NOT NULL,
+                                        assignment_id text NOT NULL,
+                                        problem_id text NOT NULL,
+                                        user_id text NOT NULL,
+                                        submission_id integer NOT NULL,
+                                        code text NOT NULL,
+                                        code_output text NOT NULL,
+                                        passed integer NOT NULL,
+                                        date text NOT NULL,
+                                        error_occurred integer NOT NULL,
+                                        FOREIGN KEY (user_id) REFERENCES user_info(user_id),
+                                        PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
+                                    ); """
+
+    # create a database connection
+    #conn = create_sqlite_connection()
+
+    # create tables
+    if conn is not None:
+        create_table(conn, create_user_info_table)
+        create_table(conn, create_permissions_table)
+        create_table(conn, create_courses_table)
+        create_table(conn, create_assignments_table)
+        create_table(conn, create_problems_table)
+        create_table(conn, create_submissions_table)
+
+        #add_row_user_info(conn, "ajohns58")
+        #add_row_permissions(conn, "ajohns58", "student")
+        print_rows(conn, "user_info")
+        print_rows(conn, "permissions")
+        
+        print_tables(conn)
+
+    else:
+        print("Error! Cannot create the database connection.")
+    
+    #close_sqlite_connection(conn)
 
 def get_root_dir_path():
     return "/course"
@@ -270,10 +452,20 @@ def save_course(course_basics, course_details):
     write_file(convert_dict_to_yaml(basics_to_save), get_course_dir_path(course_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(course_details), get_course_dir_path(course_basics["id"]) + "details")
 
+    conn = create_sqlite_connection()
+    add_row_courses(conn, course_basics["id"], course_basics["title"], course_basics["visible"], course_details["introduction"])
+    print_rows(conn, "courses")
+    close_sqlite_connection(conn)
+
 def save_assignment(assignment_basics, assignment_details):
     basics_to_save = {"id": assignment_basics["id"], "title": assignment_basics["title"], "visible": assignment_basics["visible"]}
     write_file(convert_dict_to_yaml(basics_to_save), get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(assignment_details), get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"]) + "details")
+
+    conn = create_sqlite_connection()
+    add_row_assignments(conn, assignment_basics["course"]["id"], assignment_basics["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"])
+    print_rows(conn, "assignments")
+    close_sqlite_connection(conn)
 
 def save_problem(problem_basics, problem_details):
     if "data_urls" in problem_details:
@@ -283,10 +475,20 @@ def save_problem(problem_basics, problem_details):
     write_file(convert_dict_to_yaml(basics_to_save), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "basics")
     write_file(convert_dict_to_yaml(problem_details), get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]) + "details")
 
+    conn = create_sqlite_connection()
+    add_row_problems(conn, problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"], problem_basics["title"], problem_basics["visible"], problem_details["answer_code"], problem_details["answer_description"], problem_details["credit"], problem_details["data_urls_info"], problem_details["environment"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"])
+    print_rows(conn, "problems")
+    close_sqlite_connection(conn)
+
 def save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred):
     submission_id = get_next_submission_id(course, assignment, problem, user)
     submission_dict = {"code": code, "code_output": code_output, "passed": passed, "date": date, "error_occurred": error_occurred}
     write_file(convert_dict_to_yaml(submission_dict), get_submission_file_path(course, assignment, problem, user, submission_id))
+
+    conn = create_sqlite_connection()
+    add_row_submissions(conn, course, assignment, problem, user, submission_id, code, code_output, passed, date, error_occurred)
+    print_rows(conn, "submissions")
+    close_sqlite_connection(conn)
 
 def delete_problem(problem_basics):
     dir_path = get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"])
