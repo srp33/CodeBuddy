@@ -41,5 +41,5 @@ RUN bash /app/build_html.sh
 # && chmod -R 700 /course /img /static
 
 #USER $USER
-#ENTRYPOINT ["bash", "/app/startup.sh"]
-ENTRYPOINT ["bash", "/etc/cron.hourly/summarize_logs.sh"]
+ENTRYPOINT ["bash", "/app/startup.sh"]
+#ENTRYPOINT ["bash", "/etc/cron.hourly/summarize_logs.sh"]

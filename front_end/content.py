@@ -1,4 +1,5 @@
 import glob
+import gzip
 from helper import *
 import io
 import os
@@ -250,6 +251,39 @@ def get_titles(file_path):
         new_dict[0] = "home"
 
     return new_dict
+
+def get_logs_dict(file_path, year="No filter", month="No filter", day="No filter"):
+    new_dict = {}
+    line_num = 1
+    with gzip.open(file_path) as read_file:
+        header = read_file.readline()
+        for line in read_file:
+            line_items = line.decode().rstrip("\n").split("\t")
+            line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[1:]
+
+            new_dict[line_num] = line_items
+            line_num += 1
+
+    #filter by date
+    year_dict = {}
+    month_dict = {}
+    day_dict = {}
+
+    for key, line in new_dict.items():
+        if year == "No filter" or line[0] == year:
+            year_dict[key] = line
+    for key, line in year_dict.items():
+        if month == "No filter" or line[1] == month:
+            month_dict[key] = line
+    for key, line in month_dict.items():
+        if day == "No filter" or line[2] == day:
+            day_dict[key] = line
+
+    return day_dict
+
+def get_root_dirs_to_log():
+    root_dirs_to_log = set(["home", "course", "assignment", "problem", "check_problem", "edit_course", "edit_assignment", "edit_problem", "delete_course", "delete_assignment", "delete_problem", "view_answer", "import_course", "export_course"])
+    return root_dirs_to_log
 
 def sort_by_title(nested_list):
     l_dict = {}
