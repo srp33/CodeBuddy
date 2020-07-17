@@ -517,13 +517,6 @@ class OutputTypesHandler(RequestHandler):
             logging.error(self, traceback.format_exc())
             self.write("\n".join(["txt"]))
 
-class EditPermissionsHandler(RequestHandler):
-    def get(self, course):
-        try:
-            self.render("permissions.html", courses=get_courses(), course_basics=get_course_basics(course))
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
 class SummarizeLogsHandler(RequestHandler):
     def get(self):
         try:
