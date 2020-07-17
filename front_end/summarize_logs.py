@@ -1,3 +1,4 @@
+from content import *
 import glob
 import gzip
 import json
@@ -30,24 +31,48 @@ def save_summaries(summary_dict, out_dir_path):
 
             with gzip.open(temp_file_path) as temp_file:
                 with gzip.open(out_file_path, 'w') as out_file:
-                    out_file.write(temp_file.readline())
+                    out_file.write("Timestamp\tCourse Id\tAssignment Id\tProblem Id\tValue\tName\tCourse Name\tAssignment Name\tProblem Name\n".encode())
+                    temp_file.readline()
+
+                    line_dict = {}
 
                     for line in temp_file:
                         line_items = line.decode().rstrip("\n").split("\t")
+                        url_key = "/"
+                        if line_items[1]!= "":
+                            url_key += line_items[5] + "/" + line_items[1]
+                            if line_items[2] != "":
+                                url_key += "/" + line_items[2]
+                                if line_items[3] != "":
+                                    url_key += "/" + line_items[3]
+
                         timestamp = int(line_items[0])
                         if timestamp in recent_timestamps:
-                            update_summary_dict(summary_dict, statistic, timestamp, line_items[1], float(line_items[2]))
+                            update_summary_dict(summary_dict, statistic, timestamp, url_key, float(line_items[4]))
                         else:
-                            out_file.write(line)
+                            # Save all existing values except for names in case they've changed
+                            value_dict = {}
+                            value_dict[url_key] = line_items[4]
+                            line_dict[line_items[0]] = value_dict
+
+                    for timestamp, value_dict in line_dict.items():
+                        for key, value in value_dict.items():
+                            names = get_titles(key)
+                            id_dict = split_url(key)
+                            out_file.write(f"{timestamp}\t{id_dict['course_id']}\t{id_dict['assignment_id']}\t{id_dict['problem_id']}\t{float(value):.1f}\t{names[0]}\t{names[1]}\t{names[2]}\t{names[3]}\n".encode())
+
+
         else:
             # Write header for output file
             with gzip.open(out_file_path, 'w') as out_file:
-                out_file.write("Timestamp\tKey\tValue\n".encode())
+                out_file.write("Timestamp\tCourse Id\tAssignment Id\tProblem Id\tValue\tName\tCourse Name\tAssignment Name\tProblem Name\n".encode())
 
         with gzip.open(out_file_path, 'a') as out_file:
             for timestamp, value_dict in sorted(statistic_dict.items()):
                 for key, value in sorted(value_dict.items()):
-                    out_file.write(f"{timestamp}\t{key}\t{value:.1f}\n".encode())
+                    names = get_titles(key)
+                    id_dict = split_url(key)
+                    out_file.write(f"{timestamp}\t{id_dict['course_id']}\t{id_dict['assignment_id']}\t{id_dict['problem_id']}\t{value:.1f}\t{names[0]}\t{names[1]}\t{names[2]}\t{names[3]}\n".encode())
 
 # We want the newest file (with no number at the end) to come list in the list.
 in_file_paths = glob.glob(in_file_prefix + ".*") + [in_file_prefix]

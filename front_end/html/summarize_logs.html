@@ -1,0 +1,158 @@
+
+<form method="post" action="/summarize_logs">
+
+<div class="columns">
+  <div class="column is-half">
+    <h3>CodeBuddy Summarized Logs</h3>
+    <div class="field is-grouped">
+      <div class="control">
+        <label class="label">Select File</label>
+        <div class="select is-info is-medium">
+          <select id="file_select" name="file_select">
+            <option selected disabled>Select File</option>
+            <option value="logs/summarized/HitsAnyUser.tsv.gz">HitsAnyUser</option>
+            <option value="logs/summarized/HitsPerUser.tsv.gz">HitsPerUser</option>
+            <option value="logs/summarized/LoadDuration.tsv.gz">LoadDuration</option>
+          </select>
+        </div>
+      </div>
+      <div class="control">
+        <label class="label">Filter Location</label>
+        <div class="select is-info is-medium">
+          <select id="filter_select" name="filter_select">
+            <option selected>No filter</option>
+            {% for item in filter_list %}
+              <option>{{ item }}</option>
+            {% end %}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="control">
+      <label class="label">Filter by Date</label>
+      <div class="field is-grouped">
+        <div class="control">
+          <label class="label">Year</label>
+          <div class="select is-info is-medium">
+            <select id="year_select" name="year_select">
+              <option selected>No filter</option>
+              <option>20</option>
+            </select>
+          </div>
+        </div>
+        <div class="control">
+          <label class="label">Month</label>
+          <div class="select is-info is-medium">
+            <select id="month_select" name="month_select">
+              <option selected>No filter</option>
+                {% for month in months %}
+                  <option>{{ month }}</option>
+                {% end %}
+            </select>
+          </div>
+        </div>
+        <div class="control">
+          <label class="label">Day</label>
+          <div class="select is-info is-medium">
+            <select id="day_select" name="day_select">
+              <option selected>No filter</option>
+                {% for day in days %}
+                  <option>{{ day }}</option>
+                {% end %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <input type="submit" class="button is-info is-medium is-vcentered" value="Submit"/>
+  </div>
+  <div class="column is-half">
+    <h4>Download Log Files</h4>
+    <p>
+      <p>Hits Any User <a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz" class="button is-info is-small">Download</a></p>
+      <p>Hits Per User <a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz" class="button is-info is-small">Download</a></p>
+      <p>Load Duration <a href="/logs/summarized/LoadDuration.tsv.gz" download="LoadDuration.tsv.gz" class="button is-info is-small">Download</a></p>
+    </p>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  window.onload = function() {
+    var selItem = sessionStorage.getItem("file_item");  
+    $('#file_select').val(selItem);
+    var filItem = sessionStorage.getItem("filter_item");  
+    $('#filter_select').val(filItem);
+    var yrItem = sessionStorage.getItem("year_item");  
+    $('#year_select').val(yrItem);
+    var mnItem = sessionStorage.getItem("month_item");  
+    $('#month_select').val(mnItem);
+    var dyItem = sessionStorage.getItem("day_item");  
+    $('#day_select').val(dyItem);
+    }
+    $('#file_select').change(function() { 
+        var selVal = $(this).val();
+        sessionStorage.setItem("file_item", selVal);
+    });
+    $('#filter_select').change(function() { 
+        var filVal = $(this).val();
+        sessionStorage.setItem("filter_item", filVal);
+    });
+    $('#year_select').change(function() { 
+        var yrVal = $(this).val();
+        sessionStorage.setItem("year_item", yrVal);
+    });
+    $('#month_select').change(function() { 
+        var mnVal = $(this).val();
+        sessionStorage.setItem("month_item", mnVal);
+    });
+    $('#day_select').change(function() { 
+        var dyVal = $(this).val();
+        sessionStorage.setItem("day_item", dyVal);
+    });
+</script>
+
+</form>
+
+{% if show_table %}
+  <table class="table" id="Table1">
+    <thead>
+      <tr>
+        <th>Line</th>
+        <th>Year</th>
+        <th>Month</th>
+        <th>Day</th>
+        <th>Hour</th>
+        <th>Course ID</th>
+        <th>Assignment ID</th>
+        <th>Problem ID</th>
+        <th>Value</th>
+        <th>Location</th>
+        <th>Course Title</th>
+        <th>Assignment Title</th>
+        <th>Problem Title</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for line_num, line in log_dict.items() %}
+      {% if line[8] == filter %}
+        <tr>
+          <th>{{ line_num }}</th>
+        {% for item in line %}
+          <td>{{ item }}</td> 
+        {% end %}     
+        </tr>
+      {% elif filter == "No filter" %}
+        <tr>
+          <th>{{ line_num }}</th>
+        {% for item in line %}
+          <td>{{ item }}</td> 
+        {% end %}     
+        </tr>
+      {% end %}
+    {% end %}    
+    </tbody>
+  </table>
+{% end %}  
+
+<p><a href="/">Back to Home</a></p>

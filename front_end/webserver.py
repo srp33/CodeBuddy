@@ -36,6 +36,7 @@ def make_app():
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
+        url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
         url(r"/login(/.+)", LoginHandler, name="login"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
@@ -515,6 +516,34 @@ class OutputTypesHandler(RequestHandler):
         except Exception as inst:
             logging.error(self, traceback.format_exc())
             self.write("\n".join(["txt"]))
+
+class EditPermissionsHandler(RequestHandler):
+    def get(self, course):
+        try:
+            self.render("permissions.html", courses=get_courses(), course_basics=get_course_basics(course))
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class SummarizeLogsHandler(RequestHandler):
+    def get(self):
+        try:
+            self.render("summarize_logs.html", filter_list = sorted(get_root_dirs_to_log()), months = get_days_months()[0], days = get_days_months()[1], show_table = False)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self):
+        try:
+            filter = self.get_body_argument("filter_select")
+            year = self.get_body_argument("year_select")
+            month = self.get_body_argument("month_select")
+            day = self.get_body_argument("day_select")
+            log_file = self.get_body_argument("file_select")
+            if log_file == "Select File":
+                log_file = "logs/summarized/HitsAnyUser.tsv.gz"
+
+            self.render("summarize_logs.html", filter = filter, filter_list = sorted(get_root_dirs_to_log()), months = get_days_months()[0], days = get_days_months()[1], log_dict = get_logs_dict(log_file, year, month, day), show_table = True)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):

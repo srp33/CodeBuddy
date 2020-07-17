@@ -1,7 +1,9 @@
 import glob
+import gzip
 from helper import *
 import io
 import os
+import re
 import yaml
 from yaml import load
 from yaml import Loader
@@ -10,41 +12,58 @@ import zipfile
 def get_environments():
     return load_yaml_dict(read_file("/Environments.yaml"))
 
+def get_administrators():
+    return load_yaml_dict(read_file("/Administrators.yaml"))
+
+def get_instructors():
+    return load_yaml_dict(read_file("/Instructors.yaml"))
+
 def get_root_dir_path():
     return "/course"
 
-def get_courses(show_hidden=True):
-    course_ids = [os.path.basename(x) for x in glob.glob("{}/*".format(get_root_dir_path()))]
+def get_course_ids():
+    return [os.path.basename(x) for x in glob.glob("{}/*".format(get_root_dir_path()))]
 
+def get_assignment_ids(course_id):
+    assignment_ids = []
+    for assignment_dir_path in glob.glob(get_course_dir_path(course_id) + "*"):
+        if os.path.isdir(assignment_dir_path):
+            assignment_ids.append(os.path.basename(assignment_dir_path))
+    return assignment_ids
+
+def get_problem_ids(course_id, assignment_id):
+    problem_ids = []
+    for problem_dir_path in glob.glob(get_root_dir_path() + f"/{course_id}/{assignment_id}/*"):
+        if os.path.isdir(problem_dir_path):
+            problem_ids.append(os.path.basename(problem_dir_path))
+    return problem_ids
+
+
+def get_courses(show_hidden=True):
     courses = []
-    for course_id in course_ids:
+    for course_id in get_course_ids():
         course_basics = get_course_basics(course_id)
         if course_basics["visible"] or show_hidden:
             courses.append([course_id, course_basics])
 
     return sort_nested_list(courses)
 
-def get_assignments(course, show_hidden=True):
+def get_assignments(course_id, show_hidden=True):
     assignments = []
-
-    for assignment_dir_path in glob.glob(get_course_dir_path(course) + "*"):
-        if os.path.isdir(assignment_dir_path):
-            assignment_id = os.path.basename(assignment_dir_path)
-            assignment_basics = get_assignment_basics(course, assignment_id)
-            if assignment_basics["visible"] or show_hidden:
-                assignments.append([assignment_id, assignment_basics])
+    for assignment_id in get_assignment_ids(course_id):
+        assignment_basics = get_assignment_basics(course_id, assignment_id)
+        if assignment_basics["visible"] or show_hidden:
+            assignments.append([assignment_id, assignment_basics])
 
     return sort_nested_list(assignments)
 
-def get_problems(course, assignment, show_hidden=True):
+def get_problems(course_id, assignment_id, show_hidden=True):
     problems = []
 
-    for problem_dir_path in glob.glob(get_root_dir_path() + f"/{course}/{assignment}/*"):
-        if os.path.isdir(problem_dir_path):
-            problem_id = os.path.basename(problem_dir_path)
-            problem_basics = get_problem_basics(course, assignment, problem_id)
-            if problem_basics["visible"] or show_hidden:
-                problems.append([problem_id, problem_basics])
+    for problem_id in get_problem_ids(course_id, assignment_id):
+        problem_basics = get_problem_basics(course_id, assignment_id, problem_id)
+        if problem_basics["visible"] or show_hidden:
+            problems.append([problem_id, problem_basics])
 
     return sort_nested_list(problems)
 
@@ -209,6 +228,95 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
             "expected_output": "", "data_urls": "", "data_urls_info": []}
 
     return problem_dict
+
+def split_url(file_path):
+
+    id_dict = {}
+    id_dict["name"] = ""
+    id_dict["course_id"] = ""
+    id_dict["assignment_id"] = ""
+    id_dict["problem_id"] = ""
+    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
+    if re_match:
+        id_dict = re_match.groupdict()
+        for key, value in id_dict.items():
+            if value == None:
+                id_dict[key] = ""
+    return id_dict
+
+def get_titles(file_path):
+
+    new_dict = {}
+    new_dict[0] = ""
+    new_dict[1] = ""
+    new_dict[2] = ""
+    new_dict[3] = ""
+
+    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
+    if re_match:
+        id_dict = re_match.groupdict()
+
+        course_title = ""
+        assignment_title = ""
+        problem_title = ""
+
+        for course_id in get_course_ids():
+            course_basics = get_course_basics(course_id)
+            if id_dict["course_id"] == course_id:
+                course_title = course_basics["title"]
+
+            for assignment_id in get_assignment_ids(course_id):
+                assignment_basics = get_assignment_basics(course_id, assignment_id)
+                if id_dict["assignment_id"] == assignment_id:
+                    assignment_title = assignment_basics["title"]
+
+                for problem_id in get_problem_ids(course_id, assignment_id):
+                    problem_basics = get_problem_basics(course_id, assignment_id, problem_id)
+                    if id_dict["problem_id"] == problem_id:
+                        problem_title = problem_basics["title"]
+      
+        new_dict[0] = id_dict["name"]
+        new_dict[1] = course_title
+        new_dict[2] = assignment_title
+        new_dict[3] = problem_title
+
+    if new_dict[0] == "":
+        new_dict[0] = "home"
+
+    return new_dict
+
+def get_logs_dict(file_path, year="No filter", month="No filter", day="No filter"):
+    new_dict = {}
+    line_num = 1
+    with gzip.open(file_path) as read_file:
+        header = read_file.readline()
+        for line in read_file:
+            line_items = line.decode().rstrip("\n").split("\t")
+            line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[1:]
+
+            new_dict[line_num] = line_items
+            line_num += 1
+
+    #filter by date
+    year_dict = {}
+    month_dict = {}
+    day_dict = {}
+
+    for key, line in new_dict.items():
+        if year == "No filter" or line[0] == year:
+            year_dict[key] = line
+    for key, line in year_dict.items():
+        if month == "No filter" or line[1] == month:
+            month_dict[key] = line
+    for key, line in month_dict.items():
+        if day == "No filter" or line[2] == day:
+            day_dict[key] = line
+
+    return day_dict
+
+def get_root_dirs_to_log():
+    root_dirs_to_log = set(["home", "course", "assignment", "problem", "check_problem", "edit_course", "edit_assignment", "edit_problem", "delete_course", "delete_assignment", "delete_problem", "view_answer", "import_course", "export_course"])
+    return root_dirs_to_log
 
 def sort_nested_list(nested_list, key="title"):
     l_dict = {}
