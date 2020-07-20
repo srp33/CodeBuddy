@@ -1,0 +1,7 @@
+#! /bin/bash
+
+export PATH=$PATH:~/.local/bin
+
+cd middle_layer
+
+uvicorn main:app --port 9799 --reload

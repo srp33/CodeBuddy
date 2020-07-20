@@ -4,6 +4,7 @@ import contextvars
 import json
 import logging
 import re
+import sys
 import tornado.ioloop
 from tornado.log import enable_pretty_logging
 from tornado.log import LogFormatter
@@ -14,6 +15,7 @@ import traceback
 from urllib.parse import urlencode
 import urllib.request
 import uuid
+import sqlite3
 
 def make_app():
     app = Application([
@@ -21,17 +23,21 @@ def make_app():
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
         url(r"\/delete_course\/([^\/]+)?", DeleteCourseHandler, name="delete_course"),
+        url(r"\/delete_course_submissions\/([^\/]+)?", DeleteCourseSubmissionsHandler, name="delete_course_submissions"),
         url(r"\/import_course", ImportCourseHandler, name="import_course"),
         url(r"\/export_course\/([^\/]+)?", ExportCourseHandler, name="export_course"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
         url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
         url(r"\/delete_assignment\/([^\/]+)\/([^\/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
+        url(r"\/delete_assignment_submissions\/([^\/]+)\/([^\/]+)?", DeleteAssignmentSubmissionsHandler, name="delete_assignment_submissions"),
         url(r"\/problem\/([^\/]+)\/([^\/]+)/([^\/]+)", ProblemHandler, name="problem"),
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
+        url(r"\/delete_problem_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemSubmissionsHandler, name="delete_problem_submissions"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
-        url(r"\/check_problem\/([^\/]+)\/([^\/]+)/([^\/]+)", CheckProblemHandler, name="check_problem"),
+        url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
+        url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
@@ -42,6 +48,48 @@ def make_app():
     ], autoescape=None)
 
     return app
+
+# def create_table(db, table_name):
+#     """Create database table given a database connection 'db'.
+#     Removes any existing data that might be in the
+#     table."""
+
+#     cursor = db.cursor()
+#     cursor.execute("DROP TABLE IF EXISTS " + table_name)
+#     cursor.execute("""
+#     CREATE TABLE table_name (
+#        thing text
+#     )
+#     """)
+
+# def store_value(db, value):                   #incorporate this function into other functions that save stuff
+#     """Store a new value in the database"""
+
+#     cursor = db.cursor()
+#     cursor.execute("INSERT INTO table_name (thing) VALUES (?)", [value])
+#     db.commit()
+
+# def get_values(db):                           #incorporate this function into other functions that save stuff
+#    """Return a list of values from the database"""
+
+#    cursor = db.cursor()
+#    cursor.execute("SELECT thing FROM values")
+#    result = []
+#    for row in cursor:
+#        result.append(row['thing'])
+#    return result
+
+# @app.route('/')                                   #not sure what this does
+# def index(db):
+#     """Home page"""
+
+#     info = {
+#         'title': 'Welcome Home!',
+#         'values': get_values(db)
+#     }
+
+#     return template('dbvalues.tpl', info)             #not sure what template does
+
 
 class HomeHandler(RequestHandler):
     def prepare(self):
@@ -94,31 +142,25 @@ class EditCourseHandler(BaseUserHandler):
 
     def post(self, course):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
             courses = get_courses()
             course_basics = get_course_basics(course)
             course_basics["title"] = self.get_body_argument("title").strip()
             course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             course_details = {"introduction": self.get_body_argument("introduction").strip()}
 
-            if submitted_password == password:
-                if course_basics["title"] == "" or course_details["introduction"] == "":
-                    result = "Error: Missing title or introduction."
-                else:
-                    if has_duplicate_title(courses, course, course_basics["title"]):
-                        result = "Error: A course with that title already exists."
-                    else:
-                        if re.search(r"[^\w ]", course_basics["title"]):
-                            result = "Error: The title can only contain alphanumeric characters and spaces."
-                        else:
-                            save_course(course_basics, course_details)
-                            course_basics = get_course_basics(course)
-                            courses = get_courses()
-                            result = "Success: Course information saved!"
+            if course_basics["title"] == "" or course_details["introduction"] == "":
+                result = "Error: Missing title or introduction."
             else:
-                result = "Error: Invalid password."
+                if has_duplicate_title(courses, course, course_basics["title"]):
+                    result = "Error: A course with that title already exists."
+                else:
+                    if re.search(r"[^\w ]", course_basics["title"]):
+                        result = "Error: The title can only contain alphanumeric characters and spaces."
+                    else:
+                        save_course(course_basics, course_details)
+                        course_basics = get_course_basics(course)
+                        courses = get_courses()
+                        result = "Success: Course information saved!"
 
             self.render("edit_course.html", courses=courses, assignments=get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -133,16 +175,26 @@ class DeleteCourseHandler(BaseUserHandler):
 
     def post(self, course):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
-            if submitted_password == password:
-                delete_course(get_course_basics(course))
-                result = "Success: Course deleted."
-            else:
-                result = "Error: Invalid password."
+            delete_course(get_course_basics(course))
+            result = "Success: Course deleted."
 
             self.render("delete_course.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class DeleteCourseSubmissionsHandler(BaseUserHandler):
+    def get(self, course):
+        try:
+            self.render("delete_course_submissions.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course):
+        try:
+            delete_course_submissions(get_course_basics(course))
+            result = "Success: Course submissions deleted."
+
+            self.render("delete_course_submissions.html", courses=get_courses(), assignments=get_assignments(course), course_basics=get_course_basics(course), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -155,8 +207,6 @@ class ImportCourseHandler(BaseUserHandler):
 
     def post(self):
         try:
-            submitted_password = password
-
             result = ""
             if self.request.files["zip_file"][0]["content_type"] == 'application/zip':
                 zip_file_name = self.request.files["zip_file"][0]["filename"]
@@ -236,26 +286,20 @@ class EditAssignmentHandler(BaseUserHandler):
 
     def post(self, course, assignment):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
             assignment_basics = get_assignment_basics(course, assignment)
             assignment_basics["title"] = self.get_body_argument("title").strip()
             assignment_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             assignment_details = {"introduction": self.get_body_argument("introduction").strip()}
 
-            if submitted_password == password:
-                if assignment_basics["title"] == "" or assignment_details["introduction"] == "":
-                    result = "Error: Missing title or introduction."
-                else:
-                    if has_duplicate_title(get_assignments(course), assignment, assignment_basics["title"]):
-                        result = "Error: An assignment with that title already exists."
-                    else:
-                        save_assignment(assignment_basics, assignment_details)
-                        assignment_basics = get_assignment_basics(course, assignment)
-                        result = "Success: Assignment information saved!"
+            if assignment_basics["title"] == "" or assignment_details["introduction"] == "":
+                result = "Error: Missing title or introduction."
             else:
-                result = "Error: Invalid password."
+                if has_duplicate_title(get_assignments(course), assignment, assignment_basics["title"]):
+                    result = "Error: An assignment with that title already exists."
+                else:
+                    save_assignment(assignment_basics, assignment_details)
+                    assignment_basics = get_assignment_basics(course, assignment)
+                    result = "Success: Assignment information saved!"
 
             self.render("edit_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -270,16 +314,26 @@ class DeleteAssignmentHandler(BaseUserHandler):
 
     def post(self, course, assignment):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
-            if submitted_password == password:
-                delete_assignment(get_assignment_basics(course, assignment))
-                result = "Success: Assignment deleted."
-            else:
-                result = "Error: Invalid password."
+            delete_assignment(get_assignment_basics(course, assignment))
+            result = "Success: Assignment deleted."
 
             self.render("delete_assignment.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class DeleteAssignmentSubmissionsHandler(BaseUserHandler):
+    def get(self, course, assignment):
+        try:
+            self.render("delete_assignment_submissions.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, assignment):
+        try:
+            delete_assignment_submissions(get_assignment_basics(course, assignment))
+            result = "Success: Assignment submissions deleted."
+
+            self.render("delete_assignment_submissions.html", courses=get_courses(), assignments=get_assignments(course), problems=get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -289,9 +343,9 @@ class ProblemHandler(BaseUserHandler):
             user = self.get_current_user()
             show = show_hidden(self)
             problems = get_problems(course, assignment, show)
-            problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True)
+            problem_details=get_problem_details(course, assignment, problem, format_content=True)
 
-            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, submissions=get_submissions(course, assignment, problem, user), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], num_submissions=get_num_submissions(course, assignment, problem, user), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -299,16 +353,14 @@ class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             problems = get_problems(course, assignment)
-            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
+            problem_details = get_problem_details(course, assignment, problem, parse_data_urls=True)
+
             self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     def post(self, course, assignment, problem):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
             problem_basics = get_problem_basics(course, assignment, problem)
             problem_basics["title"] = self.get_body_argument("title").strip() #required
             problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes" #required
@@ -327,40 +379,34 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["expected_output"] = ""
             problem_details["data_urls_info"] = []
 
-            result = "Error: Invalid password."
-
-            if submitted_password == password:
-                if problem_basics["title"] == "" or problem_details["instructions"] == "" or problem_details["answer_code"] == "":
-                    result = "Error: One of the required fields is missing."
+            if problem_basics["title"] == "" or problem_details["instructions"] == "" or problem_details["answer_code"] == "":
+                result = "Error: One of the required fields is missing."
+            else:
+                if has_duplicate_title(get_problems(course, assignment), problem, problem_basics["title"]):
+                    result = "Error: A problem with that title already exists in this assignment."
                 else:
-                    if has_duplicate_title(get_problems(course, assignment), problem, problem_basics["title"]):
-                        result = "Error: A problem with that title already exists in this assignment."
+                    for data_url in set(problem_details["data_urls"].split("\n")):
+                        data_url = data_url.strip()
+                        if data_url != "":
+                            contents, content_type, extension = download_file(data_url)
+                            file_name = create_md5_hash(data_url) + extension
+                            write_data_file(contents, file_name)
+                            problem_details["data_urls_info"].append([data_url, file_name, content_type])
+
+                    expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
+
+                    if error_occurred:
+                        result = expected_output
                     else:
-                        for data_url in set(problem_details["data_urls"].split("\n")):
-                            data_url = data_url.strip()
-                            if data_url != "":
-                                contents, content_type, extension = download_file(data_url)
-                                file_name = create_md5_hash(data_url) + extension
-                                write_data_file(contents, file_name)
-                                problem_details["data_urls_info"].append([data_url, file_name, content_type])
+                        problem_details["expected_output"] = expected_output
 
-                        expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
-
-                        if error_occurred:
-                            result = expected_output.decode()
-                        else:
-                            if problem_details["output_type"] == "txt":
-                                problem_details["expected_output"] = expected_output.decode()
-                            else:
-                                problem_details["expected_output"] = expected_output
-
-                            save_problem(problem_basics, problem_details)
-                            problem_basics = get_problem_basics(course, assignment, problem)
-                            problem_details = get_problem_details(course, assignment, problem, format_expected_output=True, parse_data_urls=True)
-                            result = "Success: The problem was saved!"
+                        save_problem(problem_basics, problem_details)
+                        problem_basics = get_problem_basics(course, assignment, problem)
+                        problem_details = get_problem_details(course, assignment, problem, parse_data_urls=True)
+                        result = "Success: The problem was saved!"
 
             problems = get_problems(course, assignment)
-            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), environments=sort_nicely(env_dict.keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -374,17 +420,29 @@ class DeleteProblemHandler(BaseUserHandler):
 
     def post(self, course, assignment, problem):
         try:
-            #submitted_password = self.get_body_argument("password")
-            submitted_password = password
-
-            if submitted_password == password:
-                delete_problem(get_problem_basics(course, assignment, problem))
-                result = "Success: Problem deleted."
-            else:
-                result = "Error: Invalid password."
+            delete_problem(get_problem_basics(course, assignment, problem))
+            result = "Success: Problem deleted."
 
             problems = get_problems(course, assignment)
             self.render("delete_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class DeleteProblemSubmissionsHandler(BaseUserHandler):
+    def get(self, course, assignment, problem):
+        try:
+            problems = get_problems(course, assignment)
+            self.render("delete_problem_submissions.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, assignment, problem):
+        try:
+            delete_problem_submissions(get_problem_basics(course, assignment, problem))
+            result = "Success: Problem submissions deleted."
+
+            problems = get_problems(course, assignment)
+            self.render("delete_problem_submissions.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -400,12 +458,11 @@ class RunCodeHandler(BaseUserHandler):
 
         try:
             code_output, error_occurred = exec_code(env_dict, code, problem_basics, problem_details, request=None)
-            if problem_details["output_type"] == "txt" or problem_details["output_type"] == "jpeg" and error_occurred:
-                code_output = code_output.decode()
-            else:
-                code_output = encode_image_bytes(code_output)
 
-            out_dict["code_output"] = format_output_as_html(code_output)
+            if problem_details["output_type"] == "txt" or error_occurred:
+                code_output = format_output_as_html(code_output)
+
+            out_dict["code_output"] = code_output
             out_dict["error_occurred"] = error_occurred
 
         except Exception as inst:
@@ -413,43 +470,34 @@ class RunCodeHandler(BaseUserHandler):
 
         self.write(json.dumps(out_dict))
 
-class CheckProblemHandler(BaseUserHandler):
+class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, problem):
         user = self.get_current_user()
         code = self.get_body_argument("user_code").replace("\r", "")
         date = self.get_body_argument("date")
-        date = re.sub(r"(\d*\/\d*)\/\d{4}(, \d*:\d*):\d*( .M)", r"\1\2\3", date)    #to make date shorter, optional
+        #date = re.sub(r"(\d*\/\d*)\/\d{4}(, \d*:\d*):\d*( .M)", r"\1\2\3", date) # To make date shorter, optional
 
         problem_basics = get_problem_basics(course, assignment, problem)
         problem_details = get_problem_details(course, assignment, problem)
 
-        out_dict = {"error_occurred": True, "passed": False, "diff_output": ""}
+        out_dict = {"error_occurred": True, "passed": False, "diff_output": "", "submission_id": ""}
 
-class ViewAnswerHandler(RequestHandler):
-    def get(self, course, assignment, problem):
-        try:
-            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem, format_content=True, format_expected_output=True))
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-class OutputTypesHandler(RequestHandler):
-    def get(self, environment):
         try:
             if problem_details["output_type"] == "txt":
                 code_output, error_occurred, passed, diff_output = test_code_txt(env_dict, code, problem_basics, problem_details, self.request)
             else:
                 code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict, code, problem_basics, problem_details, self.request)
 
-            out_dict["code_output"] = format_output_as_html(encode_image_bytes(code_output))
+            if problem_details["output_type"] == "txt" or error_occurred:
+                code_output = format_output_as_html(code_output)
+
+            out_dict["code_output"] = code_output
             out_dict["error_occurred"] = error_occurred
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
-
-            if problem_details["output_type"] == "txt":
-                save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
-            else:
-                save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
-
+            out_dict["submission_id"] = save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
+        except ConnectionError as inst:
+            out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -457,11 +505,12 @@ class OutputTypesHandler(RequestHandler):
 
 class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, problem, submission_id):
-        user = self.get_current_user()
-        problem_details = get_problem_details(course, assignment, problem)
-        submission_info = get_submission_info(course, assignment, problem, user, submission_id)
-
         try:
+            user = self.get_current_user()
+            problem_details = get_problem_details(course, assignment, problem)
+
+            submission_info = get_submission_info(course, assignment, problem, user, submission_id)
+
             if submission_info["error_occurred"]:
                 submission_info["diff_output"] = ""
             elif problem_details["output_type"] == "txt":
@@ -469,11 +518,25 @@ class GetSubmissionHandler(BaseUserHandler):
             else:
                 diff_percent, diff_image = diff_jpg(problem_details["expected_output"], submission_info["code_output"])
                 submission_info["diff_output"] =  find_differences_jpg(problem_details, submission_info["passed"], diff_image)
-                submission_info["code_output"] = format_output_as_html(encode_image_bytes(submission_info["code_output"]))
+                submission_info["code_output"] = format_output_as_html(submission_info["code_output"])
 
         except Exception as inst:
+            submission_info["error_occurred"] = True
+            submission_info["diff_output"] = ""
             submission_info["code_output"] = format_output_as_html(traceback.format_exc())
+
         self.write(json.dumps(submission_info))
+
+class GetSubmissionsHandler(BaseUserHandler):
+    def get(self, course, assignment, problem):
+        try:
+            user = self.get_current_user()
+            problem_details = get_problem_details(course, assignment, problem)
+            submissions = get_submissions_basic(course, assignment, problem, user)
+        except Exception as inst:
+            submissions = []
+
+        self.write(json.dumps(submissions))
 
 class DataHandler(RequestHandler):
     async def get(self, course, assignment, problem, file_name):
@@ -505,7 +568,7 @@ class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
-            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem), last_submission = get_last_submission(course, assignment, problem, user), format_content=True, format_expected_output=True)
+            self.render("view_answer.html", courses=get_courses(), assignments=get_assignments(course), problems = get_problems(course, assignment), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=get_problem_details(course, assignment, problem), last_submission = get_last_submission(course, assignment, problem, user), format_content=True)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -625,20 +688,27 @@ class LoggingFilter(logging.Filter):
         record.user_id = user_id_var.get("-")
         return True
 
-# See https://quanttype.net/posts/2020-02-05-request-id-logging.html
-class LoggingFilter(logging.Filter):
-    def filter(self, record):
-        record.user_id = user_id_var.get("-")
-        return True
-
 if __name__ == "__main__":
-    if "PORT" in os.environ:
+    if "PORT" in os.environ and "MPORT" in os.environ:
         application = make_app()
 
-        #TODO: Store this securely or have a better way of authenticating.
-        password = "abc"
+
+        # If you wanted to maintain the contents of the database between runs, you would arrange to run create_table only once or write it so that
+        # it doesn't remove any existing data. One common solution is to put the database creation code into a separate module that you can run once
+        # to create or reset the database. You could then remove that code from the main web application module.
+
+        # # code to connect to the database and create the tables
+        #if not sqlite3.connect("test.db"):
+        #create_database()
+
+        # # code to run our web application
+        # plugin = bottle.ext.sqlite.Plugin(dbfile=DATABASE_NAME)
+        # #app.install(plugin)
+        # application.install(plugin)
+
+
         #TODO: Use something other than the password. Store in a file?
-        application.settings["cookie_secret"] = password
+        application.settings["cookie_secret"] = "abc"
         env_dict = get_environments()
 
         server = tornado.httpserver.HTTPServer(application)
@@ -664,5 +734,5 @@ if __name__ == "__main__":
         logging.info("Starting on port {}...".format(os.environ['PORT']))
         tornado.ioloop.IOLoop.instance().start()
     else:
-        logging.error("No PORT environment variable was specified.")
+        logging.error("Values must be specified for the PORT and MPORT environment variables.")
         sys.exit(1)

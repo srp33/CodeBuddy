@@ -8,9 +8,52 @@ import yaml
 from yaml import load
 from yaml import Loader
 import zipfile
+import sqlite3
 
 def get_environments():
     return load_yaml_dict(read_file("/Environments.yaml"))
+
+def create_database():
+    print(os.access("/submissions", os.W_OK))
+    print("directory: " + os.getcwd())
+    sqliteConnection = sqlite3.connect("/submissions/test.db")
+    try:
+        #sqliteConnection = sqlite3.connect("test.db")
+        cursor = sqliteConnection.cursor()
+        print("Database created and successfully connected to SQLite")
+
+        #sqlite_select_Query = "select sqlite_version();"
+        cursor.execute("select sqlite_version();")
+        record = cursor.fetchall()
+        print("SQLite database version is: ", record)
+        cursor.close()
+
+    except sqlite3.Error as error:
+        print("Error while connecting to sqlite", error)
+
+    finally:
+        if (sqliteConnection):
+            sqliteConnection.close()
+            print("The SQLite connection is closed")
+    # db = sqlite3.connect("test.db")
+    # if not db:
+    #     create_table(db)
+
+#  def create_table(table_name):
+#      db = sqlite3.connect("test.db")
+#      #if not db:
+#      #    create_table(db)
+#      #Create database table given a database connection 'db'.
+
+#      cursor = db.cursor()
+#      cursor.execute("DROP TABLE IF EXISTS " + table_name)
+#      cursor.execute("""
+#      CREATE TABLE table_name (
+#         thing text
+#      )
+#      """)
+
+
 
 def get_root_dir_path():
     return "/course"
@@ -61,17 +104,15 @@ def get_problems(course_id, assignment_id, show_hidden=True):
 
     return sort_nested_list(problems)
 
-def get_submissions(course, assignment, problem, user):
+def get_submissions_basic(course, assignment, problem, user):
     submissions = []
 
     for submission_path in glob.glob(get_submission_dir_path(course, assignment, problem, user)):
-        id = int(os.path.basename(submission_path)[:-5])
+        submission_id = int(os.path.basename(submission_path)[:-5])
         submission_dict = load_yaml_dict(read_file(submission_path))
-        submissions.append([id, submission_dict])
+        submissions.append([submission_id, submission_dict["date"], submission_dict["passed"]])
 
-    submissions = sorted(submissions, key = lambda x: x[0])
-
-    return submissions
+    return sorted(submissions, key = lambda x: x[0], reverse=True)
 
 def get_course_dir_path(course):
     return get_root_dir_path() + f"/{course}/"
@@ -149,17 +190,17 @@ def get_next_prev_problems(course, assignment, problem, problems):
     return {"previous": prev_problem, "next": next_problem}
 
 def get_next_submission_id(course, assignment, problem, user):
-    num_submissions = 0
-    for submission in glob.glob(get_submission_dir_path(course, assignment, problem, user)):
-        num_submissions += 1
-    return num_submissions + 1
+    return get_num_submissions(course, assignment, problem, user) + 1
 
 def get_last_submission(course, assignment, problem, user):
-    last_submission_id = get_next_submission_id(course, assignment, problem, user) - 1
+    last_submission_id = get_num_submissions(course, assignment, problem, user)
     file_path = f"/submissions/{course}/{assignment}/{problem}/{user}/{last_submission_id}.yaml"
     last_submission = load_yaml_dict(read_file(file_path))
 
     return last_submission
+
+def get_num_submissions(course, assignment, problem, user):
+    return len(glob.glob(f"{get_submission_dir_path(course, assignment, problem, user)}"))
 
 def get_submission_info(course, assignment, problem, user, submission_id):
     return load_yaml_dict(read_file(get_submission_file_path(course, assignment, problem, user, submission_id)))
@@ -188,7 +229,7 @@ def get_assignment_details(course, assignment, format_output=False):
 
     return assignment_dict
 
-def get_problem_details(course, assignment, problem, format_content=False, format_expected_output=False, parse_data_urls=False):
+def get_problem_details(course, assignment, problem, format_content=False, parse_data_urls=False):
     file_path = get_problem_dir_path(course, assignment, problem) + "details"
 
     if os.path.exists(file_path):
@@ -202,9 +243,6 @@ def get_problem_details(course, assignment, problem, format_content=False, forma
                 problem_dict["answer_description"] = ""
             else:
                 problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
-
-        if format_expected_output and problem_dict["output_type"] == "jpeg":
-            problem_dict["expected_output"] = encode_image_bytes(problem_dict["expected_output"])
 
         if parse_data_urls:
             problem_dict["data_urls"] = "\n".join([x[0] for x in problem_dict["data_urls_info"]])
@@ -352,17 +390,27 @@ def save_submission(course, assignment, problem, user, code, code_output, passed
     submission_dict = {"code": code, "code_output": code_output, "passed": passed, "date": date, "error_occurred": error_occurred}
     write_file(convert_dict_to_yaml(submission_dict), get_submission_file_path(course, assignment, problem, user, submission_id))
 
+    return submission_id
+
 def delete_problem(problem_basics):
     dir_path = get_problem_dir_path(problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"])
-    if os.path.exists(dir_path):
-        shutil.rmtree(dir_path)
+    shutil.rmtree(dir_path, ignore_errors=True)
+    delete_problem_submissions(problem_basics)
 
 def delete_assignment(assignment_basics):
     dir_path = get_assignment_dir_path(assignment_basics["course"]["id"], assignment_basics["id"])
-    if os.path.exists(dir_path):
-        shutil.rmtree(dir_path)
+    shutil.rmtree(dir_path, ignore_errors=True)
+    delete_assignment_submissions(assignment_basics)
 
 def delete_course(course_basics):
-    dir_path = get_course_dir_path(course_basics["id"])
-    if os.path.exists(dir_path):
-        shutil.rmtree(dir_path)
+    shutil.rmtree(get_course_dir_path(course_basics["id"]), ignore_errors=True)
+    delete_course_submissions(course_basics)
+
+def delete_course_submissions(course_basics):
+    shutil.rmtree(f"/submissions/{course_basics['id']}", ignore_errors=True)
+
+def delete_assignment_submissions(assignment_basics):
+    shutil.rmtree(f"/submissions/{assignment_basics['course']['id']}/{assignment_basics['id']}", ignore_errors=True)
+
+def delete_problem_submissions(problem_basics):
+    shutil.rmtree(f"/submissions/{problem_basics['assignment']['course']['id']}/{problem_basics['assignment']['id']}/{problem_basics['id']}", ignore_errors=True)

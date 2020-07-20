@@ -37,15 +37,13 @@
     </div>
   </p>
 
-  <p><strong>Password: </strong></p>
-  <p><textarea name="password" class="textarea is-info is-normal is-medium is-fullwidth" type="password" placeholder="Please enter password" rows="1" style="font-family:monospace"></textarea></p>
-
   <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
   <p>
       {% if assignment_basics["exists"] %}
           <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Done editing</a> |
-          <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
+          <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a> |
+          <a href="/delete_assignment_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment submissions</a>
       {% end %}
   </p>
   </form>

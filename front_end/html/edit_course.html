@@ -36,16 +36,14 @@
   </div>
 </p>
 
-<p><strong>Password: </strong></p>
-<p><textarea name="password" class="textarea is-info is-normal is-medium is-fullwidth" type="password" placeholder="Please enter password" rows="1" style="font-family:monospace"></textarea></p>
-
 <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
 <p>
     {% if course_basics["exists"] %}
       <a href="/course/{{ course_basics["id"] }}">Done editing</a> |
       <a href="/export_course/{{ course_basics["id"] }}">Export course</a> |
-      <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
+      <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a> |
+      <a href="/delete_course_submissions/{{ course_basics["id"] }}">Delete course submissions</a>
     {% end %}
 </p>
 
