@@ -12,12 +12,6 @@ import zipfile
 def get_environments():
     return load_yaml_dict(read_file("/Environments.yaml"))
 
-def get_administrators():
-    return load_yaml_dict(read_file("/Administrators.yaml"))
-
-def get_instructors():
-    return load_yaml_dict(read_file("/Instructors.yaml"))
-
 def get_root_dir_path():
     return "/course"
 
