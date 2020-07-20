@@ -261,63 +261,7 @@ def get_problem_details(course, assignment, problem, format_content=False, parse
 
     return problem_dict
 
-def split_url(file_path):
-
-    id_dict = {}
-    id_dict["name"] = ""
-    id_dict["course_id"] = ""
-    id_dict["assignment_id"] = ""
-    id_dict["problem_id"] = ""
-    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
-    if re_match:
-        id_dict = re_match.groupdict()
-        for key, value in id_dict.items():
-            if value == None:
-                id_dict[key] = ""
-    return id_dict
-
-def get_titles(file_path):
-
-    new_dict = {}
-    new_dict[0] = ""
-    new_dict[1] = ""
-    new_dict[2] = ""
-    new_dict[3] = ""
-
-    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
-    if re_match:
-        id_dict = re_match.groupdict()
-
-        course_title = ""
-        assignment_title = ""
-        problem_title = ""
-
-        for course_id in get_course_ids():
-            course_basics = get_course_basics(course_id)
-            if id_dict["course_id"] == course_id:
-                course_title = course_basics["title"]
-
-            for assignment_id in get_assignment_ids(course_id):
-                assignment_basics = get_assignment_basics(course_id, assignment_id)
-                if id_dict["assignment_id"] == assignment_id:
-                    assignment_title = assignment_basics["title"]
-
-                for problem_id in get_problem_ids(course_id, assignment_id):
-                    problem_basics = get_problem_basics(course_id, assignment_id, problem_id)
-                    if id_dict["problem_id"] == problem_id:
-                        problem_title = problem_basics["title"]
-      
-        new_dict[0] = id_dict["name"]
-        new_dict[1] = course_title
-        new_dict[2] = assignment_title
-        new_dict[3] = problem_title
-
-    if new_dict[0] == "":
-        new_dict[0] = "home"
-
-    return new_dict
-
-def get_logs_dict(file_path, year="No filter", month="No filter", day="No filter"):
+def get_dict_from_log(file_path, year="No filter", month="No filter", day="No filter"):
     new_dict = {}
     line_num = 1
     with gzip.open(file_path) as read_file:
