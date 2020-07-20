@@ -3,13 +3,13 @@
 
 <div class="columns">
   <div class="column is-half">
-    <h3>CodeBuddy Summarized Logs</h3>
+    <h3>Summarized logs</h3>
     <div class="field is-grouped">
       <div class="control">
-        <label class="label">Select File</label>
+        <label class="label">Select file</label>
         <div class="select is-info is-medium">
           <select id="file_select" name="file_select">
-            <option selected disabled>Select File</option>
+            <option selected disabled>Select file</option>
             <option value="logs/summarized/HitsAnyUser.tsv.gz">HitsAnyUser</option>
             <option value="logs/summarized/HitsPerUser.tsv.gz">HitsPerUser</option>
             <option value="logs/summarized/LoadDuration.tsv.gz">LoadDuration</option>
@@ -17,7 +17,7 @@
         </div>
       </div>
       <div class="control">
-        <label class="label">Filter Location</label>
+        <label class="label">Filter page</label>
         <div class="select is-info is-medium">
           <select id="filter_select" name="filter_select">
             <option selected>No filter</option>
@@ -29,14 +29,16 @@
       </div>
     </div>
     <div class="control">
-      <label class="label">Filter by Date</label>
+      <label class="label">Filter by date</label>
       <div class="field is-grouped">
         <div class="control">
           <label class="label">Year</label>
           <div class="select is-info is-medium">
             <select id="year_select" name="year_select">
               <option selected>No filter</option>
-              <option>20</option>
+              {% for year in years %}
+              <option>{{ year }}</option>
+              {% end %}
             </select>
           </div>
         </div>
@@ -67,7 +69,7 @@
     <input type="submit" class="button is-info is-medium is-vcentered" value="Submit"/>
   </div>
   <div class="column is-half">
-    <h4>Download Log Files</h4>
+    <h4>Download log files</h4>
     <p>
       <p>Hits Any User <a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz" class="button is-info is-small">Download</a></p>
       <p>Hits Per User <a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz" class="button is-info is-small">Download</a></p>
@@ -123,14 +125,14 @@
         <th>Month</th>
         <th>Day</th>
         <th>Hour</th>
-        <th>Course ID</th>
-        <th>Assignment ID</th>
-        <th>Problem ID</th>
+        <th>Course_ID</th>
+        <th>Assignment_ID</th>
+        <th>Problem_ID</th>
         <th>Value</th>
-        <th>Location</th>
-        <th>Course Title</th>
-        <th>Assignment Title</th>
-        <th>Problem Title</th>
+        <th>Page</th>
+        <th>Course_Title</th>
+        <th>Assignment_Title</th>
+        <th>Problem_Title</th>
       </tr>
     </thead>
     <tbody>
@@ -154,5 +156,3 @@
     </tbody>
   </table>
 {% end %}  
-
-<p><a href="/">Back to Home</a></p>

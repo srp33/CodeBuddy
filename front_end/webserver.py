@@ -583,7 +583,7 @@ class OutputTypesHandler(RequestHandler):
 class SummarizeLogsHandler(RequestHandler):
     def get(self):
         try:
-            self.render("summarize_logs.html", filter_list = sorted(get_root_dirs_to_log()), months = get_days_months()[0], days = get_days_months()[1], show_table = False)
+            self.render("summarize_logs.html", filter_list = sorted(get_root_dirs_to_log()), years = get_dict_of_dates()[0], months = get_dict_of_dates()[1], days = get_dict_of_dates()[2], show_table = False)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -594,10 +594,10 @@ class SummarizeLogsHandler(RequestHandler):
             month = self.get_body_argument("month_select")
             day = self.get_body_argument("day_select")
             log_file = self.get_body_argument("file_select")
-            if log_file == "Select File":
+            if log_file == "Select file":
                 log_file = "logs/summarized/HitsAnyUser.tsv.gz"
 
-            self.render("summarize_logs.html", filter = filter, filter_list = sorted(get_root_dirs_to_log()), months = get_days_months()[0], days = get_days_months()[1], log_dict = get_logs_dict(log_file, year, month, day), show_table = True)
+            self.render("summarize_logs.html", filter = filter, filter_list = sorted(get_root_dirs_to_log()), years = get_dict_of_dates()[0], months = get_dict_of_dates()[1], days = get_dict_of_dates()[2], log_dict = get_dict_from_log(log_file, year, month, day), show_table = True)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
