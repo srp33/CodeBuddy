@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 import difflib
 import glob
 import hashlib
@@ -244,10 +245,12 @@ def show_hidden(request_handler):
         return False
     return request_handler.request.query_arguments["show_hidden"][0].decode().lower() == "true"
 
-def get_days_months():
+def get_dict_of_dates():
     date_dict = {}
+    years = []
     months = []
     days = []
+
     for i in range(1, 10):
         months.append("0" + str(i))
     for i in range(10,13):
@@ -256,6 +259,14 @@ def get_days_months():
         days.append("0" + str(i))
     for i in range(10,32):
         days.append(str(i))
-    date_dict[0] = months
-    date_dict[1] = days
+
+    dateTimeObj = datetime.now()
+    currYear = dateTimeObj.year
+    yearAbrev = int(currYear[2:])
+    for i in range(20, yearAbrev+1):
+        years.append(str(i))
+
+    date_dict[0] = years
+    date_dict[1] = months
+    date_dict[2] = days
     return date_dict
