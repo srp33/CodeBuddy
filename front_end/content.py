@@ -8,50 +8,8 @@ from yaml import Loader
 import zipfile
 import sqlite3
 
-def get_environments():
-    return load_yaml_dict(read_file("/Environments.yaml"))
-
-def create_database():
-    print(os.access("/submissions", os.W_OK))
-    print("directory: " + os.getcwd())
-    sqliteConnection = sqlite3.connect("/submissions/test.db")
-    try:
-        #sqliteConnection = sqlite3.connect("test.db")
-        cursor = sqliteConnection.cursor()
-        print("Database created and successfully connected to SQLite")
-
-        #sqlite_select_Query = "select sqlite_version();"
-        cursor.execute("select sqlite_version();")
-        record = cursor.fetchall()
-        print("SQLite database version is: ", record)
-        cursor.close()
-
-    except sqlite3.Error as error:
-        print("Error while connecting to sqlite", error)
-
-    finally:
-        if (sqliteConnection):
-            sqliteConnection.close()
-            print("The SQLite connection is closed")
-    # db = sqlite3.connect("test.db")
-    # if not db:
-    #     create_table(db)
-
-#  def create_table(table_name):
-#      db = sqlite3.connect("test.db")
-#      #if not db:
-#      #    create_table(db)
-#      #Create database table given a database connection 'db'.
-
-#      cursor = db.cursor()
-#      cursor.execute("DROP TABLE IF EXISTS " + table_name)
-#      cursor.execute("""
-#      CREATE TABLE table_name (
-#         thing text
-#      )
-#      """)
-
-
+def get_settings():
+    return load_yaml_dict(read_file("/Settings.yaml"))
 
 def get_root_dir_path():
     return "/course"
@@ -241,7 +199,7 @@ def get_problem_details(course, assignment, problem, format_content=False, parse
             problem_dict["show_answer"] = ""
 
     else:
-        problem_dict = {"instructions": "", "environment": "r_back_end",
+        problem_dict = {"instructions": "", "back_end": "python",
             "output_type": "txt", "answer_code": "", "answer_description": "", "test_code": "",
             "credit": "", "show_expected": True, "show_test_code": True, "show_answer": True,
             "expected_output": "", "data_urls": "", "data_urls_info": []}

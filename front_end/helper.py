@@ -89,9 +89,8 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(env_dict, code, problem_basics, problem_details, request=None):
+def exec_code(settings_dict, code, problem_basics, problem_details, request=None):
     code = code + "\n\n" + problem_details["test_code"]
-    settings_dict = env_dict[problem_details["environment"]]
 
     if request:
         for url, file_name in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():

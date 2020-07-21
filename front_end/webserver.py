@@ -342,9 +342,10 @@ class ProblemHandler(BaseUserHandler):
             user = self.get_current_user()
             show = show_hidden(self)
             problems = get_problems(course, assignment, show)
-            problem_details=get_problem_details(course, assignment, problem, format_content=True)
+            problem_details = get_problem_details(course, assignment, problem, format_content=True)
+            back_end = settings_dict["back_ends"][problem_details["back_end"]]
 
-            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], num_submissions=get_num_submissions(course, assignment, problem, user), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("problem.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=get_num_submissions(course, assignment, problem, user), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -354,7 +355,7 @@ class EditProblemHandler(BaseUserHandler):
             problems = get_problems(course, assignment)
             problem_details = get_problem_details(course, assignment, problem, parse_data_urls=True)
 
-            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -365,7 +366,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes" #required
             problem_details = {}
             problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
-            problem_details["environment"] = self.get_body_argument("environment")
+            problem_details["back_end"] = self.get_body_argument("back_end")
             problem_details["output_type"] = self.get_body_argument("output_type")
             problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "") #required
             problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
@@ -392,10 +393,10 @@ class EditProblemHandler(BaseUserHandler):
                             write_data_file(contents, file_name)
                             problem_details["data_urls_info"].append([data_url, file_name, content_type])
 
-                    expected_output, error_occurred = exec_code(env_dict, problem_details["answer_code"], problem_basics, problem_details)
+                    expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], problem_details["answer_code"], problem_basics, problem_details)
 
                     if error_occurred:
-                        result = expected_output
+                        result = "Error: " + expected_output
                     else:
                         problem_details["expected_output"] = expected_output
 
@@ -405,7 +406,9 @@ class EditProblemHandler(BaseUserHandler):
                         result = "Success: The problem was saved!"
 
             problems = get_problems(course, assignment)
-            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_problem.html", courses=get_courses(), assignments=get_assignments(course), problems=problems, course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except ConnectionError as inst:
+            render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -456,7 +459,7 @@ class RunCodeHandler(BaseUserHandler):
         out_dict = {"error_occurred": True}
 
         try:
-            code_output, error_occurred = exec_code(env_dict, code, problem_basics, problem_details, request=None)
+            code_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, request=None)
 
             if problem_details["output_type"] == "txt" or error_occurred:
                 code_output = format_output_as_html(code_output)
@@ -483,9 +486,9 @@ class SubmitHandler(BaseUserHandler):
 
         try:
             if problem_details["output_type"] == "txt":
-                code_output, error_occurred, passed, diff_output = test_code_txt(env_dict, code, problem_basics, problem_details, self.request)
+                code_output, error_occurred, passed, diff_output = test_code_txt(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
             else:
-                code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict, code, problem_basics, problem_details, self.request)
+                code_output, error_occurred, passed, diff_output = test_code_jpg(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
 
             if problem_details["output_type"] == "txt" or error_occurred:
                 code_output = format_output_as_html(code_output)
@@ -572,12 +575,12 @@ class ViewAnswerHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class OutputTypesHandler(RequestHandler):
-    def get(self, environment):
+    def get(self, back_end):
         try:
-            self.write(" ".join(sort_nicely(env_dict[environment]["output_types"])))
+            self.write(json.dumps(settings_dict["back_ends"][back_end]["output_types"]))
         except Exception as inst:
             logging.error(self, traceback.format_exc())
-            self.write("\n".join(["txt"]))
+            self.write(json.dumps({"Error": "An error occurred."}))
 
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
@@ -687,7 +690,7 @@ if __name__ == "__main__":
 
         #TODO: Use something other than the password. Store in a file?
         application.settings["cookie_secret"] = "abc"
-        env_dict = get_environments()
+        settings_dict = get_settings()
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))

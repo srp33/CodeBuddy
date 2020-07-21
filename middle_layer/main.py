@@ -30,8 +30,8 @@ def exec(info: ExecInfo):
 
     try:
         # Save the user's code to a file that will be accessible inside the container.
-        with open(f"{tmp_dir_path}/code", "wb") as the_file:
-            the_file.write(info.code.encode())
+        with open(f"{tmp_dir_path}/code", "w") as the_file:
+            the_file.write(info.code)
 
         #--read-only=true
         #--log-driver=none
@@ -39,30 +39,35 @@ def exec(info: ExecInfo):
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
+        error_occurred = False
+
         if os.path.exists(f"{tmp_dir_path}/error"):
-            error_occurred = True
             with open(f"{tmp_dir_path}/error", "r") as error_file:
                 output = error_file.read()
-        else:
-            if info.output_type == "txt":
-                with open(f"{tmp_dir_path}/output", "r") as output_file:
-                    output = output_file.read()
-            else:
-                with open(f"{tmp_dir_path}/output", "rb") as output_file:
-                    output = encode_image_bytes(output_file.read())
 
+            if len(output) > 0:
+                error_occurred = True
+
+        if not error_occurred:
             timed_out = result.returncode == 137
             if timed_out:
                 error_occurred = True
                 output = f"The time to execute your code exceeded {infotimeout_seconds} seconds."
             else:
                 error_occurred = result.returncode > 0
-
-                # Docker displays this, but we can ignore it.
-                #output_to_ignore = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
-                #output = "\n".join([line for line in result.stdout.rstrip().decode().split("\n") if line != output_to_ignore])
                 if error_occurred:
                     output = "ERROR: " + result.stdout.rstrip().decode()
+
+                    # Docker displays this, but we can ignore it.
+                    #output_to_ignore = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
+                    #output = "\n".join([line for line in result.stdout.rstrip().decode().split("\n") if line != output_to_ignore])
+                else:
+                    if info.output_type == "txt":
+                        with open(f"{tmp_dir_path}/output", "r") as output_file:
+                            output = output_file.read()
+                    else:
+                        with open(f"{tmp_dir_path}/output", "rb") as output_file:
+                            output = encode_image_bytes(output_file.read())
     except Exception as inst:
         error_occurred = True
         output = traceback.format_exc()

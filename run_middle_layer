@@ -1,5 +1,9 @@
 #! /bin/bash
 
+set -o errexit
+
+./build_back_ends
+
 export PATH=$PATH:~/.local/bin
 
 cd middle_layer

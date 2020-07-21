@@ -1,4 +1,3 @@
-
 code_file_path = commandArgs()[9]
 output_type = commandArgs()[10]
 
