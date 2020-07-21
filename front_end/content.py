@@ -261,7 +261,7 @@ def get_problem_details(course, assignment, problem, format_content=False, parse
 
     return problem_dict
 
-def get_dict_from_log(file_path, year="No filter", month="No filter", day="No filter"):
+def get_log_table_contents(file_path, year="No filter", month="No filter", day="No filter"):
     new_dict = {}
     line_num = 1
     with gzip.open(file_path) as read_file:

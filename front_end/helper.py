@@ -245,28 +245,21 @@ def show_hidden(request_handler):
         return False
     return request_handler.request.query_arguments["show_hidden"][0].decode().lower() == "true"
 
-def get_dict_of_dates():
-    date_dict = {}
+def get_list_of_dates():
+
     years = []
     months = []
     days = []
 
-    for i in range(1, 10):
-        months.append("0" + str(i))
-    for i in range(10,13):
-        months.append(str(i))
-    for i in range(1, 10):
-        days.append("0" + str(i))
-    for i in range(10,32):
-        days.append(str(i))
+    for i in range(1, 13):
+        months.append("{0:02d}".format(i))
+    for i in range(1, 32):
+        days.append("{0:02d}".format(i))
 
     dateTimeObj = datetime.now()
-    currYear = dateTimeObj.year
-    yearAbrev = int(currYear[2:])
-    for i in range(20, yearAbrev+1):
+    currYear = str(dateTimeObj.year)
+    yearAbrev = int(currYear)
+    for i in range(2018, yearAbrev+1):
         years.append(str(i))
 
-    date_dict[0] = years
-    date_dict[1] = months
-    date_dict[2] = days
-    return date_dict
+    return years, months, days

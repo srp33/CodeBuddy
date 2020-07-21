@@ -9,7 +9,7 @@
         <label class="label">Select file</label>
         <div class="select is-info is-medium">
           <select id="file_select" name="file_select">
-            <option selected disabled>Select file</option>
+            <option selected="selected" disabled>Select file</option>
             <option value="logs/summarized/HitsAnyUser.tsv.gz">HitsAnyUser</option>
             <option value="logs/summarized/HitsPerUser.tsv.gz">HitsPerUser</option>
             <option value="logs/summarized/LoadDuration.tsv.gz">LoadDuration</option>
@@ -17,10 +17,10 @@
         </div>
       </div>
       <div class="control">
-        <label class="label">Filter page</label>
+        <label class="label">Filter by page</label>
         <div class="select is-info is-medium">
           <select id="filter_select" name="filter_select">
-            <option selected>No filter</option>
+            <option selected="selected">No filter</option>
             {% for item in filter_list %}
               <option>{{ item }}</option>
             {% end %}
@@ -35,7 +35,7 @@
           <label class="label">Year</label>
           <div class="select is-info is-medium">
             <select id="year_select" name="year_select">
-              <option selected>No filter</option>
+              <option selected="selected">No filter</option>
               {% for year in years %}
               <option>{{ year }}</option>
               {% end %}
@@ -46,7 +46,7 @@
           <label class="label">Month</label>
           <div class="select is-info is-medium">
             <select id="month_select" name="month_select">
-              <option selected>No filter</option>
+              <option selected="selected">No filter</option>
                 {% for month in months %}
                   <option>{{ month }}</option>
                 {% end %}
@@ -57,7 +57,7 @@
           <label class="label">Day</label>
           <div class="select is-info is-medium">
             <select id="day_select" name="day_select">
-              <option selected>No filter</option>
+              <option selected="selected">No filter</option>
                 {% for day in days %}
                   <option>{{ day }}</option>
                 {% end %}
