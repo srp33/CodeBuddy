@@ -28,7 +28,7 @@
         <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-bottom"/>
       </label>
       <div class="select is-info">
-        <select name="environment">
+        <select name="environment" style="padding:2px;">
         {% for environment in environments %}
           <option
             {% if environment == problem_details["environment"] %}
@@ -42,7 +42,7 @@
 
     <p><strong>Output type: </strong>
       <div class="select is-info">
-        <select name="output_type" id="output_types">
+        <select name="output_type" id="output_types" style="padding:2px;">
         </select>
       </div>
     </p>
