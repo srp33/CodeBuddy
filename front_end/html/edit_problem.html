@@ -53,27 +53,6 @@
 
                     ot_select.appendChild(opt);
                 }
-
-
-                //output_types = data.toString().split(" ");
-
-                //var i;
-                //for (i = 0; i < output_types.length; i++) {
-                //    var opt = document.createElement('option');
-                //    opt.innerHTML = output_types[i];
-                //    opt.value = output_types[i];
-
-                //    if (output_type_to_select == '') {
-                //        if (output_types[i] == "txt")
-                //            opt.selected = true;
-                //    }
-                //    else {
-                //        if (output_types[i] == output_type_to_select)
-                //            opt.selected = true;
-                //    }
-
-                //    ot_select.appendChild(opt);
-                //}
             });
         }
     </script>
@@ -97,7 +76,7 @@
 
     <p><strong>Output type: </strong>
       <div class="select is-info">
-        <select name="output_type" id="output_types">
+        <select name="output_type" id="output_types" style="padding:2px;">
         </select>
       </div>
     </p>

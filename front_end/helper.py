@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 import difflib
 import glob
 import hashlib
@@ -242,3 +243,21 @@ def show_hidden(request_handler):
     if "show_hidden" not in request_handler.request.query_arguments:
         return False
     return request_handler.request.query_arguments["show_hidden"][0].decode().lower() == "true"
+
+def get_list_of_dates():
+    years = []
+    months = []
+    days = []
+
+    for i in range(1, 13):
+        months.append("{0:02d}".format(i))
+    for i in range(1, 32):
+        days.append("{0:02d}".format(i))
+
+    dateTimeObj = datetime.now()
+    currYear = str(dateTimeObj.year)
+    yearAbrev = int(currYear)
+    for i in range(2018, yearAbrev+1):
+        years.append(str(i))
+
+    return years, months, days

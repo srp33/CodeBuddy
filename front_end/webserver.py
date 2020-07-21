@@ -42,53 +42,12 @@ def make_app():
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
+        url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
         url(r"/login(/.+)", LoginHandler, name="login"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
 
     return app
-
-# def create_table(db, table_name):
-#     """Create database table given a database connection 'db'.
-#     Removes any existing data that might be in the
-#     table."""
-
-#     cursor = db.cursor()
-#     cursor.execute("DROP TABLE IF EXISTS " + table_name)
-#     cursor.execute("""
-#     CREATE TABLE table_name (
-#        thing text
-#     )
-#     """)
-
-# def store_value(db, value):                   #incorporate this function into other functions that save stuff
-#     """Store a new value in the database"""
-
-#     cursor = db.cursor()
-#     cursor.execute("INSERT INTO table_name (thing) VALUES (?)", [value])
-#     db.commit()
-
-# def get_values(db):                           #incorporate this function into other functions that save stuff
-#    """Return a list of values from the database"""
-
-#    cursor = db.cursor()
-#    cursor.execute("SELECT thing FROM values")
-#    result = []
-#    for row in cursor:
-#        result.append(row['thing'])
-#    return result
-
-# @app.route('/')                                   #not sure what this does
-# def index(db):
-#     """Home page"""
-
-#     info = {
-#         'title': 'Welcome Home!',
-#         'values': get_values(db)
-#     }
-
-#     return template('dbvalues.tpl', info)             #not sure what template does
-
 
 class HomeHandler(RequestHandler):
     def prepare(self):
@@ -582,6 +541,31 @@ class OutputTypesHandler(RequestHandler):
             logging.error(self, traceback.format_exc())
             self.write(json.dumps({"Error": "An error occurred."}))
 
+class SummarizeLogsHandler(RequestHandler):
+    def get(self):
+        try:
+            years, months, days = get_list_of_dates()
+            self.render("summarize_logs.html", filter_list = sorted(get_root_dirs_to_log()), years=years, months=months, days=days, show_table = False)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self):
+        try:
+            filter = self.get_body_argument("filter_select")
+            year = self.get_body_argument("year_select")
+            if year != "No filter":
+                year = year[2:]
+            month = self.get_body_argument("month_select")
+            day = self.get_body_argument("day_select")
+            log_file = self.get_body_argument("file_select")
+            if log_file == "Select file":
+                log_file = "logs/summarized/HitsAnyUser.tsv.gz"
+            years, months, days = get_list_of_dates()
+
+            self.render("summarize_logs.html", filter = filter, filter_list = sorted(get_root_dirs_to_log()), years=years, months=months, days=days, log_dict = get_log_table_contents(log_file, year, month, day), show_table = True)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         file_path = f"/static/{file_name}"
@@ -672,21 +656,6 @@ class LoggingFilter(logging.Filter):
 if __name__ == "__main__":
     if "PORT" in os.environ and "MPORT" in os.environ:
         application = make_app()
-
-
-        # If you wanted to maintain the contents of the database between runs, you would arrange to run create_table only once or write it so that
-        # it doesn't remove any existing data. One common solution is to put the database creation code into a separate module that you can run once
-        # to create or reset the database. You could then remove that code from the main web application module.
-
-        # # code to connect to the database and create the tables
-        #if not sqlite3.connect("test.db"):
-        #create_database()
-
-        # # code to run our web application
-        # plugin = bottle.ext.sqlite.Plugin(dbfile=DATABASE_NAME)
-        # #app.install(plugin)
-        # application.install(plugin)
-
 
         #TODO: Use something other than the password. Store in a file?
         application.settings["cookie_secret"] = "abc"
