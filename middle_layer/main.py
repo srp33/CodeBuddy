@@ -33,9 +33,9 @@ def exec(info: ExecInfo):
         with open(f"{tmp_dir_path}/code", "w") as the_file:
             the_file.write(info.code)
 
-        #--read-only=true
-        #--log-driver=none
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name} /sandbox/code {info.output_type}"
+        # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
+        #docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --read-only=true --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name} /sandbox/code {info.output_type}"
+        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name} /sandbox/code {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
