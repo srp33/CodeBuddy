@@ -35,7 +35,7 @@ def exec(info: ExecInfo):
 
         #--read-only=true
         #--log-driver=none
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --cpus {cpus} --memory={info.memory_allowed_mb}m --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name} /sandbox/code {info.output_type}"
+        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name} /sandbox/code {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
