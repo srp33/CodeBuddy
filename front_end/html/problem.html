@@ -225,7 +225,7 @@
                 $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
                     function (data, status) {
                         var json_data = JSON.parse(data);
-                        editor.setValue(json_data.code);
+                        editor.setValue(json_data.code,1);
                         check_code(json_data);
                 });
 
