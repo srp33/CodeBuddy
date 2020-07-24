@@ -6,3 +6,4 @@ r_back_end:
     output_types:
         - jpg
         - txt
+    db_location: r"/submissions/test.db"

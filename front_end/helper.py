@@ -93,16 +93,16 @@ def exec_code(env_dict, code, problem_basics, problem_details, request=None):
     code = code + "\n\n" + problem_details["test_code"]
     settings_dict = env_dict[problem_details["environment"]]
 
-    if request:
-        for url, file_name in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
-            cache_url = "{}://{}/data/{}/{}/{}/{}".format(
-                request.protocol,
-                request.host,
-                problem_basics["assignment"]["course"]["id"],
-                problem_basics["assignment"]["id"],
-                problem_basics["id"],
-                file_name)
-            code = code.replace(url, cache_url)
+    # if request:
+    #     for url, file_name in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
+    #         cache_url = "{}://{}/data/{}/{}/{}/{}".format(
+    #             request.protocol,
+    #             request.host,
+    #             problem_basics["assignment"]["course"]["id"],
+    #             problem_basics["assignment"]["id"],
+    #             problem_basics["id"],
+    #             file_name)
+    #         code = code.replace(url, cache_url)
 
     timeout = settings_dict["timeout_seconds"] + 2
     data_dict = {"image_name": settings_dict["image_name"],
@@ -163,16 +163,19 @@ def load_yaml_dict(yaml_text):
     return load(yaml_text, Loader=Loader)
 
 def diff_strings(expected, actual):
-    expected = expected.rstrip()
-    actual = actual.rstrip()
+    print("Expected: ", expected)
+    print("Actual: ", actual)
+    expected = expected.strip()
+    actual = actual.strip()
 
-    diff = difflib.ndiff(expected, actual)
+    #diff = difflib.ndiff(expected, actual)
 
     diff_output = ""
     #numChars = 0
     #numDifferences = 0
-
-    for x in diff:
+    
+    for x in difflib.ndiff(expected, actual):
+        print(x)
         sign = x[0]
         character = x[2]
 
@@ -194,7 +197,7 @@ def diff_strings(expected, actual):
     # Only return diff output if the differences are relatively small.
     #if numDifferences / numChars > 0.2:
     #    diff_output = "More than 20% of the characters were different."
-
+    print(diff_output)
     return diff_output
 
 def render_error(handler, exception):
