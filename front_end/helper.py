@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 import difflib
 import glob
 import hashlib
@@ -38,16 +39,6 @@ def write_file(x, file_path, mode="w"):
 def read_file(file_path, mode="r"):
     with open(file_path, mode) as the_file:
         return the_file.read()
-
-# From https://stackoverflow.com/questions/12485666/python-deleting-all-files-in-a-folder-older-than-x-days
-#import arrow
-#def remove_old_dirs(dir_path):
-#    criticalTime = arrow.now().shift(minutes=-30)
-#
-#    for item in Path(dir_path).glob('*'):
-#        itemTime = arrow.get(item.stat().st_mtime)
-#        if itemTime < criticalTime:
-#            shutil.rmtree(item)
 
 def is_old_file(file_path, days=30):
     age_in_seconds = time.time() - os.stat(file_path)[stat.ST_MTIME]
@@ -89,9 +80,8 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(env_dict, code, problem_basics, problem_details, request=None):
+def exec_code(settings_dict, code, problem_basics, problem_details, request=None):
     code = code + "\n\n" + problem_details["test_code"]
-    settings_dict = env_dict[problem_details["environment"]]
 
     # if request:
     #     for url, file_name in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
@@ -163,10 +153,8 @@ def load_yaml_dict(yaml_text):
     return load(yaml_text, Loader=Loader)
 
 def diff_strings(expected, actual):
-    print("Expected: ", expected)
-    print("Actual: ", actual)
-    expected = expected.strip()
-    actual = actual.strip()
+    expected = expected.rstrip()
+    actual = actual.rstrip()
 
     #diff = difflib.ndiff(expected, actual)
 
@@ -175,7 +163,6 @@ def diff_strings(expected, actual):
     #numDifferences = 0
     
     for x in difflib.ndiff(expected, actual):
-        print(x)
         sign = x[0]
         character = x[2]
 
@@ -197,7 +184,6 @@ def diff_strings(expected, actual):
     # Only return diff output if the differences are relatively small.
     #if numDifferences / numChars > 0.2:
     #    diff_output = "More than 20% of the characters were different."
-    print(diff_output)
     return diff_output
 
 def render_error(handler, exception):
@@ -246,3 +232,21 @@ def show_hidden(request_handler):
     if "show_hidden" not in request_handler.request.query_arguments:
         return False
     return request_handler.request.query_arguments["show_hidden"][0].decode().lower() == "true"
+
+def get_list_of_dates():
+    years = []
+    months = []
+    days = []
+
+    for i in range(1, 13):
+        months.append("{0:02d}".format(i))
+    for i in range(1, 32):
+        days.append("{0:02d}".format(i))
+
+    dateTimeObj = datetime.now()
+    currYear = str(dateTimeObj.year)
+    yearAbrev = int(currYear)
+    for i in range(2018, yearAbrev+1):
+        years.append(str(i))
+
+    return years, months, days

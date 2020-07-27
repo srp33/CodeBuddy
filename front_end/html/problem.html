@@ -19,7 +19,14 @@
               <pre>{{ problem_details["test_code"] }}</pre>
             {% end %}
 
-            <h2 id="your_code_header">Your code:</h2>
+            <p>
+                <div>
+                    <h2 id="your_code_header" style="display: inline">Your code:</h2>
+                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Please write {{ back_end_description }} to address the instructions provided above.">
+                      <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
+                    </label>
+                </div>
+            </p>
 
             <p>
                 <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
@@ -34,10 +41,8 @@
             <div class="field is-grouped">
               <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()'>Submit</button></p>
               <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
-              {% if num_submissions > 0 %}
-                <p class="control"><button class="button is-primary is-light is-large is-half" onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button></p>
-              {% end %}
-              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run Code'. {% if num_submissions > 0 %}At any time, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.{% end %}">
+              <div id="revert_div"></div>
+              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run Code'. If you have made at least one submission, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.">
                 <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
               </p>
             </div>
@@ -50,7 +55,7 @@
                 <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your code with the expected output to find and fix errors in your code.">
                   <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
                 </label>
-              </div>  
+              </div>
                 {% if problem_details["output_type"] == "txt" %}
                   <p><pre>{{ problem_details["expected_output"] }}</pre></p>
                 {% else %}
@@ -247,6 +252,7 @@
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         var submission_html = "";
+                        var revert_html = "";
 
                         if (json_data.length > 0) {
                             submission_html += "<h2>Past submissions:</h2>\n";
@@ -267,9 +273,12 @@
                             }
 
                             submission_html += "</div><br />\n";
+
+                            revert_html = "<p class='control'><button class='button is-primary is-light is-large is-half' onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button>&nbsp;</p>";
                         }
 
                         submissions_div.innerHTML = submission_html;
+                        revert_div.innerHTML = revert_html;
                     });
             }
             </script>

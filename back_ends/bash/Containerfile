@@ -1,0 +1,5 @@
+FROM debian:buster-slim
+
+ADD exec.sh /
+
+ENTRYPOINT ["bash", "/exec.sh"]

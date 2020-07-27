@@ -44,6 +44,7 @@ def make_app():
         url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
+        url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
         url(r"/login(/.+)", LoginHandler, name="login"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
@@ -59,20 +60,12 @@ class HomeHandler(RequestHandler):
             user_id_var.set(raw_current_user_id.decode())
             user_logged_in_var.set(True)
 
-            # conn = create_sqlite_connection()
-            # add_row_user_info(conn, user_id_var.get())
-            # add_row_permissions(conn, user_id_var.get(), "student")
-            # print_rows(conn, "user_info")
-            # print_rows(conn, "permissions")
-            # close_sqlite_connection(conn)
-
         else:
             user_id_var.set(self.request.remote_ip)
             user_logged_in_var.set(False)
 
     def get(self):
         try:
-            # user_id = user_id_var.get()
             self.render("home.html", courses=content.get_courses(show_hidden(self)), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -84,13 +77,6 @@ class BaseUserHandler(RequestHandler):
         if user_id:
             user_id_var.set(user_id.decode())
             user_logged_in_var.set(True)
-            # #if user in table, look up role in permissions. If not, add id to table, look up role in permissions, add to permissions table
-            # if content.check_user_exists(user_id):
-            #     role = content.get_role(user_id)
-            #     print(role)
-            # else:
-            #     content.add_row_users(user_id)
-            #     #look up role of this user id in permissions yaml file--if not administrator or instructor, add to students list in file and add row to permissions table
         else:
             user_id_var.set(self.request.remote_ip)
             user_logged_in_var.set(False)
@@ -111,10 +97,7 @@ class CourseHandler(BaseUserHandler):
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
-            #new_course = False
             self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            #if course_basics["title"] == "":
-            #    new_course = True
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -143,13 +126,13 @@ class EditCourseHandler(BaseUserHandler):
                     else:
                         if new_course:
                             content.save_course(course_basics, course_details)
-                        else: #not a new course
+                        else:
                             if course_basics["title"] != self.get_body_argument("title").strip():
                                 content.update_course(course, "title", self.get_body_argument("title").strip())
                                 course_basics["title"] = self.get_body_argument("title").strip()
-                            #elif course_basics["visible"] != self.get_body_argument("is_visible"):
-                            #    content.update_course(course, "visible", self.get_body_argument("is_visible"))
-                            #    course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
+                            if course_basics["visible"] != (self.get_body_argument("is_visible") == "Yes"):
+                                content.update_course(course, "visible", self.get_body_argument("is_visible") == "Yes")
+                                course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
                             if course_details["introduction"] != self.get_body_argument("introduction").strip():
                                 content.update_course(course, "introduction", self.get_body_argument("introduction").strip())
                                 course_details = {"introduction": self.get_body_argument("introduction").strip()}
@@ -223,7 +206,7 @@ class ImportCourseHandler(BaseUserHandler):
                     if file_path.startswith("/") or file_info.is_dir() or file_path == "VERSION":
                         continue
 
-                    out_path = "{}/{}".format(get_root_dir_path(), file_info.filename) #won't work with sqlite, no dir path
+                    out_path = "{}/{}".format(get_root_dir_path(), file_info.filename)
 
                     if os.path.exists(out_path):
                         result = "Error: A file or directory called {} already exists, so this import is not allowed. This course must first be deleted if you want to import.".format(out_path)
@@ -251,7 +234,7 @@ class ExportCourseHandler(BaseUserHandler):
 
             os.makedirs(temp_dir_path)
 
-            os.system("cp -r {} {}/".format(get_course_dir_path(course), temp_dir_path)) #won't work with sqlite, no dir path
+            os.system("cp -r {} {}/".format(get_course_dir_path(course), temp_dir_path))
             os.system("cp VERSION {}/".format(temp_dir_path))
             os.system("cd {}; zip -r -qq {} .".format(temp_dir_path, zip_file_path))
 
@@ -276,10 +259,7 @@ class AssignmentHandler(BaseUserHandler):
 class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
-            #new_assignment = False
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            #if assignment_basics["title"] == "":
-            #    new_assignment = True
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -290,7 +270,6 @@ class EditAssignmentHandler(BaseUserHandler):
                 new_assignment = False
                 assignment_details = content.get_assignment_details(course, assignment)
             assignment_basics = content.get_assignment_basics(course, assignment)
-            #assignment_basics["course"]["id"] = course
 
             if new_assignment:
                 assignment_basics["title"] = self.get_body_argument("title").strip()
@@ -309,6 +288,9 @@ class EditAssignmentHandler(BaseUserHandler):
                         if assignment_basics["title"] != self.get_body_argument("title").strip():
                             content.update_assignment(assignment, "title", self.get_body_argument("title").strip())
                             assignment_basics["title"] = self.get_body_argument("title").strip()
+                        if assignment_basics["visible"] != (self.get_body_argument("is_visible") == "Yes"):
+                            content.update_assignment(assignment, "visible", self.get_body_argument("is_visible") == "Yes")
+                            assignment_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
                         if assignment_details["introduction"] != self.get_body_argument("introduction").strip():
                             content.update_assignment(assignment, "introduction", self.get_body_argument("introduction").strip())
                             assignment_details = {"introduction": self.get_body_argument("introduction").strip()}
@@ -359,21 +341,20 @@ class ProblemHandler(BaseUserHandler):
             show = show_hidden(self)
             problems = content.get_problems(course, assignment, show)
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
+            back_end = settings_dict["back_ends"][problem_details["back_end"]]
 
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
-            #new_problem = False
             problems = content.get_problems(course, assignment)
-            problem_details = content.get_problem_details(course, assignment, problem) #, parse_data_urls=True)
+            problem_details = content.get_problem_details(course, assignment, problem)
 
-            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            #if problem_basics["title"] == "":
-            #    new_problem = True
+            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -387,12 +368,11 @@ class EditProblemHandler(BaseUserHandler):
             problem_basics = content.get_problem_basics(course, assignment, problem)
             
             if new_problem:
-                #problem_basics["assignment"]["id"] = assignment
                 problem_basics["title"] = self.get_body_argument("title").strip() #required
                 problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes" #required
                 problem_details = {}
                 problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
-                problem_details["environment"] = self.get_body_argument("environment")
+                problem_details["back_end"] = self.get_body_argument("back_end")
                 problem_details["output_type"] = self.get_body_argument("output_type")
                 problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "") #required
                 problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
@@ -403,7 +383,6 @@ class EditProblemHandler(BaseUserHandler):
                 problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
                 problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
                 problem_details["expected_output"] = ""
-                #problem_details["data_urls_info"] = []
 
             if self.get_body_argument("title").strip() == "" or self.get_body_argument("instructions").strip().replace("\r", "") == "" or self.get_body_argument("answer_code").strip().replace("\r", "") == "":
                 result = "Error: One of the required fields is missing."
@@ -411,24 +390,12 @@ class EditProblemHandler(BaseUserHandler):
                 if content.has_duplicate_title(content.get_problems(course, assignment), problem, self.get_body_argument("title").strip()):
                     result = "Error: A problem with that title already exists in this assignment."
                 else:
-                    #print("this is the type of the data urls:")
-                    #print(type(problem_details["data_urls"]))
-                    #problem_details["data_urls_info"] = problem_details["data_urls"]
+                    details_dict = {"instructions": self.get_body_argument("instructions").strip().replace("\r", ""), "back_end": self.get_body_argument("back_end"), "output_type": self.get_body_argument("output_type"), "answer_code": self.get_body_argument("answer_code").strip().replace("\r", ""), "answer_description": self.get_body_argument("answer_description").strip().replace("\r", ""), "test_code": self.get_body_argument("test_code").strip().replace("\r", ""), "credit": self.get_body_argument("credit").strip().replace("\r", ""), "data_url": self.get_body_argument("data_url").strip().replace("\r", ""), "show_expected": self.get_body_argument("show_expected") == "Yes", "show_test_code": self.get_body_argument("show_test_code") == "Yes", "show_answer": self.get_body_argument("show_answer") == "Yes", "expected_output": ""}
 
-                    # for data_url in set(problem_details["data_urls"].split("\n")):
-                    #     data_url = data_url.strip()
-                    #     if data_url != "":
-                    #         contents, content_type, extension = download_file(data_url)
-                    #         file_name = create_md5_hash(data_url) + extension
-                    #         write_data_file(contents, file_name)
-                    #         problem_details["data_urls_info"].append([data_url, file_name, content_type])
-
-                    details_dict = {"instructions": self.get_body_argument("instructions").strip().replace("\r", ""), "environment": self.get_body_argument("environment"), "output_type": self.get_body_argument("output_type"), "answer_code": self.get_body_argument("answer_code").strip().replace("\r", ""), "answer_description": self.get_body_argument("answer_description").strip().replace("\r", ""), "test_code": self.get_body_argument("test_code").strip().replace("\r", ""), "credit": self.get_body_argument("credit").strip().replace("\r", ""), "data_url": self.get_body_argument("data_url").strip().replace("\r", ""), "show_expected": self.get_body_argument("show_expected") == "Yes", "show_test_code": self.get_body_argument("show_test_code") == "Yes", "show_answer": self.get_body_argument("show_answer") == "Yes", "expected_output": ""}
-
-                    expected_output, error_occurred = exec_code(env_dict, self.get_body_argument("answer_code").strip().replace("\r", ""), problem_basics, details_dict)
-
+                    expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], self.get_body_argument("answer_code").strip().replace("\r", ""), problem_basics, details_dict)
+                    
                     if error_occurred:
-                        result = expected_output
+                        result = "Error: " + expected_output
                     else:
                         problem_details["expected_output"] = expected_output
 
@@ -438,12 +405,15 @@ class EditProblemHandler(BaseUserHandler):
                             if problem_basics["title"] != self.get_body_argument("title").strip():
                                 content.update_problem(problem, "title", self.get_body_argument("title").strip())
                                 problem_basics["title"] = self.get_body_argument("title").strip()
+                            if problem_basics["visible"] != (self.get_body_argument("is_visible") == "Yes"):
+                                content.update_problem(problem, "visible", self.get_body_argument("is_visible") == "Yes")
+                                problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
                             if problem_details["instructions"] != self.get_body_argument("instructions").strip().replace("\r", ""):
                                 content.update_problem(problem, "instructions", self.get_body_argument("instructions").strip().replace("\r", ""))
                                 problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "")
-                            if problem_details["environment"] != self.get_body_argument("environment"):
-                                content.update_problem(problem, "environment", self.get_body_argument("environment"))
-                                problem_details["environment"] = self.get_body_argument("environment")
+                            if problem_details["back_end"] != self.get_body_argument("back_end"):
+                                content.update_problem(problem, "back_end", self.get_body_argument("back_end"))
+                                problem_details["back_end"] = self.get_body_argument("back_end")
                             if problem_details["output_type"] != self.get_body_argument("output_type"):
                                 content.update_problem(problem, "output_type", self.get_body_argument("output_type"))
                                 problem_details["output_type"] = self.get_body_argument("output_type")
@@ -462,22 +432,24 @@ class EditProblemHandler(BaseUserHandler):
                             if problem_details["data_url"] != self.get_body_argument("data_url").strip().replace("\r", ""):
                                 content.update_problem(problem, "data_url", self.get_body_argument("data_url").strip().replace("\r", ""))
                                 problem_details["data_url"] = self.get_body_argument("data_url").strip().replace("\r", "")
-                            if problem_details["show_expected"] != self.get_body_argument("show_expected") == "Yes":
+                            if problem_details["show_expected"] != (self.get_body_argument("show_expected") == "Yes"):
                                 content.update_problem(problem, "show_expected", self.get_body_argument("show_expected") == "Yes")
                                 problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
-                            if problem_details["show_test_code"] != self.get_body_argument("show_test_code") == "Yes":
+                            if problem_details["show_test_code"] != (self.get_body_argument("show_test_code") == "Yes"):
                                 content.update_problem(problem, "show_test_code", self.get_body_argument("show_test_code") == "Yes")
                                 problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
-                            if problem_details["show_answer"] != self.get_body_argument("show_answer") == "Yes":
+                            if problem_details["show_answer"] != (self.get_body_argument("show_answer") == "Yes"):
                                 content.update_problem(problem, "show_answer", self.get_body_argument("show_answer") == "Yes")
                                 problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
 
                         problem_basics = content.get_problem_basics(course, assignment, problem)
-                        problem_details = content.get_problem_details(course, assignment, problem) #, parse_data_urls=True)
+                        problem_details = content.get_problem_details(course, assignment, problem)
                         result = "Success: The problem was saved!"
 
             problems = content.get_problems(course, assignment)
-            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=env_dict[problem_details["environment"]]["code_completion_path"], environments=sort_nicely(env_dict.keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+        except ConnectionError as inst:
+            render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -528,7 +500,7 @@ class RunCodeHandler(BaseUserHandler):
         out_dict = {"error_occurred": True}
 
         try:
-            code_output, error_occurred = exec_code(env_dict, code, problem_basics, problem_details, request=None)
+            code_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, request=None)
 
             if problem_details["output_type"] == "txt" or error_occurred:
                 code_output = format_output_as_html(code_output)
@@ -555,14 +527,12 @@ class SubmitHandler(BaseUserHandler):
 
         try:
             if problem_details["output_type"] == "txt":
-                code_output, error_occurred, passed, diff_output = test_code_txt(env_dict, code, problem_basics, problem_details, self.request)
+                code_output, error_occurred, passed, diff_output = test_code_txt(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
             else:
-                code_output, error_occurred, passed, diff_output = test_code_jpg(env_dict, code, problem_basics, problem_details, self.request)
+                code_output, error_occurred, passed, diff_output = test_code_jpg(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
 
             if problem_details["output_type"] == "txt" or error_occurred:
                 code_output = format_output_as_html(code_output)
-                html.unescape(code_output)
-                code_output = code_output.strip().replace("\r", "")
 
             out_dict["code_output"] = code_output
             out_dict["error_occurred"] = error_occurred
@@ -587,10 +557,7 @@ class GetSubmissionHandler(BaseUserHandler):
             if submission_info["error_occurred"]:
                 submission_info["diff_output"] = ""
             elif problem_details["output_type"] == "txt":
-                code_output = html.unescape(submission_info["code_output"])
-                code_output = code_output.strip().replace("\r", "")
-                print(code_output)
-                submission_info["diff_output"] =  find_differences_txt(problem_details, code_output, submission_info["passed"])
+                submission_info["diff_output"] =  find_differences_txt(problem_details, submission_info["code_output"], submission_info["passed"])
             else:
                 diff_percent, diff_image = diff_jpg(problem_details["expected_output"], submission_info["code_output"])
                 submission_info["diff_output"] =  find_differences_jpg(problem_details, submission_info["passed"], diff_image)
@@ -609,8 +576,6 @@ class GetSubmissionsHandler(BaseUserHandler):
             user = self.get_current_user()
             problem_details = content.get_problem_details(course, assignment, problem)
             submissions = content.get_submissions_basic(course, assignment, problem, user)
-            print("here is the submission info being sent to problem.html:")
-            print(submissions)
         except Exception as inst:
             submissions = []
 
@@ -620,7 +585,7 @@ class DataHandler(RequestHandler):
     async def get(self, course, assignment, problem, file_name):
         data_file_path = get_downloaded_file_path(file_name)
 
-        problem_details =content.get_problem_details(course, assignment, problem)
+        problem_details = content.get_problem_details(course, assignment, problem)
 
     #    content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
     #    self.set_header('Content-type', content_type)
@@ -651,12 +616,37 @@ class ViewAnswerHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class OutputTypesHandler(RequestHandler):
-    def get(self, environment):
+    def get(self, back_end):
         try:
-            self.write(" ".join(sort_nicely(env_dict[environment]["output_types"])))
+            self.write(json.dumps(settings_dict["back_ends"][back_end]["output_types"]))
         except Exception as inst:
             logging.error(self, traceback.format_exc())
-            self.write("\n".join(["txt"]))
+            self.write(json.dumps({"Error": "An error occurred."}))
+
+class SummarizeLogsHandler(RequestHandler):
+    def get(self):
+        try:
+            years, months, days = get_list_of_dates()
+            self.render("summarize_logs.html", filter_list = sorted(get_root_dirs_to_log()), years=years, months=months, days=days, show_table = False)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self):
+        try:
+            filter = self.get_body_argument("filter_select")
+            year = self.get_body_argument("year_select")
+            if year != "No filter":
+                year = year[2:]
+            month = self.get_body_argument("month_select")
+            day = self.get_body_argument("day_select")
+            log_file = self.get_body_argument("file_select")
+            if log_file == "Select file":
+                log_file = "logs/summarized/HitsAnyUser.tsv.gz"
+            years, months, days = get_list_of_dates()
+
+            self.render("summarize_logs.html", filter = filter, filter_list = sorted(get_root_dirs_to_log()), years=years, months=months, days=days, log_dict = get_log_table_contents(log_file, year, month, day), show_table = True)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
@@ -694,6 +684,17 @@ class LoginHandler(RequestHandler):
         if user_id == "":
             self.write("Invalid user ID.")
         else:
+            if not content.check_user_exists(user_id):
+                content.add_row_users(user_id)
+                print("Users:", content.print_rows("users"))
+
+            if content.check_role_exists(user_id):
+                role = content.get_role(user_id)
+                print("This is the current user's role: ", role)
+            else:
+                content.add_row_permissions(user_id, "student")
+                print("Permissions:", content.print_rows("permissions"))
+
             self.set_secure_cookie("user_id", user_id, expires_days=30)
             self.redirect(target_path)
 
@@ -746,56 +747,38 @@ class LoggingFilter(logging.Filter):
         return True
 
 if __name__ == "__main__":
-    try:
-        if "PORT" in os.environ and "MPORT" in os.environ:
-            application = make_app()
+    if "PORT" in os.environ and "MPORT" in os.environ:
+        application = make_app()
 
-            content = Content()
-            content.create_sqlite_tables()
+        content = Content()
+        content.create_sqlite_tables()
 
-            #content.add_row_users("srp33")
-            #content.add_row_permissions("srp33", "administrator")
-            
-            #content.print_rows("users")
-            #content.print_rows("permissions")
-            content.print_tables()
-            #content.delete_all_rows("courses")
-            #content.print_rows("courses")
-            #content.delete_all_rows("assignments2")
-            #content.print_rows("assignments2")
+        #TODO: Use something other than the password. Store in a file?
+        application.settings["cookie_secret"] = "abc"
+        settings_dict = get_settings()
 
-            # conn = create_sqlite_connection()
-            # create_sqlite_tables(conn)
+        server = tornado.httpserver.HTTPServer(application)
+        server.bind(int(os.environ['PORT']))
+        server.start(int(os.environ['NUM_PROCESSES']))
 
-            #TODO: Use something other than the password. Store in a file?
-            application.settings["cookie_secret"] = "abc"
-            env_dict = get_environments()
+        user_logged_in_var = contextvars.ContextVar("user_logged_in")
+        user_id_var = contextvars.ContextVar("user_id")
 
-            server = tornado.httpserver.HTTPServer(application)
-            server.bind(int(os.environ['PORT']))
-            server.start(int(os.environ['NUM_PROCESSES']))
+        # Set up logging
+        options.log_file_prefix = "/logs/codebuddy.log"
+        options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
+        options.log_file_num_backups = 10
+        parse_command_line()
+        my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s %(user_id)s')
+        logging_filter = LoggingFilter()
+        for handler in logging.getLogger().handlers:
+            handler.addFilter(logging_filter)
+        root_logger = logging.getLogger()
+        root_streamhandler = root_logger.handlers[0]
+        root_streamhandler.setFormatter(my_log_formatter)
 
-            user_logged_in_var = contextvars.ContextVar("user_logged_in")
-            user_id_var = contextvars.ContextVar("user_id")
-
-            # Set up logging
-            options.log_file_prefix = "/logs/codebuddy.log"
-            options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
-            options.log_file_num_backups = 10
-            parse_command_line()
-            my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s %(user_id)s')
-            logging_filter = LoggingFilter()
-            for handler in logging.getLogger().handlers:
-                handler.addFilter(logging_filter)
-            root_logger = logging.getLogger()
-            root_streamhandler = root_logger.handlers[0]
-            root_streamhandler.setFormatter(my_log_formatter)
-
-            logging.info("Starting on port {}...".format(os.environ['PORT']))
-            tornado.ioloop.IOLoop.instance().start()
-        else:
-            raise Exception("Values must be specified for the PORT and MPORT environment variables.")
-    #except Exception as inst:
-    except Error as e:
-        logging.error(traceback.format_exc())
+        logging.info("Starting on port {}...".format(os.environ['PORT']))
+        tornado.ioloop.IOLoop.instance().start()
+    else:
+        logging.error("Values must be specified for the PORT and MPORT environment variables.")
         sys.exit(1)

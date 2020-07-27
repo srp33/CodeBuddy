@@ -1,9 +1,0 @@
-r_back_end:
-    image_name: srp33/codebuddy_r
-    memory_allowed_mb: 100
-    timeout_seconds: 30
-    code_completion_path: ace/mode/r
-    output_types:
-        - jpg
-        - txt
-    db_location: r"/submissions/test.db"

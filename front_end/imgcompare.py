@@ -43,6 +43,9 @@ def diff_jpg(expected_image_string, answer_image_string):
     diff_image = pixel_diff(expected_image, answer_image)
     diff_percent = image_diff_percent(expected_image.size, diff_image)
 
+    expected_image.close()
+    answer_image.close()
+
     return diff_percent, diff_image
 
 def decode_image_string(s):

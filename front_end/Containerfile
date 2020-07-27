@@ -6,7 +6,7 @@ RUN apt-get update \
  && apt-get install -y bzip2 zip \
  && apt-get -y autoremove \
  && apt-get clean \
- && conda install -y tornado requests Pillow PyYAML arrow markdown2 curl git \
+ && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
  && mkdir -p /app /conda /course /static \
  && wget -O /static/jquery.min.js https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
  && curl https://raw.githubusercontent.com/jenil/bulmaswatch/gh-pages/flatly/bulmaswatch.min.css | sed -En 's/.footer\{background-color:#ecf0f1;padding:3rem 1.5rem 6rem\}/.footer\{background-color:#ecf0f1;padding:1rem 3.0rem 1rem\}/p' > /static/bulmaswatch.min.css \
@@ -21,7 +21,7 @@ RUN apt-get update \
 # This can be used for font awesome icons.
 #wget -O fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
 
-ADD Environments.yaml /
+ADD Settings.yaml /
 ADD VERSION /
 ADD front_end/summarize_logs.sh /etc/cron.hourly/
 ADD front_end/*.png /static/
