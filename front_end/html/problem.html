@@ -9,9 +9,9 @@
             {% if len(problem_details["data_url"]) > 0 %}
               <h5>
                 Data file:
-              {% end %}
               </h5>
-              <p>{{ problem_details["data_url"] }}</p>
+              <a href="{{ problem_details["data_url"] }}">{{ problem_details["data_url"] }}</a> (<a href="{{ problem_details["url_file_name"] }}>cached version</a>)
+            {% end %}
 
             {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
               <h4>Test code (to be executed after your code):</h4>

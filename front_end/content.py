@@ -77,6 +77,8 @@ class Content:
                                         answer_description text,
                                         credit text,
                                         data_url text,
+                                        url_file_name text,
+                                        url_content_type text,
                                         back_end text NOT NULL,
                                         expected_output text NOT NULL,
                                         instructions text NOT NULL,
@@ -152,7 +154,7 @@ class Content:
         self.conn.commit()
 
     def print_tables(self):
-        "SELECT name FROM sqlite_master WHERE type='table'"
+        sql = "SELECT name FROM sqlite_master WHERE type='table'"
         tables = self.c.execute(sql)
         for table in tables:
             print(table[0])
@@ -178,11 +180,30 @@ class Content:
         self.c.execute(sql, (problem,))
         return self.c.fetchone()
 
-    def get_courses(self, show_hidden=True):
-        courses = []
+    def get_course_ids(self):
+        course_ids = []
         sql = 'SELECT course_id FROM courses'
         self.c.execute(sql)
         course_ids = [course[0] for course in self.c.fetchall()]
+        return course_ids
+
+    def get_assignment_ids(self, course_id):
+        assignment_ids = []
+        sql = 'SELECT assignment_id FROM assignments WHERE course_id=?'
+        self.c.execute(sql, (str(course_id),))
+        assignment_ids = [assignment[0] for assignment in self.c.fetchall()]
+        return assignment_ids
+
+    def get_problem_ids(self, course_id, assignment_id):
+        problem_ids = []
+        sql = 'SELECT problem_id FROM problems WHERE assignment_id=?'
+        self.c.execute(sql, (str(assignment_id),))
+        problem_ids = [problem[0] for problem in self.c.fetchall()]
+        return problem_ids
+
+    def get_courses(self, show_hidden=True):
+        courses = []
+        course_ids = self.get_course_ids()
 
         for course_id in course_ids:
             course_basics = self.get_course_basics(course_id)
@@ -193,9 +214,7 @@ class Content:
 
     def get_assignments(self, course_id, show_hidden=True):
         assignments = []
-        sql = 'SELECT assignment_id FROM assignments WHERE course_id=?'
-        self.c.execute(sql, (str(course_id),))
-        assignment_ids = [assignment[0] for assignment in self.c.fetchall()]
+        assignment_ids = self.get_assignment_ids(course_id)
 
         for assignment_id in assignment_ids:
             assignment_basics = self.get_assignment_basics(course_id, assignment_id)
@@ -206,9 +225,7 @@ class Content:
 
     def get_problems(self, course_id, assignment_id, show_hidden=True):
         problems = []
-        sql = 'SELECT problem_id FROM problems WHERE assignment_id=?'
-        self.c.execute(sql, (str(assignment_id),))
-        problem_ids = [problem[0] for problem in self.c.fetchall()]
+        problem_ids = self.get_problem_ids(course_id, assignment_id)
 
         for problem_id in problem_ids:
             problem_basics = self.get_problem_basics(course_id, assignment_id, problem_id)
@@ -357,7 +374,7 @@ class Content:
     def get_problem_details(self, course, assignment, problem, format_content=False):
         problem_dict = {}
 
-        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, test_code, credit, show_expected, show_test_code, show_answer, expected_output, data_url 
+        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, test_code, credit, show_expected, show_test_code, show_answer, expected_output, data_url, url_file_name, url_content_type 
                     FROM problems WHERE problem_id = ?'''
         self.c.execute(sql, (problem,))
         row = self.c.fetchone()
@@ -365,9 +382,9 @@ class Content:
             problem_dict = {"instructions": "", "back_end": "python",
             "output_type": "txt", "answer_code": "", "answer_description": "", "test_code": "",
             "credit": "", "show_expected": True, "show_test_code": True, "show_answer": True,
-            "expected_output": "", "data_url": ""}
+            "expected_output": "", "data_url": "", "url_file_name": "", "url_content_type": ""}
         else:
-            problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_output": row["expected_output"], "data_url": row["data_url"]}
+            problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_output": row["expected_output"], "data_url": row["data_url"], "url_file_name": row["url_file_name"], "url_content_type": row["url_content_type"]}
 
             if format_content:
                 problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
@@ -419,9 +436,9 @@ class Content:
 
     def save_problem(self, course, assignment, problem_basics, problem_details):
         sql = ''' INSERT INTO 
-                    problems (course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_url, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        self.c.execute(sql, [course, assignment, problem_basics["id"], problem_basics["title"], problem_basics["visible"], problem_details["answer_code"], problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"]])
+                    problems (course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_url, url_file_name, url_content_type, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        self.c.execute(sql, [course, assignment, problem_basics["id"], problem_basics["title"], problem_basics["visible"], problem_details["answer_code"], problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["url_file_name"], problem_details["url_content_type"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"]])
         self.conn.commit()
 
     def save_submission(self, course, assignment, problem, user, code, code_output, passed, date, error_occurred):

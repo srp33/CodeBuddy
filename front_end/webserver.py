@@ -103,6 +103,10 @@ class EditCourseHandler(BaseUserHandler):
 
     def post(self, course):
         try:
+            title = self.get_body_argument("title").strip()
+            visible = self.get_body_argument("is_visible") == "Yes"
+            introduction = self.get_body_argument("introduction").strip()
+
             new_course = True
             if content.check_course_exists(course):
                 new_course = False
@@ -111,31 +115,31 @@ class EditCourseHandler(BaseUserHandler):
             course_basics = content.get_course_basics(course)
 
             if new_course:
-                course_basics["title"] = self.get_body_argument("title").strip()
-                course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
-                course_details = {"introduction": self.get_body_argument("introduction").strip()}
+                course_basics["title"] = title
+                course_basics["visible"] = visible
+                course_details = {"introduction": introduction}
 
-            if self.get_body_argument("title").strip() == "" or self.get_body_argument("introduction").strip() == "":
+            if title == "" or introduction == "":
                 result = "Error: Missing title or introduction."
             else:
-                if content.has_duplicate_title(courses, course, self.get_body_argument("title").strip()):
+                if content.has_duplicate_title(courses, course, title):
                     result = "Error: A course with that title already exists."
                 else:
-                    if re.search(r"[^\w ]", self.get_body_argument("title").strip()):
+                    if re.search(r"[^\w ]", title):
                         result = "Error: The title can only contain alphanumeric characters and spaces."
                     else:
                         if new_course:
                             content.save_course(course_basics, course_details)
                         else:
-                            if course_basics["title"] != self.get_body_argument("title").strip():
-                                content.update_course(course, "title", self.get_body_argument("title").strip())
-                                course_basics["title"] = self.get_body_argument("title").strip()
-                            if course_basics["visible"] != (self.get_body_argument("is_visible") == "Yes"):
-                                content.update_course(course, "visible", self.get_body_argument("is_visible") == "Yes")
-                                course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
-                            if course_details["introduction"] != self.get_body_argument("introduction").strip():
-                                content.update_course(course, "introduction", self.get_body_argument("introduction").strip())
-                                course_details = {"introduction": self.get_body_argument("introduction").strip()}
+                            if course_basics["title"] != title:
+                                content.update_course(course, "title", title)
+                                course_basics["title"] = title
+                            if course_basics["visible"] != visible:
+                                content.update_course(course, "visible", visible)
+                                course_basics["visible"] = visible
+                            if course_details["introduction"] != introduction:
+                                content.update_course(course, "introduction", introduction)
+                                course_details = {"introduction": introduction}
 
                         course_basics = content.get_course_basics(course)
                         courses = content.get_courses()
@@ -265,6 +269,10 @@ class EditAssignmentHandler(BaseUserHandler):
 
     def post(self, course, assignment):
         try:
+            title = self.get_body_argument("title").strip()
+            visible = self.get_body_argument("is_visible") == "Yes"
+            introduction = self.get_body_argument("introduction").strip()
+
             new_assignment = True
             if content.check_assignment_exists(assignment):
                 new_assignment = False
@@ -272,28 +280,28 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_basics = content.get_assignment_basics(course, assignment)
 
             if new_assignment:
-                assignment_basics["title"] = self.get_body_argument("title").strip()
-                assignment_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
-                assignment_details = {"introduction": self.get_body_argument("introduction").strip()}
+                assignment_basics["title"] = title
+                assignment_basics["visible"] = visible
+                assignment_details = {"introduction": introduction}
 
-            if self.get_body_argument("title").strip() == "" or self.get_body_argument("introduction").strip() == "":
+            if title == "" or introduction == "":
                 result = "Error: Missing title or introduction."
             else:
-                if content.has_duplicate_title(content.get_assignments(course), assignment, self.get_body_argument("title").strip()):
+                if content.has_duplicate_title(content.get_assignments(course), assignment, title):
                     result = "Error: An assignment with that title already exists."
                 else:
                     if new_assignment:
                         content.save_assignment(course, assignment_basics, assignment_details)
                     else:
-                        if assignment_basics["title"] != self.get_body_argument("title").strip():
-                            content.update_assignment(assignment, "title", self.get_body_argument("title").strip())
-                            assignment_basics["title"] = self.get_body_argument("title").strip()
-                        if assignment_basics["visible"] != (self.get_body_argument("is_visible") == "Yes"):
-                            content.update_assignment(assignment, "visible", self.get_body_argument("is_visible") == "Yes")
-                            assignment_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
-                        if assignment_details["introduction"] != self.get_body_argument("introduction").strip():
-                            content.update_assignment(assignment, "introduction", self.get_body_argument("introduction").strip())
-                            assignment_details = {"introduction": self.get_body_argument("introduction").strip()}
+                        if assignment_basics["title"] != title:
+                            content.update_assignment(assignment, "title", title)
+                            assignment_basics["title"] = title
+                        if assignment_basics["visible"] != visible:
+                            content.update_assignment(assignment, "visible", visible)
+                            assignment_basics["visible"] = visible
+                        if assignment_details["introduction"] != introduction:
+                            content.update_assignment(assignment, "introduction", introduction)
+                            assignment_details = {"introduction": introduction}
                         
                     assignment_basics = content.get_assignment_basics(course, assignment)
                     result = "Success: Assignment information saved!"
@@ -360,6 +368,20 @@ class EditProblemHandler(BaseUserHandler):
 
     def post(self, course, assignment, problem):
         try:
+            title = self.get_body_argument("title").strip()
+            visible = self.get_body_argument("is_visible") == "Yes"
+            instructions = self.get_body_argument("instructions").strip().replace("\r", "")
+            back_end = self.get_body_argument("back_end")
+            output_type = self.get_body_argument("output_type")
+            answer_code = self.get_body_argument("answer_code").strip().replace("\r", "")
+            answer_description = self.get_body_argument("answer_description").strip().replace("\r", "")
+            test_code = self.get_body_argument("test_code").strip().replace("\r", "")
+            credit = self.get_body_argument("credit").strip().replace("\r", "")
+            data_url = self.get_body_argument("data_url").strip().replace("\r", "")
+            show_expected = self.get_body_argument("show_expected") == "Yes"
+            show_test_code = self.get_body_argument("show_test_code") == "Yes"
+            show_answer = self.get_body_argument("show_answer") == "Yes"
+
             new_problem = True
             if content.check_problem_exists(problem):
                 new_problem = False
@@ -368,32 +390,41 @@ class EditProblemHandler(BaseUserHandler):
             problem_basics = content.get_problem_basics(course, assignment, problem)
             
             if new_problem:
-                problem_basics["title"] = self.get_body_argument("title").strip() #required
-                problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes" #required
+                problem_basics["title"] = title #required
+                problem_basics["visible"] = visible #required
                 problem_details = {}
-                problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
-                problem_details["back_end"] = self.get_body_argument("back_end")
-                problem_details["output_type"] = self.get_body_argument("output_type")
-                problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "") #required
-                problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
-                problem_details["test_code"] = self.get_body_argument("test_code").strip().replace("\r", "")
-                problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
-                problem_details["data_url"] = self.get_body_argument("data_url").strip().replace("\r", "")
-                problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
-                problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
-                problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
+                problem_details["instructions"] = instructions #required
+                problem_details["back_end"] = back_end
+                problem_details["output_type"] = output_type
+                problem_details["answer_code"] = answer_code #required
+                problem_details["answer_description"] = answer_description
+                problem_details["test_code"] = test_code
+                problem_details["credit"] = credit
+                problem_details["data_url"] = data_url
+                problem_details["show_expected"] = show_expected
+                problem_details["show_test_code"] = show_test_code
+                problem_details["show_answer"] = show_answer
                 problem_details["expected_output"] = ""
 
-            if self.get_body_argument("title").strip() == "" or self.get_body_argument("instructions").strip().replace("\r", "") == "" or self.get_body_argument("answer_code").strip().replace("\r", "") == "":
+            if title == "" or instructions == "" or answer_code == "":
                 result = "Error: One of the required fields is missing."
             else:
-                if content.has_duplicate_title(content.get_problems(course, assignment), problem, self.get_body_argument("title").strip()):
+                if content.has_duplicate_title(content.get_problems(course, assignment), problem, title):
                     result = "Error: A problem with that title already exists in this assignment."
                 else:
-                    details_dict = {"instructions": self.get_body_argument("instructions").strip().replace("\r", ""), "back_end": self.get_body_argument("back_end"), "output_type": self.get_body_argument("output_type"), "answer_code": self.get_body_argument("answer_code").strip().replace("\r", ""), "answer_description": self.get_body_argument("answer_description").strip().replace("\r", ""), "test_code": self.get_body_argument("test_code").strip().replace("\r", ""), "credit": self.get_body_argument("credit").strip().replace("\r", ""), "data_url": self.get_body_argument("data_url").strip().replace("\r", ""), "show_expected": self.get_body_argument("show_expected") == "Yes", "show_test_code": self.get_body_argument("show_test_code") == "Yes", "show_answer": self.get_body_argument("show_answer") == "Yes", "expected_output": ""}
+                    details_dict = {"instructions": instructions, "back_end": back_end, "output_type": output_type, "answer_code": answer_code, "answer_description": answer_description, "test_code": test_code, "credit": credit, "data_url": data_url, "show_expected": show_expected, "show_test_code": show_test_code, "show_answer": show_answer, "expected_output": ""}
 
-                    expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], self.get_body_argument("answer_code").strip().replace("\r", ""), problem_basics, details_dict)
-                    
+                    data_url = details_dict["data_url"].strip()
+                    if data_url != "":
+                            contents, content_type, extension = download_file(data_url)
+                            file_name = create_md5_hash(data_url) + extension
+                            write_data_file(contents, file_name)
+                            problem_details["data_url"] = data_url
+                            problem_details["url_file_name"] = file_name
+                            problem_details["url_content_type"] = content_type
+
+                    expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], answer_code, problem_basics, details_dict)
+
                     if error_occurred:
                         result = "Error: " + expected_output
                     else:
@@ -402,45 +433,45 @@ class EditProblemHandler(BaseUserHandler):
                         if new_problem:
                             content.save_problem(course, assignment, problem_basics, problem_details)
                         else:
-                            if problem_basics["title"] != self.get_body_argument("title").strip():
-                                content.update_problem(problem, "title", self.get_body_argument("title").strip())
-                                problem_basics["title"] = self.get_body_argument("title").strip()
-                            if problem_basics["visible"] != (self.get_body_argument("is_visible") == "Yes"):
-                                content.update_problem(problem, "visible", self.get_body_argument("is_visible") == "Yes")
-                                problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
-                            if problem_details["instructions"] != self.get_body_argument("instructions").strip().replace("\r", ""):
-                                content.update_problem(problem, "instructions", self.get_body_argument("instructions").strip().replace("\r", ""))
-                                problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "")
-                            if problem_details["back_end"] != self.get_body_argument("back_end"):
-                                content.update_problem(problem, "back_end", self.get_body_argument("back_end"))
-                                problem_details["back_end"] = self.get_body_argument("back_end")
-                            if problem_details["output_type"] != self.get_body_argument("output_type"):
-                                content.update_problem(problem, "output_type", self.get_body_argument("output_type"))
-                                problem_details["output_type"] = self.get_body_argument("output_type")
-                            if problem_details["answer_code"] != self.get_body_argument("answer_code").strip().replace("\r", ""):
-                                content.update_problem(problem, "answer_code", self.get_body_argument("answer_code").strip().replace("\r", ""))
-                                problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "")
-                            if problem_details["answer_description"] != self.get_body_argument("answer_description").strip().replace("\r", ""):
-                                content.update_problem(problem, "answer_description", self.get_body_argument("answer_description").strip().replace("\r", ""))
-                                problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
-                            if problem_details["test_code"] != self.get_body_argument("test_code").strip().replace("\r", ""):
-                                content.update_problem(problem, "test_code", self.get_body_argument("test_code").strip().replace("\r", ""))
-                                problem_details["test_code"] = self.get_body_argument("test_code").strip().replace("\r", "")
-                            if problem_details["credit"] != self.get_body_argument("credit").strip().replace("\r", ""):
-                                content.update_problem(problem, "credit", self.get_body_argument("credit").strip().replace("\r", ""))
-                                problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
-                            if problem_details["data_url"] != self.get_body_argument("data_url").strip().replace("\r", ""):
-                                content.update_problem(problem, "data_url", self.get_body_argument("data_url").strip().replace("\r", ""))
-                                problem_details["data_url"] = self.get_body_argument("data_url").strip().replace("\r", "")
-                            if problem_details["show_expected"] != (self.get_body_argument("show_expected") == "Yes"):
-                                content.update_problem(problem, "show_expected", self.get_body_argument("show_expected") == "Yes")
-                                problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
-                            if problem_details["show_test_code"] != (self.get_body_argument("show_test_code") == "Yes"):
-                                content.update_problem(problem, "show_test_code", self.get_body_argument("show_test_code") == "Yes")
-                                problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
-                            if problem_details["show_answer"] != (self.get_body_argument("show_answer") == "Yes"):
-                                content.update_problem(problem, "show_answer", self.get_body_argument("show_answer") == "Yes")
-                                problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
+                            if problem_basics["title"] != title:
+                                content.update_problem(problem, "title", title)
+                                problem_basics["title"] = title
+                            if problem_basics["visible"] != visible:
+                                content.update_problem(problem, "visible", visible)
+                                problem_basics["visible"] = visible
+                            if problem_details["instructions"] != instructions:
+                                content.update_problem(problem, "instructions", instructions)
+                                problem_details["instructions"] = instructions
+                            if problem_details["back_end"] != back_end:
+                                content.update_problem(problem, "back_end", back_end)
+                                problem_details["back_end"] = back_end
+                            if problem_details["output_type"] != output_type:
+                                content.update_problem(problem, "output_type", output_type)
+                                problem_details["output_type"] = output_type
+                            if problem_details["answer_code"] != answer_code:
+                                content.update_problem(problem, "answer_code", answer_code)
+                                problem_details["answer_code"] = answer_code
+                            if problem_details["answer_description"] != answer_description:
+                                content.update_problem(problem, "answer_description", answer_description)
+                                problem_details["answer_description"] = answer_description
+                            if problem_details["test_code"] != test_code:
+                                content.update_problem(problem, "test_code", test_code)
+                                problem_details["test_code"] = test_code
+                            if problem_details["credit"] != credit:
+                                content.update_problem(problem, "credit", credit)
+                                problem_details["credit"] = credit
+                            if problem_details["data_url"] != data_url:
+                                content.update_problem(problem, "data_url", data_url)
+                                problem_details["data_url"] = data_url
+                            if problem_details["show_expected"] != show_expected:
+                                content.update_problem(problem, "show_expected", show_expected)
+                                problem_details["show_expected"] = show_expected
+                            if problem_details["show_test_code"] != show_test_code:
+                                content.update_problem(problem, "show_test_code", show_test_code)
+                                problem_details["show_test_code"] = show_test_code
+                            if problem_details["show_answer"] != show_answer:
+                                content.update_problem(problem, "show_answer", show_answer)
+                                problem_details["show_answer"] = show_answer
 
                         problem_basics = content.get_problem_basics(course, assignment, problem)
                         problem_details = content.get_problem_details(course, assignment, problem)
