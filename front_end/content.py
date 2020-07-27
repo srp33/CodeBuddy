@@ -25,11 +25,6 @@ class Content:
         self.c = self.conn.cursor()
         self.c.execute("PRAGMA foreign_keys=ON")
 
-        # if not self.check_user_exists():
-        #     self.create_user()
-        # else:
-        #     self.get_user()
-
         atexit.register(self.close)
 
     def close(self):
