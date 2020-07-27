@@ -34,7 +34,7 @@
                   <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
                 </label>
                 <label class="checkbox is-pulled-right">
-                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="modify_auto_complete()">
+                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
                 </label>
             </p>
 
@@ -215,7 +215,7 @@
                 $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
                     function (data, status) {
                         var json_data = JSON.parse(data);
-                        editor.setValue(json_data.code);
+                        editor.setValue(json_data.code, 1);
                         check_code(json_data);
                 });
 
@@ -226,7 +226,7 @@
                 return false;
             }
 
-            function modify_auto_complete() {
+            function update_auto_complete() {
                 ac_box = document.getElementById("auto_complete");
 
                 if (ac_box.checked) {
@@ -297,7 +297,7 @@
             });
             editor.focus();
             editor.getSession().setMode("{{ code_completion_path }}");
-            modify_auto_complete();
+            update_auto_complete();
 
             show_past_submissions();
             last_submission_id = {{ num_submissions }};
