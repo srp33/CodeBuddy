@@ -9,34 +9,31 @@
     <p><div class='notification is-danger'><pre><strong>{{ result }}</strong></pre></div></p>
   {% else %}
     <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
-
   {% end %}
 {% end %}
 
 {% if course_basics["exists"] %}
   {% if assignment_basics["exists"] %}
-    <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
+    <!-- Load external libraries -->
+    <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/static/mode-r.js" type="text/javascript"></script>
+    <script src="/static/ext-language_tools.js"></script>
 
-    <p><strong>Title*: </strong></p>
-    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
-
-    <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this problem.</p>
-    <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
-
+    <!-- Global JavaScript -->
     <script>
-        function updateOutputType(back_end, output_type_to_select) {
+        function updateBackEndOptions(back_end, output_type_to_select) {
             // Clear out existing options from the dropdown
             $("#output_types").empty();
 
             ot_select = document.getElementById("output_types");
 
-            $.get('/output_types/' + back_end, function( data ) {
+            $.get('/back_end/' + back_end, function( data ) {
                 var json_data = JSON.parse(data);
 
                 var i;
-                for (i = 0; i < Object.keys(json_data).length; i++) {
-                    key = Object.keys(json_data)[i];
-                    description = json_data[key];
+                for (i = 0; i < Object.keys(json_data["output_types"]).length; i++) {
+                    key = Object.keys(json_data["output_types"])[i];
+                    description = json_data["output_types"][key];
 
                     var opt = document.createElement('option');
                     opt.innerHTML = description;
@@ -53,16 +50,52 @@
 
                     ot_select.appendChild(opt);
                 }
+
+                answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
+                test_code_editor.getSession().setMode(json_data["code_completion_path"]);
             });
         }
+
+        function update_auto_complete(checkbox_element_id) {
+            checkbox = document.getElementById(checkbox_element_id);
+
+            editor = answer_code_editor;
+            if (checkbox_element_id == "test_code_auto_complete")
+                editor = test_code_editor;
+
+            if (checkbox.checked) {
+                editor.setOptions({
+                    enableBasicAutocompletion: false,
+                    enableSnippets: true,
+                    enableLiveAutocompletion: true
+                });
+            }
+            else {
+              editor.setOptions({
+                  enableBasicAutocompletion: false,
+                  enableSnippets: false,
+                  enableLiveAutocompletion: false
+              });
+            }
+        }
+
+      ace.require("ace/ext/language_tools");
     </script>
+
+    <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
+
+    <p><strong>Title*: </strong></p>
+    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
+
+    <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this problem.</p>
+    <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
 
     <p><strong>Back end: </strong>
       <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' code.">
         <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-bottom"/>
       </label>
       <div class="select is-info">
-        <select name="back_end" onchange="updateOutputType(this.value, '')">
+        <select name="back_end" onchange="updateBackEndOptions(this.value, '')">
         {% for back_end in back_ends %}
           <option
             {% if back_end == problem_details["back_end"] %}
@@ -81,31 +114,6 @@
       </div>
     </p>
 
-    <script>
-        updateOutputType('{{ problem_details["back_end"] }}', '{{ problem_details["output_type"] }}');
-    </script>
-
-    <script>
-//        function modify_auto_complete() {
-//              ac_box = document.getElementById("auto_complete");
-//
-//              if (ac_box.checked) {
-//                editor.setOptions({
-//                enableBasicAutocompletion: false,
-//                enableSnippets: true,
-//                enableLiveAutocompletion: true
-//                });
-//              }
-//              else {
-//                editor.setOptions({
-//                enableBasicAutocompletion: false,
-//                enableSnippets: false,
-//                enableLiveAutocompletion: false
-//                });
-//              }
-//            }
-    </script>
-
     <p><strong>Answer code*: </strong></p>
     <p>Please note that if the answer code for this problem changes after students have already submitted answers, only the most recent answer code will appear when students view past submissions. Please use caution when changing the answer code; consider creating a new problem instead.</p>
     <p>
@@ -114,25 +122,9 @@
         <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
       </label>
       <label class="checkbox is-pulled-right">
-          Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="modify_auto_complete()">
+          Use auto-complete <input type="checkbox" id="answer_code_auto_complete" name="answer_code_auto_complete" value="true" checked onclick="update_auto_complete('answer_code_auto_complete')">
       </label>
     </p>
-    
-    <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="/static/mode-r.js" type="text/javascript"></script>
-    <script src="/static/ext-language_tools.js"></script>
-    <script>
-      //ace.require("ace/ext/language_tools");
-      //var editor = ace.edit("answer_code", {
-      //  theme: "ace/theme/tomorrow",
-      //  autoScrollEditorIntoView: true,
-      //  minLines: 20,
-      //  fontSize: "12pt"
-      //});
-      //editor.focus();
-      //editor.getSession().setMode("{{ code_completion_path }}");
-      //modify_auto_complete();
-    </script>
     
     <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide a description." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
@@ -144,22 +136,9 @@
         <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
       </label>
       <label class="checkbox is-pulled-right">
-          Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="modify_auto_complete()">
+          Use auto-complete <input type="checkbox" id="test_code_auto_complete" name="test_code_auto_complete" value="true" checked onclick="update_auto_complete('test_code_auto_complete')">
       </label>
     </p>
-
-    <script>
-//      ace.require("ace/ext/language_tools");
-//      var editor2 = ace.edit("test_code", {
-//        theme: "ace/theme/tomorrow",
-//        autoScrollEditorIntoView: true,
-//        minLines: 20,
-//        fontSize: "12pt"
-//      });
-//      editor2.focus();
-//      editor2.getSession().setMode("{{ code_completion_path }}");
-//      modify_auto_complete();
-    </script>
 
     {% if problem_basics["exists"] %}
       <p><strong>Expected output:</strong><br />
@@ -241,6 +220,27 @@
         <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem submissions</a>
       {% end %}
     </p>
+
+    <!-- Code to modify page behavior at the end of loading -->
+    <script>
+      var answer_code_editor = ace.edit("answer_code", {
+        theme: "ace/theme/tomorrow",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        fontSize: "12pt"
+      });
+
+      var test_code_editor = ace.edit("test_code", {
+        theme: "ace/theme/tomorrow",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        fontSize: "12pt"
+      });
+
+      updateBackEndOptions('{{ problem_details["back_end"] }}', '{{ problem_details["output_type"] }}');
+      update_auto_complete('answer_code_auto_complete');
+      update_auto_complete('test_code_auto_complete');
+    </script>
 
     </form>
   {% else %}
