@@ -85,8 +85,8 @@
             <div id="submissions"></div>
 
             <div>
-              <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a></br></br></br>
-            </div>
+              <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
+            </div><br /><br /><br />
 
             <script>
             function build_code_output(json_output, error_occurred) {
@@ -225,7 +225,7 @@
                 $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
                     function (data, status) {
                         var json_data = JSON.parse(data);
-                        editor.setValue(json_data.code,1);
+                        editor.setValue(json_data.code, 1);
                         check_code(json_data);
                 });
 
