@@ -42,17 +42,15 @@
                   <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
                 </label>
                 <label class="checkbox is-pulled-right">
-                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="modify_auto_complete()">
+                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
                 </label>
             </p>
 
             <div class="field is-grouped">
               <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()'>Submit</button></p>
               <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
-              {% if num_submissions > 0 %}
-                <p class="control"><button class="button is-primary is-light is-large is-half" onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button></p>
-              {% end %}
-              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run Code'. {% if num_submissions > 0 %}At any time, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.{% end %}">
+              <div id="revert_div"></div>
+              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run Code'. If you have made at least one submission, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.">
                 <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
               </p>
             </div>
@@ -236,7 +234,7 @@
                 return false;
             }
 
-            function modify_auto_complete() {
+            function update_auto_complete() {
                 ac_box = document.getElementById("auto_complete");
 
                 if (ac_box.checked) {
@@ -262,6 +260,7 @@
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         var submission_html = "";
+                        var revert_html = "";
 
                         if (json_data.length > 0) {
                             submission_html += "<h2>Past submissions:</h2>\n";
@@ -282,9 +281,12 @@
                             }
 
                             submission_html += "</div><br />\n";
+
+                            revert_html = "<p class='control'><button class='button is-primary is-light is-large is-half' onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button>&nbsp;</p>";
                         }
 
                         submissions_div.innerHTML = submission_html;
+                        revert_div.innerHTML = revert_html;
                     });
             }
             </script>
@@ -303,7 +305,7 @@
             });
             editor.focus();
             editor.getSession().setMode("{{ code_completion_path }}");
-            modify_auto_complete();
+            update_auto_complete();
 
             show_past_submissions();
             last_submission_id = {{ num_submissions }};

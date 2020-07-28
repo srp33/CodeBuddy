@@ -40,16 +40,6 @@ def read_file(file_path, mode="r"):
     with open(file_path, mode) as the_file:
         return the_file.read()
 
-# From https://stackoverflow.com/questions/12485666/python-deleting-all-files-in-a-folder-older-than-x-days
-#import arrow
-#def remove_old_dirs(dir_path):
-#    criticalTime = arrow.now().shift(minutes=-30)
-#
-#    for item in Path(dir_path).glob('*'):
-#        itemTime = arrow.get(item.stat().st_mtime)
-#        if itemTime < criticalTime:
-#            shutil.rmtree(item)
-
 def is_old_file(file_path, days=30):
     age_in_seconds = time.time() - os.stat(file_path)[stat.ST_MTIME]
     age_in_days = age_in_seconds / 60 / 60 / 24

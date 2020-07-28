@@ -26,6 +26,9 @@ cat header.html container_top.html error.html container_bottom.html footer.html 
 
 # Static pages
 
-cat header.html navbar_top.html navbar_bottom.html container_top.html about.html container_bottom.html footer.html > /static/about.html
+for page_name in about contact_us
+do
+  cat header.html navbar_top.html navbar_bottom.html container_top.html ${page_name}.html container_bottom.html footer.html > /static/${page_name}.html
+done
 
 cd -

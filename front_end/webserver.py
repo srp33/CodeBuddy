@@ -39,7 +39,7 @@ def make_app():
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
-        url(r"\/output_types\/([^\/]+)", OutputTypesHandler, name="output_types"),
+        url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
         url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
@@ -533,10 +533,10 @@ class ViewAnswerHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class OutputTypesHandler(RequestHandler):
+class BackEndHandler(RequestHandler):
     def get(self, back_end):
         try:
-            self.write(json.dumps(settings_dict["back_ends"][back_end]["output_types"]))
+            self.write(json.dumps(settings_dict["back_ends"][back_end]))
         except Exception as inst:
             logging.error(self, traceback.format_exc())
             self.write(json.dumps({"Error": "An error occurred."}))

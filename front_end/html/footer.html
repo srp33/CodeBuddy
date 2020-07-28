@@ -1,13 +1,16 @@
 <footer class="footer" style="position: absolute; bottom: 0; width: 100%; height: 3.5rem;">
     <div class="columns">
-        <div class="column is-1">
+        <div class="column is-one-quarter">
             <p><a href="/">Home</a></p>
         </div>
-        <div class="column is-1">
+        <div class="column is-one-quarter">
             <p><a href="/static/about.html">About</a></p>
         </div>
+        <div class="column is-one-quarter">
+            <p><a href="/static/contact_us.html">Contact Us</a></p>
+        </div>
         {% if "user_logged_in" in globals() and user_logged_in %}
-            <div class="column is-1">
+            <div class="column is-one-quarter">
                 <p><a href="/logout">Log out</a></p>
             </div>
         {% end %}
