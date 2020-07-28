@@ -219,7 +219,7 @@
         <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a> |
         <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem submissions</a>
       {% end %}
-    </p>
+    </p><br />
 
     <!-- Code to modify page behavior at the end of loading -->
     <script>
@@ -241,7 +241,6 @@
       update_auto_complete('answer_code_auto_complete');
       update_auto_complete('test_code_auto_complete');
     </script>
-
     </form>
   {% else %}
     This assignment has not been created yet.
