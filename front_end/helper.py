@@ -85,15 +85,16 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
 
     if request:
         data_url_info = [problem_details["data_url"], problem_details["url_file_name"], problem_details["url_content_type"]]
-        for url, file_name in get_columns_dict(data_url_info, 0, 1).items():
-            cache_url = "{}://{}/data/{}/{}/{}/{}".format(
-                request.protocol,
-                request.host,
-                problem_basics["assignment"]["course"]["id"],
-                problem_basics["assignment"]["id"],
-                problem_basics["id"],
-                file_name)
-            code = code.replace(url, cache_url)
+        if data_url_info[0] != "":
+            for url, file_name in get_columns_dict([data_url_info], 0, 1).items():
+                cache_url = "{}://{}/data/{}/{}/{}/{}".format(
+                    request.protocol,
+                    request.host,
+                    problem_basics["assignment"]["course"]["id"],
+                    problem_basics["assignment"]["id"],
+                    problem_basics["id"],
+                    file_name)
+                code = code.replace(url, cache_url)
 
     timeout = settings_dict["timeout_seconds"] + 2
     data_dict = {"image_name": settings_dict["image_name"],

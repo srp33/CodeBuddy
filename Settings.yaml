@@ -1,4 +1,4 @@
-db_location: /submissions/test.db
+db_location: /submissions/CodeBuddy.db
 back_ends:
     r:
         description: R code

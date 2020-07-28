@@ -415,13 +415,16 @@ class EditProblemHandler(BaseUserHandler):
                     details_dict = {"instructions": instructions, "back_end": back_end, "output_type": output_type, "answer_code": answer_code, "answer_description": answer_description, "test_code": test_code, "credit": credit, "data_url": data_url, "show_expected": show_expected, "show_test_code": show_test_code, "show_answer": show_answer, "expected_output": ""}
 
                     data_url = details_dict["data_url"].strip()
+                    problem_details["data_url"] = data_url
                     if data_url != "":
                             contents, content_type, extension = download_file(data_url)
                             file_name = create_md5_hash(data_url) + extension
                             write_data_file(contents, file_name)
-                            problem_details["data_url"] = data_url
                             problem_details["url_file_name"] = file_name
                             problem_details["url_content_type"] = content_type
+                    else:
+                        problem_details["url_file_name"] = ""
+                        problem_details["url_content_type"] = ""
 
                     expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], answer_code, problem_basics, details_dict)
 
@@ -605,7 +608,6 @@ class GetSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
-            problem_details = content.get_problem_details(course, assignment, problem)
             submissions = content.get_submissions_basic(course, assignment, problem, user)
         except Exception as inst:
             submissions = []
@@ -618,11 +620,11 @@ class DataHandler(RequestHandler):
 
         problem_details = content.get_problem_details(course, assignment, problem)
 
-    #    content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
-    #    self.set_header('Content-type', content_type)
+        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
+        self.set_header('Content-type', content_type)
 
-    #    if not os.path.exists(data_file_path) or is_old_file(data_file_path):
-    #        url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[file_name]
+        if not os.path.exists(data_file_path) or is_old_file(data_file_path):
+            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[file_name]
 
             ## Check to see whether the request came from the server or the user's computer
             #this_host = self.request.headers.get("Host")
@@ -634,7 +636,7 @@ class DataHandler(RequestHandler):
             #if referer_host == this_host and referer_path.startswith("/problem") and content_type.startswith("text/"):
             #    self.write("Please wait while the file is downloaded...\n\n")
 
-        #    urllib.request.urlretrieve(url, data_file_path)
+            urllib.request.urlretrieve(url, data_file_path)
 
         self.write(read_file(data_file_path))
 
@@ -658,7 +660,7 @@ class SummarizeLogsHandler(RequestHandler):
     def get(self):
         try:
             years, months, days = get_list_of_dates()
-            self.render("summarize_logs.html", filter_list = sorted(get_root_dirs_to_log()), years=years, months=months, days=days, show_table = False)
+            self.render("summarize_logs.html", filter_list = sorted(content.get_root_dirs_to_log()), years=years, months=months, days=days, show_table = False)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -675,7 +677,7 @@ class SummarizeLogsHandler(RequestHandler):
                 log_file = "logs/summarized/HitsAnyUser.tsv.gz"
             years, months, days = get_list_of_dates()
 
-            self.render("summarize_logs.html", filter = filter, filter_list = sorted(get_root_dirs_to_log()), years=years, months=months, days=days, log_dict = get_log_table_contents(log_file, year, month, day), show_table = True)
+            self.render("summarize_logs.html", filter = filter, filter_list = sorted(content.get_root_dirs_to_log()), years=years, months=months, days=days, log_dict = content.get_log_table_contents(log_file, year, month, day), show_table = True)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

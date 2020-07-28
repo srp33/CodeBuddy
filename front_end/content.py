@@ -16,6 +16,12 @@ import html
 def get_settings():
     return load_yaml_dict(read_file("/Settings.yaml"))
 
+def get_root_dir_path():
+    return "/course"
+
+def get_course_dir_path(course):
+    return get_root_dir_path() + f"/{course}/"
+
 class Content:
     __DB_LOCATION = get_settings()["db_location"]
 
@@ -45,7 +51,7 @@ class Content:
         create_permissions_table = """ CREATE TABLE IF NOT EXISTS permissions (
                                             user_id	text NOT NULL, 
                                             role text NOT NULL,
-                                            FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+                                            FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                             PRIMARY KEY (user_id)
                                         ); """        
 
@@ -63,7 +69,7 @@ class Content:
                                             title text NOT NULL UNIQUE,
                                             visible integer NOT NULL,
                                             introduction text,
-                                            FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
+                                            FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                             PRIMARY KEY (assignment_id)
                                         ); """
 
@@ -87,8 +93,8 @@ class Content:
                                         show_expected integer NOT NULL,
                                         show_test_code integer NOT NULL,
                                         test_code text,
-                                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
-                                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
+                                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         PRIMARY KEY (problem_id)
                                     ); """
 
@@ -403,6 +409,48 @@ class Content:
 
         return problem_dict
 
+    def get_student_submissions(self, user_id):
+        submission_dict = {}
+        sql = 'SELECT submission_id, passed FROM submissions WHERE user_id=?'
+        self.c.execute(sql, (user_id,))
+        for submission in self.c.fetchall():
+            submission_dict["submission_id"] = submission["submission_id"]
+            submission_dict["passed"] = submission["passed"]
+        return submission_dict
+
+    def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):
+        new_dict = {}
+        line_num = 1
+        with gzip.open(file_path) as read_file:
+            header = read_file.readline()
+            for line in read_file:
+                line_items = line.decode().rstrip("\n").split("\t")
+                line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[1:]
+
+                new_dict[line_num] = line_items
+                line_num += 1
+
+        # Filter by date.
+        year_dict = {}
+        month_dict = {}
+        day_dict = {}
+
+        for key, line in new_dict.items():
+            if year == "No filter" or line[0] == year:
+                year_dict[key] = line
+        for key, line in year_dict.items():
+            if month == "No filter" or line[1] == month:
+                month_dict[key] = line
+        for key, line in month_dict.items():
+            if day == "No filter" or line[2] == day:
+                day_dict[key] = line
+
+        return day_dict
+
+    def get_root_dirs_to_log(self):
+        root_dirs_to_log = set(["home", "course", "assignment", "problem", "check_problem", "edit_course", "edit_assignment", "edit_problem", "delete_course", "delete_assignment", "delete_problem", "view_answer", "import_course", "export_course"])
+        return root_dirs_to_log
+
     def sort_nested_list(self, nested_list, key="title"):
         l_dict = {}
         for row in nested_list:
@@ -438,7 +486,7 @@ class Content:
         sql = ''' INSERT INTO 
                     problems (course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_url, url_file_name, url_content_type, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        self.c.execute(sql, [course, assignment, problem_basics["id"], problem_basics["title"], problem_basics["visible"], problem_details["answer_code"], problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["url_file_name"], problem_details["url_content_type"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"]])
+        self.c.execute(sql, [course, assignment, problem_basics["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], str(problem_details["url_file_name"]), problem_details["url_content_type"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"]])
         self.conn.commit()
 
     def save_submission(self, course, assignment, problem, user, code, code_output, passed, date, error_occurred):
@@ -462,19 +510,15 @@ class Content:
         sql = 'UPDATE courses SET ' + col_name + '=? WHERE course_id=?'
         self.c.execute(sql, (new_value, course_id,))
         self.conn.commit()
-        print("Here are the courses:")
-        self.print_rows("courses")
 
     def update_assignment(self, assignment_id, col_name, new_value):
         sql = 'UPDATE assignments SET ' + col_name + '=? WHERE assignment_id=?'
         self.c.execute(sql, (new_value, assignment_id,))
         self.conn.commit()
-        print("Here are the assignments:")
-        self.print_rows("assignments")
 
     def update_problem(self, problem_id, col_name, new_value):
         sql = 'UPDATE problems SET ' + col_name + '=? WHERE problem_id=?'
-        self.c.execute(sql, (new_value, problem_id,))
+        self.c.execute(sql, (str(new_value), problem_id,))
         self.conn.commit()
 
     def delete_rows_with_value(self, table, col_name, value):
