@@ -155,8 +155,10 @@
     <p><strong>Credit: </strong><br />If anyone should be given credit for creating this problem, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a></p>
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write the credit statement here." rows="4" name="credit" style="font-family:monospace">{{ problem_details["credit"] }}</textarea></p>
 
-    <p><strong>Data URLs: </strong></p>
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls" style="font-family:monospace">{{ problem_details["data_urls"] }}</textarea></p>
+    <p><strong>Data URL: </strong></p>
+    <p><input class="input is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on an external URL with data, please enter it here." name="data_url" style="font-family:monospace">{{ problem_details["data_url"] }}</p>
+
+
 
     <p><strong>Show expected output: </strong>
       <div class="select is-info">

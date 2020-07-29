@@ -1,3 +1,4 @@
+db_location: /submissions/CodeBuddy.db
 back_ends:
     r:
         description: R code

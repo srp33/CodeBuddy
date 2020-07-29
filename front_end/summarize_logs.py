@@ -6,6 +6,8 @@ import os
 import shutil
 import sys
 
+content = Content()
+
 in_file_prefix = sys.argv[1]
 out_dir_path = sys.argv[2]
 temp_file_path = sys.argv[3]
@@ -33,18 +35,18 @@ def get_titles_from_ids(file_path):
         assignment_title = ""
         problem_title = ""
 
-        for course_id in get_course_ids():
-            course_basics = get_course_basics(course_id)
+        for course_id in content.get_course_ids():
+            course_basics = content.get_course_basics(course_id)
             if id_dict["course_id"] == course_id:
                 course_title = course_basics["title"]
 
-            for assignment_id in get_assignment_ids(course_id):
-                assignment_basics = get_assignment_basics(course_id, assignment_id)
+            for assignment_id in content.get_assignment_ids(course_id):
+                assignment_basics = content.get_assignment_basics(course_id, assignment_id)
                 if id_dict["assignment_id"] == assignment_id:
                     assignment_title = assignment_basics["title"]
 
-                for problem_id in get_problem_ids(course_id, assignment_id):
-                    problem_basics = get_problem_basics(course_id, assignment_id, problem_id)
+                for problem_id in content.get_problem_ids(course_id, assignment_id):
+                    problem_basics = content.get_problem_basics(course_id, assignment_id, problem_id)
                     if id_dict["problem_id"] == problem_id:
                         problem_title = problem_basics["title"]
       
