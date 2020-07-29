@@ -518,7 +518,7 @@ class Content:
 
     def update_problem(self, problem_id, col_name, new_value):
         sql = 'UPDATE problems SET ' + col_name + '=? WHERE problem_id=?'
-        self.c.execute(sql, (str(new_value), problem_id,))
+        self.c.execute(sql, (new_value, problem_id,))
         self.conn.commit()
 
     def delete_rows_with_value(self, table, col_name, value):
