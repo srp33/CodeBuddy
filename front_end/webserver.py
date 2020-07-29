@@ -327,9 +327,9 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
             problem_details["back_end"] = self.get_body_argument("back_end")
             problem_details["output_type"] = self.get_body_argument("output_type")
-            problem_details["answer_code"] = self.get_body_argument("answer_code").strip().replace("\r", "") #required
+            problem_details["answer_code"] = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required
             problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
-            problem_details["test_code"] = self.get_body_argument("test_code").strip().replace("\r", "")
+            problem_details["test_code"] = self.get_body_argument("test_code_text").strip().replace("\r", "")
             problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
             problem_details["data_urls"] = self.get_body_argument("data_urls").strip().replace("\r", "")
             problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"

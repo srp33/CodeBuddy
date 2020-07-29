@@ -82,7 +82,7 @@
       ace.require("ace/ext/language_tools");
     </script>
 
-    <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
+    <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" id="myForm" />
 
     <p><strong>Title*: </strong></p>
     <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
@@ -117,7 +117,9 @@
     <p><strong>Answer code*: </strong></p>
     <p>Please note that if the answer code for this problem changes after students have already submitted answers, only the most recent answer code will appear when students view past submissions. Please use caution when changing the answer code; consider creating a new problem instead.</p>
     <p>
-      <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" id="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea>
+      <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea>
+      <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
+      <input name="answer_code_text" type="text" hidden id="answer_code_text">
       <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
         <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
       </label>
@@ -132,6 +134,7 @@
     <p><strong>Test code: </strong></p>
     <p>
       <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" id="test_code" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea>
+      <input name="test_code_text" type="text" hidden id="test_code_text">
       <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
         <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
       </label>
@@ -240,6 +243,11 @@
       updateBackEndOptions('{{ problem_details["back_end"] }}', '{{ problem_details["output_type"] }}');
       update_auto_complete('answer_code_auto_complete');
       update_auto_complete('test_code_auto_complete');
+
+      document.getElementById("myForm").onsubmit = function(evt) {
+        document.getElementById("answer_code_text").value = answer_code_editor.getValue();
+        document.getElementById("test_code_text").value = test_code_editor.getValue();
+    } 
     </script>
 
     </form>
