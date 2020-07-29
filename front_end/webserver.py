@@ -238,11 +238,18 @@ class ExportCourseHandler(BaseUserHandler):
 
 class AssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
-        try:
-            show = show_hidden(self)
-            self.render("assignment.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=get_problems(course, assignment, show), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), administrators=admin_dict, instructor_dict=inst_dict)
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
+        if is_administrator() or is_instructor():
+            try:
+                show = show_hidden(self)
+                self.render("assignment_admin.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=get_problems(course, assignment, show), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), administrators=admin_dict, instructor_dict=inst_dict)
+            except Exception as inst:
+                render_error(self, traceback.format_exc())
+        else:
+            try:
+                show = show_hidden(self)
+                self.render("assignment.html", courses=get_courses(show), assignments=get_assignments(course, show), problems=get_problems(course, assignment, show), course_basics=get_course_basics(course), assignment_basics=get_assignment_basics(course, assignment), assignment_details=get_assignment_details(course, assignment, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), administrators=admin_dict, instructor_dict=inst_dict)
+            except Exception as inst:
+                render_error(self, traceback.format_exc())
 
 class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
