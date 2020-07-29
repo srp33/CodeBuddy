@@ -373,9 +373,9 @@ class EditProblemHandler(BaseUserHandler):
             instructions = self.get_body_argument("instructions").strip().replace("\r", "")
             back_end = self.get_body_argument("back_end")
             output_type = self.get_body_argument("output_type")
-            answer_code = self.get_body_argument("answer_code").strip().replace("\r", "")
+            answer_code = self.get_body_argument("answer_code_text").strip().replace("\r", "")
             answer_description = self.get_body_argument("answer_description").strip().replace("\r", "")
-            test_code = self.get_body_argument("test_code").strip().replace("\r", "")
+            test_code = self.get_body_argument("test_code_text").strip().replace("\r", "")
             credit = self.get_body_argument("credit").strip().replace("\r", "")
             data_url = self.get_body_argument("data_url").strip().replace("\r", "")
             show_expected = self.get_body_argument("show_expected") == "Yes"
