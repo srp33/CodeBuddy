@@ -107,10 +107,10 @@ class Content:
                                             passed integer NOT NULL,
                                             date text NOT NULL,
                                             error_occurred integer NOT NULL,
-                                            FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
-                                            FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
-                                            FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE,
-                                            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                                            FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                            FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                            FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                             PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
                                         ); """
 
@@ -235,6 +235,29 @@ class Content:
                 problems.append([problem_id, problem_basics])
 
         return self.sort_nested_list(problems)
+
+    def get_problem_statuses(self, user_id, course_id, assignment_id, show_hidden=True):
+        problem_statuses = []
+        problem_dict = {"id": "", "title": "", "passed": 0}
+        problem_ids = self.get_problem_ids(course_id, assignment_id)
+        title = ""
+        passed = 0
+
+        for problem_id in problem_ids:
+            sql = 'SELECT p.title, s.passed FROM submissions s INNER JOIN problems p USING(problem_id) WHERE s.user_id=? AND s.course_id=? AND s.assignment_id=? AND p.problem_id=?'
+            self.c.execute(sql, (str(user_id), str(course_id), str(assignment_id), str(problem_id),))
+            for submission in self.c.fetchall():
+                if submission is None:
+                    title = ""
+                else:
+                    title = submission["title"]
+                    if submission["passed"] == 1:
+                        passed = 1
+
+            problem_dict = {"id": problem_id, "title": title, "passed": passed}
+            problem_statuses.append([problem_id, problem_dict])
+
+        return self.sort_nested_list(problem_statuses)
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []
