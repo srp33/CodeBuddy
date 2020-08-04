@@ -191,14 +191,18 @@ class Content:
 
     def get_assignment_ids(self, course_id):
         assignment_ids = []
-        sql = 'SELECT assignment_id FROM assignments WHERE course_id=?'
+        sql = '''SELECT assignment_id
+                 FROM assignments
+                 WHERE course_id=?'''
         self.c.execute(sql, (str(course_id),))
         assignment_ids = [assignment[0] for assignment in self.c.fetchall()]
         return assignment_ids
 
     def get_problem_ids(self, course_id, assignment_id):
         problem_ids = []
-        sql = 'SELECT problem_id FROM problems WHERE assignment_id=?'
+        sql = '''SELECT problem_id
+                 FROM problems
+                 WHERE assignment_id=?'''
         self.c.execute(sql, (str(assignment_id),))
         problem_ids = [problem[0] for problem in self.c.fetchall()]
         return problem_ids
@@ -256,7 +260,12 @@ class Content:
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []
-        sql = 'SELECT submission_id, date, passed FROM submissions WHERE course_id=? AND assignment_id=? AND problem_id=? AND user_id=?'
+        sql = '''SELECT submission_id, date, passed
+                 FROM submissions
+                 WHERE course_id=?
+                  AND assignment_id=?
+                  AND problem_id=?
+                  AND user_id=?'''
         self.c.execute(sql, (str(course_id), str(assignment_id), str(problem_id), str(user_id),))
         for submission in self.c.fetchall():
             submissions.append([submission["submission_id"], submission["date"], submission["passed"]])
@@ -270,7 +279,9 @@ class Content:
         if not course_id:
             course_id = create_id(self.get_courses())
 
-        sql = 'SELECT course_id, title, visible FROM courses WHERE course_id=?'
+        sql = '''SELECT course_id, title, visible
+                 FROM courses
+                 WHERE course_id=?'''
         self.c.execute(sql, (str(course_id),))
         row = self.c.fetchone()
         if row is None:
@@ -284,7 +295,9 @@ class Content:
 
         course_basics = self.get_course_basics(course_id)
 
-        sql = 'SELECT assignment_id, title, visible FROM assignments WHERE assignment_id = ?'
+        sql = '''SELECT assignment_id, title, visible
+                 FROM assignments
+                 WHERE assignment_id = ?'''
         self.c.execute(sql, (str(assignment_id),))
         row = self.c.fetchone()
         if row is None:
@@ -298,7 +311,9 @@ class Content:
 
         assignment_basics = self.get_assignment_basics(course_id, assignment_id)
 
-        sql = 'SELECT problem_id, title, visible FROM problems WHERE problem_id = ?'
+        sql = '''SELECT problem_id, title, visible
+                 FROM problems
+                 WHERE problem_id = ?'''
         self.c.execute(sql, (str(problem_id),))
         row = self.c.fetchone()
         if row is None:
@@ -324,7 +339,10 @@ class Content:
         return {"previous": prev_problem, "next": next_problem}
 
     def get_num_submissions(self, course, assignment, problem, user):
-        sql = 'SELECT COUNT(*) FROM submissions WHERE problem_id=? AND user_id=?'
+        sql = '''SELECT COUNT(*)
+                 FROM submissions
+                 WHERE problem_id=?
+                  AND user_id=?'''
         num_submissions = self.c.execute(sql, (problem, user,)).fetchone()[0]
         return num_submissions
 
@@ -333,8 +351,13 @@ class Content:
 
     def get_last_submission(self, course, assignment, problem, user):
         last_submission_id = self.get_num_submissions(course, assignment, problem, user)
-        sql = ''' SELECT code, code_output, passed, date, error_occurred
-                    FROM submissions WHERE course_id=? AND assignment_id=? AND problem_id=? and user_id=? AND submission_id=? '''
+        sql = '''SELECT code, code_output, passed, date, error_occurred
+                 FROM submissions
+                 WHERE course_id=?
+                  AND assignment_id=?
+                  AND problem_id=?
+                  AND user_id=?
+                  AND submission_id=?'''
         self.c.execute(sql, (course, assignment, problem, user, last_submission_id,))
         row = self.c.fetchone()
 
@@ -343,8 +366,13 @@ class Content:
         return last_submission
 
     def get_submission_info(self, course, assignment, problem, user, submission):
-        sql = ''' SELECT code, code_output, passed, date, error_occurred
-                    FROM submissions WHERE course_id=? AND assignment_id=? AND problem_id=? AND user_id=? AND submission_id=? '''
+        sql = '''SELECT code, code_output, passed, date, error_occurred
+                 FROM submissions
+                 WHERE course_id=?
+                  AND assignment_id=?
+                  AND problem_id=?
+                  AND user_id=?
+                  AND submission_id=?'''
         self.c.execute(sql, (course, assignment, problem, user, submission,))
         row = self.c.fetchone()
 
@@ -355,7 +383,9 @@ class Content:
     def get_course_details(self, course, format_output=False):
         course_dict = {"introduction": ""}
 
-        sql = 'SELECT introduction FROM courses WHERE course_id = ?'
+        sql = '''SELECT introduction
+                 FROM courses
+                 WHERE course_id = ?'''
         self.c.execute(sql, (course,))
         row = self.c.fetchone()
         if row is None:
@@ -370,7 +400,9 @@ class Content:
     def get_assignment_details(self, course, assignment, format_output=False):
         assignment_dict = {"introduction": ""}
 
-        sql = 'SELECT introduction FROM assignments WHERE assignment_id = ?'
+        sql = '''SELECT introduction
+                 FROM assignments
+                 WHERE assignment_id = ?'''
         self.c.execute(sql, (assignment,))
         row = self.c.fetchone()
         if row is None:
@@ -385,8 +417,10 @@ class Content:
     def get_problem_details(self, course, assignment, problem, format_content=False):
         problem_dict = {}
 
-        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, test_code, credit, show_expected, show_test_code, show_answer, expected_output, data_url, data_file_name, data_contents
-                 FROM problems WHERE problem_id = ?'''
+        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, test_code, credit, 
+                 show_expected, show_test_code, show_answer, expected_output, data_url, data_file_name, data_contents
+                 FROM problems
+                 WHERE problem_id = ?'''
         self.c.execute(sql, (problem,))
         row = self.c.fetchone()
 
@@ -411,7 +445,9 @@ class Content:
 
     def get_student_submissions(self, user_id):
         submission_dict = {}
-        sql = 'SELECT submission_id, passed FROM submissions WHERE user_id=?'
+        sql = '''SELECT submission_id, passed
+                 FROM submissions
+                 WHERE user_id=?'''
         self.c.execute(sql, (user_id,))
         for submission in self.c.fetchall():
             submission_dict["submission_id"] = submission["submission_id"]
@@ -506,8 +542,8 @@ class Content:
 
     def save_submission(self, course, assignment, problem, user, code, code_output, passed, date, error_occurred):
         submission_id = self.get_next_submission_id(course, assignment, problem, user)
-        sql = ''' INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        sql = '''INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         self.c.execute(sql, [course, assignment, problem, user, submission_id, code, code_output, passed, date, error_occurred])
         return submission_id
 
