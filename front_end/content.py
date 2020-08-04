@@ -470,7 +470,7 @@ class Content:
         else:
             sql = '''INSERT INTO assignments (course_id, assignment_id, title, visible, introduction)
                      VALUES (?, ?, ?, ?, ?)'''
-            self.c.execute(sql, [course, assignment_basics["id"], assignment_basics["visible"], assignment_details["introduction"]])
+            self.c.execute(sql, [course, assignment_basics["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"]])
 
     def save_problem(self, course, assignment, problem_basics, problem_details):
         if problem_basics["exists"]:
