@@ -239,23 +239,18 @@ class Content:
     def get_problem_statuses(self, user_id, course_id, assignment_id, show_hidden=True):
         problem_statuses = []
         problem_dict = {"id": "", "title": "", "passed": 0}
-        problem_ids = self.get_problem_ids(course_id, assignment_id)
-        title = ""
-        passed = 0
 
-        for problem_id in problem_ids:
-            sql = 'SELECT p.title, s.passed FROM submissions s INNER JOIN problems p USING(problem_id) WHERE s.user_id=? AND s.course_id=? AND s.assignment_id=? AND p.problem_id=?'
-            self.c.execute(sql, (str(user_id), str(course_id), str(assignment_id), str(problem_id),))
-            for submission in self.c.fetchall():
-                if submission is None:
-                    title = ""
-                else:
-                    title = submission["title"]
-                    if submission["passed"] == 1:
-                        passed = 1
-
-            problem_dict = {"id": problem_id, "title": title, "passed": passed}
-            problem_statuses.append([problem_id, problem_dict])
+        sql = '''SELECT p.problem_id, p.title, MAX(s.passed) AS passed
+                 FROM problems p
+                 INNER JOIN submissions s
+                  ON p.problem_id = s.problem_id
+                 WHERE p.assignment_id = ?
+                  AND user_id = ?
+                 GROUP BY p.problem_id'''
+        self.c.execute(sql,(str(assignment_id), str(user_id),))
+        for row in self.c.fetchall():
+            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"]}
+            problem_statuses.append([row["problem_id"], problem_dict])
 
         return self.sort_nested_list(problem_statuses)
 
