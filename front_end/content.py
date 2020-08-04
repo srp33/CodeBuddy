@@ -26,7 +26,8 @@ class Content:
     __DB_LOCATION = get_settings()["db_location"]
 
     def __init__(self):
-        self.conn = sqlite3.connect(self.__DB_LOCATION)
+        # This should enable auto-commit.
+        self.conn = sqlite3.connect(self.__DB_LOCATION, isolation_level=None)
         self.conn.row_factory = sqlite3.Row
         self.c = self.conn.cursor()
         self.c.execute("PRAGMA foreign_keys=ON")
@@ -38,10 +39,7 @@ class Content:
         self.conn.close()
 
     def create_table(self, create_table_sql):
-        try:
-            self.c.execute(create_table_sql)
-        except Error as e:
-            print(e)
+        self.c.execute(create_table_sql)
 
     def create_sqlite_tables(self): #make id's integers?
         create_users_table = """ CREATE TABLE IF NOT EXISTS users (
@@ -49,17 +47,17 @@ class Content:
                                         ); """
 
         create_permissions_table = """ CREATE TABLE IF NOT EXISTS permissions (
-                                            user_id	text NOT NULL, 
+                                            user_id text NOT NULL,
                                             role text NOT NULL,
                                             FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                             PRIMARY KEY (user_id)
-                                        ); """        
+                                        ); """
 
         create_courses_table = """ CREATE TABLE IF NOT EXISTS courses (
                                         course_id text NOT NULL,
                                         title text NOT NULL UNIQUE,
-                                        visible integer NOT NULL,
                                         introduction text,
+                                        visible integer NOT NULL,
                                         PRIMARY KEY (course_id)
                                     ); """
 
@@ -67,8 +65,8 @@ class Content:
                                             course_id text NOT NULL,
                                             assignment_id text NOT NULL,
                                             title text NOT NULL UNIQUE,
-                                            visible integer NOT NULL,
                                             introduction text,
+                                            visible integer NOT NULL,
                                             FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                             PRIMARY KEY (assignment_id)
                                         ); """
@@ -83,8 +81,8 @@ class Content:
                                         answer_description text,
                                         credit text,
                                         data_url text,
-                                        url_file_name text,
-                                        url_content_type text,
+                                        data_file_name text,
+                                        data_contents text,
                                         back_end text NOT NULL,
                                         expected_output text NOT NULL,
                                         instructions text NOT NULL,
@@ -149,15 +147,13 @@ class Content:
         row = self.c.fetchone()
         return row["role"]
 
-    def add_row_users(self, user_id):
+    def add_user(self, user_id):
         sql = 'INSERT INTO users (user_id) VALUES (?)'
         self.c.execute(sql, (user_id,))
-        self.conn.commit()
 
     def add_row_permissions(self, user_id, role):
         sql = 'INSERT INTO permissions (user_id, role) VALUES (?, ?)'
         self.c.execute(sql, (user_id, role,))
-        self.conn.commit()
 
     def print_tables(self):
         sql = "SELECT name FROM sqlite_master WHERE type='table'"
@@ -171,20 +167,20 @@ class Content:
         for row in rows:
             print(tuple(row))
 
-    def check_course_exists(self, course):
-        sql = 'SELECT * FROM courses WHERE course_id=?'
-        self.c.execute(sql, (course,))
-        return self.c.fetchone()
+#    def check_course_exists(self, course):
+#        sql = 'SELECT * FROM courses WHERE course_id=?'
+#        self.c.execute(sql, (course,))
+#        return self.c.fetchone()
 
-    def check_assignment_exists(self, assignment):
-        sql = 'SELECT * FROM assignments WHERE assignment_id=?'
-        self.c.execute(sql, (assignment,))
-        return self.c.fetchone()
+#    def check_assignment_exists(self, assignment):
+#        sql = 'SELECT * FROM assignments WHERE assignment_id=?'
+#        self.c.execute(sql, (assignment,))
+#        return self.c.fetchone()
 
-    def check_problem_exists(self, problem):
-        sql = 'SELECT * FROM problems WHERE problem_id=?'
-        self.c.execute(sql, (problem,))
-        return self.c.fetchone()
+#    def check_problem_exists(self, problem):
+#        sql = 'SELECT * FROM problems WHERE problem_id=?'
+#        self.c.execute(sql, (problem,))
+#        return self.c.fetchone()
 
     def get_course_ids(self):
         course_ids = []
@@ -256,50 +252,41 @@ class Content:
         if not course_id:
             course_id = create_id(self.get_courses())
 
-        course_dict = {"id": course_id, "title": "", "visible": True, "exists": False}
-
         sql = 'SELECT course_id, title, visible FROM courses WHERE course_id=?'
         self.c.execute(sql, (str(course_id),))
         row = self.c.fetchone()
         if row is None:
-            return course_dict
+            return {"id": course_id, "title": "", "visible": True, "exists": False}
         else:
-            course_dict = {"id": row["course_id"], "title": row["title"], "visible": row["visible"], "exists": True}
-        return course_dict
+            return {"id": row["course_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True}
 
     def get_assignment_basics(self, course_id, assignment_id):
         if not assignment_id:
             assignment_id = create_id(self.get_assignments(course_id))
 
         course_basics = self.get_course_basics(course_id)
-        assignment_dict = {"id": assignment_id, "title": "", "visible": True, "exists": False, "course": course_basics}
 
         sql = 'SELECT assignment_id, title, visible FROM assignments WHERE assignment_id = ?'
         self.c.execute(sql, (str(assignment_id),))
         row = self.c.fetchone()
         if row is None:
-            return assignment_dict
+            return {"id": assignment_id, "title": "", "visible": True, "exists": False, "course": course_basics}
         else:
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "visible": row["visible"], "exists": True}
-
-        return assignment_dict
+            return {"id": row["assignment_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True}
 
     def get_problem_basics(self, course_id, assignment_id, problem_id):
         if not problem_id:
             problem_id = create_id(self.get_problems(course_id, assignment_id))
 
         assignment_basics = self.get_assignment_basics(course_id, assignment_id)
-        problem_dict = {"id": problem_id, "title": "", "visible": True, "exists": False, "assignment": assignment_basics}
 
         sql = 'SELECT problem_id, title, visible FROM problems WHERE problem_id = ?'
         self.c.execute(sql, (str(problem_id),))
         row = self.c.fetchone()
         if row is None:
-            return problem_dict
+            return {"id": problem_id, "title": "", "visible": True, "exists": False, "assignment": assignment_basics}
         else:
-            problem_dict = {"id": row["problem_id"], "title": row["title"], "visible": row["visible"], "exists": True}
-
-        return problem_dict
+            return {"id": row["problem_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "assignment": assignment_basics}
 
     def get_next_prev_problems(self, course, assignment, problem, problems):
         prev_problem = None
@@ -328,17 +315,17 @@ class Content:
 
     def get_last_submission(self, course, assignment, problem, user):
         last_submission_id = self.get_num_submissions(course, assignment, problem, user)
-        sql = ''' SELECT code, code_output, passed, date, error_occurred 
+        sql = ''' SELECT code, code_output, passed, date, error_occurred
                     FROM submissions WHERE course_id=? AND assignment_id=? AND problem_id=? and user_id=? AND submission_id=? '''
         self.c.execute(sql, (course, assignment, problem, user, last_submission_id,))
         row = self.c.fetchone()
-        
+
         last_submission = {"id": last_submission_id, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
 
         return last_submission
 
-    def get_submission_info(self, course, assignment, problem, user, submission): 
-        sql = ''' SELECT code, code_output, passed, date, error_occurred 
+    def get_submission_info(self, course, assignment, problem, user, submission):
+        sql = ''' SELECT code, code_output, passed, date, error_occurred
                     FROM submissions WHERE course_id=? AND assignment_id=? AND problem_id=? AND user_id=? AND submission_id=? '''
         self.c.execute(sql, (course, assignment, problem, user, submission,))
         row = self.c.fetchone()
@@ -380,17 +367,18 @@ class Content:
     def get_problem_details(self, course, assignment, problem, format_content=False):
         problem_dict = {}
 
-        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, test_code, credit, show_expected, show_test_code, show_answer, expected_output, data_url, url_file_name, url_content_type 
-                    FROM problems WHERE problem_id = ?'''
+        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, test_code, credit, show_expected, show_test_code, show_answer, expected_output, data_url, data_file_name, data_contents
+                 FROM problems WHERE problem_id = ?'''
         self.c.execute(sql, (problem,))
         row = self.c.fetchone()
+
         if row is None:
-            problem_dict = {"instructions": "", "back_end": "python",
+            return {"instructions": "", "back_end": "python",
             "output_type": "txt", "answer_code": "", "answer_description": "", "test_code": "",
             "credit": "", "show_expected": True, "show_test_code": True, "show_answer": True,
-            "expected_output": "", "data_url": "", "url_file_name": "", "url_content_type": ""}
+            "expected_output": "", "data_url": "", "data_file_name": "", "data_contents": ""}
         else:
-            problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_output": row["expected_output"], "data_url": row["data_url"], "url_file_name": row["url_file_name"], "url_content_type": row["url_content_type"]}
+            problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_output": row["expected_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"]}
 
             if format_content:
                 problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
@@ -401,13 +389,7 @@ class Content:
                 else:
                     problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
 
-            # This was added later, so adding it for backward compatibility
-            if "answer_description" not in problem_dict:
-                problem_dict["answer_description"] = ""
-            if "show_answer" not in problem_dict:
-                problem_dict["show_answer"] = ""
-
-        return problem_dict
+            return problem_dict
 
     def get_student_submissions(self, user_id):
         submission_dict = {}
@@ -469,33 +451,46 @@ class Content:
         return False
 
     def save_course(self, course_basics, course_details):
-        sql = ''' INSERT INTO 
-            courses (course_id, title, visible, introduction) 
-            VALUES (?, ?, ?, ?)'''
-        self.c.execute(sql, [course_basics["id"], course_basics["title"], course_basics["visible"], course_details["introduction"]])
-        self.conn.commit()
+        if course_basics["exists"]:
+            sql = '''UPDATE courses
+                     SET title = ?, visible = ?, introduction = ?
+                     WHERE course_id = ?'''
+            self.c.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_basics["id"]])
+        else:
+            sql = '''INSERT INTO courses (course_id, title, visible, introduction)
+                     VALUES (?, ?, ?, ?)'''
+            self.c.execute(sql, [course_basics["id"], course_basics["title"], course_basics["visible"], course_details["introduction"]])
 
     def save_assignment(self, course, assignment_basics, assignment_details):
-        sql = ''' INSERT INTO 
-                    assignments (course_id, assignment_id, title, visible, introduction) 
-                    VALUES (?, ?, ?, ?, ?)'''
-        self.c.execute(sql, [course, assignment_basics["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"]])
-        self.conn.commit()
+        if assignment_basics["exists"]:
+            sql = '''UPDATE assignments
+                     SET title = ?, visible = ?, introduction = ?
+                     WHERE course_id = ? AND assignment_id = ?'''
+            self.c.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], course, assignment_basics["id"]])
+        else:
+            sql = '''INSERT INTO assignments (course_id, assignment_id, title, visible, introduction)
+                     VALUES (?, ?, ?, ?, ?)'''
+            self.c.execute(sql, [course, assignment_basics["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"]])
 
     def save_problem(self, course, assignment, problem_basics, problem_details):
-        sql = ''' INSERT INTO 
-                    problems (course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_url, url_file_name, url_content_type, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        self.c.execute(sql, [course, assignment, problem_basics["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], str(problem_details["url_file_name"]), problem_details["url_content_type"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"]])
-        self.conn.commit()
+        if problem_basics["exists"]:
+            sql = '''UPDATE problems
+                     SET course_id = ?, assignment_id = ?, title = ?, visible = ?,
+                         answer_code = ?, answer_description = ?, credit = ?, data_url = ?, data_file_name = ?,
+                         data_contents = ?, back_end = ?, expected_output = ?, instructions = ?,
+                         output_type = ?, show_answer = ?, show_expected = ?, show_test_code = ?, test_code = ?
+                     WHERE problem_id = ?'''
+            self.c.execute(sql, [course, assignment, problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_basics["id"]])
+        else:
+            sql = '''INSERT INTO problems (course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_url, data_file_name, data_contents, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            self.c.execute(sql, [course, assignment, problem_basics["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"]])
 
     def save_submission(self, course, assignment, problem, user, code, code_output, passed, date, error_occurred):
         submission_id = self.get_next_submission_id(course, assignment, problem, user)
-        sql = ''' INSERT INTO 
-                    submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        sql = ''' INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         self.c.execute(sql, [course, assignment, problem, user, submission_id, code, code_output, passed, date, error_occurred])
-        self.conn.commit()
         return submission_id
 
     def update_user(self, old_id, new_id):
@@ -506,35 +501,29 @@ class Content:
         sql = 'UPDATE users SET role=? WHERE user_id=?'
         self.c.execute(sql, (new_role, user_id,))
 
-    def update_course(self, course_id, col_name, new_value):
-        sql = 'UPDATE courses SET ' + col_name + '=? WHERE course_id=?'
-        self.c.execute(sql, (new_value, course_id,))
-        self.conn.commit()
+#    def update_course(self, course_id, col_name, new_value):
+#        sql = 'UPDATE courses SET ' + col_name + '=? WHERE course_id=?'
+#        self.c.execute(sql, (new_value, course_id,))
 
-    def update_assignment(self, assignment_id, col_name, new_value):
-        sql = 'UPDATE assignments SET ' + col_name + '=? WHERE assignment_id=?'
-        self.c.execute(sql, (new_value, assignment_id,))
-        self.conn.commit()
+#    def update_assignment(self, assignment_id, col_name, new_value):
+#        sql = 'UPDATE assignments SET ' + col_name + '=? WHERE assignment_id=?'
+#        self.c.execute(sql, (new_value, assignment_id,))
 
-    def update_problem(self, problem_id, col_name, new_value):
-        sql = 'UPDATE problems SET ' + col_name + '=? WHERE problem_id=?'
-        self.c.execute(sql, (new_value, problem_id,))
-        self.conn.commit()
+#    def update_problem(self, problem_id, col_name, new_value):
+#        sql = 'UPDATE problems SET ' + col_name + '=? WHERE problem_id=?'
+#        self.c.execute(sql, (new_value, problem_id,))
 
     def delete_rows_with_value(self, table, col_name, value):
         sql = 'DELETE FROM ' + table + ' WHERE ' + col_name + '=?'
         self.c.execute(sql, (value,))
-        self.conn.commit()
 
     def delete_all_rows(self, table):
         sql = 'DELETE FROM ' + table
         self.c.execute(sql)
-        self.conn.commit()
 
     def delete_table(self, table):
         sql = 'DROP TABLE ' + table
         self.c.execute(sql)
-        self.conn.commit()
 
     def delete_problem(self, problem_basics):
         self.delete_rows_with_value("problems", "problem_id", problem_basics["id"])

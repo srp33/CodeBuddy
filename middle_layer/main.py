@@ -13,9 +13,11 @@ import traceback
 class ExecInfo(BaseModel):
     image_name: str
     code: str
+    data_file_name: str
+    data_contents: str
+    output_type: str
     memory_allowed_mb: int
     timeout_seconds: int
-    output_type: str
 
 app = FastAPI()
 
@@ -40,8 +42,12 @@ def exec(info: ExecInfo):
         tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
 
         # Save the user's code to a file that will be accessible inside the container.
-        with open(f"{tmp_dir_path}/code", "w") as the_file:
-            the_file.write(info.code)
+        with open(f"{tmp_dir_path}/code", "w") as code_file:
+            code_file.write(info.code)
+
+        if info.data_file_name != "":
+            with open(f"{tmp_dir_path}/{info.data_file_name}", "w") as data_file:
+                data_file.write(info.data_contents)
 
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
         docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name} /sandbox/code {info.output_type}"
