@@ -252,7 +252,9 @@ class Content:
         if not course_id:
             course_id = create_id(self.get_courses())
 
-        sql = 'SELECT course_id, title, visible FROM courses WHERE course_id=?'
+        sql = '''SELECT course_id, title, visible
+                 FROM courses
+                 WHERE course_id=?'''
         self.c.execute(sql, (str(course_id),))
         row = self.c.fetchone()
         if row is None:
