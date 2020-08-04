@@ -43,11 +43,12 @@ def make_app():
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
-        url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
         url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
         url(r"/login(/.+)", LoginHandler, name="login"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
+
+        #url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
 
     return app
 
@@ -107,45 +108,27 @@ class EditCourseHandler(BaseUserHandler):
             visible = self.get_body_argument("is_visible") == "Yes"
             introduction = self.get_body_argument("introduction").strip()
 
-            new_course = True
-            if content.check_course_exists(course):
-                new_course = False
-                course_details = content.get_course_details(course)
-            courses = content.get_courses()
             course_basics = content.get_course_basics(course)
-
-            if new_course:
-                course_basics["title"] = title
-                course_basics["visible"] = visible
-                course_details = {"introduction": introduction}
+            course_details = content.get_course_details(course)
+            result = "Success: Course information saved!"
 
             if title == "" or introduction == "":
                 result = "Error: Missing title or introduction."
             else:
-                if content.has_duplicate_title(courses, course, title):
+                if content.has_duplicate_title(content.get_courses(), course, title):
                     result = "Error: A course with that title already exists."
                 else:
                     if re.search(r"[^\w ]", title):
                         result = "Error: The title can only contain alphanumeric characters and spaces."
                     else:
-                        if new_course:
-                            content.save_course(course_basics, course_details)
-                        else:
-                            if course_basics["title"] != title:
-                                content.update_course(course, "title", title)
-                                course_basics["title"] = title
-                            if course_basics["visible"] != visible:
-                                content.update_course(course, "visible", visible)
-                                course_basics["visible"] = visible
-                            if course_details["introduction"] != introduction:
-                                content.update_course(course, "introduction", introduction)
-                                course_details = {"introduction": introduction}
+                        course_basics["title"] = title
+                        course_basics["visible"] = visible
+                        course_details["introduction"] = introduction
 
-                        course_basics = content.get_course_basics(course)
-                        courses = content.get_courses()
-                        result = "Success: Course information saved!"
+                        content.save_course(course_basics, course_details)
+                        course_basics["exists"] = True
 
-            self.render("edit_course.html", courses=courses, assignments=content.get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=course_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -273,16 +256,9 @@ class EditAssignmentHandler(BaseUserHandler):
             visible = self.get_body_argument("is_visible") == "Yes"
             introduction = self.get_body_argument("introduction").strip()
 
-            new_assignment = True
-            if content.check_assignment_exists(assignment):
-                new_assignment = False
-                assignment_details = content.get_assignment_details(course, assignment)
             assignment_basics = content.get_assignment_basics(course, assignment)
-
-            if new_assignment:
-                assignment_basics["title"] = title
-                assignment_basics["visible"] = visible
-                assignment_details = {"introduction": introduction}
+            assignment_details = content.get_assignment_details(course, assignment)
+            result = "Success: Assignment information saved!"
 
             if title == "" or introduction == "":
                 result = "Error: Missing title or introduction."
@@ -290,23 +266,14 @@ class EditAssignmentHandler(BaseUserHandler):
                 if content.has_duplicate_title(content.get_assignments(course), assignment, title):
                     result = "Error: An assignment with that title already exists."
                 else:
-                    if new_assignment:
-                        content.save_assignment(course, assignment_basics, assignment_details)
-                    else:
-                        if assignment_basics["title"] != title:
-                            content.update_assignment(assignment, "title", title)
-                            assignment_basics["title"] = title
-                        if assignment_basics["visible"] != visible:
-                            content.update_assignment(assignment, "visible", visible)
-                            assignment_basics["visible"] = visible
-                        if assignment_details["introduction"] != introduction:
-                            content.update_assignment(assignment, "introduction", introduction)
-                            assignment_details = {"introduction": introduction}
-                        
-                    assignment_basics = content.get_assignment_basics(course, assignment)
-                    result = "Success: Assignment information saved!"
+                    assignment_basics["title"] = title
+                    assignment_basics["visible"] = visible
+                    assignment_details["introduction"] = introduction
 
-            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                    content.save_assignment(course, assignment_basics, assignment_details)
+                    assignment_basics["exists"] = True
+
+            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -368,43 +335,24 @@ class EditProblemHandler(BaseUserHandler):
 
     def post(self, course, assignment, problem):
         try:
-            title = self.get_body_argument("title").strip()
+            title = self.get_body_argument("title").strip() #required
             visible = self.get_body_argument("is_visible") == "Yes"
-            instructions = self.get_body_argument("instructions").strip().replace("\r", "")
+            instructions = self.get_body_argument("instructions").strip().replace("\r", "") #required
             back_end = self.get_body_argument("back_end")
             output_type = self.get_body_argument("output_type")
-            answer_code = self.get_body_argument("answer_code_text").strip().replace("\r", "")
+            answer_code = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required
             answer_description = self.get_body_argument("answer_description").strip().replace("\r", "")
             test_code = self.get_body_argument("test_code_text").strip().replace("\r", "")
             credit = self.get_body_argument("credit").strip().replace("\r", "")
             data_url = self.get_body_argument("data_url").strip().replace("\r", "")
+            data_file_name = self.get_body_argument("data_file_name").strip().replace("\r", "")
             show_expected = self.get_body_argument("show_expected") == "Yes"
             show_test_code = self.get_body_argument("show_test_code") == "Yes"
             show_answer = self.get_body_argument("show_answer") == "Yes"
 
-            new_problem = True
-            if content.check_problem_exists(problem):
-                new_problem = False
-                problem_details = content.get_problem_details(course, assignment, problem)
-
             problem_basics = content.get_problem_basics(course, assignment, problem)
-            
-            if new_problem:
-                problem_basics["title"] = title #required
-                problem_basics["visible"] = visible #required
-                problem_details = {}
-                problem_details["instructions"] = instructions #required
-                problem_details["back_end"] = back_end
-                problem_details["output_type"] = output_type
-                problem_details["answer_code"] = answer_code #required
-                problem_details["answer_description"] = answer_description
-                problem_details["test_code"] = test_code
-                problem_details["credit"] = credit
-                problem_details["data_url"] = data_url
-                problem_details["show_expected"] = show_expected
-                problem_details["show_test_code"] = show_test_code
-                problem_details["show_answer"] = show_answer
-                problem_details["expected_output"] = ""
+            problem_details = content.get_problem_details(course, assignment, problem)
+            result = "Success: The problem was saved!"
 
             if title == "" or instructions == "" or answer_code == "":
                 result = "Error: One of the required fields is missing."
@@ -412,73 +360,47 @@ class EditProblemHandler(BaseUserHandler):
                 if content.has_duplicate_title(content.get_problems(course, assignment), problem, title):
                     result = "Error: A problem with that title already exists in this assignment."
                 else:
-                    details_dict = {"instructions": instructions, "back_end": back_end, "output_type": output_type, "answer_code": answer_code, "answer_description": answer_description, "test_code": test_code, "credit": credit, "data_url": data_url, "show_expected": show_expected, "show_test_code": show_test_code, "show_answer": show_answer, "expected_output": ""}
-
-                    data_url = details_dict["data_url"].strip()
-                    problem_details["data_url"] = data_url
-                    if data_url != "":
-                            contents, content_type, extension = download_file(data_url)
-                            file_name = create_md5_hash(data_url) + extension
-                            write_data_file(contents, file_name)
-                            problem_details["url_file_name"] = file_name
-                            problem_details["url_content_type"] = content_type
+                    if (data_url == "" and data_file_name != "") or (data_url != "" and data_file_name == ""):
+                        result = "Error: If a data URL or file name is specified, both must be specified."
                     else:
-                        problem_details["url_file_name"] = ""
-                        problem_details["url_content_type"] = ""
-
-                    expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], answer_code, problem_basics, details_dict)
-
-                    if error_occurred:
-                        result = "Error: " + expected_output
-                    else:
-                        problem_details["expected_output"] = expected_output
-
-                        if new_problem:
-                            content.save_problem(course, assignment, problem_basics, problem_details)
+                        if data_url == "":
+                            data_contents = b""
                         else:
-                            if problem_basics["title"] != title:
-                                content.update_problem(problem, "title", title)
-                                problem_basics["title"] = title
-                            if problem_basics["visible"] != visible:
-                                content.update_problem(problem, "visible", visible)
-                                problem_basics["visible"] = visible
-                            if problem_details["instructions"] != instructions:
-                                content.update_problem(problem, "instructions", instructions)
-                                problem_details["instructions"] = instructions
-                            if problem_details["back_end"] != back_end:
-                                content.update_problem(problem, "back_end", back_end)
-                                problem_details["back_end"] = back_end
-                            if problem_details["output_type"] != output_type:
-                                content.update_problem(problem, "output_type", output_type)
-                                problem_details["output_type"] = output_type
-                            if problem_details["answer_code"] != answer_code:
-                                content.update_problem(problem, "answer_code", answer_code)
-                                problem_details["answer_code"] = answer_code
-                            if problem_details["answer_description"] != answer_description:
-                                content.update_problem(problem, "answer_description", answer_description)
-                                problem_details["answer_description"] = answer_description
-                            if problem_details["test_code"] != test_code:
-                                content.update_problem(problem, "test_code", test_code)
-                                problem_details["test_code"] = test_code
-                            if problem_details["credit"] != credit:
-                                content.update_problem(problem, "credit", credit)
-                                problem_details["credit"] = credit
-                            if problem_details["data_url"] != data_url:
-                                content.update_problem(problem, "data_url", data_url)
-                                problem_details["data_url"] = data_url
-                            if problem_details["show_expected"] != show_expected:
-                                content.update_problem(problem, "show_expected", show_expected)
-                                problem_details["show_expected"] = show_expected
-                            if problem_details["show_test_code"] != show_test_code:
-                                content.update_problem(problem, "show_test_code", show_test_code)
-                                problem_details["show_test_code"] = show_test_code
-                            if problem_details["show_answer"] != show_answer:
-                                content.update_problem(problem, "show_answer", show_answer)
-                                problem_details["show_answer"] = show_answer
+                            if not data_file_name in instructions:
+                                result = f"Error: You must mention {data_file_name} at least once in the instructions."
+                            else:
+                                data_contents = download_file(data_url)
 
-                        problem_basics = content.get_problem_basics(course, assignment, problem)
-                        problem_details = content.get_problem_details(course, assignment, problem)
-                        result = "Success: The problem was saved!"
+                                # Make sure the file is not larger than 10 MB.
+                                if len(data_contents) > 10 * 1024 * 1024:
+                                    result = f"Error: The file at {data_url} is too large ({len(data_contents)} bytes)."
+
+                        if not result.startswith("Error:"):
+                            problem_basics["title"] = title
+                            problem_basics["visible"] = visible
+
+                            problem_details["instructions"] = instructions
+                            problem_details["back_end"] = back_end
+                            problem_details["output_type"] = output_type
+                            problem_details["answer_code"] = answer_code
+                            problem_details["answer_description"] = answer_description
+                            problem_details["test_code"] = test_code
+                            problem_details["credit"] = credit
+                            problem_details["data_url"] = data_url
+                            problem_details["data_file_name"] = data_file_name
+                            problem_details["data_contents"] = data_contents.decode()
+                            problem_details["show_expected"] = show_expected
+                            problem_details["show_test_code"] = show_test_code
+                            problem_details["show_answer"] = show_answer
+
+                            expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], answer_code, problem_basics, problem_details)
+
+                            if error_occurred:
+                                result = "Error: " + expected_output
+                            else:
+                                problem_details["expected_output"] = expected_output
+                                content.save_problem(course, assignment, problem_basics, problem_details)
+                                problem_basics["exists"] = True
 
             problems = content.get_problems(course, assignment)
             self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
@@ -614,31 +536,31 @@ class GetSubmissionsHandler(BaseUserHandler):
 
         self.write(json.dumps(submissions))
 
-class DataHandler(RequestHandler):
-    async def get(self, course, assignment, problem, file_name):
-        data_file_path = get_downloaded_file_path(file_name)
-
-        problem_details = content.get_problem_details(course, assignment, problem)
-
-        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
-        self.set_header('Content-type', content_type)
-
-        if not os.path.exists(data_file_path) or is_old_file(data_file_path):
-            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[file_name]
-
-            ## Check to see whether the request came from the server or the user's computer
-            #this_host = self.request.headers.get("Host")
-            #referer = self.request.headers.get("Referer")
-            #referer_url_parts = urllib.parse.urlparse(referer)
-            #referer_host = referer_url_parts[1]
-            #referer_path = referer_url_parts[2]
-
-            #if referer_host == this_host and referer_path.startswith("/problem") and content_type.startswith("text/"):
-            #    self.write("Please wait while the file is downloaded...\n\n")
-
-            urllib.request.urlretrieve(url, data_file_path)
-
-        self.write(read_file(data_file_path))
+#class DataHandler(RequestHandler):
+#    async def get(self, course, assignment, problem, file_name):
+#        data_file_path = get_downloaded_file_path(file_name)
+#
+#        problem_details = content.get_problem_details(course, assignment, problem)
+#
+#        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
+#        self.set_header('Content-type', content_type)
+#
+#        if not os.path.exists(data_file_path) or is_old_file(data_file_path):
+#            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[file_name]
+#
+#            ## Check to see whether the request came from the server or the user's computer
+#            #this_host = self.request.headers.get("Host")
+#            #referer = self.request.headers.get("Referer")
+#            #referer_url_parts = urllib.parse.urlparse(referer)
+#            #referer_host = referer_url_parts[1]
+#            #referer_path = referer_url_parts[2]
+#
+#            #if referer_host == this_host and referer_path.startswith("/problem") and content_type.startswith("text/"):
+#            #    self.write("Please wait while the file is downloaded...\n\n")
+#
+#            urllib.request.urlretrieve(url, data_file_path)
+#
+#        self.write(read_file(data_file_path))
 
 class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
@@ -712,24 +634,27 @@ class LoginHandler(RequestHandler):
         self.render("login.html", courses=content.get_courses(show_hidden(self)), target_path=target_path)
 
     def post(self, target_path):
-        user_id = self.get_body_argument("user_id")
+        try:
+            user_id = self.get_body_argument("user_id")
 
-        if user_id == "":
-            self.write("Invalid user ID.")
-        else:
-            if not content.check_user_exists(user_id):
-                content.add_row_users(user_id)
-                print("Users:", content.print_rows("users"))
-
-            if content.check_role_exists(user_id):
-                role = content.get_role(user_id)
-                print("This is the current user's role: ", role)
+            if user_id == "":
+                self.write("Invalid user ID.")
             else:
-                content.add_row_permissions(user_id, "student")
-                print("Permissions:", content.print_rows("permissions"))
+                if not content.check_user_exists(user_id):
+                    content.add_user(user_id)
+                    #print("Users:", content.print_rows("users"))
 
-            self.set_secure_cookie("user_id", user_id, expires_days=30)
-            self.redirect(target_path)
+                if content.check_role_exists(user_id):
+                    role = content.get_role(user_id)
+                    #print("This is the current user's role: ", role)
+                else:
+                    content.add_row_permissions(user_id, "student")
+                    #print("Permissions:", content.print_rows("permissions"))
+
+                self.set_secure_cookie("user_id", user_id, expires_days=30)
+                self.redirect(target_path)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class LogoutHandler(BaseUserHandler):
     def get(self):
