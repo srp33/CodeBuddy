@@ -5,12 +5,14 @@
 
             <p>{{ problem_details["instructions"] }}</p>
 
-
             {% if len(problem_details["data_url"]) > 0 %}
-              <h5>
-                Data file:
-              </h5>
-              <a href="{{ problem_details["data_url"] }}">{{ problem_details["data_url"] }}</a> (<a href="{{ problem_details["url_file_name"] }}>cached version</a>)
+                <p><em>The data for this problem originated from <a href='{{ problem_details["data_url"] }}' target="_blank">here</a>.</em></p>
+
+                <p>
+                    <b>{{ problem_details["data_file_name"] }}</b>
+                    <button id="show_hide_data_button" onclick="show_hide_data()">Show</button>
+                </p>
+                <pre id="data_panel" hidden>{{ problem_details["data_contents"] }}</pre>
             {% end %}
 
             {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
@@ -79,6 +81,22 @@
             </div><br /><br /><br />
 
             <script>
+            {% if len(problem_details["data_url"]) > 0 %}
+                function show_hide_data() {
+                    var button = document.getElementById("show_hide_data_button");
+                    var data_panel = document.getElementById("data_panel");
+
+                    if (data_panel.hidden) {
+                        button.innerHTML = "Hide";
+                        data_panel.hidden = false;
+                    }
+                    else {
+                        button.innerHTML = "Show";
+                        data_panel.hidden = true;
+                    }
+                }
+            {% end %}
+
             function build_code_output(json_output, error_occurred) {
               code_output = ""
 
