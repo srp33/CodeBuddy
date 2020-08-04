@@ -4,15 +4,29 @@
   {% if assignment_basics["exists"] %}
     <p>{{ assignment_details["introduction"] }}</p>
 
-    {% if len(problem_statuses) > 0 %}
-      <h4>Problems</h4>
+    <div class="columns">
+      <div class="column is-half">
 
-      <ul>
-      {% for problem in problem_statuses %}
-        <li><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></li>
-      {% end %}
-      </ul>
-    {% end %}
+        {% if len(problem_statuses) > 0 %}
+          <h4>Problems</h4></br>
+
+          {% for problem in problem_statuses %}
+            <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a>
+            {% if problem[1]["passed"] %}
+              <label class="is-pulled-right">
+                <img src="/static/greencheck.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+              </label>
+            {% else %}
+              <label class="is-pulled-right">
+                <img src="/static/unchecked.png" alt="Not Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+              </label>
+            {% end %}
+            <hr style="border: 2px solid#F6F5F5;" />
+          {% end %}
+        {% end %}
+
+      </div>
+    </div>
 
     <p>
       <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit assignment</a> |
