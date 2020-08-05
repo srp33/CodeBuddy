@@ -244,13 +244,14 @@ class Content:
         problem_statuses = []
         problem_dict = {"id": "", "title": "", "passed": 0}
 
-        sql = '''SELECT p.problem_id, p.title, MAX(s.passed) AS passed
+        sql = '''SELECT p.problem_id, p.title, IFNULL(MAX(s.passed), 0) AS passed, COUNT(s.submission_id) AS num_attempts
                  FROM problems p
-                 INNER JOIN submissions s
+                 LEFT JOIN submissions s
                   ON p.problem_id = s.problem_id
                  WHERE p.assignment_id = ?
-                  AND user_id = ?
-                 GROUP BY p.problem_id'''
+                  AND (s.user_id = ? OR s.user_id IS NULL)
+                 GROUP BY p.assignment_id, p.problem_id
+                 ORDER BY p.title'''
         self.c.execute(sql,(str(assignment_id), str(user_id),))
         for row in self.c.fetchall():
             problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"]}
