@@ -5,6 +5,9 @@ frontend_codechecker/*css*
 frontend_codechecker/*.js
 logs
 __pycache__
-E_run_front_end
-E_run_r_back_end
+E_run_front
+E_run_middle
 submissions
+a_run_front_end
+a_run_middle_layer
+nohup*

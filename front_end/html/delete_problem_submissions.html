@@ -1,4 +1,4 @@
-<h2>Delete Problem</h2>
+<h2>Delete Problem Submissions</h2>
 
 {% if result %}
   {% if result.startswith("Error:") %}
@@ -12,11 +12,11 @@
   {% if assignment_basics["exists"] %}
     {% if problem_basics["exists"] %}
       {% if not result %}
-          <form method="post" action="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
+          <form method="post" action="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
 
           <p><strong>Title: </strong>{{ problem_basics["title"] }}</p>
 
-          <p><font color="red">Are you sure you want to delete this problem? It will also delete any submissions that students have made for this problem.</font></p>
+          <p><font color="red">Are you sure you want to delete any submissions that students have made for this problem?</font></p>
 
           <p><input type="submit" class="button is-info is-large is-fullwidth" value="Confirm" /></p>
 

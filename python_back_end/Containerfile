@@ -1,6 +1,0 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
-
-RUN pip install --upgrade pip \
- && pip install pandas==1.0.4 scikit-learn==0.23.1 seaborn==0.10.1 arrow==0.15.6 Pillow==7.1.2
-
-COPY python_back_end/main.py /app/

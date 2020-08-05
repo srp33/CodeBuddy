@@ -1,0 +1,33 @@
+db_location: /submissions/CodeBuddy.db
+back_ends:
+    r:
+        description: R code
+        image_name: srp33/codebuddy_r
+        memory_allowed_mb: 100
+        timeout_seconds: 30
+        code_completion_path: ace/mode/r
+        output_types:
+            jpg: |-
+                Image (base graphics or ggplot2)
+            txt: |-
+                Text
+    python:
+        description: Python code
+        image_name: srp33/codebuddy_python
+        memory_allowed_mb: 100
+        timeout_seconds: 30
+        code_completion_path: ace/mode/python
+        output_types:
+            jpg:
+                Image (matplotlib or seaborn)
+            txt: |-
+                Text
+    bash:
+        description: bash commands
+        image_name: srp33/codebuddy_bash
+        memory_allowed_mb: 100
+        timeout_seconds: 30
+        code_completion_path: ace/mode/plain_text
+        output_types:
+            txt: |-
+                Text (standard out)

@@ -6,32 +6,102 @@
 
 {% if result %}
   {% if result.startswith("Error:") %}
-    <p><div class='notification is-danger'><strong>{{ result }}</strong></div></p>
+    <p><div class='notification is-danger'><pre><strong>{{ result }}</strong></pre></div></p>
   {% else %}
     <p><div class='notification is-success'><strong>{{ result }}</strong></div></p>
-
   {% end %}
 {% end %}
 
 {% if course_basics["exists"] %}
   {% if assignment_basics["exists"] %}
-    <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
+    <!-- Load external libraries -->
+    <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/static/mode-r.js" type="text/javascript"></script>
+    <script src="/static/ext-language_tools.js"></script>
+
+    <!-- Global JavaScript -->
+    <script>
+        function updateBackEndOptions(back_end, output_type_to_select) {
+            // Clear out existing options from the dropdown
+            $("#output_types").empty();
+
+            ot_select = document.getElementById("output_types");
+
+            $.get('/back_end/' + back_end, function( data ) {
+                var json_data = JSON.parse(data);
+
+                var i;
+                for (i = 0; i < Object.keys(json_data["output_types"]).length; i++) {
+                    key = Object.keys(json_data["output_types"])[i];
+                    description = json_data["output_types"][key];
+
+                    var opt = document.createElement('option');
+                    opt.innerHTML = description;
+                    opt.value = key;
+
+                    if (output_type_to_select == '') {
+                        if (key == "txt")
+                            opt.selected = true;
+                    }
+                    else {
+                        if (key == output_type_to_select)
+                            opt.selected = true;
+                    }
+
+                    ot_select.appendChild(opt);
+                }
+
+                answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
+                test_code_editor.getSession().setMode(json_data["code_completion_path"]);
+            });
+        }
+
+        function update_auto_complete(checkbox_element_id) {
+            checkbox = document.getElementById(checkbox_element_id);
+
+            editor = answer_code_editor;
+            if (checkbox_element_id == "test_code_auto_complete")
+                editor = test_code_editor;
+
+            if (checkbox.checked) {
+                editor.setOptions({
+                    enableBasicAutocompletion: false,
+                    enableSnippets: true,
+                    enableLiveAutocompletion: true
+                });
+            }
+            else {
+              editor.setOptions({
+                  enableBasicAutocompletion: false,
+                  enableSnippets: false,
+                  enableLiveAutocompletion: false
+              });
+            }
+        }
+
+      ace.require("ace/ext/language_tools");
+    </script>
+
+    <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" id="myForm" />
 
     <p><strong>Title*: </strong></p>
-    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1">{{ problem_basics["title"] }}</textarea></p>
+    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
 
     <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this problem.</p>
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" name="instructions">{{ problem_details["instructions"] }}</textarea></p>
+    <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
 
-    <p><strong>Environment: </strong>
+    <p><strong>Back end: </strong>
+      <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' code.">
+        <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-bottom"/>
+      </label>
       <div class="select is-info">
-        <select name="environment">
-        {% for environment in environments %}
+        <select name="back_end" onchange="updateBackEndOptions(this.value, '')" style="padding:2px;">
+        {% for back_end in back_ends %}
           <option
-            {% if environment == problem_details["environment"] %}
+            {% if back_end == problem_details["back_end"] %}
               selected
             {% end %}
-          >{{ environment }}</option>
+          >{{ back_end }}</option>
         {% end %}
         </select>
       </div>
@@ -39,39 +109,39 @@
 
     <p><strong>Output type: </strong>
       <div class="select is-info">
-        <select name="output_type" id="output_types">
+        <select name="output_type" id="output_types" style="padding:2px;">
         </select>
       </div>
     </p>
 
-    <script>
-        ot_select = document.getElementById("output_types");
-
-        $.get('/output_types/{{ problem_details["environment"] }}', function( data ) {
-          output_types = data.toString().split(" ");
-
-          var i;
-          for (i = 0; i < output_types.length; i++) {
-            var opt = document.createElement('option');
-            opt.innerHTML = output_types[i];
-            opt.value = output_types[i];
-
-            if (output_types[i] == "{{ problem_details["output_type"] }}")
-              opt.selected = true;
-
-            ot_select.appendChild(opt);
-          }
-        });
-    </script>
-
     <p><strong>Answer code*: </strong></p>
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" name="answer_code" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea></p>
+    <p>Please note that if the answer code for this problem changes after students have already submitted answers, only the most recent answer code will appear when students view past submissions. Please use caution when changing the answer code; consider creating a new problem instead.</p>
+    <p>
+      <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea>
+      <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
+      <input name="answer_code_text" type="text" hidden id="answer_code_text">
+      <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
+        <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+      </label>
+      <label class="checkbox is-pulled-right">
+          Use auto-complete <input type="checkbox" id="answer_code_auto_complete" name="answer_code_auto_complete" value="true" checked onclick="update_auto_complete('answer_code_auto_complete')">
+      </label>
+    </p>
     
     <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
     <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
 
     <p><strong>Test code: </strong></p>
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea></p>
+    <p>
+      <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" id="test_code" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea>
+      <input name="test_code_text" type="text" hidden id="test_code_text">
+      <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
+        <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+      </label>
+      <label class="checkbox is-pulled-right">
+          Use auto-complete <input type="checkbox" id="test_code_auto_complete" name="test_code_auto_complete" value="true" checked onclick="update_auto_complete('test_code_auto_complete')">
+      </label>
+    </p>
 
     {% if problem_basics["exists"] %}
       <p><strong>Expected output:</strong><br />
@@ -82,15 +152,24 @@
       {% end %}
     {% end %}
 
-    <p><strong>Credit: </strong><br />If anyone should be given credit for creating this problem, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a></p>
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" rows="4" name="credit">{{ problem_details["credit"] }}</textarea></p>
+    <p><strong>Credit: </strong>
+      <br />If anyone should be given credit for creating this problem, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
+    </p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write the credit statement here." rows="4" name="credit" style="font-family:monospace">{{ problem_details["credit"] }}</textarea></p>
 
-    <p><strong>Data URLs: </strong></p>
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="If this problem depends on external URLs with data, please list those (one per line)." rows="4" name="data_urls" style="font-family:monospace">{{ problem_details["data_urls"] }}</textarea></p>
+    <p><strong>Data source: </strong>
+      <br />Optionally, you can specify the URL of a data file that students will use on this problem.
+      If you specify a URL, that file will be downloaded and stored on the server using the name you specify in the second box below. The maximum file size is 10 megabytes.
+    </p>
+    <p>
+      URL: <textarea name="data_url" class="textarea is-info is-normal is-medium is-fullwidth" rows="1" style="font-family:monospace">{{ problem_details["data_url"] }}</textarea>
+      <br />
+      File name: <textarea name="data_file_name" class="textarea is-info is-normal is-medium is-fullwidth" rows="1" style="font-family:monospace">{{ problem_details["data_file_name"] }}</textarea>
+    </p>
 
     <p><strong>Show expected output: </strong>
       <div class="select is-info">
-        <select name="show_expected">
+        <select name="show_expected" style="padding:2px;">
           {% if problem_details["show_expected"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -104,7 +183,7 @@
 
     <p><strong>Show test code: </strong>
       <div class="select is-info">
-        <select name="show_test_code">
+        <select name="show_test_code" style="padding:2px;">
           {% if problem_details["show_test_code"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -118,7 +197,7 @@
 
     <p><strong>Allow students to view answer code once they correctly solve the problem: </strong>
       <div class="select is-info">
-        <select name="show_answer">
+        <select name="show_answer" style="padding:2px;">
           {% if problem_details["show_answer"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -132,7 +211,7 @@
 
     <p><strong>Visible: </strong>
       <div class="select is-info">
-        <select name="is_visible">
+        <select name="is_visible" style="padding:2px;">
           {% if problem_basics["visible"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -144,18 +223,41 @@
       </div>
     </p>
 
-    <p><strong>Password: </strong></p>
-    <p><textarea name="password" class="textarea is-info is-normal is-medium is-fullwidth" type="password" placeholder="Please enter password" rows="1" style="font-family:monospace"></textarea></p>
-
     <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
     <p>
       {% if problem_basics["exists"] %}
         <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a> |
-        <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a>
+        <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a> |
+        <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem submissions</a>
       {% end %}
-    </p>
+    </p><br />
 
+    <!-- Code to modify page behavior at the end of loading -->
+    <script>
+      var answer_code_editor = ace.edit("answer_code", {
+        theme: "ace/theme/tomorrow",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        fontSize: "12pt"
+      });
+
+      var test_code_editor = ace.edit("test_code", {
+        theme: "ace/theme/tomorrow",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        fontSize: "12pt"
+      });
+
+      updateBackEndOptions('{{ problem_details["back_end"] }}', '{{ problem_details["output_type"] }}');
+      update_auto_complete('answer_code_auto_complete');
+      update_auto_complete('test_code_auto_complete');
+
+      document.getElementById("myForm").onsubmit = function(evt) {
+        document.getElementById("answer_code_text").value = answer_code_editor.getValue();
+        document.getElementById("test_code_text").value = test_code_editor.getValue();
+    } 
+    </script>
     </form>
   {% else %}
     This assignment has not been created yet.

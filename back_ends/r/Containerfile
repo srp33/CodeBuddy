@@ -1,0 +1,14 @@
+FROM rocker/tidyverse:4.0.0
+
+RUN apt-get update -qq && apt-get install -y \
+  git-core \
+  libssl-dev \
+  libcurl4-gnutls-dev \
+  libjemalloc-dev \
+  libmagick++-dev
+
+RUN R -e "install.packages(c('car', 'conflicted', 'e1071', 'gbm', 'igraph', 'kknn', 'magick', 'mapproj', 'maps', 'mlr', 'randomForest', 'XML'))"
+
+ADD exec.R /
+
+ENTRYPOINT ["Rscript", "--vanilla", "/exec.R"]

@@ -1,15 +1,18 @@
 {% if problem_basics["exists"] %}
-    <h2>Answer code:</h2>
+    {% if last_submission["passed"] %}
+        <h4>Answer code:</h4>
 
-    <pre>{{ problem_details["answer_code"]}}</pre>
+        <pre>{{ problem_details["answer_code"]}}</pre>
 
-
-    {% if len(problem_details["answer_description"]) > 0 %}
-        <h2>Instructor's comments:</h2>
-
-        <p>{{ problem_details["answer_description"] }}</p>
+        {% if len(problem_details["answer_description"]) > 0 %}
+            <h4>Instructor's comments</h4>
+            <p>{{ problem_details["answer_description"] }}</p>
+        {% end %}
+    
+    {% else %}
+        <p>Either you have not yet passed this problem or you passed it previously but your most recent submission is not passing. Please make sure your code passes the problem, and then you'll be able to view the instructor's answer.</p>
     {% end %}
-
+    
     <p>
         <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to problem</a>
     </p>

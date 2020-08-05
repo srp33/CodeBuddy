@@ -1,9 +1,12 @@
+from content import *
 import glob
 import gzip
 import json
 import os
 import shutil
 import sys
+
+content = Content()
 
 in_file_prefix = sys.argv[1]
 out_dir_path = sys.argv[2]
@@ -16,8 +19,64 @@ def update_summary_dict(summary_dict, statistic, timestamp, key, value):
     summary_dict[statistic][timestamp] = summary_dict[statistic].setdefault(timestamp, {})
     summary_dict[statistic][timestamp][key] = summary_dict[statistic][timestamp].setdefault(key, 0) + value
 
+def get_titles_from_ids(file_path):
+
+    new_dict = {}
+    new_dict[0] = ""
+    new_dict[1] = ""
+    new_dict[2] = ""
+    new_dict[3] = ""
+
+    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
+    if re_match:
+        id_dict = re_match.groupdict()
+
+        course_title = ""
+        assignment_title = ""
+        problem_title = ""
+
+        for course_id in content.get_course_ids():
+            course_basics = content.get_course_basics(course_id)
+            if id_dict["course_id"] == course_id:
+                course_title = course_basics["title"]
+
+            for assignment_id in content.get_assignment_ids(course_id):
+                assignment_basics = content.get_assignment_basics(course_id, assignment_id)
+                if id_dict["assignment_id"] == assignment_id:
+                    assignment_title = assignment_basics["title"]
+
+                for problem_id in content.get_problem_ids(course_id, assignment_id):
+                    problem_basics = content.get_problem_basics(course_id, assignment_id, problem_id)
+                    if id_dict["problem_id"] == problem_id:
+                        problem_title = problem_basics["title"]
+      
+        new_dict[0] = id_dict["name"]
+        new_dict[1] = course_title
+        new_dict[2] = assignment_title
+        new_dict[3] = problem_title
+
+    if new_dict[0] == "":
+        new_dict[0] = "home"
+
+    return new_dict
+
 def create_timestamp(year, month, day="", hour=""):
     return int(f"{year}{month}{day}{hour}")
+
+def create_id_dict_from_url(file_path):
+
+    id_dict = {}
+    id_dict["name"] = ""
+    id_dict["course_id"] = ""
+    id_dict["assignment_id"] = ""
+    id_dict["problem_id"] = ""
+    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<problem_id>[^\/]*)", file_path)
+    if re_match:
+        id_dict = re_match.groupdict()
+        for key, value in id_dict.items():
+            if value == None:
+                id_dict[key] = ""
+    return id_dict
 
 def save_summaries(summary_dict, out_dir_path):
     for statistic, statistic_dict in summary_dict.items():
@@ -30,24 +89,48 @@ def save_summaries(summary_dict, out_dir_path):
 
             with gzip.open(temp_file_path) as temp_file:
                 with gzip.open(out_file_path, 'w') as out_file:
-                    out_file.write(temp_file.readline())
+                    out_file.write("Timestamp\tCourse_ID\tAssignment_ID\tProblem_ID\tValue\tName\tCourse_Name\tAssignment_Name\tProblem_Name\n".encode())
+                    temp_file.readline()
+
+                    line_dict = {}
 
                     for line in temp_file:
                         line_items = line.decode().rstrip("\n").split("\t")
+                        url_key = "/"
+                        if line_items[1]!= "":
+                            url_key += line_items[5] + "/" + line_items[1]
+                            if line_items[2] != "":
+                                url_key += "/" + line_items[2]
+                                if line_items[3] != "":
+                                    url_key += "/" + line_items[3]
+
                         timestamp = int(line_items[0])
                         if timestamp in recent_timestamps:
-                            update_summary_dict(summary_dict, statistic, timestamp, line_items[1], float(line_items[2]))
+                            update_summary_dict(summary_dict, statistic, timestamp, url_key, float(line_items[4]))
                         else:
-                            out_file.write(line)
+                            # Save all existing values except for names in case they've changed
+                            value_dict = {}
+                            value_dict[url_key] = line_items[4]
+                            line_dict[line_items[0]] = value_dict
+
+                    for timestamp, value_dict in line_dict.items():
+                        for key, value in value_dict.items():
+                            names = get_titles_from_ids(key)
+                            id_dict = create_id_dict_from_url(key)
+                            out_file.write(f"{timestamp}\t{id_dict['course_id']}\t{id_dict['assignment_id']}\t{id_dict['problem_id']}\t{float(value):.1f}\t{names[0]}\t{names[1]}\t{names[2]}\t{names[3]}\n".encode())
+
+
         else:
             # Write header for output file
             with gzip.open(out_file_path, 'w') as out_file:
-                out_file.write("Timestamp\tKey\tValue\n".encode())
+                out_file.write("Timestamp\tCourse_ID\tAssignment_ID\tProblem_ID\tValue\tName\tCourse_Name\tAssignment_Name\tProblem_Name\n".encode())
 
         with gzip.open(out_file_path, 'a') as out_file:
             for timestamp, value_dict in sorted(statistic_dict.items()):
                 for key, value in sorted(value_dict.items()):
-                    out_file.write(f"{timestamp}\t{key}\t{value:.1f}\n".encode())
+                    names = get_titles_from_ids(key)
+                    id_dict = create_id_dict_from_url(key)
+                    out_file.write(f"{timestamp}\t{id_dict['course_id']}\t{id_dict['assignment_id']}\t{id_dict['problem_id']}\t{value:.1f}\t{names[0]}\t{names[1]}\t{names[2]}\t{names[3]}\n".encode())
 
 # We want the newest file (with no number at the end) to come list in the list.
 in_file_paths = glob.glob(in_file_prefix + ".*") + [in_file_prefix]

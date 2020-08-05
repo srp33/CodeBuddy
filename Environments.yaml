@@ -1,7 +1,0 @@
-r_back_end:
-    url: http://localhost:9002/exec
-    timeout_seconds: 30
-    code_completion_path: ace/mode/r
-    output_types:
-        - jpeg
-        - txt

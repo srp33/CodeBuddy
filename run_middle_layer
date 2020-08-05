@@ -1,0 +1,12 @@
+#! /bin/bash
+
+set -o errexit
+
+./build_back_ends
+
+export PATH=$PATH:~/.local/bin
+
+cd middle_layer
+
+#uvicorn main:app --port 9799 --workers 4
+gunicorn main:app -b 127.0.0.1:9799 -w 4 -k uvicorn.workers.UvicornWorker

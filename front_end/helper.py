@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 import difflib
 import glob
 import hashlib
@@ -38,16 +39,6 @@ def write_file(x, file_path, mode="w"):
 def read_file(file_path, mode="r"):
     with open(file_path, mode) as the_file:
         return the_file.read()
-
-# From https://stackoverflow.com/questions/12485666/python-deleting-all-files-in-a-folder-older-than-x-days
-#import arrow
-#def remove_old_dirs(dir_path):
-#    criticalTime = arrow.now().shift(minutes=-30)
-#
-#    for item in Path(dir_path).glob('*'):
-#        itemTime = arrow.get(item.stat().st_mtime)
-#        if itemTime < criticalTime:
-#            shutil.rmtree(item)
 
 def is_old_file(file_path, days=30):
     age_in_seconds = time.time() - os.stat(file_path)[stat.ST_MTIME]
@@ -89,62 +80,74 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(env_dict, code, problem_basics, problem_details, request=None):
-    try:
-        code = code + "\n\n" + problem_details["test_code"]
-        settings_dict = env_dict[problem_details["environment"]]
+def exec_code(settings_dict, code, problem_basics, problem_details, request=None):
+    code = code + "\n\n" + problem_details["test_code"]
 
-        if request:
-            for url, file_name in get_columns_dict(problem_details["data_urls_info"], 0, 1).items():
-                cache_url = "{}://{}/data/{}/{}/{}/{}".format(
-                    request.protocol,
-                    request.host,
-                    problem_basics["assignment"]["course"]["id"],
-                    problem_basics["assignment"]["id"],
-                    problem_basics["id"],
-                    file_name)
-                code = code.replace(url, cache_url)
+#    if request:
+#        if problem_details["data_url"] != "":
+#        data_url_info = [problem_details["data_url"], problem_details["url_file_name"], problem_details["url_content_type"]]
+#        if data_url_info[0] != "":
+#            for url, file_name in get_columns_dict([data_url_info], 0, 1).items():
+#                cache_url = "{}://{}/data/{}/{}/{}/{}".format(
+#                    request.protocol,
+#                    request.host,
+#                    problem_basics["assignment"]["course"]["id"],
+#                    problem_basics["assignment"]["id"],
+#                    problem_basics["id"],
+#                    file_name)
+#                code = code.replace(url, cache_url)
 
-        timeout = settings_dict["timeout_seconds"] + 2
-        data_dict = {"code": code, "timeout_seconds": timeout, "output_type": problem_details["output_type"]}
-        response = requests.post(settings_dict["url"], json.dumps(data_dict), timeout=timeout)
+    timeout = settings_dict["timeout_seconds"] + 2
+    data_dict = {"image_name": settings_dict["image_name"],
+                 "code": code,
+                 "data_file_name": problem_details["data_file_name"],
+                 "data_contents": problem_details["data_contents"],
+                 "output_type": problem_details["output_type"],
+                 "memory_allowed_mb": settings_dict["memory_allowed_mb"],
+                 "timeout_seconds": timeout
+                 }
 
-        return response.content, response.status_code != 200
-    except ReadTimeout as inst:
-        return "Your code did not finish executing before the time limit: {} seconds.".format(timeout).encode(), True
-    except ConnectionError as inst:
-        return "The front-end server was unable to contact the back-end server to check your code.\n\nIf you are running your own instance of this app, please make sure the back-end server is running.".encode(), True
+    middle_layer_port = os.environ['MPORT']
+    response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
+
+    response_dict = json.loads(response.content)
+
+    return response_dict["output"].strip(), response_dict["error_occurred"]
 
 def test_code_txt(settings_dict, code, problem_basics, problem_details, request):
     code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
-    code_output = code_output.decode()
 
     if error_occurred:
         return code_output, True, False, ""
 
     passed = problem_details["expected_output"] == code_output
 
-    diff_output = ""
-    if not passed and problem_details["show_expected"]:
-        diff_output = diff_strings(problem_details["expected_output"], code_output)
-
-    return code_output, error_occurred, passed, diff_output
+    return code_output, error_occurred, passed, find_differences_txt(problem_details, code_output, passed)
 
 def test_code_jpg(settings_dict, code, problem_basics, problem_details, request):
     code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
 
     if error_occurred:
-        return code_output.decode(), True, False, ""
+        return format_output_as_html(code_output), True, False, ""
 
-    passed, diff_image = are_images_similar(problem_details["expected_output"], code_output)
+    diff_percent, diff_image = diff_jpg(problem_details["expected_output"], code_output)
+    passed = does_image_pass(diff_percent)
 
+    return code_output, error_occurred, passed, find_differences_jpg(problem_details, passed, diff_image)
+
+def find_differences_txt(problem_details, code_output, passed):
+    diff_output = ""
+
+    if not passed and problem_details["show_expected"]:
+        diff_output = diff_strings(problem_details["expected_output"], code_output)
+
+    return diff_output
+
+def find_differences_jpg(problem_details, passed, diff_image):
     diff_output = ""
     if not passed and problem_details["show_expected"]:
         diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
-
-    code_output = encode_image_bytes(code_output)
-
-    return code_output, error_occurred, passed, diff_output
+    return diff_output
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
@@ -187,7 +190,6 @@ def diff_strings(expected, actual):
     # Only return diff output if the differences are relatively small.
     #if numDifferences / numChars > 0.2:
     #    diff_output = "More than 20% of the characters were different."
-
     return diff_output
 
 def render_error(handler, exception):
@@ -202,37 +204,56 @@ def create_id(current_objects=[], num_characters=4):
 
     return new_id
 
-def create_md5_hash(my_string):
-    return hashlib.md5(my_string.encode("utf-8")).hexdigest()
+#def create_md5_hash(my_string):
+#    return hashlib.md5(my_string.encode("utf-8")).hexdigest()
 
 def download_file(url):
     response = requests.get(url)
 
-    if 'Content-type' in response.headers:
-        content_type = response.headers['Content-type']
-    else:
-        content_type = "text/plain"
+    #if 'Content-type' in response.headers:
+    #    content_type = response.headers['Content-type']
+    #else:
+    #    content_type = "text/plain"
 
-    return response.content, content_type, get_url_extension(url)
+    #return response.content, content_type, get_url_extension(url)
+    return response.content
 
-def get_url_extension(url):
-    file_name = os.path.basename(url)
-    if "." in file_name:
-        return "." + file_name.split(".")[-1]
-    return ""
+#def get_url_extension(url):
+#    file_name = os.path.basename(url)
+#    if "." in file_name:
+#        return "." + file_name.split(".")[-1]
+#    return ""
 
-def get_downloaded_file_path(file_name):
-    return "/data/{}".format(file_name)
+#def get_downloaded_file_path(file_name):
+#    return "/data/{}".format(file_name)
 
-def write_data_file(contents, file_name):
-    # First delete any old files to prevent stale file buildup
-    for f in glob.glob("/data/*"):
-        if is_old_file(f):
-            os.remove(f)
-
-    write_file(contents, get_downloaded_file_path(file_name), "wb")
+#def write_data_file(contents, file_name):
+#    # First delete any old files to prevent stale file buildup
+#    for f in glob.glob("/data/*"):
+#        if is_old_file(f):
+#            os.remove(f)
+#
+#    write_file(contents, get_downloaded_file_path(file_name), "wb")
 
 def show_hidden(request_handler):
     if "show_hidden" not in request_handler.request.query_arguments:
         return False
     return request_handler.request.query_arguments["show_hidden"][0].decode().lower() == "true"
+
+def get_list_of_dates():
+    years = []
+    months = []
+    days = []
+
+    for i in range(1, 13):
+        months.append("{0:02d}".format(i))
+    for i in range(1, 32):
+        days.append("{0:02d}".format(i))
+
+    dateTimeObj = datetime.now()
+    currYear = str(dateTimeObj.year)
+    yearAbrev = int(currYear)
+    for i in range(2018, yearAbrev+1):
+        years.append(str(i))
+
+    return years, months, days
