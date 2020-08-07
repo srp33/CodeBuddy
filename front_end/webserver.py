@@ -458,7 +458,7 @@ class RunCodeHandler(BaseUserHandler):
         out_dict = {"error_occurred": True}
 
         try:
-            code_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, request=None) #, course, assignment, request=None)
+            code_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, request=None)
 
             if problem_details["output_type"] == "txt" or error_occurred:
                 code_output = format_output_as_html(code_output)

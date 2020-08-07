@@ -91,8 +91,8 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
 #                cache_url = "{}://{}/data/{}/{}/{}/{}".format(
 #                    request.protocol,
 #                    request.host,
-#                    problem_basics["assignment"]["course"]["id"], #course
-#                    problem_basics["assignment"]["id"], #assignment
+#                    problem_basics["assignment"]["course"]["id"],
+#                    problem_basics["assignment"]["id"],
 #                    problem_basics["id"],
 #                    file_name)
 #                code = code.replace(url, cache_url)
