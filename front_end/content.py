@@ -27,7 +27,7 @@ class Content:
 
     def __init__(self):
         # This should enable auto-commit.
-        self.conn = sqlite3.connect(self.__DB_LOCATION, isolation_level=None)
+        self.conn = sqlite3.connect(self.__DB_LOCATION, isolation_level=None, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         self.conn.row_factory = sqlite3.Row
         self.c = self.conn.cursor()
         self.c.execute("PRAGMA foreign_keys=ON")
@@ -41,7 +41,7 @@ class Content:
     def create_table(self, create_table_sql):
         self.c.execute(create_table_sql)
 
-    def create_sqlite_tables(self): #make id's integers?
+    def create_sqlite_tables(self):
         create_users_table = """ CREATE TABLE IF NOT EXISTS users (
                                             user_id text PRIMARY KEY
                                         ); """
@@ -58,6 +58,8 @@ class Content:
                                         title text NOT NULL UNIQUE,
                                         introduction text,
                                         visible integer NOT NULL,
+                                        date_created timestamp NOT NULL,
+                                        date_updated timestamp,
                                         PRIMARY KEY (course_id)
                                     ); """
 
@@ -67,6 +69,8 @@ class Content:
                                             title text NOT NULL UNIQUE,
                                             introduction text,
                                             visible integer NOT NULL,
+                                            date_created timestamp NOT NULL,
+                                            date_updated timestamp,
                                             FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                             PRIMARY KEY (assignment_id)
                                         ); """
@@ -91,6 +95,8 @@ class Content:
                                         show_expected integer NOT NULL,
                                         show_test_code integer NOT NULL,
                                         test_code text,
+                                        date_created timestamp NOT NULL,
+                                        date_updated timestamp,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         PRIMARY KEY (problem_id)
@@ -105,7 +111,7 @@ class Content:
                                             code text NOT NULL,
                                             code_output text NOT NULL,
                                             passed integer NOT NULL,
-                                            date text NOT NULL,
+                                            date timestamp NOT NULL,
                                             error_occurred integer NOT NULL,
                                             FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
                                             FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
@@ -115,6 +121,11 @@ class Content:
                                         ); """
 
         if self.conn is not None:
+            # self.delete_table("submissions")
+            # self.delete_table("problems")
+            # self.delete_table("assignments")
+            # self.delete_table("courses")
+
             self.create_table(create_users_table)
             self.create_table(create_permissions_table)
             self.create_table(create_courses_table)
@@ -143,7 +154,7 @@ class Content:
 
     def get_role(self, user_id):
         sql = 'SELECT role FROM permissions WHERE user_id=?'
-        self.c.execute(sql, (user_id,))
+        self.c.execute(sql, (str(user_id),))
         row = self.c.fetchone()
         return row["role"]
 
@@ -214,6 +225,18 @@ class Content:
 
         return self.sort_nested_list(courses)
 
+    def get_course_title_from_id(self, course_id, show_hidden=True):
+        sql = 'SELECT title FROM courses WHERE course_id=?'
+        self.c.execute(sql, (str(course_id),))
+        row = self.c.fetchone()
+        return row["title"]
+
+    def get_assignment_title_from_id(self, assignment_id, show_hidden=True):
+        sql = 'SELECT title FROM assignments WHERE assignment_id=?'
+        self.c.execute(sql, (str(assignment_id),))
+        row = self.c.fetchone()
+        return row["title"]
+
     def get_assignments(self, course_id, show_hidden=True):
         assignments = []
         assignment_ids = self.get_assignment_ids(course_id)
@@ -232,7 +255,7 @@ class Content:
         for problem_id in problem_ids:
             problem_basics = self.get_problem_basics(course_id, assignment_id, problem_id)
             if problem_basics["visible"] or show_hidden:
-                problems.append([problem_id, problem_basics])
+                problems.append([problem_id, problem_basics, course_id, assignment_id])
 
         return self.sort_nested_list(problems)
 
@@ -241,7 +264,7 @@ class Content:
         sql = 'SELECT submission_id, date, passed FROM submissions WHERE course_id=? AND assignment_id=? AND problem_id=? AND user_id=?'
         self.c.execute(sql, (str(course_id), str(assignment_id), str(problem_id), str(user_id),))
         for submission in self.c.fetchall():
-            submissions.append([submission["submission_id"], submission["date"], submission["passed"]])
+            submissions.append([submission["submission_id"], submission["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), submission["passed"]])
 
         if submissions == []:
             return submissions
@@ -309,6 +332,11 @@ class Content:
         sql = 'SELECT COUNT(*) FROM submissions WHERE problem_id=? AND user_id=?'
         num_submissions = self.c.execute(sql, (problem, user,)).fetchone()[0]
         return num_submissions
+    
+    def get_user_total_submissions(self, user):
+        sql = 'SELECT COUNT(*) FROM submissions WHERE user_id=?'
+        num_submissions = self.c.execute(sql, (user,)).fetchone()[0]
+        return num_submissions
 
     def get_next_submission_id(self, course, assignment, problem, user):
         return self.get_num_submissions(course, assignment, problem, user) + 1
@@ -330,7 +358,7 @@ class Content:
         self.c.execute(sql, (course, assignment, problem, user, submission,))
         row = self.c.fetchone()
 
-        submission_dict = {"id": submission, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
+        submission_dict = {"id": submission, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "error_occurred": row["error_occurred"], "exists": True}
 
         return submission_dict
 
@@ -391,14 +419,68 @@ class Content:
 
             return problem_dict
 
-    def get_student_submissions(self, user_id):
-        submission_dict = {}
-        sql = 'SELECT submission_id, passed FROM submissions WHERE user_id=?'
-        self.c.execute(sql, (user_id,))
+    def course_ids_to_titles(self):
+        course_dict = {}
+        sql = 'SELECT course_id, title FROM courses'
+        self.c.execute(sql)
+        for course in self.c.fetchall():
+            course_dict[course["course_id"]] = course["title"]
+        return course_dict
+
+    def assignment_ids_to_titles(self):
+        assignment_dict = {}
+        sql = 'SELECT assignment_id, title FROM assignments'
+        self.c.execute(sql)
+        for assignment in self.c.fetchall():
+            assignment_dict[assignment["assignment_id"]] = assignment["title"]
+        return assignment_dict
+
+    def problem_ids_to_titles(self):
+        problem_dict = {}
+        sql = 'SELECT problem_id, title FROM problems'
+        self.c.execute(sql)
+        for problem in self.c.fetchall():
+            problem_dict[problem["problem_id"]] = problem["title"]
+        return problem_dict
+
+    def get_student_courses(self, student_id):
+        courses = []
+        sql = 'SELECT courses.course_id, courses.title, submissions.user_id FROM courses INNER JOIN submissions ON courses.course_id=submissions.course_id WHERE submissions.user_id=?' 
+        self.c.execute(sql, (str(student_id),))
+        for course in self.c.fetchall():
+            courses.append([course["title"], course["course_id"]])
+        return courses
+
+    def get_student_assignments(self, student_id):
+        assignments = []
+        sql = 'SELECT assignments.course_id, assignments.assignment_id, assignments.title FROM assignments INNER JOIN submissions ON assignments.assignment_id=submissions.assignment_id WHERE submissions.user_id=?'
+        self.c.execute(sql, (str(student_id),))
+        for assignment in self.c.fetchall():
+            assignments.append([assignment["title"], assignment["course_id"], assignment["assignment_id"]])
+        return assignments
+
+    def get_student_problem_status(self, problem_id, student_id):
+        passed = False
+        sql = 'SELECT passed FROM submissions WHERE problem_id=? AND user_id=?'
+        self.c.execute(sql, (problem_id, student_id,))
         for submission in self.c.fetchall():
-            submission_dict["submission_id"] = submission["submission_id"]
-            submission_dict["passed"] = submission["passed"]
-        return submission_dict
+            if submission["passed"]:
+                passed = True
+        return passed
+
+    def get_student_problems(self, student_id):  #returns list of problems a certain student has made submissions for, also whether the student has passed the problem and number of submissions student has made
+        problems = []
+        sql = 'SELECT DISTINCT problems.course_id, problems.assignment_id, problems.problem_id, problems.title FROM problems INNER JOIN submissions ON problems.problem_id=submissions.problem_id WHERE submissions.user_id=?'
+        self.c.execute(sql, (str(student_id),))
+        for problem in self.c.fetchall():
+            problems.append([problem["title"], problem["course_id"], problem["assignment_id"], problem["problem_id"]])
+        for problem in problems:
+            num_submissions = self.get_num_submissions(problem[1], problem[2], problem[3], student_id)
+            passed = self.get_student_problem_status(problem[3], student_id)
+            problem.append(num_submissions)
+            problem.append(passed)
+
+        return problems
 
     def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):
         new_dict = {}
@@ -453,24 +535,24 @@ class Content:
     def save_course(self, course_basics, course_details):
         if course_basics["exists"]:
             sql = '''UPDATE courses
-                     SET title = ?, visible = ?, introduction = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?
                      WHERE course_id = ?'''
-            self.c.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_basics["id"]])
+            self.c.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], datetime.now(), course_basics["id"]])
         else:
-            sql = '''INSERT INTO courses (course_id, title, visible, introduction)
-                     VALUES (?, ?, ?, ?)'''
-            self.c.execute(sql, [course_basics["id"], course_basics["title"], course_basics["visible"], course_details["introduction"]])
+            sql = '''INSERT INTO courses (course_id, title, visible, introduction, date_created)
+                     VALUES (?, ?, ?, ?, ?)'''
+            self.c.execute(sql, [course_basics["id"], course_basics["title"], course_basics["visible"], course_details["introduction"], datetime.now()])
 
     def save_assignment(self, course, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
-                     SET title = ?, visible = ?, introduction = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?
                      WHERE course_id = ? AND assignment_id = ?'''
-            self.c.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], course, assignment_basics["id"]])
+            self.c.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], datetime.now(), course, assignment_basics["id"]])
         else:
-            sql = '''INSERT INTO assignments (course_id, assignment_id, title, visible, introduction)
-                     VALUES (?, ?, ?, ?, ?)'''
-            self.c.execute(sql, [course, assignment_basics["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"]])
+            sql = '''INSERT INTO assignments (course_id, assignment_id, title, visible, introduction, date_created)
+                     VALUES (?, ?, ?, ?, ?, ?)'''
+            self.c.execute(sql, [course, assignment_basics["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], datetime.now()])
 
     def save_problem(self, course, assignment, problem_basics, problem_details):
         if problem_basics["exists"]:
@@ -478,19 +560,22 @@ class Content:
                      SET course_id = ?, assignment_id = ?, title = ?, visible = ?,
                          answer_code = ?, answer_description = ?, credit = ?, data_url = ?, data_file_name = ?,
                          data_contents = ?, back_end = ?, expected_output = ?, instructions = ?,
-                         output_type = ?, show_answer = ?, show_expected = ?, show_test_code = ?, test_code = ?
+                         output_type = ?, show_answer = ?, show_expected = ?, show_test_code = ?, test_code = ?, date_updated = ?
                      WHERE problem_id = ?'''
-            self.c.execute(sql, [course, assignment, problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_basics["id"]])
+            self.c.execute(sql, [course, assignment, problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], datetime.now(), problem_basics["id"]])
         else:
-            sql = '''INSERT INTO problems (course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_url, data_file_name, data_contents, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-            self.c.execute(sql, [course, assignment, problem_basics["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"]])
+            sql = '''INSERT INTO problems (course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, credit, data_url, data_file_name, data_contents, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            self.c.execute(sql, [course, assignment, problem_basics["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], datetime.now()])
+        
+        self.print_rows("problems")
 
-    def save_submission(self, course, assignment, problem, user, code, code_output, passed, date, error_occurred):
+    def save_submission(self, course, assignment, problem, user, code, code_output, passed, error_occurred):
         submission_id = self.get_next_submission_id(course, assignment, problem, user)
         sql = ''' INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        self.c.execute(sql, [course, assignment, problem, user, submission_id, code, code_output, passed, date, error_occurred])
+        self.c.execute(sql, [course, assignment, problem, user, submission_id, code, code_output, passed, datetime.now(), error_occurred])
+
         return submission_id
 
     def update_user(self, old_id, new_id):

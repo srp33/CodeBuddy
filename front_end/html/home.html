@@ -22,6 +22,10 @@
   <p>No courses have been created yet.</p>
 {% end %}
 
+{% if role == "administrator" or role == "instructor" %}
+  <a href="/student_submissions">View students' submissions</a>
+{% end %}
+
 <p>
     <a href="/edit_course/">Create course</a> |
     <a href="/import_course">Import course</a> |

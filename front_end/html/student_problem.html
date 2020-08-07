@@ -1,7 +1,7 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if problem_basics["exists"] %}
-            <h2>{{ problem_basics["title"] }}</h2>
+            <h2>{{ student_id }}'s submissions for "{{ problem_basics["title"] }}"</h2>
 
             <p>{{ problem_details["instructions"] }}</p>
 
@@ -15,57 +15,45 @@
                 <pre id="data_panel" hidden>{{ problem_details["data_contents"] }}</pre>
             {% end %}
 
-            {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
-              <h4>Test code (to be executed after your code):</h4>
+            <h2>Answer code:</h2>
+
+            <pre>{{ problem_details["answer_code"]}}</pre>
+    
+            {% if len(problem_details["answer_description"]) > 0 %}
+                <h4>Instructor's comments</h4>
+                <p>{{ problem_details["answer_description"] }}</p>
+            {% end %}
+
+            {% if len(problem_details["test_code"]) > 0 %}
+              <h4>Test code (to be executed after the code):</h4>
 
               <pre>{{ problem_details["test_code"] }}</pre>
             {% end %}
 
+            <div id="submissions"></div>
+
             <p>
                 <div>
-                    <h2 id="your_code_header" style="display: inline">Your code:</h2>
-                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Please write {{ back_end_description }} to address the instructions provided above.">
-                      <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
-                    </label>
+                    <h2 id="your_code_header" style="display: inline">Student's code:</h2>
                 </div>
             </p>
 
             <p>
                 <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
-                <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-                  <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
-                </label>
-                <label class="checkbox is-pulled-right">
-                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
-                </label>
             </p>
 
-            <div class="field is-grouped">
-              <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()'>Submit</button></p>
-              <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
-              <div id="revert_div"></div>
-              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run Code'. If you have made at least one submission, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.">
-                <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
-              </p>
-            </div>
+
 
             <p><div id="result"></div></p>
 
-            {% if problem_details["show_expected"] %}
               <div>
                 <h2 style="display: inline">Expected output:</h2>
-                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your code with the expected output to find and fix errors in your code.">
-                  <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
-                </label>
               </div>
                 {% if problem_details["output_type"] == "txt" %}
                   <p><pre>{{ problem_details["expected_output"] }}</pre></p>
                 {% else %}
                   <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
                 {% end %}
-            {% else %}
-              <p><em>This problem is configured so that the expected output is not shown.</em></p>
-            {% end %}
 
             <p><span id="code_output"></span></p>
             <p><span id="diff_output"></span></p>
@@ -73,8 +61,6 @@
             {% if len(problem_details["credit"]) > 0 %}
                 <p><em>{{ problem_details["credit"] }}</em></p>
             {% end %}  
-
-            <div id="submissions"></div>
 
             <div>
               <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
@@ -120,17 +106,14 @@
             }
 
             function check_code(json_data) {
-              var code_output = "<h2>Your output:</h2>\n\n";
+              var code_output = "<h2>Student output:</h2>\n\n";
               var diff_output = "";
               var result = "";
 
               code_output += build_code_output(json_data.code_output, json_data.error_occurred);
 
               if (json_data.passed) {
-                  result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
-                  {% if problem_details["show_answer"] %}
-                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p>"; 
-                  {% end %}
+                  result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Student's code produced the expected output.</strong></p>\n\n";
                   {% if "next_problem" in globals() and next_problem %}
                       result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["next_problem"] }}'>Next Problem</a></strong></p>\n\n";
                   {% end %}
@@ -138,15 +121,15 @@
                   result += "</div>\n\n"
               }
               else {
-                  result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
+                  result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Did not pass.</strong></p>\n<p>Student output does not match the expected output.</div>\n\n";
 
                   {% if problem_details["show_expected"] and len(problem_details["expected_output"]) > 0 %}
                       if (!json_data.error_occurred) {
-                          diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
+                          diff_output += "<h2>Difference between expected output and student output:</h2>\n\n";
 
                           {% if problem_details["output_type"] == "txt" %}
                               if (json_data.diff_output.length > 0)
-                                  diff_output += "<p><pre>" + json_data.diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                  diff_output += "<p><pre>" + json_data.diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that student output had an extra character.<br />A <code>-</code> in brackets indicates that student output was missing the specified character.</em></p>";
                           {% else %}
                               if (json_data.diff_output.length > 0)
                                   diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
@@ -158,64 +141,6 @@
               document.getElementById("code_output").innerHTML = code_output;
               document.getElementById("diff_output").innerHTML = diff_output;
               document.getElementById("result").innerHTML = result;
-            }
-
-            function run_code() {
-                user_code = editor.getValue();
-                if (user_code.trim() == "")
-                    return false;
-
-                result_div = document.getElementById("result");
-                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
-                result_div.scrollIntoView();
-                document.getElementById("code_output").innerHTML = "";
-                document.getElementById("diff_output").innerHTML = "";
-
-                post_data = { "user_code": user_code };
-
-                $.post("/run_code/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
-                    post_data,
-                    function(data, status) {
-                        var json_data = JSON.parse(data);
-                        var code_output = "<h2>Your output:</h2>\n\n";
-                        var result = "";
-
-                        code_output += build_code_output(json_data.code_output, json_data.error_occurred);
-                        document.getElementById("code_output").innerHTML = code_output;
-                        document.getElementById("result").innerHTML = result;
-                    })
-
-                editor.focus();
-                return false;
-            }
-
-            function submit() {
-                user_code = editor.getValue();
-
-                if (user_code.trim() == "")
-                    return false;
-
-                result_div = document.getElementById("result");
-                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
-                result_div.scrollIntoView();
-                document.getElementById("code_output").innerHTML = "";
-                document.getElementById("diff_output").innerHTML = "";
-
-                post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
-
-                $.post("/submit/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
-                    post_data,
-                    function(data, status) {
-                        json_data = JSON.parse(data);
-                        check_code(json_data);
-
-                        show_past_submissions();
-                        if (json_data.submission_id != "")
-                            last_submission_id = json_data.submission_id;
-                    });
-
-                editor.focus();
-                return false;
             }
 
             function get_submission(submission_id, scroll) {
@@ -244,25 +169,6 @@
                 return false;
             }
 
-            function update_auto_complete() {
-                ac_box = document.getElementById("auto_complete");
-
-                if (ac_box.checked) {
-                    editor.setOptions({
-                    enableBasicAutocompletion: false,
-                    enableSnippets: true,
-                    enableLiveAutocompletion: true
-                    });
-                }
-                else {
-                    editor.setOptions({
-                    enableBasicAutocompletion: false,
-                    enableSnippets: false,
-                    enableLiveAutocompletion: false
-                    });
-                }
-            }
-
             function show_past_submissions() {
                 submissions_div = document.getElementById("submissions");
 
@@ -273,7 +179,7 @@
                         var revert_html = "";
 
                         if (json_data.length > 0) {
-                            submission_html += "<h2>Past submissions:</h2>\n";
+                            submission_html += "<h2>Student submissions:</h2>\n";
                             submission_html += "<div class='buttons'>\n";
 
                             var i;
@@ -296,7 +202,6 @@
                         }
 
                         submissions_div.innerHTML = submission_html;
-                        revert_div.innerHTML = revert_html;
                     });
             }
             </script>
@@ -315,11 +220,11 @@
             });
             editor.focus();
             editor.getSession().setMode("{{ code_completion_path }}");
-            update_auto_complete();
 
             show_past_submissions();
             last_submission_id = {{ num_submissions }};
             </script>
+
         {% else %}
           <p>This problem does not exist.</p>
         {% end %}
