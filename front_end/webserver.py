@@ -39,8 +39,10 @@ def make_app():
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
-        url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
+        url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
+        url(r"\/student_submissions", StudentSubmissionsHandler, name="student_submissions"),
+        url(r"\/student_problem\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", StudentProblemHandler, name="student_problem"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
@@ -67,7 +69,7 @@ class HomeHandler(RequestHandler):
 
     def get(self):
         try:
-            self.render("home.html", courses=content.get_courses(show_hidden(self)), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            self.render("home.html", courses=content.get_courses(show_hidden(self)), user_id=user_id_var.get(), role=content.get_role(user_id_var.get()), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -473,7 +475,7 @@ class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, problem):
         user = self.get_current_user()
         code = self.get_body_argument("user_code").replace("\r", "")
-        date = self.get_body_argument("date")
+        #date = self.get_body_argument("date")
         #date = re.sub(r"(\d*\/\d*)\/\d{4}(, \d*:\d*):\d*( .M)", r"\1\2\3", date) # To make date shorter, optional
 
         problem_basics = content.get_problem_basics(course, assignment, problem)
@@ -494,7 +496,7 @@ class SubmitHandler(BaseUserHandler):
             out_dict["error_occurred"] = error_occurred
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
-            out_dict["submission_id"] = content.save_submission(course, assignment, problem, user, code, code_output, passed, date, error_occurred)
+            out_dict["submission_id"] = content.save_submission(course, assignment, problem, user, code, code_output, passed, error_occurred)
         except ConnectionError as inst:
             out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except Exception as inst:
@@ -527,10 +529,10 @@ class GetSubmissionHandler(BaseUserHandler):
         self.write(json.dumps(submission_info))
 
 class GetSubmissionsHandler(BaseUserHandler):
-    def get(self, course, assignment, problem):
+    def get(self, course, assignment, problem, user_id):
         try:
-            user = self.get_current_user()
-            submissions = content.get_submissions_basic(course, assignment, problem, user)
+            #user = self.get_current_user()
+            submissions = content.get_submissions_basic(course, assignment, problem, user_id)
         except Exception as inst:
             submissions = []
 
@@ -567,6 +569,25 @@ class ViewAnswerHandler(BaseUserHandler):
         try:
             user = self.get_current_user()
             self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem), last_submission=content.get_last_submission(course, assignment, problem, user), format_content=True)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class StudentSubmissionsHandler(BaseUserHandler): #(This is just a filler html page to be able to access the instructor view of a student's problem, Emme's page will replace it)
+    def get(self):
+        try:
+            student_id = "ajohns58"
+            self.render("student_submissions.html", student_id="ajohns58", courses=content.get_courses(), course_dict=content.course_ids_to_titles(), assignment_dict=content.assignment_ids_to_titles(), problem_dict=content.problem_ids_to_titles(), student_courses=content.get_student_courses(student_id), student_assignments=content.get_student_assignments(student_id), student_problems=content.get_student_problems(student_id), num_submissions=content.get_user_total_submissions(student_id))
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class StudentProblemHandler(BaseUserHandler):
+    def get(self, course, assignment, problem, student_id):
+        try:
+            show = show_hidden(self)
+            problems = content.get_problems(course, assignment, show)
+            problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
+            back_end = settings_dict["back_ends"][problem_details["back_end"]]
+            self.render("student_problem.html", user_id="ajohns58", student_id="ajohns58", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, student_id), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
