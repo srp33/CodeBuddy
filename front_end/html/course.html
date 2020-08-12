@@ -16,16 +16,15 @@
   {% end %}
 
   <p>
-    {% if user_id in administrators["administrators"] %}
-      <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a>
-      | <a href="/edit_permissions/{{ course_basics["id"] }}" id="per">Edit Course Permissions</a>
+    {% if role == "administrator" or role == "instructor" %}
+      <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a> |
+    {% end %}
+    <a href="/edit_assignment/{{ course_basics["id"] }}/">Create assignment</a>
+    {% if role == "administrator" %}
+      | <a href="/add_instructor/{{ course_basics["id"] }}">Add Instructor</a>
     {% else %}
-      {% if course_basics["exists"] %}
-        {% if instructor_dict["role"] == "instructor" %}
-          <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a>
-          | <a href="/edit_assignment/{{ course_basics["id"] }}/">Create assignment</a>
-          | <a href="/edit_permissions/{{ course_basics["id"] }}" id="per">Edit Course Permissions</a>
-        {% end %}
+      {% if role == "instructor" %}
+          | <a href="/add_assistant/{{ course_basics["id"] }}">Add Instructor Assistant</a>
       {% end %}
     {% end %}
   </p>

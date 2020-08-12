@@ -1,0 +1,44 @@
+{% if course_basics["exists"] %}
+  <h2>{{ assignment_basics["title"] }}</h2>
+
+  {% if assignment_basics["exists"] %}
+    <p>{{ assignment_details["introduction"] }}</p>
+
+    <div class="columns">
+      <div class="column is-half">
+
+        {% if len(problems) > 0 %}
+          <h4>Problems</h4></br>
+
+          {% for problem in problems %}
+            <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a>
+              <label class="is-pulled-right">
+                <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}">
+                  <img src="/static/trashcan.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
+                </a> 
+              </label>
+              <label class="is-pulled-right">
+                <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}">
+                  <img src="/static/editicon.png" alt="Edit problem" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
+                </a>
+              </label>
+              <!--<label class="is-pulled-right">
+                PUBLISH/UNPUBLISH
+              </label>-->
+            <hr style="border: 2px solid#F6F5F5;" />
+          {% end %}
+        {% end %}
+
+      </div>
+    </div>
+
+    <p>
+      <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit assignment</a> |
+      <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">New problem</a>
+    </p>
+  {% else %}
+    <p>This assignment does not exist.</p>
+  {% end %}
+{% else %}
+  <p>This course does not exist.</p>
+{% end %}

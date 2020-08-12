@@ -1,0 +1,25 @@
+<h4>Instructor Assistants for this course:</h4>
+{% if assistants %}
+    {% for user in assistants %}
+        <li>{{ user }}</li>
+    {% end %}
+{% end %}
+<br />
+
+<form method="post" action="/add_assistant/{{ course_basics["id"] }}" name="form1">
+
+<p><input class="button is-primary" value="Add Assistant" onClick="unhideReg()" /></p>
+<input type="input" placeholder="Enter user_id" name="new_assistant" id="new_assistant" style="display:none" /><br />
+<input class="button is-info" type="submit" name="button_1" value="Submit" id="submit_id" style="display:none" />
+{% if attempt %}
+    <p>{{ status_message }}</p>
+{% end %}
+
+</form>
+
+<script>
+    function unhideReg() {
+        document.getElementById('new_assistant').style.display = "block";
+        document.getElementById('submit_id').style.display = "block";
+    }
+</script>

@@ -16,22 +16,6 @@ import html
 def get_settings():
     return load_yaml_dict(read_file("/Settings.yaml"))
 
-def is_administrator():
-    admins = get_administrators()
-    instructors = get_instructors()
-    user_id = instructors["user_id"]
-    if user_id in admins["administrators"]:
-        return True
-    else:
-        return False
-
-def is_instructor():
-    instructors = get_instructors()
-    if instructors["role"] == "instructor":
-        return True
-    else:
-        return False
-
 def get_root_dir_path():
     return "/course"
 
@@ -65,6 +49,7 @@ class Content:
         create_permissions_table = """ CREATE TABLE IF NOT EXISTS permissions (
                                             user_id text NOT NULL,
                                             role text NOT NULL,
+                                            course_id text,
                                             FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                             PRIMARY KEY (user_id)
                                         ); """
@@ -163,13 +148,43 @@ class Content:
         row = self.c.fetchone()
         return row["role"]
 
+    def get_users_from_role(self, role, course_id):
+        users = []
+        if role == "administrator":
+            sql = 'SELECT user_id FROM permissions WHERE role=?'
+            rows = self.c.execute(sql, (role,))
+            for row in rows:
+                users.append(row["user_id"])
+        else:
+            sql = 'SELECT user_id FROM permissions WHERE role=? AND course_id=?'
+            rows = self.c.execute(sql, (role, course_id,))
+            for row in rows:
+                users.append(row["user_id"])
+        return users
+
     def add_user(self, user_id):
         sql = 'INSERT INTO users (user_id) VALUES (?)'
         self.c.execute(sql, (user_id,))
 
-    def add_row_permissions(self, user_id, role):
-        sql = 'INSERT INTO permissions (user_id, role) VALUES (?, ?)'
-        self.c.execute(sql, (user_id, role,))
+    def add_row_permissions(self, user_id, role, course_id):
+        #check if user exists
+        check = 'SELECT * FROM users WHERE user_id=?'
+        self.c.execute(check, (user_id,))
+        row = self.c.fetchone()
+        if row is not None:
+            check2 = 'SELECT * FROM permissions WHERE user_id=?'
+            self.c.execute(check2, (user_id,))
+            row2 = self.c.fetchone()
+            if row2 is None:
+                sql = 'INSERT INTO permissions (user_id, role, course_id) VALUES (?, ?, ?)'
+                self.c.execute(sql, (user_id, role, course_id,))
+                return "Permissions succesfully added"
+            else:
+                sql = 'UPDATE permissions SET role=?, course_id=? WHERE user_id=?'
+                self.c.execute(sql, (role, course_id, user_id,))
+                return "Permissions successfully updated"
+        else:
+            return "User does not exist"
 
     def print_tables(self):
         sql = "SELECT name FROM sqlite_master WHERE type='table'"

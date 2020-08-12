@@ -76,9 +76,12 @@
 
             <div id="submissions"></div>
 
-            <div>
-              <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
-            </div><br /><br /><br />
+            {% if role == "administrator" or role == "instructor" or role == "assistant" %}
+                <div>
+                <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
+                </div>
+            {% end %}
+            <br /><br /><br />
 
             <script>
             {% if len(problem_details["data_url"]) > 0 %}
