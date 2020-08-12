@@ -737,8 +737,11 @@ class AddAssistantHandler(BaseUserHandler):
             new_assistant = self.get_body_argument("new_assistant")
             message = content.add_row_permissions(new_assistant, "assistant", course_basics["id"])
             self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), status_message = message, attempt = True)
- 
-class StudentSubmissionsHandler(BaseUserHandler): #(This is just a filler html page to be able to access the instructor view of a student's problem, Emme's page will replace it)
+        except Exception as inst:
+            render_error(self, traceback.format_exc()) 
+
+class StudentSubmissionsHandler(BaseUserHandler):
+#(This is just a filler html page to be able to access the instructor view of a student's problem, Emme's page will replace it)
     def get(self):
         try:
             student_id = "ajohns58"
