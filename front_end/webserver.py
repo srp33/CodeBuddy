@@ -687,7 +687,6 @@ class AddAdminHandler(BaseUserHandler):
             new_admin = self.get_body_argument("new_admin")
             message = content.add_row_permissions(new_admin, "administrator", None)
             self.render("add_admin.html", admins=content.get_users_from_role("administrator", None), status_message = message, attempt = True)
- 
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -712,7 +711,6 @@ class AddInstructorHandler(BaseUserHandler):
             new_instructor = self.get_body_argument("new_inst")
             message = content.add_row_permissions(new_instructor, "instructor", course_basics["id"])
             self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role("instructor", course_basics["id"]), status_message = message, attempt = True)
- 
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
