@@ -1,4 +1,7 @@
-db_location: /submissions/CodeBuddy.db
+db_location: /database/CodeBuddy.db
+initial_administrators:
+    - piccolo
+    - e171505
 back_ends:
     r:
         description: R code
