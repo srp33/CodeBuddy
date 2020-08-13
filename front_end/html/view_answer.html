@@ -1,7 +1,10 @@
 {% if problem_basics["exists"] %}
     {% if last_submission["passed"] %}
-        <h4>Answer code:</h4>
+        <h4>Your code:</h4>
+        <pre>{{ last_submission["code"] }}</pre>
+        <br /><br />
 
+        <h4>Answer code:</h4>
         <pre>{{ problem_details["answer_code"]}}</pre>
 
         {% if len(problem_details["answer_description"]) > 0 %}
