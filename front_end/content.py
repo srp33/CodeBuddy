@@ -143,15 +143,12 @@ class Content:
             return "student"
 
     def get_users_from_role(self, role, course_id):
-        users = []
         sql = '''SELECT user_id
                  FROM permissions
                  WHERE role = ?
                  AND (course_id = ? OR course_id IS NULL)'''
         rows = self.c.execute(sql, (role, course_id,))
-        for row in rows:
-            users.append(row["user_id"])
-        return users
+        return [row["user_id"] for row in rows]
 
     def add_user(self, user_id):
         sql = 'INSERT INTO users (user_id) VALUES (?)'
