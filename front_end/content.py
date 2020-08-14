@@ -603,11 +603,7 @@ class Content:
         for row in nested_list:
             l_dict[row[1][key]] = row
 
-        sorted_list = []
-        for key in sort_nicely(l_dict):
-            sorted_list.append(l_dict[key])
-
-        return sorted_list
+        return [l_dict[key] for key in sort_nicely(l_dict)]
 
     def has_duplicate_title(self, entries, this_entry, proposed_title):
         for entry in entries:
