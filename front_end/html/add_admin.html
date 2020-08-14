@@ -3,6 +3,8 @@
     {% for user in admins %}
         <li>{{ user }}</li>
     {% end %}
+{% else %}
+    <p>There are no existing administrators</p>
 {% end %}
 <br />
 

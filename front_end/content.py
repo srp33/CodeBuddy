@@ -39,6 +39,7 @@ class Content:
         create_permissions_table = '''CREATE TABLE IF NOT EXISTS permissions (
                                         user_id text NOT NULL,
                                         role text NOT NULL,
+                                        course_id text,
                                         FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         PRIMARY KEY (user_id)
                                       );'''
@@ -120,8 +121,9 @@ class Content:
 
             if len(self.get_courses()) == 0:
                 for user_id in self.__settings_dict["initial_administrators"]:
-                    self.add_user(user_id)
-                    self.add_permissions(user_id, "administrator")
+                    if not self.check_user_exists(user_id):
+                        self.add_user(user_id)
+                    self.add_row_permissions(user_id, "administrator", None)
         else:
             print("Error! Cannot create the database connection.")
 

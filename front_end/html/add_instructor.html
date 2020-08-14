@@ -3,6 +3,8 @@
     {% for user in instructors %}
         <li>{{ user }}</li>
     {% end %}
+{% else %}
+    <p>No instructors have been added for this course</p>
 {% end %}
 <br />
 
