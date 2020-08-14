@@ -176,11 +176,9 @@ class Content:
             return False
 
     def get_course_ids(self):
-        course_ids = []
         sql = 'SELECT course_id FROM courses'
         self.c.execute(sql)
-        course_ids = [course[0] for course in self.c.fetchall()]
-        return course_ids
+        return [course[0] for course in self.c.fetchall()]
 
     def get_assignment_ids(self, course_id):        
         sql = 'SELECT assignment_id FROM assignments WHERE course_id = ?'
@@ -188,9 +186,7 @@ class Content:
         return [assignment[0] for assignment in self.c.fetchall()]
 
     def get_problem_ids(self, course_id, assignment_id):
-        sql = '''SELECT problem_id
-                 FROM problems
-                 WHERE assignment_id = ?'''
+        sql = 'SELECT problem_id FROM problems WHERE assignment_id = ?'
         self.c.execute(sql, (str(assignment_id),))
         return [problem[0] for problem in self.c.fetchall()]
 
