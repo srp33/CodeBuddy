@@ -1,0 +1,39 @@
+<h4>CodeBuddy administrators:</h4>
+{% if admins %}
+    {% for user in admins %}
+        <li>{{ user }}</li>
+    {% end %}
+{% else %}
+    <p>There are no existing administrators</p>
+{% end %}
+<br />
+
+<form method="post" action="/add_admin" name="form1">
+
+<p><input class="button is-primary" value="Add administrator" onClick="unhideReg()" /></p>
+<input type="input" placeholder="Enter user id" name="new_admin" id="new_admin" style="display:none" /><br />
+<input class="button is-info" type="submit" name="button_1" value="Submit" id="submit_id" style="display:none" />
+{% if attempt %}
+    {% if added %}
+        <article class="message is-success">
+            <div class="message-body">
+                Role successfully updated
+            </div>
+        </article>
+    {% else %}
+        <article class="message is-warning">
+            <div class="message-body">
+                User not found
+            </div>
+        </article>
+    {% end %}
+{% end %}
+
+</form>
+
+<script>
+    function unhideReg() {
+        document.getElementById('new_admin').style.display = "block";
+        document.getElementById('submit_id').style.display = "block";
+    }
+</script>
