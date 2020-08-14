@@ -1,4 +1,4 @@
-<h4>Instructor Assistants for this course:</h4>
+<h4>Instructor assistants for this course:</h4>
 {% if assistants %}
     {% for user in assistants %}
         <li>{{ user }}</li>
@@ -8,11 +8,23 @@
 
 <form method="post" action="/add_assistant/{{ course_basics["id"] }}" name="form1">
 
-<p><input class="button is-primary" value="Add Assistant" onClick="unhideReg()" /></p>
-<input type="input" placeholder="Enter user_id" name="new_assistant" id="new_assistant" style="display:none" /><br />
+<p><input class="button is-primary" value="Add assistant" onClick="unhideReg()" /></p>
+<input type="input" placeholder="Enter user id" name="new_assistant" id="new_assistant" style="display:none" /><br />
 <input class="button is-info" type="submit" name="button_1" value="Submit" id="submit_id" style="display:none" />
 {% if attempt %}
-    <p>{{ status_message }}</p>
+    {% if added %}
+        <article class="message is-success">
+            <div class="message-body">
+                Role successfully updated
+            </div>
+        </article>
+    {% else %}
+        <article class="message is-warning">
+            <div class="message-body">
+                User not found
+            </div>
+        </article>
+    {% end %}
 {% end %}
 
 </form>

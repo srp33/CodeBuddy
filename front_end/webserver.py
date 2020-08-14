@@ -97,7 +97,7 @@ class CourseHandler(BaseUserHandler):
         try:
             user_id = self.get_current_user()
             show = show_hidden(self)
-            self.render("course.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_logged_in=user_logged_in_var.get(), role=content.get_role(user_id))
+            self.render("course.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=user_id, user_logged_in=user_logged_in_var.get(), role=content.get_role(user_id))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -393,7 +393,7 @@ class ProblemHandler(BaseUserHandler):
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
 
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), role = content.get_role(user))
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), role=content.get_role(user))
 
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -685,8 +685,8 @@ class AddAdminHandler(BaseUserHandler):
     def post(self):
         try:
             new_admin = self.get_body_argument("new_admin")
-            message = content.add_row_permissions(new_admin, "administrator", None)
-            self.render("add_admin.html", admins=content.get_users_from_role("administrator", None), status_message = message, attempt = True)
+            added = content.add_row_permissions(new_admin, "administrator", None)
+            self.render("add_admin.html", admins=content.get_users_from_role("administrator", None), added=added, attempt = True)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -709,8 +709,8 @@ class AddInstructorHandler(BaseUserHandler):
         try:
             course_basics = content.get_course_basics(course)
             new_instructor = self.get_body_argument("new_inst")
-            message = content.add_row_permissions(new_instructor, "instructor", course_basics["id"])
-            self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role("instructor", course_basics["id"]), status_message = message, attempt = True)
+            added = content.add_row_permissions(new_instructor, "instructor", course_basics["id"])
+            self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role("instructor", course_basics["id"]), added=added, attempt = True)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -733,8 +733,8 @@ class AddAssistantHandler(BaseUserHandler):
         try:
             course_basics = content.get_course_basics(course)
             new_assistant = self.get_body_argument("new_assistant")
-            message = content.add_row_permissions(new_assistant, "assistant", course_basics["id"])
-            self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), status_message = message, attempt = True)
+            added = content.add_row_permissions(new_assistant, "assistant", course_basics["id"])
+            self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), added=added, attempt = True)
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
 

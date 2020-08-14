@@ -138,7 +138,7 @@ class Content:
             print("Error! Cannot create the database connection.")
 
     def check_user_exists(self, user_id):
-        sql = 'SELECT user_id FROM users WHERE user_id=?'
+        sql = 'SELECT user_id FROM users WHERE user_id = ?'
         self.c.execute(sql, (user_id,))
         exists = self.c.fetchone()
         if exists is None:
@@ -146,7 +146,7 @@ class Content:
         return True
 
     def check_role_exists(self, user_id):
-        sql = 'SELECT role FROM permissions WHERE user_id=?'
+        sql = 'SELECT role FROM permissions WHERE user_id = ?'
         self.c.execute(sql, (user_id,))
         exists = self.c.fetchone()
         if exists is None:
@@ -154,23 +154,20 @@ class Content:
         return True
 
     def get_role(self, user_id):
-        sql = 'SELECT role FROM permissions WHERE user_id=?'
+        sql = 'SELECT role FROM permissions WHERE user_id = ?'
         self.c.execute(sql, (str(user_id),))
         row = self.c.fetchone()
         return row["role"]
 
     def get_users_from_role(self, role, course_id):
         users = []
-        if role == "administrator":
-            sql = 'SELECT user_id FROM permissions WHERE role=?'
-            rows = self.c.execute(sql, (role,))
-            for row in rows:
-                users.append(row["user_id"])
-        else:
-            sql = 'SELECT user_id FROM permissions WHERE role=? AND course_id=?'
-            rows = self.c.execute(sql, (role, course_id,))
-            for row in rows:
-                users.append(row["user_id"])
+        sql = '''SELECT user_id
+                 FROM permissions
+                 WHERE role = ?
+                 AND (course_id = ? OR course_id IS NULL)'''
+        rows = self.c.execute(sql, (role, course_id,))
+        for row in rows:
+            users.append(row["user_id"])
         return users
 
     def add_user(self, user_id):
@@ -179,26 +176,26 @@ class Content:
 
     def add_row_permissions(self, user_id, role, course_id):
         #check if user exists
-        check = 'SELECT * FROM users WHERE user_id=?'
+        check = 'SELECT * FROM users WHERE user_id = ?'
         self.c.execute(check, (user_id,))
         row = self.c.fetchone()
         if row is not None:
-            check2 = 'SELECT * FROM permissions WHERE user_id=?'
+            check2 = 'SELECT * FROM permissions WHERE user_id = ?'
             self.c.execute(check2, (user_id,))
             row2 = self.c.fetchone()
             if row2 is None:
                 sql = 'INSERT INTO permissions (user_id, role, course_id) VALUES (?, ?, ?)'
                 self.c.execute(sql, (user_id, role, course_id,))
-                return "Permissions succesfully added"
+                return True
             else:
-                sql = 'UPDATE permissions SET role=?, course_id=? WHERE user_id=?'
+                sql = 'UPDATE permissions SET role = ?, course_id = ? WHERE user_id = ?'
                 self.c.execute(sql, (role, course_id, user_id,))
-                return "Permissions successfully updated"
+                return True
         else:
-            return "User does not exist"
+            return False
 
     def print_tables(self):
-        sql = "SELECT name FROM sqlite_master WHERE type='table'"
+        sql = "SELECT name FROM sqlite_master WHERE type = 'table'"
         tables = self.c.execute(sql)
         for table in tables:
             print(table[0])
@@ -235,7 +232,7 @@ class Content:
         assignment_ids = []
         sql = '''SELECT assignment_id
                  FROM assignments
-                 WHERE course_id=?'''
+                 WHERE course_id = ?'''
         self.c.execute(sql, (str(course_id),))
         assignment_ids = [assignment[0] for assignment in self.c.fetchall()]
         return assignment_ids
@@ -244,7 +241,7 @@ class Content:
         problem_ids = []
         sql = '''SELECT problem_id
                  FROM problems
-                 WHERE assignment_id=?'''
+                 WHERE assignment_id = ?'''
         self.c.execute(sql, (str(assignment_id),))
         problem_ids = [problem[0] for problem in self.c.fetchall()]
         return problem_ids
@@ -261,13 +258,13 @@ class Content:
         return self.sort_nested_list(courses)
 
     def get_course_title_from_id(self, course_id, show_hidden=True):
-        sql = 'SELECT title FROM courses WHERE course_id=?'
+        sql = 'SELECT title FROM courses WHERE course_id = ?'
         self.c.execute(sql, (str(course_id),))
         row = self.c.fetchone()
         return row["title"]
 
     def get_assignment_title_from_id(self, assignment_id, show_hidden=True):
-        sql = 'SELECT title FROM assignments WHERE assignment_id=?'
+        sql = 'SELECT title FROM assignments WHERE assignment_id = ?'
         self.c.execute(sql, (str(assignment_id),))
         row = self.c.fetchone()
         return row["title"]
@@ -311,16 +308,16 @@ class Content:
             problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"]}
             problem_statuses.append([row["problem_id"], problem_dict])
 
-        return self.sort_nested_list(problem_statuses)
+        return problem_statuses
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []
         sql = '''SELECT submission_id, date, passed
                  FROM submissions
-                 WHERE course_id=?
-                  AND assignment_id=?
-                  AND problem_id=?
-                  AND user_id=?'''
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?
+                  AND user_id = ?'''
         self.c.execute(sql, (str(course_id), str(assignment_id), str(problem_id), str(user_id),))
         for submission in self.c.fetchall():
             submissions.append([submission["submission_id"], submission["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), submission["passed"]])
@@ -336,7 +333,7 @@ class Content:
 
         sql = '''SELECT course_id, title, visible
                  FROM courses
-                 WHERE course_id=?'''
+                 WHERE course_id = ?'''
         self.c.execute(sql, (str(course_id),))
         row = self.c.fetchone()
         if row is None:
@@ -396,13 +393,13 @@ class Content:
     def get_num_submissions(self, course, assignment, problem, user):
         sql = '''SELECT COUNT(*)
                  FROM submissions
-                 WHERE problem_id=?
-                  AND user_id=?'''
+                 WHERE problem_id = ?
+                  AND user_id = ?'''
         num_submissions = self.c.execute(sql, (problem, user,)).fetchone()[0]
         return num_submissions
     
     def get_user_total_submissions(self, user):
-        sql = 'SELECT COUNT(*) FROM submissions WHERE user_id=?'
+        sql = 'SELECT COUNT(*) FROM submissions WHERE user_id = ?'
         num_submissions = self.c.execute(sql, (user,)).fetchone()[0]
         return num_submissions
 
@@ -413,11 +410,11 @@ class Content:
         last_submission_id = self.get_num_submissions(course, assignment, problem, user)
         sql = '''SELECT code, code_output, passed, date, error_occurred
                  FROM submissions
-                 WHERE course_id=?
-                  AND assignment_id=?
-                  AND problem_id=?
-                  AND user_id=?
-                  AND submission_id=?'''
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?
+                  AND user_id = ?
+                  AND submission_id = ?'''
         self.c.execute(sql, (course, assignment, problem, user, last_submission_id,))
         row = self.c.fetchone()
 
@@ -428,11 +425,11 @@ class Content:
     def get_submission_info(self, course, assignment, problem, user, submission):
         sql = '''SELECT code, code_output, passed, date, error_occurred
                  FROM submissions
-                 WHERE course_id=?
-                  AND assignment_id=?
-                  AND problem_id=?
-                  AND user_id=?
-                  AND submission_id=?'''
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?
+                  AND user_id = ?
+                  AND submission_id = ?'''
         self.c.execute(sql, (course, assignment, problem, user, submission,))
         row = self.c.fetchone()
 
@@ -529,7 +526,10 @@ class Content:
 
     def get_student_courses(self, student_id):
         courses = []
-        sql = 'SELECT courses.course_id, courses.title, submissions.user_id FROM courses INNER JOIN submissions ON courses.course_id=submissions.course_id WHERE submissions.user_id=?' 
+        sql = '''SELECT courses.course_id, courses.title, submissions.user_id
+                 FROM courses
+                 INNER JOIN submissions ON courses.course_id = submissions.course_id
+                 WHERE submissions.user_id = ?'''
         self.c.execute(sql, (str(student_id),))
         for course in self.c.fetchall():
             courses.append([course["title"], course["course_id"]])
@@ -537,7 +537,10 @@ class Content:
 
     def get_student_assignments(self, student_id):
         assignments = []
-        sql = 'SELECT assignments.course_id, assignments.assignment_id, assignments.title FROM assignments INNER JOIN submissions ON assignments.assignment_id=submissions.assignment_id WHERE submissions.user_id=?'
+        sql = '''SELECT assignments.course_id, assignments.assignment_id, assignments.title
+                 FROM assignments
+                 INNER JOIN submissions ON assignments.assignment_id = submissions.assignment_id
+                 WHERE submissions.user_id = ?'''
         self.c.execute(sql, (str(student_id),))
         for assignment in self.c.fetchall():
             assignments.append([assignment["title"], assignment["course_id"], assignment["assignment_id"]])
@@ -545,7 +548,7 @@ class Content:
 
     def get_student_problem_status(self, problem_id, student_id):
         passed = False
-        sql = 'SELECT passed FROM submissions WHERE problem_id=? AND user_id=?'
+        sql = 'SELECT passed FROM submissions WHERE problem_id = ? AND user_id = ?'
         self.c.execute(sql, (problem_id, student_id,))
         for submission in self.c.fetchall():
             if submission["passed"]:
@@ -554,7 +557,10 @@ class Content:
 
     def get_student_problems(self, student_id):  #returns list of problems a certain student has made submissions for, also whether the student has passed the problem and number of submissions student has made
         problems = []
-        sql = 'SELECT DISTINCT problems.course_id, problems.assignment_id, problems.problem_id, problems.title FROM problems INNER JOIN submissions ON problems.problem_id=submissions.problem_id WHERE submissions.user_id=?'
+        sql = '''SELECT DISTINCT problems.course_id, problems.assignment_id, problems.problem_id, problems.title
+                 FROM problems
+                 INNER JOIN submissions ON problems.problem_id = submissions.problem_id
+                 WHERE submissions.user_id = ?'''
         self.c.execute(sql, (str(student_id),))
         for problem in self.c.fetchall():
             problems.append([problem["title"], problem["course_id"], problem["assignment_id"], problem["problem_id"]])
@@ -663,12 +669,12 @@ class Content:
         return submission_id
 
     def update_user(self, old_id, new_id):
-        sql = 'UPDATE users SET user_id=? WHERE user_id'
+        sql = 'UPDATE users SET user_id = ? WHERE user_id = ?'
         self.c.execute(sql, (new_id, old_id,))
 
-    def update_role(self, user_id, new_role):
-        sql = 'UPDATE users SET role=? WHERE user_id=?'
-        self.c.execute(sql, (new_role, user_id,))
+#    def update_role(self, user_id, new_role):
+#        sql = 'UPDATE users SET role = ? WHERE user_id = ?'
+#        self.c.execute(sql, (new_role, user_id,))
 
 #    def update_course(self, course_id, col_name, new_value):
 #        sql = 'UPDATE courses SET ' + col_name + '=? WHERE course_id=?'
@@ -683,7 +689,7 @@ class Content:
 #        self.c.execute(sql, (new_value, problem_id,))
 
     def delete_rows_with_value(self, table, col_name, value):
-        sql = 'DELETE FROM ' + table + ' WHERE ' + col_name + '=?'
+        sql = 'DELETE FROM ' + table + ' WHERE ' + col_name + ' = ?'
         self.c.execute(sql, (value,))
 
     def delete_all_rows(self, table):
