@@ -1,6 +1,9 @@
-from helper import *
 from content import *
 import contextvars
+from datetime import datetime
+from helper import *
+import html
+import io
 import json
 import logging
 import re
@@ -17,7 +20,7 @@ import urllib.request
 import uuid
 import sqlite3
 from sqlite3 import Error
-import html
+import zipfile
 
 def make_app():
     app = Application([
@@ -52,8 +55,6 @@ def make_app():
         url(r"/login(/.+)", LoginHandler, name="login"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
-
-        #url(r"/data/([^\/]+)\/([^\/]+)/([^\/]+)/(.+)", DataHandler, name="data"),
 
     return app
 
@@ -135,12 +136,9 @@ class EditCourseHandler(BaseUserHandler):
                     if re.search(r"[^\w ]", title):
                         result = "Error: The title can only contain alphanumeric characters and spaces."
                     else:
-                        course_basics["title"] = title
-                        course_basics["visible"] = visible
-                        course_details["introduction"] = introduction
-
+                        content.specify_course_basics(course_basics, title, visible)
+                        content.specify_course_details(course_details, introduction, None, datetime.datetime.now())
                         content.save_course(course_basics, course_details)
-                        course_basics["exists"] = True
 
             self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=course_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -207,36 +205,68 @@ class ImportCourseHandler(BaseUserHandler):
     def post(self):
         try:
             result = ""
-            if self.request.files["zip_file"][0]["content_type"] == 'application/zip':
+            if "zip_file" in self.request.files and self.request.files["zip_file"][0]["content_type"] == 'application/zip':
                 zip_file_name = self.request.files["zip_file"][0]["filename"]
                 zip_file_contents = self.request.files["zip_file"][0]["body"]
+                descriptor = zip_file_name.replace(".zip", "")
 
-                import io
-                import zipfile
                 zip_data = BytesIO()
                 zip_data.write(zip_file_contents)
                 zip_file = zipfile.ZipFile(zip_data)
-                version = int(zip_file.read("VERSION"))
+                version = int(zip_file.read(f"{descriptor}/VERSION"))
 
-                for file_path in zip_file.namelist():
-                    file_info = zip_file.getinfo(file_path)
+                course_list = json.loads(zip_file.read(f"{descriptor}/courses.json"))[0]
+                course_id = course_list[0]
+                course_basics = content.get_course_basics(course_id)
 
-                    # Prevent the use of absolute paths within the zip file.
-                    # Ignore directories and VERSION file.
-                    if file_path.startswith("/") or file_info.is_dir() or file_path == "VERSION":
-                        continue
+                # Check whether course already exists.
+                if course_basics["exists"]:
+                    result = f"Error: A course with this id [{course_basics['id']}] already exists, so it cannot be imported."
+                else:
+                    assignment_lists = json.loads(zip_file.read(f"{descriptor}/assignments.json"))
+                    problem_lists = json.loads(zip_file.read(f"{descriptor}/problems.json"))
 
-                    out_path = "{}/{}".format(get_root_dir_path(), file_info.filename)
+                    content.specify_course_basics(course_basics, course_list[1], bool(course_list[3]))
 
-                    if os.path.exists(out_path):
-                        result = "Error: A file or directory called {} already exists, so this import is not allowed. This course must first be deleted if you want to import.".format(out_path)
-                        break
+                    course_details = content.get_course_details(course_id)
+                    content.specify_course_details(course_details, course_list[2], convert_string_to_date(course_list[4]), convert_string_to_date(course_list[5]))
+                    content.save_course(course_basics, course_details)
 
-                    os.makedirs(os.path.dirname(out_path), exist_ok=True)
-                    with open(out_path, 'wb') as out_file:
-                        out_file.write(zip_file.read(file_path))
+                    for assignment_list in assignment_lists:
+                        assignment_basics = content.get_assignment_basics(assignment_list[0], assignment_list[1])
+                        assignment_details = content.get_assignment_details(assignment_list[0], assignment_list[1])
 
-                if not result.startswith("Error:"):
+                        content.specify_assignment_basics(assignment_basics, assignment_list[2], bool(course_list[4]))
+                        content.specify_assignment_details(assignment_details, assignment_list[3], convert_string_to_date(assignment_list[5]), convert_string_to_date(assignment_list[6]))
+
+                        content.save_assignment(assignment_basics, assignment_details)
+
+                    for problem_list in problem_lists:
+                        problem_basics = content.get_problem_basics(problem_list[0], problem_list[1], problem_list[2])
+                        problem_details = content.get_problem_details(problem_list[0], problem_list[1], problem_list[2])
+
+                        content.specify_problem_basics(problem_basics, problem_list[3], bool(problem_list[4]))
+
+                        answer_code = problem_list[5]
+                        answer_description = problem_list[6]
+                        credit = problem_list[7]
+                        data_url = problem_list[8]
+                        data_file_name = problem_list[9]
+                        data_contents = problem_list[10]
+                        back_end = problem_list[11]
+                        expected_output = problem_list[12]
+                        instructions = problem_list[13]
+                        output_type = problem_list[14]
+                        show_answer = bool(problem_list[15])
+                        show_expected = bool(problem_list[16])
+                        show_test_code = bool(problem_list[17])
+                        test_code = problem_list[18]
+                        date_created = convert_string_to_date(problem_list[19])
+                        date_updated = convert_string_to_date(problem_list[20])
+
+                        content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
+                        content.save_problem(problem_basics, problem_details)
+
                     result = "Success: The course was imported!"
             else:
                 result = "Error: The uploaded file was not recognized as a zip file."
@@ -247,34 +277,37 @@ class ImportCourseHandler(BaseUserHandler):
 
 class ExportCourseHandler(BaseUserHandler):
     def get(self, course):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator":
-            try:
-                temp_dir_path = "/tmp/{}".format(create_id())
-                zip_file_name = "{}.zip".format(content.get_course_basics(course)["title"].replace(" ", "_"))
-                zip_file_path = "{}/{}".format(temp_dir_path, zip_file_name)
+        course_basics = content.get_course_basics(course)
 
-                os.makedirs(temp_dir_path)
+        temp_dir_path = "/tmp/{}".format(create_id())
+        descriptor = f"Course_{course_basics['title'].replace(' ', '_')}"
+        zip_file_name = f"{descriptor}.zip"
+        zip_file_path = f"{temp_dir_path}/{zip_file_name}"
 
-                os.system("cp -r {} {}/".format(get_course_dir_path(course), temp_dir_path))
-                os.system("cp VERSION {}/".format(temp_dir_path))
-                os.system("cd {}; zip -r -qq {} .".format(temp_dir_path, zip_file_path))
+        try:
+            os.makedirs(temp_dir_path)
+            os.makedirs(f"{temp_dir_path}/{descriptor}")
 
-                zip_bytes = read_file(zip_file_path, "rb")
+            for table_name in ["courses", "assignments", "problems"]:
+                content.export_course(course_basics, table_name, f"{temp_dir_path}/{descriptor}/{table_name}.json")
 
-                self.set_header('Content-type', 'application/zip')
-                self.set_header('Content-Disposition', 'attachment; filename=' + zip_file_name)
-                self.write(zip_bytes)
-                self.finish()
+            os.system(f"cp VERSION {temp_dir_path}/{descriptor}/")
+            os.system(f"cd {temp_dir_path}; zip -r -qq {zip_file_path} .")
+
+            zip_bytes = read_file(zip_file_path, "rb")
+
+            self.set_header("Content-type", "application/zip")
+            self.set_header("Content-Disposition", f"attachment; filename={zip_file_name}")
+            self.write(zip_bytes)
+            self.finish()
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+        finally:
+            if os.path.exists(zip_file_path):
                 os.remove(zip_file_path)
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try: 
-                self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+
+            if os.path.exists(tmp_dir_path):
+                shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
 class AssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
@@ -325,12 +358,9 @@ class EditAssignmentHandler(BaseUserHandler):
                 if content.has_duplicate_title(content.get_assignments(course), assignment, title):
                     result = "Error: An assignment with that title already exists."
                 else:
-                    assignment_basics["title"] = title
-                    assignment_basics["visible"] = visible
-                    assignment_details["introduction"] = introduction
-
-                    content.save_assignment(course, assignment_basics, assignment_details)
-                    assignment_basics["exists"] = True
+                    content.specify_assignment_basics(assignment_basics, title, visible)
+                    content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
+                    content.save_assignment(assignment_basics, assignment_details)
 
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -458,22 +488,8 @@ class EditProblemHandler(BaseUserHandler):
                                     result = f"Error: The file at {data_url} is too large ({len(data_contents)} bytes)."
 
                         if not result.startswith("Error:"):
-                            problem_basics["title"] = title
-                            problem_basics["visible"] = visible
-
-                            problem_details["instructions"] = instructions
-                            problem_details["back_end"] = back_end
-                            problem_details["output_type"] = output_type
-                            problem_details["answer_code"] = answer_code
-                            problem_details["answer_description"] = answer_description
-                            problem_details["test_code"] = test_code
-                            problem_details["credit"] = credit
-                            problem_details["data_url"] = data_url
-                            problem_details["data_file_name"] = data_file_name
-                            problem_details["data_contents"] = data_contents.decode()
-                            problem_details["show_expected"] = show_expected
-                            problem_details["show_test_code"] = show_test_code
-                            problem_details["show_answer"] = show_answer
+                            content.specify_problem_basics(problem_basics, title, visible)
+                            content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, test_code, credit, data_url, data_file_name, data_contents.decode(), show_expected, show_test_code, show_answer, "", None, datetime.datetime.now())
 
                             expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], answer_code, problem_basics, problem_details)
 
@@ -481,8 +497,7 @@ class EditProblemHandler(BaseUserHandler):
                                 result = "Error: " + expected_output
                             else:
                                 problem_details["expected_output"] = expected_output
-                                content.save_problem(course, assignment, problem_basics, problem_details)
-                                problem_basics["exists"] = True
+                                content.save_problem(problem_basics, problem_details)
 
             problems = content.get_problems(course, assignment)
             self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
@@ -633,32 +648,6 @@ class GetSubmissionsHandler(BaseUserHandler):
             submissions = []
 
         self.write(json.dumps(submissions))
-
-#class DataHandler(RequestHandler):
-#    async def get(self, course, assignment, problem, file_name):
-#        data_file_path = get_downloaded_file_path(file_name)
-#
-#        problem_details = content.get_problem_details(course, assignment, problem)
-#
-#        content_type = get_columns_dict(problem_details["data_urls_info"], 1, 2)[file_name]
-#        self.set_header('Content-type', content_type)
-#
-#        if not os.path.exists(data_file_path) or is_old_file(data_file_path):
-#            url = get_columns_dict(problem_details["data_urls_info"], 1, 0)[file_name]
-#
-#            ## Check to see whether the request came from the server or the user's computer
-#            #this_host = self.request.headers.get("Host")
-#            #referer = self.request.headers.get("Referer")
-#            #referer_url_parts = urllib.parse.urlparse(referer)
-#            #referer_host = referer_url_parts[1]
-#            #referer_path = referer_url_parts[2]
-#
-#            #if referer_host == this_host and referer_path.startswith("/problem") and content_type.startswith("text/"):
-#            #    self.write("Please wait while the file is downloaded...\n\n")
-#
-#            urllib.request.urlretrieve(url, data_file_path)
-#
-#        self.write(read_file(data_file_path))
 
 class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
@@ -838,14 +827,6 @@ class LoginHandler(RequestHandler):
             else:
                 if not content.check_user_exists(user_id):
                     content.add_user(user_id)
-                    #print("Users:", content.print_rows("users"))
-
-                if content.check_role_exists(user_id):
-                    role = content.get_role(user_id)
-                    #print("This is the current user's role: ", role)
-                else:
-                    content.add_row_permissions(user_id, "administrator", None)
-                    #print("Permissions:", content.print_rows("permissions"))
 
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
                 self.redirect(target_path)
@@ -904,12 +885,12 @@ if __name__ == "__main__":
     if "PORT" in os.environ and "MPORT" in os.environ:
         application = make_app()
 
-        content = Content()
-        content.create_sqlite_tables()
-
         #TODO: Use something other than the password. Store in a file?
         application.settings["cookie_secret"] = "abc"
-        settings_dict = get_settings()
+        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+
+        content = Content(settings_dict)
+        content.create_sqlite_tables()
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))

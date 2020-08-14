@@ -119,7 +119,7 @@
     <p>
       <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide answer code." rows="20" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea>
       <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
-      <input name="answer_code_text" type="text" hidden id="answer_code_text">
+      <textarea name="answer_code_text" id="answer_code_text" style="display:none;"></textarea>
       <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
         <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
       </label>
@@ -134,7 +134,7 @@
     <p><strong>Test code: </strong></p>
     <p>
       <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" id="test_code" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea>
-      <input name="test_code_text" type="text" hidden id="test_code_text">
+      <textarea name="test_code_text" id="test_code_text" style="display:none;"></textarea>
       <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
         <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
       </label>
