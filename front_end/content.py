@@ -123,7 +123,7 @@ class Content:
                 for user_id in self.__settings_dict["initial_administrators"]:
                     if not self.check_user_exists(user_id):
                         self.add_user(user_id)
-                    self.add_row_permissions(user_id, "administrator", None)
+                    self.add_permissions(user_id, "administrator", None)
         else:
             print("Error! Cannot create the database connection.")
 
@@ -154,33 +154,35 @@ class Content:
         sql = 'INSERT INTO users (user_id) VALUES (?)'
         self.c.execute(sql, (user_id,))
 
-    def add_row_permissions(self, user_id, role, course_id):
-        #check if user exists
-        check = 'SELECT * FROM users WHERE user_id = ?'
-        self.c.execute(check, (user_id,))
-        
-        row = self.c.fetchone()
-        if row is not None:
-            check2 = 'SELECT * FROM permissions WHERE user_id = ?'
-            self.c.execute(check2, (user_id,))
-            row2 = self.c.fetchone()
-            if row2 is None:
-                sql = 'INSERT INTO permissions (user_id, role, course_id) VALUES (?, ?, ?)'
-                self.c.execute(sql, (user_id, role, course_id,))
-                return True
-            else:
-                sql = 'UPDATE permissions SET role = ?, course_id = ? WHERE user_id = ?'
-                self.c.execute(sql, (role, course_id, user_id,))
-                return True
-        else:
+    def add_permissions(self, user_id, role, course_id):
+        if not self.check_user_exists(user_id):
             return False
+
+        sql = '''SELECT role
+                 FROM permissions
+                 WHERE user_id = ?
+                   AND (course_id = ? OR course_id IS NULL)'''
+        self.c.execute(sql, (user_id, course_id,))
+        role_exists = self.c.fetchone() != None
+
+        if role_exists:
+            sql = '''UPDATE permissions
+                     SET role = ?, course_id = ?
+                     WHERE user_id = ?'''
+            self.c.execute(sql, (role, course_id, user_id,))
+        else:
+            sql = '''INSERT INTO permissions (user_id, role, course_id)
+                     VALUES (?, ?, ?)'''
+            self.c.execute(sql, (user_id, role, course_id,))
+
+        return True
 
     def get_course_ids(self):
         sql = 'SELECT course_id FROM courses'
         self.c.execute(sql)
         return [course[0] for course in self.c.fetchall()]
 
-    def get_assignment_ids(self, course_id):        
+    def get_assignment_ids(self, course_id):
         sql = 'SELECT assignment_id FROM assignments WHERE course_id = ?'
         self.c.execute(sql, (str(course_id),))
         return [assignment[0] for assignment in self.c.fetchall()]
@@ -412,7 +414,7 @@ class Content:
                    AND problem_id = ?
                    AND user_id = ?
                    AND submission_id = ?'''
-        
+
         self.c.execute(sql, (course, assignment, problem, user, last_submission_id,))
         row = self.c.fetchone()
 
