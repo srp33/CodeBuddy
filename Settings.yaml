@@ -3,6 +3,12 @@ initial_administrators:
     - piccolo
     - e171505
 back_ends:
+    free_response:
+        description: a free response (not code)
+        code_completion_path: ace/mode/text
+        output_types:
+            txt: |-
+                Text
     r:
         description: R code
         image_name: srp33/codebuddy_r

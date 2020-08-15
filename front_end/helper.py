@@ -83,6 +83,10 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
 def exec_code(settings_dict, code, problem_basics, problem_details, request=None):
     code = code + "\n\n" + problem_details["test_code"]
 
+    if problem_details["back_end"] == 'free_response':
+        # In this case, the code is the answer that the student provided.
+        return code.strip(), False
+
     timeout = settings_dict["timeout_seconds"] + 2
     data_dict = {"image_name": settings_dict["image_name"],
                  "code": code,
