@@ -131,6 +131,29 @@
     <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
     <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
 
+    <p><strong>Maximum # of submissions:</strong></p>
+    <p>
+        <div class="select is-info">
+            <select name="max_submissions" style="padding:2px;">
+                {% for i in range(101) %}
+                    {% if i == 0 %}
+                        {% if problem_details["max_submissions"] == i %}
+                            <option value="0" selected>Unlimited</option>
+                        {% else %}
+                            <option value="0">Unlimited</option>
+                        {% end %}
+                    {% else %}
+                        {% if problem_details["max_submissions"] == i %}
+                            <option selected>{{ i }}</option>
+                        {% else %}
+                            <option>{{ i }}</option>
+                        {% end %}
+                    {% end %}
+                {% end %}
+            </select>
+        </div>
+    </p>
+
     <p><strong>Test code: </strong></p>
     <p>
       <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" id="test_code" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea>

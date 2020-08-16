@@ -249,22 +249,23 @@ class ImportCourseHandler(BaseUserHandler):
 
                         answer_code = problem_list[5]
                         answer_description = problem_list[6]
-                        credit = problem_list[7]
-                        data_url = problem_list[8]
-                        data_file_name = problem_list[9]
-                        data_contents = problem_list[10]
-                        back_end = problem_list[11]
-                        expected_output = problem_list[12]
-                        instructions = problem_list[13]
-                        output_type = problem_list[14]
-                        show_answer = bool(problem_list[15])
-                        show_expected = bool(problem_list[16])
-                        show_test_code = bool(problem_list[17])
-                        test_code = problem_list[18]
-                        date_created = convert_string_to_date(problem_list[19])
-                        date_updated = convert_string_to_date(problem_list[20])
+                        max_submissions = int(problem_list[7])
+                        credit = problem_list[8]
+                        data_url = problem_list[9]
+                        data_file_name = problem_list[10]
+                        data_contents = problem_list[11]
+                        back_end = problem_list[12]
+                        expected_output = problem_list[13]
+                        instructions = problem_list[14]
+                        output_type = problem_list[15]
+                        show_answer = bool(problem_list[16])
+                        show_expected = bool(problem_list[17])
+                        show_test_code = bool(problem_list[18])
+                        test_code = problem_list[19]
+                        date_created = convert_string_to_date(problem_list[20])
+                        date_updated = convert_string_to_date(problem_list[21])
 
-                        content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
+                        content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
                         content.save_problem(problem_basics, problem_details)
 
                     result = "Success: The course was imported!"
@@ -454,6 +455,7 @@ class EditProblemHandler(BaseUserHandler):
             output_type = self.get_body_argument("output_type")
             answer_code = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required
             answer_description = self.get_body_argument("answer_description").strip().replace("\r", "")
+            max_submissions = int(self.get_body_argument("max_submissions"))
             test_code = self.get_body_argument("test_code_text").strip().replace("\r", "")
             credit = self.get_body_argument("credit").strip().replace("\r", "")
             data_url = self.get_body_argument("data_url").strip().replace("\r", "")
@@ -489,7 +491,7 @@ class EditProblemHandler(BaseUserHandler):
 
                         if not result.startswith("Error:"):
                             content.specify_problem_basics(problem_basics, title, visible)
-                            content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, test_code, credit, data_url, data_file_name, data_contents.decode(), show_expected, show_test_code, show_answer, "", None, datetime.datetime.now())
+                            content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, data_url, data_file_name, data_contents.decode(), show_expected, show_test_code, show_answer, "", None, datetime.datetime.now())
 
                             expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], answer_code, problem_basics, problem_details)
 
