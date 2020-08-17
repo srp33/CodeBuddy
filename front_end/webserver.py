@@ -61,14 +61,14 @@ def make_app():
 class HomeHandler(RequestHandler):
     def prepare(self):
         try:
-            raw_current_user_id = self.get_secure_cookie("user_id")
-            raw_current_user_role = self.get_secure_cookie("user_role")
+            user_id = self.get_secure_cookie("user_id")
 
             # Set context variables depending on whether the user is logged in.
-            if raw_current_user_id and raw_current_user_role:
-                user_id_var.set(raw_current_user_id.decode())
+            if user_id:
+                user_id = user_id.decode()
+                user_id_var.set(user_id)
                 user_logged_in_var.set(True)
-                user_role_var.set(raw_current_user_role.decode())
+                user_role_var.set(content.get_role(user_id))
             else:
                 user_id_var.set(self.request.remote_ip)
                 user_logged_in_var.set(False)
@@ -88,9 +88,10 @@ class BaseUserHandler(RequestHandler):
             user_id = self.get_secure_cookie("user_id")
 
             if user_id:
-                user_id_var.set(user_id.decode())
+                user_id = user_id.decode()
+                user_id_var.set(user_id)
                 user_logged_in_var.set(True)
-                user_role_var.set(self.get_secure_cookie("user_role").decode())
+                user_role_var.set(content.get_role(user_id))
             else:
                 user_id_var.set(self.request.remote_ip)
                 user_logged_in_var.set(False)
@@ -832,7 +833,6 @@ class LoginHandler(RequestHandler):
                     content.add_user(user_id)
 
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
-                self.set_secure_cookie("user_role", content.get_role(user_id), expires_days=30)
                 self.redirect(target_path)
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -840,9 +840,7 @@ class LoginHandler(RequestHandler):
 class LogoutHandler(BaseUserHandler):
     def get(self):
         try:
-            self.write(self.get_current_user())
             self.clear_cookie("user_id")
-            self.clear_cookie("user_role")
             self.redirect("/")
         except Exception as inst:
             render_error(self, traceback.format_exc())
