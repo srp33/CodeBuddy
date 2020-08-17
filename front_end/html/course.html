@@ -21,10 +21,10 @@
     {% end %}
     <a href="/edit_assignment/{{ course_basics["id"] }}/">Create assignment</a>
     {% if role == "administrator" %}
-      | <a href="/add_instructor/{{ course_basics["id"] }}">Add Instructor</a>
+      | <a href="/add_instructor/{{ course_basics["id"] }}">Add instructor</a>
     {% else %}
       {% if role == "instructor" %}
-          | <a href="/add_assistant/{{ course_basics["id"] }}">Add Instructor Assistant</a>
+          | <a href="/add_assistant/{{ course_basics["id"] }}">Add instructor assistant</a>
       {% end %}
     {% end %}
   </p>

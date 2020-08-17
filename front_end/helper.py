@@ -83,19 +83,9 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
 def exec_code(settings_dict, code, problem_basics, problem_details, request=None):
     code = code + "\n\n" + problem_details["test_code"]
 
-#    if request:
-#        if problem_details["data_url"] != "":
-#        data_url_info = [problem_details["data_url"], problem_details["url_file_name"], problem_details["url_content_type"]]
-#        if data_url_info[0] != "":
-#            for url, file_name in get_columns_dict([data_url_info], 0, 1).items():
-#                cache_url = "{}://{}/data/{}/{}/{}/{}".format(
-#                    request.protocol,
-#                    request.host,
-#                    problem_basics["assignment"]["course"]["id"],
-#                    problem_basics["assignment"]["id"],
-#                    problem_basics["id"],
-#                    file_name)
-#                code = code.replace(url, cache_url)
+    if problem_details["back_end"] == 'free_response':
+        # In this case, the code is the answer that the student provided.
+        return code.strip(), False
 
     timeout = settings_dict["timeout_seconds"] + 2
     data_dict = {"image_name": settings_dict["image_name"],
@@ -204,36 +194,8 @@ def create_id(current_objects=[], num_characters=4):
 
     return new_id
 
-#def create_md5_hash(my_string):
-#    return hashlib.md5(my_string.encode("utf-8")).hexdigest()
-
 def download_file(url):
-    response = requests.get(url)
-
-    #if 'Content-type' in response.headers:
-    #    content_type = response.headers['Content-type']
-    #else:
-    #    content_type = "text/plain"
-
-    #return response.content, content_type, get_url_extension(url)
-    return response.content
-
-#def get_url_extension(url):
-#    file_name = os.path.basename(url)
-#    if "." in file_name:
-#        return "." + file_name.split(".")[-1]
-#    return ""
-
-#def get_downloaded_file_path(file_name):
-#    return "/data/{}".format(file_name)
-
-#def write_data_file(contents, file_name):
-#    # First delete any old files to prevent stale file buildup
-#    for f in glob.glob("/data/*"):
-#        if is_old_file(f):
-#            os.remove(f)
-#
-#    write_file(contents, get_downloaded_file_path(file_name), "wb")
+    return requests.get(url).content
 
 def show_hidden(request_handler):
     if "show_hidden" not in request_handler.request.query_arguments:
@@ -257,3 +219,6 @@ def get_list_of_dates():
         years.append(str(i))
 
     return years, months, days
+
+def convert_string_to_date(s):
+    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f")
