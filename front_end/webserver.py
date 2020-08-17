@@ -44,6 +44,7 @@ def make_app():
         url(r"\/add_admin", AddAdminHandler, name="add_admin"),
         url(r"\/add_instructor\/([^\/]+)", AddInstructorHandler, name="add_instructor"),
         url(r"\/add_assistant\/([^\/]+)", AddAssistantHandler, name="add_assistant"),
+        url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
         url(r"\/student_submissions", StudentSubmissionsHandler, name="student_submissions"),
         url(r"\/student_problem\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", StudentProblemHandler, name="student_problem"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
@@ -737,6 +738,13 @@ class AddAssistantHandler(BaseUserHandler):
             self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), status_message = message, attempt = True)
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
+
+class ViewScoresHandler(BaseUserHandler):
+    def get(self, course, assignment):
+        try:
+            self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment))
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class StudentSubmissionsHandler(BaseUserHandler):
 #(This is just a filler html page to be able to access the instructor view of a student's problem, Emme's page will replace it)

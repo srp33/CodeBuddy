@@ -313,6 +313,39 @@ class Content:
 
         return self.sort_nested_list(problem_statuses)
 
+    def get_assignment_scores(self, course_id, assignment_id):
+        scores = []
+        scores_dict = {"user_id": "", "percent_passed": ""}
+        
+        sql = '''SELECT UNIQUE user_id
+                 FROM submissions
+                 WHERE course_id = ?
+                 AND assignment_id = ?'''
+        self.c.execute(sql, (str(course_id), str(assignment_id),))
+        for user in self.c.fetchall():
+            percent_passed = self.get_percent_problems_passed(course_id, assignment_id, user["user_id"])
+            scores_dict = {"user_id": user["user_id"], "percent_passed": percent_passed}
+            scores.append([user["user_id"], scores_dict])
+
+        return self.sort_nested_list(scores)      
+
+    def get_percent_problems_passed(self, course_id, assignment_id, user_id):
+        problems = self.get_problems(course_id, assignment_id)
+        num_passed = 0
+        for problem in problems:
+            problem_id = problem[0]
+            sql = '''SELECT passed
+                     FROM submissions
+                     WHERE user_id = ?
+                     AND course_id = ?
+                     AND assignment_id = ?
+                     AND problem_id = ?'''
+            self.c.execute(sql, (str(user_id), str(course_id), str(assignment_id), str(problem_id),))
+            for submission in self.c.fetchall():
+                if submission["passed"] == 1:
+                    num_passed += 1
+        return ((num_passed/len(problems)) * 100)
+
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []
         sql = '''SELECT submission_id, date, passed
