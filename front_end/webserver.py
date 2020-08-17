@@ -892,7 +892,7 @@ if __name__ == "__main__":
         application = make_app()
 
         #TODO: Use something other than the password. Store in a file?
-        application.settings["cookie_secret"] = "abc"
+        application.settings["cookie_secret"] = read_file("/app/cookie_secret.txt")
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
         content = Content(settings_dict)
