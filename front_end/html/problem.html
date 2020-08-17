@@ -336,8 +336,11 @@
             show_past_submissions();
             last_submission_id = {{ num_submissions }};
 
-            if (last_submission_id >= {{ problem_details["max_submissions"] }})
-                document.getElementById("submit_button").disabled = true;
+            if ({{ problem_details["max_submissions"] }} != 0) {
+                if (last_submission_id >= {{ problem_details["max_submissions"] }}) {
+                    document.getElementById("submit_button").disabled = true;
+                }
+            }
             </script>
         {% else %}
           <p>This problem does not exist.</p>
