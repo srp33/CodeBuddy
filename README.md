@@ -1,1 +1,3 @@
-You must create a text file called `cookie_secret.txt` that contains a password that you wish to use for encrypting cookies.
+More details to come...
+
+You must create a text file called `front_end/cookie_secret.txt` that contains a password that you wish to use for encrypting cookies.

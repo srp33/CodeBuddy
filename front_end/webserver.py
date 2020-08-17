@@ -631,10 +631,9 @@ class GetSubmissionHandler(BaseUserHandler):
             elif problem_details["output_type"] == "txt":
                 submission_info["diff_output"] =  find_differences_txt(problem_details, submission_info["code_output"], submission_info["passed"])
             else:
-                diff_percent, diff_image = diff_jpg(problem_details["expected_output"], submission_info["code_output"])
+                diff_image, diff_percent = diff_jpg(problem_details["expected_output"], submission_info["code_output"])
                 submission_info["diff_output"] =  find_differences_jpg(problem_details, submission_info["passed"], diff_image)
                 submission_info["code_output"] = format_output_as_html(submission_info["code_output"])
-
         except Exception as inst:
             submission_info["error_occurred"] = True
             submission_info["diff_output"] = ""
