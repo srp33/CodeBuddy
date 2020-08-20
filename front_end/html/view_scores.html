@@ -3,7 +3,7 @@
     <h2>{{ assignment_basics["title"] }}</h2>
 
     <h4>View scores</h4>
-    <p>Click on a student's name to view their score and past submissions for each problem in this assignment.</p>
+    <p>Click on a student's ID to view their score and past submissions for each problem in this assignment.</p>
 
     <div class="columns">
       <div class="column is-half">
@@ -15,10 +15,12 @@
                 Score: {{ score[1]["percent_passed"] }}%
             </label>
             <br />
+            <hr style="border: 2px solid#F6F5F5;" />
           {% end %}
         {% end %}
 
         <br />
+        <a href="/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}">Download scores</a> | 
         <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to assignment</a>
 
       </div>

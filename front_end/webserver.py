@@ -48,6 +48,7 @@ def make_app():
         url(r"\/add_instructor\/([^\/]+)", AddInstructorHandler, name="add_instructor"),
         url(r"\/add_assistant\/([^\/]+)", AddAssistantHandler, name="add_assistant"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
+        url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
         url(r"\/student_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", StudentScoresHandler, name="student_scores"),
         url(r"\/student_problem\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", StudentProblemHandler, name="student_problem"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
@@ -745,7 +746,10 @@ class ViewScoresHandler(BaseUserHandler):
         role = content.get_role(user_id)
         if role == "instructor" or role == "administrator":
             try:
-                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment))
+                assignment_basics = content.get_assignment_basics(course, assignment)
+                assignment_id = assignment_basics["id"]
+                out_file = f"Assignment_{assignment_id}_Scores.csv"
+                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), out_file=out_file)
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
@@ -753,6 +757,21 @@ class ViewScoresHandler(BaseUserHandler):
                 self.render("permissions.html")
             except Exception as inst:
                 render_error(self, traceback.format_exc())
+
+class DownloadScoresHandler(BaseUserHandler):
+    def get(self, course, assignment):
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "instructor" or role == "administrator":
+                csv_text = content.create_scores_text(course, assignment)
+                self.set_header('Content-type', "text/csv")
+                self.write(csv_text)
+            else:
+                self.render("permissions.html")
+        except Exception as inst:
+            self.write(traceback.format_exc())
+            #render_error(self, traceback.format_exc())
 
 class StudentScoresHandler(BaseUserHandler):
     def get(self, course, assignment, student_id):

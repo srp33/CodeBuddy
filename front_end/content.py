@@ -128,6 +128,15 @@ class Content:
         else:
             print("Error! Cannot create the database connection.")
 
+    def create_scores_text(self, course_id, assignment_id):
+        out_file_text = "Line_Num,Course_ID,Assignment_ID,Student_ID,Score\n"
+        scores = self.get_assignment_scores(course_id, assignment_id)
+        lineNum = 1
+        for student in scores:
+            out_file_text += f"{lineNum},{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']}\n"
+            lineNum += 1
+        return out_file_text
+
     def check_user_exists(self, user_id):
         sql = 'SELECT user_id FROM users WHERE user_id = ?'
         self.c.execute(sql, (user_id,))
