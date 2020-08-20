@@ -106,18 +106,15 @@ class CourseHandler(BaseUserHandler):
 
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator" or role == "instructor":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator" or role == "instructor":
                 self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course):
         try:
@@ -148,18 +145,15 @@ class EditCourseHandler(BaseUserHandler):
 
 class DeleteCourseHandler(BaseUserHandler):
     def get(self, course):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator":
                 self.render("delete_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course):
         try:
@@ -172,13 +166,15 @@ class DeleteCourseHandler(BaseUserHandler):
 
 class DeleteCourseSubmissionsHandler(BaseUserHandler):
     def get(self, course):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator" or role == "instructor":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator" or role == "instructor":
                 self.render("delete_course_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+            else:
+                self.render("permissions.html")
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course):
         try:
@@ -191,18 +187,15 @@ class DeleteCourseSubmissionsHandler(BaseUserHandler):
 
 class ImportCourseHandler(BaseUserHandler):
     def get(self):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator":
                 self.render("import_course.html", result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self):
         try:
@@ -319,7 +312,10 @@ class AssignmentHandler(BaseUserHandler):
         if role == "administrator" or role == "instructor" or role == "assistant":
             try:
                 show = show_hidden(self)
-                self.render("assignment_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                assignment_basics = content.get_assignment_basics(course, assignment)
+                assignment_id = assignment_basics["id"]
+                out_file = f"Assignment_{assignment_id}_Scores.csv"
+                self.render("assignment_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), out_file=out_file)
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
@@ -332,18 +328,15 @@ class AssignmentHandler(BaseUserHandler):
 
 class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator" or role == "instructor" or role == "assistant":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course, assignment):
         try:
@@ -371,18 +364,15 @@ class EditAssignmentHandler(BaseUserHandler):
 
 class DeleteAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator" or role == "instructor":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator" or role == "instructor":
                 self.render("delete_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course, assignment):
         try:
@@ -395,18 +385,15 @@ class DeleteAssignmentHandler(BaseUserHandler):
 
 class DeleteAssignmentSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator" or role == "instructor":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator" or role == "instructor":
                 self.render("delete_assignment_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course, assignment):
         try:
@@ -433,20 +420,17 @@ class ProblemHandler(BaseUserHandler):
 
 class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator" or role == "instructor":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator" or role == "instructor":
                 problems = content.get_problems(course, assignment)
                 problem_details = content.get_problem_details(course, assignment, problem)
                 self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course, assignment, problem):
         try:
@@ -512,19 +496,16 @@ class EditProblemHandler(BaseUserHandler):
 
 class DeleteProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator" or role == "instructor":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator" or role == "instructor":
                 problems = content.get_problems(course, assignment)
                 self.render("delete_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course, assignment, problem):
         try:
@@ -538,19 +519,16 @@ class DeleteProblemHandler(BaseUserHandler):
 
 class DeleteProblemSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator" or role == "instructor":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator" or role == "instructor":
                 problems =content.get_problems(course, assignment)
                 self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course, assignment, problem):
         try:
@@ -663,19 +641,15 @@ class ViewAnswerHandler(BaseUserHandler):
 
 class AddAdminHandler(BaseUserHandler):
     def get(self):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-
-        if role == "administrator":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator":
                 self.render("add_admin.html", admins=content.get_users_from_role("administrator", None), attempt=False)
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self):
         try:
@@ -688,21 +662,16 @@ class AddAdminHandler(BaseUserHandler):
 
 class AddInstructorHandler(BaseUserHandler):
     def get(self, course):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-
-        if role == "administrator":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator":
                 course_basics = content.get_course_basics(course)
-
                 self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role("instructor", course_basics["id"]), attempt=False)
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self, course):
         try:
@@ -716,20 +685,17 @@ class AddInstructorHandler(BaseUserHandler):
 
 class AddAssistantHandler(BaseUserHandler):
     def get(self, course):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "instructor":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "instructor":
                 course_basics = content.get_course_basics(course)
-
                 self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), attempt=False)
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
     def post(self, course):
         try:
             course_basics = content.get_course_basics(course)
@@ -742,21 +708,18 @@ class AddAssistantHandler(BaseUserHandler):
 
 class ViewScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "instructor" or role == "administrator":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "instructor" or role == "administrator":
                 assignment_basics = content.get_assignment_basics(course, assignment)
                 assignment_id = assignment_basics["id"]
                 out_file = f"Assignment_{assignment_id}_Scores.csv"
                 self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), out_file=out_file)
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class DownloadScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
@@ -775,38 +738,32 @@ class DownloadScoresHandler(BaseUserHandler):
 
 class StudentScoresHandler(BaseUserHandler):
     def get(self, course, assignment, student_id):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "instructor" or role == "administrator":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "instructor" or role == "administrator":
                 self.render("student_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(student_id, course, assignment))
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class StudentProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem, student_id):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "instructor" or role == "administrator":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "instructor" or role == "administrator":
                 show = show_hidden(self)
                 problems = content.get_problems(course, assignment, show)
                 problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
                 back_end = settings_dict["back_ends"][problem_details["back_end"]]
 
                 self.render("student_problem.html", student_id=student_id, courses=content.get_courses(show), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course, show), assignment_basics=content.get_assignment_basics(course, assignment), problems=problems, problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, student_id), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class BackEndHandler(RequestHandler):
     def get(self, back_end):
@@ -818,19 +775,16 @@ class BackEndHandler(RequestHandler):
 
 class SummarizeLogsHandler(RequestHandler):
     def get(self):
-        user_id = self.get_current_user()
-        role = content.get_role(user_id)
-        if role == "administrator":
-            try:
+        try:
+            user_id = self.get_current_user()
+            role = content.get_role(user_id)
+            if role == "administrator":
                 years, months, days = get_list_of_dates()
                 self.render("summarize_logs.html", filter_list = sorted(content.get_root_dirs_to_log()), years=years, months=months, days=days, show_table = False)
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def post(self):
         try:
