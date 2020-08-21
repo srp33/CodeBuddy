@@ -8,20 +8,26 @@
     <div class="columns">
       <div class="column is-half">
 
-        {% if scores %}
-          {% for score in scores %}
-            <a href="/student_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ score[0] }}">{{ score[0] }}</a>
-            <label class="is-pulled-right">
-                Score: {{ score[1]["percent_passed"] }}%
-            </label>
-            <br />
-            <hr style="border: 2px solid#F6F5F5;" />
-          {% end %}
-        {% end %}
+        <table class="table" id="scores_table">
+          <thead>
+            <tr>
+              <th>Student_ID</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for score in scores %}
+              <tr>
+              <td><a href="/student_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ score[0] }}">{{ score[0] }}</a></td>
+              <td>{{ score[1]["percent_passed"] }}%</td>
+              </tr>
+            {% end %}    
+          </tbody>
+        </table>
 
         <br />
-        <a href="/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}">Download scores</a> | 
-        <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to assignment</a>
+        <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to assignment</a> |
+        <a href="/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}">Download scores</a>
 
       </div>
     </div>

@@ -767,7 +767,7 @@ class BackEndHandler(RequestHandler):
             logging.error(self, traceback.format_exc())
             self.write(json.dumps({"Error": "An error occurred."}))
 
-class SummarizeLogsHandler(RequestHandler):
+class SummarizeLogsHandler(BaseUserHandler):
     def get(self):
         try:
             if self.get_current_role() == "administrator":
