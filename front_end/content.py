@@ -732,6 +732,7 @@ class Content:
     def delete_course(self, course_basics):
         self.delete_rows_with_value("courses", "course_id", course_basics["id"])
         self.delete_course_submissions(course_basics)
+        self.delete_rows_with_value("permissions", "course_id", course_basics["id"])
 
     def delete_course_submissions(self, course_basics):
         self.delete_rows_with_value("submissions", "course_id", course_basics["id"])
