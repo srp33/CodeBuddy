@@ -124,7 +124,7 @@
                   result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Did not pass.</strong></p>\n<p>Student output does not match the expected output.</div>\n\n";
 
                   {% if problem_details["show_expected"] and len(problem_details["expected_output"]) > 0 %}
-                      if (!json_data.error_occurred) {
+                      if (!json_data.error_occurred && json_data.diff_output.length > 0) {
                           diff_output += "<h2>Difference between expected output and student output:</h2>\n\n";
 
                           {% if problem_details["output_type"] == "txt" %}

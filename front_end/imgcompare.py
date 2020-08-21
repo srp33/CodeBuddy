@@ -46,7 +46,7 @@ def diff_jpg(expected_image_string, answer_image_string):
     expected_image.close()
     answer_image.close()
 
-    return diff_percent, diff_image
+    return diff_image, diff_percent
 
 def decode_image_string(s):
     return base64.b64decode(s)

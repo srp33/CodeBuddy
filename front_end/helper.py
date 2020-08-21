@@ -120,7 +120,7 @@ def test_code_jpg(settings_dict, code, problem_basics, problem_details, request)
     if error_occurred:
         return format_output_as_html(code_output), True, False, ""
 
-    diff_percent, diff_image = diff_jpg(problem_details["expected_output"], code_output)
+    diff_image, diff_percent = diff_jpg(problem_details["expected_output"], code_output)
     passed = does_image_pass(diff_percent)
 
     return code_output, error_occurred, passed, find_differences_jpg(problem_details, passed, diff_image)
@@ -129,14 +129,20 @@ def find_differences_txt(problem_details, code_output, passed):
     diff_output = ""
 
     if not passed and problem_details["show_expected"]:
-        diff_output = diff_strings(problem_details["expected_output"], code_output)
+        diff_output, num_differences = diff_strings(problem_details["expected_output"], code_output)
+
+        # Only show diff output if the diff is relatively small.
+        if num_differences > 50.0:
+            diff_output = ""
 
     return diff_output
 
 def find_differences_jpg(problem_details, passed, diff_image):
     diff_output = ""
+
     if not passed and problem_details["show_expected"]:
         diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
+
     return diff_output
 
 def encode_image_bytes(b):
@@ -155,32 +161,26 @@ def diff_strings(expected, actual):
     diff = difflib.ndiff(expected, actual)
 
     diff_output = ""
-    #numChars = 0
-    #numDifferences = 0
+    num_chars = 0
+    num_differences = 0
 
     for x in diff:
         sign = x[0]
         character = x[2]
 
-        #numChars += 1
+        num_chars += 1
 
         if sign == " ":
             diff_output += character
         else:
-            #numDifferences += 1
-
-            #if character == "\n" or character == "\t" or character == " ":
-            #    hasWhitespaceDiff = True
+            num_differences += 1
 
             if character == "\n":
                 diff_output += "[\\n{}]\n".format(sign)
             else:
                 diff_output += "[{}{}]".format(character, sign)
 
-    # Only return diff output if the differences are relatively small.
-    #if numDifferences / numChars > 0.2:
-    #    diff_output = "More than 20% of the characters were different."
-    return diff_output
+    return diff_output, (num_differences / num_chars) * 100
 
 def render_error(handler, exception):
     handler.render("error.html", error_title="An internal error occurred", error_message=format_output_as_html(exception))
