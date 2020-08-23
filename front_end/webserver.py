@@ -344,7 +344,7 @@ class AssignmentHandler(BaseUserHandler):
         if role == "administrator" or role == "instructor" or role == "assistant":
             try:
                 show = show_hidden(self)
-                self.render("assignment_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("assignment_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
@@ -450,7 +450,6 @@ class ProblemHandler(BaseUserHandler):
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
 
             self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
-
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -461,7 +460,7 @@ class EditProblemHandler(BaseUserHandler):
             try:
                 problems = content.get_problems(course, assignment)
                 problem_details = content.get_problem_details(course, assignment, problem)
-                self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
@@ -526,7 +525,7 @@ class EditProblemHandler(BaseUserHandler):
                                 content.save_problem(problem_basics, problem_details)
 
             problems = content.get_problems(course, assignment)
-            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
         except Exception as inst:

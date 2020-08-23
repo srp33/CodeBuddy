@@ -30,9 +30,17 @@
     </div>
 
     <p>
-      <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit assignment</a> |
-      <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">New problem</a>
+        {% if role == "administrator" or role == "instructor" or role == "assistant" %}
+            <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">New problem</a>
+            | <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit assignment</a>
+            | <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
+        {% end %}
+
+        {% if role == "administrator" or role == "instructor" %}
+            | <a href="/delete_assignment_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment submissions</a>
+        {% end %}
     </p>
+
   {% else %}
     <p>This assignment does not exist.</p>
   {% end %}
