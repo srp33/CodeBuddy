@@ -79,13 +79,10 @@ class HomeHandler(RequestHandler):
 
     def get(self):
         try:
-            if len(content.get_courses()) == 0:
-                if content.check_administrator_exists():
-                    self.show_home_page()
-                else:
-                    self.redirect("/initialize")
-            else:
+            if content.check_administrator_exists():
                 self.show_home_page()
+            else:
+                self.redirect("/initialize")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -120,7 +117,7 @@ class BaseUserHandler(RequestHandler):
 class InitializeHandler(BaseUserHandler):
     def get(self):
         try:
-            if len(content.get_courses()) == 0 and not content.check_administrator_exists():
+            if not content.check_administrator_exists():
                 content.add_permissions(self.get_current_user(), "administrator", None)
                 self.render("initialize.html", user_logged_in=user_logged_in_var.get())
             else:
