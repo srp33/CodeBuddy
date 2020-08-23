@@ -239,7 +239,11 @@ class Content:
         problem_statuses = []
         problem_dict = {"id": "", "title": "", "passed": 0}
 
-        sql = '''SELECT p.problem_id, p.title, IFNULL(MAX(s.passed), 0) AS passed, COUNT(s.submission_id) AS num_attempts
+        sql = '''SELECT p.problem_id,
+                        p.title,
+                        IFNULL(MAX(s.passed), 0) AS passed,
+                        COUNT(s.submission_id) AS num_attempts,
+                        p.visible
                  FROM problems p
                  LEFT JOIN submissions s
                   ON p.problem_id = s.problem_id
@@ -248,9 +252,11 @@ class Content:
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
         self.c.execute(sql,(str(assignment_id), str(user_id),))
+
         for row in self.c.fetchall():
-            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"]}
-            problem_statuses.append([row["problem_id"], problem_dict])
+            if row["visible"] or show_hidden:
+                problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"]}
+                problem_statuses.append([row["problem_id"], problem_dict])
 
         return problem_statuses
 

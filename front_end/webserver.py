@@ -87,7 +87,7 @@ class HomeHandler(RequestHandler):
             render_error(self, traceback.format_exc())
 
     def show_home_page(self):
-        self.render("home.html", courses=content.get_courses(show_hidden(self)), user_id=user_id_var.get(), role=user_role_var.get(), user_logged_in=user_logged_in_var.get())
+        self.render("home.html", courses=content.get_courses(show_hidden(user_role_var.get())), user_id=user_id_var.get(), role=user_role_var.get(), user_logged_in=user_logged_in_var.get())
 
 class BaseUserHandler(RequestHandler):
     def prepare(self):
@@ -128,7 +128,7 @@ class InitializeHandler(BaseUserHandler):
 class CourseHandler(BaseUserHandler):
     def get(self, course):
         try:
-            show = show_hidden(self)
+            show = show_hidden(self.get_current_role())
             self.render("course.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -340,16 +340,16 @@ class AssignmentHandler(BaseUserHandler):
         role = self.get_current_role()
         if role == "administrator" or role == "instructor" or role == "assistant":
             try:
-                show = show_hidden(self)
+                show = True
                 self.render("assignment_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
             try:
-                show = show_hidden(self)
+                show = show_hidden(self.get_current_role())
                 user_id = self.get_current_user()
                 course_basics=content.get_course_basics(course)
-                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problem_statuses=content.get_problem_statuses(user_id, course, assignment), course_basics=course_basics, assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id, user_logged_in=user_logged_in_var.get())
+                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problem_statuses=content.get_problem_statuses(user_id, course, assignment, show), course_basics=course_basics, assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id, user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -441,7 +441,7 @@ class ProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
-            show = show_hidden(self)
+            show = show_hidden(self.get_current_role())
             problems = content.get_problems(course, assignment, show)
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
@@ -797,7 +797,7 @@ class SummarizeLogsHandler(BaseUserHandler):
         if self.get_current_role() == "administrator":
             try:
                 years, months, days = get_list_of_dates()
-                self.render("summarize_logs.html", filter_list = sorted(content.get_root_dirs_to_log()), years=years, months=months, days=days, show_table = False, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("summarize_logs.html", filter_list = sorted(content.get_root_dirs_to_log()), years=years, months=months, days=days, show_table=False, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
@@ -819,7 +819,7 @@ class SummarizeLogsHandler(BaseUserHandler):
                 log_file = "logs/summarized/HitsAnyUser.tsv.gz"
             years, months, days = get_list_of_dates()
 
-            self.render("summarize_logs.html", filter = filter, filter_list = sorted(content.get_root_dirs_to_log()), years=years, months=months, days=days, log_dict = content.get_log_table_contents(log_file, year, month, day), show_table = True, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("summarize_logs.html", filter = filter, filter_list = sorted(content.get_root_dirs_to_log()), years=years, months=months, days=days, log_dict=content.get_log_table_contents(log_file, year, month, day), show_table=True, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -854,7 +854,7 @@ class LoginHandler(RequestHandler):
         if not target_path:
             target_path = ""
 
-        self.render("login.html", courses=content.get_courses(show_hidden(self)), target_path=target_path)
+        self.render("login.html", courses=content.get_courses(False), target_path=target_path)
 
     def post(self, target_path):
         try:
