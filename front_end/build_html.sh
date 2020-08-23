@@ -28,6 +28,7 @@ cat header.html navbar_top.html navbar_bottom.html container_top.html summarize_
 cat header.html navbar_top.html navbar_bottom.html container_top.html student_submissions.html container_bottom.html footer.html > /app/student_submissions.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html student_problem.html container_bottom.html footer.html > /app/student_problem.html
 
+cat header.html navbar_top.html navbar_bottom.html container_top.html initialize.html container_bottom.html footer.html > /app/initialize.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html error.html container_bottom.html footer.html > /app/error.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html permissions.html container_bottom.html footer.html > /app/permissions.html
 

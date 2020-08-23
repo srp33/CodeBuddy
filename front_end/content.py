@@ -20,7 +20,7 @@ class Content:
         self.__settings_dict = settings_dict
 
         # This enables auto-commit.
-        self.conn = sqlite3.connect(settings_dict["db_location"], isolation_level=None, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+        self.conn = sqlite3.connect(f"/database/{settings_dict['db_name']}", isolation_level=None, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         self.conn.row_factory = sqlite3.Row
         self.c = self.conn.cursor()
         self.c.execute("PRAGMA foreign_keys=ON")
@@ -119,19 +119,21 @@ class Content:
             self.c.execute(create_assignments_table)
             self.c.execute(create_problems_table)
             self.c.execute(create_submissions_table)
-
-            if len(self.get_courses()) == 0:
-                for user_id in self.__settings_dict["initial_administrators"]:
-                    if not self.check_user_exists(user_id):
-                        self.add_user(user_id)
-                    self.add_permissions(user_id, "administrator", None)
         else:
-            print("Error! Cannot create the database connection.")
+            print("Error! Cannot create a database connection.")
 
     def check_user_exists(self, user_id):
         sql = 'SELECT user_id FROM users WHERE user_id = ?'
         self.c.execute(sql, (user_id,))
         return self.c.fetchone() != None
+
+    def check_administrator_exists(self):
+        sql = '''SELECT COUNT(*) AS num_administrators
+                 FROM permissions
+                 WHERE role = "administrator"'''
+        self.c.execute(sql)
+
+        return self.c.fetchone()["num_administrators"]
 
     def get_role(self, user_id):
         sql = 'SELECT role FROM permissions WHERE user_id = ?'
@@ -156,9 +158,6 @@ class Content:
         self.c.execute(sql, (user_id,))
 
     def add_permissions(self, user_id, role, course_id):
-        if not self.check_user_exists(user_id):
-            return False
-
         sql = '''SELECT role
                  FROM permissions
                  WHERE user_id = ?
@@ -175,8 +174,6 @@ class Content:
             sql = '''INSERT INTO permissions (user_id, role, course_id)
                      VALUES (?, ?, ?)'''
             self.c.execute(sql, (user_id, role, course_id,))
-
-        return True
 
     def get_course_ids(self):
         sql = 'SELECT course_id FROM courses'

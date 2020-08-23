@@ -1,42 +1,44 @@
-<h4>Administrators:</h4>
+<h2>Current administrators:</h2>
 
 {% if admins %}
+    <ul>
     {% for user in admins %}
         <li>{{ user }}</li>
     {% end %}
+    </ul>
 {% else %}
-    <p>There are no existing administrators</p>
+    <p>There are no existing administrators.</p>
 {% end %}
-<br />
 
-<form method="post" action="/add_admin" name="form1">
+<form method="post" action="/add_admin">
 
-<p><input class="button is-primary" value="Add administrator" onClick="unhideReg()" /></p>
+<div class="field">
+  <label class="label is-large">Add an administrator:</label>
+  <div class="control">
+    <input name="new_admin" class="input is-large" type="text" placeholder="Enter ID of an existing user." autofocus>
+  </div>
+</div>
 
-<input type="input" placeholder="Enter user ID" name="new_admin" id="new_admin" style="display:none" /><br />
-<input class="button is-info" type="submit" name="button_1" value="Submit" id="submit_id" style="display:none" />
+<div class="field">
+  <p class="control">
+    <button class="button is-info is-large">Add</button>
+  </p>
+</div>
 
-{% if attempt %}
-    {% if added %}
-        <article class="message is-success">
+{% if result %}
+    {% if result.startswith("Success") %}
+        <article class="message is-success is-large">
             <div class="message-body">
-                Role successfully updated.
+                {{ result }}
             </div>
         </article>
     {% else %}
-        <article class="message is-warning">
+        <article class="message is-danger is-large">
             <div class="message-body">
-                User not found.
+                {{ result }}
             </div>
         </article>
     {% end %}
 {% end %}
 
 </form>
-
-<script>
-    function unhideReg() {
-        document.getElementById('new_admin').style.display = "block";
-        document.getElementById('submit_id').style.display = "block";
-    }
-</script>

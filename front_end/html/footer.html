@@ -9,11 +9,15 @@
         <div class="column is-one-quarter">
             <p><a href="/static/contact_us.html">Contact Us</a></p>
         </div>
-        {% if "user_logged_in" in globals() and user_logged_in %}
-            <div class="column is-one-quarter">
-                <p><a href="/logout">Log out</a></p>
-            </div>
-        {% end %}
+        <div class="column is-one-quarter">
+            <p>
+            {% if "user_logged_in" in globals() and user_logged_in %}
+                <a href="/logout">Log out</a>
+            {% else %}
+                <a href="/login">Log in</a>
+            </p>
+            {% end %}
+        </div>
     </div>
 </footer>
 </div>

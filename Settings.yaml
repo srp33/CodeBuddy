@@ -1,7 +1,4 @@
-db_location: /database/CodeBuddy.db
-initial_administrators:
-    - piccolo
-    - e171505
+db_name: CodeBuddy.db
 back_ends:
     free_response:
         description: a free response (not code)
