@@ -1,9 +1,19 @@
-<h2>
-    Login page
-</h2>
-
 <form method="post" action="/login{{ target_path }}" />
-    <p><strong>User ID: </strong><input name="user_id" class="input is-info is-normal is-medium" placeholder="Please enter your user ID." value="" autofocus /></p>
+  <div class="field">
+    <label class="label is-large">User ID:</label>
+    <div class="control">
+      <input name="user_id" class="input is-large" type="text" placeholder="Enter your user ID." autofocus>
+    </div>
+  </div>
 
-    <p><input type="submit" class="button is-info is-large is-fullwidth" value="Login" /></p>
+  <!--<div class="field">
+    <label class="label is-large">Password:</label>
+    <div class="control">
+      <input name="user_password" class="input is-large" type="password" placeholder="Enter your password.">
+    </div>
+  </div>-->
+
+  <div class="field">
+    <input type="submit" class="button is-info is-large is-fullwidth" value="Log in" />
+  </div>
 </form>

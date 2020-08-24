@@ -20,7 +20,7 @@ class Content:
         self.__settings_dict = settings_dict
 
         # This enables auto-commit.
-        self.conn = sqlite3.connect(settings_dict["db_location"], isolation_level=None, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+        self.conn = sqlite3.connect(f"/database/{settings_dict['db_name']}", isolation_level=None, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         self.conn.row_factory = sqlite3.Row
         self.c = self.conn.cursor()
         self.c.execute("PRAGMA foreign_keys=ON")
@@ -119,14 +119,8 @@ class Content:
             self.c.execute(create_assignments_table)
             self.c.execute(create_problems_table)
             self.c.execute(create_submissions_table)
-
-            if len(self.get_courses()) == 0:
-                for user_id in self.__settings_dict["initial_administrators"]:
-                    if not self.check_user_exists(user_id):
-                        self.add_user(user_id)
-                    self.add_permissions(user_id, "administrator", None)
         else:
-            print("Error! Cannot create the database connection.")
+            print("Error! Cannot create a database connection.")
 
     def create_scores_text(self, course_id, assignment_id):
         out_file_text = "Line_Num,Course_ID,Assignment_ID,Student_ID,Score\n"
@@ -143,6 +137,14 @@ class Content:
         sql = 'SELECT user_id FROM users WHERE user_id = ?'
         self.c.execute(sql, (user_id,))
         return self.c.fetchone() != None
+
+    def check_administrator_exists(self):
+        sql = '''SELECT COUNT(*) AS num_administrators
+                 FROM permissions
+                 WHERE role = "administrator"'''
+        self.c.execute(sql)
+
+        return self.c.fetchone()["num_administrators"]
 
     def get_role(self, user_id):
         sql = 'SELECT role FROM permissions WHERE user_id = ?'
@@ -167,9 +169,6 @@ class Content:
         self.c.execute(sql, (user_id,))
 
     def add_permissions(self, user_id, role, course_id):
-        if not self.check_user_exists(user_id):
-            return False
-
         sql = '''SELECT role
                  FROM permissions
                  WHERE user_id = ?
@@ -186,8 +185,6 @@ class Content:
             sql = '''INSERT INTO permissions (user_id, role, course_id)
                      VALUES (?, ?, ?)'''
             self.c.execute(sql, (user_id, role, course_id,))
-
-        return True
 
     def get_course_ids(self):
         sql = 'SELECT course_id FROM courses'
@@ -254,7 +251,11 @@ class Content:
         problem_statuses = []
         problem_dict = {"id": "", "title": "", "passed": 0, "num_submissions": 0}
 
-        sql = '''SELECT p.problem_id, p.title, IFNULL(MAX(s.passed), 0) AS passed, COUNT(s.submission_id) AS num_attempts
+        sql = '''SELECT p.problem_id,
+                        p.title,
+                        IFNULL(MAX(s.passed), 0) AS passed,
+                        COUNT(s.submission_id) AS num_submissions,
+                        p.visible
                  FROM problems p
                  LEFT JOIN submissions s
                   ON p.problem_id = s.problem_id
@@ -263,9 +264,11 @@ class Content:
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
         self.c.execute(sql,(str(assignment_id), str(user_id),))
+
         for row in self.c.fetchall():
-            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_attempts"]}
-            problem_statuses.append([row["problem_id"], problem_dict])
+            if row["visible"] or show_hidden:
+                problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"]}
+                problem_statuses.append([row["problem_id"], problem_dict])
 
         return problem_statuses
 

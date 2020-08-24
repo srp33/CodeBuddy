@@ -41,9 +41,7 @@
 
   <p>
       {% if assignment_basics["exists"] %}
-          <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Done editing</a> |
-          <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a> |
-          <a href="/delete_assignment_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment submissions</a>
+          <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Done editing</a>
       {% end %}
   </p><br />
   </form>

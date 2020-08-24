@@ -44,7 +44,22 @@
                 {% end %}
 
             <p><span id="code_output"></span></p>
-            <p><span id="diff_output"></span></p> 
+            <p><span id="diff_output"></span></p>
+
+            {% if len(problem_details["credit"]) > 0 %}
+                <p><em>{{ problem_details["credit"] }}</em></p>
+            {% end %}  
+
+            {% if role == "administrator" or role == "instructor" or role == "assistant" %}
+                <p>
+                    <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
+                    | <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a>
+            {% end %}
+
+            {% if role == "administrator" or role == "instructor" %}
+                    | <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem submissions</a>
+                </p>
+            {% end %}
 
             <script>
             {% if len(problem_details["data_url"]) > 0 %}
