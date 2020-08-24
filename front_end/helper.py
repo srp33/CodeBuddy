@@ -197,10 +197,8 @@ def create_id(current_objects=[], num_characters=4):
 def download_file(url):
     return requests.get(url).content
 
-def show_hidden(request_handler):
-    if "show_hidden" not in request_handler.request.query_arguments:
-        return False
-    return request_handler.request.query_arguments["show_hidden"][0].decode().lower() == "true"
+def show_hidden(role):
+    return role == "administrator" or role == "instructor" or role == "assistant"
 
 def get_list_of_dates():
     years = []
