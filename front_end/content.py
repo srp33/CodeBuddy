@@ -250,7 +250,7 @@ class Content:
         return self.sort_nested_list(problems)
 
     def get_problem_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
-        #gets the number of submissions a student has made for each problem in an assignment and whether or not they've passed the problem
+        #Gets the number of submissions a student has made for each problem in an assignment and whether or not they've passed the problem.
         problem_statuses = []
         problem_dict = {"id": "", "title": "", "passed": 0, "num_submissions": 0}
 
@@ -270,7 +270,7 @@ class Content:
         return problem_statuses
 
     def get_assignment_scores(self, course_id, assignment_id):
-        #gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment
+        #Gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment.
         scores = []
         scores_dict = {"user_id": "", "percent_passed": ""}
 
@@ -555,17 +555,6 @@ class Content:
         for problem in self.c.fetchall():
             problem_dict[problem["problem_id"]] = problem["title"]
         return problem_dict
-
-    def get_student_problem_status(self, problem_id, student_id):
-        passed = False
-        sql = '''SELECT passed
-                 FROM submissions
-                 WHERE problem_id = ? AND user_id = ?'''
-        self.c.execute(sql, (problem_id, student_id,))
-        for submission in self.c.fetchall():
-            if submission["passed"]:
-                passed = True
-        return passed
 
     def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):
         new_dict = {}
