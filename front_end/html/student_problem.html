@@ -18,17 +18,6 @@
             <h2>Answer code:</h2>
 
             <pre>{{ problem_details["answer_code"]}}</pre>
-    
-            <!--{% if len(problem_details["answer_description"]) > 0 %}
-                <h4>Instructor's comments</h4>
-                <p>{{ problem_details["answer_description"] }}</p>
-            {% end %}-->
-
-            <!--{% if len(problem_details["test_code"]) > 0 %}
-              <h4>Test code (to be executed after the code):</h4>
-
-              <pre>{{ problem_details["test_code"] }}</pre>
-            {% end %}-->
 
             <p>
                 <div>
@@ -55,11 +44,7 @@
                 {% end %}
 
             <p><span id="code_output"></span></p>
-            <p><span id="diff_output"></span></p>
-
-            <!--{% if len(problem_details["credit"]) > 0 %}
-                <p><em>{{ problem_details["credit"] }}</em></p>
-            {% end %}-->  
+            <p><span id="diff_output"></span></p> 
 
             <script>
             {% if len(problem_details["data_url"]) > 0 %}
@@ -77,28 +62,6 @@
                     }
                 }
             {% end %}
-
-            /*function build_code_output(json_output, error_occurred) {
-              code_output = ""
-
-              {% if problem_details["output_type"] == "txt" %}
-                  if (json_output == "") {
-                      code_output += "<p><pre>[Your code produced no output.]</pre></p>";
-                  }
-                  else {
-                      code_output += "<p><pre>" + json_output + "</pre></p>";
-                  }
-              {% else %}
-                  if (error_occurred) {
-                      code_output += "<p><pre>" + json_output + "</pre></p>";
-                  }
-                  else {
-                      code_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
-                  }
-              {% end %}
-
-              return code_output;
-            }
 
             function check_code(json_data) {
               var code_output = "<h2>Student output:</h2>\n\n";
@@ -154,7 +117,6 @@
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         editor.setValue(json_data.code, 1);
-                        //check_code(json_data);
                 });
 
                 if (scroll)
@@ -171,7 +133,6 @@
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         var submission_html = "";
-                        //var revert_html = "";
 
                         if (json_data.length > 0) {
                             submission_html += "<h2>Student submissions:</h2>\n";
@@ -192,9 +153,7 @@
                             }
 
                             submission_html += "</div><br />\n";
-
-                            //revert_html = "<p class='control'><button class='button is-primary is-light is-large is-half' onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button>&nbsp;</p>";
-                        }
+                       }
 
                         submissions_div.innerHTML = submission_html;
                     });
