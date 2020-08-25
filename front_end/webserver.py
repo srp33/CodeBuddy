@@ -129,20 +129,11 @@ class InitializeHandler(BaseUserHandler):
 
 class CourseHandler(BaseUserHandler):
     def get(self, course):
-        role = self.get_current_role()
-        if role == "administrator" or role == "instructor" or role == "assistant":
-            try:
-                show = show_hidden(self)
-                self.render("course_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
-                show = show_hidden(self)
-                user_id = self.get_current_user()
-                self.render("course.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), assignment_statuses=content.get_assignment_statuses(course, user_id), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
+        try:
+            show = show_hidden(self.get_current_role())
+            self.render("course.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
