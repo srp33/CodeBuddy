@@ -129,10 +129,20 @@ class InitializeHandler(BaseUserHandler):
 
 class CourseHandler(BaseUserHandler):
     def get(self, course):
-        try:
-            self.render("course.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
+        role = self.get_current_role()
+        if role == "administrator" or role == "instructor" or role == "assistant":
+            try:
+                show = show_hidden(self)
+                self.render("course_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            except Exception as inst:
+                render_error(self, traceback.format_exc())
+        else:
+            try:
+                show = show_hidden(self)
+                user_id = self.get_current_user()
+                self.render("course.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), assignment_statuses=content.get_assignment_statuses(course, user_id), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            except Exception as inst:
+                render_error(self, traceback.format_exc())
 
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
@@ -441,7 +451,7 @@ class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 problems = content.get_problems(course, assignment)
                 problem_details = content.get_problem_details(course, assignment, problem)
                 self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
@@ -734,7 +744,7 @@ class ViewScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
             role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 assignment_basics = content.get_assignment_basics(course, assignment)
                 assignment_id = assignment_basics["id"]
                 out_file = f"Assignment_{assignment_id}_Scores.csv"
@@ -747,9 +757,8 @@ class ViewScoresHandler(BaseUserHandler):
 class DownloadScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
-            user_id = self.get_current_user()
-            role = content.get_role(user_id)
-            if role == "instructor" or role == "administrator":
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 csv_text = content.create_scores_text(course, assignment)
                 self.set_header('Content-type', "text/csv")
                 self.write(csv_text)
@@ -763,7 +772,7 @@ class StudentScoresHandler(BaseUserHandler):
     def get(self, course, assignment, student_id):
         try:
             role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 self.render("student_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, student_id))
             else:
                 self.render("permissions.html")
@@ -774,7 +783,7 @@ class StudentProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem, student_id):
         try:
             role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 show = show_hidden(self)
                 problems = content.get_problems(course, assignment, show)
                 problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
