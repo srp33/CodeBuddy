@@ -447,12 +447,8 @@ class EditProblemHandler(BaseUserHandler):
             if role == "administrator" or role == "instructor":
                 problems = content.get_problems(course, assignment)
                 problem_details = content.get_problem_details(course, assignment, problem)
-            else:
                 self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
