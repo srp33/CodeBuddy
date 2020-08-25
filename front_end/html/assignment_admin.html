@@ -34,13 +34,14 @@
             <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">New problem</a>
             | <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit assignment</a>
             | <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
+            | <a href="/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">View scores</a>
+            | <a href="/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}">Download scores</a>
         {% end %}
 
         {% if role == "administrator" or role == "instructor" %}
             | <a href="/delete_assignment_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment submissions</a>
         {% end %}
     </p>
-
   {% else %}
     <p>This assignment does not exist.</p>
   {% end %}

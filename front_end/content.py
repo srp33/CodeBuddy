@@ -123,6 +123,17 @@ class Content:
         else:
             print("Error! Cannot create a database connection.")
 
+    def create_scores_text(self, course_id, assignment_id):
+        out_file_text = "Line_Num,Course_ID,Assignment_ID,Student_ID,Score\n"
+        scores = self.get_assignment_scores(course_id, assignment_id)
+        lineNum = 1
+
+        for student in scores:
+            out_file_text += f"{lineNum},{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']}\n"
+            lineNum += 1
+
+        return out_file_text
+
     def check_user_exists(self, user_id):
         sql = 'SELECT user_id FROM users WHERE user_id = ?'
         self.c.execute(sql, (user_id,))
@@ -237,14 +248,15 @@ class Content:
 
         return self.sort_nested_list(problems)
 
-    def get_problem_statuses(self, user_id, course_id, assignment_id, show_hidden=True):
+    def get_problem_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
+        #Gets the number of submissions a student has made for each problem in an assignment and whether or not they've passed the problem.
         problem_statuses = []
-        problem_dict = {"id": "", "title": "", "passed": 0}
+        problem_dict = {"id": "", "title": "", "passed": 0, "num_submissions": 0}
 
         sql = '''SELECT p.problem_id,
                         p.title,
                         IFNULL(MAX(s.passed), 0) AS passed,
-                        COUNT(s.submission_id) AS num_attempts,
+                        COUNT(s.submission_id) AS num_submissions,
                         p.visible
                  FROM problems p
                  LEFT JOIN submissions s
@@ -257,10 +269,36 @@ class Content:
 
         for row in self.c.fetchall():
             if row["visible"] or show_hidden:
-                problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"]}
+                problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"]}
                 problem_statuses.append([row["problem_id"], problem_dict])
 
         return problem_statuses
+
+    def get_assignment_scores(self, course_id, assignment_id):
+        #Gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment.
+        scores = []
+        scores_dict = {"user_id": "", "percent_passed": ""}
+
+        sql = '''SELECT a.user_id, SUM(passed) * 100.0 / b.num_problems AS percent_passed
+                 FROM
+                   (SELECT user_id, IFNULL(MAX(passed), 0) AS passed
+                    FROM submissions
+                    WHERE course_id = ? AND assignment_id = ?
+                    GROUP BY problem_id, user_id) a
+                 INNER JOIN
+                   (SELECT COUNT(DISTINCT problem_id) AS num_problems
+                    FROM problems
+                    WHERE course_id = ? AND assignment_id = ? AND visible = 1) b
+                    ORDER BY user_id'''
+        
+        self.c.execute(sql, (str(course_id), str(assignment_id), str(course_id), str(assignment_id),))
+        for user in self.c.fetchall():
+            user_id = user["user_id"]
+            percent_passed = round(user["percent_passed"],2)
+            scores_dict = {"user_id": user_id, "percent_passed": percent_passed}
+            scores.append([user_id, scores_dict])
+
+        return scores     
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []
@@ -523,57 +561,6 @@ class Content:
             problem_dict[problem["problem_id"]] = problem["title"]
         return problem_dict
 
-    def get_student_courses(self, student_id):
-        courses = []
-        sql = '''SELECT courses.course_id, courses.title, submissions.user_id
-                 FROM courses
-                 INNER JOIN submissions ON courses.course_id = submissions.course_id
-                 WHERE submissions.user_id = ?'''
-        self.c.execute(sql, (str(student_id),))
-        for course in self.c.fetchall():
-            courses.append([course["title"], course["course_id"]])
-        return courses
-
-    def get_student_assignments(self, student_id):
-        assignments = []
-        sql = '''SELECT assignments.course_id, assignments.assignment_id, assignments.title
-                 FROM assignments
-                 INNER JOIN submissions ON assignments.assignment_id = submissions.assignment_id
-                 WHERE submissions.user_id = ?'''
-        self.c.execute(sql, (str(student_id),))
-        for assignment in self.c.fetchall():
-            assignments.append([assignment["title"], assignment["course_id"], assignment["assignment_id"]])
-        return assignments
-
-    def get_student_problem_status(self, problem_id, student_id):
-        passed = False
-        sql = '''SELECT passed
-                 FROM submissions
-                 WHERE problem_id = ? AND user_id = ?'''
-        self.c.execute(sql, (problem_id, student_id,))
-        for submission in self.c.fetchall():
-            if submission["passed"]:
-                passed = True
-        return passed
-
-    def get_student_problems(self, student_id):  #returns list of problems a certain student has made submissions for, also whether the student has passed the problem and number of submissions student has made
-        problems = []
-        sql = '''SELECT DISTINCT problems.course_id, problems.assignment_id, problems.problem_id, problems.title
-                 FROM problems
-                 INNER JOIN submissions ON problems.problem_id = submissions.problem_id
-                 WHERE submissions.user_id = ?'''
-        self.c.execute(sql, (str(student_id),))
-
-        for problem in self.c.fetchall():
-            problems.append([problem["title"], problem["course_id"], problem["assignment_id"], problem["problem_id"]])
-        for problem in problems:
-            num_submissions = self.get_num_submissions(problem[1], problem[2], problem[3], student_id)
-            passed = self.get_student_problem_status(problem[3], student_id)
-            problem.append(num_submissions)
-            problem.append(passed)
-
-        return problems
-
     def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):
         new_dict = {}
         line_num = 1
@@ -696,6 +683,7 @@ class Content:
     def delete_course(self, course_basics):
         self.delete_rows_with_value("courses", "course_id", course_basics["id"])
         self.delete_course_submissions(course_basics)
+        self.delete_rows_with_value("permissions", "course_id", course_basics["id"])
 
     def delete_course_submissions(self, course_basics):
         self.delete_rows_with_value("submissions", "course_id", course_basics["id"])

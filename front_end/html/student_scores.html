@@ -1,0 +1,45 @@
+{% if course_basics["exists"] %}
+  {% if assignment_basics["exists"] %}
+    <h2>{{ assignment_basics["title"] }}</h2>
+
+    <h4>View scores for {{ student_id }}</h4>
+    <p>Click on a problem to view the student's past submissions.</p>
+
+    <div class="columns">
+      <div class="column is-half">
+
+        <table class="table" id="scores_table">
+          <thead>
+            <tr>
+              <th>Problem</th>
+              <th># Submissions</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for problem in problem_statuses %}
+              <tr>
+              {% if problem[1]["num_submissions"] > 0 %}
+                <td><a href="/student_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}/{{ student_id }}">{{ problem[1]["title"] }}</a></td>
+              {% else %}
+                <td>{{ problem[1]["title"] }}</td>
+              {% end %}
+              <td>{{ problem[1]["num_submissions"] }}</td>
+              {% if problem[1]["passed"] %}
+                <td>100%</td>
+              {% else %}
+                <td>0%</td>
+              {% end %}
+              </tr>
+            {% end %}    
+          </tbody>
+        </table>
+
+        <br />
+        <a href="/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to all scores</a>
+
+      </div>
+    </div>
+
+  {% end %}
+{% end %}
