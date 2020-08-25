@@ -5,33 +5,32 @@
 
   <h3>Assignments</h3>
 
-  {% if len(assignments) == 0 %}
-    <p>No assignments have been created.</p>
-  {% else %}
-    <ul>
-    {% for assignment in assignments %}
-      <li><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></li>
-    {% end %}
-    </ul>
-  {% end %}
+  <div class="columns">
+    <div class="column is-half">
 
-  <p>
-    {% if role == "administrator" or role == "instructor" or role == "assistant" %}
-      <a href="/edit_assignment/{{ course_basics["id"] }}/">Create assignment</a>
-    {% end %}
+      {% if len(assignment_statuses) == 0 %}
+        <p>No assignments have been created.</p>
+      {% else %}
+        {% for assignment in assignment_statuses %}
+          <a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></li>
+          {% if assignment[1]["passed"] %}
+            <label class="is-pulled-right">
+              <img src="/static/greencheck.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+            </label>
+          {% else %}
+            <label class="is-pulled-right">
+              <img src="/static/unchecked.png" alt="Not completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+            </label>
+          {% end %}
+          <hr style="border: 2px solid#F6F5F5;" />
+        {% end %}
+      {% end %}
 
-    {% if role == "administrator" or role == "instructor" %}
-      | <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a>
-      | <a href="/export_course/{{ course_basics["id"] }}">Export course</a>
-      | <a href="/delete_course_submissions/{{ course_basics["id"] }}">Delete course submissions</a>
-      | <a href="/add_instructor/{{ course_basics["id"] }}">Add instructor</a>
-      | <a href="/add_assistant/{{ course_basics["id"] }}">Add instructor assistant</a>
-    {% end %}
+      <br /><br />
 
-    {% if role == "administrator" %}
-      | <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
-    {% end %}
-  </p>
+    </div>
+  </div>
+
 {% else %}
   <h2>This course does not exist.</h2>
 {% end %}
