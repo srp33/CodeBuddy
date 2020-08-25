@@ -5,7 +5,7 @@ cd /tmp
 # Dynamic pages
 
 cat header.html navbar_top.html navbar_course.html navbar_bottom.html container_top.html home.html container_bottom.html footer.html > /app/home.html
-cat header.html navbar_top.html navbar_bottom.html container_top.html login.html container_bottom.html footer.html > /app/login.html
+cat header.html navbar_top.html navbar_bottom.html container_top.html devlogin.html container_bottom.html footer.html > /app/devlogin.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_bottom.html container_top.html course.html container_bottom.html footer.html > /app/course.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_bottom.html container_top.html edit_course.html container_bottom.html footer.html > /app/edit_course.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_bottom.html container_top.html delete_course.html container_bottom.html footer.html > /app/delete_course.html

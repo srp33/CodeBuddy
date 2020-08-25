@@ -8,6 +8,7 @@ import json
 import logging
 import re
 import sys
+from tornado.auth import GoogleOAuth2Mixin
 import tornado.ioloop
 from tornado.log import enable_pretty_logging
 from tornado.log import LogFormatter
@@ -53,7 +54,8 @@ def make_app():
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
-        url(r"/login(/.+)?", LoginHandler, name="login"),
+        url(r"/login", GoogleLoginHandler, name="login"),
+        url(r"/devlogin(/.+)?", DevelopmentLoginHandler, name="devlogin"),
         url(r"/logout", LogoutHandler, name="logout"),
     ], autoescape=None)
 
@@ -104,7 +106,11 @@ class BaseUserHandler(RequestHandler):
                 user_logged_in_var.set(False)
                 user_role_var.set("not_logged_in")
 
-                self.redirect("/login{}".format(self.request.path))
+                if settings_dict["mode"] == "production":
+                    self.set_secure_cookie("redirect_path", self.request.path)
+                    self.redirect("/login")
+                else:
+                    self.redirect("/devlogin{}".format(self.request.path))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -349,7 +355,7 @@ class AssignmentHandler(BaseUserHandler):
                 show = show_hidden(self.get_current_role())
                 user_id = self.get_current_user()
                 course_basics=content.get_course_basics(course)
-                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problem_statuses=content.get_problem_statuses(user_id, course, assignment, show), course_basics=course_basics, assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id, user_logged_in=user_logged_in_var.get())
+                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(user_id, course, assignment, show), course_basics=course_basics, assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id, user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -849,12 +855,12 @@ class StaticFileHandler(RequestHandler):
             self.set_header('Content-type', content_type)
             self.write(file_contents)
 
-class LoginHandler(RequestHandler):
+class DevelopmentLoginHandler(RequestHandler):
     def get(self, target_path):
         if not target_path:
             target_path = ""
 
-        self.render("login.html", courses=content.get_courses(False), target_path=target_path)
+        self.render("devlogin.html", courses=content.get_courses(False), target_path=target_path)
 
     def post(self, target_path):
         try:
@@ -864,7 +870,9 @@ class LoginHandler(RequestHandler):
                 self.write("Invalid user ID.")
             else:
                 if not content.check_user_exists(user_id):
-                    content.add_user(user_id)
+                    # Add static information for test user.
+                    user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
+                    content.add_user(user_id, user_dict)
 
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
 
@@ -874,49 +882,62 @@ class LoginHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class LogoutHandler(BaseUserHandler):
-    def get(self):
+class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
+    async def get(self):
         try:
-            self.clear_cookie("user_id")
-            self.redirect("/")
+            redirect_uri = f"https://codebuddy.byu.edu/login"
+
+            # Examples: https://www.programcreek.com/python/example/95028/tornado.auth
+            if self.get_argument('code', False):
+                user_dict = await self.get_authenticated_user(redirect_uri = redirect_uri, code = self.get_argument('code'))
+
+                if user_dict:
+                    response = urllib.request.urlopen(f"https://www.googleapis.com/oauth2/v1/userinfo?access_token={user_dict['access_token']}").read()
+
+                    if response:
+                        user_dict = json.loads(response.decode('utf-8'))
+
+                        if content.check_user_exists(user_dict["id"]):
+                            # Update user with current information when they already exist.
+                            content.update_user(user_dict["id"], user_dict)
+                        else:
+                            # Store current user information when they do not already exist.
+                            content.add_user(user_dict["id"], user_dict)
+
+                        self.set_secure_cookie("user_id", user_dict["id"], expires_days=30)
+
+                        redirect_path = self.get_secure_cookie("redirect_path")
+                        self.clear_cookie("redirect_path")
+                        if not redirect_path:
+                            redirect_path = "/"
+                        self.redirect(redirect_path)
+                    else:
+                        self.clear_all_cookies()
+                        render_error(self, "Google account information could not be retrieved.")
+                else:
+                    self.clear_all_cookies()
+                    render_error(self, "Google authentication failed. Your account could not be authenticated.")
+            else:
+                await self.authorize_redirect(
+                    redirect_uri = redirect_uri,
+                    client_id = self.settings['google_oauth']['key'],
+                    scope = ['profile', 'email'],
+                    response_type = 'code',
+                    extra_params = {'approval_prompt': 'auto'})
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-#from tornado.auth import GoogleOAuth2Mixin
-#class LoginHandler(BaseUserHandler, GoogleOAuth2Mixin):
-#    async def get(self):
-#        if self.get_argument("code", None):
-#            authorization_code = self.get_argument("code", None)
-#            self.get_authenticated_user(authorization_code, self.async_callback(self._on_auth))
-#            return
-#        self.authorize_redirect(self.settings['google_permissions'])
-#
-#    def _on_auth(self, response):
-#        print(response.body)
-#        print(response.request.headers)
-#        if response.error:
-#            raise tornado.web.HTTPError(500, "Google auth failed")
-#        #self.set_secure_cookie("user_id", tornado.escape.json_encode(user))
-#        #self.redirect("/")
-#
-#from tornado.auth import GoogleOAuth2Mixin
-#class GoogleOAuth2LoginHandler(BaseUserHandler, GoogleOAuth2Mixin):
-#    async def get(self):
-#        if self.get_argument('code', False):
-#            user = await self.get_authenticated_user(
-#                redirect_uri='http://your.site.com/auth/google',
-#                code=self.get_argument('code'))
-#
-#            if not self.get_secure_cookie("user"):
-#                self.set_secure_cookie("user", user, expires_days=30)
-#                self.write("Your cookie was not set yet!")
-#        else:
-#            await self.authorize_redirect(
-#                redirect_uri='http://your.site.com/auth/google',
-#                client_id=self.settings['google_oauth']['key'],
-#                scope=['profile', 'email'],
-#                response_type='code',
-#                extra_params={'approval_prompt': 'auto'})
+class LogoutHandler(BaseUserHandler):
+    def get(self):
+        try:
+            self.clear_all_cookies()
+
+            if settings_dict["mode"] == "production":
+                self.redirect("https://accounts.google.com/Logout")
+            else:
+                self.redirect("/")
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 # See https://quanttype.net/posts/2020-02-05-request-id-logging.html
 class LoggingFilter(logging.Filter):
@@ -930,6 +951,7 @@ if __name__ == "__main__":
 
         #TODO: Use something other than the password. Store in a file?
         application.settings["cookie_secret"] = read_file("/app/cookie_secret.txt")
+        application.settings["google_oauth"] = {"key": "167847101372-vsig609s07dn73fjqd2gqjsg3unto2hm.apps.googleusercontent.com", "secret": "psXlEmFQws_qhMgeWGyi-ysN"}
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
         content = Content(settings_dict)
