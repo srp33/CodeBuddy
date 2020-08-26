@@ -13,6 +13,7 @@
             <thead>
               <tr>
                 <th>Problem</th>
+                <th>Visibility</th>
                 <th>Edit</th>
                 <th>Delete</th>
               </tr>
@@ -21,6 +22,11 @@
               {% for problem in problems %}
                 <tr>
                   <td><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
+                  {% if problem[1]["visible"] == 0 %}
+                    <td>Hidden</td>
+                  {% else %}
+                    <td>Visible</td>
+                  {% end %}
                   <td><label>
                     <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}">
                       <img src="/static/editicon.png" alt="Edit problem" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
