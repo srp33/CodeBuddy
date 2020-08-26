@@ -124,13 +124,11 @@ class Content:
             print("Error! Cannot create a database connection.")
 
     def create_scores_text(self, course_id, assignment_id):
-        out_file_text = "Line_Num,Course_ID,Assignment_ID,Student_ID,Score\n"
+        out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
         scores = self.get_assignment_scores(course_id, assignment_id)
-        lineNum = 1
 
         for student in scores:
-            out_file_text += f"{lineNum},{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']}\n"
-            lineNum += 1
+            out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']}\n"
 
         return out_file_text
 
