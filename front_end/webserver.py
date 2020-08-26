@@ -483,7 +483,7 @@ class EditProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 problems = content.get_problems(course, assignment)
                 problem_details = content.get_problem_details(course, assignment, problem)
 
@@ -806,9 +806,8 @@ class AddAssistantHandler(BaseUserHandler):
 class ViewScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
-            user_id = self.get_current_user()
-            role = content.get_role(user_id)
-            if role == "instructor" or role == "administrator":
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 assignment_basics = content.get_assignment_basics(course, assignment)
                 assignment_id = assignment_basics["id"]
                 out_file = f"Assignment_{assignment_id}_Scores.csv"
@@ -821,9 +820,8 @@ class ViewScoresHandler(BaseUserHandler):
 class DownloadScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
-            user_id = self.get_current_user()
-            role = content.get_role(user_id)
-            if role == "instructor" or role == "administrator":
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 csv_text = content.create_scores_text(course, assignment)
                 self.set_header('Content-type', "text/csv")
                 self.write(csv_text)
@@ -836,9 +834,8 @@ class DownloadScoresHandler(BaseUserHandler):
 class StudentScoresHandler(BaseUserHandler):
     def get(self, course, assignment, student_id):
         try:
-            user_id = self.get_current_user()
-            role = content.get_role(user_id)
-            if role == "instructor" or role == "administrator":
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 self.render("student_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, student_id))
             else:
                 self.render("permissions.html")
@@ -848,14 +845,12 @@ class StudentScoresHandler(BaseUserHandler):
 class StudentProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem, student_id):
         try:
-            user_id = self.get_current_user()
-            role = content.get_role(user_id)
-            if role == "instructor" or role == "administrator":
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
                 show = show_hidden(self)
                 problems = content.get_problems(course, assignment, show)
                 problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
                 back_end = settings_dict["back_ends"][problem_details["back_end"]]
-
                 self.render("student_problem.html", student_id=student_id, courses=content.get_courses(show), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course, show), assignment_basics=content.get_assignment_basics(course, assignment), problems=problems, problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, student_id), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html")
