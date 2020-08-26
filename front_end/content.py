@@ -33,7 +33,8 @@ class Content:
 
     def create_sqlite_tables(self):
         create_users_table = '''CREATE TABLE IF NOT EXISTS users (
-                                  user_id text PRIMARY KEY
+                                  user_id text PRIMARY KEY,
+                                  user_json text
                                 );'''
 
         create_permissions_table = '''CREATE TABLE IF NOT EXISTS permissions (
@@ -164,9 +165,10 @@ class Content:
         rows = self.c.execute(sql, (role, course_id,))
         return [row["user_id"] for row in rows]
 
-    def add_user(self, user_id):
-        sql = 'INSERT INTO users (user_id) VALUES (?)'
-        self.c.execute(sql, (user_id,))
+    def add_user(self, user_id, user_dict):
+        sql = '''INSERT INTO users (user_id, user_json)
+                 VALUES (?, ?)'''
+        self.c.execute(sql, (user_id, json.dumps(user_dict)))
 
     def add_permissions(self, user_id, role, course_id):
         sql = '''SELECT role
@@ -185,6 +187,11 @@ class Content:
             sql = '''INSERT INTO permissions (user_id, role, course_id)
                      VALUES (?, ?, ?)'''
             self.c.execute(sql, (user_id, role, course_id,))
+
+    def get_user_count(self):
+        sql = 'SELECT COUNT(*) AS count FROM users'
+        self.c.execute(sql)
+        return self.c.fetchone()["count"]
 
     def get_course_ids(self):
         sql = 'SELECT course_id FROM courses'
@@ -288,7 +295,7 @@ class Content:
                     FROM problems
                     WHERE course_id = ? AND assignment_id = ? AND visible = 1) b
                     ORDER BY user_id'''
-        
+
         self.c.execute(sql, (str(course_id), str(assignment_id), str(course_id), str(assignment_id),))
         for user in self.c.fetchall():
             user_id = user["user_id"]
@@ -296,7 +303,7 @@ class Content:
             scores_dict = {"user_id": user_id, "percent_passed": percent_passed}
             scores.append([user_id, scores_dict])
 
-        return scores     
+        return scores
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []
@@ -646,15 +653,17 @@ class Content:
 
     def save_submission(self, course, assignment, problem, user, code, code_output, passed, error_occurred):
         submission_id = self.get_next_submission_id(course, assignment, problem, user)
-        sql = ''' INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        sql = '''INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         self.c.execute(sql, [course, assignment, problem, user, submission_id, code, code_output, passed, datetime.now(), error_occurred])
 
         return submission_id
 
-    def update_user(self, old_id, new_id):
-        sql = 'UPDATE users SET user_id = ? WHERE user_id'
-        self.c.execute(sql, (new_id, old_id,))
+    def update_user(self, user_id, user_dict):
+        sql = '''UPDATE users
+                 SET user_json = ?
+                 WHERE user_id = ?'''
+        self.c.execute(sql, (json.dumps(user_dict), user_id,))
 
     def update_role(self, user_id, new_role):
         sql = 'UPDATE users SET role = ? WHERE user_id = ?'

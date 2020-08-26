@@ -23,7 +23,7 @@ app = FastAPI()
 
 @app.get("/hello")
 def hello():
-    return "World"
+    return "world"
 
 @app.post("/exec/")
 def exec(info: ExecInfo):
