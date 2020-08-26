@@ -7,22 +7,33 @@
     <div class="column is-half">
 
       {% if len(assignments) > 0 %}
-        <h4>Assignments</h4></br>
-
-        {% for assignment in assignments %}
-          <a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
-          <label class="is-pulled-right">
-            <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment[1]["id"] }}">
-              <img src="/static/trashcan.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
-            </a> 
-          </label>
-          <label class="is-pulled-right">
-            <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment[1]["id"] }}">
-              <img src="/static/editicon.png" alt="Edit problem" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
-            </a>
-          </label>
-          <hr style="border: 2px solid#F6F5F5;" />
-        {% end %}
+        
+        <table class="table" id="assignment_table">
+          <thead>
+            <tr>
+              <th>Assignment</th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for assignment in assignments %}
+              <tr>
+                <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+                <td><label>
+                  <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment[1]["id"] }}">
+                    <img src="/static/editicon.png" alt="Edit problem" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
+                  </a>
+                </label></td>
+                <td><label>
+                  <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment[1]["id"] }}">
+                    <img src="/static/trashcan.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
+                  </a> 
+                </label></td>
+              </tr>
+            {% end %}
+          </tbody>
+        </table>
       {% end %}
 
     </div>

@@ -11,19 +11,31 @@
       {% if len(assignment_statuses) == 0 %}
         <p>No assignments have been created.</p>
       {% else %}
-        {% for assignment in assignment_statuses %}
-          <a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></li>
-          {% if assignment[1]["passed"] %}
-            <label class="is-pulled-right">
-              <img src="/static/greencheck.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
-            </label>
-          {% else %}
-            <label class="is-pulled-right">
-              <img src="/static/unchecked.png" alt="Not completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
-            </label>
-          {% end %}
-          <hr style="border: 2px solid#F6F5F5;" />
-        {% end %}
+
+        <table class="table" id="assignment_table">
+          <thead>
+            <tr>
+              <th>Assignment</th>
+              <th>Completed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for assignment in assignment_statuses %}
+              <tr>
+                <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+                {% if assignment[1]["passed"] %}
+                  <td><label>
+                    <img src="/static/greencheck.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+                  </label></td>
+                {% else %}
+                  <td><label>
+                    <img src="/static/unchecked.png" alt="Not completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+                  </label></td>
+                {% end %}
+              </tr>
+            {% end %}
+          </tbody>
+        </table>
       {% end %}
 
       <br /><br />

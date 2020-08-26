@@ -8,21 +8,34 @@
       <div class="column is-half">
 
         {% if len(problem_statuses) > 0 %}
-          <h4>Problems</h4></br>
 
-          {% for problem in problem_statuses %}
-            <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a>
-            {% if problem[1]["passed"] %}
-              <label class="is-pulled-right">
-                <img src="/static/greencheck.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
-              </label>
-            {% else %}
-              <label class="is-pulled-right">
-                <img src="/static/unchecked.png" alt="Not completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
-              </label>
-            {% end %}
-            <hr style="border: 2px solid#F6F5F5;" />
-          {% end %}
+          <table class="table" id="assignment_table">
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th># Submissions</th>
+                <th>Completed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for problem in problem_statuses %}
+                <tr>
+                  <td><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
+                  <td>{{ problem[1]["num_submissions"] }}</td>
+                  {% if problem[1]["passed"] %}
+                    <td><label>
+                      <img src="/static/greencheck.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+                    </label></td>
+                  {% else %}
+                    <td><label>
+                      <img src="/static/unchecked.png" alt="Not completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+                    </label></td>
+                  {% end %}
+                </tr>
+              {% end %} 
+            </tbody>
+          </table>
+
         {% end %}
 
         <br /><br />
