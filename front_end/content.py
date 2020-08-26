@@ -188,6 +188,11 @@ class Content:
                      VALUES (?, ?, ?)'''
             self.c.execute(sql, (user_id, role, course_id,))
 
+    def get_user_count(self):
+        sql = 'SELECT COUNT(*) AS count FROM users'
+        self.c.execute(sql)
+        return self.c.fetchone()["count"]
+
     def get_course_ids(self):
         sql = 'SELECT course_id FROM courses'
         self.c.execute(sql)
@@ -290,7 +295,7 @@ class Content:
                     FROM problems
                     WHERE course_id = ? AND assignment_id = ? AND visible = 1) b
                     ORDER BY user_id'''
-        
+
         self.c.execute(sql, (str(course_id), str(assignment_id), str(course_id), str(assignment_id),))
         for user in self.c.fetchall():
             user_id = user["user_id"]
@@ -298,7 +303,7 @@ class Content:
             scores_dict = {"user_id": user_id, "percent_passed": percent_passed}
             scores.append([user_id, scores_dict])
 
-        return scores     
+        return scores
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []

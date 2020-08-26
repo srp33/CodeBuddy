@@ -125,11 +125,11 @@ class BaseUserHandler(RequestHandler):
 class InitializeHandler(BaseUserHandler):
     def get(self):
         try:
-            if not content.check_administrator_exists():
+            if content.get_user_count() == 0:
+                self.redirect("/login")
+            else:
                 content.add_permissions(self.get_current_user(), "administrator", None)
                 self.render("initialize.html", user_logged_in=user_logged_in_var.get())
-            else:
-                self.redirect("/")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -154,6 +154,11 @@ class EditCourseHandler(BaseUserHandler):
 
     def post(self, course):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html")
+                return
+
             title = self.get_body_argument("title").strip()
             visible = self.get_body_argument("is_visible") == "Yes"
             introduction = self.get_body_argument("introduction").strip()
@@ -191,6 +196,10 @@ class DeleteCourseHandler(BaseUserHandler):
 
     def post(self, course):
         try:
+            if self.get_current_role() != "administrator":
+                self.render("permissions.html")
+                return
+
             content.delete_course(content.get_course_basics(course))
             result = "Success: Course deleted."
 
@@ -211,6 +220,11 @@ class DeleteCourseSubmissionsHandler(BaseUserHandler):
 
     def post(self, course):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html")
+                return
+
             content.delete_course_submissions(content.get_course_basics(course))
             result = "Success: Course submissions deleted."
 
@@ -230,6 +244,10 @@ class ImportCourseHandler(BaseUserHandler):
 
     def post(self):
         try:
+            if self.get_current_role() != "administrator":
+                self.render("permissions.html")
+                return
+
             result = ""
             if "zip_file" in self.request.files and self.request.files["zip_file"][0]["content_type"] == 'application/zip':
                 zip_file_name = self.request.files["zip_file"][0]["filename"]
@@ -371,6 +389,11 @@ class EditAssignmentHandler(BaseUserHandler):
 
     def post(self, course, assignment):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor" and role != "assistant":
+                self.render("permissions.html")
+                return
+
             title = self.get_body_argument("title").strip()
             visible = self.get_body_argument("is_visible") == "Yes"
             introduction = self.get_body_argument("introduction").strip()
@@ -406,6 +429,11 @@ class DeleteAssignmentHandler(BaseUserHandler):
 
     def post(self, course, assignment):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html")
+                return
+
             content.delete_assignment(content.get_assignment_basics(course, assignment))
             result = "Success: Assignment deleted."
 
@@ -426,6 +454,11 @@ class DeleteAssignmentSubmissionsHandler(BaseUserHandler):
 
     def post(self, course, assignment):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html")
+                return
+
             content.delete_assignment_submissions(content.get_assignment_basics(course, assignment))
             result = "Success: Assignment submissions deleted."
 
@@ -453,18 +486,20 @@ class EditProblemHandler(BaseUserHandler):
             if role == "administrator" or role == "instructor":
                 problems = content.get_problems(course, assignment)
                 problem_details = content.get_problem_details(course, assignment, problem)
-            else:
+
                 self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     def post(self, course, assignment, problem):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html")
+                return
+
             title = self.get_body_argument("title").strip() #required
             visible = self.get_body_argument("is_visible") == "Yes"
             instructions = self.get_body_argument("instructions").strip().replace("\r", "") #required
@@ -539,6 +574,11 @@ class DeleteProblemHandler(BaseUserHandler):
 
     def post(self, course, assignment, problem):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html")
+                return
+
             content.delete_problem(content.get_problem_basics(course, assignment, problem))
             result = "Success: Problem deleted."
 
@@ -561,6 +601,11 @@ class DeleteProblemSubmissionsHandler(BaseUserHandler):
 
     def post(self, course, assignment, problem):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html")
+                return
+
             content.delete_problem_submissions(content.get_problem_basics(course, assignment, problem))
             result = "Success: Problem submissions deleted."
 
@@ -587,7 +632,8 @@ class RunCodeHandler(BaseUserHandler):
 
             out_dict["code_output"] = code_output
             out_dict["error_occurred"] = error_occurred
-
+        except ConnectionError as inst:
+            out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -669,19 +715,20 @@ class ViewAnswerHandler(BaseUserHandler):
 
 class AddAdminHandler(BaseUserHandler):
     def get(self):
-        if self.get_current_role() == "administrator":
-            try:
-                self.render("add_admin.html", admins=content.get_users_from_role("administrator", None), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+        try:
+            if self.get_current_role() == "administrator":
+                self.render("add_admin.html", courses=content.get_courses(True), admins=content.get_users_from_role("administrator", None), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     def post(self):
         try:
+            if self.get_current_role() != "administrator":
+                self.render("permissions.html")
+                return
+
             new_admin = self.get_body_argument("new_admin")
 
             if content.check_user_exists(new_admin):
@@ -699,18 +746,18 @@ class AddInstructorHandler(BaseUserHandler):
         try:
             if self.get_current_role() == "administrator":
                 course_basics = content.get_course_basics(course)
-            else:
                 self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role("instructor", course_basics["id"]), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     def post(self, course):
         try:
+            if self.get_current_role() != "administrator":
+                self.render("permissions.html")
+                return
+
             course_basics = content.get_course_basics(course)
             new_instructor = self.get_body_argument("new_inst")
 
@@ -727,20 +774,22 @@ class AddInstructorHandler(BaseUserHandler):
 class AddAssistantHandler(BaseUserHandler):
     def get(self, course):
         try:
-            if self.get_current_role() == "instructor":
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
                 course_basics = content.get_course_basics(course)
-            else:
                 self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     def post(self, course):
         try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html")
+                return
+
             course_basics = content.get_course_basics(course)
             new_assistant = self.get_body_argument("new_assistant")
 
@@ -826,18 +875,18 @@ class SummarizeLogsHandler(BaseUserHandler):
         try:
             if self.get_current_role() == "administrator":
                 years, months, days = get_list_of_dates()
-            else:
                 self.render("summarize_logs.html", filter_list = sorted(content.get_root_dirs_to_log()), years=years, months=months, days=days, show_table=False, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-        else:
-            try:
+            else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     def post(self):
         try:
+            if self.get_current_role() != "administrator":
+                self.render("permissions.html")
+                return
+
             filter = self.get_body_argument("filter_select")
             year = self.get_body_argument("year_select")
             if year != "No filter":
@@ -909,7 +958,7 @@ class DevelopmentLoginHandler(RequestHandler):
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     async def get(self):
         try:
-            redirect_uri = f"https://codebuddy.byu.edu/login"
+            redirect_uri = f"https://{settings_dict['domain']}/login"
 
             # Examples: https://www.programcreek.com/python/example/95028/tornado.auth
             if self.get_argument('code', False):
@@ -973,9 +1022,11 @@ if __name__ == "__main__":
     if "PORT" in os.environ and "MPORT" in os.environ:
         application = make_app()
 
-        #TODO: Use something other than the password. Store in a file?
-        application.settings["cookie_secret"] = read_file("/app/cookie_secret.txt")
-        application.settings["google_oauth"] = {"key": "167847101372-vsig609s07dn73fjqd2gqjsg3unto2hm.apps.googleusercontent.com", "secret": "psXlEmFQws_qhMgeWGyi-ysN"}
+        secrets_dict = load_yaml_dict(read_file("/app/secrets.yaml"))
+        application.settings["cookie_secret"] = secrets_dict["cookie"]
+        application.settings["google_oauth"] = {
+            "key": secrets_dict["google_oauth_key"],
+            "secret": secrets_dict["google_oauth_secret"]}
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
         content = Content(settings_dict)

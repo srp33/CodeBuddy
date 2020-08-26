@@ -1,4 +1,5 @@
-mode: development
+mode: production
+domain: codebuddy.byu.edu
 db_name: CodeBuddy.db
 back_ends:
     free_response:
