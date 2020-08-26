@@ -811,7 +811,8 @@ class ViewScoresHandler(BaseUserHandler):
                 assignment_basics = content.get_assignment_basics(course, assignment)
                 assignment_id = assignment_basics["id"]
                 out_file = f"Assignment_{assignment_id}_Scores.csv"
-                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), out_file=out_file)
+
+                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), out_file=out_file, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -836,7 +837,7 @@ class StudentScoresHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor" or role == "assistant":
-                self.render("student_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, student_id))
+                self.render("student_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, student_id), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -851,7 +852,8 @@ class StudentProblemHandler(BaseUserHandler):
                 problems = content.get_problems(course, assignment, show)
                 problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
                 back_end = settings_dict["back_ends"][problem_details["back_end"]]
-                self.render("student_problem.html", student_id=student_id, courses=content.get_courses(show), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course, show), assignment_basics=content.get_assignment_basics(course, assignment), problems=problems, problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, student_id), user_logged_in=user_logged_in_var.get())
+
+                self.render("student_problem.html", student_id=student_id, courses=content.get_courses(show), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course, show), assignment_basics=content.get_assignment_basics(course, assignment), problems=problems, problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, student_id), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html")
         except Exception as inst:
