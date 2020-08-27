@@ -516,6 +516,8 @@ class EditProblemHandler(BaseUserHandler):
                                 content.save_problem(problem_basics, problem_details)
 
             problems = content.get_problems(course, assignment)
+            problem_basics = content.get_problem_basics(course, assignment, problem)
+            problem_details = content.get_problem_details(course, assignment, problem)
             self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
