@@ -144,7 +144,7 @@
                       result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p>"; 
                   {% end %}
                   {% if next_problem %}
-                      result += "<p><strong><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}'>Next Problem</a></strong></p>\n\n";
+                      result += "<p><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}'>Next problem</a></p>\n\n";
                   {% end %}
 
                   result += "</div>\n\n"
