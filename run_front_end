@@ -20,7 +20,6 @@ function run_container {
 
   container_name=${subdir_name}_$USER
 
-  #docker rm $(docker stop $(docker ps -a -q --filter ancestor=${image_name} --format="{{.ID}}") 2> /dev/null) 2> /dev/null
   docker container stop ${container_name} 2> /dev/null
 
   set -o errexit
@@ -36,16 +35,8 @@ function run_container {
     --name ${container_name} \
     ${run_args} \
     ${image_name}
-
-  #--name=name
-  #--security-opt=option
-  #  no-new-privileges
-  #-u=user
-  #--tmpfs /tmp
 }
 
-# Use this if you want to run the front end on your local computer
-#run_container front_end "--user $(id -u):$(id -g) -p 9001:9001 -e NUM_PROCESSES=4 -e PORT=9001 -e MPORT=9799 -v $(pwd)/course:/course -v $(pwd)/data:/data -v $(pwd)/submissions:/submissions -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
+#run_container front_end "--user $(id -u):$(id -g) --network host -e NUM_PROCESSES=4 -e PORT=9001 -e MPORT=9799 -v $(pwd)/database:/database -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
 
-# Use this if you want to be able to run front end and back end on a Linux server
 run_container front_end "--user $(id -u):$(id -g) --network host -e NUM_PROCESSES=4 -e PORT=8008 -e MPORT=9799 -v $(pwd)/database:/database -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
