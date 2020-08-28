@@ -8,22 +8,41 @@
       <div class="column is-half">
 
         {% if len(problems) > 0 %}
-          <h4>Problems</h4></br>
 
-          {% for problem in problems %}
-            <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a>
-              <label class="is-pulled-right">
-                <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}">
-                  <img src="/static/trashcan.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
-                </a> 
-              </label>
-              <label class="is-pulled-right">
-                <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}">
-                  <img src="/static/editicon.png" alt="Edit problem" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
-                </a>
-              </label>
-            <hr style="border: 2px solid#F6F5F5;" />
-          {% end %}
+          <table class="table" id="assignment_table">
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th>Visibility</th>
+                <th>Edit</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for problem in problems %}
+                <tr>
+                  <td><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
+                  {% if problem[1]["visible"] == 0 %}
+                    <td>Hidden</td>
+                  {% else %}
+                    <td>Visible</td>
+                  {% end %}
+                  <td><label>
+                    <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}">
+                      <img src="/static/editicon.png" alt="Edit problem" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
+                    </a>
+                  </label></td>
+                  <td><label>
+                    <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}">
+                      <img src="/static/trashcan.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px; padding:12px;"/>
+                    </a> 
+                  </label></td>
+                </tr>
+              {% end %}  
+            </tbody>
+          </table>
+        {% else %}
+        <p><strong>No problems have been created for this assignment.</strong></p>
         {% end %}
 
       </div>
@@ -31,16 +50,21 @@
 
     <p>
         {% if role == "administrator" or role == "instructor" or role == "assistant" %}
-            <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">New problem</a>
-            | <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit assignment</a>
-            | <a href="/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">View scores</a>
-            | <a href="/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}">Download scores</a>
+            <a href="/course/{{ course_basics["id"] }}">Back to course</a> |
+            <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">New problem</a> |
+            <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit assignment</a>
         {% end %}
 
         {% if role == "administrator" or role == "instructor" %}
-            | <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
+          | <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
             | <a href="/delete_assignment_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment submissions</a>
         {% end %}
+    </p>
+    <p>
+      {% if role == "administrator" or role == "instructor" or role == "assistant" %}
+        <a href="/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">View scores</a> |
+        <a href="/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}">Download scores</a>
+      {% end %}
     </p>
   {% else %}
     <p>This assignment does not exist.</p>
@@ -48,3 +72,4 @@
 {% else %}
   <p>This course does not exist.</p>
 {% end %}
+<br /><br />

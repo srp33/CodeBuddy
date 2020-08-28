@@ -240,54 +240,97 @@ class Content:
 
     def get_courses(self, show_hidden=True):
         courses = []
-        course_ids = self.get_course_ids()
 
-        for course_id in course_ids:
-            course_basics = self.get_course_basics(course_id)
-            if course_basics["visible"] or show_hidden:
-                courses.append([course_id, course_basics])
-
-        return self.sort_nested_list(courses)
-
-    def get_course_title_from_id(self, course_id, show_hidden=True):
-        sql = '''SELECT title
+        sql = '''SELECT course_id, title, visible
                  FROM courses
-                 WHERE course_id = ?'''
+                 ORDER BY title'''
+        self.c.execute(sql)
 
-        self.c.execute(sql, (course_id,))
-        row = self.c.fetchone()
-        return row["title"]
+        for course in self.c.fetchall():
+            if course["visible"] or show_hidden:
+                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "exists": True}
+                courses.append([course["course_id"], course_basics])
 
-    def get_assignment_title_from_id(self, assignment_id, show_hidden=True):
-        sql = '''SELECT title
-                 FROM assignments
-                 WHERE assignment_id = ?'''
-
-        self.c.execute(sql, (assignment_id,))
-        row = self.c.fetchone()
-        return row["title"]
+        return courses
 
     def get_assignments(self, course_id, show_hidden=True):
         assignments = []
-        assignment_ids = self.get_assignment_ids(course_id)
 
-        for assignment_id in assignment_ids:
-            assignment_basics = self.get_assignment_basics(course_id, assignment_id)
-            if assignment_basics["visible"] or show_hidden:
-                assignments.append([assignment_id, assignment_basics])
+        sql = '''SELECT assignment_id, title, visible
+                 FROM assignments
+                 WHERE course_id = ?
+                 ORDER BY title'''
+        self.c.execute(sql, (str(course_id),))
 
-        return self.sort_nested_list(assignments)
+        for assignment in self.c.fetchall():
+            if assignment["visible"] or show_hidden:
+                course_basics = self.get_course_basics(course_id)
+                assignment_basics = {"id": assignment["assignment_id"], "title": assignment["title"], "visible": assignment["visible"], "exists": False, "course": course_basics}
+                assignments.append([assignment["assignment_id"], assignment_basics])
+
+        return assignments
 
     def get_problems(self, course_id, assignment_id, show_hidden=True):
         problems = []
-        problem_ids = self.get_problem_ids(course_id, assignment_id)
 
-        for problem_id in problem_ids:
-            problem_basics = self.get_problem_basics(course_id, assignment_id, problem_id)
-            if problem_basics["visible"] or show_hidden:
-                problems.append([problem_id, problem_basics, course_id, assignment_id])
+        sql = '''SELECT problem_id, title, visible
+                 FROM problems
+                 WHERE course_id = ?
+                 AND assignment_id = ?
+                 ORDER BY title'''
+        self.c.execute(sql, (str(course_id), str(assignment_id),))
+        
+        for problem in self.c.fetchall():
+            if problem["visible"] or show_hidden:
+                assignment_basics = self.get_assignment_basics(course_id, assignment_id)
+                problem_basics = {"id": problem["problem_id"], "title": problem["title"], "visible": problem["visible"], "exists": True, "assignment": assignment_basics}
+                problems.append([problem["problem_id"], problem_basics, course_id, assignment_id])
 
-        return self.sort_nested_list(problems)
+        return problems
+
+    def get_assignment_statuses(self, course_id, user_id):
+        #Gets whether or not a student has passed each assignment in the course.
+        assignment_statuses = []
+        assignment_dict = {"id": "", "title": "", "passed": 0}
+
+        #FINISH ME - include COUNT for num problems passed and COUNT for total num problems, then calculate "passed" manually
+        sql = '''SELECT pass_status.assignment_id,
+                        pass_status.title,
+                        SUM(pass_status.passed) AS passed,
+                        num_status.problem_count
+                 FROM
+                   (SELECT a.course_id, a.assignment_id, p.problem_id, a.title, IFNULL(MAX(s.passed), 0) AS passed
+                    FROM assignments a
+                    INNER JOIN problems p
+                    ON a.course_id = p.course_id AND a.assignment_id = p.assignment_id
+                    LEFT JOIN submissions s
+                    ON p.course_id = s.course_id AND p.assignment_id = s.assignment_id AND p.problem_id = s.problem_id
+                    WHERE p.course_id = ?
+                    AND a.visible = 1
+                    AND p.visible = 1
+                    AND (s.user_id = ? OR s.user_id IS NULL)
+                    GROUP BY a.course_id, a.assignment_id, p.problem_id) pass_status
+                 INNER JOIN
+                   (SELECT assignment_id, COUNT(problem_id) AS problem_count
+                    FROM problems
+                    WHERE course_id = ? AND visible = 1
+                    GROUP BY course_id, assignment_id) num_status
+                 ON pass_status.assignment_id = num_status.assignment_id
+                 GROUP BY pass_status.course_id, pass_status.assignment_id
+                 ORDER BY pass_status.title'''
+
+        self.c.execute(sql,(str(course_id), str(user_id), str(course_id),))
+        for row in self.c.fetchall():
+            num_problems = row["problem_count"]
+            num_passed = row["passed"]
+            if num_problems == num_passed:
+                passed = 1
+            else:
+                passed = 0
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": passed}
+            assignment_statuses.append([row["assignment_id"], assignment_dict])
+
+        return assignment_statuses
 
     def get_problem_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
         # Gets the number of submissions a student has made for each problem in an assignment and whether or not they've passed the problem.
@@ -297,28 +340,27 @@ class Content:
         sql = '''SELECT p.problem_id,
                         p.title,
                         IFNULL(MAX(s.passed), 0) AS passed,
-                        COUNT(s.submission_id) AS num_submissions,
-                        p.visible
+                        COUNT(s.submission_id) AS num_submissions
                  FROM problems p
                  LEFT JOIN submissions s
-                  ON p.problem_id = s.problem_id
-                 WHERE p.assignment_id = ?
+                  ON p.course_id = s.course_id AND p.assignment_id = s.assignment_id AND p.problem_id = s.problem_id
+                 WHERE p.course_id = ?
+                  AND p.assignment_id = ? 
                   AND (s.user_id = ? OR s.user_id IS NULL)
+                  AND p.visible = 1
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
-        self.c.execute(sql,(assignment_id, user_id,))
+        self.c.execute(sql,(course_id, assignment_id, user_id,))
 
         for row in self.c.fetchall():
-            if row["visible"] or show_hidden:
-                problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"]}
-                problem_statuses.append([row["problem_id"], problem_dict])
+            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"]}
+            problem_statuses.append([row["problem_id"], problem_dict])
 
         return problem_statuses
 
     def get_assignment_scores(self, course_id, assignment_id):
         #Gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment.
         scores = []
-        scores_dict = {"user_id": "", "percent_passed": ""}
 
         sql = '''SELECT a.user_id, SUM(passed) * 100.0 / b.num_problems AS percent_passed
                  FROM
@@ -334,10 +376,11 @@ class Content:
 
         self.c.execute(sql, (course_id, assignment_id, course_id, assignment_id,))
         for user in self.c.fetchall():
-            user_id = user["user_id"]
-            percent_passed = round(user["percent_passed"],2)
-            scores_dict = {"user_id": user_id, "percent_passed": percent_passed}
-            scores.append([user_id, scores_dict])
+            if user["percent_passed"]:
+                user_id = user["user_id"]
+                percent_passed = round(user["percent_passed"],2)
+                scores_dict = {"user_id": user_id, "percent_passed": percent_passed}
+                scores.append([user_id, scores_dict])
 
         return scores
 
@@ -480,14 +523,6 @@ class Content:
 
         return self.c.execute(sql, (problem, user,)).fetchone()[0]
 
-    def get_user_total_submissions(self, user):
-        sql = '''SELECT COUNT(*)
-                 FROM submissions
-                 WHERE user_id = ?'''
-
-        num_submissions = self.c.execute(sql, (user,)).fetchone()[0]
-        return num_submissions
-
     def get_next_submission_id(self, course, assignment, problem, user):
         return self.get_num_submissions(course, assignment, problem, user) + 1
 
@@ -578,36 +613,6 @@ class Content:
             problem_dict["credit"] = convert_markdown_to_html(problem_dict["credit"])
             problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
 
-        return problem_dict
-
-    def course_ids_to_titles(self):
-        course_dict = {}
-        sql = '''SELECT course_id, title
-                 FROM courses'''
-
-        self.c.execute(sql)
-        for course in self.c.fetchall():
-            course_dict[course["course_id"]] = course["title"]
-        return course_dict
-
-    def assignment_ids_to_titles(self):
-        assignment_dict = {}
-        sql = '''SELECT assignment_id, title
-                 FROM assignments'''
-
-        self.c.execute(sql)
-        for assignment in self.c.fetchall():
-            assignment_dict[assignment["assignment_id"]] = assignment["title"]
-        return assignment_dict
-
-    def problem_ids_to_titles(self):
-        problem_dict = {}
-        sql = '''SELECT problem_id, title
-                 FROM problems'''
-
-        self.c.execute(sql)
-        for problem in self.c.fetchall():
-            problem_dict[problem["problem_id"]] = problem["title"]
         return problem_dict
 
     def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):
@@ -721,10 +726,6 @@ class Content:
 
         self.c.execute(sql, (json.dumps(user_dict), user_id,))
 
-    def update_role(self, user_id, new_role):
-        sql = 'UPDATE users SET role = ? WHERE user_id = ?'
-        self.c.execute(sql, (new_role, user_id,))
-
     def delete_rows_with_value(self, table, col_name, value):
         sql = 'DELETE FROM ' + table + ' WHERE ' + col_name + ' = ?'
         self.c.execute(sql, (value,))
@@ -734,16 +735,16 @@ class Content:
         self.c.execute(sql)
 
     def delete_problem(self, problem_basics):
-        self.delete_rows_with_value("problems", "problem_id", problem_basics["id"])
         self.delete_problem_submissions(problem_basics)
+        self.delete_rows_with_value("problems", "problem_id", problem_basics["id"])
 
     def delete_assignment(self, assignment_basics):
-        self.delete_rows_with_value("assignments", "assignment_id", assignment_basics["id"])
         self.delete_assignment_submissions(assignment_basics)
+        self.delete_rows_with_value("assignments", "assignment_id", assignment_basics["id"])
 
     def delete_course(self, course_basics):
-        self.delete_rows_with_value("courses", "course_id", course_basics["id"])
         self.delete_course_submissions(course_basics)
+        self.delete_rows_with_value("courses", "course_id", course_basics["id"])
         self.delete_rows_with_value("permissions", "course_id", course_basics["id"])
 
     def delete_course_submissions(self, course_basics):

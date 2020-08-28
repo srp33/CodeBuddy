@@ -2,28 +2,34 @@
   {% if assignment_basics["exists"] %}
     <h2>{{ assignment_basics["title"] }}</h2>
 
-    <h4>View scores</h4>
-    <p>Click on a student's ID to view their score and past submissions for each problem in this assignment.</p>
-
     <div class="columns">
       <div class="column is-half">
 
-        <table class="table" id="scores_table">
-          <thead>
-            <tr>
-              <th>Student ID</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for score in scores %}
+        {% if len(scores) == 0 %}
+          <p><strong>No submissions have been made for this assignment.</strong></p>
+        {% else %}
+
+          <h4>View scores</h4>
+          <p>Click on a student's ID to view their score and past submissions for each problem in this assignment.</p>
+
+          <table class="table" id="scores_table">
+            <thead>
               <tr>
-              <td><a href="/student_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ score[0] }}">{{ score[0] }}</a></td>
-              <td>{{ score[1]["percent_passed"] }}%</td>
+                <th>Student ID</th>
+                <th>Score</th>
               </tr>
-            {% end %}    
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for score in scores %}
+                <tr>
+                <td><a href="/student_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ score[0] }}">{{ score[0] }}</a></td>
+                <td>{{ score[1]["percent_passed"] }}%</td>
+                </tr>
+              {% end %}    
+            </tbody>
+          </table>
+
+        {% end %}
 
         <br />
         <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to assignment</a> |
@@ -33,3 +39,4 @@
     </div>
   {% end %}
 {% end %}
+<br /><br />
