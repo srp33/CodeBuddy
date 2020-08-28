@@ -25,11 +25,11 @@
                 <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
                 {% if assignment[1]["passed"] %}
                   <td><label>
-                    <img src="/static/greencheck.png" alt="Completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+                    <img src="/static/greencheck.png" alt="Completed" height="30" width="30" style="vertical-align: middle;"/>
                   </label></td>
                 {% else %}
                   <td><label>
-                    <img src="/static/unchecked.png" alt="Not completed" height="50" width="50" style="vertical-align:top; position:relative; bottom:10px;"/>
+                    <img src="/static/unchecked.png" alt="Not completed" height="30" width="30" style="vertical-align: middle;"/>
                   </label></td>
                 {% end %}
               </tr>
