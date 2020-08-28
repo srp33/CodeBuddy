@@ -279,7 +279,7 @@ class Content:
                  AND assignment_id = ?
                  ORDER BY title'''
         self.c.execute(sql, (str(course_id), str(assignment_id),))
-        
+
         for problem in self.c.fetchall():
             if problem["visible"] or show_hidden:
                 assignment_basics = self.get_assignment_basics(course_id, assignment_id)
@@ -291,7 +291,7 @@ class Content:
     def get_assignment_statuses(self, course_id, user_id):
         #Gets whether or not a student has passed each assignment in the course.
         assignment_statuses = []
-        assignment_dict = {"id": "", "title": "", "passed": 0}
+        assignment_dict = {"id": "", "title": "", "passed": 0, "in_progress": 0}
 
         #FINISH ME - include COUNT for num problems passed and COUNT for total num problems, then calculate "passed" manually
         sql = '''SELECT pass_status.assignment_id,
@@ -323,11 +323,16 @@ class Content:
         for row in self.c.fetchall():
             num_problems = row["problem_count"]
             num_passed = row["passed"]
-            if num_problems == num_passed:
+            if num_problems == num_passed and num_problems > 0:
                 passed = 1
+                in_progress = 0
             else:
                 passed = 0
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": passed}
+                if num_passed > 0:
+                    in_progress = 1
+                else:
+                    in_progress = 0
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": passed, "in_progress": in_progress}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
         return assignment_statuses
@@ -335,7 +340,7 @@ class Content:
     def get_problem_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
         # Gets the number of submissions a student has made for each problem in an assignment and whether or not they've passed the problem.
         problem_statuses = []
-        problem_dict = {"id": "", "title": "", "passed": 0, "num_submissions": 0}
+        problem_dict = {"id": "", "title": "", "passed": 0, "num_submissions": 0, "in_progress": 0}
 
         sql = '''SELECT p.problem_id,
                         p.title,
@@ -353,7 +358,11 @@ class Content:
         self.c.execute(sql,(course_id, assignment_id, user_id,))
 
         for row in self.c.fetchall():
-            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"]}
+            if row["num_submissions"] > 0:
+                in_progress = 1
+            else:
+                in_progress = 0
+            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": in_progress}
             problem_statuses.append([row["problem_id"], problem_dict])
 
         return problem_statuses
