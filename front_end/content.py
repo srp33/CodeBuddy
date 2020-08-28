@@ -245,6 +245,7 @@ class Content:
                  FROM courses
                  ORDER BY title'''
         self.c.execute(sql)
+
         for course in self.c.fetchall():
             if course["visible"] or show_hidden:
                 course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "exists": True}
@@ -260,6 +261,7 @@ class Content:
                  WHERE course_id = ?
                  ORDER BY title'''
         self.c.execute(sql, (str(course_id),))
+
         for assignment in self.c.fetchall():
             if assignment["visible"] or show_hidden:
                 course_basics = self.get_course_basics(course_id)
@@ -277,6 +279,7 @@ class Content:
                  AND assignment_id = ?
                  ORDER BY title'''
         self.c.execute(sql, (str(course_id), str(assignment_id),))
+        
         for problem in self.c.fetchall():
             if problem["visible"] or show_hidden:
                 assignment_basics = self.get_assignment_basics(course_id, assignment_id)
