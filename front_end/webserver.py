@@ -128,7 +128,7 @@ class InitializeHandler(BaseUserHandler):
             if content.get_user_count() == 0:
                 self.redirect("/login")
             else:
-                content.add_permissions(self.get_current_user(), "administrator", None)
+                content.add_admin_permissions(self.get_current_user())
                 self.render("initialize.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -170,7 +170,7 @@ class EditCourseHandler(BaseUserHandler):
             if title == "" or introduction == "":
                 result = "Error: Missing title or introduction."
             else:
-                if content.has_duplicate_title(content.get_courses(), course, title):
+                if content.has_duplicate_title(content.get_courses(), course_basics["id"], title):
                     result = "Error: A course with that title already exists."
                 else:
                     if re.search(r"[^\w ]", title):
@@ -188,7 +188,7 @@ class DeleteCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
             if self.get_current_role() == "administrator":
-                self.render("delete_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                self.render("delete_course.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -203,7 +203,7 @@ class DeleteCourseHandler(BaseUserHandler):
             content.delete_course(content.get_course_basics(course))
             result = "Success: Course deleted."
 
-            self.render("delete_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("delete_course.html", courses=content.get_courses(), course_basics=content.get_course_basics(None), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -212,7 +212,7 @@ class DeleteCourseSubmissionsHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor":
-                self.render("delete_course_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                self.render("delete_course_submissions.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -228,7 +228,7 @@ class DeleteCourseSubmissionsHandler(BaseUserHandler):
             content.delete_course_submissions(content.get_course_basics(course))
             result = "Success: Course submissions deleted."
 
-            self.render("delete_course_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("delete_course_submissions.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -260,34 +260,36 @@ class ImportCourseHandler(BaseUserHandler):
                 version = int(zip_file.read(f"{descriptor}/VERSION"))
 
                 course_list = json.loads(zip_file.read(f"{descriptor}/courses.json"))[0]
-                course_id = course_list[0]
+                course_id = None
                 course_basics = content.get_course_basics(course_id)
+                content.specify_course_basics(course_basics, course_list[1], bool(course_list[3]))
 
                 # Check whether course already exists.
-                if course_basics["exists"]:
-                    result = f"Error: A course with this id [{course_basics['id']}] already exists, so it cannot be imported."
+                if content.has_duplicate_title(content.get_courses(), course_basics["id"], course_list[1]):
+                    result = f"Error: A course with that title already exists."
                 else:
-                    assignment_lists = json.loads(zip_file.read(f"{descriptor}/assignments.json"))
-                    problem_lists = json.loads(zip_file.read(f"{descriptor}/problems.json"))
-
-                    content.specify_course_basics(course_basics, course_list[1], bool(course_list[3]))
-
                     course_details = content.get_course_details(course_id)
                     content.specify_course_details(course_details, course_list[2], convert_string_to_date(course_list[4]), convert_string_to_date(course_list[5]))
                     content.save_course(course_basics, course_details)
 
+                    assignment_id_dict = {}
+                    assignment_lists = json.loads(zip_file.read(f"{descriptor}/assignments.json"))
                     for assignment_list in assignment_lists:
-                        assignment_basics = content.get_assignment_basics(assignment_list[0], assignment_list[1])
-                        assignment_details = content.get_assignment_details(assignment_list[0], assignment_list[1])
+                        assignment_id = None
+                        assignment_basics = content.get_assignment_basics(course_basics["id"], assignment_id)
+                        assignment_details = content.get_assignment_details(course_basics["id"], assignment_id)
 
-                        content.specify_assignment_basics(assignment_basics, assignment_list[2], bool(course_list[4]))
+                        content.specify_assignment_basics(assignment_basics, assignment_list[2], bool(assignment_list[4]))
                         content.specify_assignment_details(assignment_details, assignment_list[3], convert_string_to_date(assignment_list[5]), convert_string_to_date(assignment_list[6]))
 
                         content.save_assignment(assignment_basics, assignment_details)
+                        assignment_id_dict[assignment_list[1]] = assignment_basics["id"]
 
+                    problem_lists = json.loads(zip_file.read(f"{descriptor}/problems.json"))
                     for problem_list in problem_lists:
-                        problem_basics = content.get_problem_basics(problem_list[0], problem_list[1], problem_list[2])
-                        problem_details = content.get_problem_details(problem_list[0], problem_list[1], problem_list[2])
+                        problem_id = None
+                        problem_basics = content.get_problem_basics(course_basics["id"], assignment_id_dict[problem_list[1]], problem_id)
+                        problem_details = content.get_problem_details(course_basics["id"], assignment_id_dict[problem_list[1]], problem_id)
 
                         content.specify_problem_basics(problem_basics, problem_list[3], bool(problem_list[4]))
 
@@ -405,7 +407,7 @@ class EditAssignmentHandler(BaseUserHandler):
             if title == "" or introduction == "":
                 result = "Error: Missing title or introduction."
             else:
-                if content.has_duplicate_title(content.get_assignments(course), assignment, title):
+                if content.has_duplicate_title(content.get_assignments(course), assignment_basics["id"], title):
                     result = "Error: An assignment with that title already exists."
                 else:
                     content.specify_assignment_basics(assignment_basics, title, visible)
@@ -437,7 +439,7 @@ class DeleteAssignmentHandler(BaseUserHandler):
             content.delete_assignment(content.get_assignment_basics(course, assignment))
             result = "Success: Assignment deleted."
 
-            self.render("delete_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("delete_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -523,7 +525,7 @@ class EditProblemHandler(BaseUserHandler):
             if title == "" or instructions == "" or answer_code == "":
                 result = "Error: One of the required fields is missing."
             else:
-                if content.has_duplicate_title(content.get_problems(course, assignment), problem, title):
+                if content.has_duplicate_title(content.get_problems(course, assignment), problem_basics["id"], title):
                     result = "Error: A problem with that title already exists in this assignment."
                 else:
                     if (data_url == "" and data_file_name != "") or (data_url != "" and data_file_name == ""):
@@ -732,7 +734,7 @@ class AddAdminHandler(BaseUserHandler):
             new_admin = self.get_body_argument("new_admin")
 
             if content.check_user_exists(new_admin):
-                content.add_permissions(new_admin, "administrator", None)
+                content.add_admin_permissions(new_admin)
                 result = f"Success! {new_admin} is an administrator."
             else:
                 result = f"Error: The specified user does not exist."
