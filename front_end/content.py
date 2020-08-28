@@ -320,8 +320,6 @@ class Content:
         for row in self.c.fetchall():
             num_problems = row["problem_count"]
             num_passed = row["passed"]
-            print(num_problems)
-            print(num_passed)
             if num_problems == num_passed:
                 passed = 1
             else:
@@ -349,7 +347,7 @@ class Content:
                   AND p.visible = 1
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
-        self.c.execute(sql,(assignment_id, user_id,))
+        self.c.execute(sql,(course_id, assignment_id, user_id,))
 
         for row in self.c.fetchall():
             problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"]}
