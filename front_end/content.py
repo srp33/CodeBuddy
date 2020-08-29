@@ -162,7 +162,7 @@ class Content:
         sql = '''SELECT user_id
                  FROM permissions
                  WHERE role = ?
-                 AND (course_id = ? OR course_id IS NULL)'''
+                   AND (course_id = ? OR course_id IS NULL)'''
 
         rows = self.c.execute(sql, (role, course_id,))
         return [row["user_id"] for row in rows]
@@ -233,9 +233,10 @@ class Content:
 
         sql = '''SELECT problem_id
                  FROM problems
-                 WHERE assignment_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
 
-        self.c.execute(sql, (assignment_id,))
+        self.c.execute(sql, (course_id, assignment_id,))
         return [problem[0] for problem in self.c.fetchall()]
 
     def get_courses(self, show_hidden=True):
@@ -276,7 +277,7 @@ class Content:
         sql = '''SELECT problem_id, title, visible
                  FROM problems
                  WHERE course_id = ?
-                 AND assignment_id = ?
+                   AND assignment_id = ?
                  ORDER BY title'''
         self.c.execute(sql, (str(course_id), str(assignment_id),))
 
@@ -485,9 +486,10 @@ class Content:
 
         sql = '''SELECT assignment_id, title, visible
                  FROM assignments
-                 WHERE assignment_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
 
-        self.c.execute(sql, (assignment_id,))
+        self.c.execute(sql, (course_id, assignment_id,))
         row = self.c.fetchone()
 
         return {"id": row["assignment_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "course": course_basics}
@@ -500,9 +502,11 @@ class Content:
 
         sql = '''SELECT problem_id, title, visible
                  FROM problems
-                 WHERE problem_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?'''
 
-        self.c.execute(sql, (problem_id,))
+        self.c.execute(sql, (course_id, assignment_id, problem_id,))
         row = self.c.fetchone()
 
         return {"id": row["problem_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "assignment": assignment_basics}
@@ -527,10 +531,12 @@ class Content:
     def get_num_submissions(self, course, assignment, problem, user):
         sql = '''SELECT COUNT(*)
                  FROM submissions
-                 WHERE problem_id = ?
-                  AND user_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?
+                   AND user_id = ?'''
 
-        return self.c.execute(sql, (problem, user,)).fetchone()[0]
+        return self.c.execute(sql, (course, assignment, problem, user,)).fetchone()[0]
 
     def get_next_submission_id(self, course, assignment, problem, user):
         return self.get_num_submissions(course, assignment, problem, user) + 1
@@ -587,7 +593,8 @@ class Content:
 
         sql = '''SELECT introduction, date_created, date_updated
                  FROM assignments
-                 WHERE course_id = ? AND assignment_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
 
         self.c.execute(sql, (course, assignment,))
         row = self.c.fetchone()
@@ -689,7 +696,8 @@ class Content:
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
                      SET title = ?, visible = ?, introduction = ?, date_updated = ?
-                     WHERE course_id = ? AND assignment_id = ?'''
+                     WHERE course_id = ?
+                       AND assignment_id = ?'''
 
             self.c.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
@@ -708,7 +716,9 @@ class Content:
                          data_file_name = ?, data_contents = ?, back_end = ?, expected_output = ?,
                          instructions = ?, output_type = ?, show_answer = ?, show_expected = ?,
                          show_test_code = ?, test_code = ?, date_updated = ?
-                     WHERE course_id = ? AND assignment_id = ? AND problem_id = ?'''
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND problem_id = ?'''
 
             self.c.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
         else:
