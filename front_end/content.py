@@ -289,77 +289,72 @@ class Content:
 
         return problems
 
+    # Gets whether or not a student has passed each assignment in the course.
     def get_assignment_statuses(self, course_id, user_id):
-        #Gets whether or not a student has passed each assignment in the course.
+        sql = '''SELECT assignment_id,
+                        title,
+                        SUM(passed) AS num_passed,
+                        SUM(passed) = COUNT(assignment_id) AS passed_all
+                 FROM (
+                   SELECT a.assignment_id,
+                          a.title,
+                          IFNULL(MAX(s.passed), 0) AS passed
+                   FROM problems p
+                   LEFT JOIN submissions s
+                     ON p.course_id = s.course_id
+                     AND p.assignment_id = s.assignment_id
+                     AND p.problem_id = s.problem_id
+                     AND (s.user_id = ? OR s.user_id IS NULL)
+                   INNER JOIN assignments a
+                     ON p.course_id = a.course_id
+                     AND p.assignment_id = a.assignment_id
+                   WHERE p.course_id = ?
+                     AND a.visible = 1
+                     AND p.visible = 1
+                   GROUP BY p.assignment_id, p.problem_id
+                 )
+                 GROUP BY assignment_id, title
+                 ORDER BY title'''
+
+        self.c.execute(sql,(user_id, int(course_id),))
+
         assignment_statuses = []
-        assignment_dict = {"id": "", "title": "", "passed": 0, "in_progress": 0}
-
-        #FINISH ME - include COUNT for num problems passed and COUNT for total num problems, then calculate "passed" manually
-        sql = '''SELECT pass_status.assignment_id,
-                        pass_status.title,
-                        SUM(pass_status.passed) AS passed,
-                        num_status.problem_count
-                 FROM
-                   (SELECT a.course_id, a.assignment_id, p.problem_id, a.title, IFNULL(MAX(s.passed), 0) AS passed
-                    FROM assignments a
-                    INNER JOIN problems p
-                    ON a.course_id = p.course_id AND a.assignment_id = p.assignment_id
-                    LEFT JOIN submissions s
-                    ON p.course_id = s.course_id AND p.assignment_id = s.assignment_id AND p.problem_id = s.problem_id
-                    WHERE p.course_id = ?
-                    AND a.visible = 1
-                    AND p.visible = 1
-                    AND (s.user_id = ? OR s.user_id IS NULL)
-                    GROUP BY a.course_id, a.assignment_id, p.problem_id) pass_status
-                 INNER JOIN
-                   (SELECT assignment_id, COUNT(problem_id) AS problem_count
-                    FROM problems
-                    WHERE course_id = ? AND visible = 1
-                    GROUP BY course_id, assignment_id) num_status
-                 ON pass_status.assignment_id = num_status.assignment_id
-                 GROUP BY pass_status.course_id, pass_status.assignment_id
-                 ORDER BY pass_status.title'''
-
-        self.c.execute(sql,(str(course_id), str(user_id), str(course_id),))
         for row in self.c.fetchall():
-            num_problems = row["problem_count"]
-            num_passed = row["passed"]
-            if num_problems == num_passed and num_problems > 0:
-                passed = 1
+            if row["passed_all"]:
                 in_progress = 0
             else:
-                passed = 0
-                if num_passed > 0:
+                if row["num_passed"] > 0:
                     in_progress = 1
                 else:
                     in_progress = 0
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": passed, "in_progress": in_progress}
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": in_progress}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
         return assignment_statuses
 
+    # Gets the number of submissions a student has made for each problem in an assignment and whether or not they have passed the problem.
     def get_problem_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
-        # Gets the number of submissions a student has made for each problem in an assignment and whether or not they've passed the problem.
-        problem_statuses = []
-        problem_dict = {"id": "", "title": "", "passed": 0, "num_submissions": 0, "in_progress": 0}
-
         sql = '''SELECT p.problem_id,
                         p.title,
                         IFNULL(MAX(s.passed), 0) AS passed,
                         COUNT(s.submission_id) AS num_submissions
                  FROM problems p
                  LEFT JOIN submissions s
-                  ON p.course_id = s.course_id AND p.assignment_id = s.assignment_id AND p.problem_id = s.problem_id
-                 WHERE p.course_id = ?
-                  AND p.assignment_id = ? 
+                  ON p.course_id = s.course_id
+                  AND p.assignment_id = s.assignment_id
+                  AND p.problem_id = s.problem_id
                   AND (s.user_id = ? OR s.user_id IS NULL)
+                 WHERE p.course_id = ?
+                  AND p.assignment_id = ?
                   AND p.visible = 1
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
-        self.c.execute(sql,(course_id, assignment_id, user_id,))
 
+        self.c.execute(sql,(user_id, int(course_id), int(assignment_id),))
+
+        problem_statuses = []
         for row in self.c.fetchall():
-            if row["num_submissions"] > 0:
+            if row["num_submissions"] > 0 and not row["passed"]:
                 in_progress = 1
             else:
                 in_progress = 0
@@ -368,29 +363,47 @@ class Content:
 
         return problem_statuses
 
+    # Gets all users who have submitted on a particular assignment
+    # and creates a list of their average scores for the assignment.
     def get_assignment_scores(self, course_id, assignment_id):
-        #Gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment.
         scores = []
 
-        sql = '''SELECT a.user_id, SUM(passed) * 100.0 / b.num_problems AS percent_passed
+        sql = '''SELECT a.user_id, ROUND(SUM(passed) * 100.0 / b.num_problems, 1) AS percent_passed
                  FROM
-                   (SELECT user_id, IFNULL(MAX(passed), 0) AS passed
-                    FROM submissions
-                    WHERE course_id = ? AND assignment_id = ?
-                    GROUP BY problem_id, user_id) a
+                 (
+                   SELECT u.user_id, IFNULL(s.passed, 0) AS passed
+                   FROM users u
+                   LEFT JOIN
+                   (
+                     SELECT s.problem_id, s.user_id, MAX(s.passed) as passed
+                     FROM submissions s
+                     INNER JOIN problems p
+                       ON s.course_id = p.course_id
+                       AND s.assignment_id = p.assignment_id
+                       AND s.problem_id = p.problem_id
+                     WHERE s.course_id = ?
+                       AND s.assignment_id = ?
+                       AND p.visible = 1
+                     GROUP BY s.problem_id
+                   ) s
+                     ON u.user_id = s.user_id
+                 ) a
                  INNER JOIN
-                   (SELECT COUNT(DISTINCT problem_id) AS num_problems
-                    FROM problems
-                    WHERE course_id = ? AND assignment_id = ? AND visible = 1) b
-                    ORDER BY user_id'''
+                 (
+                   SELECT COUNT(DISTINCT problem_id) AS num_problems
+                   FROM problems
+                   WHERE course_id = ?
+                     AND assignment_id = ?
+                     AND visible = 1
+                 ) b
+                 GROUP BY a.user_id
+                 ORDER BY a.user_id'''
 
-        self.c.execute(sql, (course_id, assignment_id, course_id, assignment_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id),))
+
         for user in self.c.fetchall():
-            if user["percent_passed"]:
-                user_id = user["user_id"]
-                percent_passed = round(user["percent_passed"],2)
-                scores_dict = {"user_id": user_id, "percent_passed": percent_passed}
-                scores.append([user_id, scores_dict])
+            scores_dict = {"user_id": user["user_id"], "percent_passed": user["percent_passed"]}
+            scores.append([user["user_id"], scores_dict])
 
         return scores
 
