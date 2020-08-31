@@ -529,9 +529,9 @@ class Content:
         next_problem = None
 
         if len(problems) > 0 and problem:
-            this_problem = [i for i in range(len(problems)) if problems[i][0] == problem]
+            this_problem = [i for i in range(len(problems)) if problems[i][0] == int(problem)]
             if len(this_problem) > 0:
-                this_problem_index = [i for i in range(len(problems)) if problems[i][0] == problem][0]
+                this_problem_index = [i for i in range(len(problems)) if problems[i][0] == int(problem)][0]
 
                 if len(problems) >= 2 and this_problem_index != 0:
                     prev_problem = problems[this_problem_index - 1][1]
