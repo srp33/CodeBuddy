@@ -556,18 +556,21 @@ class Content:
 
     def get_last_submission(self, course, assignment, problem, user):
         last_submission_id = self.get_num_submissions(course, assignment, problem, user)
-        sql = '''SELECT code, code_output, passed, date, error_occurred
-                 FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND problem_id = ?
-                   AND user_id = ?
-                   AND submission_id = ?'''
+        if last_submission_id > 0:
+            sql = '''SELECT code, code_output, passed, date, error_occurred
+                    FROM submissions
+                    WHERE course_id = ?
+                    AND assignment_id = ?
+                    AND problem_id = ?
+                    AND user_id = ?
+                    AND submission_id = ?'''
 
-        self.c.execute(sql, (course, assignment, problem, user, last_submission_id,))
-        row = self.c.fetchone()
+            self.c.execute(sql, (course, assignment, problem, user, last_submission_id,))
+            row = self.c.fetchone()
 
-        return {"id": last_submission_id, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
+            return {"id": last_submission_id, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
+        else:
+            return None
 
     def get_submission_info(self, course, assignment, problem, user, submission):
         sql = '''SELECT code, code_output, passed, date, error_occurred
