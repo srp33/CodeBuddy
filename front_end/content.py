@@ -368,36 +368,35 @@ class Content:
     def get_assignment_scores(self, course_id, assignment_id):
         scores = []
 
-        sql = '''SELECT a.user_id, ROUND(SUM(passed) * 100.0 / b.num_problems, 1) AS percent_passed
-                 FROM
-                 (
-                   SELECT u.user_id, IFNULL(s.passed, 0) AS passed
-                   FROM users u
-                   LEFT JOIN
-                   (
-                     SELECT s.problem_id, s.user_id, MAX(s.passed) as passed
-                     FROM submissions s
-                     INNER JOIN problems p
-                       ON s.course_id = p.course_id
-                       AND s.assignment_id = p.assignment_id
-                       AND s.problem_id = p.problem_id
-                     WHERE s.course_id = ?
-                       AND s.assignment_id = ?
-                       AND p.visible = 1
-                     GROUP BY s.problem_id
-                   ) s
-                     ON u.user_id = s.user_id
-                 ) a
-                 INNER JOIN
-                 (
-                   SELECT COUNT(DISTINCT problem_id) AS num_problems
-                   FROM problems
-                   WHERE course_id = ?
-                     AND assignment_id = ?
-                     AND visible = 1
-                 ) b
-                 GROUP BY a.user_id
-                 ORDER BY a.user_id'''
+        sql = '''SELECT u.user_id,
+                        IFNULL(c.percent_passed, 0.0) AS percent_passed
+                 FROM users u
+                 LEFT JOIN (
+                     SELECT a.user_id,
+                     ROUND(SUM(a.passed) * 100.0 / b.num_problems, 1) AS percent_passed
+                     FROM (
+                         SELECT s.problem_id,
+                                s.user_id,
+                                MAX(s.passed) AS passed
+                         FROM submissions s
+                         INNER JOIN problems p
+                           ON s.course_id = ?
+                           AND s.assignment_id = ?
+                           AND s.problem_id = p.problem_id
+                         WHERE p.visible = 1
+                           AND s.passed = 1
+                         GROUP BY s.problem_id, s.user_id
+                     ) a
+                     INNER JOIN (
+                         SELECT COUNT(DISTINCT problem_id) AS num_problems
+                         FROM problems
+                         WHERE course_id = ?
+                           AND assignment_id = ?
+                           AND visible = 1
+                     ) b
+                     GROUP BY a.user_id
+                 ) c
+                 ON u.user_id = c.user_id'''
 
         self.c.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id),))
 
