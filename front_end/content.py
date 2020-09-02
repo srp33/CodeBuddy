@@ -164,7 +164,7 @@ class Content:
                  WHERE role = ?
                    AND (course_id = ? OR course_id IS NULL)'''
 
-        rows = self.c.execute(sql, (role, course_id,))
+        rows = self.c.execute(sql, (role, int(course_id),))
         return [row["user_id"] for row in rows]
 
     def add_user(self, user_id, user_dict):
@@ -183,7 +183,7 @@ class Content:
         if not course_id:
             course_id = "0"
 
-        self.c.execute(sql, (user_id, course_id,))
+        self.c.execute(sql, (user_id, int(course_id),))
 
         role_exists = self.c.fetchone() != None
 
@@ -224,7 +224,7 @@ class Content:
                  FROM assignments
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (course_id,))
+        self.c.execute(sql, (int(course_id),))
         return [assignment[0] for assignment in self.c.fetchall()]
 
     def get_problem_ids(self, course_id, assignment_id):
@@ -236,7 +236,7 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        self.c.execute(sql, (course_id, assignment_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id),))
         return [problem[0] for problem in self.c.fetchall()]
 
     def get_courses(self, show_hidden=True):
@@ -261,7 +261,7 @@ class Content:
                  FROM assignments
                  WHERE course_id = ?
                  ORDER BY title'''
-        self.c.execute(sql, (str(course_id),))
+        self.c.execute(sql, (int(course_id),))
 
         for assignment in self.c.fetchall():
             if assignment["visible"] or show_hidden:
@@ -279,7 +279,7 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?
                  ORDER BY title'''
-        self.c.execute(sql, (str(course_id), str(assignment_id),))
+        self.c.execute(sql, (int(course_id), int(assignment_id),))
 
         for problem in self.c.fetchall():
             if problem["visible"] or show_hidden:
@@ -408,7 +408,7 @@ class Content:
                    AND user_id = ?
                   ORDER BY submission_id DESC'''
 
-        self.c.execute(sql, (course_id, assignment_id, problem_id, user_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id), int(problem_id), user_id,))
 
         for submission in self.c.fetchall():
             submissions.append([submission["submission_id"], submission["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), submission["passed"]])
@@ -477,7 +477,7 @@ class Content:
                  FROM courses
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (course_id,))
+        self.c.execute(sql, (int(course_id),))
         row = self.c.fetchone()
 
         return {"id": row["course_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True}
@@ -493,10 +493,12 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        self.c.execute(sql, (course_id, assignment_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id),))
         row = self.c.fetchone()
-
-        return {"id": row["assignment_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "course": course_basics}
+        if row is None:
+            return {"id": "", "title": "", "visible": True, "exists": False, "course": course_basics}
+        else:
+            return {"id": row["assignment_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "course": course_basics}
 
     def get_problem_basics(self, course_id, assignment_id, problem_id):
         assignment_basics = self.get_assignment_basics(course_id, assignment_id)
@@ -510,10 +512,12 @@ class Content:
                    AND assignment_id = ?
                    AND problem_id = ?'''
 
-        self.c.execute(sql, (course_id, assignment_id, problem_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
         row = self.c.fetchone()
-
-        return {"id": row["problem_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "assignment": assignment_basics}
+        if row is None:
+            return {"id": "", "title": "", "visible": True, "exists": False, "assignment": assignment_basics}
+        else:
+            return {"id": row["problem_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "assignment": assignment_basics}
 
     def get_next_prev_problems(self, course, assignment, problem, problems):
         prev_problem = None
@@ -540,7 +544,7 @@ class Content:
                    AND problem_id = ?
                    AND user_id = ?'''
 
-        return self.c.execute(sql, (course, assignment, problem, user,)).fetchone()[0]
+        return self.c.execute(sql, (int(course), int(assignment), int(problem), user,)).fetchone()[0]
 
     def get_next_submission_id(self, course, assignment, problem, user):
         return self.get_num_submissions(course, assignment, problem, user) + 1
@@ -556,7 +560,7 @@ class Content:
                     AND user_id = ?
                     AND submission_id = ?'''
 
-            self.c.execute(sql, (course, assignment, problem, user, last_submission_id,))
+            self.c.execute(sql, (int(course), int(assignment), int(problem), user, int(last_submission_id),))
             row = self.c.fetchone()
 
             return {"id": last_submission_id, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
@@ -572,7 +576,7 @@ class Content:
                    AND user_id = ?
                    AND submission_id = ?'''
 
-        self.c.execute(sql, (course, assignment, problem, user, submission,))
+        self.c.execute(sql, (int(course), int(assignment), int(problem), user, int(submission),))
         row = self.c.fetchone()
 
         return {"id": submission, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "error_occurred": row["error_occurred"], "exists": True}
@@ -585,7 +589,7 @@ class Content:
                  FROM courses
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (course,))
+        self.c.execute(sql, (int(course),))
         row = self.c.fetchone()
 
         course_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
@@ -603,7 +607,7 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        self.c.execute(sql, (course, assignment,))
+        self.c.execute(sql, (int(course), int(assignment),))
         row = self.c.fetchone()
 
         assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
@@ -626,7 +630,7 @@ class Content:
                    AND assignment_id = ?
                    AND problem_id = ?'''
 
-        self.c.execute(sql, (course, assignment, problem,))
+        self.c.execute(sql, (int(course), int(assignment), int(problem),))
         row = self.c.fetchone()
 
         problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_output": row["expected_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
@@ -741,7 +745,7 @@ class Content:
         sql = '''INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.c.execute(sql, [course, assignment, problem, user, submission_id, code, code_output, passed, datetime.now(), error_occurred])
+        self.c.execute(sql, [int(course), int(assignment), int(problem), user, int(submission_id), code, code_output, passed, datetime.now(), error_occurred])
 
         return submission_id
 
