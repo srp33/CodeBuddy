@@ -250,7 +250,7 @@
                 document.getElementById("code_output").innerHTML = "";
                 document.getElementById("diff_output").innerHTML = "";
 
-                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
+                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ user_id }}/" + submission_id, 
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         editor.setValue(json_data.code, 1);

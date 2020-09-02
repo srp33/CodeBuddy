@@ -43,7 +43,7 @@ def make_app():
         url(r"\/delete_problem_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemSubmissionsHandler, name="delete_problem_submissions"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
-        url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
+        url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/add_admin", AddAdminHandler, name="add_admin"),
@@ -684,12 +684,11 @@ class SubmitHandler(BaseUserHandler):
         self.write(json.dumps(out_dict))
 
 class GetSubmissionHandler(BaseUserHandler):
-    def get(self, course, assignment, problem, submission_id):
+    def get(self, course, assignment, problem, student_id, submission_id):
         try:
-            user = self.get_current_user()
             problem_details = content.get_problem_details(course, assignment, problem)
 
-            submission_info = content.get_submission_info(course, assignment, problem, user, submission_id)
+            submission_info = content.get_submission_info(course, assignment, problem, student_id, submission_id)
 
             if submission_info["error_occurred"]:
                 submission_info["diff_output"] = ""
