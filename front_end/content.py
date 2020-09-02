@@ -294,11 +294,13 @@ class Content:
         sql = '''SELECT assignment_id,
                         title,
                         SUM(passed) AS num_passed,
-                        SUM(passed) = COUNT(assignment_id) AS passed_all
+                        SUM(passed) = COUNT(assignment_id) AS passed_all,
+                        (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress
                  FROM (
                    SELECT a.assignment_id,
                           a.title,
-                          IFNULL(MAX(s.passed), 0) AS passed
+                          IFNULL(MAX(s.passed), 0) AS passed,
+                          COUNT(s.submission_id) AS num_submissions
                    FROM problems p
                    LEFT JOIN submissions s
                      ON p.course_id = s.course_id
@@ -320,14 +322,7 @@ class Content:
 
         assignment_statuses = []
         for row in self.c.fetchall():
-            if row["passed_all"]:
-                in_progress = 0
-            else:
-                if row["num_passed"] > 0:
-                    in_progress = 1
-                else:
-                    in_progress = 0
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": in_progress}
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": row["in_progress"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
         return assignment_statuses
@@ -337,7 +332,8 @@ class Content:
         sql = '''SELECT p.problem_id,
                         p.title,
                         IFNULL(MAX(s.passed), 0) AS passed,
-                        COUNT(s.submission_id) AS num_submissions
+                        COUNT(s.submission_id) AS num_submissions,
+                        COUNT(s.submission_id) > 0 AND IFNULL(MAX(s.passed), 0) = 0 AS in_progress
                  FROM problems p
                  LEFT JOIN submissions s
                   ON p.course_id = s.course_id
@@ -354,11 +350,7 @@ class Content:
 
         problem_statuses = []
         for row in self.c.fetchall():
-            if row["num_submissions"] > 0 and not row["passed"]:
-                in_progress = 1
-            else:
-                in_progress = 0
-            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": in_progress}
+            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"]}
             problem_statuses.append([row["problem_id"], problem_dict])
 
         return problem_statuses
