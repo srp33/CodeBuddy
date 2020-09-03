@@ -261,7 +261,7 @@ class Content:
                  FROM assignments
                  WHERE course_id = ?
                  ORDER BY title'''
-        self.c.execute(sql, (int(course_id),))
+        self.c.execute(sql, (course_id,))
 
         for assignment in self.c.fetchall():
             if assignment["visible"] or show_hidden:
@@ -279,7 +279,7 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?
                  ORDER BY title'''
-        self.c.execute(sql, (int(course_id), int(assignment_id),))
+        self.c.execute(sql, (course_id, assignment_id,))
 
         for problem in self.c.fetchall():
             if problem["visible"] or show_hidden:
