@@ -649,7 +649,8 @@ class Content:
             header = read_file.readline()
             for line in read_file:
                 line_items = line.decode().rstrip("\n").split("\t")
-                line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[1:]
+                line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[4:]
+                print(line_items)
 
                 new_dict[line_num] = line_items
                 line_num += 1
