@@ -70,11 +70,28 @@
   </div>
   <div class="column is-half">
     <h4>Download log files</h4>
-    <p>
-      <p>Hits Any User <a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz" class="button is-info is-small">Download</a></p>
-      <p>Hits Per User <a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz" class="button is-info is-small">Download</a></p>
-      <p>Load Duration <a href="/logs/summarized/LoadDuration.tsv.gz" download="LoadDuration.tsv.gz" class="button is-info is-small">Download</a></p>
-    </p>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>File Name</th>
+          <th>Download Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Hits Any User</td>
+          <td><a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Hits Per User</td>
+          <td><a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Load Duration</td>
+          <td><a href="/logs/summarized/LoadDuration.tsv.gz" download="LoadDuration.tsv.gz">Download</a></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
