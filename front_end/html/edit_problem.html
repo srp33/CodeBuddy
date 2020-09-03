@@ -127,6 +127,19 @@
           Use auto-complete <input type="checkbox" id="answer_code_auto_complete" name="answer_code_auto_complete" value="true" checked onclick="update_auto_complete('answer_code_auto_complete')">
       </label>
     </p>
+
+    <p><strong>Test code: </strong></p>
+    <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
+    <p>
+      <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" id="test_code" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea>
+      <textarea name="test_code_text" id="test_code_text" style="display:none;"></textarea>
+      <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
+        <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+      </label>
+      <label class="checkbox is-pulled-right">
+          Use auto-complete <input type="checkbox" id="test_code_auto_complete" name="test_code_auto_complete" value="true" checked onclick="update_auto_complete('test_code_auto_complete')">
+      </label>
+    </p>
     
     <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
     <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
@@ -152,18 +165,6 @@
                 {% end %}
             </select>
         </div>
-    </p>
-
-    <p><strong>Test code: </strong></p>
-    <p>
-      <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" id="test_code" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea>
-      <textarea name="test_code_text" id="test_code_text" style="display:none;"></textarea>
-      <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-        <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
-      </label>
-      <label class="checkbox is-pulled-right">
-          Use auto-complete <input type="checkbox" id="test_code_auto_complete" name="test_code_auto_complete" value="true" checked onclick="update_auto_complete('test_code_auto_complete')">
-      </label>
     </p>
 
     {% if problem_basics["exists"] %}
@@ -250,8 +251,9 @@
 
     <p>
       {% if problem_basics["exists"] %}
-        <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a>
+        <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a> |
       {% end %}
+      <a href="#top">Back to top</a>
     </p>
 
     <!-- Code to modify page behavior at the end of loading -->
