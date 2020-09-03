@@ -650,7 +650,6 @@ class Content:
             for line in read_file:
                 line_items = line.decode().rstrip("\n").split("\t")
                 line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[4:]
-                print(line_items)
 
                 new_dict[line_num] = line_items
                 line_num += 1
@@ -704,6 +703,8 @@ class Content:
             course_basics["id"] = self.c.lastrowid
             course_basics["exists"] = True
 
+        return course_basics["id"]
+
     def save_assignment(self, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
@@ -719,6 +720,8 @@ class Content:
             self.c.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"]])
             assignment_basics["id"] = self.c.lastrowid
             assignment_basics["exists"] = True
+
+        return assignment_basics["id"]
 
     def save_problem(self, problem_basics, problem_details):
         if problem_basics["exists"]:
@@ -740,6 +743,8 @@ class Content:
             self.c.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
             problem_basics["id"] = self.c.lastrowid
             problem_basics["exists"] = True
+        
+        return problem_basics["id"]
 
     def save_submission(self, course, assignment, problem, user, code, code_output, passed, error_occurred):
         submission_id = self.get_next_submission_id(course, assignment, problem, user)
