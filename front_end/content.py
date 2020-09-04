@@ -294,6 +294,7 @@ class Content:
         sql = '''SELECT assignment_id,
                         title,
                         SUM(passed) AS num_passed,
+                        COUNT(assignment_id) AS num_problems,
                         SUM(passed) = COUNT(assignment_id) AS passed_all,
                         (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress
                  FROM (
@@ -322,7 +323,7 @@ class Content:
 
         assignment_statuses = []
         for row in self.c.fetchall():
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": row["in_progress"]}
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
         return assignment_statuses
