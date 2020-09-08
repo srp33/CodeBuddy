@@ -23,6 +23,9 @@
   <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
   <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" style="font-family:monospace">{{ assignment_details["introduction"] }}</textarea></p>
 
+  <p><strong>Due date: </strong></p>
+  <input type="date" name="due_date" id="due_date">
+  
   <p><strong>Visible: </strong>
     <div class="select is-info">
       <select name="is_visible" style="padding:2px;">
@@ -49,3 +52,19 @@
   This course has not been created yet.
 {% end %}
 <br /><br />
+
+<script>
+  var calendars = bulmaCalendar.attach('[type="date"]', options);
+  for(var i = 0; i < calendars.length; i++) {
+	  calendars[i].on('select', date => {
+		  console.log(date);
+	  });
+  }
+
+  var element = document.querySelector('#due_date');
+  if (element) {
+	  element.bulmaCalendar.on('select', function(datepicker) {
+		  console.log(datepicker.data.value());
+	  });
+  }
+</script>

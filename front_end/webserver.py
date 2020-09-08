@@ -289,7 +289,7 @@ class ImportCourseHandler(BaseUserHandler):
                         assignment_details = content.get_assignment_details(course_basics["id"], assignment_id)
 
                         content.specify_assignment_basics(assignment_basics, assignment_list[2], bool(assignment_list[4]))
-                        content.specify_assignment_details(assignment_details, assignment_list[3], convert_string_to_date(assignment_list[5]), convert_string_to_date(assignment_list[6]))
+                        #content.specify_assignment_details(assignment_details, assignment_list[3], convert_string_to_date(assignment_list[5]), convert_string_to_date(assignment_list[6]))
 
                         content.save_assignment(assignment_basics, assignment_details)
                         assignment_id_dict[assignment_list[1]] = assignment_basics["id"]
@@ -406,6 +406,7 @@ class EditAssignmentHandler(BaseUserHandler):
             title = self.get_body_argument("title").strip()
             visible = self.get_body_argument("is_visible") == "Yes"
             introduction = self.get_body_argument("introduction").strip()
+            due_date = self.get_body_argument("due_date").strip()
 
             assignment_basics = content.get_assignment_basics(course, assignment)
             assignment_details = content.get_assignment_details(course, assignment)
@@ -418,7 +419,7 @@ class EditAssignmentHandler(BaseUserHandler):
                     result = "Error: An assignment with that title already exists."
                 else:
                     content.specify_assignment_basics(assignment_basics, title, visible)
-                    content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
+                    content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), due_date)
                     assignment = content.save_assignment(assignment_basics, assignment_details)
 
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())

@@ -62,6 +62,7 @@ class Content:
                                         visible integer NOT NULL,
                                         date_created timestamp NOT NULL,
                                         date_updated timestamp NOT NULL,
+                                        due_date text,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
                                       );'''
 
@@ -293,6 +294,7 @@ class Content:
     def get_assignment_statuses(self, course_id, user_id):
         sql = '''SELECT assignment_id,
                         title,
+                        due_date,
                         SUM(passed) AS num_passed,
                         COUNT(assignment_id) AS num_problems,
                         SUM(passed) = COUNT(assignment_id) AS passed_all,
@@ -300,6 +302,7 @@ class Content:
                  FROM (
                    SELECT a.assignment_id,
                           a.title,
+                          a.due_date,
                           IFNULL(MAX(s.passed), 0) AS passed,
                           COUNT(s.submission_id) AS num_submissions
                    FROM problems p
@@ -317,13 +320,13 @@ class Content:
                    GROUP BY p.assignment_id, p.problem_id
                  )
                  GROUP BY assignment_id, title
-                 ORDER BY title'''
+                 ORDER BY due_date'''
 
         self.c.execute(sql,(user_id, int(course_id),))
 
         assignment_statuses = []
         for row in self.c.fetchall():
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"]}
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
         return assignment_statuses
@@ -433,9 +436,10 @@ class Content:
         assignment_basics["title"] = title
         assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated):
+    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, due_date):
         assignment_details["introduction"] = introduction
         assignment_details["date_updated"] = date_updated
+        assignment_details["due_date"] = due_date
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -601,9 +605,9 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None}
+            return {"introduction": "", "date_created": None, "date_updated": None, "due_date": None}
 
-        sql = '''SELECT introduction, date_created, date_updated
+        sql = '''SELECT introduction, date_created, date_updated, due_date
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -611,7 +615,7 @@ class Content:
         self.c.execute(sql, (int(course), int(assignment),))
         row = self.c.fetchone()
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "due_date": row["due_date"]}
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
 
@@ -709,16 +713,16 @@ class Content:
     def save_assignment(self, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, due_date = ?
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.c.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.c.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["due_date"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, due_date)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
-            self.c.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"]])
+            self.c.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["due_date"]])
             assignment_basics["id"] = self.c.lastrowid
             assignment_basics["exists"] = True
 
