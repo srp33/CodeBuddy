@@ -43,7 +43,7 @@ def make_app():
         url(r"\/delete_problem_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemSubmissionsHandler, name="delete_problem_submissions"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
-        url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
+        url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/add_admin", AddAdminHandler, name="add_admin"),
@@ -187,7 +187,7 @@ class EditCourseHandler(BaseUserHandler):
                     else:
                         content.specify_course_basics(course_basics, title, visible)
                         content.specify_course_details(course_details, introduction, None, datetime.datetime.now())
-                        content.save_course(course_basics, course_details)
+                        course = content.save_course(course_basics, course_details)
 
             self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=course_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -419,7 +419,7 @@ class EditAssignmentHandler(BaseUserHandler):
                 else:
                     content.specify_assignment_basics(assignment_basics, title, visible)
                     content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
-                    content.save_assignment(assignment_basics, assignment_details)
+                    assignment = content.save_assignment(assignment_basics, assignment_details)
 
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -446,7 +446,7 @@ class DeleteAssignmentHandler(BaseUserHandler):
             content.delete_assignment(content.get_assignment_basics(course, assignment))
             result = "Success: Assignment deleted."
 
-            self.render("delete_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("delete_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -560,12 +560,10 @@ class EditProblemHandler(BaseUserHandler):
                                 result = "Error: " + expected_output
                             else:
                                 problem_details["expected_output"] = expected_output
-                                content.save_problem(problem_basics, problem_details)
+                                problem = content.save_problem(problem_basics, problem_details)
 
             problems = content.get_problems(course, assignment)
-            problem_basics = content.get_problem_basics(course, assignment, problem)
-            problem_details = content.get_problem_details(course, assignment, problem)
-            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
+            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
         except Exception as inst:
@@ -593,7 +591,7 @@ class DeleteProblemHandler(BaseUserHandler):
             content.delete_problem(content.get_problem_basics(course, assignment, problem))
             result = "Success: Problem deleted."
 
-            problems =content.get_problems(course, assignment)
+            problems = content.get_problems(course, assignment)
             self.render("delete_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -684,12 +682,11 @@ class SubmitHandler(BaseUserHandler):
         self.write(json.dumps(out_dict))
 
 class GetSubmissionHandler(BaseUserHandler):
-    def get(self, course, assignment, problem, submission_id):
+    def get(self, course, assignment, problem, student_id, submission_id):
         try:
-            user = self.get_current_user()
             problem_details = content.get_problem_details(course, assignment, problem)
 
-            submission_info = content.get_submission_info(course, assignment, problem, user, submission_id)
+            submission_info = content.get_submission_info(course, assignment, problem, student_id, submission_id)
 
             if submission_info["error_occurred"]:
                 submission_info["diff_output"] = ""

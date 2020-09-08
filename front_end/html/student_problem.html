@@ -53,10 +53,10 @@
             {% if role == "administrator" or role == "instructor" or role == "assistant" %}
                 <p>
                     <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
-                    | <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a>
             {% end %}
 
             {% if role == "administrator" or role == "instructor" %}
+                    | <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a>
                     | <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem submissions</a>
                 </p>
             {% end %}
@@ -128,7 +128,7 @@
                 document.getElementById("code_output").innerHTML = "";
                 document.getElementById("diff_output").innerHTML = "";
 
-                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
+                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student_id }}/" + submission_id, 
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         editor.setValue(json_data.code, 1);

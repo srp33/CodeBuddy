@@ -162,9 +162,9 @@ class Content:
         sql = '''SELECT user_id
                  FROM permissions
                  WHERE role = ?
-                 AND (course_id = ? OR course_id IS NULL)'''
+                   AND (course_id = ? OR course_id IS NULL)'''
 
-        rows = self.c.execute(sql, (role, course_id,))
+        rows = self.c.execute(sql, (role, int(course_id),))
         return [row["user_id"] for row in rows]
 
     def add_user(self, user_id, user_dict):
@@ -183,7 +183,7 @@ class Content:
         if not course_id:
             course_id = "0"
 
-        self.c.execute(sql, (user_id, course_id,))
+        self.c.execute(sql, (user_id, int(course_id),))
 
         role_exists = self.c.fetchone() != None
 
@@ -224,7 +224,7 @@ class Content:
                  FROM assignments
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (course_id,))
+        self.c.execute(sql, (int(course_id),))
         return [assignment[0] for assignment in self.c.fetchall()]
 
     def get_problem_ids(self, course_id, assignment_id):
@@ -233,9 +233,10 @@ class Content:
 
         sql = '''SELECT problem_id
                  FROM problems
-                 WHERE assignment_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
 
-        self.c.execute(sql, (assignment_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id),))
         return [problem[0] for problem in self.c.fetchall()]
 
     def get_courses(self, show_hidden=True):
@@ -260,7 +261,7 @@ class Content:
                  FROM assignments
                  WHERE course_id = ?
                  ORDER BY title'''
-        self.c.execute(sql, (str(course_id),))
+        self.c.execute(sql, (course_id,))
 
         for assignment in self.c.fetchall():
             if assignment["visible"] or show_hidden:
@@ -276,9 +277,9 @@ class Content:
         sql = '''SELECT problem_id, title, visible
                  FROM problems
                  WHERE course_id = ?
-                 AND assignment_id = ?
+                   AND assignment_id = ?
                  ORDER BY title'''
-        self.c.execute(sql, (str(course_id), str(assignment_id),))
+        self.c.execute(sql, (course_id, assignment_id,))
 
         for problem in self.c.fetchall():
             if problem["visible"] or show_hidden:
@@ -292,11 +293,15 @@ class Content:
     def get_assignment_statuses(self, course_id, user_id):
         sql = '''SELECT assignment_id,
                         title,
-                        SUM(passed) = COUNT(assignment_id) AS passed_all
+                        SUM(passed) AS num_passed,
+                        COUNT(assignment_id) AS num_problems,
+                        SUM(passed) = COUNT(assignment_id) AS passed_all,
+                        (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress
                  FROM (
                    SELECT a.assignment_id,
                           a.title,
-                          IFNULL(MAX(s.passed), 0) AS passed
+                          IFNULL(MAX(s.passed), 0) AS passed,
+                          COUNT(s.submission_id) AS num_submissions
                    FROM problems p
                    LEFT JOIN submissions s
                      ON p.course_id = s.course_id
@@ -318,7 +323,7 @@ class Content:
 
         assignment_statuses = []
         for row in self.c.fetchall():
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"]}
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
         return assignment_statuses
@@ -328,7 +333,8 @@ class Content:
         sql = '''SELECT p.problem_id,
                         p.title,
                         IFNULL(MAX(s.passed), 0) AS passed,
-                        COUNT(s.submission_id) AS num_submissions
+                        COUNT(s.submission_id) AS num_submissions,
+                        COUNT(s.submission_id) > 0 AND IFNULL(MAX(s.passed), 0) = 0 AS in_progress
                  FROM problems p
                  LEFT JOIN submissions s
                   ON p.course_id = s.course_id
@@ -345,7 +351,7 @@ class Content:
 
         problem_statuses = []
         for row in self.c.fetchall():
-            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"]}
+            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"]}
             problem_statuses.append([row["problem_id"], problem_dict])
 
         return problem_statuses
@@ -403,7 +409,7 @@ class Content:
                    AND user_id = ?
                   ORDER BY submission_id DESC'''
 
-        self.c.execute(sql, (course_id, assignment_id, problem_id, user_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id), int(problem_id), user_id,))
 
         for submission in self.c.fetchall():
             submissions.append([submission["submission_id"], submission["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), submission["passed"]])
@@ -472,7 +478,7 @@ class Content:
                  FROM courses
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (course_id,))
+        self.c.execute(sql, (int(course_id),))
         row = self.c.fetchone()
 
         return {"id": row["course_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True}
@@ -485,12 +491,15 @@ class Content:
 
         sql = '''SELECT assignment_id, title, visible
                  FROM assignments
-                 WHERE assignment_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
 
-        self.c.execute(sql, (assignment_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id),))
         row = self.c.fetchone()
-
-        return {"id": row["assignment_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "course": course_basics}
+        if row is None:
+            return {"id": "", "title": "", "visible": True, "exists": False, "course": course_basics}
+        else:
+            return {"id": row["assignment_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "course": course_basics}
 
     def get_problem_basics(self, course_id, assignment_id, problem_id):
         assignment_basics = self.get_assignment_basics(course_id, assignment_id)
@@ -500,21 +509,25 @@ class Content:
 
         sql = '''SELECT problem_id, title, visible
                  FROM problems
-                 WHERE problem_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?'''
 
-        self.c.execute(sql, (problem_id,))
+        self.c.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
         row = self.c.fetchone()
-
-        return {"id": row["problem_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "assignment": assignment_basics}
+        if row is None:
+            return {"id": "", "title": "", "visible": True, "exists": False, "assignment": assignment_basics}
+        else:
+            return {"id": row["problem_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "assignment": assignment_basics}
 
     def get_next_prev_problems(self, course, assignment, problem, problems):
         prev_problem = None
         next_problem = None
 
         if len(problems) > 0 and problem:
-            this_problem = [i for i in range(len(problems)) if problems[i][0] == problem]
+            this_problem = [i for i in range(len(problems)) if problems[i][0] == int(problem)]
             if len(this_problem) > 0:
-                this_problem_index = [i for i in range(len(problems)) if problems[i][0] == problem][0]
+                this_problem_index = [i for i in range(len(problems)) if problems[i][0] == int(problem)][0]
 
                 if len(problems) >= 2 and this_problem_index != 0:
                     prev_problem = problems[this_problem_index - 1][1]
@@ -527,28 +540,33 @@ class Content:
     def get_num_submissions(self, course, assignment, problem, user):
         sql = '''SELECT COUNT(*)
                  FROM submissions
-                 WHERE problem_id = ?
-                  AND user_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?
+                   AND user_id = ?'''
 
-        return self.c.execute(sql, (problem, user,)).fetchone()[0]
+        return self.c.execute(sql, (int(course), int(assignment), int(problem), user,)).fetchone()[0]
 
     def get_next_submission_id(self, course, assignment, problem, user):
         return self.get_num_submissions(course, assignment, problem, user) + 1
 
     def get_last_submission(self, course, assignment, problem, user):
         last_submission_id = self.get_num_submissions(course, assignment, problem, user)
-        sql = '''SELECT code, code_output, passed, date, error_occurred
-                 FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND problem_id = ?
-                   AND user_id = ?
-                   AND submission_id = ?'''
+        if last_submission_id > 0:
+            sql = '''SELECT code, code_output, passed, date, error_occurred
+                    FROM submissions
+                    WHERE course_id = ?
+                    AND assignment_id = ?
+                    AND problem_id = ?
+                    AND user_id = ?
+                    AND submission_id = ?'''
 
-        self.c.execute(sql, (course, assignment, problem, user, last_submission_id,))
-        row = self.c.fetchone()
+            self.c.execute(sql, (int(course), int(assignment), int(problem), user, int(last_submission_id),))
+            row = self.c.fetchone()
 
-        return {"id": last_submission_id, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
+            return {"id": last_submission_id, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
+        else:
+            return None
 
     def get_submission_info(self, course, assignment, problem, user, submission):
         sql = '''SELECT code, code_output, passed, date, error_occurred
@@ -559,7 +577,7 @@ class Content:
                    AND user_id = ?
                    AND submission_id = ?'''
 
-        self.c.execute(sql, (course, assignment, problem, user, submission,))
+        self.c.execute(sql, (int(course), int(assignment), int(problem), user, int(submission),))
         row = self.c.fetchone()
 
         return {"id": submission, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "error_occurred": row["error_occurred"], "exists": True}
@@ -572,7 +590,7 @@ class Content:
                  FROM courses
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (course,))
+        self.c.execute(sql, (int(course),))
         row = self.c.fetchone()
 
         course_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
@@ -587,9 +605,10 @@ class Content:
 
         sql = '''SELECT introduction, date_created, date_updated
                  FROM assignments
-                 WHERE course_id = ? AND assignment_id = ?'''
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
 
-        self.c.execute(sql, (course, assignment,))
+        self.c.execute(sql, (int(course), int(assignment),))
         row = self.c.fetchone()
 
         assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
@@ -612,7 +631,7 @@ class Content:
                    AND assignment_id = ?
                    AND problem_id = ?'''
 
-        self.c.execute(sql, (course, assignment, problem,))
+        self.c.execute(sql, (int(course), int(assignment), int(problem),))
         row = self.c.fetchone()
 
         problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_output": row["expected_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
@@ -631,7 +650,7 @@ class Content:
             header = read_file.readline()
             for line in read_file:
                 line_items = line.decode().rstrip("\n").split("\t")
-                line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[1:]
+                line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[4:]
 
                 new_dict[line_num] = line_items
                 line_num += 1
@@ -685,11 +704,14 @@ class Content:
             course_basics["id"] = self.c.lastrowid
             course_basics["exists"] = True
 
+        return course_basics["id"]
+
     def save_assignment(self, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
                      SET title = ?, visible = ?, introduction = ?, date_updated = ?
-                     WHERE course_id = ? AND assignment_id = ?'''
+                     WHERE course_id = ?
+                       AND assignment_id = ?'''
 
             self.c.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
@@ -700,6 +722,8 @@ class Content:
             assignment_basics["id"] = self.c.lastrowid
             assignment_basics["exists"] = True
 
+        return assignment_basics["id"]
+
     def save_problem(self, problem_basics, problem_details):
         if problem_basics["exists"]:
             sql = '''UPDATE problems
@@ -708,7 +732,9 @@ class Content:
                          data_file_name = ?, data_contents = ?, back_end = ?, expected_output = ?,
                          instructions = ?, output_type = ?, show_answer = ?, show_expected = ?,
                          show_test_code = ?, test_code = ?, date_updated = ?
-                     WHERE course_id = ? AND assignment_id = ? AND problem_id = ?'''
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND problem_id = ?'''
 
             self.c.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
         else:
@@ -718,13 +744,15 @@ class Content:
             self.c.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
             problem_basics["id"] = self.c.lastrowid
             problem_basics["exists"] = True
+        
+        return problem_basics["id"]
 
     def save_submission(self, course, assignment, problem, user, code, code_output, passed, error_occurred):
         submission_id = self.get_next_submission_id(course, assignment, problem, user)
         sql = '''INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.c.execute(sql, [course, assignment, problem, user, submission_id, code, code_output, passed, datetime.now(), error_occurred])
+        self.c.execute(sql, [int(course), int(assignment), int(problem), user, int(submission_id), code, code_output, passed, datetime.now(), error_occurred])
 
         return submission_id
 

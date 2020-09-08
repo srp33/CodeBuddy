@@ -46,9 +46,9 @@
             </p>
 
             <div class="field is-grouped">
-              <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()' id='submit_button'>Submit</button></p>
               <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
               <div id="revert_div"></div>
+              <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()' id='submit_button'>Submit</button></p>
               <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run Code'. If you have made at least one submission, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.">
                 <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
               </p>
@@ -250,7 +250,7 @@
                 document.getElementById("code_output").innerHTML = "";
                 document.getElementById("diff_output").innerHTML = "";
 
-                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/" + submission_id, 
+                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ user_id }}/" + submission_id, 
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         editor.setValue(json_data.code, 1);

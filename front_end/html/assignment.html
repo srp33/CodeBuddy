@@ -25,11 +25,17 @@
                   {% if problem[1]["passed"] %}
                     <td><label>
                       <img src="/static/greencheck.png" alt="Completed" height="30" width="30" style="vertical-align: middle;"/>
-                    </label></td>
+                    </label>Completed</td>
                   {% else %}
-                    <td><label>
-                      <img src="/static/unchecked.png" alt="Not completed" height="30" width="30" style="vertical-align: middle;"/>
-                    </label></td>
+                    {% if problem[1]["in_progress"] %}
+                      <td><label>
+                      <img src="/static/inprogress.png" alt="In progress" height="30" width="30" style="vertical-align: middle;"/>
+                      </label>In progress</td>
+                    {% else %}
+                      <td><label>
+                        <img src="/static/unchecked.png" alt="Not completed" height="30" width="30" style="vertical-align: middle;"/>
+                      </label>Not started</td>
+                    {% end %}
                   {% end %}
                 </tr>
               {% end %} 
