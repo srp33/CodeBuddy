@@ -164,7 +164,7 @@ class Content:
                  WHERE role = ?
                    AND (course_id = ? OR course_id IS NULL)'''
 
-        rows = self.c.execute(sql, (role, int(course_id),))
+        rows = self.c.execute(sql, (role, course_id,))
         return [row["user_id"] for row in rows]
 
     def add_user(self, user_id, user_dict):
