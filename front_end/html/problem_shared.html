@@ -7,7 +7,7 @@
                     <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a> |
                     <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem submissions</a>
                 </p>
-            {% else %}
+            {% elif role == "student" %}
                 <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to problems</a><br/>
             {% end %}
             {% if student_id == user_id %}
