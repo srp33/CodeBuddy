@@ -484,7 +484,7 @@ class ProblemHandler(BaseUserHandler):
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
             next_prev_problems = content.get_next_prev_problems(course, assignment, problem, problems)
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_problem=next_prev_problems["next"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -717,7 +717,7 @@ class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
-            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem), last_submission=content.get_last_submission(course, assignment, problem, user), format_content=True, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem, format_content=True), last_submission=content.get_last_submission(course, assignment, problem, user), format_content=True, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
