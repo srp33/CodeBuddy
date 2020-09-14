@@ -1,0 +1,8 @@
+<div class="navbar-end">
+    {% if prev_problem %}
+        <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ prev_problem["id"] }}">Previous Problem</a>
+    {% end %}
+    {% if next_problem %}
+        <a class="navbar-item" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}">Next Problem</a>
+    {% end %}
+</div>
