@@ -22,13 +22,13 @@ class Content:
         # This enables auto-commit.
         self.conn = sqlite3.connect(f"/database/{settings_dict['db_name']}", isolation_level=None, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         self.conn.row_factory = sqlite3.Row
-        self.c = self.conn.cursor()
-        self.c.execute("PRAGMA foreign_keys=ON")
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("PRAGMA foreign_keys=ON")
 
         atexit.register(self.close)
 
     def close(self):
-        self.c.close()
+        self.cursor.close()
         self.conn.close()
 
     def create_sqlite_tables(self):
@@ -111,12 +111,12 @@ class Content:
                                       );'''
 
         if self.conn is not None:
-            self.c.execute(create_users_table)
-            self.c.execute(create_permissions_table)
-            self.c.execute(create_courses_table)
-            self.c.execute(create_assignments_table)
-            self.c.execute(create_problems_table)
-            self.c.execute(create_submissions_table)
+            self.cursor.execute(create_users_table)
+            self.cursor.execute(create_permissions_table)
+            self.cursor.execute(create_courses_table)
+            self.cursor.execute(create_assignments_table)
+            self.cursor.execute(create_problems_table)
+            self.cursor.execute(create_submissions_table)
         else:
             print("Error! Cannot create a database connection.")
 
@@ -134,24 +134,24 @@ class Content:
                  FROM users
                  WHERE user_id = ?'''
 
-        self.c.execute(sql, (user_id,))
-        return self.c.fetchone() != None
+        self.cursor.execute(sql, (user_id,))
+        return self.cursor.fetchone() != None
 
     def check_administrator_exists(self):
         sql = '''SELECT COUNT(*) AS num_administrators
                  FROM permissions
                  WHERE role = "administrator"'''
 
-        self.c.execute(sql)
-        return self.c.fetchone()["num_administrators"]
+        self.cursor.execute(sql)
+        return self.cursor.fetchone()["num_administrators"]
 
     def get_role(self, user_id):
         sql = '''SELECT role
                  FROM permissions
                  WHERE user_id = ?'''
 
-        self.c.execute(sql, (user_id,))
-        row = self.c.fetchone()
+        self.cursor.execute(sql, (user_id,))
+        row = self.cursor.fetchone()
 
         if row:
             return row["role"]
@@ -164,14 +164,14 @@ class Content:
                  WHERE role = ?
                    AND (course_id = ? OR course_id IS NULL)'''
 
-        rows = self.c.execute(sql, (role, course_id,))
+        rows = self.cursor.execute(sql, (role, course_id,))
         return [row["user_id"] for row in rows]
 
     def add_user(self, user_id, user_dict):
         sql = '''INSERT INTO users (user_id, user_json)
                  VALUES (?, ?)'''
 
-        self.c.execute(sql, (user_id, json.dumps(user_dict)))
+        self.cursor.execute(sql, (user_id, json.dumps(user_dict)))
 
     def add_permissions(self, user_id, role, course_id):
         sql = '''SELECT role
@@ -183,21 +183,21 @@ class Content:
         if not course_id:
             course_id = "0"
 
-        self.c.execute(sql, (user_id, int(course_id),))
+        self.cursor.execute(sql, (user_id, int(course_id),))
 
-        role_exists = self.c.fetchone() != None
+        role_exists = self.cursor.fetchone() != None
 
         if role_exists:
             sql = '''UPDATE permissions
                      SET role = ?, course_id = ?
                      WHERE user_id = ?'''
 
-            self.c.execute(sql, (role, course_id, user_id,))
+            self.cursor.execute(sql, (role, course_id, user_id,))
         else:
             sql = '''INSERT INTO permissions (user_id, role, course_id)
                      VALUES (?, ?, ?)'''
 
-            self.c.execute(sql, (user_id, role, course_id,))
+            self.cursor.execute(sql, (user_id, role, course_id,))
 
     def add_admin_permissions(self, user_id):
         self.add_permissions(user_id, "administrator", None)
@@ -206,15 +206,15 @@ class Content:
         sql = '''SELECT COUNT(*) AS count
                  FROM users'''
 
-        self.c.execute(sql)
-        return self.c.fetchone()["count"]
+        self.cursor.execute(sql)
+        return self.cursor.fetchone()["count"]
 
     def get_course_ids(self):
         sql = '''SELECT course_id
                  FROM courses'''
 
-        self.c.execute(sql)
-        return [course[0] for course in self.c.fetchall()]
+        self.cursor.execute(sql)
+        return [course[0] for course in self.cursor.fetchall()]
 
     def get_assignment_ids(self, course_id):
         if not course_id:
@@ -224,8 +224,8 @@ class Content:
                  FROM assignments
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (int(course_id),))
-        return [assignment[0] for assignment in self.c.fetchall()]
+        self.cursor.execute(sql, (int(course_id),))
+        return [assignment[0] for assignment in self.cursor.fetchall()]
 
     def get_problem_ids(self, course_id, assignment_id):
         if not assignment_id:
@@ -236,8 +236,8 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        self.c.execute(sql, (int(course_id), int(assignment_id),))
-        return [problem[0] for problem in self.c.fetchall()]
+        self.cursor.execute(sql, (int(course_id), int(assignment_id),))
+        return [problem[0] for problem in self.cursor.fetchall()]
 
     def get_courses(self, show_hidden=True):
         courses = []
@@ -245,9 +245,9 @@ class Content:
         sql = '''SELECT course_id, title, visible
                  FROM courses
                  ORDER BY title'''
-        self.c.execute(sql)
+        self.cursor.execute(sql)
 
-        for course in self.c.fetchall():
+        for course in self.cursor.fetchall():
             if course["visible"] or show_hidden:
                 course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "exists": True}
                 courses.append([course["course_id"], course_basics])
@@ -261,9 +261,9 @@ class Content:
                  FROM assignments
                  WHERE course_id = ?
                  ORDER BY title'''
-        self.c.execute(sql, (course_id,))
+        self.cursor.execute(sql, (course_id,))
 
-        for assignment in self.c.fetchall():
+        for assignment in self.cursor.fetchall():
             if assignment["visible"] or show_hidden:
                 course_basics = self.get_course_basics(course_id)
                 assignment_basics = {"id": assignment["assignment_id"], "title": assignment["title"], "visible": assignment["visible"], "exists": False, "course": course_basics}
@@ -279,9 +279,9 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?
                  ORDER BY title'''
-        self.c.execute(sql, (course_id, assignment_id,))
+        self.cursor.execute(sql, (course_id, assignment_id,))
 
-        for problem in self.c.fetchall():
+        for problem in self.cursor.fetchall():
             if problem["visible"] or show_hidden:
                 assignment_basics = self.get_assignment_basics(course_id, assignment_id)
                 problem_basics = {"id": problem["problem_id"], "title": problem["title"], "visible": problem["visible"], "exists": True, "assignment": assignment_basics}
@@ -319,10 +319,10 @@ class Content:
                  GROUP BY assignment_id, title
                  ORDER BY title'''
 
-        self.c.execute(sql,(user_id, int(course_id),))
+        self.cursor.execute(sql,(user_id, int(course_id),))
 
         assignment_statuses = []
-        for row in self.c.fetchall():
+        for row in self.cursor.fetchall():
             assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
@@ -347,10 +347,10 @@ class Content:
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
 
-        self.c.execute(sql,(user_id, int(course_id), int(assignment_id),))
+        self.cursor.execute(sql,(user_id, int(course_id), int(assignment_id),))
 
         problem_statuses = []
-        for row in self.c.fetchall():
+        for row in self.cursor.fetchall():
             problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"]}
             problem_statuses.append([row["problem_id"], problem_dict])
 
@@ -391,9 +391,9 @@ class Content:
                  ) c
                  ON u.user_id = c.user_id'''
 
-        self.c.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id),))
+        self.cursor.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id),))
 
-        for user in self.c.fetchall():
+        for user in self.cursor.fetchall():
             scores_dict = {"user_id": user["user_id"], "percent_passed": user["percent_passed"]}
             scores.append([user["user_id"], scores_dict])
 
@@ -409,9 +409,9 @@ class Content:
                    AND user_id = ?
                   ORDER BY submission_id DESC'''
 
-        self.c.execute(sql, (int(course_id), int(assignment_id), int(problem_id), user_id,))
+        self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id), user_id,))
 
-        for submission in self.c.fetchall():
+        for submission in self.cursor.fetchall():
             submissions.append([submission["submission_id"], submission["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), submission["passed"]])
 
         return submissions
@@ -478,8 +478,8 @@ class Content:
                  FROM courses
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (int(course_id),))
-        row = self.c.fetchone()
+        self.cursor.execute(sql, (int(course_id),))
+        row = self.cursor.fetchone()
 
         return {"id": row["course_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True}
 
@@ -494,8 +494,8 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        self.c.execute(sql, (int(course_id), int(assignment_id),))
-        row = self.c.fetchone()
+        self.cursor.execute(sql, (int(course_id), int(assignment_id),))
+        row = self.cursor.fetchone()
         if row is None:
             return {"id": "", "title": "", "visible": True, "exists": False, "course": course_basics}
         else:
@@ -513,8 +513,8 @@ class Content:
                    AND assignment_id = ?
                    AND problem_id = ?'''
 
-        self.c.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
-        row = self.c.fetchone()
+        self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
+        row = self.cursor.fetchone()
         if row is None:
             return {"id": "", "title": "", "visible": True, "exists": False, "assignment": assignment_basics}
         else:
@@ -545,7 +545,7 @@ class Content:
                    AND problem_id = ?
                    AND user_id = ?'''
 
-        return self.c.execute(sql, (int(course), int(assignment), int(problem), user,)).fetchone()[0]
+        return self.cursor.execute(sql, (int(course), int(assignment), int(problem), user,)).fetchone()[0]
 
     def get_next_submission_id(self, course, assignment, problem, user):
         return self.get_num_submissions(course, assignment, problem, user) + 1
@@ -561,8 +561,8 @@ class Content:
                     AND user_id = ?
                     AND submission_id = ?'''
 
-            self.c.execute(sql, (int(course), int(assignment), int(problem), user, int(last_submission_id),))
-            row = self.c.fetchone()
+            self.cursor.execute(sql, (int(course), int(assignment), int(problem), user, int(last_submission_id),))
+            row = self.cursor.fetchone()
 
             return {"id": last_submission_id, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
         else:
@@ -577,8 +577,8 @@ class Content:
                    AND user_id = ?
                    AND submission_id = ?'''
 
-        self.c.execute(sql, (int(course), int(assignment), int(problem), user, int(submission),))
-        row = self.c.fetchone()
+        self.cursor.execute(sql, (int(course), int(assignment), int(problem), user, int(submission),))
+        row = self.cursor.fetchone()
 
         return {"id": submission, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "error_occurred": row["error_occurred"], "exists": True}
 
@@ -590,8 +590,8 @@ class Content:
                  FROM courses
                  WHERE course_id = ?'''
 
-        self.c.execute(sql, (int(course),))
-        row = self.c.fetchone()
+        self.cursor.execute(sql, (int(course),))
+        row = self.cursor.fetchone()
 
         course_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
         if format_output:
@@ -608,8 +608,8 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        self.c.execute(sql, (int(course), int(assignment),))
-        row = self.c.fetchone()
+        self.cursor.execute(sql, (int(course), int(assignment),))
+        row = self.cursor.fetchone()
 
         assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
         if format_output:
@@ -631,8 +631,8 @@ class Content:
                    AND assignment_id = ?
                    AND problem_id = ?'''
 
-        self.c.execute(sql, (int(course), int(assignment), int(problem),))
-        row = self.c.fetchone()
+        self.cursor.execute(sql, (int(course), int(assignment), int(problem),))
+        row = self.cursor.fetchone()
 
         problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_output": row["expected_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
 
@@ -695,13 +695,13 @@ class Content:
                      SET title = ?, visible = ?, introduction = ?, date_updated = ?
                      WHERE course_id = ?'''
 
-            self.c.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["date_updated"], course_basics["id"]])
+            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["date_updated"], course_basics["id"]])
         else:
             sql = '''INSERT INTO courses (title, visible, introduction, date_created, date_updated)
                      VALUES (?, ?, ?, ?, ?)'''
 
-            self.c.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["date_created"], course_details["date_updated"]])
-            course_basics["id"] = self.c.lastrowid
+            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["date_created"], course_details["date_updated"]])
+            course_basics["id"] = self.cursor.lastrowid
             course_basics["exists"] = True
 
         return course_basics["id"]
@@ -713,13 +713,13 @@ class Content:
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.c.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.cursor.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated)
                      VALUES (?, ?, ?, ?, ?, ?)'''
 
-            self.c.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"]])
-            assignment_basics["id"] = self.c.lastrowid
+            self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"]])
+            assignment_basics["id"] = self.cursor.lastrowid
             assignment_basics["exists"] = True
 
         return assignment_basics["id"]
@@ -736,15 +736,15 @@ class Content:
                        AND assignment_id = ?
                        AND problem_id = ?'''
 
-            self.c.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
+            self.cursor.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
         else:
             sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            self.c.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
-            problem_basics["id"] = self.c.lastrowid
+            self.cursor.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
+            problem_basics["id"] = self.cursor.lastrowid
             problem_basics["exists"] = True
-        
+
         return problem_basics["id"]
 
     def save_submission(self, course, assignment, problem, user, code, code_output, passed, error_occurred):
@@ -752,7 +752,7 @@ class Content:
         sql = '''INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.c.execute(sql, [int(course), int(assignment), int(problem), user, int(submission_id), code, code_output, passed, datetime.now(), error_occurred])
+        self.cursor.execute(sql, [int(course), int(assignment), int(problem), user, int(submission_id), code, code_output, passed, datetime.now(), error_occurred])
 
         return submission_id
 
@@ -761,44 +761,102 @@ class Content:
                  SET user_json = ?
                  WHERE user_id = ?'''
 
-        self.c.execute(sql, (json.dumps(user_dict), user_id,))
-
-    def delete_rows_with_value(self, table, col_name, value):
-        sql = 'DELETE FROM ' + table + ' WHERE ' + col_name + ' = ?'
-        self.c.execute(sql, (value,))
-
-    def delete_all_rows(self, table):
-        sql = 'DELETE FROM ' + table
-        self.c.execute(sql)
+        self.cursor.execute(sql, (json.dumps(user_dict), user_id,))
 
     def delete_problem(self, problem_basics):
-        self.delete_problem_submissions(problem_basics)
-        self.delete_rows_with_value("problems", "problem_id", problem_basics["id"])
+        sql = '''BEGIN TRANSACTION;
+
+                 DELETE FROM submissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?;
+
+                 DELETE FROM problems
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?;
+
+                 COMMIT;
+              '''
+
+        c_id = problem_basics["assignment"]["course"]["id"]
+        a_id = problem_basics["assignment"]["id"]
+        p_id = problem_basics["id"]
+        self.cursor.execute(sql, (c_id, a_id, p_id, c_id, a_id, p_id,))
 
     def delete_assignment(self, assignment_basics):
-        self.delete_assignment_submissions(assignment_basics)
-        self.delete_rows_with_value("assignments", "assignment_id", assignment_basics["id"])
+        sql = '''BEGIN TRANSACTION;
+
+                 DELETE FROM submissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?;
+
+                 DELETE FROM problems
+                 WHERE course_id = ?
+                   AND assignment_id = ?;
+
+                 DELETE FROM assignments
+                 WHERE course_id = ?
+                   AND assignment_id = ?;
+
+                 COMMIT;
+              '''
+
+        c_id = assignment_basics["course"]["id"]
+        a_id = assignment_basics["id"]
+        self.cursor.execute(sql, (c_id, a_id, c_id, a_id, c_id, a_id,))
 
     def delete_course(self, course_basics):
-        self.delete_course_submissions(course_basics)
-        self.delete_rows_with_value("courses", "course_id", course_basics["id"])
-        self.delete_rows_with_value("permissions", "course_id", course_basics["id"])
+        sql = '''BEGIN TRANSACTION;
+
+                 DELETE FROM submissions
+                 WHERE course_id = ?;
+
+                 DELETE FROM problems
+                 WHERE course_id = ?;
+
+                 DELETE FROM assignments
+                 WHERE course_id = ?;
+
+                 DELETE FROM courses
+                 WHERE course_id = ?;
+
+                 DELETE FROM permissions
+                 WHERE course_id = ?;
+
+                 COMMIT;
+              '''
+
+        c_id = course_basics["id"]
+        self.cursor.execute(sql, (c_id, c_id, c_id, c_id, c_id,))
 
     def delete_course_submissions(self, course_basics):
-        self.delete_rows_with_value("submissions", "course_id", course_basics["id"])
+        sql = '''DELETE FROM submissions
+                 WHERE course_id = ?'''
+
+        self.cursor.execute(sql, (course_basics["id"],))
 
     def delete_assignment_submissions(self, assignment_basics):
-        self.delete_rows_with_value("submissions", "assignment_id", assignment_basics["id"])
+        sql = '''DELETE FROM submissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
+
+        self.cursor.execute(sql, (assignment_basics["course"]["id"], assignment_basics["id"],))
 
     def delete_problem_submissions(self, problem_basics):
-        self.delete_rows_with_value("submissions", "problem_id", problem_basics["id"])
+        sql = '''DELETE FROM submissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?'''
+
+        self.cursor.execute(sql, (problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"],))
 
     def export_course(self, course_basics, table_name, output_tsv_file_path):
         sql = f"SELECT * FROM {table_name} WHERE course_id = ?"
-        self.c.execute(sql, (course_basics["id"],))
+        self.cursor.execute(sql, (course_basics["id"],))
 
         rows = []
-        for row in self.c.fetchall():
+        for row in self.cursor.fetchall():
             row_values = []
             for x in row:
                 if type(x) is datetime:
