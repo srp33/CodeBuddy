@@ -199,6 +199,18 @@ class Content:
 
             self.cursor.execute(sql, (user_id, role, course_id,))
 
+    def remove_permissions(self, user_id, role, course_id):
+        sql = '''DELETE FROM permissions
+                 WHERE user_id = ?
+                 AND role = ?
+                 AND (course_id = ? OR course_id IS NULL)'''
+
+        # Admins are not assigned to a particular course.
+        if not course_id:
+            course_id = "0"
+
+        self.cursor.execute(sql, (user_id, role, int(course_id),))
+
     def add_admin_permissions(self, user_id):
         self.add_permissions(user_id, "administrator", None)
 

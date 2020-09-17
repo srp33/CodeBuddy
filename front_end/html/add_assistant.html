@@ -3,7 +3,7 @@
 {% if assistants %}
     <ul>
     {% for user in assistants %}
-        <li>{{ user }}</li>
+        <li>{{ user }}<a href="/remove_assistant/{{ course_basics["id"] }}/{{ user }}"> remove</a></li>
     {% end %}
     </ul>
 {% else %}

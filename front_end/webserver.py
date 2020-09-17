@@ -49,6 +49,9 @@ def make_app():
         url(r"\/add_admin", AddAdminHandler, name="add_admin"),
         url(r"\/add_instructor\/([^\/]+)", AddInstructorHandler, name="add_instructor"),
         url(r"\/add_assistant\/([^\/]+)", AddAssistantHandler, name="add_assistant"),
+        url(r"\/remove_admin\/([^\/]+)", RemoveAdminHandler, name="remove_admin"),
+        url(r"\/remove_instructor\/([^\/]+)\/([^\/]+)", RemoveInstructorHandler, name="remove_instructor"),
+        url(r"\/remove_assistant\/([^\/]+)\/([^\/]+)", RemoveAssistantHandler, name="remove_assistant"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
         url(r"\/student_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", StudentScoresHandler, name="student_scores"),
@@ -734,7 +737,7 @@ class AddAdminHandler(BaseUserHandler):
     def get(self):
         try:
             if self.get_current_role() == "administrator":
-                self.render("add_admin.html", courses=content.get_courses(True), admins=content.get_users_from_role("administrator", None), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("add_admin.html", courses=content.get_courses(True), admins=content.get_users_from_role("administrator", 0), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -757,7 +760,7 @@ class AddAdminHandler(BaseUserHandler):
             else:
                 result = f"Error: {new_admin} does not exist."
 
-            self.render("add_admin.html", courses=content.get_courses(), admins=content.get_users_from_role("administrator", None), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("add_admin.html", courses=content.get_courses(), admins=content.get_users_from_role("administrator", 0), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -830,6 +833,97 @@ class AddAssistantHandler(BaseUserHandler):
             self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+class RemoveAdminHandler(BaseUserHandler):
+    def get(self, old_admin):
+        try:
+            role = self.get_current_role()
+            if role == "administrator":
+                self.render("remove_admin.html", courses=content.get_courses(), result=None, old_admin = old_admin, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, old_admin):
+        try:
+            user_id=self.get_current_user()
+            role = self.get_current_role()
+            if role != "administrator":
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+                return
+
+            if content.get_role(old_admin) != "administrator":
+                result = f"Error: {old_admin} is not an administrator."
+            else:
+                if user_id != old_admin:
+                    result = "Error: administrators can only be removed by themselves."
+                else:
+                    content.remove_permissions(old_admin, "administrator", None)
+                    result = f"Success: {old_admin} has been removed from the administrator list."
+
+            self.render("remove_admin.html", courses=content.get_courses(), result=result, user_id=user_id, user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class RemoveInstructorHandler(BaseUserHandler):
+    def get(self, course, old_instructor):
+        try:
+            role = self.get_current_role()
+            if role == "administrator":
+                self.render("remove_instructor.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=None, old_instructor = old_instructor, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, old_instructor):
+        try:
+            user_id=self.get_current_user()
+            role = self.get_current_role()
+            if role != "administrator":
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+                return
+
+            if content.get_role(old_instructor) != "instructor":
+                result = f"Error: {old_instructor} is not an instructor."
+            else:
+                content.remove_permissions(old_instructor, "instructor", course)
+                result = f"Success: {old_instructor} has been removed from the instructor list."
+
+            self.render("remove_instructor.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_id=user_id, user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class RemoveAssistantHandler(BaseUserHandler):
+    def get(self, course, old_assistant):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
+                self.render("remove_assistant.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=None, old_assistant = old_assistant, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, old_assistant):
+        try:
+            user_id=self.get_current_user()
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+                return
+
+            if content.get_role(old_assistant) != "assistant":
+                result = f"Error: {old_assistant} is not an assistant."
+            else:
+                content.remove_permissions(old_assistant, "assistant", course)
+                result = f"Success: {old_assistant} has been removed from the instructor assistant list."
+
+            self.render("remove_assistant.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_id=user_id, user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+            
 
 class ViewScoresHandler(BaseUserHandler):
     def get(self, course, assignment):

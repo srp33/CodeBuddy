@@ -1,9 +1,18 @@
-<h2>Current administrators:</h2>
+<h2>Current administrators:
+    <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Administrators can only be removed by themselves.">
+        <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-middle; display: inline"/>
+    </label>
+</h2>
 
 {% if admins %}
     <ul>
     {% for user in admins %}
-        <li>{{ user }}</li>
+        <li>
+            {{ user }}
+            {% if user_id == user %}
+                <a href="/remove_admin/{{ user }}"> remove</a>
+            {% end %}
+        </li>
     {% end %}
     </ul>
 {% else %}

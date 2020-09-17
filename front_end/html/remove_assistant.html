@@ -1,0 +1,24 @@
+<h2>Remove assistant:</h2>
+
+{% if result %}
+  {% if result.startswith("Error:") %}
+    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+  {% else %}
+    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+  {% end %}
+  <p><a href="/add_assistant/{{ course_basics["id"] }}">Back to permissions page</a></p>
+{% end %}
+
+{% if not result %}
+    <form method="post" action="/remove_assistant/{{ course_basics["id"] }}/{{ old_assistant }}">
+
+    <p><strong>{{ old_assistant }}</strong></p>
+
+    <p><font color="red">Are you sure you want to remove this user from the instructor assistant list?</font></p>
+
+    <p><input type="submit" class="button is-info is-large is-fullwidth" value="Confirm" /></p>
+
+    <p><a href="/add_assistant/{{ course_basics["id"] }}">Back to permissions page</a></p>
+
+    </form>
+{% end %}

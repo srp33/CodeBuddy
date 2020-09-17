@@ -53,10 +53,10 @@
       <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a> |
       <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
       {% if role == "administrator" %}
-        | <a href="/add_instructor/{{ course_basics["id"] }}">Add instructor</a>
+        | <a href="/add_instructor/{{ course_basics["id"] }}">Add/remove instructor</a>
       {% end %}
       {% if role == "instructor" %}
-        | <a href="/add_assistant/{{ course_basics["id"] }}">Add instructor assistant</a>
+        | <a href="/add_assistant/{{ course_basics["id"] }}">Add/remove instructor assistant</a>
       {% end %}
     {% end %}
   </p>
