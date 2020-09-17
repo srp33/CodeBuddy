@@ -749,10 +749,13 @@ class AddAdminHandler(BaseUserHandler):
             new_admin = self.get_body_argument("new_admin")
 
             if content.check_user_exists(new_admin):
-                content.add_admin_permissions(new_admin)
-                result = f"Success! {new_admin} is an administrator."
+                if content.get_role(new_admin) == "administrator":
+                    result = f"{new_admin} is already an administrator."
+                else:
+                    content.add_admin_permissions(new_admin)
+                    result = f"Success! {new_admin} is an administrator."
             else:
-                result = f"Error: The specified user does not exist."
+                result = f"Error: {new_admin} does not exist."
 
             self.render("add_admin.html", courses=content.get_courses(), admins=content.get_users_from_role("administrator", None), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -779,10 +782,13 @@ class AddInstructorHandler(BaseUserHandler):
             new_instructor = self.get_body_argument("new_inst")
 
             if content.check_user_exists(new_instructor):
-                content.add_permissions(new_instructor, "instructor", course_basics["id"])
-                result = f"Success! {new_instructor} is an instructor for the {course_basics['title']} course."
+                if content.get_role(new_instructor) == "administrator":
+                    result = f"Error: {new_instructor} is already an administrator and can't be given a lower role."
+                else:
+                    content.add_permissions(new_instructor, "instructor", course_basics["id"])
+                    result = f"Success! {new_instructor} is now an instructor for the {course_basics['title']} course."
             else:
-                result = f"Error: The specified user does not exist."
+                result = f"Error: {new_instructor} does not exist."
 
             self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role("instructor", course_basics["id"]), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -811,8 +817,13 @@ class AddAssistantHandler(BaseUserHandler):
             new_assistant = self.get_body_argument("new_assistant")
 
             if content.check_user_exists(new_assistant):
-                content.add_permissions(new_assistant, "assistant", course_basics["id"])
-                result = f"Success! {new_assistant} is an instructor's assistant for the {course_basics['title']} course."
+                if content.get_role(new_assistant) == "administrator":
+                    result = f"Error: {new_assistant} is already an administrator and can't be given a lower role."
+                elif content.get_role(new_assistant) == "instructor":
+                    result = f"Error: {new_assistant} is already an instructor and can't be given a lower role."
+                else:
+                    content.add_permissions(new_assistant, "assistant", course_basics["id"])
+                    result = f"Success! {new_assistant} is an instructor's assistant for the {course_basics['title']} course."
             else:
                 result = f"Error: The specified user does not exist."
 
