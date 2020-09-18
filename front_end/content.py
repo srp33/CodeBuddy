@@ -655,6 +655,33 @@ class Content:
 
         return problem_dict
 
+    def get_course_id_from_title(self, title):
+        sql = '''SELECT course_id
+                 FROM courses
+                 WHERE title = ?'''
+        self.cursor.execute(sql, (title,))
+        row = self.cursor.fetchone()
+        return row["course_id"]
+    
+    def get_assignment_id_from_title(self, title, course_id):
+        sql = '''SELECT assignment_id
+                 FROM assignments
+                 WHERE title = ?
+                 AND course_id = ?'''
+        self.cursor.execute(sql, (title, course_id,))
+        row = self.cursor.fetchone()
+        return row["assignment_id"]
+
+    def get_problem_id_from_title(self, title, course_id, assignment_id):
+        sql = '''SELECT problem_id
+                 FROM problems
+                 WHERE title = ?
+                 AND course_id = ?
+                 AND assignment_id = ?'''
+        self.cursor.execute(sql, (title, course_id, assignment_id,))
+        row = self.cursor.fetchone()
+        return row["problem_id"]
+
     def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):
         new_dict = {}
         line_num = 1
@@ -663,6 +690,15 @@ class Content:
             for line in read_file:
                 line_items = line.decode().rstrip("\n").split("\t")
                 line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[4:]
+
+                #Get ids to create links to each course, assignment, and problem in the table
+                course_id = self.get_course_id_from_title(line_items[6])
+                assignment_id = self.get_assignment_id_from_title(line_items[7], course_id)
+                problem_id = self.get_problem_id_from_title(line_items[8], course_id, assignment_id)
+
+                line_items[6] = f"<a href='/course/{course_id}'>{line_items[6]}</a>"
+                line_items[7] = f"<a href='/assignment/{course_id}/{assignment_id}'>{line_items[7]}</a>"
+                line_items[8] = f"<a href='/problem/{course_id}/{assignment_id}/{problem_id}'>{line_items[8]}</a>"
 
                 new_dict[line_num] = line_items
                 line_num += 1
