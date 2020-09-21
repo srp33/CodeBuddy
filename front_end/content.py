@@ -158,7 +158,7 @@ class Content:
         else:
             return "student"
 
-    def get_users_from_role(self, role, course_id):
+    def get_users_from_role(self, course_id, role):
         sql = '''SELECT user_id
                  FROM permissions
                  WHERE role = ?
@@ -173,7 +173,7 @@ class Content:
 
         self.cursor.execute(sql, (user_id, json.dumps(user_dict)))
 
-    def add_permissions(self, user_id, role, course_id):
+    def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role
                  FROM permissions
                  WHERE user_id = ?
@@ -199,8 +199,20 @@ class Content:
 
             self.cursor.execute(sql, (user_id, role, course_id,))
 
+    def remove_permissions(self, course_id, user_id, role):
+        sql = '''DELETE FROM permissions
+                 WHERE user_id = ?
+                 AND role = ?
+                 AND (course_id = ? OR course_id IS NULL)'''
+
+        # Admins are not assigned to a particular course.
+        if not course_id:
+            course_id = "0"
+
+        self.cursor.execute(sql, (user_id, role, int(course_id),))
+
     def add_admin_permissions(self, user_id):
-        self.add_permissions(user_id, "administrator", None)
+        self.add_permissions(None, user_id, "administrator")
 
     def get_user_count(self):
         sql = '''SELECT COUNT(*) AS count
@@ -643,6 +655,33 @@ class Content:
 
         return problem_dict
 
+    def get_course_id_from_title(self, title):
+        sql = '''SELECT course_id
+                 FROM courses
+                 WHERE title = ?'''
+        self.cursor.execute(sql, (title,))
+        row = self.cursor.fetchone()
+        return row["course_id"]
+    
+    def get_assignment_id_from_title(self, title, course_id):
+        sql = '''SELECT assignment_id
+                 FROM assignments
+                 WHERE title = ?
+                 AND course_id = ?'''
+        self.cursor.execute(sql, (title, course_id,))
+        row = self.cursor.fetchone()
+        return row["assignment_id"]
+
+    def get_problem_id_from_title(self, title, course_id, assignment_id):
+        sql = '''SELECT problem_id
+                 FROM problems
+                 WHERE title = ?
+                 AND course_id = ?
+                 AND assignment_id = ?'''
+        self.cursor.execute(sql, (title, course_id, assignment_id,))
+        row = self.cursor.fetchone()
+        return row["problem_id"]
+
     def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):
         new_dict = {}
         line_num = 1
@@ -651,6 +690,15 @@ class Content:
             for line in read_file:
                 line_items = line.decode().rstrip("\n").split("\t")
                 line_items = [line_items[0][:2], line_items[0][2:4], line_items[0][4:6], line_items[0][6:]] + line_items[4:]
+
+                #Get ids to create links to each course, assignment, and problem in the table
+                course_id = self.get_course_id_from_title(line_items[6])
+                assignment_id = self.get_assignment_id_from_title(line_items[7], course_id)
+                problem_id = self.get_problem_id_from_title(line_items[8], course_id, assignment_id)
+
+                line_items[6] = f"<a href='/course/{course_id}'>{line_items[6]}</a>"
+                line_items[7] = f"<a href='/assignment/{course_id}/{assignment_id}'>{line_items[7]}</a>"
+                line_items[8] = f"<a href='/problem/{course_id}/{assignment_id}/{problem_id}'>{line_items[8]}</a>"
 
                 new_dict[line_num] = line_items
                 line_num += 1
@@ -764,71 +812,74 @@ class Content:
         self.cursor.execute(sql, (json.dumps(user_dict), user_id,))
 
     def delete_problem(self, problem_basics):
-        sql = '''BEGIN TRANSACTION;
-
-                 DELETE FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND problem_id = ?;
-
-                 DELETE FROM problems
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND problem_id = ?;
-
-                 COMMIT;
-              '''
-
         c_id = problem_basics["assignment"]["course"]["id"]
         a_id = problem_basics["assignment"]["id"]
         p_id = problem_basics["id"]
-        self.cursor.execute(sql, (c_id, a_id, p_id, c_id, a_id, p_id,))
+
+        sql = f'''BEGIN TRANSACTION;
+
+                 DELETE FROM submissions
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id}
+                   AND problem_id = {p_id};
+
+                 DELETE FROM problems
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id}
+                   AND problem_id = {p_id};
+
+                 COMMIT;
+              '''
+
+        self.cursor.executescript(sql)
 
     def delete_assignment(self, assignment_basics):
-        sql = '''BEGIN TRANSACTION;
-
-                 DELETE FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?;
-
-                 DELETE FROM problems
-                 WHERE course_id = ?
-                   AND assignment_id = ?;
-
-                 DELETE FROM assignments
-                 WHERE course_id = ?
-                   AND assignment_id = ?;
-
-                 COMMIT;
-              '''
-
         c_id = assignment_basics["course"]["id"]
         a_id = assignment_basics["id"]
-        self.cursor.execute(sql, (c_id, a_id, c_id, a_id, c_id, a_id,))
 
-    def delete_course(self, course_basics):
-        sql = '''BEGIN TRANSACTION;
+        sql = f'''BEGIN TRANSACTION;
 
                  DELETE FROM submissions
-                 WHERE course_id = ?;
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id};
 
                  DELETE FROM problems
-                 WHERE course_id = ?;
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id};
 
                  DELETE FROM assignments
-                 WHERE course_id = ?;
-
-                 DELETE FROM courses
-                 WHERE course_id = ?;
-
-                 DELETE FROM permissions
-                 WHERE course_id = ?;
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id};
 
                  COMMIT;
               '''
 
+        self.cursor.executescript(sql)
+
+    def delete_course(self, course_basics):
         c_id = course_basics["id"]
-        self.cursor.execute(sql, (c_id, c_id, c_id, c_id, c_id,))
+
+        sql = f'''BEGIN TRANSACTION;
+
+                 DELETE FROM submissions
+                 WHERE course_id = {c_id};
+
+                 DELETE FROM problems
+                 WHERE course_id = {c_id};
+
+                 DELETE FROM assignments
+                 WHERE course_id = {c_id};
+
+                 DELETE FROM courses
+                 WHERE course_id = {c_id};
+
+                 DELETE FROM permissions
+                 WHERE course_id = {c_id};
+
+                 COMMIT;
+              '''
+
+        self.cursor.executescript(sql)
 
     def delete_course_submissions(self, course_basics):
         sql = '''DELETE FROM submissions
