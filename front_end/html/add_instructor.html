@@ -3,7 +3,7 @@
 {% if instructors %}
     <ul>
     {% for user in instructors %}
-        <li>{{ user }}</li>
+        <li>{{ user }}<a href="/remove_instructor/{{ course_basics["id"] }}/{{ user }}"> remove</a></li>
     {% end %}
     </ul>
 {% else %}
@@ -15,13 +15,13 @@
 <div class="field">
   <label class="label is-large">Add an instructor:</label>
   <div class="control">
-    <input name="new_inst" class="input is-large" type="text" placeholder="Enter ID (email address) of an existing user." autofocus>
+    <textarea name="new_inst" class="textarea is-primary is-fullwidth" type="text" rows="1" placeholder="Enter ID (email address) of an existing user." autofocus></textarea>
   </div>
 </div>
 
 <div class="field">
   <p class="control">
-    <button class="button is-info is-large">Add</button>
+    <button class="button is-primary is-medium is-rounded">Add</button>
   </p>
 </div>
 
