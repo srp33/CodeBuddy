@@ -189,7 +189,7 @@ class EditCourseHandler(BaseUserHandler):
                         result = "Error: The title can only contain alphanumeric characters and spaces."
                     else:
                         if len(title) > 20:
-                            result = "Error: Title cannot exceed 20 characters."
+                            result = "Error: The title cannot exceed 20 characters."
                         else:
                             content.specify_course_basics(course_basics, title, visible)
                             content.specify_course_details(course_details, introduction, None, datetime.datetime.now())
@@ -424,7 +424,7 @@ class EditAssignmentHandler(BaseUserHandler):
                     result = "Error: An assignment with that title already exists."
                 else:
                     if len(title) > 50:
-                        result = "Error: Title cannot exceed 50 characters."
+                        result = "Error: The title cannot exceed 50 characters."
                     else:
                         content.specify_assignment_basics(assignment_basics, title, visible)
                         content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
@@ -545,7 +545,7 @@ class EditProblemHandler(BaseUserHandler):
                     result = "Error: A problem with that title already exists in this assignment."
                 else:
                     if len(title) > 50:
-                        result = "Error: Title cannot exceed 50 characters."
+                        result = "Error: The title cannot exceed 50 characters."
                     else:
                         if (data_url == "" and data_file_name != "") or (data_url != "" and data_file_name == ""):
                             result = "Error: If a data URL or file name is specified, both must be specified."
@@ -758,7 +758,7 @@ class AddAdminHandler(BaseUserHandler):
                     content.add_admin_permissions(new_admin)
                     result = f"Success! {new_admin} is an administrator."
             else:
-                result = f"Error: {new_admin} does not exist."
+                result = f"Error: The user '{new_admin}' does not exist."
 
             self.render("add_admin.html", courses=content.get_courses(), admins=content.get_users_from_role(0, "administrator"), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -791,7 +791,7 @@ class AddInstructorHandler(BaseUserHandler):
                     content.add_permissions(course_basics["id"], new_instructor, "instructor")
                     result = f"Success! {new_instructor} is now an instructor for the {course_basics['title']} course."
             else:
-                result = f"Error: {new_instructor} does not exist."
+                result = f"Error: The user '{new_instructor}' does not exist."
 
             self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role(course_basics["id"], "instructor"), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -828,7 +828,7 @@ class AddAssistantHandler(BaseUserHandler):
                     content.add_permissions(course_basics["id"], new_assistant, "assistant")
                     result = f"Success! {new_assistant} is an instructor's assistant for the {course_basics['title']} course."
             else:
-                result = f"Error: The specified user does not exist."
+                result = f"Error: The user '{new_assistant}' does not exist."
 
             self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role(course_basics["id"], "assistant"), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
