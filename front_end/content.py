@@ -158,7 +158,7 @@ class Content:
         else:
             return "student"
 
-    def get_users_from_role(self, role, course_id):
+    def get_users_from_role(self, course_id, role):
         sql = '''SELECT user_id
                  FROM permissions
                  WHERE role = ?
@@ -173,7 +173,7 @@ class Content:
 
         self.cursor.execute(sql, (user_id, json.dumps(user_dict)))
 
-    def add_permissions(self, user_id, role, course_id):
+    def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role
                  FROM permissions
                  WHERE user_id = ?
@@ -199,7 +199,7 @@ class Content:
 
             self.cursor.execute(sql, (user_id, role, course_id,))
 
-    def remove_permissions(self, user_id, role, course_id):
+    def remove_permissions(self, course_id, user_id, role):
         sql = '''DELETE FROM permissions
                  WHERE user_id = ?
                  AND role = ?
@@ -212,7 +212,7 @@ class Content:
         self.cursor.execute(sql, (user_id, role, int(course_id),))
 
     def add_admin_permissions(self, user_id):
-        self.add_permissions(user_id, "administrator", None)
+        self.add_permissions(None, user_id, "administrator")
 
     def get_user_count(self):
         sql = '''SELECT COUNT(*) AS count

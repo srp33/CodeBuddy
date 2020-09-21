@@ -737,7 +737,7 @@ class AddAdminHandler(BaseUserHandler):
     def get(self):
         try:
             if self.get_current_role() == "administrator":
-                self.render("add_admin.html", courses=content.get_courses(True), admins=content.get_users_from_role("administrator", 0), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("add_admin.html", courses=content.get_courses(True), admins=content.get_users_from_role(0, "administrator"), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -760,7 +760,7 @@ class AddAdminHandler(BaseUserHandler):
             else:
                 result = f"Error: {new_admin} does not exist."
 
-            self.render("add_admin.html", courses=content.get_courses(), admins=content.get_users_from_role("administrator", 0), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("add_admin.html", courses=content.get_courses(), admins=content.get_users_from_role(0, "administrator"), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -769,7 +769,7 @@ class AddInstructorHandler(BaseUserHandler):
         try:
             if self.get_current_role() == "administrator":
                 course_basics = content.get_course_basics(course)
-                self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role("instructor", course_basics["id"]), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role(course_basics["id"], "instructor"), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -788,12 +788,12 @@ class AddInstructorHandler(BaseUserHandler):
                 if content.get_role(new_instructor) == "administrator":
                     result = f"Error: {new_instructor} is already an administrator and can't be given a lower role."
                 else:
-                    content.add_permissions(new_instructor, "instructor", course_basics["id"])
+                    content.add_permissions(course_basics["id"], new_instructor, "instructor")
                     result = f"Success! {new_instructor} is now an instructor for the {course_basics['title']} course."
             else:
                 result = f"Error: {new_instructor} does not exist."
 
-            self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role("instructor", course_basics["id"]), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("add_instructor.html", courses=content.get_courses(), course_basics=course_basics, instructors=content.get_users_from_role(course_basics["id"], "instructor"), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -803,7 +803,7 @@ class AddAssistantHandler(BaseUserHandler):
             role = self.get_current_role()
             if role == "administrator" or role == "instructor":
                 course_basics = content.get_course_basics(course)
-                self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role(course_basics["id"], "assistant"), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -825,12 +825,12 @@ class AddAssistantHandler(BaseUserHandler):
                 elif content.get_role(new_assistant) == "instructor":
                     result = f"Error: {new_assistant} is already an instructor and can't be given a lower role."
                 else:
-                    content.add_permissions(new_assistant, "assistant", course_basics["id"])
+                    content.add_permissions(course_basics["id"], new_assistant, "assistant")
                     result = f"Success! {new_assistant} is an instructor's assistant for the {course_basics['title']} course."
             else:
                 result = f"Error: The specified user does not exist."
 
-            self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role("assistant", course_basics["id"]), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role(course_basics["id"], "assistant"), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -859,7 +859,7 @@ class RemoveAdminHandler(BaseUserHandler):
                 if user_id != old_admin:
                     result = "Error: administrators can only be removed by themselves."
                 else:
-                    content.remove_permissions(old_admin, "administrator", None)
+                    content.remove_permissions(None, old_admin, "administrator")
                     result = f"Success: {old_admin} has been removed from the administrator list."
 
             self.render("remove_admin.html", courses=content.get_courses(), result=result, user_id=user_id, user_logged_in=user_logged_in_var.get())
@@ -888,7 +888,7 @@ class RemoveInstructorHandler(BaseUserHandler):
             if content.get_role(old_instructor) != "instructor":
                 result = f"Error: {old_instructor} is not an instructor."
             else:
-                content.remove_permissions(old_instructor, "instructor", course)
+                content.remove_permissions(course, old_instructor, "instructor")
                 result = f"Success: {old_instructor} has been removed from the instructor list."
 
             self.render("remove_instructor.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_id=user_id, user_logged_in=user_logged_in_var.get())
@@ -917,7 +917,7 @@ class RemoveAssistantHandler(BaseUserHandler):
             if content.get_role(old_assistant) != "assistant":
                 result = f"Error: {old_assistant} is not an assistant."
             else:
-                content.remove_permissions(old_assistant, "assistant", course)
+                content.remove_permissions(course, old_assistant, "assistant")
                 result = f"Success: {old_assistant} has been removed from the instructor assistant list."
 
             self.render("remove_assistant.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_id=user_id, user_logged_in=user_logged_in_var.get())
