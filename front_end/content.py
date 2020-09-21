@@ -1,3 +1,4 @@
+from queries import *
 from datetime import datetime
 import glob
 import gzip
@@ -328,7 +329,8 @@ class Content:
 
         return assignment_statuses
 
-    # Gets the number of submissions a student has made for each problem in an assignment and whether or not they have passed the problem.
+    # Gets the number of submissions a student has made for each problem
+    # in an assignment and whether or not they have passed the problem.
     def get_problem_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
         sql = '''SELECT p.problem_id,
                         p.title,
@@ -389,7 +391,13 @@ class Content:
                      ) b
                      GROUP BY a.user_id
                  ) c
-                 ON u.user_id = c.user_id'''
+                   ON u.user_id = c.user_id
+                 WHERE u.user_id NOT IN
+                 (
+                   SELECT user_id
+                   FROM permissions
+                   WHERE course_id = 0 OR course_id = 1
+                 )'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id),))
 
