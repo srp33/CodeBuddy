@@ -518,65 +518,72 @@ class EditProblemHandler(BaseUserHandler):
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
                 return
 
-            title = self.get_body_argument("title").strip() #required
-            visible = self.get_body_argument("is_visible") == "Yes"
-            instructions = self.get_body_argument("instructions").strip().replace("\r", "") #required
-            back_end = self.get_body_argument("back_end")
-            output_type = self.get_body_argument("output_type")
-            answer_code = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required
-            answer_description = self.get_body_argument("answer_description").strip().replace("\r", "")
-            max_submissions = int(self.get_body_argument("max_submissions"))
-            test_code = self.get_body_argument("test_code_text").strip().replace("\r", "")
-            credit = self.get_body_argument("credit").strip().replace("\r", "")
-            data_url = self.get_body_argument("data_url").strip().replace("\r", "")
-            data_file_name = self.get_body_argument("data_file_name").strip().replace("\r", "")
-            show_expected = self.get_body_argument("show_expected") == "Yes"
-            show_test_code = self.get_body_argument("show_test_code") == "Yes"
-            show_answer = self.get_body_argument("show_answer") == "Yes"
-
             problem_basics = content.get_problem_basics(course, assignment, problem)
             problem_details = content.get_problem_details(course, assignment, problem)
+
+            problem_basics["title"] = self.get_body_argument("title").strip() #required
+            problem_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
+            problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
+            problem_details["back_end"] = self.get_body_argument("back_end")
+            problem_details["output_type"] = self.get_body_argument("output_type")
+            problem_details["answer_code"] = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required
+            problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
+            problem_details["max_submissions"] = int(self.get_body_argument("max_submissions"))
+            problem_details["test_code"] = self.get_body_argument("test_code_text").strip().replace("\r", "")
+            problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
+            problem_details["data_url"] = self.get_body_argument("data_url").strip().replace("\r", "")
+            problem_details["data_file_name"] = self.get_body_argument("data_file_name").strip().replace("\r", "")
+            problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
+            problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
+            problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
+
             result = "Success: The problem was saved!"
             error_occurred = False
 
-            if title == "" or instructions == "" or answer_code == "":
+            if problem_basics["title"] == "" or problem_details["instructions"] == "" or problem_details["answer_code"] == "":
                 result = "Error: One of the required fields is missing."
             else:
-                if content.has_duplicate_title(content.get_problems(course, assignment), problem_basics["id"], title):
+                if content.has_duplicate_title(content.get_problems(course, assignment), problem_basics["id"], problem_basics["title"]):
                     result = "Error: A problem with that title already exists in this assignment."
                 else:
-                    if len(title) > 50:
+                    if len(problem_basics["title"]) > 50:
                         result = "Error: The title cannot exceed 50 characters."
                     else:
-                        if (data_url == "" and data_file_name != "") or (data_url != "" and data_file_name == ""):
+                        if (problem_details["data_url"] == "" and problem_details["data_file_name"] != "") or (problem_details["data_url"] != "" and problem_details["data_file_name"] == ""):
                             result = "Error: If a data URL or file name is specified, both must be specified."
                         else:
-                            if data_url == "":
+                            if problem_details["data_url"] == "":
                                 data_contents = b""
                             else:
-                                if not data_file_name in instructions:
+                                if not problem_details["data_file_name"] in problem_details["instructions"]:
+                                    data_file_name = problem_details["data_file_name"]
                                     result = f"Error: You must mention {data_file_name} at least once in the instructions."
                                 else:
-                                    data_contents = download_file(data_url)
+                                    data_contents = download_file(problem_details["data_url"])
 
                                     # Make sure the file is not larger than 10 MB.
                                     if len(data_contents) > 10 * 1024 * 1024:
+                                        data_url = problem_details["data_url"]
                                         result = f"Error: The file at {data_url} is too large ({len(data_contents)} bytes)."
 
                             if not result.startswith("Error:"):
-                                content.specify_problem_basics(problem_basics, title, visible)
-                                content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, data_url, data_file_name, data_contents.decode(), show_expected, show_test_code, show_answer, "", None, datetime.datetime.now())
+                                content.specify_problem_basics(problem_basics, problem_basics["title"], problem_basics["visible"])
+                                content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"],
+                                problem_details["answer_description"], problem_details["max_submissions"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"],
+                                data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], "", None, datetime.datetime.now())
 
-                                expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], answer_code, problem_basics, problem_details)
+                                expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], problem_details["answer_code"], problem_basics, problem_details)
 
                                 if error_occurred:
                                     result = "Code Error: " + expected_output
                                 else:
                                     problem_details["expected_output"] = expected_output
                                     problem = content.save_problem(problem_basics, problem_details)
+                                    problem_basics = content.get_problem_basics(course, assignment, problem)
+                                    problem_details = content.get_problem_details(course, assignment, problem)
 
             problems = content.get_problems(course, assignment)
-            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, error_occurred=error_occurred, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
+            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, error_occurred=error_occurred, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
         except Exception as inst:
