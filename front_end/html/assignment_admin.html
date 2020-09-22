@@ -58,7 +58,7 @@
         <a class="button is-small is-rounded is-link" onclick="window.location.href='/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}';">
           <span>View scores</span>
         </a>
-        <a class="button is-small is-rounded is-link is-light" onclick="window.location.href='/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}';">
+        <a class="button is-small is-rounded is-link" style="margin: 5px;" onclick="window.location.href='/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}';">
           <span>Download scores</span>
         </a>
       </p>
