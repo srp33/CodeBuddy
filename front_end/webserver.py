@@ -578,6 +578,8 @@ class EditProblemHandler(BaseUserHandler):
             self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
+        except ReadTimeout as inst:
+            render_error(self, f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds.")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -655,6 +657,8 @@ class RunCodeHandler(BaseUserHandler):
             out_dict["error_occurred"] = error_occurred
         except ConnectionError as inst:
             out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
+        except ReadTimeout as inst:
+            out_dict["code_output"] = f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -688,6 +692,8 @@ class SubmitHandler(BaseUserHandler):
             out_dict["submission_id"] = content.save_submission(course, assignment, problem, user, code, code_output, passed, error_occurred)
         except ConnectionError as inst:
             out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
+        except ReadTimeout as inst:
+            out_dict["code_output"] = f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
         except Exception as inst:
             out_dict["code_output"] = format_output_as_html(traceback.format_exc())
 
@@ -923,7 +929,7 @@ class RemoveAssistantHandler(BaseUserHandler):
             self.render("remove_assistant.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_id=user_id, user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
-            
+
 
 class ViewScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
