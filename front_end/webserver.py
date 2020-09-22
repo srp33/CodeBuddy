@@ -537,6 +537,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_basics = content.get_problem_basics(course, assignment, problem)
             problem_details = content.get_problem_details(course, assignment, problem)
             result = "Success: The problem was saved!"
+            error_occurred = False
 
             if title == "" or instructions == "" or answer_code == "":
                 result = "Error: One of the required fields is missing."
@@ -569,13 +570,13 @@ class EditProblemHandler(BaseUserHandler):
                                 expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], answer_code, problem_basics, problem_details)
 
                                 if error_occurred:
-                                    result = "Error: " + expected_output
+                                    result = "Code Error: " + expected_output
                                 else:
                                     problem_details["expected_output"] = expected_output
                                     problem = content.save_problem(problem_basics, problem_details)
 
             problems = content.get_problems(course, assignment)
-            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
+            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, error_occurred=error_occurred, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
         except Exception as inst:
