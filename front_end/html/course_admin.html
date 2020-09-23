@@ -27,7 +27,7 @@
             {% else %}
               <td>Visible</td>
               <td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
-              <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}</td>
+              <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
             {% end %}
             <td>
               <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment[1]["id"] }}">
