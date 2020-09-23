@@ -142,7 +142,7 @@ class CourseHandler(BaseUserHandler):
         if role == "administrator" or role == "instructor" or role == "assistant":
             try:
                 show = show_hidden(self)
-                self.render("course_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, True), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+                self.render("course_admin.html", courses=content.get_courses(show), assignments=content.get_assignments(course, True), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), course_scores=content.get_course_scores(course), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:

@@ -419,6 +419,18 @@ class Content:
 
         return scores
 
+    def get_course_scores(self, course_id):
+        scores = {}
+
+        sql = assignment_summary_course(course_id)
+        self.cursor.execute(sql)
+
+        for row in self.cursor.fetchall():
+            scores_dict = {"assignment_id": row["assignment_id"], "title": row["title"], "num_students_completed": row["num_students_completed"], "num_students": row["num_students"], "avg_score": row["avg_score"]}
+            scores[row["assignment_id"]] = scores_dict
+
+        return scores
+
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []
         sql = '''SELECT submission_id, date, passed
