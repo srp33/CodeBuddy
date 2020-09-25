@@ -52,6 +52,7 @@ def make_app():
         url(r"\/remove_admin\/([^\/]+)", RemoveAdminHandler, name="remove_admin"),
         url(r"\/remove_instructor\/([^\/]+)\/([^\/]+)", RemoveInstructorHandler, name="remove_instructor"),
         url(r"\/remove_assistant\/([^\/]+)\/([^\/]+)", RemoveAssistantHandler, name="remove_assistant"),
+        url(r"\/delete_user", DeleteUserHandler, name="delete_user"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
         url(r"\/student_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", StudentScoresHandler, name="student_scores"),
@@ -935,6 +936,52 @@ class RemoveAssistantHandler(BaseUserHandler):
                 result = f"Success: {old_assistant} has been removed from the instructor assistant list."
 
             self.render("remove_assistant.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_id=user_id, user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class DeleteUserHandler(BaseUserHandler):
+    def get(self):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
+                self.render("delete_user.html", courses=content.get_courses(True), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self):
+        try:
+            user_id=self.get_current_user()
+            user = self.get_body_argument("delete_user")
+
+            if content.check_user_exists(user):
+                if content.get_role(user) == "administrator":
+                    if len(content.get_users_from_role(0, "administrator")) > 1:
+                        if user == user_id:
+                            #Figure out what to do when admins remove themselves
+                            content.delete_user(user)
+                        else:
+                            result = f"{user} is an administrator and can only be deleted by him/her self."
+                    else:
+                        result = f"Error: At least one administrator must remain in the system."
+                elif content.get_role(user) == "instructor":
+                    course_id = content.get_course_id_from_role(user)
+                    if len(content.get_users_from_role(course_id, "instructor")) > 1:
+                        if content.get_role(user_id) == "administrator":
+                            content.delete_user(user)
+                            result = f"Success: The user '{user}' has been deleted."
+                        else:
+                            result = "Instructors can only be removed by administrators."
+                    else:
+                        result = f"Error: The user '{user}' is the only instructor for their course. They cannot be deleted until another instructor is assigned to the course."
+                else:
+                    content.delete_user(user)
+                    result = f"Success: The user '{user}' has been deleted."
+            else:
+                result = f"Error: The user '{user}' does not exist."
+
+            self.render("delete_user.html", courses=content.get_courses(), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
