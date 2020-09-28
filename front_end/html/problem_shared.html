@@ -95,7 +95,9 @@
             }
 
             function run_code() {
-                user_code = editor.getValue();
+                user_code = editor.getSelectedText();
+                if (user_code.trim() == "")
+                    user_code = editor.getValue();
                 if (user_code.trim() == "")
                     return false;
 
