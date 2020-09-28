@@ -1,0 +1,36 @@
+<form method="post" action="/delete_user">
+
+<div class="field">
+  <label class="label is-large">Delete an existing user:</label>
+  <div class="control">
+    <textarea name="delete_user" class="textarea is-primary is-fullwidth" type="text" rows="1" placeholder="Enter ID (email address) of an existing user." autofocus></textarea>
+  </div>
+</div>
+
+<div class="field">
+  <p class="control">
+    <button class="button is-primary is-medium is-rounded">Delete</button>
+  </p>
+</div>
+
+{% if result %}
+    {% if result.startswith("Success") %}
+        <article class="message is-success is-large">
+            <div class="message-body">
+                {{ result }}
+            </div>
+        </article>
+    {% else %}
+        <article class="message is-danger is-large">
+            <div class="message-body">
+                {{ result }}
+            </div>
+        </article>
+    {% end %}
+{% end %}
+
+</form>
+
+<p>
+    <br/><a href="/">Back to home</a>
+</p>

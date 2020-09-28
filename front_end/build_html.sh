@@ -36,6 +36,7 @@ cat header.html navbar_top.html navbar_bottom.html container_top.html summarize_
 cat header.html navbar_top.html navbar_bottom.html container_top.html initialize.html container_bottom.html footer.html > /app/initialize.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html error.html container_bottom.html footer.html > /app/error.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html permissions.html container_bottom.html footer.html > /app/permissions.html
+cat header.html navbar_top.html navbar_bottom.html container_top.html delete_user.html container_bottom.html footer.html > /app/delete_user.html
 
 # Static pages
 

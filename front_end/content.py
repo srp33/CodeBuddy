@@ -168,6 +168,15 @@ class Content:
         rows = self.cursor.execute(sql, (role, course_id,))
         return [row["user_id"] for row in rows]
 
+    def get_course_id_from_role(self, user_id):
+        sql = '''SELECT course_id
+                 FROM permissions
+                 WHERE user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
+        row = self.cursor.fetchone()
+        return row["course_id"]
+
     def add_user(self, user_id, user_dict):
         sql = '''INSERT INTO users (user_id, user_json)
                  VALUES (?, ?)'''
@@ -804,6 +813,12 @@ class Content:
                  WHERE user_id = ?'''
 
         self.cursor.execute(sql, (json.dumps(user_dict), user_id,))
+
+    def delete_user(self, user_id):
+        sql = f'''DELETE FROM users
+                  WHERE user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
 
     def delete_problem(self, problem_basics):
         c_id = problem_basics["assignment"]["course"]["id"]
