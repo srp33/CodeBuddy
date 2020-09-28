@@ -575,6 +575,8 @@ class EditProblemHandler(BaseUserHandler):
 
                                 expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], problem_details["answer_code"], problem_basics, problem_details)
 
+                                if problem_details["output_type"] == "txt" or error_occurred:
+                                    expected_output = format_output_as_html(expected_output)
                                 if error_occurred:
                                     result = "Code Error: " + expected_output
                                 else:
@@ -651,8 +653,8 @@ class RunCodeHandler(BaseUserHandler):
         user = self.get_current_user()
         code = self.get_body_argument("user_code").replace("\r", "")
 
-        problem_basics =content.get_problem_basics(course, assignment, problem)
-        problem_details =content.get_problem_details(course, assignment, problem)
+        problem_basics = content.get_problem_basics(course, assignment, problem)
+        problem_details = content.get_problem_details(course, assignment, problem)
 
         out_dict = {"error_occurred": True}
 
