@@ -964,7 +964,7 @@ class DeleteUserHandler(BaseUserHandler):
                             #Figure out what to do when admins remove themselves
                             content.delete_user(user)
                         else:
-                            result = f"{user} is an administrator and can only be deleted by him/her self."
+                            result = f"{user} is an administrator and can only be deleted by that user."
                     else:
                         result = f"Error: At least one administrator must remain in the system."
                 elif content.get_role(user) == "instructor":
