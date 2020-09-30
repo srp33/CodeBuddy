@@ -45,22 +45,27 @@
     </table>
   {% end %}
 
-  <p>
-    <p><a class="button is-small is-rounded is-primary" onclick="window.location.href='/edit_assignment/{{ course_basics["id"] }}/';">
-      <span>New assignment</span>
-    </a></p>
-    {% if role == "administrator" or role == "instructor" %}
-      <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a> |
-      <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
-      {% if role == "administrator" %}
-        | <a href="/add_instructor/{{ course_basics["id"] }}">Add/remove instructor</a>
+  <div>
+    <a class="button is-small is-rounded is-primary" href="/edit_assignment/{{ course_basics["id"] }}/">New assignment</a>
+    <p class="buttons is-pulled-right">
+      <a class="button is-small is-rounded is-light" href="/export_course/{{ course_basics["id"] }}">Export course</a>
+      <a class="button is-small is-rounded is-light" href="/export_submissions/{{ course_basics["id"] }}">Export submissions</a>   
+    </p>
+    <p></br>
+      {% if role == "administrator" or role == "instructor" %}
+        <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a> |
+        <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
+        {% if role == "administrator" %}
+          | <a href="/add_instructor/{{ course_basics["id"] }}">Add/remove instructor</a>
+        {% end %}
+        {% if role == "instructor" %}
+          | <a href="/add_assistant/{{ course_basics["id"] }}">Add/remove instructor assistant</a>
+        {% end %}
+        | <a href="/delete_user">Delete user</a>
       {% end %}
-      {% if role == "instructor" %}
-        | <a href="/add_assistant/{{ course_basics["id"] }}">Add/remove instructor assistant</a>
-      {% end %}
-      | <a href="/delete_user">Delete user</a>
-    {% end %}
-  </p>
+    </p>
+  </div>
+
 {% else %}
   <h2>This course does not exist.</h2>
 {% end %}
