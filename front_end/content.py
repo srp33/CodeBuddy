@@ -915,11 +915,11 @@ class Content:
         if table_name == "submissions":
             sql = '''SELECT c.title, a.title, p.title, s.user_id, s.submission_id, s.code, s.code_output, s.passed, s.date, s.error_occurred
                     FROM submissions s
-                    LEFT JOIN courses c
+                    INNER JOIN courses c
                      ON c.course_id = s.course_id
-                    LEFT JOIN assignments a
+                    INNER JOIN assignments a
                      ON a.assignment_id = s.assignment_id
-                    LEFT JOIN problems p
+                    INNER JOIN problems p
                      ON p.problem_id = s.problem_id
                     WHERE s.course_id = ?'''
 
