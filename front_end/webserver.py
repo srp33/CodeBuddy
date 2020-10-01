@@ -33,6 +33,7 @@ def make_app():
         url(r"\/delete_course_submissions\/([^\/]+)?", DeleteCourseSubmissionsHandler, name="delete_course_submissions"),
         url(r"\/import_course", ImportCourseHandler, name="import_course"),
         url(r"\/export_course\/([^\/]+)?", ExportCourseHandler, name="export_course"),
+        url(r"\/export_submissions\/([^\/]+)?", ExportSubmissionsHandler, name="export_submissions"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
         url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
         url(r"\/delete_assignment\/([^\/]+)\/([^\/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
@@ -342,35 +343,52 @@ class ExportCourseHandler(BaseUserHandler):
     def get(self, course):
         course_basics = content.get_course_basics(course)
 
-        temp_dir_path = "/tmp/{}".format(create_id())
         descriptor = f"Course_{course_basics['title'].replace(' ', '_')}"
-        zip_file_name = f"{descriptor}.zip"
-        zip_file_path = f"{temp_dir_path}/{zip_file_name}"
+        temp_dir_path, zip_file_name, zip_file_path = content.create_zip_file_path(descriptor)
 
         try:
-            os.makedirs(temp_dir_path)
-            os.makedirs(f"{temp_dir_path}/{descriptor}")
+            content.create_export_paths(temp_dir_path, descriptor)
 
             for table_name in ["courses", "assignments", "problems"]:
-                content.export_course(course_basics, table_name, f"{temp_dir_path}/{descriptor}/{table_name}.json")
+                content.export_data(course_basics, table_name, f"{temp_dir_path}/{descriptor}/{table_name}.json")
 
-            os.system(f"cp VERSION {temp_dir_path}/{descriptor}/")
-            os.system(f"cd {temp_dir_path}; zip -r -qq {zip_file_path} .")
-
+            content.zip_export_files(temp_dir_path, zip_file_name, zip_file_path, descriptor)
             zip_bytes = read_file(zip_file_path, "rb")
 
             self.set_header("Content-type", "application/zip")
             self.set_header("Content-Disposition", f"attachment; filename={zip_file_name}")
             self.write(zip_bytes)
             self.finish()
+
         except Exception as inst:
             render_error(self, traceback.format_exc())
         finally:
-            if os.path.exists(zip_file_path):
-                os.remove(zip_file_path)
+            content.remove_export_paths(zip_file_path, tmp_dir_path)
 
-            if os.path.exists(tmp_dir_path):
-                shutil.rmtree(tmp_dir_path, ignore_errors=True)
+class ExportSubmissionsHandler(BaseUserHandler):
+    def get(self, course):
+        course_basics = content.get_course_basics(course)
+
+        descriptor = f"Submissions_{course_basics['title'].replace(' ', '_')}"
+        temp_dir_path, zip_file_name, zip_file_path = content.create_zip_file_path(descriptor)
+
+        try:
+            content.create_export_paths(temp_dir_path, descriptor)
+
+            content.export_data(course_basics, "submissions", f"{temp_dir_path}/{descriptor}/submissions.json")
+
+            content.zip_export_files(temp_dir_path, zip_file_name, zip_file_path, descriptor)
+            zip_bytes = read_file(zip_file_path, "rb")
+
+            self.set_header("Content-type", "application/zip")
+            self.set_header("Content-Disposition", f"attachment; filename={zip_file_name}")
+            self.write(zip_bytes)
+            self.finish()
+
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+        finally:
+            content.remove_export_paths(zip_file_path, tmp_dir_path)
 
 class AssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):

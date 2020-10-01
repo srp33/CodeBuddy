@@ -911,8 +911,21 @@ class Content:
 
         self.cursor.execute(sql, (problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"],))
 
-    def export_course(self, course_basics, table_name, output_tsv_file_path):
-        sql = f"SELECT * FROM {table_name} WHERE course_id = ?"
+    def export_data(self, course_basics, table_name, output_tsv_file_path):
+        if table_name == "submissions":
+            sql = '''SELECT c.title, a.title, p.title, s.user_id, s.submission_id, s.code, s.code_output, s.passed, s.date, s.error_occurred
+                    FROM submissions s
+                    INNER JOIN courses c
+                     ON c.course_id = s.course_id
+                    INNER JOIN assignments a
+                     ON a.assignment_id = s.assignment_id
+                    INNER JOIN problems p
+                     ON p.problem_id = s.problem_id
+                    WHERE s.course_id = ?'''
+
+        else:
+            sql = f"SELECT * FROM {table_name} WHERE course_id = ?"
+
         self.cursor.execute(sql, (course_basics["id"],))
 
         rows = []
@@ -927,3 +940,24 @@ class Content:
 
         with open(output_tsv_file_path, "w") as out_file:
             out_file.write(json.dumps(rows))
+
+    def create_zip_file_path(self, descriptor):
+        temp_dir_path = "/tmp/{}".format(create_id())
+        zip_file_name = f"{descriptor}.zip"
+        zip_file_path = f"{temp_dir_path}/{zip_file_name}"
+        return temp_dir_path, zip_file_name, zip_file_path
+
+    def zip_export_files(self, temp_dir_path, zip_file_name, zip_file_path, descriptor):
+        os.system(f"cp VERSION {temp_dir_path}/{descriptor}/")
+        os.system(f"cd {temp_dir_path}; zip -r -qq {zip_file_path} .")
+
+    def create_export_paths(self, temp_dir_path, descriptor):
+        os.makedirs(temp_dir_path)
+        os.makedirs(f"{temp_dir_path}/{descriptor}")
+
+    def remove_export_paths(self, zip_file_path, tmp_dir_path):
+        if os.path.exists(zip_file_path):
+            os.remove(zip_file_path)
+
+        if os.path.exists(tmp_dir_path):
+            shutil.rmtree(tmp_dir_path, ignore_errors=True)

@@ -67,7 +67,7 @@ def exec(info: ExecInfo):
             timed_out = result.returncode == 137
             if timed_out:
                 error_occurred = True
-                output = f"The time to execute your code exceeded {infotimeout_seconds} seconds."
+                output = f"The time to execute your code exceeded {info.timeout_seconds} seconds."
             else:
                 error_occurred = result.returncode > 0
                 if error_occurred:
