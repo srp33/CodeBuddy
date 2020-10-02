@@ -37,6 +37,6 @@ function run_container {
     ${image_name}
 }
 
-#run_container front_end "--user $(id -u):$(id -g) --network host -e NUM_PROCESSES=4 -e PORT=9001 -e MPORT=9798 -v $(pwd)/database:/database -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
+#run_container front_end "--user $(id -u):$(id -g) --network host -e NUM_PROCESSES=1 -e PORT=9001 -e MPORT=9798 -v $(pwd)/database:/database -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
 
-run_container front_end "--user $(id -u):$(id -g) --network host -e NUM_PROCESSES=4 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
+run_container front_end "--user $(id -u):$(id -g) --network host -e NUM_PROCESSES=1 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v /tmp:/tmp -v $(pwd)/logs:/logs" ""

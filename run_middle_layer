@@ -8,5 +8,16 @@ export PATH=$PATH:~/.local/bin
 
 cd middle_layer
 
-#uvicorn main:app --port 9798 --workers 4
-gunicorn main:app -b 127.0.0.1:9798 -w 4 -k uvicorn.workers.UvicornWorker
+#uvicorn main:app --port 9798 --workers 1
+
+Port=9798
+pid=`ps ax | grep gunicorn | grep $Port | awk '{split($0,a," "); print a[1]}' | head -n 1`
+if [ -z "$pid" ]; then
+  echo "No gunicorn deamon on port $Port"
+else
+  kill $pid
+  echo "Killed gunicorn deamon on port $Port"
+fi
+
+gunicorn main:app -b 127.0.0.1:9798 -w 1 -k uvicorn.workers.UvicornWorker
+#nohup gunicorn main:app -b 127.0.0.1:9798 -w 1 -k uvicorn.workers.UvicornWorker &
