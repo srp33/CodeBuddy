@@ -7,6 +7,8 @@
 {% if result %}
   {% if result.startswith("Error:") %}
     <p><div class='notification is-danger' style='background-color:#f4a582'><strong>{{ result }}</strong></div></p>
+  {% elif result.startswith("Code") %}
+    <p><pre style='background-color:#f4a582'>{{ result }}</pre></p>
   {% else %}
     <p><div class='notification is-success' style='background-color:#80cdc1'><strong>{{ result }}</strong></div></p>
   {% end %}

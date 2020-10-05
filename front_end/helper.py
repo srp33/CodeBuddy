@@ -118,7 +118,7 @@ def test_code_jpg(settings_dict, code, problem_basics, problem_details, request)
     code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
 
     if error_occurred:
-        return format_output_as_html(code_output), True, False, ""
+        return code_output, True, False, ""
 
     diff_image, diff_percent = diff_jpg(problem_details["expected_output"], code_output)
     passed = does_image_pass(diff_percent)
