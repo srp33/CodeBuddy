@@ -63,7 +63,6 @@ class Content:
                                         visible integer NOT NULL,
                                         date_created timestamp NOT NULL,
                                         date_updated timestamp NOT NULL,
-                                        due_date text,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
                                       );'''
 
@@ -121,6 +120,11 @@ class Content:
             self.cursor.execute(create_submissions_table)
         else:
             print("Error! Cannot create a database connection.")
+
+    def update_tables_for_due_date(self):
+        sql = '''ALTER TABLE assignments
+                 ADD COLUMN due_date text'''
+        self.cursor.execute(sql)
 
     def create_scores_text(self, course_id, assignment_id):
         out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
@@ -280,7 +284,7 @@ class Content:
     def get_assignments(self, course_id, show_hidden=True):
         assignments = []
 
-        sql = '''SELECT assignment_id, title, visible
+        sql = '''SELECT assignment_id, title, visible, due_date
                  FROM assignments
                  WHERE course_id = ?
                  ORDER BY title'''
@@ -289,7 +293,7 @@ class Content:
         for assignment in self.cursor.fetchall():
             if assignment["visible"] or show_hidden:
                 course_basics = self.get_course_basics(course_id)
-                assignment_basics = {"id": assignment["assignment_id"], "title": assignment["title"], "visible": assignment["visible"], "exists": False, "course": course_basics}
+                assignment_basics = {"id": assignment["assignment_id"], "title": assignment["title"], "visible": assignment["visible"], "due_date": assignment["due_date"], "exists": False, "course": course_basics}
                 assignments.append([assignment["assignment_id"], assignment_basics])
 
         return assignments

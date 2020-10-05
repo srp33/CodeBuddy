@@ -447,7 +447,7 @@ class EditAssignmentHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 50 characters."
                     else:
                         content.specify_assignment_basics(assignment_basics, title, visible)
-                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
+                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), due_date)
                         assignment = content.save_assignment(assignment_basics, assignment_details)
 
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
@@ -1154,6 +1154,8 @@ class DevelopmentLoginHandler(RequestHandler):
                 if not target_path:
                     target_path = "/"
                 self.redirect(target_path)
+
+                #content.update_tables_for_due_date()
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
