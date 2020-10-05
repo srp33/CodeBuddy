@@ -10,6 +10,7 @@
         <tr>
           <th>Assignment</th>
           <th>Visibility</th>
+          <th>Due Date</th>
           <th># Students Completed</th>
           <th>Avg Score</th>
           <th>Edit</th>
@@ -24,8 +25,10 @@
               <td>Hidden</td>
               <td> </td>
               <td> </td>
+              <td> </td>
             {% else %}
               <td>Visible</td>
+              <td>{{ assignment[1]["due_date"] }}</td>
               <td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
               <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
             {% end %}
