@@ -6,6 +6,14 @@
 
     {% if len(problem_statuses) > 0 %}
 
+      {% if assignment_details["timer"] %}
+        <div id="clockdiv">
+          Hours: <span class="hours"></span><br>
+          Minutes: <span class="minutes"></span><br>
+          Seconds: <span class="seconds"></span>
+        </div>
+      {% end %}
+
       <table class="table" id="assignment_table">
         <thead>
           <tr>
@@ -48,3 +56,45 @@
 {% end %}
 <br/><a href="/course/{{ course_basics["id"] }}">Back to assignments</a>
 <br /><br />
+
+<script>
+  var deadline = new Date();
+  deadline.setHours(deadline.getHours() + {{ assignment_details["timer"] }});
+  //const deadline = '2020-12-31'; fix later, could do current timestamp + num hours for timer
+  initializeClock('clockdiv', deadline);
+
+  function getTimeRemaining(endtime){
+    const total = Date.parse(endtime) - Date.parse(new Date());
+    const seconds = Math.floor( (total/1000) % 60 );
+    const minutes = Math.floor( (total/1000/60) % 60 );
+    const hours = Math.floor( (total/(1000*60*60)) % 24 );
+
+    return {
+      total,
+      hours,
+      minutes,
+      seconds
+    };
+  }
+
+  function initializeClock(id, endtime) {
+    const clock = document.getElementById(id);
+    const hoursSpan = clock.querySelector('.hours');
+    const minutesSpan = clock.querySelector('.minutes');
+    const secondsSpan = clock.querySelector('.seconds');
+
+    function updateClock(){
+      const t = getTimeRemaining(endtime);
+      hoursSpan.innerHTML = t.hours;
+      minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+      secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+
+      if (t.total <= 0) {
+        clearInterval(timeinterval);
+      }
+    }
+
+    updateClock(); // run function once at first to avoid delay
+    var timeinterval = setInterval(updateClock,1000);
+  }
+</script>

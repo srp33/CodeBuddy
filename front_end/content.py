@@ -121,6 +121,11 @@ class Content:
         else:
             print("Error! Cannot create a database connection.")
 
+    def update_tables_for_timer(self):
+        sql = '''ALTER TABLE assignments
+                 ADD COLUMN timer int'''
+        self.cursor.execute(sql)
+
     def create_scores_text(self, course_id, assignment_id):
         out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
         scores = self.get_assignment_scores(course_id, assignment_id)
@@ -474,9 +479,10 @@ class Content:
         assignment_basics["title"] = title
         assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated):
+    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, timer):
         assignment_details["introduction"] = introduction
         assignment_details["date_updated"] = date_updated
+        assignment_details["timer"] = timer
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -642,9 +648,9 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None}
+            return {"introduction": "", "date_created": None, "date_updated": None, "timer": None}
 
-        sql = '''SELECT introduction, date_created, date_updated
+        sql = '''SELECT introduction, date_created, date_updated, timer
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -652,7 +658,7 @@ class Content:
         self.cursor.execute(sql, (int(course), int(assignment),))
         row = self.cursor.fetchone()
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "timer": row["timer"]}
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
 
@@ -760,16 +766,16 @@ class Content:
     def save_assignment(self, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, timer = ?
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.cursor.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.cursor.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["timer"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, timer)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
-            self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"]])
+            self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["timer"]])
             assignment_basics["id"] = self.cursor.lastrowid
             assignment_basics["exists"] = True
 

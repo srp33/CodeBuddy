@@ -415,7 +415,7 @@ class EditAssignmentHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor" or role == "assistant":
-                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), time_options=["No timer", 1,2,3,4,5,6,7,8], result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -429,8 +429,14 @@ class EditAssignmentHandler(BaseUserHandler):
                 return
 
             title = self.get_body_argument("title").strip()
-            visible = self.get_body_argument("is_visible") == "Yes"
             introduction = self.get_body_argument("introduction").strip()
+            timer = self.get_body_argument("has_timer")
+            visible = self.get_body_argument("is_visible") == "Yes"
+
+            if timer == "No timer":
+                timer = None
+            else:
+                timer = int(timer)
 
             assignment_basics = content.get_assignment_basics(course, assignment)
             assignment_details = content.get_assignment_details(course, assignment)
@@ -446,10 +452,10 @@ class EditAssignmentHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 50 characters."
                     else:
                         content.specify_assignment_basics(assignment_basics, title, visible)
-                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
+                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), timer)
                         assignment = content.save_assignment(assignment_basics, assignment_details)
 
-            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, time_options=["No timer", 1,2,3,4,5,6,7,8], result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1148,6 +1154,7 @@ class DevelopmentLoginHandler(RequestHandler):
                     user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
                     content.add_user(user_id, user_dict)
 
+                #content.update_tables_for_timer()
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
 
                 if not target_path:
