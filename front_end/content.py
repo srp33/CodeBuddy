@@ -111,6 +111,16 @@ class Content:
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
                                       );'''
 
+        create_user_assignment_start_table = '''CREATE TABLE IF NOT EXISTS user_assignment_start (
+                                                  user_id text NOT NULL,
+                                                  course_id text NOT NULL,
+                                                  assignment_id text NOT NULL,
+                                                  start_time text NOT NULL,
+                                                  FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
+                                                  FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
+                                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                                                );'''
+
         if self.conn is not None:
             self.cursor.execute(create_users_table)
             self.cursor.execute(create_permissions_table)
@@ -118,6 +128,7 @@ class Content:
             self.cursor.execute(create_assignments_table)
             self.cursor.execute(create_problems_table)
             self.cursor.execute(create_submissions_table)
+            self.cursor.execute(create_user_assignment_start_table)
         else:
             print("Error! Cannot create a database connection.")
 
