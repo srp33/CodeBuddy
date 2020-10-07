@@ -61,6 +61,9 @@ class Content:
                                         title text NOT NULL UNIQUE,
                                         introduction text,
                                         visible integer NOT NULL,
+                                        has_timer int NOT NULL,
+                                        hour_timer int,
+                                        minute_timer int,
                                         date_created timestamp NOT NULL,
                                         date_updated timestamp NOT NULL,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -118,7 +121,7 @@ class Content:
                                                   start_time text NOT NULL,
                                                   FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
                                                   FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
-                                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
                                                 );'''
 
         if self.conn is not None:
@@ -134,8 +137,27 @@ class Content:
 
     def update_tables_for_timer(self):
         sql = '''ALTER TABLE assignments
-                 ADD COLUMN timer int'''
+                 ADD COLUMN has_timer int'''
         self.cursor.execute(sql)
+
+    def set_start_time(self, course_id, assignment_id, user_id, start_time):
+        sql = '''INSERT INTO user_assignment_start (course_id, assignment_id, user_id, start_time)
+                 VALUES (?, ?, ?, ?)'''
+
+        self.cursor.execute(sql, (course_id, assignment_id, user_id, start_time,))
+
+    def get_start_time(self, course_id, assignment_id, user_id):
+        sql = '''SELECT start_time
+                 FROM user_assignment_start
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND user_id = ?'''
+
+        self.cursor.execute(sql, (course_id, assignment_id, user_id,))
+        if self.cursor.fetchone():
+            return self.cursor.fetchone()["start_time"]
+        else:
+            return 0
 
     def create_scores_text(self, course_id, assignment_id):
         out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
@@ -490,10 +512,12 @@ class Content:
         assignment_basics["title"] = title
         assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, timer):
+    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, has_timer, hour_timer, minute_timer):
         assignment_details["introduction"] = introduction
         assignment_details["date_updated"] = date_updated
-        assignment_details["timer"] = timer
+        assignment_details["has_timer"] = has_timer
+        assignment_details["hour_timer"] = hour_timer
+        assignment_details["minute_timer"] = minute_timer
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -659,9 +683,9 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None, "timer": None}
+            return {"introduction": "", "date_created": None, "date_updated": None, "has_timer": 0, "hour_timer": None, "minute_timer": None}
 
-        sql = '''SELECT introduction, date_created, date_updated, timer
+        sql = '''SELECT introduction, date_created, date_updated, has_timer, hour_timer, minute_timer
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -669,7 +693,7 @@ class Content:
         self.cursor.execute(sql, (int(course), int(assignment),))
         row = self.cursor.fetchone()
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "timer": row["timer"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
 
@@ -777,16 +801,16 @@ class Content:
     def save_assignment(self, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, timer = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, has_timer = ?, hour_timer = ?, minute_timer = ?
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.cursor.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["timer"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.cursor.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, timer)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, has_timer, hour_timer, minute_timer)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["timer"]])
+            self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"]])
             assignment_basics["id"] = self.cursor.lastrowid
             assignment_basics["exists"] = True
 
