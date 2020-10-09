@@ -154,8 +154,9 @@ class Content:
                   AND user_id = ?'''
 
         self.cursor.execute(sql, (course_id, assignment_id, user_id,))
-        if self.cursor.fetchone():
-            return self.cursor.fetchone()["start_time"]
+        row = self.cursor.fetchone()
+        if row:
+            return row["start_time"]
         else:
             return 0
 
