@@ -406,16 +406,30 @@ class AssignmentHandler(BaseUserHandler):
             try:
                 show = show_hidden(self.get_current_role())
                 user_id = self.get_current_user()
-                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id, user_logged_in=user_logged_in_var.get())
+                start_time = content.get_start_time(course, assignment, user_id)
+
+                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), start_time=start_time, user_id=user_id, user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
+    def post(self, course, assignment):
+        try:
+            show = show_hidden(self.get_current_role())
+            user_id = self.get_current_user()
+            start_time = self.get_body_argument("start_time")
+            content.set_start_time(course, assignment, user_id, start_time)
+
+            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), start_time=content.get_start_time(course, assignment, user_id), user_id=user_id, user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor" or role == "assistant":
-                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), time_options=["No timer", 1,2,3,4,5,6,7,8], result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                hour_options = list(range(13))
+                minute_options = list(range(61))
+                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), hour_options=hour_options, minute_options=minute_options, result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -430,13 +444,14 @@ class EditAssignmentHandler(BaseUserHandler):
 
             title = self.get_body_argument("title").strip()
             introduction = self.get_body_argument("introduction").strip()
-            timer = self.get_body_argument("has_timer")
             visible = self.get_body_argument("is_visible") == "Yes"
-
-            if timer == "No timer":
-                timer = None
+            has_timer = self.get_body_argument("has_timer") == "On"
+            if has_timer:
+                hour_timer = self.get_body_argument("hour_select")
+                minute_timer = self.get_body_argument("minute_select")
             else:
-                timer = int(timer)
+                hour_timer = None
+                minute_timer = None
 
             assignment_basics = content.get_assignment_basics(course, assignment)
             assignment_details = content.get_assignment_details(course, assignment)
@@ -452,10 +467,13 @@ class EditAssignmentHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 50 characters."
                     else:
                         content.specify_assignment_basics(assignment_basics, title, visible)
-                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), timer)
+                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), has_timer, hour_timer, minute_timer)
                         assignment = content.save_assignment(assignment_basics, assignment_details)
 
-            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, time_options=["No timer", 1,2,3,4,5,6,7,8], result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            hour_options = list(range(13))
+            minute_options = list(range(61))
+
+            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), hour_options=hour_options, minute_options=minute_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
