@@ -379,12 +379,18 @@ class Content:
                         SUM(passed) AS num_passed,
                         COUNT(assignment_id) AS num_problems,
                         SUM(passed) = COUNT(assignment_id) AS passed_all,
-                        (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress
+                        (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress,
+                        has_timer,
+                        hour_timer,
+                        minute_timer
                  FROM (
                    SELECT a.assignment_id,
                           a.title,
                           IFNULL(MAX(s.passed), 0) AS passed,
-                          COUNT(s.submission_id) AS num_submissions
+                          COUNT(s.submission_id) AS num_submissions,
+                          a.has_timer,
+                          a.hour_timer,
+                          a.minute_timer
                    FROM problems p
                    LEFT JOIN submissions s
                      ON p.course_id = s.course_id
@@ -406,7 +412,7 @@ class Content:
 
         assignment_statuses = []
         for row in self.cursor.fetchall():
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"]}
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
         return assignment_statuses
