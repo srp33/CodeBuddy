@@ -160,6 +160,28 @@ class Content:
         else:
             return 0
 
+    def timer_ended(self, course_id, assignment_id, start_time):
+        curr_time = datetime.datetime.now()
+        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z") 
+
+        sql = '''SELECT hour_timer, minute_timer
+                 FROM assignment
+                 WHERE course_id = ?
+                 AND assignment_id = ?'''
+        self.cursor.execute(sql, (course_id, assignment_id,))
+        row = self.cursor.fetchone()
+
+        elapsed_time = curr_time - start_time
+        e_hours = elapsed_time.hour
+        e_minutes = elapsed_time.minute
+
+        if e_hours > row["hour_timer"]:
+            return True
+        elif e_hours == row["hour_timer"] and e_minutes > row["minute_timer"]:
+            return True
+
+        return False
+
     def create_scores_text(self, course_id, assignment_id):
         out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
         scores = self.get_assignment_scores(course_id, assignment_id)
@@ -809,7 +831,7 @@ class Content:
             self.cursor.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, has_timer, hour_timer, minute_timer)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"]])
             assignment_basics["id"] = self.cursor.lastrowid

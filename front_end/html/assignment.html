@@ -48,7 +48,10 @@
           if (start_time == 0) {
             start_time = new Date();
           }
-          document.getElementById("start_time").innerHTML = start_time;
+          else {
+            start_time = new Date(start_time);
+          }
+          document.getElementById("start_time").innerHTML = start_time.toUTCString();
           var deadline = new Date(start_time);
           deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
           deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
@@ -83,6 +86,9 @@
       
             if (t.total <= 0) {
               clearInterval(timeinterval);
+              hoursSpan.innerHTML = 0;
+              minutesSpan.innerHTML = 0;
+              secondsSpan.innerHTML = 0;
             }
           }
       

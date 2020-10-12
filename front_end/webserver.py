@@ -531,6 +531,13 @@ class ProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
+            role = self.get_current_role()
+            assignment_details = content.get_assignment_details(course, assignment)
+            if role == "student" and assignment_details["has_timer"]:
+                start_time = content.get_start_time(course, assignment, user)
+                if start_time == 0 or content.timer_ended:
+                    self.render("timer_error.html", user_logged_in=user_logged_in_var.get())
+                    return
             show = show_hidden(self.get_current_role())
             problems = content.get_problems(course, assignment, show)
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
