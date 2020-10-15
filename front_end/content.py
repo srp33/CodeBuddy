@@ -1,11 +1,12 @@
 from queries import *
-from datetime import datetime
+from datetime import datetime, timezone
 import glob
 import gzip
 from helper import *
 import io
 import json
 import os
+import math
 import re
 import yaml
 from yaml import load
@@ -118,7 +119,7 @@ class Content:
                                                   user_id text NOT NULL,
                                                   course_id text NOT NULL,
                                                   assignment_id text NOT NULL,
-                                                  start_time text NOT NULL,
+                                                  start_time timestamp NOT NULL,
                                                   FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
                                                   FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
                                                   FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -137,10 +138,12 @@ class Content:
 
     def update_tables_for_timer(self):
         sql = '''ALTER TABLE assignments
-                 ADD COLUMN has_timer int'''
+                 ADD COLUMN minute_timer'''
         self.cursor.execute(sql)
 
     def set_start_time(self, course_id, assignment_id, user_id, start_time):
+        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
+
         sql = '''INSERT INTO user_assignment_start (course_id, assignment_id, user_id, start_time)
                  VALUES (?, ?, ?, ?)'''
 
@@ -156,29 +159,32 @@ class Content:
         self.cursor.execute(sql, (course_id, assignment_id, user_id,))
         row = self.cursor.fetchone()
         if row:
-            return row["start_time"]
-        else:
-            return 0
+            return row["start_time"].strftime("%a, %d %b %Y %H:%M:%S %Z")
 
     def timer_ended(self, course_id, assignment_id, start_time):
-        curr_time = datetime.datetime.now()
-        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z") 
+        curr_time = datetime.now()
+        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ") 
 
         sql = '''SELECT hour_timer, minute_timer
-                 FROM assignment
+                 FROM assignments
                  WHERE course_id = ?
                  AND assignment_id = ?'''
         self.cursor.execute(sql, (course_id, assignment_id,))
         row = self.cursor.fetchone()
 
-        elapsed_time = curr_time - start_time
-        e_hours = elapsed_time.hour
-        e_minutes = elapsed_time.minute
+        if row:
+            elapsed_time = curr_time - start_time
+            seconds = elapsed_time.total_seconds()
+            e_hours = math.floor(seconds/3600)
+            e_minutes = math.floor((seconds/60) - (e_hours*60))
+            e_seconds = (seconds - (e_minutes*60) - (e_hours*3600))
 
-        if e_hours > row["hour_timer"]:
-            return True
-        elif e_hours == row["hour_timer"] and e_minutes > row["minute_timer"]:
-            return True
+            if e_hours > int(row["hour_timer"]):
+                return True
+            elif e_hours == int(row["hour_timer"]) and e_minutes > int(row["minute_timer"]):
+                return True
+            elif e_hours == int(row["hour_timer"]) and e_minutes == int(row["minute_timer"]) and e_seconds > 0:
+                return True
 
         return False
 

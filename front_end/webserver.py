@@ -407,6 +407,8 @@ class AssignmentHandler(BaseUserHandler):
                 show = show_hidden(self.get_current_role())
                 user_id = self.get_current_user()
                 start_time = content.get_start_time(course, assignment, user_id)
+                #print("After getting start_time from content.py: ")
+                #print(start_time)
 
                 self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), start_time=start_time, user_id=user_id, user_logged_in=user_logged_in_var.get())
             except Exception as inst:
@@ -416,6 +418,8 @@ class AssignmentHandler(BaseUserHandler):
             show = show_hidden(self.get_current_role())
             user_id = self.get_current_user()
             start_time = self.get_body_argument("start_time")
+            #print("Before sending to set_start_time:")
+            #print(start_time)
             content.set_start_time(course, assignment, user_id, start_time)
 
             self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), start_time=content.get_start_time(course, assignment, user_id), user_id=user_id, user_logged_in=user_logged_in_var.get())
@@ -535,7 +539,7 @@ class ProblemHandler(BaseUserHandler):
             assignment_details = content.get_assignment_details(course, assignment)
             if role == "student" and assignment_details["has_timer"]:
                 start_time = content.get_start_time(course, assignment, user)
-                if start_time == 0 or content.timer_ended:
+                if not start_time or content.timer_ended(course, assignment, start_time):
                     self.render("timer_error.html", user_logged_in=user_logged_in_var.get())
                     return
             show = show_hidden(self.get_current_role())
@@ -543,7 +547,7 @@ class ProblemHandler(BaseUserHandler):
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
             next_prev_problems = content.get_next_prev_problems(course, assignment, problem, problems)
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), start_time=content.get_start_time(course, assignment, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

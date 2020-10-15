@@ -40,21 +40,20 @@
         function showTimer() {
           var timer_div = document.getElementById("clockdiv");
           timer_div.style.display = "inline";
-          startTimer();
         }
       
         function startTimer() {
-          start_time = "{{ start_time }}";
-          if (start_time == 0) {
-            start_time = new Date();
-          }
-          else {
-            start_time = new Date(start_time);
-          }
-          document.getElementById("start_time").innerHTML = start_time.toUTCString();
-          var deadline = new Date(start_time);
+          var start_time_js = new Date();
+          {% if start_time %}
+            start_time_js = new Date("{{ start_time }}");
+          {% end %}
+
+          document.getElementById("start_time").innerHTML = start_time_js.toUTCString();
+          start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
+          var deadline = start_time_js;
           deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
           deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
+          showTimer();
           initializeClock('clockdiv', deadline);
         }
       
@@ -97,7 +96,7 @@
         }
       </script>
 
-      <form onsubmit="showTimer()" method="post" action="/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}" />
+      <form method="post" action="/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}" />
       <div id="clockdiv" style="display: none;">
         <div>
           <span class="hours"></span>
@@ -113,13 +112,13 @@
         </div>
       </div>
 
-      <input type="hidden" name="start_time" id="start_time"></input>
+      <textarea name="start_time" id="start_time" style="display:none;"></textarea>
 
       {% if assignment_details["has_timer"] %}
-        {% if start_time == 0 %}
-          <button class="button is-link is-medium is-rounded" style="margin-bottom: 20px;" type="submit">Begin Assignment</button>    
+        {% if not start_time %}
+          <button class="button is-link is-medium is-rounded" onclick="startTimer()" style="margin-bottom: 20px;" type="submit">Begin Assignment</button>    
         {% else %}
-          <script>showTimer();</script>
+          <script>startTimer();</script>
         {% end %}
  
       {% end %}
