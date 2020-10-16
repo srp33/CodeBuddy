@@ -1,6 +1,149 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if problem_basics["exists"] %}
+
+          <style>
+            #clockdiv{
+              font-family: sans-serif;
+              color: #fff;
+              display: inline-block;
+              font-weight: 100;
+              text-align: center;
+              font-size: 30px;
+            }
+    
+            #clockdiv > div{
+              padding: 10px;
+              border-radius: 3px;
+              background: #00BF96;
+              display: inline-block;
+            }
+    
+            #clockdiv div > span{
+              padding: 15px;
+              border-radius: 3px;
+              background: #00816A;
+              display: inline-block;
+            }
+    
+            .smalltext{
+              padding-top: 5px;
+              font-size: 16px;
+            }
+
+            .modal {
+              display: none; /* Hidden by default */
+              position: fixed; /* Stay in place */
+              z-index: 1; /* Sit on top */
+              padding-top: 100px; /* Location of the box */
+              left: 0;
+              top: 0;
+              width: 100%; /* Full width */
+              height: 100%; /* Full height */
+              overflow: auto; /* Enable scroll if needed */
+              background-color: rgb(0,0,0); /* Fallback color */
+              background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            }
+
+            /* Modal Content/Box */
+            .modal-content {
+              background-color: #fefefe;
+              margin: 15% auto; /* 15% from the top and centered */
+              padding: 20px;
+              border: 1px solid #888;
+              width: 80%; /* Could be more or less, depending on screen size */
+            }
+
+            /* The Close Button */
+            .close {
+              color: #aaa;
+              float: right;
+              font-size: 28px;
+              font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+              color: black;
+              text-decoration: none;
+              cursor: pointer;
+            }
+          </style>
+    
+          <script>         
+            function startTimer() {
+              start_time_js = new Date("{{ start_time }}");
+              start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
+
+              var deadline = start_time_js;
+              deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
+              deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
+
+              initializeClock('clockdiv', deadline);
+            }
+          
+            function getTimeRemaining(endtime){
+              const total = Date.parse(endtime) - Date.parse(new Date());
+              const seconds = Math.floor( (total/1000) % 60 );
+              const minutes = Math.floor( (total/1000/60) % 60 );
+              const hours = Math.floor( (total/(1000*60*60)) % 24 );
+          
+              return {
+                total,
+                hours,
+                minutes,
+                seconds
+              };
+            }
+          
+            function initializeClock(id, endtime) {
+              const clock = document.getElementById(id);
+              const hoursSpan = clock.querySelector('.hours');
+              const minutesSpan = clock.querySelector('.minutes');
+              const secondsSpan = clock.querySelector('.seconds');
+          
+              function updateClock(){
+                const t = getTimeRemaining(endtime);
+                hoursSpan.innerHTML = t.hours;
+                minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+                secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+          
+                if (t.total == 120000) {
+                  var modal = document.getElementById("myModal");
+                  var span = document.getElementsByClassName("close")[0];
+                  modal.style.display = "block";
+                  span.onclick = function() {
+                    modal.style.display = "none";
+                  }
+                  window.onclick = function(event) {
+                    if (event.target == modal) {
+                      modal.style.display = "none";
+                    }
+                  }
+                }
+        
+                if (t.total <= 0) {
+                  clearInterval(timeinterval);
+                  hoursSpan.innerHTML = 0;
+                  minutesSpan.innerHTML = 0;
+                  secondsSpan.innerHTML = 0;
+
+                  window.location.replace("/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}");
+                }
+              }
+          
+              updateClock(); // run function once at first to avoid delay
+              var timeinterval = setInterval(updateClock,1000);
+            }
+          </script>
+
+          <div id="myModal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <p>You have less than 2 minutes remaining. If you're still working, save your code to avoid losing your work.</p>
+            </div>
+          </div>
+
             <h2>{{ problem_basics["title"] }}</h2>
 
             <p>{{ problem_details["instructions"] }}</p>
@@ -19,6 +162,26 @@
               <h4>Test code (to be executed after your code):</h4>
 
               <pre>{{ problem_details["test_code"] }}</pre>
+            {% end %}
+
+            {% if assignment_details["has_timer"] %}
+              {% if start_time %}
+                <div id="clockdiv">
+                  <div>
+                    <span class="hours"></span>
+                    <div class="smalltext">Hours</div>
+                  </div>
+                  <div>
+                    <span class="minutes"></span>
+                    <div class="smalltext">Minutes</div>
+                  </div>
+                  <div>
+                    <span class="seconds"></span>
+                    <div class="smalltext">Seconds</div>
+                  </div>
+                </div>
+                <script>startTimer();</script>
+              {% end %}
             {% end %}
 
             <p>
