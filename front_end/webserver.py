@@ -1012,8 +1012,8 @@ class ViewScoresHandler(BaseUserHandler):
             role = self.get_current_role()
             if role == "administrator" or role == "instructor" or role == "assistant":
                 assignment_basics = content.get_assignment_basics(course, assignment)
-                assignment_id = assignment_basics["id"]
-                out_file = f"Assignment_{assignment_id}_Scores.csv"
+                assignment_title = assignment_basics["title"].replace(" ", "_")
+                out_file = f"{assignment_title}.csv"
 
                 self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), out_file=out_file, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
