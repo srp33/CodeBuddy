@@ -1,20 +1,19 @@
-from queries import *
+import atexit
 from datetime import datetime
 import glob
 import gzip
 from helper import *
+import html
 import io
 import json
 import os
+from queries import *
 import re
+import sqlite3
 import yaml
 from yaml import load
 from yaml import Loader
 import zipfile
-import sqlite3
-from sqlite3 import Error
-import atexit
-import html
 
 class Content:
     def __init__(self, settings_dict):
@@ -80,7 +79,8 @@ class Content:
                                      data_file_name text,
                                      data_contents text,
                                      back_end text NOT NULL,
-                                     expected_output text NOT NULL,
+                                     expected_text_output text NOT NULL,
+                                     expected_image_output text NOT NULL,
                                      instructions text NOT NULL,
                                      output_type text NOT NULL,
                                      show_answer integer NOT NULL,
@@ -100,7 +100,8 @@ class Content:
                                         user_id text NOT NULL,
                                         submission_id integer NOT NULL,
                                         code text NOT NULL,
-                                        code_output text NOT NULL,
+                                        text_output text NOT NULL,
+                                        image_output text NOT NULL,
                                         passed integer NOT NULL,
                                         date timestamp NOT NULL,
                                         error_occurred integer NOT NULL,

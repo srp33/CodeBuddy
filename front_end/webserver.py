@@ -591,17 +591,17 @@ class EditProblemHandler(BaseUserHandler):
                                 problem_details["answer_description"], problem_details["max_submissions"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"],
                                 data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], "", None, datetime.datetime.now())
 
-                                expected_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], problem_details["answer_code"], problem_basics, problem_details)
+                                text_output, image_output = exec_code(settings_dict["back_ends"][problem_details["back_end"]], problem_details["answer_code"], problem_basics, problem_details)
+                                text_output = format_output_as_html(text_output)
 
-                                if problem_details["output_type"] == "txt" or error_occurred:
-                                    expected_output = format_output_as_html(expected_output)
-                                if error_occurred:
-                                    result = "Code Error: " + expected_output
+                                if problem_details["output_type"] == "txt":
+                                    problem_details["expected_output"] = text_output
                                 else:
-                                    problem_details["expected_output"] = expected_output
-                                    problem = content.save_problem(problem_basics, problem_details)
-                                    problem_basics = content.get_problem_basics(course, assignment, problem)
-                                    problem_details = content.get_problem_details(course, assignment, problem)
+                                    problem_details["expected_output"] = json.dumps({"text_output": text_output, "image_output": image_output})
+
+                                problem = content.save_problem(problem_basics, problem_details)
+                                problem_basics = content.get_problem_basics(course, assignment, problem)
+                                problem_details = content.get_problem_details(course, assignment, problem)
 
             problems = content.get_problems(course, assignment)
             self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, error_occurred=error_occurred, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
@@ -674,22 +674,20 @@ class RunCodeHandler(BaseUserHandler):
         problem_basics = content.get_problem_basics(course, assignment, problem)
         problem_details = content.get_problem_details(course, assignment, problem)
 
-        out_dict = {"error_occurred": True}
+        out_dict = {"image_output": ""}
 
         try:
-            code_output, error_occurred = exec_code(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, request=None)
+            text_output, image_output = exec_code(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, request=None)
+            out_dict["text_output"] = format_output_as_html(text_output)
 
-            if problem_details["output_type"] == "txt" or error_occurred:
-                code_output = format_output_as_html(code_output)
-
-            out_dict["code_output"] = code_output
-            out_dict["error_occurred"] = error_occurred
+            if problem_details["output_type"] == "jpg":
+                out_dict["image_output"] = image_output
         except ConnectionError as inst:
-            out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
+            out_dict["text_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except ReadTimeout as inst:
-            out_dict["code_output"] = f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
+            out_dict["text_output"] = f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
         except Exception as inst:
-            out_dict["code_output"] = format_output_as_html(traceback.format_exc())
+            out_dict["text_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
 
@@ -703,28 +701,27 @@ class SubmitHandler(BaseUserHandler):
         problem_basics = content.get_problem_basics(course, assignment, problem)
         problem_details = content.get_problem_details(course, assignment, problem)
 
-        out_dict = {"error_occurred": True, "passed": False, "diff_output": "", "submission_id": ""}
+        out_dict = {"image_output": "", "passed": False, "diff_output": "", "submission_id": ""}
 
         try:
             if problem_details["output_type"] == "txt":
-                code_output, error_occurred, passed, diff_output = test_code_txt(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
+                text_output, passed, diff_output = test_code_txt(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
+                code_output = text_output
             else:
-                code_output, error_occurred, passed, diff_output = test_code_jpg(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
+                text_output, image_output, passed, diff_output = test_code_jpg(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
+                out_dict["image_output"] = image_output
+                code_output = json.dumps({"text_output": text_output, "": "image_output": image_output})
 
-            if problem_details["output_type"] == "txt" or error_occurred:
-                code_output = format_output_as_html(code_output)
-
-            out_dict["code_output"] = code_output
-            out_dict["error_occurred"] = error_occurred
+            out_dict["text_output"] = format_output_as_html(text_output)
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
             out_dict["submission_id"] = content.save_submission(course, assignment, problem, user, code, code_output, passed, error_occurred)
         except ConnectionError as inst:
-            out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
+            out_dict["text_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except ReadTimeout as inst:
-            out_dict["code_output"] = f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
+            out_dict["text_output"] = f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
         except Exception as inst:
-            out_dict["code_output"] = format_output_as_html(traceback.format_exc())
+            out_dict["text_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
 

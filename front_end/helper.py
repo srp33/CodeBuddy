@@ -99,31 +99,26 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
 
     middle_layer_port = os.environ['MPORT']
     response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
-
     response_dict = json.loads(response.content)
 
-    return response_dict["output"].strip(), response_dict["error_occurred"]
+    return response_dict["text_output"], response_dict["image_output"]
 
 def test_code_txt(settings_dict, code, problem_basics, problem_details, request):
-    code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
-
-    if error_occurred:
-        return code_output, True, False, ""
+    text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, request)
 
     passed = problem_details["expected_output"] == code_output
+    differences = find_differences_txt(problem_details, code_output, passed)
 
-    return code_output, error_occurred, passed, find_differences_txt(problem_details, code_output, passed)
+    return text_output, passed, differences
 
 def test_code_jpg(settings_dict, code, problem_basics, problem_details, request):
-    code_output, error_occurred = exec_code(settings_dict, code, problem_basics, problem_details, request)
-
-    if error_occurred:
-        return code_output, True, False, ""
+    text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, request)
 
     diff_image, diff_percent = diff_jpg(problem_details["expected_output"], code_output)
     passed = does_image_pass(diff_percent)
+    differences = find_differences_jpg(problem_details, passed, diff_image)
 
-    return code_output, error_occurred, passed, find_differences_jpg(problem_details, passed, diff_image)
+    return text_output, image_output, passed, differences
 
 def find_differences_txt(problem_details, code_output, passed):
     diff_output = ""
