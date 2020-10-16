@@ -61,6 +61,9 @@ class Content:
                                         title text NOT NULL UNIQUE,
                                         introduction text,
                                         visible integer NOT NULL,
+                                        start_date timestamp,
+                                        due_date timestamp,
+                                        allow_late integer,
                                         date_created timestamp NOT NULL,
                                         date_updated timestamp NOT NULL,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -123,7 +126,7 @@ class Content:
 
     def update_tables_for_due_date(self):
         sql = '''ALTER TABLE assignments
-                 ADD COLUMN due_date text'''
+                 ADD COLUMN allow_late integer'''
         self.cursor.execute(sql)
 
     def create_scores_text(self, course_id, assignment_id):
