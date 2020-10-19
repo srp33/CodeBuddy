@@ -23,8 +23,51 @@
   <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
   <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" style="font-family:monospace">{{ assignment_details["introduction"] }}</textarea></p>
 
+  <p><strong>Start date: </strong><br />If a start date is specified, students will be unable to view this assignment before the start date and time.</p>
+  <div class="select is-info">
+    <select name="has_start_date" onchange="showStartOptions(this.value)" style="padding: 2px;">
+      <option
+        {% if not assignment_details["start_date"] %}
+          selected
+        {% end %}
+      >None</option>
+      <option
+        {% if assignment_details["start_date"] %}
+          selected
+        {% end %}
+      >Select</option>
+    </select>
+  </div>
+  <input type="datetime-local" name="start_date" id="start_date"
+  {% if assignment_details["start_date"] %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}
+  value='{{ assignment_details["start_date"] }}'>
+
   <p><strong>Due date: </strong></p>
-  <input type="datetime-local" name="due_date" id="due_date">
+  <div class="select is-info">
+    <select name="has_due_date" onchange="showDueOptions(this.value)" style="padding: 2px;">
+      <option
+        {% if not assignment_details["due_date"] %}
+          selected
+        {% end %}
+      >None</option>
+      <option
+        {% if assignment_details["due_date"] %}
+          selected
+        {% end %}
+      >Select</option>
+    </select>
+  </div>
+  <input type="datetime-local" name="due_date" id="due_date"
+  {% if assignment_details["due_date"] %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}
+  value='{{ assignment_details["due_date"] }}'>
   
   <p><strong>Visible: </strong>
     <div class="select is-info">
@@ -54,7 +97,7 @@
 <br /><br />
 
 <script>
-  var calendars = bulmaCalendar.attach('[type="date"]', options);
+  /*var calendars = bulmaCalendar.attach('[type="date"]', options);
   for(var i = 0; i < calendars.length; i++) {
 	  calendars[i].on('select', date => {
 		  console.log(date);
@@ -66,5 +109,25 @@
 	  element.bulmaCalendar.on('select', function(datepicker) {
 		  console.log(datepicker.data.value());
 	  });
+  }*/
+
+  function showStartOptions(on) {
+    var start_date = document.getElementById("start_date");
+    if (on == "Select") {
+      start_date.style.display = "inline";
+    }
+    else {
+      start_date.style.display = "none";
+    }
+  }
+
+  function showDueOptions(on) {
+    var due_date = document.getElementById("due_date");
+    if (on == "Select") {
+      due_date.style.display = "inline";
+    }
+    else {
+      due_date.style.display = "none";
+    }
   }
 </script>
