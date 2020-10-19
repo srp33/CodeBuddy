@@ -431,6 +431,7 @@ class EditAssignmentHandler(BaseUserHandler):
             title = self.get_body_argument("title").strip()
             visible = self.get_body_argument("is_visible") == "Yes"
             introduction = self.get_body_argument("introduction").strip()
+            start_date = self.get_body_argument("start_date").strip()
             due_date = self.get_body_argument("due_date").strip()
 
             assignment_basics = content.get_assignment_basics(course, assignment)
@@ -447,7 +448,7 @@ class EditAssignmentHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 50 characters."
                     else:
                         content.specify_assignment_basics(assignment_basics, title, visible)
-                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), due_date)
+                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date)
                         assignment = content.save_assignment(assignment_basics, assignment_details)
 
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
