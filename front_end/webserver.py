@@ -58,6 +58,7 @@ def make_app():
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
         url(r"\/student_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", StudentScoresHandler, name="student_scores"),
         url(r"\/student_problem\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", StudentProblemHandler, name="student_problem"),
+        url(r"\/problem_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", ProblemScoresHandler, name="problem_scores"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
@@ -1064,6 +1065,17 @@ class StudentProblemHandler(BaseUserHandler):
                 next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems)
 
                 self.render("student_problem.html", student_id=student_id, courses=content.get_courses(show), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course, show), assignment_basics=content.get_assignment_basics(course, assignment), problems=problems, problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_problem=next_prev_problems["next"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, student_id), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class ProblemScoresHandler(BaseUserHandler):
+    def get(self, course, assignment, problem):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
+                self.render("problem_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_scores=content.get_problem_scores(course, assignment, problem), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
