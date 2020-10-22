@@ -3,8 +3,23 @@
                     <a class="navbar-link" href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Problems</a>
 
                     <div id="moreDropdown" class="navbar-dropdown is-size-4">
-                        {% for problem in problems %}
-                            <a class="navbar-item " href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a>
+                        {% if role == "student" %}
+                            {% for problem in problem_statuses %}
+                                <a class="navbar-item " href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">
+                                    {% if problem[1]["passed"] %}
+                                        <img src="/static/greencheck.png" alt="Completed"/>
+                                    {% elif problem[1]["in_progress"] %}
+                                        <img src="/static/inprogress.png" alt="In progress"/>
+                                    {% else %}
+                                        <img src="/static/unchecked.png" alt="Not completed"/>
+                                    {% end %}
+                                    {{ problem[1]["title"] }}
+                                </a>
+                            {% end %}
+                        {% else %}
+                            {% for problem in problems %}
+                                <a class="navbar-item " href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a>
+                            {% end %}
                         {% end %}
                     </div>
                 {% end %}

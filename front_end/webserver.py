@@ -407,7 +407,7 @@ class AssignmentHandler(BaseUserHandler):
             try:
                 show = show_hidden(self.get_current_role())
                 user_id = self.get_current_user()
-                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id, user_logged_in=user_logged_in_var.get())
+                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id, user_logged_in=user_logged_in_var.get(), role=role)
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -416,7 +416,7 @@ class EditAssignmentHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor" or role == "assistant":
-                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), role=role)
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -453,7 +453,7 @@ class EditAssignmentHandler(BaseUserHandler):
                             content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
                             assignment = content.save_assignment(assignment_basics, assignment_details)
 
-            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -516,7 +516,7 @@ class ProblemHandler(BaseUserHandler):
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
             next_prev_problems = content.get_next_prev_problems(course, assignment, problem, problems)
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, problem_statuses=content.get_problem_statuses(course, assignment, user), next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -625,7 +625,7 @@ class DeleteProblemHandler(BaseUserHandler):
             role = self.get_current_role()
             if role == "administrator" or role == "instructor":
                 problems = content.get_problems(course, assignment)
-                self.render("delete_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                self.render("delete_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), role=role)
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -642,7 +642,7 @@ class DeleteProblemHandler(BaseUserHandler):
             result = "Success: Problem deleted."
 
             problems = content.get_problems(course, assignment)
-            self.render("delete_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("delete_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -652,7 +652,7 @@ class DeleteProblemSubmissionsHandler(BaseUserHandler):
             role = self.get_current_role()
             if role == "administrator" or role == "instructor":
                 problems =content.get_problems(course, assignment)
-                self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get(), role=role)
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -669,7 +669,7 @@ class DeleteProblemSubmissionsHandler(BaseUserHandler):
             result = "Success: Problem submissions deleted."
 
             problems =content.get_problems(course, assignment)
-            self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -770,8 +770,8 @@ class GetSubmissionsHandler(BaseUserHandler):
 class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
-            user = self.get_current_user()
-            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem, format_content=True), last_submission=content.get_last_submission(course, assignment, problem, user), format_content=True, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            user_id=self.get_current_user()
+            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem, format_content=True), problem_statuses=content.get_problem_statuses(course, assignment, user_id), last_submission=content.get_last_submission(course, assignment, problem, user_id), format_content=True, user_id=user_id, user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1022,7 +1022,7 @@ class ViewScoresHandler(BaseUserHandler):
                 assignment_title = assignment_basics["title"].replace(" ", "_")
                 out_file = f"{assignment_title}.csv"
 
-                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), out_file=out_file, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), out_file=out_file, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -1047,7 +1047,7 @@ class StudentScoresHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor" or role == "assistant":
-                self.render("student_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, student_id), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                self.render("student_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, student_id), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
