@@ -68,6 +68,20 @@
     style="display: none;"
   {% end %}
   value='{{ assignment_details["due_date"] }}'>
+
+  <p><strong>Allow late submissions: </strong>
+    <div class="select is-info">
+      <select name="allow_late" style="padding:2px;">
+        {% if assignment_details["allow_late"] %}
+          <option value="Yes" selected>Yes</option>
+          <option value="No">No</option>
+        {% else %}
+          <option value="Yes">Yes</option>
+          <option value="No" selected>No</option>
+        {% end %}
+      </select>
+    </div>
+  </p>
   
   <p><strong>Visible: </strong>
     <div class="select is-info">
