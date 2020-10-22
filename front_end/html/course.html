@@ -13,6 +13,7 @@
       <thead>
         <tr>
           <th>Assignment</th>
+          <th>Start Date</th>
           <th>Due Date</th>
           <th>Problems Completed</th>
           <th>Status</th>
@@ -21,7 +22,12 @@
       <tbody>
         {% for assignment in assignment_statuses %}
           <tr>
-            <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+            {% if assignment[1]["start_date"] and assignment[1]["start_date"] > curr_datetime %}
+              <td>{{ assignment[1]["title"] }}</td>
+            {% else %}
+              <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+            {% end %}
+            <td>{{ assignment[1]["start_date"] }}</td>
             <td>{{ assignment[1]["due_date"] }}</td>
             <td><progress class="progress is-small is-primary" value="{{ assignment[1]["num_passed"] }}" max="{{ assignment[1]["num_problems"] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_problems"] }}</td>
             {% if assignment[1]["passed"] %}
