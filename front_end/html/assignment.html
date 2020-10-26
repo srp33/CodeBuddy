@@ -4,6 +4,10 @@
   {% if assignment_basics["exists"] %}
     <p>{{ assignment_details["introduction"] }}</p>
 
+    {% if assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["allow_late"] == 1 %}
+      <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for half the points.</div>  
+    {% end %}
+
     {% if len(problem_statuses) > 0 %}
 
       <table class="table" id="assignment_table">
