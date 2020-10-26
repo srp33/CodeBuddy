@@ -31,26 +31,24 @@
                 }
             {% end %}
 
-            function build_code_output(json_output, error_occurred) {
-              code_output = ""
+            function build_text_output(json_output) {
+              var output = "";
 
-              {% if problem_details["output_type"] == "txt" %}
-                  if (json_output == "") {
-                      code_output += "<p><pre>[Your code produced no output.]</pre></p>";
-                  }
-                  else {
-                      code_output += "<p><pre>" + json_output + "</pre></p>";
-                  }
-              {% else %}
-                  if (error_occurred) {
-                      code_output += "<p><pre>" + json_output + "</pre></p>";
-                  }
-                  else {
-                      code_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
-                  }
-              {% end %}
+              if (json_output == "")
+                  output = "<p><pre>[Your code produced no text output.]</pre></p>";
+              else
+                  output = "<p><pre>" + json_output + "</pre></p>";
 
-              return code_output;
+              return output;
+            }
+
+            function build_image_output(json_output) {
+              var output = "";
+
+              if (json_output != "")
+                  output = "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
+
+              return output;
             }
 
             function check_code(json_data) {
@@ -58,13 +56,16 @@
               var diff_output = "";
               var result = "";
 
-              code_output += build_code_output(json_data.code_output, json_data.error_occurred);
+              code_output += build_text_output(json_data.text_output);
+              code_output += build_image_output(json_data.image_output);
 
               if (json_data.passed) {
                   result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
+
                   {% if problem_details["show_answer"] %}
                       result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p>"; 
                   {% end %}
+
                   {% if next_problem %}
                       result += "<p><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}'>Next problem</a></p>\n\n";
                   {% end %}
@@ -73,19 +74,18 @@
               }
               else {
                   result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
+                  {% if problem_details["show_expected"] %}
+                      diff_output += "<h2>Difference between your output and the expected output:</h2>\n\n";
 
-                  {% if problem_details["show_expected"] and len(problem_details["expected_output"]) > 0 %}
-                      if (!json_data.error_occurred && json_data.diff_output.length > 0) {
-                          diff_output += "<h2>Difference between expected output and your output:</h2>\n\n";
-
-                          {% if problem_details["output_type"] == "txt" %}
-                              if (json_data.diff_output.length > 0)
-                                  diff_output += "<p><pre>" + json_data.diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                          {% else %}
-                              if (json_data.diff_output.length > 0)
-                                  diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff_output + "' width='100%' /></figure></p>";
-                          {% end %}
-                      }
+                      {% if problem_details["output_type"] == "txt" %}
+                          if (json_data.diff.length > 0) {
+                              diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                          }
+                      {% else %}
+                          if (json_data.diff.length > 0) {
+                              diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
+                          }
+                      {% end %}
                   {% end %}
               }
 
@@ -116,7 +116,8 @@
                         var code_output = "<h2>Your output:</h2>\n\n";
                         var result = "";
 
-                        code_output += build_code_output(json_data.code_output, json_data.error_occurred);
+                        code_output += build_text_output(json_data.text_output);
+                        code_output += build_image_output(json_data.image_output);
                         document.getElementById("code_output").innerHTML = code_output;
                         document.getElementById("result").innerHTML = result;
                     })
@@ -165,11 +166,12 @@
             function get_submission(submission_id, scroll) {
                 var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
                 var i;
-                for (i = 0; i < submission_buttons.length; i++)
+                for (i = 0; i < submission_buttons.length; i++) {
                     if (submission_buttons[i].id == submission_id)
                         submission_buttons[i].style.border = "solid #34495e";
                     else
                         submission_buttons[i].style.border = "none";
+                }
 
                 document.getElementById("code_output").innerHTML = "";
                 document.getElementById("diff_output").innerHTML = "";
@@ -179,10 +181,11 @@
                         var json_data = JSON.parse(data);
                         editor.setValue(json_data.code, 1);
                         check_code(json_data);
-                });
+                    });
 
                 if (scroll)
                     document.getElementById("your_code_header").scrollIntoView();
+
                 editor.focus();
 
                 return false;
@@ -228,9 +231,8 @@
 
                                 //show student's most recent submission
                                 {% if student_id != user_id %}
-                                    if (i == 0) {
+                                    if (i == 0)
                                         get_submission(submission_id, false);
-                                    }
                                 {% end %}
                     
                                 if (passed)

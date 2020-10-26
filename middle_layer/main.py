@@ -69,9 +69,6 @@ def exec(info: ExecInfo):
                 continue
             text_output_lines.append(text_output_line)
 
-        #TODO: Add an optional script in each back end that cleans up the stdout/err, rather than doing it here?
-        #Probably add an import statement here...
-
         if info.output_type == "jpg":
             image_file_path = f"{tmp_dir_path}/image_output"
 

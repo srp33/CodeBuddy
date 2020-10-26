@@ -104,7 +104,6 @@ class Content:
                                         image_output text NOT NULL,
                                         passed integer NOT NULL,
                                         date timestamp NOT NULL,
-                                        error_occurred integer NOT NULL,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
                                         FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
                                         FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE,
@@ -449,7 +448,7 @@ class Content:
                    AND assignment_id = ?
                    AND problem_id = ?
                    AND user_id = ?
-                  ORDER BY submission_id DESC'''
+                 ORDER BY submission_id DESC'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id), user_id,))
 
@@ -488,7 +487,7 @@ class Content:
         problem_basics["title"] = title
         problem_basics["visible"] = visible
 
-    def specify_problem_details(self, problem_details, instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated):
+    def specify_problem_details(self, problem_details, instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_text_output, expected_image_output, date_created, date_updated):
         problem_details["instructions"] = instructions
         problem_details["back_end"] = back_end
         problem_details["output_type"] = output_type
@@ -503,7 +502,8 @@ class Content:
         problem_details["show_expected"] = show_expected
         problem_details["show_test_code"] = show_test_code
         problem_details["show_answer"] = show_answer
-        problem_details["expected_output"] = expected_output
+        problem_details["expected_text_output"] = expected_text_output
+        problem_details["expected_image_output"] = expected_image_output
         problem_details["date_updated"] = date_updated
 
         if problem_details["date_created"]:
@@ -594,24 +594,14 @@ class Content:
 
     def get_last_submission(self, course, assignment, problem, user):
         last_submission_id = self.get_num_submissions(course, assignment, problem, user)
+
         if last_submission_id > 0:
-            sql = '''SELECT code, code_output, passed, date, error_occurred
-                    FROM submissions
-                    WHERE course_id = ?
-                    AND assignment_id = ?
-                    AND problem_id = ?
-                    AND user_id = ?
-                    AND submission_id = ?'''
-
-            self.cursor.execute(sql, (int(course), int(assignment), int(problem), user, int(last_submission_id),))
-            row = self.cursor.fetchone()
-
-            return {"id": last_submission_id, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"], "error_occurred": row["error_occurred"], "exists": True}
+            return self.get_submission_info(course, assignment, problem, user, last_submission_id)
         else:
             return None
 
     def get_submission_info(self, course, assignment, problem, user, submission):
-        sql = '''SELECT code, code_output, passed, date, error_occurred
+        sql = '''SELECT code, text_output, image_output, passed, date
                  FROM submissions
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -622,7 +612,7 @@ class Content:
         self.cursor.execute(sql, (int(course), int(assignment), int(problem), user, int(submission),))
         row = self.cursor.fetchone()
 
-        return {"id": submission, "code": row["code"], "code_output": row["code_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "error_occurred": row["error_occurred"], "exists": True}
+        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True}
 
     def get_course_details(self, course, format_output=False):
         if not course:
@@ -664,10 +654,10 @@ class Content:
             return {"instructions": "", "back_end": "python",
             "output_type": "txt", "answer_code": "", "answer_description": "", "max_submissions": 0, "test_code": "",
             "credit": "", "show_expected": True, "show_test_code": True, "show_answer": True,
-            "expected_output": "", "data_url": "", "data_file_name": "", "data_contents": "",
+            "expected_text_output": "", "expected_image_output": "", "data_url": "", "data_file_name": "", "data_contents": "",
             "date_created": None, "date_updated": None}
 
-        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, show_expected, show_test_code, show_answer, expected_output, data_url, data_file_name, data_contents, date_created, date_updated
+        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, show_expected, show_test_code, show_answer, expected_text_output, expected_image_output, data_url, data_file_name, data_contents, date_created, date_updated
                  FROM problems
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -676,7 +666,7 @@ class Content:
         self.cursor.execute(sql, (int(course), int(assignment), int(problem),))
         row = self.cursor.fetchone()
 
-        problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_output": row["expected_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_text_output": row["expected_text_output"], "expected_image_output": row["expected_image_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
 
         if format_content:
             problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
@@ -781,30 +771,30 @@ class Content:
             sql = '''UPDATE problems
                      SET title = ?, visible = ?,
                          answer_code = ?, answer_description = ?, max_submissions = ?, credit = ?, data_url = ?,
-                         data_file_name = ?, data_contents = ?, back_end = ?, expected_output = ?,
-                         instructions = ?, output_type = ?, show_answer = ?, show_expected = ?,
+                         data_file_name = ?, data_contents = ?, back_end = ?, expected_text_output = ?,
+                         expected_image_output = ?, instructions = ?, output_type = ?, show_answer = ?, show_expected = ?,
                          show_test_code = ?, test_code = ?, date_updated = ?
                      WHERE course_id = ?
                        AND assignment_id = ?
                        AND problem_id = ?'''
 
-            self.cursor.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
+            self.cursor.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_text_output"], problem_details["expected_image_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
         else:
-            sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            self.cursor.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
+            self.cursor.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_text_output"], problem_details["expected_image_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
             problem_basics["id"] = self.cursor.lastrowid
             problem_basics["exists"] = True
 
         return problem_basics["id"]
 
-    def save_submission(self, course, assignment, problem, user, code, code_output, passed, error_occurred):
+    def save_submission(self, course, assignment, problem, user, code, text_output, image_output, passed):
         submission_id = self.get_next_submission_id(course, assignment, problem, user)
-        sql = '''INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, code_output, passed, date, error_occurred)
+        sql = '''INSERT INTO submissions (course_id, assignment_id, problem_id, user_id, submission_id, code, text_output, image_output, passed, date)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.cursor.execute(sql, [int(course), int(assignment), int(problem), user, int(submission_id), code, code_output, passed, datetime.now(), error_occurred])
+        self.cursor.execute(sql, [int(course), int(assignment), int(problem), user, int(submission_id), code, text_output, image_output, passed, datetime.now()])
 
         return submission_id
 
@@ -914,7 +904,7 @@ class Content:
 
     def export_data(self, course_basics, table_name, output_tsv_file_path):
         if table_name == "submissions":
-            sql = '''SELECT c.title, a.title, p.title, s.user_id, s.submission_id, s.code, s.code_output, s.passed, s.date, s.error_occurred
+            sql = '''SELECT c.title, a.title, p.title, s.user_id, s.submission_id, s.code, s.text_output, s.image_output, s.passed, s.date
                     FROM submissions s
                     INNER JOIN courses c
                      ON c.course_id = s.course_id
@@ -962,3 +952,73 @@ class Content:
 
         if os.path.exists(tmp_dir_path):
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
+
+    def rebuild_problems(self, assignment_title):
+        sql = '''SELECT p.*
+                 FROM problems p
+                 INNER JOIN assignments a
+                   ON p.course_id = a.course_id AND p.assignment_id = a.assignment_id
+                 WHERE a.title = ?'''
+        self.cursor.execute(sql, (assignment_title, ))
+
+        for row in self.cursor.fetchall():
+            course = row["course_id"]
+            assignment = row["assignment_id"]
+            problem = row["problem_id"]
+            print(f"Rebuilding course {course}, assignment {assignment}, problem {problem}")
+
+            problem_basics = self.get_problem_basics(course, assignment, problem)
+            problem_details = self.get_problem_details(course, assignment, problem)
+
+            text_output, image_output = exec_code(self.__settings_dict, problem_details["answer_code"], problem_basics, problem_details)
+
+            problem_details["expected_text_output"] = text_output
+            problem_details["expected_image_output"] = image_output
+            self.save_problem(problem_basics, problem_details)
+
+    def rerun_submissions(self, assignment_title):
+        sql = '''SELECT course_id, assignment_id
+                 FROM assignments
+                 WHERE title = ?'''
+        self.cursor.execute(sql, (assignment_title, ))
+        row = self.cursor.fetchone()
+        course = int(row["course_id"])
+        assignment = int(row["assignment_id"])
+
+        sql = '''SELECT *
+                 FROM submissions
+                 WHERE course_id = ? AND assignment_id = ?
+                 ORDER BY problem_id, user_id, submission_id'''
+        self.cursor.execute(sql, (course, assignment, ))
+
+        for row in self.cursor.fetchall():
+            problem = row["problem_id"]
+            user = row["user_id"]
+            #if user != "tyler.mansfield96@gmail.com":
+            #    continue
+            submission = row["submission_id"]
+            code = row["code"].replace("\r", "")
+            print(f"Rerunning submission {submission} for course {course}, assignment {assignment}, problem {problem}, user {user}.")
+
+            problem_basics = self.get_problem_basics(course, assignment, problem)
+            problem_details = self.get_problem_details(course, assignment, problem)
+
+            text_output, image_output = exec_code(self.__settings_dict, code, problem_basics, problem_details, None)
+            diff, passed = check_problem_output(problem_details["expected_text_output"], text_output, problem_details["expected_image_output"], image_output, problem_details["output_type"])
+            print(text_output)
+            print(problem_details["expected_text_output"])
+            print(image_output)
+            print(problem_details["expected_image_output"])
+            print(passed)
+
+            sql = '''UPDATE submissions
+                     SET text_output = ?,
+                         image_output = ?,
+                         passed = ?
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND problem_id = ?
+                       AND user_id = ?
+                       AND submission_id = ?'''
+
+            self.cursor.execute(sql, [text_output, image_output, passed, int(course), int(assignment), int(problem), user, int(submission)])

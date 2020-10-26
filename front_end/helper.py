@@ -16,12 +16,17 @@ from requests.exceptions import *
 import shutil
 import stat
 import string
+import subprocess
 import sys
 import time
 import uuid
 import yaml
 from yaml import load
 from yaml import Loader
+
+def run_command(command):
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return "".join(result.stdout.decode().split("\n"))
 
 def make_dir(dir_path):
     if not os.path.exists(dir_path):
@@ -81,19 +86,20 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
     return columns_dict
 
 def exec_code(settings_dict, code, problem_basics, problem_details, request=None):
+    this_settings_dict = settings_dict["back_ends"][problem_details["back_end"]]
     code = code + "\n\n" + problem_details["test_code"]
 
     if problem_details["back_end"] == 'free_response':
         # In this case, the code is the answer that the student provided.
-        return code.strip(), False
+        return code.strip(), ""
 
-    timeout = settings_dict["timeout_seconds"] + 2
-    data_dict = {"image_name": settings_dict["image_name"],
+    timeout = this_settings_dict["timeout_seconds"] + 2
+    data_dict = {"image_name": this_settings_dict["image_name"],
                  "code": code,
                  "data_file_name": problem_details["data_file_name"],
                  "data_contents": problem_details["data_contents"],
                  "output_type": problem_details["output_type"],
-                 "memory_allowed_mb": settings_dict["memory_allowed_mb"],
+                 "memory_allowed_mb": this_settings_dict["memory_allowed_mb"],
                  "timeout_seconds": timeout
                  }
 
@@ -103,42 +109,37 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
 
     return response_dict["text_output"], response_dict["image_output"]
 
-def test_code_txt(settings_dict, code, problem_basics, problem_details, request):
-    text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, request)
+def check_problem_output(expected_text, actual_text, expected_image, actual_image, output_type):
+    passed = False
 
-    passed = problem_details["expected_output"] == code_output
-    differences = find_differences_txt(problem_details, code_output, passed)
+    if output_type == "txt":
+        if expected_text == actual_text:
+            return "", True
+        if actual_text == "":
+            return "", False
 
-    return text_output, passed, differences
+        diff_output, num_differences = diff_strings(expected_text, actual_text)
 
-def test_code_jpg(settings_dict, code, problem_basics, problem_details, request):
-    text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, request)
-
-    diff_image, diff_percent = diff_jpg(problem_details["expected_output"], code_output)
-    passed = does_image_pass(diff_percent)
-    differences = find_differences_jpg(problem_details, passed, diff_image)
-
-    return text_output, image_output, passed, differences
-
-def find_differences_txt(problem_details, code_output, passed):
-    diff_output = ""
-
-    if not passed and problem_details["show_expected"]:
-        diff_output, num_differences = diff_strings(problem_details["expected_output"], code_output)
-
-        # Only show diff output if the diff is relatively small.
-        if num_differences > 50.0:
+        # Only return diff output if the differences are relatively small.
+        if num_differences > 20:
             diff_output = ""
 
-    return diff_output
+        return diff_output, False
+    else:
+        if expected_image == actual_image:
+            return "", True
+        if actual_image == "":
+            return "", False
 
-def find_differences_jpg(problem_details, passed, diff_image):
-    diff_output = ""
+        diff_image, diff_percent = diff_jpg(expected_image, actual_image)
 
-    if not passed and problem_details["show_expected"]:
-        diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
+        diff_output = ""
+        max_diff_percent = 1.0
+        if diff_percent > max_diff_percent:
+            # Only return diff output if the differences are relatively small.
+            diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
 
-    return diff_output
+        return diff_output, diff_percent < max_diff_percent # Pass if they are similar enough.
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")

@@ -143,6 +143,18 @@
       </label>
     </p>
     
+    {% if problem_basics["exists"] %}
+      <p><strong>Output:</strong><br />
+
+      {% if problem_details["expected_text_output"] != "" %}
+        <p><pre><code>{{ problem_details["expected_text_output"] }}</code></pre></p>
+      {% end %}
+
+      {% if problem_details["expected_image_output"] != "" %}
+        <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_details["expected_image_output"] }}' width='95%' /></figure></p>
+      {% end %}
+    {% end %}
+
     <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
     <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
 
@@ -168,15 +180,6 @@
             </select>
         </div>
     </p>
-
-    {% if problem_basics["exists"] %}
-      <p><strong>Expected output:</strong><br />
-      {% if problem_details["output_type"] == "txt" %}
-        <p><pre><code>{{ problem_details["expected_output"] }}</code></pre></p>
-      {% else %}
-        <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_details["expected_output"] }}' width='95%' /></figure></p>
-      {% end %}
-    {% end %}
 
     <p><strong>Credit: </strong>
       <br />If anyone should be given credit for creating this problem, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>

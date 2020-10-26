@@ -1,6 +1,7 @@
 from content import *
 import contextvars
 from datetime import datetime
+import glob
 from helper import *
 import html
 import io
@@ -187,15 +188,15 @@ class EditCourseHandler(BaseUserHandler):
                 if content.has_duplicate_title(content.get_courses(), course_basics["id"], title):
                     result = "Error: A course with that title already exists."
                 else:
-                    if re.search(r"[^\w ]", title):
-                        result = "Error: The title can only contain alphanumeric characters and spaces."
+                    #if re.search(r"[^\w ]", title):
+                    #    result = "Error: The title can only contain alphanumeric characters and spaces."
+                    #else:
+                    if len(title) > 30:
+                        result = "Error: The title cannot exceed 30 characters."
                     else:
-                        if len(title) > 20:
-                            result = "Error: The title cannot exceed 20 characters."
-                        else:
-                            content.specify_course_basics(course_basics, title, visible)
-                            content.specify_course_details(course_details, introduction, None, datetime.datetime.now())
-                            course = content.save_course(course_basics, course_details)
+                        content.specify_course_basics(course_basics, title, visible)
+                        content.specify_course_details(course_details, introduction, None, datetime.datetime.now())
+                        course = content.save_course(course_basics, course_details)
 
             self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=course_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -445,12 +446,12 @@ class EditAssignmentHandler(BaseUserHandler):
                     if len(title) > 50:
                         result = "Error: The title cannot exceed 50 characters."
                     else:
-                        if not re.match('^[a-zA-Z0-9()\s\"\-]*$', title):
-                            result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
-                        else:
-                            content.specify_assignment_basics(assignment_basics, title, visible)
-                            content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
-                            assignment = content.save_assignment(assignment_basics, assignment_details)
+                        #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', title):
+                        #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
+                        #else:
+                        content.specify_assignment_basics(assignment_basics, title, visible)
+                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now())
+                        assignment = content.save_assignment(assignment_basics, assignment_details)
 
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -560,7 +561,6 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
 
             result = "Success: The problem was saved!"
-            error_occurred = False
 
             if problem_basics["title"] == "" or problem_details["instructions"] == "" or problem_details["answer_code"] == "":
                 result = "Error: One of the required fields is missing."
@@ -568,50 +568,46 @@ class EditProblemHandler(BaseUserHandler):
                 if content.has_duplicate_title(content.get_problems(course, assignment), problem_basics["id"], problem_basics["title"]):
                     result = "Error: A problem with that title already exists in this assignment."
                 else:
-                    if len(problem_basics["title"]) > 50:
-                        result = "Error: The title cannot exceed 50 characters."
+                    if len(problem_basics["title"]) > 60:
+                        result = "Error: The title cannot exceed 60 characters."
                     else:
-                        if not re.match('^[a-zA-Z0-9()\s\"\-]*$', problem_basics["title"]):
-                            result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
+                        #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', problem_basics["title"]):
+                        #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
+                        #else:
+                        if (problem_details["data_url"] == "" and problem_details["data_file_name"] != "") or (problem_details["data_url"] != "" and problem_details["data_file_name"] == ""):
+                            result = "Error: If a data URL or file name is specified, both must be specified."
                         else:
-                            if (problem_details["data_url"] == "" and problem_details["data_file_name"] != "") or (problem_details["data_url"] != "" and problem_details["data_file_name"] == ""):
-                                result = "Error: If a data URL or file name is specified, both must be specified."
+                            if problem_details["data_url"] == "":
+                                data_contents = b""
                             else:
-                                if problem_details["data_url"] == "":
-                                    data_contents = b""
+                                if not problem_details["data_file_name"] in problem_details["instructions"]:
+                                    data_file_name = problem_details["data_file_name"]
+                                    result = f"Error: You must mention {data_file_name} at least once in the instructions."
                                 else:
-                                    if not problem_details["data_file_name"] in problem_details["instructions"]:
-                                        data_file_name = problem_details["data_file_name"]
-                                        result = f"Error: You must mention {data_file_name} at least once in the instructions."
-                                    else:
-                                        data_contents = download_file(problem_details["data_url"])
+                                    data_contents = download_file(problem_details["data_url"])
 
-                                        # Make sure the file is not larger than 10 MB.
-                                        if len(data_contents) > 10 * 1024 * 1024:
-                                            data_url = problem_details["data_url"]
-                                            result = f"Error: The file at {data_url} is too large ({len(data_contents)} bytes)."
+                                    # Make sure the file is not larger than 10 MB.
+                                    if len(data_contents) > 10 * 1024 * 1024:
+                                        data_url = problem_details["data_url"]
+                                        result = f"Error: The file at {data_url} is too large ({len(data_contents)} bytes)."
 
-                                if not result.startswith("Error:"):
-                                    content.specify_problem_basics(problem_basics, problem_basics["title"], problem_basics["visible"])
-                                    content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"],
-                                    problem_details["answer_description"], problem_details["max_submissions"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"],
-                                    data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], "", None, datetime.datetime.now())
+                            if not result.startswith("Error:"):
+                                content.specify_problem_basics(problem_basics, problem_basics["title"], problem_basics["visible"])
+                                content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"], problem_details["answer_description"], problem_details["max_submissions"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], "", "", None, datetime.datetime.now())
 
-                                    text_output, image_output = exec_code(settings_dict["back_ends"][problem_details["back_end"]], problem_details["answer_code"], problem_basics, problem_details)
-                                    text_output = format_output_as_html(text_output)
+                                text_output, image_output = exec_code(settings_dict, problem_details["answer_code"], problem_basics, problem_details)
 
-                                    if problem_details["output_type"] == "txt":
-                                        problem_details["expected_output"] = text_output
-                                    else:
-                                        problem_details["expected_output"] = json.dumps({"text_output": text_output, "image_output": image_output})
-
-
+                                if text_output == "" and image_output == "":
+                                    result = f"Error: No output was produced."
+                                else:
+                                    problem_details["expected_text_output"] = text_output
+                                    problem_details["expected_image_output"] = image_output
                                     problem = content.save_problem(problem_basics, problem_details)
                                     problem_basics = content.get_problem_basics(course, assignment, problem)
                                     problem_details = content.get_problem_details(course, assignment, problem)
 
             problems = content.get_problems(course, assignment)
-            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, error_occurred=error_occurred, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
+            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
         except ReadTimeout as inst:
@@ -675,20 +671,18 @@ class DeleteProblemSubmissionsHandler(BaseUserHandler):
 
 class RunCodeHandler(BaseUserHandler):
     async def post(self, course, assignment, problem):
-        user = self.get_current_user()
-        code = self.get_body_argument("user_code").replace("\r", "")
-
-        problem_basics = content.get_problem_basics(course, assignment, problem)
-        problem_details = content.get_problem_details(course, assignment, problem)
-
-        out_dict = {"image_output": ""}
+        out_dict = {"text_output": "", "image_output": ""}
 
         try:
-            text_output, image_output = exec_code(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, request=None)
-            out_dict["text_output"] = format_output_as_html(text_output)
+            user = self.get_current_user()
+            code = self.get_body_argument("user_code").replace("\r", "")
+            problem_basics = content.get_problem_basics(course, assignment, problem)
+            problem_details = content.get_problem_details(course, assignment, problem)
 
-            if problem_details["output_type"] == "jpg":
-                out_dict["image_output"] = image_output
+            text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, request=None)
+
+            out_dict["text_output"] = format_output_as_html(text_output)
+            out_dict["image_output"] = image_output
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except ReadTimeout as inst:
@@ -700,29 +694,22 @@ class RunCodeHandler(BaseUserHandler):
 
 class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, problem):
-        user = self.get_current_user()
-        code = self.get_body_argument("user_code").replace("\r", "")
-        #date = self.get_body_argument("date")
-        #date = re.sub(r"(\d*\/\d*)\/\d{4}(, \d*:\d*):\d*( .M)", r"\1\2\3", date) # To make date shorter, optional
-
-        problem_basics = content.get_problem_basics(course, assignment, problem)
-        problem_details = content.get_problem_details(course, assignment, problem)
-
-        out_dict = {"image_output": "", "passed": False, "diff_output": "", "submission_id": ""}
+        out_dict = {"text_output": "", "image_output": "", "diff": "", "passed": False, "submission_id": ""}
 
         try:
-            if problem_details["output_type"] == "txt":
-                text_output, passed, diff_output = test_code_txt(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
-                code_output = text_output
-            else:
-                text_output, image_output, passed, diff_output = test_code_jpg(settings_dict["back_ends"][problem_details["back_end"]], code, problem_basics, problem_details, self.request)
-                out_dict["image_output"] = image_output
-                code_output = json.dumps({"text_output": text_output, "": "image_output": image_output})
+            user = self.get_current_user()
+            code = self.get_body_argument("user_code").replace("\r", "")
+            problem_basics = content.get_problem_basics(course, assignment, problem)
+            problem_details = content.get_problem_details(course, assignment, problem)
+
+            text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, self.request)
+            diff, passed = check_problem_output(problem_details["expected_text_output"], text_output, problem_details["expected_image_output"], image_output, problem_details["output_type"])
 
             out_dict["text_output"] = format_output_as_html(text_output)
+            out_dict["image_output"] = image_output
+            out_dict["diff"] = diff
             out_dict["passed"] = passed
-            out_dict["diff_output"] = diff_output
-            out_dict["submission_id"] = content.save_submission(course, assignment, problem, user, code, code_output, passed, error_occurred)
+            out_dict["submission_id"] = content.save_submission(course, assignment, problem, user, code, text_output, image_output, passed)
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except ReadTimeout as inst:
@@ -736,28 +723,21 @@ class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, problem, student_id, submission_id):
         try:
             problem_details = content.get_problem_details(course, assignment, problem)
-
             submission_info = content.get_submission_info(course, assignment, problem, student_id, submission_id)
 
-            if submission_info["error_occurred"]:
-                submission_info["diff_output"] = ""
-            elif problem_details["output_type"] == "txt":
-                submission_info["diff_output"] =  find_differences_txt(problem_details, submission_info["code_output"], submission_info["passed"])
-            else:
-                diff_image, diff_percent = diff_jpg(problem_details["expected_output"], submission_info["code_output"])
-                submission_info["diff_output"] =  find_differences_jpg(problem_details, submission_info["passed"], diff_image)
-                submission_info["code_output"] = format_output_as_html(submission_info["code_output"])
+            diff, passed = check_problem_output(problem_details["expected_text_output"], submission_info["text_output"], problem_details["expected_image_output"], submission_info["image_output"], problem_details["output_type"])
+
+            submission_info["diff"] = diff
+            submission_info["text_output"] = format_output_as_html(submission_info["text_output"])
         except Exception as inst:
-            submission_info["error_occurred"] = True
-            submission_info["diff_output"] = ""
-            submission_info["code_output"] = format_output_as_html(traceback.format_exc())
+            submission_info["diff"] = ""
+            submission_info["text_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(submission_info))
 
 class GetSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, problem, user_id):
         try:
-            #user = self.get_current_user()
             submissions = content.get_submissions_basic(course, assignment, problem, user_id)
         except Exception as inst:
             submissions = []
@@ -1237,6 +1217,29 @@ if __name__ == "__main__":
 
         content = Content(settings_dict)
         content.create_sqlite_tables()
+
+        version = read_file("VERSION").rstrip()
+        # Check to see whether there is a database migration script (should only be one per version).
+        # If so, make a backup copy of the database and then do the migration.
+        migration_file_path = glob.glob(f"/migration_scripts/*_to_{version}.py")
+        if len(migration_file_path) > 0:
+            run_command("bash /etc/cron.hourly/back_up_database.sh")
+
+            result = run_command(f"python {migration_file_path[0]}")
+
+            if result == "Success":
+                print(f"Database successfully migrated to version {version} using {migration_file_path[0]}.")
+            elif result != "NotNeeded":
+                print(f"Database migration failed using {migration_file_path[0]} so rolling back...")
+                print(result)
+                run_command("bash /etc/cron.hourly/restore_database.sh")
+
+        #for assignment_title in ["19 - Biostatistics - Prob. models - frequency data"]:
+#        for assignment_title in ["13 - Biostatistics - Displaying data"]:
+        for assignment_title in ["18 - Biostatistics - Analyzing proportions"]:
+            content.rebuild_problems(assignment_title)
+            content.rerun_submissions(assignment_title)
+#        sys.exit(0)
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))

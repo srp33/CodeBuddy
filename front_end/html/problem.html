@@ -74,9 +74,9 @@
                 </label>
               </div>
                 {% if problem_details["output_type"] == "txt" %}
-                  <p><pre>{{ problem_details["expected_output"] }}</pre></p>
+                  <p><pre>{{ problem_details["expected_text_output"] }}</pre></p>
                 {% else %}
-                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
+                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_image_output"] }}" width="100%"/></figure></p>
                 {% end %}
             {% else %}
               <p><em>This problem is configured so that the expected output is not shown.</em></p>
