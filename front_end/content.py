@@ -994,8 +994,8 @@ class Content:
         for row in self.cursor.fetchall():
             problem = row["problem_id"]
             user = row["user_id"]
-            #if user != "tyler.mansfield96@gmail.com":
-            #    continue
+            ##if user != "tyler.mansfield96@gmail.com":
+            ##    continue
             submission = row["submission_id"]
             code = row["code"].replace("\r", "")
             print(f"Rerunning submission {submission} for course {course}, assignment {assignment}, problem {problem}, user {user}.")

@@ -1234,12 +1234,9 @@ if __name__ == "__main__":
                 print(result)
                 run_command("bash /etc/cron.hourly/restore_database.sh")
 
-        #for assignment_title in ["19 - Biostatistics - Prob. models - frequency data"]:
-#        for assignment_title in ["13 - Biostatistics - Displaying data"]:
-        for assignment_title in ["18 - Biostatistics - Analyzing proportions"]:
-            content.rebuild_problems(assignment_title)
-            content.rerun_submissions(assignment_title)
-#        sys.exit(0)
+        ##for assignment_title in ["18 - Biostatistics - Analyzing proportions"]:
+        ##    content.rebuild_problems(assignment_title)
+        ##    content.rerun_submissions(assignment_title)
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))
