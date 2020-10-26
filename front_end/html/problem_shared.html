@@ -1,5 +1,6 @@
             {% if role == "administrator" or role == "instructor" or role == "assistant" %}
                 <p>
+                    <a href="/problem_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">View scores</a> |
                     <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a> |
             {% end %}
 

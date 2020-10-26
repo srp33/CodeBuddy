@@ -1,0 +1,32 @@
+{% if len(problem_scores) > 0 %}
+
+  <h2>Scores for {{ problem_basics["title"] }}</h2>
+
+  <table class="table" id="assignment_table">
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Num Submissions</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in problem_scores %}
+        <tr>
+          <td><a href="/student_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student[1]["user_id"] }}">{{ student[1]["user_id"] }}</a></td>
+          <td>{{ student[1]["num_submissions"] }}</td>
+          {% if student[1]["passed"] == 1 %}
+            <td>100%</td>
+          {% else %}
+            <td>0%</td>
+          {% end %}
+        </tr>
+      {% end %}  
+    </tbody>
+  </table>
+
+{% else %}
+  <h2>No submissions have been made for this problem.</h2>
+{% end %}
+
+<a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to assignment page</a>

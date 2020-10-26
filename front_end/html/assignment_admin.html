@@ -11,6 +11,7 @@
           <tr>
             <th>Problem</th>
             <th>Visibility</th>
+            <th>See Scores</th>
             <th>Edit</th>
             <th>Delete</th>
           </tr>
@@ -21,8 +22,10 @@
               <td><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
               {% if problem[1]["visible"] == 0 %}
                 <td>Hidden</td>
+                <td> </td>
               {% else %}
                 <td>Visible</td>
+                <td><a href="/problem_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">Scores</a></td>
               {% end %}
               <td>
                 <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}">

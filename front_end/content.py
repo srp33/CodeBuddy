@@ -379,6 +379,18 @@ class Content:
 
         return problem_statuses
 
+    def get_course_scores(self, course_id):
+        scores = {}
+
+        sql = assignment_summary_course(course_id)
+        self.cursor.execute(sql)
+
+        for row in self.cursor.fetchall():
+            scores_dict = {"assignment_id": row["assignment_id"], "title": row["title"], "num_students_completed": row["num_students_completed"], "num_students": row["num_students"], "avg_score": row["avg_score"]}
+            scores[row["assignment_id"]] = scores_dict
+
+        return scores
+
     # Gets all users who have submitted on a particular assignment
     # and creates a list of their average scores for the assignment.
     def get_assignment_scores(self, course_id, assignment_id):
@@ -428,17 +440,26 @@ class Content:
 
         return scores
 
-    def get_course_scores(self, course_id):
-        scores = {}
+    def get_problem_scores(self, course_id, assignment_id, problem_id):
+        scores = []
 
-        sql = assignment_summary_course(course_id)
-        self.cursor.execute(sql)
+        sql = '''SELECT user_id,
+                 IFNULL(MAX(passed), 0) AS passed,
+                 COUNT(submission_id) AS num_submissions
+                 FROM submissions
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?
+                 GROUP BY user_id
+                 ORDER BY user_id'''
+                
+        self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
 
-        for row in self.cursor.fetchall():
-            scores_dict = {"assignment_id": row["assignment_id"], "title": row["title"], "num_students_completed": row["num_students_completed"], "num_students": row["num_students"], "avg_score": row["avg_score"]}
-            scores[row["assignment_id"]] = scores_dict
+        for user in self.cursor.fetchall():
+            scores_dict = {"user_id": user["user_id"], "num_submissions": user["num_submissions"], "passed": user["passed"]}
+            scores.append([user["user_id"], scores_dict])
 
-        return scores
+        return scores     
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []

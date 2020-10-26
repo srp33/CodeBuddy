@@ -31,6 +31,7 @@ cat header.html navbar_top.html navbar_course.html navbar_bottom.html container_
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html view_scores.html container_bottom.html footer.html > /app/view_scores.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html student_scores.html container_bottom.html footer.html > /app/student_scores.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html student_problem.html problem_shared.html student_problem_back_button.html container_bottom.html footer.html > /app/student_problem.html
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_bottom.html container_top.html problem_scores.html container_bottom.html footer.html > /app/problem_scores.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html summarize_logs.html container_bottom.html footer.html > /app/summarize_logs.html
 
 cat header.html navbar_top.html navbar_bottom.html container_top.html initialize.html container_bottom.html footer.html > /app/initialize.html
