@@ -1,97 +1,93 @@
 {% if course_basics["exists"] %}
   {% if assignment_basics["exists"] %}
 
-    {% if assignment_details["start_date"] and assignment_details["start_date"] > curr_time %}
-      <p>This problem is unavailable until {{ assignment_details["start_date"] }}.</p>
-    {% else %}
+    {% if problem_basics["exists"] %}
+      <h2>{{ problem_basics["title"] }}</h2>
 
-      {% if problem_basics["exists"] %}
-        <h2>{{ problem_basics["title"] }}</h2>
+      <p>{{ problem_details["instructions"] }}</p>
 
-        <p>{{ problem_details["instructions"] }}</p>
-
-        {% if len(problem_details["data_url"]) > 0 %}
-          <p><em>The data for this problem originated from <a href='{{ problem_details["data_url"] }}' target="_blank">here</a>.</em></p>
-
-          <p>
-              <b>{{ problem_details["data_file_name"] }}</b>
-              <button id="show_hide_data_button" onclick="show_hide_data()">Show</button>
-          </p>
-          <pre id="data_panel" hidden>{{ problem_details["data_contents"] }}</pre>
-        {% end %}
-
-        {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
-          <h4>Test code (to be executed after your code):</h4>
-
-          <pre>{{ problem_details["test_code"] }}</pre>
-        {% end %}
+      {% if len(problem_details["data_url"]) > 0 %}
+        <p><em>The data for this problem originated from <a href='{{ problem_details["data_url"] }}' target="_blank">here</a>.</em></p>
 
         <p>
-          <div>
-            <h2 id="your_code_header" style="display: inline">Your code:</h2>
-
-            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Please write {{ back_end_description }} to address the instructions provided above.">
-              <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
-            </label>
-
-            <div class="buttons are-small is-pulled-right">
-                {% if prev_problem %}
-                  <a class="button is-light" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ prev_problem["id"] }}">Previous Problem</a>
-                {% end %}
-                {% if next_problem %}
-                  <a class="button is-light" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}">Next Problem</a>
-                {% end %}
-            </div>
-          </div>
+            <b>{{ problem_details["data_file_name"] }}</b>
+            <button id="show_hide_data_button" onclick="show_hide_data()">Show</button>
         </p>
+        <pre id="data_panel" hidden>{{ problem_details["data_contents"] }}</pre>
+      {% end %}
 
-        <p>
-          <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
-            <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-              <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
-            </label>
-            <label class="checkbox is-pulled-right">
-              Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
-            </label>
-        </p>
+      {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
+        <h4>Test code (to be executed after your code):</h4>
 
-        <div class="field is-grouped">
-          <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
-          <div id="revert_div"></div>
-          <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()' id='submit_button'>Submit</button></p>
-          <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run code'. You can highlight a section of your code and then hit 'Run code' to test just that section. If you have made at least one submission, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.">
-            <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
-          </p>
-        </div>
+        <pre>{{ problem_details["test_code"] }}</pre>
+      {% end %}
+
+      <p>
         <div>
-          {% if problem_details["max_submissions"] > 0 %}
-            <label style="padding-left: 10px;">You have made <span id="num_submissions">{{ num_submissions }}</span> of {{ problem_details["max_submissions"] }} allowed submission(s)</label>
-          {% end %}
-        </div>
+          <h2 id="your_code_header" style="display: inline">Your code:</h2>
 
-        <p><div id="result"></div></p>
+          <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Please write {{ back_end_description }} to address the instructions provided above.">
+            <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
+          </label>
 
-        {% if problem_details["show_expected"] %}
-          <div>
-            <h2 style="display: inline">Expected output:</h2>
-            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your code with the expected output to find and fix errors in your code.">
-              <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
-            </label>
+          <div class="buttons are-small is-pulled-right">
+              {% if prev_problem %}
+                <a class="button is-light" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ prev_problem["id"] }}">Previous Problem</a>
+              {% end %}
+              {% if next_problem %}
+                <a class="button is-light" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}">Next Problem</a>
+              {% end %}
           </div>
-          {% if problem_details["output_type"] == "txt" %}
-            <p><pre>{{ problem_details["expected_output"] }}</pre></p>
-          {% else %}
-            <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
-          {% end %}
-        {% else %}
-          <p><em>This problem is configured so that the expected output is not shown.</em></p>
+        </div>
+      </p>
+
+      <p>
+        <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
+          <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
+            <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+          </label>
+          <label class="checkbox is-pulled-right">
+            Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
+          </label>
+      </p>
+
+      <div class="field is-grouped">
+        <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
+        <div id="revert_div"></div>
+        <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()' id='submit_button'>Submit</button></p>
+        <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run code'. You can highlight a section of your code and then hit 'Run code' to test just that section. If you have made at least one submission, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.">
+          <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
+        </p>
+      </div>
+      <div>
+        {% if problem_details["max_submissions"] > 0 %}
+          <label style="padding-left: 10px;">You have made <span id="num_submissions">{{ num_submissions }}</span> of {{ problem_details["max_submissions"] }} allowed submission(s)</label>
         {% end %}
+      </div>
 
-        <p><span id="code_output"></span></p>
-        <p><span id="diff_output"></span></p>
+      <p><div id="result"></div></p>
 
-        {% if len(problem_details["credit"]) > 0 %}
-          <p><em>{{ problem_details["credit"] }}</em></p>
-        {% end %}  
+      {% if problem_details["show_expected"] %}
+        <div>
+          <h2 style="display: inline">Expected output:</h2>
+          <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your code with the expected output to find and fix errors in your code.">
+            <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
+          </label>
+        </div>
+        {% if problem_details["output_type"] == "txt" %}
+          <p><pre>{{ problem_details["expected_output"] }}</pre></p>
+        {% else %}
+          <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
+        {% end %}
+      {% else %}
+        <p><em>This problem is configured so that the expected output is not shown.</em></p>
+      {% end %}
 
-        <div id="submissions"></div>
+      <p><span id="code_output"></span></p>
+      <p><span id="diff_output"></span></p>
+
+      {% if len(problem_details["credit"]) > 0 %}
+        <p><em>{{ problem_details["credit"] }}</em></p>
+      {% end %}  
+
+      <div id="submissions"></div>

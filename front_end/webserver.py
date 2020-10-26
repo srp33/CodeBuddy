@@ -406,7 +406,14 @@ class AssignmentHandler(BaseUserHandler):
             try:
                 show = show_hidden(self.get_current_role())
                 user_id = self.get_current_user()
-                self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), user_id=user_id, user_logged_in=user_logged_in_var.get())
+                assignment_details = content.get_assignment_details(course, assignment)
+                curr_time = datetime.datetime.now()
+                if assignment_details["start_date"] and assignment_details["start_date"] > curr_time:
+                    self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"))
+                elif assignment_details["due_date"] and assignment_details["due_date"] < curr_time and assignment_details["allow_late"] == 0:
+                    self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"))
+                else:
+                    self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_time=curr_time, user_id=user_id, user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
@@ -433,9 +440,16 @@ class EditAssignmentHandler(BaseUserHandler):
             introduction = self.get_body_argument("introduction").strip()
             start_date = self.get_body_argument("start_date").strip()
             due_date = self.get_body_argument("due_date").strip()
+            allow_late = self.get_body_argument("allow_late") == "Yes"
 
-            start_date = datetime.datetime.strptime(start_date,"%Y-%m-%dT%H:%M")
-            due_date = datetime.datetime.strptime(due_date,"%Y-%m-%dT%H:%M")
+            if start_date == '':
+                start_date = None
+            else:
+                start_date = datetime.datetime.strptime(start_date,"%Y-%m-%dT%H:%M")
+            if due_date == '':
+                due_date = None
+            else:
+                due_date = datetime.datetime.strptime(due_date,"%Y-%m-%dT%H:%M")
 
             assignment_basics = content.get_assignment_basics(course, assignment)
             assignment_details = content.get_assignment_details(course, assignment)
@@ -451,7 +465,7 @@ class EditAssignmentHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 50 characters."
                     else:
                         content.specify_assignment_basics(assignment_basics, title, visible)
-                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date)
+                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late)
                         assignment = content.save_assignment(assignment_basics, assignment_details)
 
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
@@ -517,7 +531,8 @@ class ProblemHandler(BaseUserHandler):
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
             next_prev_problems = content.get_next_prev_problems(course, assignment, problem, problems)
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, curr_datetime=datetime.datetime.now(), next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
