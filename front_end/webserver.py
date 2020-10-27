@@ -410,7 +410,7 @@ class AssignmentHandler(BaseUserHandler):
                 curr_time = datetime.datetime.now()
                 if assignment_details["start_date"] and assignment_details["start_date"] > curr_time:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"))
-                elif assignment_details["due_date"] and assignment_details["due_date"] < curr_time and assignment_details["allow_late"] == 0:
+                elif assignment_details["due_date"] and assignment_details["due_date"] < curr_time and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 0:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"))
                 else:
                     self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_time=curr_time, user_id=user_id, user_logged_in=user_logged_in_var.get())
@@ -441,6 +441,7 @@ class EditAssignmentHandler(BaseUserHandler):
             start_date = self.get_body_argument("start_date").strip()
             due_date = self.get_body_argument("due_date").strip()
             allow_late = self.get_body_argument("allow_late") == "Yes"
+            view_answer_late = self.get_body_argument("view_answer_late") == "Yes"
 
             if start_date == '':
                 start_date = None
@@ -464,9 +465,12 @@ class EditAssignmentHandler(BaseUserHandler):
                     if len(title) > 50:
                         result = "Error: The title cannot exceed 50 characters."
                     else:
-                        content.specify_assignment_basics(assignment_basics, title, visible)
-                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late)
-                        assignment = content.save_assignment(assignment_basics, assignment_details)
+                        if allow_late == 1 and view_answer_late == 1:
+                            result = "Error: You're unable to allow late submissions and allow students to view the answer code after a due date has passed at the same time."
+                        else:
+                            content.specify_assignment_basics(assignment_basics, title, visible)
+                            content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late, view_answer_late)
+                            assignment = content.save_assignment(assignment_basics, assignment_details)
 
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -784,7 +788,7 @@ class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
-            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem, format_content=True), last_submission=content.get_last_submission(course, assignment, problem, user), format_content=True, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem, format_content=True), last_submission=content.get_last_submission(course, assignment, problem, user), curr_time=datetime.datetime.now(), format_content=True, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

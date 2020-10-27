@@ -69,19 +69,47 @@
   {% end %}
   value='{{ assignment_details["due_date"] }}'>
 
-  <p><strong>Allow late submissions: </strong>
-    <div class="select is-info">
-      <select name="allow_late" style="padding:2px;">
-        {% if assignment_details["allow_late"] %}
-          <option value="Yes" selected>Yes</option>
-          <option value="No">No</option>
-        {% else %}
-          <option value="Yes">Yes</option>
-          <option value="No" selected>No</option>
-        {% end %}
-      </select>
-    </div>
-  </p>
+  <div id="allow_late"
+  {% if assignment_details["due_date"] %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}>
+    <p><strong>Allow late submissions: </strong>
+      <div class="select is-info">
+        <select name="allow_late" style="padding:2px;">
+          {% if assignment_details["allow_late"] %}
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+            <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
+  </div>
+
+  <div id="view_answer_late"
+  {% if assignment_details["due_date"] %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}>
+    <p><strong>Allow students to view answer code after due date has passed: </strong>
+      <div class="select is-info">
+        <select name="view_answer_late" style="padding:2px;">
+          {% if assignment_details["view_answer_late"] %}
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+            <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
+  </div>
   
   <p><strong>Visible: </strong>
     <div class="select is-info">
@@ -137,11 +165,18 @@
 
   function showDueOptions(on) {
     var due_date = document.getElementById("due_date");
+    var allow_late = document.getElementById("allow_late");
+    var view_answer_late = document.getElementById("view_answer_late");
+
     if (on == "Select") {
       due_date.style.display = "inline";
+      allow_late.style.display = "inline";
+      view_answer_late.style.display = "inline";
     }
     else {
       due_date.style.display = "none";
+      allow_late.style.display = "none";
+      view_answer_late.style.display = "none";
     }
   }
 </script>

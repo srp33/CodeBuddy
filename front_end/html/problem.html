@@ -6,6 +6,13 @@
 
       <p>{{ problem_details["instructions"] }}</p>
 
+      {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
+        <div class='notification is-warning is-light'>The due date for this problem has passed, but your instructor has enabled viewing the answer code.</div>
+      {% end %}
+      {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 1 and assignment_details["view_answer_late"] == 0 %}
+        <div class='notification is-warning is-light'>The due date for this problem has passed, but you can still submit answers for half the points.</div>
+      {% end %}
+
       {% if len(problem_details["data_url"]) > 0 %}
         <p><em>The data for this problem originated from <a href='{{ problem_details["data_url"] }}' target="_blank">here</a>.</em></p>
 
@@ -59,11 +66,17 @@
           <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
         </p>
       </div>
+
       <div>
         {% if problem_details["max_submissions"] > 0 %}
           <label style="padding-left: 10px;">You have made <span id="num_submissions">{{ num_submissions }}</span> of {{ problem_details["max_submissions"] }} allowed submission(s)</label>
         {% end %}
       </div>
+
+      {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
+        <script>document.getElementById("submit_button").disabled = true;</script>  
+        <div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p></div>
+      {% end %}
 
       <p><div id="result"></div></p>
 
