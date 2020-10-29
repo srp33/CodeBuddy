@@ -27,8 +27,8 @@
             {% else %}
               <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
             {% end %}
-            <td>{{ assignment[1]["start_date"] }}</td>
-            <td>{{ assignment[1]["due_date"] }}</td>
+            <td>{{ assignment[1]["start_date"].strftime("%a %m/%d/%y %H:%M") }}</td>
+            <td>{{ assignment[1]["due_date"].strftime("%a %m/%d/%y %H:%M") }}</td>
             <td><progress class="progress is-small is-primary" value="{{ assignment[1]["num_passed"] }}" max="{{ assignment[1]["num_problems"] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_problems"] }}</td>
             {% if assignment[1]["passed"] %}
               <td><label>
