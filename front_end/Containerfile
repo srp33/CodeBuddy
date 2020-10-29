@@ -11,8 +11,6 @@ RUN apt-get update \
  && wget -O /static/jquery.min.js https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
  && curl https://raw.githubusercontent.com/jenil/bulmaswatch/gh-pages/flatly/bulmaswatch.min.css | sed -En 's/.footer\{background-color:#ecf0f1;padding:3rem 1.5rem 6rem\}/.footer\{background-color:#ecf0f1;padding:1rem 3.0rem 1rem\}/p' > /static/bulmaswatch.min.css \
  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > /static/bulma-tooltip.min.css \
- && curl https://github.com/Wikiki/bulma-calendar/raw/74d311a979df3b7e0e58ab9ddecc3d62a015ac10/dist/css/bulma-calendar.min.css > /static/bulma-calendar.min.css \
- && curl https://github.com/Wikiki/bulma-calendar/raw/74d311a979df3b7e0e58ab9ddecc3d62a015ac10/dist/js/bulma-calendar.min.js > /static/bulma-calendar.min.js \
  && git clone https://github.com/ajaxorg/ace-builds.git \
  && git clone git://github.com/Wikiki/bulma-calendar.git \
  && cp -r ace-builds/src-min-noconflict/* /static/

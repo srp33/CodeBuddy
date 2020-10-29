@@ -446,11 +446,11 @@ class EditAssignmentHandler(BaseUserHandler):
             if start_date == '':
                 start_date = None
             else:
-                start_date = datetime.datetime.strptime(start_date,"%Y-%m-%dT%H:%M")
+                start_date = datetime.datetime.strptime(start_date,"%Y-%m-%d %H:%M")
             if due_date == '':
                 due_date = None
             else:
-                due_date = datetime.datetime.strptime(due_date,"%Y-%m-%dT%H:%M")
+                due_date = datetime.datetime.strptime(due_date,"%Y-%m-%d %H:%M")
 
             assignment_basics = content.get_assignment_basics(course, assignment)
             assignment_details = content.get_assignment_details(course, assignment)
