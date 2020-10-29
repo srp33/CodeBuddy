@@ -407,13 +407,13 @@ class AssignmentHandler(BaseUserHandler):
                 show = show_hidden(self.get_current_role())
                 user_id = self.get_current_user()
                 assignment_details = content.get_assignment_details(course, assignment)
-                curr_time = datetime.datetime.now()
-                if assignment_details["start_date"] and assignment_details["start_date"] > curr_time:
+                curr_datetime = datetime.datetime.now()
+                if assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"))
-                elif assignment_details["due_date"] and assignment_details["due_date"] < curr_time and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 0:
+                elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 0:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"))
                 else:
-                    self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_time=curr_time, user_id=user_id, user_logged_in=user_logged_in_var.get())
+                    self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, user_id=user_id, user_logged_in=user_logged_in_var.get())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 
