@@ -6,11 +6,11 @@
 
       <p>{{ problem_details["instructions"] }}</p>
 
-      {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
+      {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] == 1 %}
         <div class='notification is-warning is-light'>The due date for this problem has passed, but your instructor has enabled viewing the answer code.</div>
       {% end %}
-      {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 1 and assignment_details["view_answer_late"] == 0 %}
-        <div class='notification is-warning is-light'>The due date for this problem has passed, but you can still submit answers for half the points.</div>
+      {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] == 1 %}
+        <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for half the points.</div>
       {% end %}
 
       {% if len(problem_details["data_url"]) > 0 %}
