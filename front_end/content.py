@@ -114,6 +114,19 @@ class Content:
                                         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
                                       );'''
+        
+        create_submissions_table = '''CREATE TABLE IF NOT EXISTS scores (
+                                        course_id integer NOT NULL,
+                                        assignment_id integer NOT NULL,
+                                        problem_id integer NOT NULL,
+                                        user_id text NOT NULL,
+                                        score real NOT NULL,
+                                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
+                                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
+                                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE,
+                                        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                                        PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
+                                      );'''
 
         if self.conn is not None:
             self.cursor.execute(create_users_table)
@@ -452,6 +465,49 @@ class Content:
             scores[row["assignment_id"]] = scores_dict
 
         return scores
+
+    def get_problem_score(self, course_id, assignment_id, problem_id, user_id):
+        sql = '''SELECT score
+                 FROM scores
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?
+                  AND user_id = ?'''
+
+        self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id), user_id,))
+
+        row = self.cursor.fetchone()
+        if row:
+            return row["score"]
+        else:
+            return None
+
+    def calc_problem_score(self, assignment_details, passed):
+        score = 0
+        if passed:
+            if assignment_details["due_date"] and assignment_details["due_date"] < datetime.now():
+                if assignment_details["allow_late"]:
+                    score = 100 * assignment_details["late_percent"]
+            else:
+                score = 100
+                     
+        return score
+
+    def save_problem_score(self, course_id, assignment_id, problem_id, user_id, new_score):
+        score = self.get_problem_score(course_id, assignment_id, problem_id, user_id)
+
+        if score:
+            sql = '''UPDATE scores
+                     SET score = ?
+                     WHERE course_id = ?, assignment_id = ?, problem_id = ?, user_id = ?'''
+
+            self.cursor.execute(sql, (new_score, course_id, assignment_id, problem_id, user_id))
+
+        else:
+            sql = '''INSERT INTO scores (course_id, assignment_id, problem_id, user_id, score)
+                     VALUES (?, ?, ?, ?, ?)'''
+
+            self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id, new_score))
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []

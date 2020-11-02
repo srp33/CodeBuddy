@@ -732,6 +732,7 @@ class SubmitHandler(BaseUserHandler):
 
         problem_basics = content.get_problem_basics(course, assignment, problem)
         problem_details = content.get_problem_details(course, assignment, problem)
+        assignment_details = content.get_assignment_details(course, assignment)
 
         out_dict = {"error_occurred": True, "passed": False, "diff_output": "", "submission_id": ""}
 
@@ -749,6 +750,12 @@ class SubmitHandler(BaseUserHandler):
             out_dict["passed"] = passed
             out_dict["diff_output"] = diff_output
             out_dict["submission_id"] = content.save_submission(course, assignment, problem, user, code, code_output, passed, error_occurred)
+        
+            problem_score = content.get_problem_score(course, assignment, problem, user)
+            new_score = content.calc_problem_score(assignment_details, passed)
+            if (not problem_score or problem_score < new_score):
+                content.save_problem_score(course, assignment, problem, user, new_score)
+
         except ConnectionError as inst:
             out_dict["code_output"] = "The front-end server was unable to contact the back-end server to check your code."
         except ReadTimeout as inst:
