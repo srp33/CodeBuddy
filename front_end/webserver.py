@@ -422,7 +422,8 @@ class EditAssignmentHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor" or role == "assistant":
-                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
+                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), percentage_options=percentage_options, result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -441,6 +442,7 @@ class EditAssignmentHandler(BaseUserHandler):
             start_date = self.get_body_argument("start_date").strip()
             due_date = self.get_body_argument("due_date").strip()
             allow_late = self.get_body_argument("allow_late") == "Yes"
+            late_percent = int(self.get_body_argument("late_percent")[:-1]) / 100
             view_answer_late = self.get_body_argument("view_answer_late") == "Yes"
 
             if start_date == '':
@@ -451,6 +453,9 @@ class EditAssignmentHandler(BaseUserHandler):
                 due_date = None
             else:
                 due_date = datetime.datetime.strptime(due_date,"%Y-%m-%d %H:%M")
+
+            if allow_late == "No":
+                late_percent = None
 
             assignment_basics = content.get_assignment_basics(course, assignment)
             assignment_details = content.get_assignment_details(course, assignment)
@@ -469,10 +474,11 @@ class EditAssignmentHandler(BaseUserHandler):
                             result = "Error: You're unable to allow late submissions and allow students to view the answer code after a due date has passed at the same time."
                         else:
                             content.specify_assignment_basics(assignment_basics, title, visible)
-                            content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late, view_answer_late)
+                            content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late, late_percent, view_answer_late)
                             assignment = content.save_assignment(assignment_basics, assignment_details)
 
-            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
+            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, percentage_options=percentage_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

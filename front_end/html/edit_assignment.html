@@ -80,13 +80,34 @@
   {% end %}>
     <p><strong>Allow late submissions: </strong>
       <div class="select is-info">
-        <select name="allow_late" style="padding:2px;">
+        <select name="allow_late" onchange="showLatePercentOptions(this.value)" style="padding:2px;">
           {% if assignment_details["allow_late"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
           {% else %}
             <option value="Yes">Yes</option>
             <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
+  </div>
+
+  <div id="late_percent"
+  {% if assignment_details["allow_late"] == 1 %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}>
+    <p><strong>Select percentage of points students can earn back with late submissions: </strong>
+      <div class="select is-info">
+        <select name="late_percent" style="padding:2px;">
+          {% for percent in percentage_options %}
+            {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
+              <option selected>{{ percent }}%</option>
+            {% else %}
+              <option>{{ percent }}%</option>
+            {% end %}
           {% end %}
         </select>
       </div>
@@ -177,6 +198,16 @@
       due_date.style.display = "none";
       allow_late.style.display = "none";
       view_answer_late.style.display = "none";
+    }
+  }
+
+  function showLatePercentOptions(on) {
+    var late_percent = document.getElementById("late_percent");
+    if (on == "Yes") {
+      late_percent.style.display = "inline";
+    }
+    else {
+      late_percent.style.display = "none";
     }
   }
 </script>
