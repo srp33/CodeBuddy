@@ -490,16 +490,19 @@ class Content:
                     score = 100 * assignment_details["late_percent"]
             else:
                 score = 100
-                     
+
         return score
 
     def save_problem_score(self, course_id, assignment_id, problem_id, user_id, new_score):
         score = self.get_problem_score(course_id, assignment_id, problem_id, user_id)
 
-        if score:
+        if score != None:
             sql = '''UPDATE scores
                      SET score = ?
-                     WHERE course_id = ?, assignment_id = ?, problem_id = ?, user_id = ?'''
+                     WHERE course_id = ?
+                      AND assignment_id = ?
+                      AND problem_id = ?
+                      AND user_id = ?'''
 
             self.cursor.execute(sql, (new_score, course_id, assignment_id, problem_id, user_id))
 
@@ -716,7 +719,7 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": 0, "late_percent": None, "view_answer_late": 0}
+            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False}
 
         sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late
                  FROM assignments

@@ -30,8 +30,16 @@
               <td> </td>
             {% else %}
               <td>Visible</td>
-              <td>{{ assignment[1]["start_date"].strftime("%a %m/%d/%y %H:%M") }}</td>
-              <td>{{ assignment[1]["due_date"].strftime("%a %m/%d/%y %H:%M") }}</td>
+              {% if assignment[1]["start_date"] %}
+                <td>{{ assignment[1]["start_date"].strftime("%a %m/%d/%y %H:%M") }}</td>
+              {% else %}
+                <td> </td>
+              {% end %}
+              {% if assignment[1]["due_date"] %} 
+                <td>{{ assignment[1]["due_date"].strftime("%a %m/%d/%y %H:%M") }}</td>
+              {% else %}
+                <td> </td>
+              {% end %}
               <td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
               <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
             {% end %}

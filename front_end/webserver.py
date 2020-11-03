@@ -408,9 +408,10 @@ class AssignmentHandler(BaseUserHandler):
                 user_id = self.get_current_user()
                 assignment_details = content.get_assignment_details(course, assignment)
                 curr_datetime = datetime.datetime.now()
+
                 if assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"))
-                elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 0:
+                elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"))
                 else:
                     self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, user_id=user_id, user_logged_in=user_logged_in_var.get())
@@ -445,11 +446,11 @@ class EditAssignmentHandler(BaseUserHandler):
             late_percent = int(self.get_body_argument("late_percent")[:-1]) / 100
             view_answer_late = self.get_body_argument("view_answer_late") == "Yes"
 
-            if start_date == '':
+            if start_date == "None":
                 start_date = None
             else:
                 start_date = datetime.datetime.strptime(start_date,"%Y-%m-%d %H:%M")
-            if due_date == '':
+            if due_date == "None":
                 due_date = None
             else:
                 due_date = datetime.datetime.strptime(due_date,"%Y-%m-%d %H:%M")
@@ -470,7 +471,7 @@ class EditAssignmentHandler(BaseUserHandler):
                     if len(title) > 50:
                         result = "Error: The title cannot exceed 50 characters."
                     else:
-                        if allow_late == 1 and view_answer_late == 1:
+                        if allow_late and view_answer_late:
                             result = "Error: You're unable to allow late submissions and allow students to view the answer code after a due date has passed at the same time."
                         else:
                             content.specify_assignment_basics(assignment_basics, title, visible)
