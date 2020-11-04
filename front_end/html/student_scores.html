@@ -25,11 +25,7 @@
                 <td>{{ problem[1]["title"] }}</td>
               {% end %}
               <td>{{ problem[1]["num_submissions"] }}</td>
-              {% if problem[1]["passed"] %}
-                <td>100%</td>
-              {% else %}
-                <td>0%</td>
-              {% end %}
+              <td>{{ round(problem[1]["score"]) }}%</td>
               </tr>
             {% end %}    
           </tbody>

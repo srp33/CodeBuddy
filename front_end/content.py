@@ -383,13 +383,19 @@ class Content:
                         p.title,
                         IFNULL(MAX(s.passed), 0) AS passed,
                         COUNT(s.submission_id) AS num_submissions,
-                        COUNT(s.submission_id) > 0 AND IFNULL(MAX(s.passed), 0) = 0 AS in_progress
+                        COUNT(s.submission_id) > 0 AND IFNULL(MAX(s.passed), 0) = 0 AS in_progress,
+						IFNULL(sc.score, 0) as score
                  FROM problems p
                  LEFT JOIN submissions s
                   ON p.course_id = s.course_id
                   AND p.assignment_id = s.assignment_id
                   AND p.problem_id = s.problem_id
                   AND (s.user_id = ? OR s.user_id IS NULL)
+				 LEFT JOIN scores sc
+				  ON p.course_id = sc.course_id
+                  AND p.assignment_id = sc.assignment_id
+                  AND p.problem_id = sc.problem_id
+				  AND s.user_id = sc.user_id
                  WHERE p.course_id = ?
                   AND p.assignment_id = ?
                   AND p.visible = 1
@@ -400,7 +406,7 @@ class Content:
 
         problem_statuses = []
         for row in self.cursor.fetchall():
-            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"]}
+            problem_dict = {"id": row["problem_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"], "score": row["score"]}
             problem_statuses.append([row["problem_id"], problem_dict])
 
         return problem_statuses
@@ -410,41 +416,24 @@ class Content:
     def get_assignment_scores(self, course_id, assignment_id):
         scores = []
 
-        sql = '''SELECT u.user_id,
-                        IFNULL(c.percent_passed, 0.0) AS percent_passed
-                 FROM users u
-                 LEFT JOIN (
-                     SELECT a.user_id,
-                     ROUND(SUM(a.passed) * 100.0 / b.num_problems, 1) AS percent_passed
-                     FROM (
-                         SELECT s.problem_id,
-                                s.user_id,
-                                MAX(s.passed) AS passed
-                         FROM submissions s
-                         INNER JOIN problems p
-                           ON s.course_id = ?
-                           AND s.assignment_id = ?
-                           AND s.problem_id = p.problem_id
-                         WHERE p.visible = 1
-                           AND s.passed = 1
-                         GROUP BY s.problem_id, s.user_id
-                     ) a
-                     INNER JOIN (
-                         SELECT COUNT(DISTINCT problem_id) AS num_problems
-                         FROM problems
-                         WHERE course_id = ?
-                           AND assignment_id = ?
-                           AND visible = 1
-                     ) b
-                     GROUP BY a.user_id
-                 ) c
-                   ON u.user_id = c.user_id
-                 WHERE u.user_id NOT IN
-                 (
-                   SELECT user_id
-                   FROM permissions
-                   WHERE course_id = 0 OR course_id = 1
-                 )'''
+        sql = '''SELECT user_id, (SUM(score) / b.num_problems) AS percent_passed
+                 FROM scores
+                 INNER JOIN (
+	              SELECT COUNT(DISTINCT problem_id) AS num_problems
+	              FROM problems
+	              WHERE course_id = ?
+	               AND assignment_id = ?
+	               AND visible = 1
+                  ) b
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND user_id NOT IN
+                   (
+                    SELECT user_id
+	                FROM permissions
+	                WHERE course_id = 0 OR course_id = 1
+                   )
+                 GROUP BY course_id, assignment_id, user_id'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id),))
 

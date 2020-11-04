@@ -23,7 +23,7 @@
               {% for score in scores %}
                 <tr>
                 <td><a href="/student_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ score[0] }}">{{ score[0] }}</a></td>
-                <td>{{ score[1]["percent_passed"] }}%</td>
+                <td>{{ round(score[1]["percent_passed"]) }}%</td>
                 </tr>
               {% end %}    
             </tbody>
