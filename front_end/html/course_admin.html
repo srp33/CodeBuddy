@@ -31,12 +31,12 @@
             {% else %}
               <td>Visible</td>
               {% if assignment[1]["start_date"] %}
-                <td>{{ assignment[1]["start_date"].strftime("%a %m/%d/%y %H:%M") }}</td>
+                <td>{{ assignment[1]["start_date"].strftime("%a %m/%d/%y %I:%M %p") }}</td>
               {% else %}
                 <td> </td>
               {% end %}
               {% if assignment[1]["due_date"] %} 
-                <td>{{ assignment[1]["due_date"].strftime("%a %m/%d/%y %H:%M") }}</td>
+                <td>{{ assignment[1]["due_date"].strftime("%a %m/%d/%y %I:%M %p") }}</td>
               {% else %}
                 <td> </td>
               {% end %}
