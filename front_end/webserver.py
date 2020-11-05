@@ -1,6 +1,7 @@
 from content import *
 import contextvars
 from datetime import datetime
+#import dateutil.parser
 from helper import *
 import html
 import io
@@ -56,6 +57,7 @@ def make_app():
         url(r"\/delete_user", DeleteUserHandler, name="delete_user"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
+        url(r"\/edit_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", EditScoresHandler, name="edit_scores"),
         url(r"\/student_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", StudentScoresHandler, name="student_scores"),
         url(r"\/student_problem\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", StudentProblemHandler, name="student_problem"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
@@ -446,14 +448,20 @@ class EditAssignmentHandler(BaseUserHandler):
             late_percent = int(self.get_body_argument("late_percent")[:-1]) / 100
             view_answer_late = self.get_body_argument("view_answer_late") == "Yes"
 
+            #print(start_date)
+            #print(due_date)
+
             if start_date == "None":
                 start_date = None
-            else:
-                start_date = datetime.datetime.strptime(start_date,"%Y-%m-%d %H:%M")
+            #else:
+                #start_date = dateutil.parser.parse(start_date)
             if due_date == "None":
                 due_date = None
-            else:
-                due_date = datetime.datetime.strptime(due_date,"%Y-%m-%d %H:%M")
+            #else:
+                #due_date = dateutil.parser.parse(due_date)
+
+            #print(start_date)
+            #print(due_date)
 
             if allow_late == "No":
                 late_percent = None
@@ -476,7 +484,7 @@ class EditAssignmentHandler(BaseUserHandler):
                         else:
                             content.specify_assignment_basics(assignment_basics, title, visible)
                             content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late, late_percent, view_answer_late)
-                            assignment = content.save_assignment(assignment_basics, assignment_details)
+                            #assignment = content.save_assignment(assignment_basics, assignment_details)
 
             percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, percentage_options=percentage_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
@@ -1072,6 +1080,34 @@ class DownloadScoresHandler(BaseUserHandler):
         except Exception as inst:
             self.write(traceback.format_exc())
             #render_error(self, traceback.format_exc())
+
+class EditScoresHandler(BaseUserHandler):
+    def get(self, course, assignment, student_id):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
+                self.render("edit_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, student_id), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course, assignment, student_id):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
+
+                problem_statuses = content.get_problem_statuses(course, assignment, student_id)
+                for problem in problem_statuses:
+                    student_score = self.get_body_argument(str(problem[1]["id"]))
+                    content.save_problem_score(course, assignment, problem[1]["id"], student_id, int(student_score))
+
+                self.render("edit_scores.html", student_id=student_id, courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, student_id), user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 
 class StudentScoresHandler(BaseUserHandler):
     def get(self, course, assignment, student_id):

@@ -164,14 +164,18 @@
 
 <script>
 
-  var due_date_picker = flatpickr("#due_date_picker", {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-  });
-
   var start_date_picker = flatpickr("#start_date_picker", {
     enableTime: true,
-    dateFormat: "Y-m-d H:i",
+    dateFormat: 'Z',
+    altInput: true,
+    altFormat: 'Y-m-d H:i'
+  });
+
+  var due_date_picker = flatpickr("#due_date_picker", {
+    enableTime: true,
+    dateFormat: 'Z',
+    altInput: true,
+    altFormat: 'Y-m-d H:i'
   });
 
   function showStartOptions(on) {

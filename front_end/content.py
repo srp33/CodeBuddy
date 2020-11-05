@@ -395,7 +395,7 @@ class Content:
 				  ON p.course_id = sc.course_id
                   AND p.assignment_id = sc.assignment_id
                   AND p.problem_id = sc.problem_id
-				  AND s.user_id = sc.user_id
+				  AND (s.user_id = sc.user_id OR s.user_id IS NULL)
                  WHERE p.course_id = ?
                   AND p.assignment_id = ?
                   AND p.visible = 1
