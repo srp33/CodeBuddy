@@ -1,7 +1,6 @@
 from content import *
 import contextvars
 from datetime import datetime
-#import dateutil.parser
 from helper import *
 import html
 import io
@@ -448,20 +447,14 @@ class EditAssignmentHandler(BaseUserHandler):
             late_percent = int(self.get_body_argument("late_percent")[:-1]) / 100
             view_answer_late = self.get_body_argument("view_answer_late") == "Yes"
 
-            #print(start_date)
-            #print(due_date)
-
             if start_date == "None":
                 start_date = None
-            #else:
-                #start_date = dateutil.parser.parse(start_date)
+            else:
+                start_date = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
             if due_date == "None":
                 due_date = None
-            #else:
-                #due_date = dateutil.parser.parse(due_date)
-
-            #print(start_date)
-            #print(due_date)
+            else:
+                due_date = datetime.datetime.strptime(due_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
             if allow_late == "No":
                 late_percent = None
@@ -484,7 +477,7 @@ class EditAssignmentHandler(BaseUserHandler):
                         else:
                             content.specify_assignment_basics(assignment_basics, title, visible)
                             content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late, late_percent, view_answer_late)
-                            #assignment = content.save_assignment(assignment_basics, assignment_details)
+                            assignment = content.save_assignment(assignment_basics, assignment_details)
 
             percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, percentage_options=percentage_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
