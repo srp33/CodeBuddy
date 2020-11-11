@@ -9,6 +9,20 @@
     <p>No assignments have been created.</p>
   {% else %}
 
+    <script>
+      var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      function convertDate(d) {
+        var hours = d.getHours();
+        var minutes = d.getMinutes() < 10 ? "0" + d.getMinutes():d.getMinutes();
+        var suffix = hours >= 12 ? "PM":"AM";
+        var time = ((hours + 11) % 12 + 1) + ":" + minutes + " " + suffix; 
+
+        var start_date = days[d.getDay()] + " " + (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear().toString().substr(-2) +
+        " " + time;
+        return start_date;
+      }
+    </script>
+
     <table class="table" id="assignment_table">
       <thead>
         <tr>
@@ -28,12 +42,22 @@
               <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
             {% end %}
             {% if assignment[1]["start_date"] %}
-              <td>{{ assignment[1]["start_date"].strftime("%a %m/%d/%y %I:%M %p") }}</td>
+              <td>
+                <script>
+                  var s = new Date("{{ assignment[1]["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+                  document.write(convertDate(s));
+                </script>
+              </td>
             {% else %}
               <td> </td>
             {% end %}
             {% if assignment[1]["due_date"] %}
-              <td>{{ assignment[1]["due_date"].strftime("%a %m/%d/%y %I:%M %p") }}</td>
+              <td>
+                <script>
+                  var d = new Date("{{ assignment[1]["due_date"].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+                  document.write(convertDate(d));
+                </script>
+              </td>
             {% else %}
               <td> </td>
             {% end %}
@@ -64,3 +88,16 @@
 {% end %}
 <br/><a href="/">Back to courses</a>
 <br /><br />
+
+<script>
+
+  function setStartDate(id, start) {
+    var start_date = new Date(start);
+    document.getElementById(id).textContent = start_date;
+  }
+
+  function setDueDate(due) {
+    var due_date = new Date(due);
+    return due_date;
+  }
+</script>
