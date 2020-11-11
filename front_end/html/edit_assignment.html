@@ -46,8 +46,7 @@
     style="display: inline;"
   {% else %}
     style="display: none;"
-  {% end %}
-  value='{{ assignment_details["start_date"] }}'>
+  {% end %}>
 
   <p><strong>Due date: </strong></p>
   <div class="select is-info">
@@ -69,8 +68,7 @@
     style="display: inline;"
   {% else %}
     style="display: none;"
-  {% end %}
-  value='{{ assignment_details["due_date"] }}'>
+  {% end %}>
 
   <div id="allow_late"
   {% if assignment_details["due_date"] %}
@@ -115,7 +113,7 @@
   </div>
 
   <div id="view_answer_late"
-  {% if assignment_details["allow_late"] %}
+  {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
     style="display: none;"
   {% else %}
     style="display: inline;"
@@ -168,15 +166,27 @@
     enableTime: true,
     dateFormat: 'Z',
     altInput: true,
-    altFormat: 'Y-m-d H:i'
+    altFormat: 'Y-m-d G:i K'
   });
+  start_date_picker.setDate(setStartDate(),false,'Y-m-d G:i K');
 
   var due_date_picker = flatpickr("#due_date_picker", {
     enableTime: true,
     dateFormat: 'Z',
     altInput: true,
-    altFormat: 'Y-m-d H:i'
+    altFormat: 'Y-m-d G:i K'
   });
+  due_date_picker.setDate(setDueDate(),false,'Y-m-d G:i K');
+
+  function setStartDate() {
+    var start_date = new Date("{{ assignment_details['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+    return start_date;
+  }
+
+  function setDueDate() {
+    var due_date = new Date("{{ assignment_details['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+    return due_date;
+  }
 
   function showStartOptions(on) {
     var start_date = document.getElementById("start_date_picker");
@@ -191,6 +201,7 @@
   function showDueOptions(on) {
     var due_date = document.getElementById("due_date_picker");
     var allow_late = document.getElementById("allow_late");
+    var view_answer_late = document.getElementById("view_answer_late");
 
     if (on == "Select") {
       due_date.style.display = "inline";
@@ -199,6 +210,7 @@
     else {
       due_date.style.display = "none";
       allow_late.style.display = "none";
+      view_answer_late.style.display = "none";
     }
   }
 
