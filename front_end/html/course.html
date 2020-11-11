@@ -30,6 +30,7 @@
           <th>Start Date</th>
           <th>Due Date</th>
           <th>Problems Completed</th>
+          <th>Timer</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -62,6 +63,11 @@
               <td> </td>
             {% end %}
             <td><progress class="progress is-small is-primary" value="{{ assignment[1]["num_passed"] }}" max="{{ assignment[1]["num_problems"] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_problems"] }}</td>
+            {% if assignment[1]["has_timer"] %}
+              <td>{{ assignment[1]["hour_timer"] }} hours {{ assignment[1]["minute_timer"] }} minutes </td>
+            {% else %}
+              <td>Untimed</td>
+            {% end %}
             {% if assignment[1]["passed"] %}
               <td><label>
                 <img src="/static/greencheck.png" alt="Completed" height="30" width="30" style="vertical-align: middle;"/>

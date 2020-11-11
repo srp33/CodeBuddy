@@ -1,11 +1,12 @@
 from queries import *
-from datetime import datetime
+from datetime import datetime, timezone
 import glob
 import gzip
 from helper import *
 import io
 import json
 import os
+import math
 import re
 import yaml
 from yaml import load
@@ -65,6 +66,9 @@ class Content:
                                         due_date timestamp,
                                         allow_late integer,
                                         late_percent real,
+                                        has_timer int NOT NULL,
+                                        hour_timer int,
+                                        minute_timer int,
                                         date_created timestamp NOT NULL,
                                         date_updated timestamp NOT NULL,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -128,6 +132,16 @@ class Content:
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
                                       );'''
 
+        create_user_assignment_start_table = '''CREATE TABLE IF NOT EXISTS user_assignment_start (
+                                                  user_id text NOT NULL,
+                                                  course_id text NOT NULL,
+                                                  assignment_id text NOT NULL,
+                                                  start_time timestamp NOT NULL,
+                                                  FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
+                                                  FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
+                                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                                                );'''
+
         if self.conn is not None:
             self.cursor.execute(create_users_table)
             self.cursor.execute(create_permissions_table)
@@ -135,13 +149,61 @@ class Content:
             self.cursor.execute(create_assignments_table)
             self.cursor.execute(create_problems_table)
             self.cursor.execute(create_submissions_table)
+            self.cursor.execute(create_user_assignment_start_table)
         else:
             print("Error! Cannot create a database connection.")
 
-    def update_tables_for_due_date(self):
+    def update_tables_for_timer(self):
         sql = '''ALTER TABLE assignments
-                 ADD COLUMN late_percent real'''
+                 ADD COLUMN minute_timer'''
         self.cursor.execute(sql)
+
+    def set_start_time(self, course_id, assignment_id, user_id, start_time):
+        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
+
+        sql = '''INSERT INTO user_assignment_start (course_id, assignment_id, user_id, start_time)
+                 VALUES (?, ?, ?, ?)'''
+
+        self.cursor.execute(sql, (course_id, assignment_id, user_id, start_time,))
+
+    def get_start_time(self, course_id, assignment_id, user_id):
+        sql = '''SELECT start_time
+                 FROM user_assignment_start
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND user_id = ?'''
+
+        self.cursor.execute(sql, (course_id, assignment_id, user_id,))
+        row = self.cursor.fetchone()
+        if row:
+            return row["start_time"].strftime("%a, %d %b %Y %H:%M:%S %Z")
+
+    def timer_ended(self, course_id, assignment_id, start_time):
+        curr_time = datetime.now()
+        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ") 
+
+        sql = '''SELECT hour_timer, minute_timer
+                 FROM assignments
+                 WHERE course_id = ?
+                 AND assignment_id = ?'''
+        self.cursor.execute(sql, (course_id, assignment_id,))
+        row = self.cursor.fetchone()
+
+        if row:
+            elapsed_time = curr_time - start_time
+            seconds = elapsed_time.total_seconds()
+            e_hours = math.floor(seconds/3600)
+            e_minutes = math.floor((seconds/60) - (e_hours*60))
+            e_seconds = (seconds - (e_minutes*60) - (e_hours*3600))
+
+            if e_hours > int(row["hour_timer"]):
+                return True
+            elif e_hours == int(row["hour_timer"]) and e_minutes > int(row["minute_timer"]):
+                return True
+            elif e_hours == int(row["hour_timer"]) and e_minutes == int(row["minute_timer"]) and e_seconds > 0:
+                return True
+
+        return False
 
     def create_scores_text(self, course_id, assignment_id):
         out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
@@ -342,14 +404,20 @@ class Content:
                         SUM(passed) AS num_passed,
                         COUNT(assignment_id) AS num_problems,
                         SUM(passed) = COUNT(assignment_id) AS passed_all,
-                        (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress
+                        (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress,
+                        has_timer,
+                        hour_timer,
+                        minute_timer
                  FROM (
                    SELECT a.assignment_id,
                           a.title,
                           a.start_date,
                           a.due_date,
                           IFNULL(MAX(s.passed), 0) AS passed,
-                          COUNT(s.submission_id) AS num_submissions
+                          COUNT(s.submission_id) AS num_submissions,
+                          a.has_timer,
+                          a.hour_timer,
+                          a.minute_timer
                    FROM problems p
                    LEFT JOIN submissions s
                      ON p.course_id = s.course_id
@@ -371,7 +439,7 @@ class Content:
 
         assignment_statuses = []
         for row in self.cursor.fetchall():
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "start_date": row["start_date"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"]}
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "start_date": row["start_date"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_problems": row["num_problems"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
         return assignment_statuses
@@ -535,7 +603,7 @@ class Content:
         assignment_basics["title"] = title
         assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late):
+    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer):
         assignment_details["introduction"] = introduction
         assignment_details["date_updated"] = date_updated
         assignment_details["start_date"] = start_date
@@ -543,6 +611,9 @@ class Content:
         assignment_details["allow_late"] = allow_late
         assignment_details["late_percent"] = late_percent
         assignment_details["view_answer_late"] = view_answer_late
+        assignment_details["has_timer"] = has_timer
+        assignment_details["hour_timer"] = hour_timer
+        assignment_details["minute_timer"] = minute_timer
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -708,9 +779,9 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False}
+            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None}
 
-        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late
+        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -718,7 +789,7 @@ class Content:
         self.cursor.execute(sql, (int(course), int(assignment),))
         row = self.cursor.fetchone()
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
 
@@ -826,16 +897,17 @@ class Content:
     def save_assignment(self, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, has_timer = ?, hour_timer = ?, minute_timer = ?
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.cursor.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.cursor.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"]])
+            self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"]])
+                     
             assignment_basics["id"] = self.cursor.lastrowid
             assignment_basics["exists"] = True
 

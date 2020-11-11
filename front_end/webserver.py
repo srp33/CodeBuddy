@@ -409,15 +409,29 @@ class AssignmentHandler(BaseUserHandler):
                 user_id = self.get_current_user()
                 assignment_details = content.get_assignment_details(course, assignment)
                 curr_datetime = datetime.datetime.now()
+                start_time = content.get_start_time(course, assignment, user_id)
 
                 if assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"))
                 elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"))
                 else:
-                    self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, user_id=user_id, user_logged_in=user_logged_in_var.get())
+                    self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, start_time=start_time, user_id=user_id, user_logged_in=user_logged_in_var.get())
+                
             except Exception as inst:
                 render_error(self, traceback.format_exc())
+    def post(self, course, assignment):
+        try:
+            show = show_hidden(self.get_current_role())
+            user_id = self.get_current_user()
+            start_time = self.get_body_argument("start_time")
+            #print("Before sending to set_start_time:")
+            #print(start_time)
+            content.set_start_time(course, assignment, user_id, start_time)
+
+            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), start_time=content.get_start_time(course, assignment, user_id), user_id=user_id, user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
@@ -425,7 +439,9 @@ class EditAssignmentHandler(BaseUserHandler):
             role = self.get_current_role()
             if role == "administrator" or role == "instructor" or role == "assistant":
                 percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
-                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), percentage_options=percentage_options, result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                hour_options = list(range(13))
+                minute_options = list(range(61))
+                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -439,13 +455,14 @@ class EditAssignmentHandler(BaseUserHandler):
                 return
 
             title = self.get_body_argument("title").strip()
-            visible = self.get_body_argument("is_visible") == "Yes"
             introduction = self.get_body_argument("introduction").strip()
+            visible = self.get_body_argument("is_visible") == "Yes"
             start_date = self.get_body_argument("start_date").strip()
             due_date = self.get_body_argument("due_date").strip()
             allow_late = self.get_body_argument("allow_late") == "Yes"
             late_percent = int(self.get_body_argument("late_percent")[:-1]) / 100
             view_answer_late = self.get_body_argument("view_answer_late") == "Yes"
+            has_timer = self.get_body_argument("has_timer") == "On"
 
             if start_date == "None":
                 start_date = None
@@ -458,6 +475,13 @@ class EditAssignmentHandler(BaseUserHandler):
 
             if allow_late == "No":
                 late_percent = None
+
+            if has_timer:
+                hour_timer = self.get_body_argument("hour_select")
+                minute_timer = self.get_body_argument("minute_select")
+            else:
+                hour_timer = None
+                minute_timer = None
 
             assignment_basics = content.get_assignment_basics(course, assignment)
             assignment_details = content.get_assignment_details(course, assignment)
@@ -472,15 +496,15 @@ class EditAssignmentHandler(BaseUserHandler):
                     if len(title) > 50:
                         result = "Error: The title cannot exceed 50 characters."
                     else:
-                        if allow_late and view_answer_late:
-                            result = "Error: You're unable to allow late submissions and allow students to view the answer code after a due date has passed at the same time."
-                        else:
-                            content.specify_assignment_basics(assignment_basics, title, visible)
-                            content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late, late_percent, view_answer_late)
-                            assignment = content.save_assignment(assignment_basics, assignment_details)
+                        content.specify_assignment_basics(assignment_basics, title, visible)
+                        content.specify_assignment_details(assignment_details, introduction, None, datetime.datetime.now(), start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
+                        assignment = content.save_assignment(assignment_basics, assignment_details)
 
             percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
-            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, percentage_options=percentage_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            hour_options = list(range(13))
+            minute_options = list(range(61))
+            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+                                    
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -538,13 +562,21 @@ class ProblemHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
             user = self.get_current_user()
+            role = self.get_current_role()
+            assignment_details = content.get_assignment_details(course, assignment)
+            if role == "student" and assignment_details["has_timer"]:
+                start_time = content.get_start_time(course, assignment, user)
+                if not start_time or content.timer_ended(course, assignment, start_time):
+                    self.render("timer_error.html", user_logged_in=user_logged_in_var.get())
+                    return
             show = show_hidden(self.get_current_role())
             problems = content.get_problems(course, assignment, show)
             problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
             next_prev_problems = content.get_next_prev_problems(course, assignment, problem, problems)
 
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, curr_datetime=datetime.datetime.now(), next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, curr_datetime=datetime.datetime.now(), next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), start_time=content.get_start_time(course, assignment, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1215,6 +1247,7 @@ class DevelopmentLoginHandler(RequestHandler):
                     user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
                     content.add_user(user_id, user_dict)
 
+                #content.update_tables_for_timer()
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
 
                 if not target_path:

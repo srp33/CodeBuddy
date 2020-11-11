@@ -133,6 +133,50 @@
     </p>
   </div>
   
+  <p><strong>Timer: </strong><br />Here you can specify the time a student has to complete this assignment. Once a students begins this assignment, they cannot pause the timer.</p>
+  <div class="select is-info">
+    <select name="has_timer" onchange="showTimerOptions(this.value)" style="padding: 2px;">
+      <option
+        {% if assignment_details["has_timer"] == 0 %}
+          selected
+        {% end %}
+      >Off</option>
+      <option
+        {% if assignment_details["has_timer"] == 1 %}
+          selected
+        {% end %}
+      >On</option>
+    </select>
+  </div>
+
+  <div id="timer_div" class="select is-info" 
+    {% if assignment_details["has_timer"] == 1 %}
+      style="display: inline;"
+    {% else %}
+      style="display: none;"
+    {% end %}>
+    <label for="hour_select">Hours:</label>
+    <select id="hour_select" name="hour_select" style="display: inline;">
+      {% for hour in hour_options %}
+        <option
+          {% if hour == assignment_details["hour_timer"] %}
+            selected
+          {% end %}
+        >{{ hour }}</option>
+      {% end %}
+    </select>
+    <label for="minute_select">Minutes:</label>
+    <select id="minute_select" name="minute_select" style="display: inline;">
+      {% for minute in minute_options %}
+        <option
+          {% if minute == assignment_details["minute_timer"] %}
+            selected
+          {% end %}
+        >{{ minute }}</option>
+      {% end %}
+    </select>
+  </div>
+
   <p><strong>Visible: </strong>
     <div class="select is-info">
       <select name="is_visible" style="padding:2px;">
@@ -226,6 +270,16 @@
     else {
       late_percent.style.display = "none";
       view_answer_late.style.display = "inline";
+    }
+  }
+  
+  function showTimerOptions(on) {
+    var timer_div = document.getElementById("timer_div");
+    if (on == "On") {
+      timer_div.style.display = "inline";
+    }
+    else {
+      timer_div.style.display = "none";
     }
   }
 </script>

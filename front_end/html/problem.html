@@ -1,5 +1,5 @@
 {% if course_basics["exists"] %}
-  {% if assignment_basics["exists"] %}
+  <!--{% if assignment_basics["exists"] %}
 
     {% if problem_basics["exists"] %}
       <h2>{{ problem_basics["title"] }}</h2>
@@ -103,4 +103,274 @@
         <p><em>{{ problem_details["credit"] }}</em></p>
       {% end %}  
 
-      <div id="submissions"></div>
+      <div id="submissions"></div>-->
+
+
+
+    {% if assignment_basics["exists"] %}
+        {% if problem_basics["exists"] %}
+
+          <style>
+            #clockdiv{
+              font-family: sans-serif;
+              color: #fff;
+              display: inline-block;
+              font-weight: 100;
+              text-align: center;
+              font-size: 30px;
+            }
+    
+            #clockdiv > div{
+              padding: 10px;
+              border-radius: 3px;
+              background: #00BF96;
+              display: inline-block;
+            }
+    
+            #clockdiv div > span{
+              padding: 15px;
+              border-radius: 3px;
+              background: #00816A;
+              display: inline-block;
+            }
+    
+            .smalltext{
+              padding-top: 5px;
+              font-size: 16px;
+            }
+
+            .modal {
+              display: none; /* Hidden by default */
+              position: fixed; /* Stay in place */
+              z-index: 1; /* Sit on top */
+              padding-top: 100px; /* Location of the box */
+              left: 0;
+              top: 0;
+              width: 100%; /* Full width */
+              height: 100%; /* Full height */
+              overflow: auto; /* Enable scroll if needed */
+              background-color: rgb(0,0,0); /* Fallback color */
+              background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            }
+
+            /* Modal Content/Box */
+            .modal-content {
+              background-color: #fefefe;
+              margin: 15% auto; /* 15% from the top and centered */
+              padding: 20px;
+              border: 1px solid #888;
+              width: 80%; /* Could be more or less, depending on screen size */
+            }
+
+            /* The Close Button */
+            .close {
+              color: #aaa;
+              float: right;
+              font-size: 28px;
+              font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+              color: black;
+              text-decoration: none;
+              cursor: pointer;
+            }
+          </style>
+    
+          <script>         
+            function startTimer() {
+              start_time_js = new Date("{{ start_time }}");
+              start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
+
+              var deadline = start_time_js;
+              deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
+              deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
+
+              initializeClock('clockdiv', deadline);
+            }
+          
+            function getTimeRemaining(endtime){
+              const total = Date.parse(endtime) - Date.parse(new Date());
+              const seconds = Math.floor( (total/1000) % 60 );
+              const minutes = Math.floor( (total/1000/60) % 60 );
+              const hours = Math.floor( (total/(1000*60*60)) % 24 );
+          
+              return {
+                total,
+                hours,
+                minutes,
+                seconds
+              };
+            }
+          
+            function initializeClock(id, endtime) {
+              const clock = document.getElementById(id);
+              const hoursSpan = clock.querySelector('.hours');
+              const minutesSpan = clock.querySelector('.minutes');
+              const secondsSpan = clock.querySelector('.seconds');
+          
+              function updateClock(){
+                const t = getTimeRemaining(endtime);
+                hoursSpan.innerHTML = t.hours;
+                minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+                secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+          
+                if (t.total == 120000) {
+                  var modal = document.getElementById("myModal");
+                  var span = document.getElementsByClassName("close")[0];
+                  modal.style.display = "block";
+                  span.onclick = function() {
+                    modal.style.display = "none";
+                  }
+                  window.onclick = function(event) {
+                    if (event.target == modal) {
+                      modal.style.display = "none";
+                    }
+                  }
+                }
+        
+                if (t.total <= 0) {
+                  clearInterval(timeinterval);
+                  hoursSpan.innerHTML = 0;
+                  minutesSpan.innerHTML = 0;
+                  secondsSpan.innerHTML = 0;
+
+                  window.location.replace("/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}");
+                }
+              }
+          
+              updateClock(); // run function once at first to avoid delay
+              var timeinterval = setInterval(updateClock,1000);
+            }
+          </script>
+
+          <div id="myModal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <p>You have less than 2 minutes remaining. If you're still working, save your code to avoid losing your work.</p>
+            </div>
+          </div>
+
+            <h2>{{ problem_basics["title"] }}</h2>
+
+            <p>{{ problem_details["instructions"] }}</p>
+
+            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
+              <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer code.</div>
+            {% end %}
+            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
+              <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
+            {% end %}
+
+            {% if len(problem_details["data_url"]) > 0 %}
+                <p><em>The data for this problem originated from <a href='{{ problem_details["data_url"] }}' target="_blank">here</a>.</em></p>
+
+                <p>
+                    <b>{{ problem_details["data_file_name"] }}</b>
+                    <button id="show_hide_data_button" onclick="show_hide_data()">Show</button>
+                </p>
+                <pre id="data_panel" hidden>{{ problem_details["data_contents"] }}</pre>
+            {% end %}
+
+            {% if problem_details["show_test_code"] and len(problem_details["test_code"]) > 0 %}
+              <h4>Test code (to be executed after your code):</h4>
+
+              <pre>{{ problem_details["test_code"] }}</pre>
+            {% end %}
+
+            {% if assignment_details["has_timer"] %}
+              {% if start_time %}
+                <div id="clockdiv">
+                  <div>
+                    <span class="hours"></span>
+                    <div class="smalltext">Hours</div>
+                  </div>
+                  <div>
+                    <span class="minutes"></span>
+                    <div class="smalltext">Minutes</div>
+                  </div>
+                  <div>
+                    <span class="seconds"></span>
+                    <div class="smalltext">Seconds</div>
+                  </div>
+                </div>
+                <script>startTimer();</script>
+              {% end %}
+            {% end %}
+
+            <p>
+                <div>
+                    <h2 id="your_code_header" style="display: inline">Your code:</h2>
+
+                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Please write {{ back_end_description }} to address the instructions provided above.">
+                      <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
+                    </label>
+
+                    <div class="buttons are-small is-pulled-right">
+                      {% if prev_problem %}
+                        <a class="button is-light" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ prev_problem["id"] }}">Previous Problem</a>
+                      {% end %}
+                      {% if next_problem %}
+                        <a class="button is-light" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}">Next Problem</a>
+                      {% end %}
+                    </div>
+                </div>
+            </p>
+
+            <p>
+                <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your code here" rows="15" id="user_code" style="font-family:monospace"></textarea>
+                <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
+                  <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+                </label>
+                <label class="checkbox is-pulled-right">
+                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
+                </label>
+            </p>
+
+            <div class="field is-grouped">
+              <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run code</button></p>
+              <div id="revert_div"></div>
+              <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()' id='submit_button'>Submit</button></p>
+              <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your code against the expected output, click on 'Submit'. If you would like to see the output of your code without officially submitting it, click on 'Run code'. You can highlight a section of your code and then hit 'Run code' to test just that section. If you have made at least one submission, you can revert your code to the most recent submission; please note that this will delete any code that is currently in the box above.">
+                <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:top"/>
+              </p>
+            </div>
+
+            <div>
+              {% if problem_details["max_submissions"] > 0 %}
+                <label style="padding-left: 10px;">You have made <span id="num_submissions">{{ num_submissions }}</span> of {{ problem_details["max_submissions"] }} allowed submission(s)</label>
+              {% end %}
+            </div>
+
+            {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
+              <script>document.getElementById("submit_button").disabled = true;</script>  
+              <div class='notification is-warning'><p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p></div>
+            {% end %}
+
+            <p><div id="result"></div></p>
+
+            {% if problem_details["show_expected"] %}
+              <div>
+                <h2 style="display: inline">Expected output:</h2>
+                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your code with the expected output to find and fix errors in your code.">
+                  <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-top; display: inline"/>
+                </label>
+              </div>
+                {% if problem_details["output_type"] == "txt" %}
+                  <p><pre>{{ problem_details["expected_output"] }}</pre></p>
+                {% else %}
+                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_output"] }}" width="100%"/></figure></p>
+                {% end %}
+            {% else %}
+              <p><em>This problem is configured so that the expected output is not shown.</em></p>
+            {% end %}
+
+            <p><span id="code_output"></span></p>
+            <p><span id="diff_output"></span></p>
+
+            {% if len(problem_details["credit"]) > 0 %}
+                <p><em>{{ problem_details["credit"] }}</em></p>
+            {% end %}  
+
+            <div id="submissions"></div>
