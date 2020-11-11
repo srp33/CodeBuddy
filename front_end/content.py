@@ -155,7 +155,7 @@ class Content:
 
     def update_tables_for_timer(self):
         sql = '''ALTER TABLE assignments
-                 ADD COLUMN minute_timer'''
+                 ADD COLUMN has_timer'''
         self.cursor.execute(sql)
 
     def set_start_time(self, course_id, assignment_id, user_id, start_time):

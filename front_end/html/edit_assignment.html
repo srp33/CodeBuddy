@@ -78,7 +78,7 @@
   {% end %}>
     <p><strong>Allow late submissions: </strong>
       <div class="select is-info">
-        <select name="allow_late" onchange="showLatePercentOptions(this.value)" style="padding:2px;">
+        <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" style="padding:2px;">
           {% if assignment_details["allow_late"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -99,7 +99,7 @@
   {% end %}>
     <p><strong>Select percentage of points students can earn back with late submissions: </strong>
       <div class="select is-info">
-        <select name="late_percent" style="padding:2px;">
+        <select id="late_percent_select" name="late_percent_select" style="padding:2px;">
           {% for percent in percentage_options %}
             {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
               <option selected>{{ percent }}%</option>
@@ -120,7 +120,7 @@
   {% end %}>
     <p><strong>Allow students to view answer code after due date has passed: </strong>
       <div class="select is-info">
-        <select id="view_late_select" name="view_answer_late" style="padding:2px;">
+        <select id="view_late_select" name="view_late_select" style="padding:2px;">
           {% if assignment_details["view_answer_late"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -159,7 +159,7 @@
     <select id="hour_select" name="hour_select" style="display: inline;">
       {% for hour in hour_options %}
         <option
-          {% if hour == assignment_details["hour_timer"] %}
+          {% if str(hour) == assignment_details["hour_timer"] %}
             selected
           {% end %}
         >{{ hour }}</option>
@@ -169,7 +169,7 @@
     <select id="minute_select" name="minute_select" style="display: inline;">
       {% for minute in minute_options %}
         <option
-          {% if minute == assignment_details["minute_timer"] %}
+          {% if str(minute) == assignment_details["minute_timer"] %}
             selected
           {% end %}
         >{{ minute }}</option>
@@ -246,15 +246,16 @@
     var due_date = document.getElementById("due_date_picker");
     var allow_late = document.getElementById("allow_late");
     var view_answer_late = document.getElementById("view_answer_late");
+    var late_percent = document.getElementById("late_percent");
 
-    if (on == "Select") {
-      due_date.style.display = "inline";
-      allow_late.style.display = "inline";
-    }
-    else {
+    if (on == "None") {
       due_date.style.display = "none";
       allow_late.style.display = "none";
       view_answer_late.style.display = "none";
+      late_percent.style.display = "none";
+    }
+    else {
+      turnOnAllowLate();
     }
   }
 
@@ -272,7 +273,23 @@
       view_answer_late.style.display = "inline";
     }
   }
-  
+
+  function turnOnAllowLate() {
+    var allow_late = document.getElementById("allow_late");
+    var view_answer_late = document.getElementById("view_answer_late");
+    var late_percent = document.getElementById("late_percent");
+
+    allow_late.style.display = "inline";
+    if ({{ assignment_details["allow_late"] }}) {
+      late_percent.style.display = "inline";
+      view_answer_late.style.display = "none";
+    }
+    else {
+      late_percent.style.display = "none";
+      view_answer_late.style.display = "inline";
+    }
+  }
+
   function showTimerOptions(on) {
     var timer_div = document.getElementById("timer_div");
     if (on == "On") {

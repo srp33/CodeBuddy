@@ -441,7 +441,7 @@ class EditAssignmentHandler(BaseUserHandler):
                 percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
                 hour_options = list(range(13))
                 minute_options = list(range(61))
-                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
+                self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_id=user_id_var.get(), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -459,9 +459,9 @@ class EditAssignmentHandler(BaseUserHandler):
             visible = self.get_body_argument("is_visible") == "Yes"
             start_date = self.get_body_argument("start_date").strip()
             due_date = self.get_body_argument("due_date").strip()
-            allow_late = self.get_body_argument("allow_late") == "Yes"
-            late_percent = int(self.get_body_argument("late_percent")[:-1]) / 100
-            view_answer_late = self.get_body_argument("view_answer_late") == "Yes"
+            allow_late = self.get_body_argument("allow_late_select") == "Yes"
+            late_percent = int(self.get_body_argument("late_percent_select")[:-1]) / 100
+            view_answer_late = self.get_body_argument("view_late_select") == "Yes"
             has_timer = self.get_body_argument("has_timer") == "On"
 
             if start_date == "None":
@@ -503,7 +503,7 @@ class EditAssignmentHandler(BaseUserHandler):
             percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
             hour_options = list(range(13))
             minute_options = list(range(61))
-            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
+            self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get())
                                     
         except Exception as inst:
             render_error(self, traceback.format_exc())
