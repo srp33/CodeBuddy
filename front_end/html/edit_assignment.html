@@ -41,12 +41,14 @@
       >Select</option>
     </select>
   </div>
-  <input id="start_date_picker" name="start_date" type="text" placeholder="Select Date.." data-input
+  <div id="start_date"
   {% if assignment_details["start_date"] %}
     style="display: inline;"
   {% else %}
     style="display: none;"
   {% end %}>
+    <input class="is-medium" id="start_date_picker" name="start_date_picker" type="text" placeholder="Select Date.." data-input>
+  </div>
 
   <p><strong>Due date: </strong></p>
   <div class="select is-info">
@@ -63,12 +65,14 @@
       >Select</option>
     </select>
   </div>
-  <input id="due_date_picker" name="due_date" type="text" placeholder="Select Date.." data-input
+  <div id="due_date"
   {% if assignment_details["due_date"] %}
     style="display: inline;"
   {% else %}
     style="display: none;"
   {% end %}>
+    <input class="is-medium" id="due_date_picker" name="due_date_picker" type="text" placeholder="Select Date.." data-input>
+  </div>
 
   <div id="allow_late"
   {% if assignment_details["due_date"] %}
@@ -223,27 +227,35 @@
   due_date_picker.setDate(setDueDate(),false,'Y-m-d G:i K');
 
   function setStartDate() {
-    var start_date = new Date("{{ assignment_details['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+    {% if assignment_details["start_date"] %}
+      var start_date = new Date("{{ assignment_details['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+    {% else %}
+      var start_date = new Date();
+    {% end %}
     return start_date;
   }
 
   function setDueDate() {
-    var due_date = new Date("{{ assignment_details['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+    {% if assignment_details["due_date"] %}
+      var due_date = new Date("{{ assignment_details['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+    {% else %}
+      var due_date = new Date();
+    {% end %}
     return due_date;
   }
 
   function showStartOptions(on) {
-    var start_date = document.getElementById("start_date_picker");
-    if (on == "Select") {
-      start_date.style.display = "inline";
+    var start_date = document.getElementById("start_date");
+    if (on == "None") {
+      start_date.style.display = "none";
     }
     else {
-      start_date.style.display = "none";
+      start_date.style.display = "inline";
     }
   }
 
   function showDueOptions(on) {
-    var due_date = document.getElementById("due_date_picker");
+    var due_date = document.getElementById("due_date");
     var allow_late = document.getElementById("allow_late");
     var view_answer_late = document.getElementById("view_answer_late");
     var late_percent = document.getElementById("late_percent");
@@ -255,6 +267,7 @@
       late_percent.style.display = "none";
     }
     else {
+      due_date.style.display = "inline";
       turnOnAllowLate();
     }
   }

@@ -429,7 +429,7 @@ class AssignmentHandler(BaseUserHandler):
             #print(start_time)
             content.set_start_time(course, assignment, user_id, start_time)
 
-            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), start_time=content.get_start_time(course, assignment, user_id), user_id=user_id, user_logged_in=user_logged_in_var.get())
+            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_start_time(course, assignment, user_id), user_id=user_id, user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -457,24 +457,34 @@ class EditAssignmentHandler(BaseUserHandler):
             title = self.get_body_argument("title").strip()
             introduction = self.get_body_argument("introduction").strip()
             visible = self.get_body_argument("is_visible") == "Yes"
-            start_date = self.get_body_argument("start_date").strip()
-            due_date = self.get_body_argument("due_date").strip()
-            allow_late = self.get_body_argument("allow_late_select") == "Yes"
-            late_percent = int(self.get_body_argument("late_percent_select")[:-1]) / 100
-            view_answer_late = self.get_body_argument("view_late_select") == "Yes"
+            has_start_date = self.get_body_argument("has_start_date") == "Select"
+            has_due_date = self.get_body_argument("has_due_date") == "Select"
             has_timer = self.get_body_argument("has_timer") == "On"
 
-            if start_date == "None":
+            if has_start_date:
+                start_date = self.get_body_argument("start_date_picker").strip()
+                if start_date == "None":
+                    start_date = None
+                else:
+                    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+            else:
                 start_date = None
+            if has_due_date:
+                due_date = self.get_body_argument("due_date_picker").strip()
+                allow_late = self.get_body_argument("allow_late_select") == "Yes"
+                late_percent = int(self.get_body_argument("late_percent_select")[:-1]) / 100
+                view_answer_late = self.get_body_argument("view_late_select") == "Yes"
+                if not allow_late:
+                    late_percent = None
+                if due_date == "None":
+                    due_date = None
+                else:
+                    due_date = datetime.datetime.strptime(due_date, '%Y-%m-%dT%H:%M:%S.%fZ')
             else:
-                start_date = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-            if due_date == "None":
                 due_date = None
-            else:
-                due_date = datetime.datetime.strptime(due_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-
-            if allow_late == "No":
+                allow_late = False
                 late_percent = None
+                view_answer_late = False
 
             if has_timer:
                 hour_timer = self.get_body_argument("hour_select")
