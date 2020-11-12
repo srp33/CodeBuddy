@@ -29,6 +29,7 @@ cat header.html navbar_top.html navbar_course.html navbar_bottom.html container_
 cat header.html navbar_top.html navbar_course.html navbar_bottom.html container_top.html remove_instructor.html container_bottom.html footer.html > /app/remove_instructor.html
 cat header.html navbar_top.html navbar_course.html navbar_bottom.html container_top.html remove_assistant.html container_bottom.html footer.html > /app/remove_assistant.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html view_scores.html container_bottom.html footer.html > /app/view_scores.html
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html edit_scores.html container_bottom.html footer.html > /app/edit_scores.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html student_scores.html container_bottom.html footer.html > /app/student_scores.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_bottom.html container_top.html student_problem.html problem_shared.html student_problem_back_button.html container_bottom.html footer.html > /app/student_problem.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_bottom.html container_top.html problem_scores.html container_bottom.html footer.html > /app/problem_scores.html
@@ -37,6 +38,8 @@ cat header.html navbar_top.html navbar_bottom.html container_top.html summarize_
 cat header.html navbar_top.html navbar_bottom.html container_top.html initialize.html container_bottom.html footer.html > /app/initialize.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html error.html container_bottom.html footer.html > /app/error.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html permissions.html container_bottom.html footer.html > /app/permissions.html
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_bottom.html container_top.html date.html container_bottom.html footer.html > /app/date.html
+cat header.html navbar_top.html navbar_bottom.html container_top.html timer_error.html container_bottom.html footer.html > /app/timer_error.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html delete_user.html container_bottom.html footer.html > /app/delete_user.html
 
 # Static pages

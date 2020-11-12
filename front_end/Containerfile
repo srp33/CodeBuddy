@@ -12,6 +12,7 @@ RUN apt-get update \
  && curl https://raw.githubusercontent.com/jenil/bulmaswatch/gh-pages/flatly/bulmaswatch.min.css | sed -En 's/.footer\{background-color:#ecf0f1;padding:3rem 1.5rem 6rem\}/.footer\{background-color:#ecf0f1;padding:1rem 3.0rem 1rem\}/p' > /static/bulmaswatch.min.css \
  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > /static/bulma-tooltip.min.css \
  && git clone https://github.com/ajaxorg/ace-builds.git \
+ && git clone git://github.com/Wikiki/bulma-calendar.git \
  && cp -r ace-builds/src-min-noconflict/* /static/
 
 # To learn about bulmaswatch, see https://jenil.github.io/bulmaswatch/flatly.

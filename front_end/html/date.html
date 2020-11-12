@@ -1,0 +1,17 @@
+{% if course_basics["exists"] %}
+  <h2>{{ assignment_basics["title"] }}</h2>
+
+  {% if assignment_basics["exists"] %}
+    
+    {% if error == "start" %}
+      <p>This assignment will open on {{ start_date }}.</p>
+    {% elif error == "due" %}
+      <p>This assignment closed on {{ due_date }}.</p>
+    {% end %}
+
+  {% else %}
+    <p>This assignment does not exist.</p>
+  {% end %}
+{% else %}
+  <p>This course does not exist.</p>
+{% end %}

@@ -8,6 +8,8 @@
     <div class="columns">
       <div class="column is-half">
 
+        <form method="post" action="/edit_scores/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}/{{ student_id}}">
+
         <table class="table" id="scores_table">
           <thead>
             <tr>
@@ -25,15 +27,19 @@
                 <td>{{ problem[1]["title"] }}</td>
               {% end %}
               <td>{{ problem[1]["num_submissions"] }}</td>
-              <td>{{ round(problem[1]["score"]) }}%</td>
+              <td><input id="{{ problem[1]["id"] }}" name="{{ problem[1]["id"] }}" type="text" datainput value="{{ round(problem[1]["score"]) }}"></td>
               </tr>
             {% end %}    
           </tbody>
         </table>
 
+        <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>        
+
         <br />
         <a href="/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to all scores</a> |
-        <a href="/edit_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ student_id }}">Edit scores</a>
+        <a href="/edit_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit scores</a>
+
+        </form>
 
       </div>
     </div>

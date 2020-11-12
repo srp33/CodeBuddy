@@ -9,19 +9,65 @@
     <p>No assignments have been created.</p>
   {% else %}
 
+    <script>
+      var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      function convertDate(d) {
+        var hours = d.getHours();
+        var minutes = d.getMinutes() < 10 ? "0" + d.getMinutes():d.getMinutes();
+        var suffix = hours >= 12 ? "PM":"AM";
+        var time = ((hours + 11) % 12 + 1) + ":" + minutes + " " + suffix; 
+
+        var start_date = days[d.getDay()] + " " + (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear().toString().substr(-2) +
+        " " + time;
+        return start_date;
+      }
+    </script>
+
     <table class="table" id="assignment_table">
       <thead>
         <tr>
           <th>Assignment</th>
+          <th>Start Date</th>
+          <th>Due Date</th>
           <th>Problems Completed</th>
+          <th>Timer</th>
           <th>Status</th>
         </tr>
       </thead>
       <tbody>
         {% for assignment in assignment_statuses %}
           <tr>
-            <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+            {% if assignment[1]["start_date"] and assignment[1]["start_date"] > curr_datetime %}
+              <td>{{ assignment[1]["title"] }}</td>
+            {% else %}
+              <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+            {% end %}
+            {% if assignment[1]["start_date"] %}
+              <td>
+                <script>
+                  var s = new Date("{{ assignment[1]["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+                  document.write(convertDate(s));
+                </script>
+              </td>
+            {% else %}
+              <td> </td>
+            {% end %}
+            {% if assignment[1]["due_date"] %}
+              <td>
+                <script>
+                  var d = new Date("{{ assignment[1]["due_date"].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+                  document.write(convertDate(d));
+                </script>
+              </td>
+            {% else %}
+              <td> </td>
+            {% end %}
             <td><progress class="progress is-small is-primary" value="{{ assignment[1]["num_passed"] }}" max="{{ assignment[1]["num_problems"] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_problems"] }}</td>
+            {% if assignment[1]["has_timer"] %}
+              <td>{{ assignment[1]["hour_timer"] }} hours {{ assignment[1]["minute_timer"] }} minutes </td>
+            {% else %}
+              <td>Untimed</td>
+            {% end %}
             {% if assignment[1]["passed"] %}
               <td><label>
                 <img src="/static/greencheck.png" alt="Completed" height="30" width="30" style="vertical-align: middle;"/>
@@ -48,3 +94,16 @@
 {% end %}
 <br/><a href="/">Back to courses</a>
 <br /><br />
+
+<script>
+
+  function setStartDate(id, start) {
+    var start_date = new Date(start);
+    document.getElementById(id).textContent = start_date;
+  }
+
+  function setDueDate(due) {
+    var due_date = new Date(due);
+    return due_date;
+  }
+</script>

@@ -23,6 +23,164 @@
   <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
   <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this assignment." rows="8" style="font-family:monospace">{{ assignment_details["introduction"] }}</textarea></p>
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <p><strong>Start date: </strong><br />If a start date is specified, students will be unable to view this assignment before the start date and time.</p>
+  <div class="select is-info">
+    <select name="has_start_date" onchange="showStartOptions(this.value)" style="padding: 2px;">
+      <option
+        {% if not assignment_details["start_date"] %}
+          selected
+        {% end %}
+      >None</option>
+      <option
+        {% if assignment_details["start_date"] %}
+          selected
+        {% end %}
+      >Select</option>
+    </select>
+  </div>
+  <div id="start_date"
+  {% if assignment_details["start_date"] %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}>
+    <input class="is-medium" id="start_date_picker" name="start_date_picker" type="text" placeholder="Select Date.." data-input>
+  </div>
+
+  <p><strong>Due date: </strong></p>
+  <div class="select is-info">
+    <select name="has_due_date" onchange="showDueOptions(this.value)" style="padding: 2px;">
+      <option
+        {% if not assignment_details["due_date"] %}
+          selected
+        {% end %}
+      >None</option>
+      <option
+        {% if assignment_details["due_date"] %}
+          selected
+        {% end %}
+      >Select</option>
+    </select>
+  </div>
+  <div id="due_date"
+  {% if assignment_details["due_date"] %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}>
+    <input class="is-medium" id="due_date_picker" name="due_date_picker" type="text" placeholder="Select Date.." data-input>
+  </div>
+
+  <div id="allow_late"
+  {% if assignment_details["due_date"] %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}>
+    <p><strong>Allow late submissions: </strong>
+      <div class="select is-info">
+        <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" style="padding:2px;">
+          {% if assignment_details["allow_late"] %}
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+            <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
+  </div>
+
+  <div id="late_percent"
+  {% if assignment_details["allow_late"] %}
+    style="display: inline;"
+  {% else %}
+    style="display: none;"
+  {% end %}>
+    <p><strong>Select percentage of points students can earn back with late submissions: </strong>
+      <div class="select is-info">
+        <select id="late_percent_select" name="late_percent_select" style="padding:2px;">
+          {% for percent in percentage_options %}
+            {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
+              <option selected>{{ percent }}%</option>
+            {% else %}
+              <option>{{ percent }}%</option>
+            {% end %}
+          {% end %}
+        </select>
+      </div>
+    </p>
+  </div>
+
+  <div id="view_answer_late"
+  {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
+    style="display: none;"
+  {% else %}
+    style="display: inline;"
+  {% end %}>
+    <p><strong>Allow students to view answer code after due date has passed: </strong>
+      <div class="select is-info">
+        <select id="view_late_select" name="view_late_select" style="padding:2px;">
+          {% if assignment_details["view_answer_late"] %}
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+            <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
+  </div>
+  
+  <p><strong>Timer: </strong><br />Here you can specify the time a student has to complete this assignment. Once a students begins this assignment, they cannot pause the timer.</p>
+  <div class="select is-info">
+    <select name="has_timer" onchange="showTimerOptions(this.value)" style="padding: 2px;">
+      <option
+        {% if assignment_details["has_timer"] == 0 %}
+          selected
+        {% end %}
+      >Off</option>
+      <option
+        {% if assignment_details["has_timer"] == 1 %}
+          selected
+        {% end %}
+      >On</option>
+    </select>
+  </div>
+
+  <div id="timer_div" class="select is-info" 
+    {% if assignment_details["has_timer"] == 1 %}
+      style="display: inline;"
+    {% else %}
+      style="display: none;"
+    {% end %}>
+    <label for="hour_select">Hours:</label>
+    <select id="hour_select" name="hour_select" style="display: inline;">
+      {% for hour in hour_options %}
+        <option
+          {% if str(hour) == assignment_details["hour_timer"] %}
+            selected
+          {% end %}
+        >{{ hour }}</option>
+      {% end %}
+    </select>
+    <label for="minute_select">Minutes:</label>
+    <select id="minute_select" name="minute_select" style="display: inline;">
+      {% for minute in minute_options %}
+        <option
+          {% if str(minute) == assignment_details["minute_timer"] %}
+            selected
+          {% end %}
+        >{{ minute }}</option>
+      {% end %}
+    </select>
+  </div>
+
   <p><strong>Visible: </strong>
     <div class="select is-info">
       <select name="is_visible" style="padding:2px;">
@@ -49,3 +207,109 @@
   This course has not been created yet.
 {% end %}
 <br /><br />
+
+<script>
+
+  var start_date_picker = flatpickr("#start_date_picker", {
+    enableTime: true,
+    dateFormat: 'Z',
+    altInput: true,
+    altFormat: 'Y-m-d G:i K'
+  });
+  start_date_picker.setDate(setStartDate(),false,'Y-m-d G:i K');
+
+  var due_date_picker = flatpickr("#due_date_picker", {
+    enableTime: true,
+    dateFormat: 'Z',
+    altInput: true,
+    altFormat: 'Y-m-d G:i K'
+  });
+  due_date_picker.setDate(setDueDate(),false,'Y-m-d G:i K');
+
+  function setStartDate() {
+    {% if assignment_details["start_date"] %}
+      var start_date = new Date("{{ assignment_details['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+    {% else %}
+      var start_date = new Date();
+    {% end %}
+    return start_date;
+  }
+
+  function setDueDate() {
+    {% if assignment_details["due_date"] %}
+      var due_date = new Date("{{ assignment_details['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+    {% else %}
+      var due_date = new Date();
+    {% end %}
+    return due_date;
+  }
+
+  function showStartOptions(on) {
+    var start_date = document.getElementById("start_date");
+    if (on == "None") {
+      start_date.style.display = "none";
+    }
+    else {
+      start_date.style.display = "inline";
+    }
+  }
+
+  function showDueOptions(on) {
+    var due_date = document.getElementById("due_date");
+    var allow_late = document.getElementById("allow_late");
+    var view_answer_late = document.getElementById("view_answer_late");
+    var late_percent = document.getElementById("late_percent");
+
+    if (on == "None") {
+      due_date.style.display = "none";
+      allow_late.style.display = "none";
+      view_answer_late.style.display = "none";
+      late_percent.style.display = "none";
+    }
+    else {
+      due_date.style.display = "inline";
+      turnOnAllowLate();
+    }
+  }
+
+  function showLatePercentOptions(on) {
+    var late_percent = document.getElementById("late_percent");
+    var view_answer_late = document.getElementById("view_answer_late");
+    var view_late_select =  document.getElementById("view_late_select");
+    if (on == "Yes") {
+      late_percent.style.display = "inline";
+      view_late_select.value = "No";
+      view_answer_late.style.display = "none";
+    }
+    else {
+      late_percent.style.display = "none";
+      view_answer_late.style.display = "inline";
+    }
+  }
+
+  function turnOnAllowLate() {
+    var allow_late = document.getElementById("allow_late");
+    var view_answer_late = document.getElementById("view_answer_late");
+    var late_percent = document.getElementById("late_percent");
+
+    allow_late.style.display = "inline";
+    if ({{ assignment_details["allow_late"] }}) {
+      late_percent.style.display = "inline";
+      view_answer_late.style.display = "none";
+    }
+    else {
+      late_percent.style.display = "none";
+      view_answer_late.style.display = "inline";
+    }
+  }
+
+  function showTimerOptions(on) {
+    var timer_div = document.getElementById("timer_div");
+    if (on == "On") {
+      timer_div.style.display = "inline";
+    }
+    else {
+      timer_div.style.display = "none";
+    }
+  }
+</script>

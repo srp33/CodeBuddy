@@ -1,6 +1,6 @@
 {% if problem_basics["exists"] %}
     {% if last_submission %}
-        {% if last_submission["passed"] %}
+        {% if last_submission["passed"] or (assignment_details["due_date"] and assignment_details["due_date"] < curr_time and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1) %}
             <h4>Your code:</h4>
             <pre>{{ last_submission["code"] }}</pre>
             <br /><br />
@@ -12,7 +12,7 @@
                 <h4>Instructor's comments</h4>
                 <p>{{ problem_details["answer_description"] }}</p>
             {% end %}
-        
+
         {% else %}
             <p>Either you have not yet passed this problem or you passed it previously but your most recent submission is not passing. Please make sure your code passes the problem, and then you'll be able to view the instructor's answer.</p>
         {% end %}
