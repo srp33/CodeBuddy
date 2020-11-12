@@ -425,8 +425,6 @@ class AssignmentHandler(BaseUserHandler):
             show = show_hidden(self.get_current_role())
             user_id = self.get_current_user()
             start_time = self.get_body_argument("start_time")
-            #print("Before sending to set_start_time:")
-            #print(start_time)
             content.set_start_time(course, assignment, user_id, start_time)
 
             self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_start_time(course, assignment, user_id), user_id=user_id, user_logged_in=user_logged_in_var.get())
