@@ -959,6 +959,17 @@ class Content:
 
         self.cursor.execute(sql, (json.dumps(user_dict), user_id,))
 
+    def remove_user_submissions(self, user_id):
+        sql = '''DELETE FROM scores
+                 WHERE user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
+
+        sql = '''DELETE FROM submissions
+                 WHERE user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
+
     def delete_user(self, user_id):
         sql = f'''DELETE FROM users
                   WHERE user_id = ?'''

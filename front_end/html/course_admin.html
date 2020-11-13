@@ -97,12 +97,11 @@
         {% if role == "administrator" %}
           | <a href="/add_instructor/{{ course_basics["id"] }}">Add/remove instructor</a>
         {% end %}
-        | <a href="/delete_user">Delete user</a>
+        | <a href="/manage_users/{{ course_basics["id"] }}">Manage users</a>
       {% end %}
     </p>
-  </div>
+  </div></br></br></br>
 
 {% else %}
   <h2>This course does not exist.</h2>
 {% end %}
-<br /><br />
