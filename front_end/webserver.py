@@ -516,12 +516,15 @@ class EditAssignmentHandler(BaseUserHandler):
                     if len(assignment_basics["title"]) > 50:
                         result = "Error: The title cannot exceed 50 characters."
                     else:
-                        #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', title):
-                        #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
-                        #else:
-                        #content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
-                        content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"])
-                        assignment = content.save_assignment(assignment_basics, assignment_details)
+                        if assignment_details["start_date"] and assignment_details["due_date"] and assignment_details["start_date"] > assignment_details["due_date"]:
+                            result = "Error: The start date must be earlier than the due date."
+                        else:
+                            #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', title):
+                            #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
+                            #else:
+                            #content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
+                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"])
+                            assignment = content.save_assignment(assignment_basics, assignment_details)
 
             percentage_options = [0,10,20,30,40,50,60,70,80,90,100]
             hour_options = list(range(13))
