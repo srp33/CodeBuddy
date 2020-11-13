@@ -32,6 +32,7 @@ else:
     alter_sql_list = ['ALTER TABLE assignments ADD COLUMN start_date timestamp',
                       'ALTER TABLE assignments ADD COLUMN due_date timestamp',
                       'ALTER TABLE assignments ADD COLUMN allow_late integer',
+                      'ALTER TABLE assignments ADD COLUMN view_answer_late integer',
                       'ALTER TABLE assignments ADD COLUMN late_percent real',
                       'ALTER TABLE assignments ADD COLUMN has_timer int NOT NULL DEFAULT 0',
                       'ALTER TABLE assignments ADD COLUMN hour_timer int',
