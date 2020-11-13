@@ -153,11 +153,6 @@ class Content:
         else:
             print("Error! Cannot create a database connection.")
 
-    def update_tables_for_timer(self):
-        sql = '''ALTER TABLE assignments
-                 ADD COLUMN has_timer'''
-        self.cursor.execute(sql)
-
     def set_start_time(self, course_id, assignment_id, user_id, start_time):
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
 

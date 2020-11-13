@@ -1259,15 +1259,13 @@ class DevelopmentLoginHandler(RequestHandler):
                     # Add static information for test user.
                     user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
                     content.add_user(user_id, user_dict)
-
-                #content.update_tables_for_timer()
+                    
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
 
                 if not target_path:
                     target_path = "/"
                 self.redirect(target_path)
 
-                #content.update_tables_for_due_date()
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
