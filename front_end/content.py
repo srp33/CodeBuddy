@@ -65,6 +65,7 @@ class Content:
                                         due_date timestamp,
                                         allow_late integer,
                                         late_percent real,
+                                        view_answer_late integer,
                                         has_timer int NOT NULL,
                                         hour_timer int,
                                         minute_timer int,
