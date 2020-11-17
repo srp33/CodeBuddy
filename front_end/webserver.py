@@ -57,6 +57,7 @@ def make_app():
         url(r"\/manage_users\/([^\/]+)", ManageUsersHandler, name="manage_users"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
+        url(r"\/download_all_scores\/([^\/]+)", DownloadAllScoresHandler, name="download_all_scores"),
         url(r"\/edit_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", EditScoresHandler, name="edit_scores"),
         url(r"\/student_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", StudentScoresHandler, name="student_scores"),
         url(r"\/student_problem\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", StudentProblemHandler, name="student_problem"),
@@ -601,7 +602,7 @@ class ProblemHandler(BaseUserHandler):
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
             next_prev_problems = content.get_next_prev_problems(course, assignment, problem, problems)
 
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, curr_datetime=datetime.datetime.now(), next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), start_time=content.get_start_time(course, assignment, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, problem_statuses=content.get_problem_statuses(course, assignment, user), curr_datetime=datetime.datetime.now(), next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, user), start_time=content.get_start_time(course, assignment, user), user_id=self.get_current_user(), student_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
 
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -787,6 +788,7 @@ class SubmitHandler(BaseUserHandler):
             code = self.get_body_argument("user_code").replace("\r", "")
             problem_basics = content.get_problem_basics(course, assignment, problem)
             problem_details = content.get_problem_details(course, assignment, problem)
+            assignment_details = content.get_assignment_details(course, assignment)
 
             text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, self.request)
             diff, passed = check_problem_output(problem_details["expected_text_output"], text_output, problem_details["expected_image_output"], image_output, problem_details["output_type"])
@@ -1122,6 +1124,34 @@ class DownloadScoresHandler(BaseUserHandler):
         except Exception as inst:
             self.write(traceback.format_exc())
             #render_error(self, traceback.format_exc())
+
+class DownloadAllScoresHandler(BaseUserHandler):
+    def get(self, course):
+        course_basics = content.get_course_basics(course)
+        descriptor = f"Course_{course_basics['title'].replace(' ', '_')}_Scores"
+        temp_dir_path, zip_file_name, zip_file_path = content.create_zip_file_path(descriptor)
+
+        try:
+            content.create_export_paths(temp_dir_path, descriptor)
+
+            assignments = content.get_assignments(course)
+            for assignment in assignments:
+                file_contents = content.create_scores_text(course, assignment[0])
+                with open(f"{temp_dir_path}/{assignment[0]}.csv", "w") as score_file:
+                    score_file.write(file_contents)
+            
+            content.zip_export_files(temp_dir_path, zip_file_name, zip_file_path, descriptor)
+            zip_bytes = read_file(zip_file_path, "rb")
+
+            self.set_header("Content-type", "application/zip")
+            self.set_header("Content-Disposition", f"attachment; filename={zip_file_name}")
+            self.write(zip_bytes)
+            self.finish()
+
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+        finally:
+            content.remove_export_paths(zip_file_path, tmp_dir_path)
 
 class EditScoresHandler(BaseUserHandler):
     def get(self, course, assignment, student_id):

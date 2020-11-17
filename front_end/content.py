@@ -201,15 +201,6 @@ class Content:
 
         return False
 
-    def create_scores_text(self, course_id, assignment_id):
-        out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
-        scores = self.get_assignment_scores(course_id, assignment_id)
-
-        for student in scores:
-            out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']}\n"
-
-        return out_file_text
-
     def check_user_exists(self, user_id):
         sql = '''SELECT user_id
                  FROM users
@@ -1068,6 +1059,15 @@ class Content:
 
         self.cursor.execute(sql, (problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"],))
 
+    def create_scores_text(self, course_id, assignment_id):
+        out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
+        scores = self.get_assignment_scores(course_id, assignment_id)
+
+        for student in scores:
+            out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']}\n"
+
+        return out_file_text
+    
     def export_data(self, course_basics, table_name, output_tsv_file_path):
         if table_name == "submissions":
             sql = '''SELECT c.title, a.title, p.title, s.user_id, s.submission_id, s.code, s.text_output, s.image_output, s.passed, s.date
