@@ -109,7 +109,7 @@
                 secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
           
                 if (t.total == 120000) {
-                  var modal = document.getElementById("myModal");
+                  var modal = document.getElementById("time_modal");
                   var span = document.getElementsByClassName("close")[0];
                   modal.style.display = "block";
                   span.onclick = function() {
@@ -135,16 +135,53 @@
               updateClock(); // run function once at first to avoid delay
               var timeinterval = setInterval(updateClock,1000);
             }
+
+            function showLinkModal() {
+              var modal = document.getElementById("share_modal");
+              var span = document.getElementsByClassName("close")[1];
+              var copyText = document.getElementById("share_link");
+              modal.style.display = "block";
+
+              span.onclick = function() {
+                modal.style.display = "none";
+              }
+              window.onclick = function(event) {
+                if (event.target == modal) {
+                  modal.style.display = "none";
+                }
+              }
+            }
+
+            function copyLink() {
+              var copyText = document.getElementById("share_link");
+              copyText.select(); 
+              copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+              document.execCommand("copy");
+              alert("Copied the text: " + copyText.value);
+            }
           </script>
 
-          <div id="myModal" class="modal">
+          <div id="time_modal" class="modal">
             <div class="modal-content">
               <span class="close">&times;</span>
               <p>You have less than 2 minutes remaining. If you're still working, save your code to avoid losing your work.</p>
             </div>
           </div>
 
-            <h2>{{ problem_basics["title"] }}</h2>
+          <div id="share_modal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <p>Share this link with an instructor or assistant:</p>
+              <input class="input is-medium is-primary" type="text" id="share_link" value="https://codebuddy.byu.edu/student_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}" readonly>
+              <button class="button is-small is-primary" style="margin-top: 10px;" onclick="copyLink()">Copy Link</button>
+            </div>
+          </div>
+
+            <div>
+              <h2 style="display: inline-block;">{{ problem_basics["title"] }}</h2>
+              <button class="button is-small is-light is-pulled-right" onclick="showLinkModal()">Share</button>
+            </div>
+            
 
             <p>{{ problem_details["instructions"] }}</p>
 
