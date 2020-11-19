@@ -2,6 +2,87 @@
   {% if assignment_basics["exists"] %}
     <h2>{{ assignment_basics["title"] }}</h2>
 
+    <style>
+      .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content/Box */
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+      }
+
+      /* The Close Button */
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+    </style>
+
+    <script>
+      function showResetModal(student_id) {
+        var modal = document.getElementById("reset_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("cancel_button");
+        var resetButton = document.getElementById("reset_button");
+
+        resetButton.onclick = function() {
+          $.post("/reset_timer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + student_id);
+          modal.style.display = "none";
+          location.reload();
+        }
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+      }
+    </script>
+
+    <div id="reset_modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Are you sure you want to reset this timer?</p>
+        <p class="buttons">
+          <button id="cancel_button" class="button is-small is-primary" style="margin-top: 10px;">Go back</button>
+          <button id="reset_button" class="button is-small is-primary" style="margin-top: 10px;">Reset</button>
+        </p>
+      </div>
+    </div>
+
     <div class="columns">
       <div class="column is-half">
 
@@ -17,6 +98,9 @@
               <tr>
                 <th>Student ID</th>
                 <th>Score</th>
+                {% if assignment_details["has_timer"] %}
+                  <th>Timer</th>
+                {% end %}
               </tr>
             </thead>
             <tbody>
@@ -24,6 +108,17 @@
                 <tr>
                 <td><a href="/student_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ score[0] }}">{{ score[0] }}</a></td>
                 <td>{{ round(score[1]["percent_passed"]) }}%</td>
+                {% if assignment_details["has_timer"] %}
+                  {% if score[0] in start_times %}
+                    {% if start_times[score[0]]["timer_ended"] %}
+                      <td>Timer ended <a onclick="showResetModal({{ score[0] }})">(reset)</a></td>
+                    {% else %}
+                      <td>In progress <a onclick="showResetModal({{ score[0] }})">(reset)</a></td>
+                    {% end %}
+                  {% else %}
+                    <td>Not started</td>
+                  {% end %}
+                {% end %}
                 </tr>
               {% end %}    
             </tbody>

@@ -55,6 +55,7 @@ def make_app():
         url(r"\/remove_instructor\/([^\/]+)\/([^\/]+)", RemoveInstructorHandler, name="remove_instructor"),
         url(r"\/remove_assistant\/([^\/]+)\/([^\/]+)", RemoveAssistantHandler, name="remove_assistant"),
         url(r"\/manage_users\/([^\/]+)", ManageUsersHandler, name="manage_users"),
+        url(r"\/reset_timer\/([^\/]+)\/([^\/]+)\/([^\/]+)", ResetTimerHandler, name="reset_timer"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
         url(r"\/download_all_scores\/([^\/]+)", DownloadAllScoresHandler, name="download_all_scores"),
@@ -420,7 +421,7 @@ class AssignmentHandler(BaseUserHandler):
                 elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
                     self.render("date.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"))
                 else:
-                    self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, start_time=start_time, user_id=user_id, user_logged_in=user_logged_in_var.get(), role=role)
+                    self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, start_time=start_time, user_id=user_id, user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
                 
             except Exception as inst:
                 render_error(self, traceback.format_exc())
@@ -431,7 +432,7 @@ class AssignmentHandler(BaseUserHandler):
             start_time = self.get_body_argument("start_time")
             content.set_start_time(course, assignment, user_id, start_time)
 
-            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_start_time(course, assignment, user_id), user_id=user_id, user_logged_in=user_logged_in_var.get())
+            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_start_time(course, assignment, user_id), user_id=user_id, user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1095,6 +1096,18 @@ class ManageUsersHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+class ResetTimerHandler(BaseUserHandler):
+    async def post(self, course, assignment, user):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor" or role == "assistant":
+                content.reset_timer(course, assignment, user)
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+
+        except Exception as inst:
+            self.write(traceback.format_exc())
+
 
 class ViewScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
@@ -1105,7 +1118,7 @@ class ViewScoresHandler(BaseUserHandler):
                 assignment_title = assignment_basics["title"].replace(" ", "_")
                 out_file = f"{assignment_title}.csv"
 
-                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), out_file=out_file, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
+                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment), problems=content.get_problems(course, assignment), scores=content.get_assignment_scores(course, assignment), start_times=content.get_all_start_times(course, assignment), curr_datetime=datetime.datetime.now(), out_file=out_file, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
             else:
                 self.render("permissions.html", user_logged_in=user_logged_in_var.get())
         except Exception as inst:

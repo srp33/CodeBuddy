@@ -174,6 +174,23 @@ class Content:
         if row:
             return row["start_time"].strftime("%a, %d %b %Y %H:%M:%S %Z")
 
+    def get_all_start_times(self, course_id, assignment_id):
+        start_times = {}
+
+        sql = '''SELECT user_id, start_time
+                 FROM user_assignment_start
+                 WHERE course_id = ?
+                  AND assignment_id = ?'''
+
+        self.cursor.execute(sql, (course_id, assignment_id,))
+        for row in self.cursor.fetchall():
+            start_time = datetime.strftime(row["start_time"], "%a, %d %b %Y %H:%M:%S ")
+            timer_ended = self.timer_ended(course_id, assignment_id, start_time)
+            time_info = {"start_time": row["start_time"], "timer_ended": timer_ended}
+            start_times[row["user_id"]] = time_info
+
+        return start_times
+
     def timer_ended(self, course_id, assignment_id, start_time):
         curr_time = datetime.now()
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ") 
@@ -200,6 +217,14 @@ class Content:
                 return True
 
         return False
+
+    def reset_timer(self, course_id, assignment_id, user_id):
+        sql = '''DELETE FROM user_assignment_start
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND user_id = ?'''
+
+        self.cursor.execute(sql, (course_id, assignment_id, user_id))
 
     def check_user_exists(self, user_id):
         sql = '''SELECT user_id
