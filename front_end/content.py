@@ -35,6 +35,11 @@ class Content:
     def create_sqlite_tables(self):
         create_users_table = '''CREATE TABLE IF NOT EXISTS users (
                                   user_id text PRIMARY KEY,
+                                  name text,
+                                  given_name text,
+                                  family_name text,
+                                  picture text,
+                                  locale text,
                                   user_json text
                                 );'''
 
@@ -274,10 +279,11 @@ class Content:
         return row["course_id"]
 
     def add_user(self, user_id, user_dict):
-        sql = '''INSERT INTO users (user_id, user_json)
-                 VALUES (?, ?)'''
+        sql = '''INSERT INTO users (user_id, name, given_name, family_name, picture, locale, user_json)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
-        self.cursor.execute(sql, (user_id, json.dumps(user_dict)))
+        self.cursor.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"],
+        user_dict["picture"], user_dict["locale"], json.dumps(user_dict)))
 
     def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role
