@@ -285,6 +285,17 @@ class Content:
         self.cursor.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"],
         user_dict["picture"], user_dict["locale"], json.dumps(user_dict)))
 
+    def get_user_info(self, user_id):
+        sql = '''SELECT *
+                 FROM users
+                 WHERE user_id = ?'''
+        
+        self.cursor.execute(sql, (user_id,))
+        user = self.cursor.fetchone()
+        user_info = {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
+                     "picture": user["picture"], "locale": user["locale"]}
+        return user_info
+
     def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role
                  FROM permissions
