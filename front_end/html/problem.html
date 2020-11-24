@@ -2,73 +2,8 @@
     {% if assignment_basics["exists"] %}
         {% if problem_basics["exists"] %}
 
-          <style>
-            #clockdiv{
-              font-family: sans-serif;
-              color: #fff;
-              display: inline-block;
-              font-weight: 100;
-              text-align: center;
-              font-size: 30px;
-            }
-    
-            #clockdiv > div{
-              padding: 10px;
-              border-radius: 3px;
-              background: #00BF96;
-              display: inline-block;
-            }
-    
-            #clockdiv div > span{
-              padding: 15px;
-              border-radius: 3px;
-              background: #00816A;
-              display: inline-block;
-            }
-    
-            .smalltext{
-              padding-top: 5px;
-              font-size: 16px;
-            }
-
-            .modal {
-              display: none; /* Hidden by default */
-              position: fixed; /* Stay in place */
-              z-index: 1; /* Sit on top */
-              padding-top: 100px; /* Location of the box */
-              left: 0;
-              top: 0;
-              width: 100%; /* Full width */
-              height: 100%; /* Full height */
-              overflow: auto; /* Enable scroll if needed */
-              background-color: rgb(0,0,0); /* Fallback color */
-              background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-            }
-
-            /* Modal Content/Box */
-            .modal-content {
-              background-color: #fefefe;
-              margin: 15% auto; /* 15% from the top and centered */
-              padding: 20px;
-              border: 1px solid #888;
-              width: 80%; /* Could be more or less, depending on screen size */
-            }
-
-            /* The Close Button */
-            .close {
-              color: #aaa;
-              float: right;
-              font-size: 28px;
-              font-weight: bold;
-            }
-
-            .close:hover,
-            .close:focus {
-              color: black;
-              text-decoration: none;
-              cursor: pointer;
-            }
-          </style>
+        <link rel="stylesheet" href="/static/modal.css">
+        <link rel="stylesheet" href="/static/timer.css">
     
           <script>         
             function startTimer() {
