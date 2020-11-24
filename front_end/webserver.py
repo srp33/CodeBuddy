@@ -28,6 +28,8 @@ def make_app():
     app = Application([
         url(r"/", HomeHandler),
         url(r"\/initialize", InitializeHandler, name="initialize"),
+        url(r"\/profile\/personal_info\/([^\/]+)", PersonalInfoHandler, name="personal_info"),
+        url(r"\/profile\/preferences\/([^\/]+)", PreferencesHandler, name="preferences"),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
         url(r"\/delete_course\/([^\/]+)?", DeleteCourseHandler, name="delete_course"),
@@ -145,6 +147,20 @@ class InitializeHandler(BaseUserHandler):
             else:
                 content.add_admin_permissions(self.get_current_user())
                 self.render("initialize.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class PersonalInfoHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            self.render("personal_info.html", page="personal_info", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class PreferencesHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            self.render("preferences.html", page="preferences", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
