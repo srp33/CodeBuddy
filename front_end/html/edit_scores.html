@@ -35,7 +35,7 @@
                 <td>{{ problem[1]["title"] }}</td>
               {% end %}
               <td>{{ problem[1]["num_submissions"] }}</td>
-              <td><input id="{{ problem[1]["id"] }}" name="{{ problem[1]["id"] }}" type="text" datainput value="{{ round(problem[1]["score"]) }}"></td>
+              <td><input class="input is-medium is-link" style="width: 50px;" id="{{ problem[1]["id"] }}" name="{{ problem[1]["id"] }}" type="text" datainput value="{{ round(problem[1]["score"]) }}"></td>
               </tr>
             {% end %}    
           </tbody>
