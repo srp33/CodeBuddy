@@ -375,17 +375,20 @@ class Content:
     def get_assignments(self, course_id, show_hidden=True):
         assignments = []
 
-        sql = '''SELECT assignment_id, title, visible, start_date, due_date
-                 FROM assignments
-                 WHERE course_id = ?
-                 ORDER BY title'''
+        sql = '''SELECT c.course_id, c.title as course_title, c.visible as course_visible, a.assignment_id,
+                        a.title as assignment_title, a.visible as assignment_visible, a.start_date, a.due_date
+                 FROM assignments a
+                 INNER JOIN courses c
+                  ON c.course_id = a.course_id
+                 WHERE c.course_id = ?
+                 ORDER BY a.title'''
         self.cursor.execute(sql, (course_id,))
 
-        for assignment in self.cursor.fetchall():
-            if assignment["visible"] or show_hidden:
-                course_basics = self.get_course_basics(course_id)
-                assignment_basics = {"id": assignment["assignment_id"], "title": assignment["title"], "visible": assignment["visible"], "start_date": assignment["start_date"], "due_date": assignment["due_date"], "exists": False, "course": course_basics}
-                assignments.append([assignment["assignment_id"], assignment_basics])
+        for row in self.cursor.fetchall():
+            if row["assignment_visible"] or show_hidden:
+                course_basics = {"id": row["course_id"], "title": row["course_title"], "visible": bool(row["course_visible"]), "exists": True}
+                assignment_basics = {"id": row["assignment_id"], "title": row["assignment_title"], "visible": row["assignment_visible"], "start_date": row["start_date"], "due_date": row["due_date"], "exists": False, "course": course_basics}
+                assignments.append([row["assignment_id"], assignment_basics])
 
         return assignments
 
