@@ -38,7 +38,7 @@ cat header.html navbar_top.html navbar_bottom.html container_top.html summarize_
 cat header.html navbar_top.html navbar_bottom.html container_top.html initialize.html container_bottom.html footer.html > /app/initialize.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html error.html container_bottom.html footer.html > /app/error.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html permissions.html container_bottom.html footer.html > /app/permissions.html
-cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_bottom.html container_top.html date.html container_bottom.html footer.html > /app/date.html
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_bottom.html container_top.html unavailable_assignment.html container_bottom.html footer.html > /app/unavailable_assignment.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html timer_error.html container_bottom.html footer.html > /app/timer_error.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html manage_users.html container_bottom.html footer.html > /app/manage_users.html
 
