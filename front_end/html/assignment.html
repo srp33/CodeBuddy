@@ -69,7 +69,7 @@
               secondsSpan.innerHTML = 0;
             }
           }
-      
+          
           updateClock(); // run function once at first to avoid delay
           var timeinterval = setInterval(updateClock,1000);
         }
@@ -113,8 +113,8 @@
         <tbody>
           {% for problem in problem_statuses %}
             <tr>
-              {% if assignment_details["has_timer"] and start_time == 0 %}
-                  <td><a>{{ problem[1]["title"] }}</a></td>
+              {% if assignment_details["has_timer"] and not start_time and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
+                  <td>{{ problem[1]["title"] }}</td>
               {% else %}
                   <td><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
               {% end %}
