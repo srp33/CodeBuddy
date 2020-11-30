@@ -163,7 +163,7 @@
     <select id="hour_select" name="hour_select" style="display: inline;">
       {% for hour in hour_options %}
         <option
-          {% if str(hour) == assignment_details["hour_timer"] %}
+          {% if hour == assignment_details["hour_timer"] %}
             selected
           {% end %}
         >{{ hour }}</option>
@@ -173,7 +173,7 @@
     <select id="minute_select" name="minute_select" style="display: inline;">
       {% for minute in minute_options %}
         <option
-          {% if str(minute) == assignment_details["minute_timer"] %}
+          {% if minute == assignment_details["minute_timer"] %}
             selected
           {% end %}
         >{{ minute }}</option>

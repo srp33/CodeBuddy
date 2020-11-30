@@ -63,7 +63,9 @@
                   minutesSpan.innerHTML = 0;
                   secondsSpan.innerHTML = 0;
 
-                  window.location.replace("/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}");
+                  {% if not (assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime) %}
+                    window.location.replace("/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}");
+                  {% end %}
                 }
               }
           

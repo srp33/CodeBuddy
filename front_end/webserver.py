@@ -493,8 +493,8 @@ class EditAssignmentHandler(BaseUserHandler):
                 view_answer_late = False
 
             if assignment_details["has_timer"]:
-                hour_timer = self.get_body_argument("hour_select")
-                minute_timer = self.get_body_argument("minute_select")
+                hour_timer = int(self.get_body_argument("hour_select"))
+                minute_timer = int(self.get_body_argument("minute_select"))
             else:
                 hour_timer = None
                 minute_timer = None
@@ -1109,7 +1109,6 @@ class ResetTimerHandler(BaseUserHandler):
 
         except Exception as inst:
             self.write(traceback.format_exc())
-
 
 class ViewScoresHandler(BaseUserHandler):
     def get(self, course, assignment):

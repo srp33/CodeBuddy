@@ -192,6 +192,9 @@ class Content:
         return start_times
 
     def timer_ended(self, course_id, assignment_id, start_time):
+        if not start_time:
+            return False
+            
         curr_time = datetime.now()
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ") 
 
