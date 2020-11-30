@@ -1,0 +1,19 @@
+<h3>Register for a course</h3>
+
+{% if result %}
+  {% if result.startswith("Error:") %}
+    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+  {% else %}
+    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+  {% end %}
+{% end %}
+
+{% if not result %}
+    <form method="post" action="/register/{{ user_info['user_id'] }}">
+
+    <p>Please enter a course ID:</p>
+    <input class="input is-medium is-link" type="text" id="course_id" name="course_id">
+    <p><input type="submit" class="button is-primary is-small is-rounded" value="Confirm" style="margin-top: 10px;"/></p>
+
+    </form>
+{% end %}

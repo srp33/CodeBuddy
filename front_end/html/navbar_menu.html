@@ -11,11 +11,6 @@
             <div class="navbar-end">
               <div class="navbar-item has-dropdown is-hoverable">
                   {% if user_logged_in %}
-                    {% if user_info["picture"] %}
-                      <img src="{{ user_info['picture'] }}" alt="Profile Photo" style="border-radius: 50%; margin-right: 10px;" height="32" width="32"/>
-                    {% else %}
-                      <img src="https://icon-library.com/images/default-profile-icon/default-profile-icon-16.jpg" alt="Profile Photo" style="border-radius: 50%; margin-right: 10px;" height="32" width="32"/>
-                    {% end %}
                     <span>{{ user_info["given_name"] }}</span>
                     <div class="navbar-dropdown">
                         <a class="navbar-item" href="/profile/personal_info/{{ user_info['user_id'] }}">View Profile</a>

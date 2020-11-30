@@ -39,8 +39,7 @@ class Content:
                                   given_name text,
                                   family_name text,
                                   picture text,
-                                  locale text,
-                                  user_json text
+                                  locale text
                                 );'''
 
         create_permissions_table = '''CREATE TABLE IF NOT EXISTS permissions (
@@ -48,7 +47,6 @@ class Content:
                                         role text NOT NULL,
                                         course_id integer,
                                         FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                                        PRIMARY KEY (user_id)
                                       );'''
 
         create_courses_table = '''CREATE TABLE IF NOT EXISTS courses (
@@ -285,6 +283,12 @@ class Content:
         self.cursor.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"],
         user_dict["picture"], user_dict["locale"], json.dumps(user_dict)))
 
+    def register_user_for_course(self, course_id, user_id):
+        sql = '''INSERT INTO permissions (user_id, role, course_id)
+                 VALUES (?, ?, ?)'''
+
+        self.cursor.execute(sql, (user_id, "student", course_id,))
+
     def get_user_info(self, user_id):
         sql = '''SELECT *
                  FROM users
@@ -343,6 +347,24 @@ class Content:
 
         self.cursor.execute(sql)
         return self.cursor.fetchone()["count"]
+
+    def check_course_exists(self, course_id):
+        sql = '''SELECT COUNT(*) AS count
+                 FROM courses
+                 WHERE course_id = ?'''
+        self.cursor.execute(sql, (course_id,))
+        if self.cursor.fetchone():
+            return True
+        else:
+            return False
+
+    def get_course_title_from_id(self, course_id):
+        sql = '''SELECT title
+                 FROM courses
+                 WHERE course_id = ?'''
+        self.cursor.execute(sql, (course_id,))
+        course = self.cursor.fetchone()
+        return course["title"]
 
     def get_course_ids(self):
         sql = '''SELECT course_id
@@ -423,6 +445,23 @@ class Content:
                 problems.append([problem["problem_id"], problem_basics, course_id, assignment_id])
 
         return problems
+
+    def get_registered_courses(self, user_id):
+        registered_courses = []
+
+        sql = '''SELECT p.course_id, c.title
+                 FROM permissions p
+                 INNER JOIN courses c
+                  ON p.course_id = c.course_id
+                 WHERE p.user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
+
+        for course in self.cursor.fetchall():
+            course_basics = {"id": course["course_id"], "title": course["title"]}
+            registered_courses.append([course["course_id"], course_basics])
+        
+        return registered_courses
 
     # Gets whether or not a student has passed each assignment in the course.
     def get_assignment_statuses(self, course_id, user_id):

@@ -1,0 +1,18 @@
+        <h3>Registered Courses</h3>
+        {% if registered_courses %}
+            <ul>
+                {% for course in registered_courses %}
+                    <li>
+                        <a href="/course/{{ course[1]['course_id'] }}">{{ course[1]["title"] }}</a>
+                    </li>
+                {% end %}
+            </ul>
+        {% else %}
+            <p>No current courses</p>
+        {% end %}
+        <br/>
+
+        <a class="button is-medium is-link is-rounded" href="/register/{{ user_info['user_id'] }}">Register for a course</a>
+
+    </div>
+</div>

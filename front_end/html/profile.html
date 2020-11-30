@@ -5,17 +5,22 @@
               General
             </p>
             <ul class="menu-list">
-              <li><a 
+              <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
                 {% if page == "personal_info" %}
                     class="is-active"
                 {% end %}
                 >Personal info</a></li>
+              <li><a href="/profile/courses/{{ user_info['user_id'] }}"
+                {% if page == "courses" %}
+                    class="is-active"
+                {% end %}
+                >Courses</a></li>
             </ul>
             <p class="menu-label">
               Settings
             </p>
             <ul class="menu-list">
-              <li><a
+              <li><a href="/profile/preferences/{{ user_info['user_id'] }}"
                 {% if page == "preferences" %}
                     class="is-active"
                 {% end %}
@@ -26,5 +31,3 @@
     <div class="column is-three-quarters" style="text-align: center;">
         <img src="{{ user_info['picture'] }}" alt="Profile Photo" style="border-radius: 50%; display: inline-block; vertical-align: middle; margin: 10px;"/>
         <span style="font-size: larger;"><b>{{ user_info["name"] }}</b></span>
-    </div>
-</div>

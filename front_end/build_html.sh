@@ -6,8 +6,10 @@ cd /tmp
 
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html home.html container_bottom.html footer.html > /app/home.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html devlogin.html container_bottom.html footer.html > /app/devlogin.html
-cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html profile.html personal_info.html container_bottom.html footer.html > /app/personal_info.html
-cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html profile.html preferences.html container_bottom.html footer.html > /app/preferences.html
+cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html profile.html profile_personal_info.html container_bottom.html footer.html > /app/profile_personal_info.html
+cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html profile.html profile_courses.html container_bottom.html footer.html > /app/profile_courses.html
+cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html profile.html profile_preferences.html container_bottom.html footer.html > /app/profile_preferences.html
+cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html register.html container_bottom.html footer.html > /app/register.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html course.html container_bottom.html footer.html > /app/course.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html course_admin.html container_bottom.html footer.html > /app/course_admin.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html edit_course.html container_bottom.html footer.html > /app/edit_course.html

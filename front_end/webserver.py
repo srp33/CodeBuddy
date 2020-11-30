@@ -28,8 +28,10 @@ def make_app():
     app = Application([
         url(r"/", HomeHandler),
         url(r"\/initialize", InitializeHandler, name="initialize"),
-        url(r"\/profile\/personal_info\/([^\/]+)", PersonalInfoHandler, name="personal_info"),
-        url(r"\/profile\/preferences\/([^\/]+)", PreferencesHandler, name="preferences"),
+        url(r"\/profile\/personal_info\/([^\/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
+        url(r"\/profile\/courses\/([^\/]+)", ProfileCoursesHandler, name="profile_courses"),
+        url(r"\/profile\/preferences\/([^\/]+)", ProfilePreferencesHandler, name="profile_preferences"),
+        url(r"\/register\/([^\/]+)", RegisterHandler, name="register"),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
         url(r"\/delete_course\/([^\/]+)?", DeleteCourseHandler, name="delete_course"),
@@ -150,19 +152,47 @@ class InitializeHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class PersonalInfoHandler(BaseUserHandler):
+class ProfilePersonalInfoHandler(BaseUserHandler):
     def get(self, user_id):
         try:
-            self.render("personal_info.html", page="personal_info", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+            self.render("profile_personal_info.html", page="personal_info", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class PreferencesHandler(BaseUserHandler):
+class ProfileCoursesHandler(BaseUserHandler):
     def get(self, user_id):
         try:
-            self.render("preferences.html", page="preferences", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+            self.render("profile_courses.html", page="courses", registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())            
+
+class ProfilePreferencesHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            self.render("profile_preferences.html", page="preferences", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+class RegisterHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            self.render("register.html", result=None, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())   
+    def post(self, user_id):
+        try:
+            course_id = self.get_body_argument("course_id")
+            result = ""
+            if (content.check_course_exists(course_id)):
+                content.register_user_for_course(course_id, user_id)
+                course_title = content.get_course_title_from_id(course_id)
+                result = f"Success: You're now registered for {course_title}"
+            else:
+                result = "Error: A course with that ID was not found"
+            
+            self.render("register.html", result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())         
 
 class CourseHandler(BaseUserHandler):
     def get(self, course):
