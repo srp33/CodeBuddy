@@ -4,9 +4,105 @@
   {% if assignment_basics["exists"] %}
     <p>{{ assignment_details["introduction"] }}</p>
 
+    {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
+      <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer code.</div>
+    {% end %}
+    {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
+      <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>  
+    {% end %}
+
     {% if len(problem_statuses) > 0 %}
 
-      <table class="table" id="assignment_table">
+    <link rel="stylesheet" href="/static/timer.css">
+
+      <script>
+        function showTimer() {
+          var timer_div = document.getElementById("clockdiv");
+          timer_div.style.display = "inline";
+        }
+      
+        function startTimer() {
+          var start_time_js = new Date();
+          {% if start_time %}
+            start_time_js = new Date("{{ start_time }}");
+          {% end %}
+
+          document.getElementById("start_time").innerHTML = start_time_js.toUTCString();
+          start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
+          var deadline = start_time_js;
+          deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
+          deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
+          showTimer();
+          initializeClock('clockdiv', deadline);
+        }
+      
+        function getTimeRemaining(endtime){
+          const total = Date.parse(endtime) - Date.parse(new Date());
+          const seconds = Math.floor( (total/1000) % 60 );
+          const minutes = Math.floor( (total/1000/60) % 60 );
+          const hours = Math.floor( (total/(1000*60*60)) % 24 );
+      
+          return {
+            total,
+            hours,
+            minutes,
+            seconds
+          };
+        }
+      
+        function initializeClock(id, endtime) {
+          const clock = document.getElementById(id);
+          const hoursSpan = clock.querySelector('.hours');
+          const minutesSpan = clock.querySelector('.minutes');
+          const secondsSpan = clock.querySelector('.seconds');
+      
+          function updateClock(){
+            const t = getTimeRemaining(endtime);
+            hoursSpan.innerHTML = t.hours;
+            minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+            secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+      
+            if (t.total <= 0) {
+              clearInterval(timeinterval);
+              hoursSpan.innerHTML = 0;
+              minutesSpan.innerHTML = 0;
+              secondsSpan.innerHTML = 0;
+            }
+          }
+          
+          updateClock(); // run function once at first to avoid delay
+          var timeinterval = setInterval(updateClock,1000);
+        }
+      </script>
+
+      <form method="post" action="/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}" />
+      <div id="clockdiv" style="display: none;">
+        <div>
+          <span class="hours"></span>
+          <div class="smalltext">Hours</div>
+        </div>
+        <div>
+          <span class="minutes"></span>
+          <div class="smalltext">Minutes</div>
+        </div>
+        <div>
+          <span class="seconds"></span>
+          <div class="smalltext">Seconds</div>
+        </div>
+      </div>
+
+      <textarea name="start_time" id="start_time" style="display:none;"></textarea>
+
+      {% if assignment_details["has_timer"] %}
+        {% if not start_time %}
+          <button class="button is-link is-medium is-rounded" onclick="startTimer()" style="margin-bottom: 20px;" type="submit">Begin Assignment</button>    
+        {% else %}
+          <script>startTimer();</script>
+        {% end %}
+ 
+      {% end %}
+
+      <table class="table" id="assignment_table" style="margin-top: 30px;">
         <thead>
           <tr>
             <th>Problem</th>
@@ -17,7 +113,11 @@
         <tbody>
           {% for problem in problem_statuses %}
             <tr>
-              <td><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
+              {% if assignment_details["has_timer"] and not start_time and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
+                  <td>{{ problem[1]["title"] }}</td>
+              {% else %}
+                  <td><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
+              {% end %}
               <td>{{ problem[1]["num_submissions"] }}</td>
               {% if problem[1]["passed"] %}
                 <td><label>
@@ -38,6 +138,9 @@
           {% end %} 
         </tbody>
       </table>
+
+      </form> 
+
     {% end %}
 
   {% else %}

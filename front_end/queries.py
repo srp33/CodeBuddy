@@ -60,16 +60,16 @@ def assignment_summary_course(course_id):
                FROM ({visible_assignments_course(course_id)}) a, const
                LEFT JOIN
                (
-                 SELECT assignment_id, SUM(percent_passed = 100.0) AS num_passed, SUM(percent_passed) AS total_percent
+                 SELECT assignment_id, SUM(percent_passed > 0) AS num_passed, SUM(percent_passed) AS total_percent
                  FROM
                  (
-                   SELECT ups.assignment_id, ups.user_id, SUM(ups.passed) * 100.0 / nvp.problem_count AS percent_passed
+                   SELECT sc.assignment_id, sc.user_id, SUM(sc.score) / nvp.problem_count AS percent_passed
                    FROM ({students_course(course_id)}) st
-                   LEFT JOIN ({user_problem_status_course(course_id)}) ups
-                     ON st.user_id = ups.user_id
+                   LEFT JOIN scores sc
+                     ON st.user_id = sc.user_id
                    INNER JOIN ({num_visible_problems_course(course_id)}) nvp
-                     ON ups.assignment_id = nvp.assignment_id
-                   GROUP BY ups.assignment_id, ups.user_id
+                     ON sc.assignment_id = nvp.assignment_id
+                   GROUP BY sc.assignment_id, sc.user_id
                  )
                GROUP BY assignment_id
                ) b
