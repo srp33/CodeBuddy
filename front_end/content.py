@@ -46,14 +46,22 @@ class Content:
                                         user_id text NOT NULL,
                                         role text NOT NULL,
                                         course_id integer,
-                                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
                                       );'''
+
+        create_course_registration_table = '''CREATE TABLE IF NOT EXISTS course_registration (
+                                                 user_id text NOT NULL,
+                                                 course_id integer NOT NULL,
+                                                 FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                                 FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
+                                              );'''
 
         create_courses_table = '''CREATE TABLE IF NOT EXISTS courses (
                                     course_id integer PRIMARY KEY AUTOINCREMENT,
                                     title text NOT NULL UNIQUE,
                                     introduction text,
                                     visible integer NOT NULL,
+                                    passcode text,
                                     date_created timestamp NOT NULL,
                                     date_updated timestamp NOT NULL
                                   );'''
@@ -81,7 +89,7 @@ class Content:
                                      course_id integer NOT NULL,
                                      assignment_id integer NOT NULL,
                                      problem_id integer PRIMARY KEY AUTOINCREMENT,
-                                     title text NOT NULL UNIQUE,
+                                     title text NOT NULL,
                                      visible integer NOT NULL,
                                      answer_code text NOT NULL,
                                      answer_description text,
@@ -149,6 +157,7 @@ class Content:
         if self.conn is not None:
             self.cursor.execute(create_users_table)
             self.cursor.execute(create_permissions_table)
+            self.cursor.execute(create_course_registration_table)
             self.cursor.execute(create_courses_table)
             self.cursor.execute(create_assignments_table)
             self.cursor.execute(create_problems_table)
@@ -156,6 +165,11 @@ class Content:
             self.cursor.execute(create_user_assignment_start_table)
         else:
             print("Error! Cannot create a database connection.")
+
+    def add_column(self):
+        sql = '''ALTER TABLE courses
+                 ADD COLUMN passcode text'''
+        self.cursor.execute(sql)
 
     def set_start_time(self, course_id, assignment_id, user_id, start_time):
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
@@ -284,10 +298,22 @@ class Content:
         user_dict["picture"], user_dict["locale"], json.dumps(user_dict)))
 
     def register_user_for_course(self, course_id, user_id):
-        sql = '''INSERT INTO permissions (user_id, role, course_id)
-                 VALUES (?, ?, ?)'''
+        sql = '''INSERT INTO course_registration (course_id, user_id)
+                 VALUES (?, ?)'''
 
-        self.cursor.execute(sql, (user_id, "student", course_id,))
+        self.cursor.execute(sql, (course_id, user_id,))
+
+    def check_user_registered(self, course_id, user_id):
+        sql = '''SELECT *
+                 FROM course_registration
+                 WHERE course_id = ?
+                 AND user_id = ?'''
+
+        self.cursor.execute(sql, (course_id, user_id,))
+        if self.cursor.fetchone():
+            return True
+
+        return False
 
     def get_user_info(self, user_id):
         sql = '''SELECT *
@@ -358,13 +384,24 @@ class Content:
         else:
             return False
 
-    def get_course_title_from_id(self, course_id):
-        sql = '''SELECT title
+    def get_course_id_from_title(self, course_title):
+        sql = '''SELECT course_id
+                 FROM courses
+                 WHERE title = ?'''
+        self.cursor.execute(sql, (course_title,))
+        course = self.cursor.fetchone()
+        return course["course_id"]
+
+    def get_course_passcode(self, course_id):
+        sql = '''SELECT passcode
                  FROM courses
                  WHERE course_id = ?'''
         self.cursor.execute(sql, (course_id,))
         course = self.cursor.fetchone()
-        return course["title"]
+        if course:
+            return course["passcode"]
+        else:
+            return None
 
     def get_course_ids(self):
         sql = '''SELECT course_id
@@ -449,11 +486,11 @@ class Content:
     def get_registered_courses(self, user_id):
         registered_courses = []
 
-        sql = '''SELECT p.course_id, c.title
-                 FROM permissions p
+        sql = '''SELECT r.course_id, c.title
+                 FROM course_registration r
                  INNER JOIN courses c
-                  ON p.course_id = c.course_id
-                 WHERE p.user_id = ?'''
+                  ON r.course_id = c.course_id
+                 WHERE r.user_id = ?'''
 
         self.cursor.execute(sql, (user_id,))
 
@@ -956,6 +993,12 @@ class Content:
             if entry[0] != this_entry and entry[1]["title"] == proposed_title:
                 return True
         return False
+
+    def save_course_passcode(self, course_id, passcode):
+        sql = '''UPDATE courses
+                    SET passcode = ?
+                    WHERE course_id = ?'''
+        self.cursor.execute(sql, (passcode, course_id,))
 
     def save_course(self, course_basics, course_details):
         if course_basics["exists"]:
