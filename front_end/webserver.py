@@ -28,8 +28,9 @@ def make_app():
     app = Application([
         url(r"/", HomeHandler),
         url(r"\/initialize", InitializeHandler, name="initialize"),
-        url(r"\/profile\/personal_info\/([^\/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
         url(r"\/profile\/courses\/([^\/]+)", ProfileCoursesHandler, name="profile_courses"),
+        url(r"\/profile\/admin\/([^\/]+)", ProfileAdminHandler, name="profile_admin"),
+        url(r"\/profile\/personal_info\/([^\/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
         url(r"\/profile\/preferences\/([^\/]+)", ProfilePreferencesHandler, name="profile_preferences"),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
@@ -151,41 +152,57 @@ class InitializeHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class ProfilePersonalInfoHandler(BaseUserHandler):
-    def get(self, user_id):
-        try:
-            self.render("profile_personal_info.html", page="personal_info", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
 class ProfileCoursesHandler(BaseUserHandler):
     def get(self, user_id):
         try:
-            self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+            self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
     def post(self, user_id):
         try:
             course_title = self.get_body_argument("course_select")
+            passcode = self.get_body_argument("passcode")
+
             course_id = content.get_course_id_from_title(course_title)
+            course_passcode = content.get_course_passcode(course_id) 
             result = ""
-            if (content.check_course_exists(course_id)):
-                if (content.check_user_registered(course_id, user_id)):
-                    result = f"Error: You are already registered for {course_title}"
+
+            if (course_passcode == None or course_passcode == passcode):
+                if (content.check_course_exists(course_id)):
+                    if (content.check_user_registered(course_id, user_id)):
+                        result = f"Error: You are already registered for {course_title}"
+                    else:
+                        content.register_user_for_course(course_id, user_id)
+                        result = f"Success: You're now registered for {course_title}"
                 else:
-                    content.register_user_for_course(course_id, user_id)
-                    result = f"Success: You're now registered for {course_title}"
+                    result = "Error: A course with that ID was not found"
+            elif passcode == "":
+                result = "Error: Please enter a passcode"
             else:
-                result = "Error: A course with that ID was not found"
+                result = "Error: Incorrect passcode"
 
             self.render("profile_courses.html", page="courses", result=result, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
-            render_error(self, traceback.format_exc())   
+            render_error(self, traceback.format_exc())  
+
+class ProfileAdminHandler(BaseUserHandler):
+    def get (self, user_id):
+        try:
+            self.render("profile_admin.html", page="admin", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+        except Exception as inst:
+            render_error(self, traceback.format_exc()) 
+
+class ProfilePersonalInfoHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            self.render("profile_personal_info.html", page="personal_info", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+        except Exception as inst:
+            render_error(self, traceback.format_exc()) 
 
 class ProfilePreferencesHandler(BaseUserHandler):
     def get(self, user_id):
         try:
-            self.render("profile_preferences.html", page="preferences", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+            self.render("profile_preferences.html", page="preferences", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())         
 
@@ -212,7 +229,7 @@ class EditCourseHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor":
-                self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course), result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+                self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course), passcode=content.get_course_passcode(course), result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -231,6 +248,10 @@ class EditCourseHandler(BaseUserHandler):
             course_basics["title"] = self.get_body_argument("title").strip()
             course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             course_details["introduction"] = self.get_body_argument("introduction").strip()
+            passcode = self.get_body_argument("passcode").strip()
+
+            if passcode == "":
+                passcode = None
 
             result = "Success: Course information saved!"
 
@@ -249,8 +270,10 @@ class EditCourseHandler(BaseUserHandler):
                         #content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
                         content.specify_course_details(course_details, course_details["introduction"], None, datetime.datetime.now())
                         course = content.save_course(course_basics, course_details)
+                        if passcode != None:
+                            content.save_course_passcode(course, passcode)
 
-            self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+            self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=course_basics, course_details=course_details, passcode=passcode, result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1371,6 +1394,8 @@ class DevelopmentLoginHandler(RequestHandler):
                     # Add static information for test user.
                     user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
                     content.add_user(user_id, user_dict)
+
+                #content.add_column()
                     
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
 

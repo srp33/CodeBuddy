@@ -1,18 +1,159 @@
-        <h3>Registered Courses</h3>
-        {% if registered_courses %}
-            <ul>
-                {% for course in registered_courses %}
-                    <li>
-                        <a href="/course/{{ course[1]['course_id'] }}">{{ course[1]["title"] }}</a>
-                    </li>
-                {% end %}
-            </ul>
-        {% else %}
-            <p>No current courses</p>
-        {% end %}
-        <br/>
+        <!--<div class="buttons has-addons is-centered" style="margin: 10px;">
+            <a class="button is-normal is-primary is-rounded" id="current" onclick="clickCurrent()">Current Courses</a>
+            <a class="button is-normal is-primary is-light is-rounded" id="past" onclick="clickPast()">Past Courses</a>
+        </div>-->
+        <style>
+            .modal {
+              display: none; /* Hidden by default */
+              position: fixed; /* Stay in place */
+              z-index: 1; /* Sit on top */
+              padding-top: 100px; /* Location of the box */
+              left: 0;
+              top: 0;
+              width: 100%; /* Full width */
+              height: 100%; /* Full height */
+              overflow: auto; /* Enable scroll if needed */
+              background-color: rgb(0,0,0); /* Fallback color */
+              background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            }
+      
+            /* Modal Content/Box */
+            .modal-content {
+              background-color: #fefefe;
+              margin: 15% auto; /* 15% from the top and centered */
+              padding: 20px;
+              border: 1px solid #888;
+              width: 80%; /* Could be more or less, depending on screen size */
+            }
+      
+            /* The Close Button */
+            .close {
+              color: #aaa;
+              float: right;
+              font-size: 28px;
+              font-weight: bold;
+            }
+      
+            .close:hover,
+            .close:focus {
+              color: black;
+              text-decoration: none;
+              cursor: pointer;
+            }
+        </style>
 
-        <a class="button is-medium is-link is-rounded" href="/register/{{ user_info['user_id'] }}">Register for a course</a>
+        <form method="post" action="/profile/courses/{{ user_info['user_id'] }}">
+
+        <div id="register_modal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <p>Please enter the passcode for this course:</p>
+              <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
+              <p class="buttons">
+                <button id="cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
+                <input type="submit" id="register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
+              </p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h3>Registered Courses</h3>
+            {% if registered_courses %}
+                <ul style="list-style-position: inside;">
+                    {% for course in registered_courses %}
+                        <li>
+                            <a href="/course/{{ course[1]['id'] }}">{{ course[1]["title"] }}</a>
+                        </li>
+                    {% end %}
+                </ul>
+            {% else %}
+                <p>No current courses</p>
+            {% end %}
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <a class="button is-normal is-link is-rounded" style="margin-top: 50px;" onclick="showRegistration()">Register for a course</a>
+        </div>
+
+        <div id="register_div"
+          {% if not result %}
+            style="display: none;">
+          {% else %}
+            >
+          {% end %}
+            {% if result %}
+                {% if result.startswith("Error:") %}
+                    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+                {% else %}
+                    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+                {% end %}
+            {% end %}
+
+            <label class="label">Select a course:</label>
+            <div class="select is-info is-medium">
+              <select id="course_select" name="course_select" onchange="showRegisterModal()">
+                <option selected disabled>Course</option>
+                {% for course in courses %}
+                  <option>{{ course[1]["title"] }}</option>
+                {% end %}
+              </select>
+            </div>
+
+            </form>
+        </div>
 
     </div>
 </div>
+
+<script>
+    function showRegistration() {
+        var div = document.getElementById("register_div");
+        div.style.display = "inline";
+    }
+
+    function showRegisterModal() {
+        var modal = document.getElementById("register_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("cancel_button");
+        var registerButton = document.getElementById("register_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+
+    /*function clickCurrent() {
+        var currButton = document.getElementById("current");
+        var pastButton = document.getElementById("past");
+        currButton.className = "button is-normal is-primary is-rounded";
+        pastButton.className = "button is-normal is-primary is-light is-rounded";
+
+        var currCourses = document.getElementById("currentCourses");
+        var pastCourses = document.getElementById("pastCourses");
+        currCourses.style.display = "inline";
+        pastCourses.style.display = "none";
+    }
+
+    function clickPast() {
+        var currButton = document.getElementById("current");
+        var pastButton = document.getElementById("past");
+        currButton.className = "button is-normal is-primary is-light is-rounded";
+        pastButton.className = "button is-normal is-primary is-rounded";
+
+        var currCourses = document.getElementById("currentCourses");
+        var pastCourses = document.getElementById("pastCourses");
+        currCourses.style.display = "none";
+        pastCourses.style.display = "inline";
+    }*/
+</script>
