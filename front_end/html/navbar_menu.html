@@ -1,20 +1,14 @@
             </div>
-
-            <style>
-              .profile-photo {
-                display: inline-block;
-                border-radius: 50%;
-                object-fit: cover;
-              }
-            </style>
-
             <div class="navbar-end">
               <div class="navbar-item has-dropdown is-hoverable">
                   {% if user_logged_in %}
-                    <span>{{ user_info["given_name"] }}</span>
-                    <div class="navbar-dropdown">
+                    <a class="navbar-link">{{ user_info["given_name"] }}</a>
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/profile/courses/{{ user_info['user_id'] }}">Home</a>
                         <a class="navbar-item" href="/profile/personal_info/{{ user_info['user_id'] }}">View Profile</a>
                         <a class="navbar-item" href="/profile/preferences/{{ user_info['user_id'] }}">Settings</a>
+                        <hr class="navbar-divider">
+                        <a class="navbar-item" href="/logout">Log out</a>
                     </div>
                   {% else %}
                     <a class="navbar-item" href="/devlogin">Log in</a>
