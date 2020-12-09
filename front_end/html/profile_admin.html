@@ -1,4 +1,33 @@
-    
-    
+        <style>
+            .box:hover {
+                opacity: 0.7;
+            }
+        </style>
+        
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h3>Admin Menu</h3>
+        </div>
+        <div class="columns">
+            <div class="column is-one-quarter">
+                <div class="box has-background-link" style="padding: 50px;" onclick="window.location='/edit_course/';">
+                    <p class="has-text-white" style="text-align: center; font-size: larger;">Create<br>Course</p>
+                </div>
+            </div>
+            <div class="column">
+                <div class="box has-background-info" style="padding: 50px;" onclick="window.location='/import_course';">
+                    <p class="has-text-white" style="text-align: center; font-size: larger;">Import<br>Course</p>
+                </div>
+            </div>
+            <div class="column">
+                <div class="box has-background-grey-light" style="padding: 50px;" onclick="window.location='/summarize_logs';">
+                    <p class="has-text-white" style="text-align: center; font-size: larger;">View<br>Logs</p>
+                </div>
+            </div>
+            <div class="column">
+                <div class="box has-background-warning" style="padding: 50px;" onclick="window.location='/add_admin';">
+                    <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Administrators</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
