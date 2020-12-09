@@ -181,14 +181,18 @@ class ProfileCoursesHandler(BaseUserHandler):
             else:
                 result = "Error: Incorrect passcode"
 
-            self.render("profile_courses.html", page="courses", result=result, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+            self.render("profile_courses.html", page="courses", result=result, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())  
 
 class ProfileAdminHandler(BaseUserHandler):
     def get (self, user_id):
         try:
-            self.render("profile_admin.html", page="admin", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            role = self.get_current_role()
+            if role == "administrator":
+                self.render("profile_admin.html", page="admin", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            else:
+                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())                
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
 
@@ -202,9 +206,19 @@ class ProfilePersonalInfoHandler(BaseUserHandler):
 class ProfilePreferencesHandler(BaseUserHandler):
     def get(self, user_id):
         try:
-            self.render("profile_preferences.html", page="preferences", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
+            self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
-            render_error(self, traceback.format_exc())         
+            render_error(self, traceback.format_exc()) 
+
+    def post(self, user_id):
+        try:
+            ace_theme = self.get_body_argument("ace_theme")
+            content.update_user_theme(user_id, ace_theme)
+            ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
+            self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+        except Exception as inst:
+            render_error(self, traceback.format_exc()) 
 
 class CourseHandler(BaseUserHandler):
     def get(self, course):

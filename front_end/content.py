@@ -39,7 +39,8 @@ class Content:
                                   given_name text,
                                   family_name text,
                                   picture text,
-                                  locale text
+                                  locale text,
+                                  ace_theme text NOT NULL
                                 );'''
 
         create_permissions_table = '''CREATE TABLE IF NOT EXISTS permissions (
@@ -167,8 +168,9 @@ class Content:
             print("Error! Cannot create a database connection.")
 
     def add_column(self):
-        sql = '''ALTER TABLE courses
-                 ADD COLUMN passcode text'''
+        sql = '''ALTER TABLE users
+                 ADD COLUMN ace_theme text NOT NULL
+                 DEFAULT "tomorrow"'''
         self.cursor.execute(sql)
 
     def set_start_time(self, course_id, assignment_id, user_id, start_time):
@@ -291,11 +293,11 @@ class Content:
         return row["course_id"]
 
     def add_user(self, user_id, user_dict):
-        sql = '''INSERT INTO users (user_id, name, given_name, family_name, picture, locale, user_json)
+        sql = '''INSERT INTO users (user_id, name, given_name, family_name, picture, locale, ace_theme)
                  VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
         self.cursor.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"],
-        user_dict["picture"], user_dict["locale"], json.dumps(user_dict)))
+        user_dict["picture"], user_dict["locale"], "tomorrow"))
 
     def register_user_for_course(self, course_id, user_id):
         sql = '''INSERT INTO course_registration (course_id, user_id)
@@ -323,7 +325,7 @@ class Content:
         self.cursor.execute(sql, (user_id,))
         user = self.cursor.fetchone()
         user_info = {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
-                     "picture": user["picture"], "locale": user["locale"]}
+                     "picture": user["picture"], "locale": user["locale"], "ace_theme": user["ace_theme"]}
         return user_info
 
     def add_permissions(self, course_id, user_id, role):
@@ -1070,10 +1072,17 @@ class Content:
 
     def update_user(self, user_id, user_dict):
         sql = '''UPDATE users
-                 SET user_json = ?
+                 SET name = ?, given_name = ?, family_name = ?, picture = ?, locale = ?
                  WHERE user_id = ?'''
 
-        self.cursor.execute(sql, (json.dumps(user_dict), user_id,))
+        self.cursor.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"],
+        user_dict["picture"], user_dict["locale"], user_id,))
+
+    def update_user_theme(self, user_id, theme):
+        sql = '''UPDATE users
+                 SET ace_theme = ?
+                 WHERE user_id = ?'''
+        self.cursor.execute(sql, (theme, user_id,))
 
     def remove_user_submissions(self, user_id):
         sql = '''DELETE FROM scores
