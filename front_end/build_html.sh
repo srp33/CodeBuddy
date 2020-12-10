@@ -26,10 +26,8 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html delete_problem.html container_bottom.html footer.html > /app/delete_problem.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html delete_problem_submissions.html container_bottom.html footer.html > /app/delete_problem_submissions.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html view_answer.html container_bottom.html footer.html > /app/view_answer.html
-cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html add_admin.html container_bottom.html footer.html > /app/add_admin.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html add_instructor.html container_bottom.html footer.html > /app/add_instructor.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html add_assistant.html container_bottom.html footer.html > /app/add_assistant.html
-cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html remove_admin.html container_bottom.html footer.html > /app/remove_admin.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html remove_instructor.html container_bottom.html footer.html > /app/remove_instructor.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html remove_assistant.html container_bottom.html footer.html > /app/remove_assistant.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html view_scores.html container_bottom.html footer.html > /app/view_scores.html

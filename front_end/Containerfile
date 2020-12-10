@@ -26,6 +26,7 @@ ADD VERSION /
 ADD front_end/summarize_logs.sh /etc/cron.hourly/
 ADD front_end/*_database.sh /etc/cron.hourly/
 ADD front_end/*.png /static/
+ADD front_end/*.css /static/
 ADD front_end/favicon.ico /static/
 ADD front_end/site.webmanifest /static/
 ADD front_end/build_html.sh /app/

@@ -52,7 +52,6 @@ def make_app():
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
-        url(r"\/add_admin", AddAdminHandler, name="add_admin"),
         url(r"\/add_instructor\/([^\/]+)", AddInstructorHandler, name="add_instructor"),
         url(r"\/add_assistant\/([^\/]+)", AddAssistantHandler, name="add_assistant"),
         url(r"\/remove_admin\/([^\/]+)", RemoveAdminHandler, name="remove_admin"),
@@ -190,9 +189,31 @@ class ProfileAdminHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator":
-                self.render("profile_admin.html", page="admin", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+                self.render("profile_admin.html", page="admin", admins=content.get_users_from_role(0, "administrator"), result=None, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
             else:
                 self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())                
+        except Exception as inst:
+            render_error(self, traceback.format_exc()) 
+
+    def post(self, user_id):
+        try:
+            role = self.get_current_role()
+            if role != "administrator":
+                self.render("permissions.html", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+                return
+
+            new_admin = self.get_body_argument("new_admin")
+
+            if content.check_user_exists(new_admin):
+                if content.get_role(new_admin) == "administrator":
+                    result = f"{new_admin} is already an administrator."
+                else:
+                    content.add_admin_permissions(new_admin)
+                    result = f"Success! {new_admin} is an administrator."
+            else:
+                result = f"Error: The user '{new_admin}' does not exist."
+
+            self.render("profile_admin.html", page="admin", admins=content.get_users_from_role(0, "administrator"), result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
 
@@ -931,37 +952,6 @@ class ViewAnswerHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class AddAdminHandler(BaseUserHandler):
-    def get(self):
-        try:
-            if self.get_current_role() == "administrator":
-                self.render("add_admin.html", courses=content.get_courses(True), admins=content.get_users_from_role(0, "administrator"), result=None, user_id=self.get_current_user(), user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-            else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-    def post(self):
-        try:
-            if self.get_current_role() != "administrator":
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-                return
-
-            new_admin = self.get_body_argument("new_admin")
-
-            if content.check_user_exists(new_admin):
-                if content.get_role(new_admin) == "administrator":
-                    result = f"{new_admin} is already an administrator."
-                else:
-                    content.add_admin_permissions(new_admin)
-                    result = f"Success! {new_admin} is an administrator."
-            else:
-                result = f"Error: The user '{new_admin}' does not exist."
-
-            self.render("add_admin.html", courses=content.get_courses(), admins=content.get_users_from_role(0, "administrator"), result=result, user_id=self.get_current_user(), user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
 class AddInstructorHandler(BaseUserHandler):
     def get(self, course):
         try:
@@ -1033,34 +1023,15 @@ class AddAssistantHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class RemoveAdminHandler(BaseUserHandler):
-    def get(self, old_admin):
+    def post(self, user_id):
         try:
-            role = self.get_current_role()
-            if role == "administrator":
-                self.render("remove_admin.html", courses=content.get_courses(), result=None, old_admin = old_admin, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-            else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-    def post(self, old_admin):
-        try:
-            user_id=self.get_current_user()
             role = self.get_current_role()
             if role != "administrator":
                 self.render("permissions.html", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
                 return
 
-            if content.get_role(old_admin) != "administrator":
-                result = f"Error: {old_admin} is not an administrator."
-            else:
-                if user_id != old_admin:
-                    result = "Error: administrators can only be removed by themselves."
-                else:
-                    content.remove_permissions(None, old_admin, "administrator")
-                    result = f"Success: {old_admin} has been removed from the administrator list."
-
-            self.render("remove_admin.html", courses=content.get_courses(), result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+            content.remove_permissions(None, user_id, "administrator")
+            self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
