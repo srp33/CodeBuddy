@@ -241,7 +241,8 @@
                                 else
                                     button_bg_color = "#f4a582";
 
-                                submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${the_date}</button>`;
+                                var submission_date = new Date(the_date).toLocaleString();
+                                submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
                             }
 
                             submission_html += "</div><br />\n";
