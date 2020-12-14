@@ -109,7 +109,7 @@ class HomeHandler(RequestHandler):
             user_info=content.get_user_info(user_id_var.get())
         else:
             user_info = {"picture": "https://icon-library.com/images/default-profile-icon/default-profile-icon-16.jpg"}
-        self.render("home.html", courses=content.get_courses(show_hidden(user_role_var.get())), user_info=user_info, role=user_role_var.get(), user_logged_in=user_logged_in)
+        self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_info['user_id']), user_info=user_info, user_logged_in=user_logged_in_var.get(), role=user_role_var.get())
 
 class BaseUserHandler(RequestHandler):
     def prepare(self):
