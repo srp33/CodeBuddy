@@ -2,39 +2,29 @@
             <a class="button is-normal is-primary is-rounded" id="current" onclick="clickCurrent()">Current Courses</a>
             <a class="button is-normal is-primary is-light is-rounded" id="past" onclick="clickPast()">Past Courses</a>
         </div>-->
-        <link rel="stylesheet" href="/static/modal.css">
-
-        <form method="post" action="/profile/courses/{{ user_info['user_id'] }}">
-
-        <div id="register_modal" class="modal">
-            <div class="modal-content">
-              <span class="close">&times;</span>
-              <p>Please enter the passcode for this course:</p>
-              <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
-              <p class="buttons">
-                <button type="button" id="cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
-                <input type="submit" id="register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
-              </p>
-            </div>
-        </div>
         
-        <div style="text-align: center; margin-bottom: 40px;">
-            <h3>Registered Courses</h3>
+        <div style="margin-bottom: 40px;">
+          <div style="margin-bottom: 40px;">
+            <h2 style="display: inline">My Courses</h2>
+            <div class="buttons is-pulled-right">
+              <a class="button is-normal is-white is-rounded" onclick="showRegistration()">Register for a course</a>
+            </div>
+          </div>
+          <div>
             {% if registered_courses %}
-                <ul style="list-style-position: inside;">
-                    {% for course in registered_courses %}
-                        <li>
-                            <a href="/course/{{ course[1]['id'] }}">{{ course[1]["title"] }}</a>
-                        </li>
-                    {% end %}
-                </ul>
+              {% for course in registered_courses %}
+                <div class="columns">
+                  <div class="column is-one-third">
+                      <div class="box has-background-link" style="padding: 50px;" onclick="window.location='/course/{{ course[1]["id"] }}';">
+                          <p class="has-text-white" style="text-align: center; font-size: larger;">{{ course[1]["title"] }}</p>
+                      </div>
+                  </div>
+                </div>
+              {% end %}
             {% else %}
                 <p>No current courses</p>
             {% end %}
-        </div>
-
-        <div style="margin-bottom: 30px;">
-          <a class="button is-normal is-link is-rounded" style="margin-top: 50px;" onclick="showRegistration()">Register for a course</a>
+          </div>
         </div>
 
         <div id="register_div"
@@ -51,14 +41,25 @@
                 {% end %}
             {% end %}
 
+            <form method="post" action="/profile/courses/{{ user_info['user_id'] }}">
+
             <label class="label">Select a course:</label>
             <div class="select is-info is-medium">
-              <select id="course_select" name="course_select" onchange="showRegisterModal()">
+              <select id="course_select" name="course_select" onchange="showPasscodeDiv()">
                 <option selected disabled>Course</option>
                 {% for course in courses %}
                   <option>{{ course[1]["title"] }}</option>
                 {% end %}
               </select>
+            </div>
+
+            <div id="passcode_div" style="display: none;">
+              <p>Please enter the passcode for this course:</p>
+              <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
+              <p class="buttons">
+                <button type="button" id="cancel_button" class="button is-small is-warning is-light" style="margin-top: 10px;">Cancel</button>
+                <input type="submit" id="register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
+              </p>
             </div>
 
             </form>
@@ -73,25 +74,17 @@
         div.style.display = "inline";
     }
 
-    function showRegisterModal() {
-        var modal = document.getElementById("register_modal");
-        var span = document.getElementsByClassName("close")[0];
-        modal.style.display = "block";
+    function showPasscodeDiv() {
+        var passcode_div = document.getElementById("passcode_div");
+        passcode_div.style.display = "inline";
 
         var cancelButton = document.getElementById("cancel_button");
         var registerButton = document.getElementById("register_button");
 
         cancelButton.onclick = function() {
-          modal.style.display = "none";
-        }
-
-        span.onclick = function() {
-          modal.style.display = "none";
-        }
-        window.onclick = function(event) {
-          if (event.target == modal) {
-            modal.style.display = "none";
-          }
+          passcode_div.style.display = "none";
+          var course_select = document.getElementById("course_select");
+          course_select.value = "Course";
         }
     }
 
