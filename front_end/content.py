@@ -621,8 +621,7 @@ class Content:
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id), user_id,))
 
         for submission in self.cursor.fetchall():
-            submissions.append([submission["submission_id"], submission["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), submission["passed"]])
-
+            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"]])
         return submissions
 
     def specify_course_basics(self, course_basics, title, visible):
