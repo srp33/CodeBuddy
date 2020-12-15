@@ -40,7 +40,7 @@ class Content:
                                   family_name text,
                                   picture text,
                                   locale text,
-                                  ace_theme text NOT NULL
+                                  ace_theme text NOT NULL DEFAULT "tomorrow"
                                 );'''
 
         create_permissions_table = '''CREATE TABLE IF NOT EXISTS permissions (
