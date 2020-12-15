@@ -9,7 +9,7 @@
         <div style="text-align: center; margin-bottom: 40px;">
             <h3>Admin Menu</h3>
         </div>
-        <div>
+        <div style="margin-bottom: 40px;">
             <div class="columns">
                 <div class="column is-one-quarter">
                     <div class="box has-background-link" style="padding: 50px;" onclick="window.location='/edit_course/';">
@@ -17,7 +17,7 @@
                     </div>
                 </div>
                 <div class="column">
-                    <div class="box has-background-info" style="padding: 50px;" onclick="window.location='/import_course';">
+                    <div class="box has-background-info" style="padding: 50px;" onclick="showImportCourse()">
                         <p class="has-text-white" style="text-align: center; font-size: larger;">Import<br>Course</p>
                     </div>
                 </div>
@@ -33,8 +33,35 @@
                 </div>
             </div>
         </div>
+
+        <div id="import_div"
+          {% if tab == "import" %}
+            style="display: inline;"
+          {% else %}
+            style="display: none;"
+          {% end %}>
+            {% if result %}
+                {% if result.startswith("Error:") %}
+                    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+                {% else %}
+                    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+                {% end %}
+            {% end %}
+
+            <h2>Import a course</h2>
+            <p>Use this page to import a course that has previously been exported from this tool. The file must be zipped.</p>
+
+            <form method="post" action="/import_course" enctype="multipart/form-data">
+
+            <input type="file" name="zip_file" id="zip_file" accept=".zip"/>
+            <p style="margin-top: 10px;"><input type="submit" class="button is-small is-primary is-rounded" value="Import"/></p>
+            
+            </form>
+          
+        </div>
+
         <div id="manage_admins"
-          {% if result %}
+          {% if tab == "manage" %}
             style="display: inline;"
           {% else %}
             style="display: none;"
@@ -103,7 +130,16 @@
 <script>
     function showManageAdmins() {
         var manage_div = document.getElementById("manage_admins");
+        var import_div = document.getElementById("import_div");
         manage_div.style.display = "inline";
+        import_div.style.display = "none";
+    }
+
+    function showImportCourse() {
+        var manage_div = document.getElementById("manage_admins");
+        var import_div = document.getElementById("import_div");
+        import_div.style.display = "inline";
+        manage_div.style.display = "none";
     }
 
     function showAddModal() {

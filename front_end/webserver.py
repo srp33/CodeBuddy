@@ -189,7 +189,7 @@ class ProfileAdminHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator":
-                self.render("profile_admin.html", page="admin", admins=content.get_users_from_role(0, "administrator"), result=None, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+                self.render("profile_admin.html", page="admin", tab=None, admins=content.get_users_from_role(0, "administrator"), result=None, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
             else:
                 self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())                
         except Exception as inst:
@@ -213,7 +213,7 @@ class ProfileAdminHandler(BaseUserHandler):
             else:
                 result = f"Error: The user '{new_admin}' does not exist."
 
-            self.render("profile_admin.html", page="admin", admins=content.get_users_from_role(0, "administrator"), result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            self.render("profile_admin.html", page="admin", tab="manage", admins=content.get_users_from_role(0, "administrator"), result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
 
@@ -361,15 +361,6 @@ class DeleteCourseSubmissionsHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class ImportCourseHandler(BaseUserHandler):
-    def get(self):
-        try:
-            if self.get_current_role() == "administrator":
-                self.render("import_course.html", result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-            else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
     def post(self):
         try:
             if self.get_current_role() != "administrator":
@@ -377,6 +368,8 @@ class ImportCourseHandler(BaseUserHandler):
                 return
 
             result = ""
+            user_id = self.get_current_user()
+            
             if "zip_file" in self.request.files and self.request.files["zip_file"][0]["content_type"] == 'application/zip':
                 zip_file_name = self.request.files["zip_file"][0]["filename"]
                 zip_file_contents = self.request.files["zip_file"][0]["body"]
@@ -446,7 +439,7 @@ class ImportCourseHandler(BaseUserHandler):
             else:
                 result = "Error: The uploaded file was not recognized as a zip file."
 
-            self.render("import_course.html", result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+            self.render("profile_admin.html", page="admin", tab="import", admins=content.get_users_from_role(0, "administrator"), result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
