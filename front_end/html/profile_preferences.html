@@ -21,11 +21,10 @@
                 </div></br>
                 <div class="buttons">
                     <input type="submit" class="button is-small is-link is-rounded" value="Save" />
-                    <a id="previewButton" class="button is-small is-primary is-rounded" onclick="showEditor()">See preview</a>
                 </div>
             </div>
             <div class="column is-two-thirds">
-                <div id="ace_div" style="display: none;">
+                <div id="ace_div">
                     <textarea name="preview" id="preview" class="textarea is-info" rows="10" style="font-family:monospace">
                     cloneNumbers = function(vec, x) {
                         newvec = rep(vec, each = x+1)
@@ -58,20 +57,6 @@
         mode: "ace/mode/r"
     });
     editor.focus();
-
-    function showEditor() {
-        var ace_div = document.getElementById("ace_div");
-        var previewButton = document.getElementById("previewButton");
-
-        if (previewButton.textContent == "See preview") {
-            ace_div.style.display = "inline";
-            previewButton.textContent = "Close preview";
-        }
-        else {
-            ace_div.style.display = "none";
-            previewButton.textContent = "See preview";           
-        }
-    }
 
     function changeTheme(theme) {
         preview_editor.setTheme("ace/theme/" + theme);
