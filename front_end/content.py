@@ -386,14 +386,6 @@ class Content:
         else:
             return False
 
-    def get_course_id_from_title(self, course_title):
-        sql = '''SELECT course_id
-                 FROM courses
-                 WHERE title = ?'''
-        self.cursor.execute(sql, (course_title,))
-        course = self.cursor.fetchone()
-        return course["course_id"]
-
     def get_course_passcode(self, course_id):
         sql = '''SELECT passcode
                  FROM courses
@@ -438,14 +430,14 @@ class Content:
     def get_courses(self, show_hidden=True):
         courses = []
 
-        sql = '''SELECT course_id, title, visible
+        sql = '''SELECT course_id, title, visible, introduction
                  FROM courses
                  ORDER BY title'''
         self.cursor.execute(sql)
 
         for course in self.cursor.fetchall():
             if course["visible"] or show_hidden:
-                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "exists": True}
+                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": course["introduction"], "exists": True}
                 courses.append([course["course_id"], course_basics])
 
         return courses

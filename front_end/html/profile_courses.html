@@ -2,6 +2,18 @@
             <a class="button is-normal is-primary is-rounded" id="current" onclick="clickCurrent()">Current Courses</a>
             <a class="button is-normal is-primary is-light is-rounded" id="past" onclick="clickPast()">Past Courses</a>
         </div>-->
+
+        <link rel="stylesheet" href="/static/modal.css">
+
+        <style>
+          .scroll_div {
+            height: 300px;
+            width: 100%;
+            overflow-y: auto;
+            position: relative;
+            padding-bottom: 20px;
+          }
+        </style>
         
         <div style="margin-bottom: 40px;">
           <div style="margin-bottom: 40px;">
@@ -29,10 +41,8 @@
 
         <div id="register_div"
           {% if not result %}
-            style="display: none;">
-          {% else %}
-            >
-          {% end %}
+            style="display: none;"
+          {% end %}>
             {% if result %}
                 {% if result.startswith("Error:") %}
                     <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
@@ -43,28 +53,57 @@
 
             <form method="post" action="/profile/courses/{{ user_info['user_id'] }}">
 
-            <label class="label">Select a course:</label>
-            <div class="select is-info is-medium">
-              <select id="course_select" name="course_select" onchange="showPasscodeDiv()">
-                <option selected disabled>Course</option>
-                {% for course in courses %}
-                  <option>{{ course[1]["title"] }}</option>
-                {% end %}
-              </select>
+            <div id="register_modal" class="modal">
+              <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Please enter the passcode for this course:</p>
+                <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
+                <p class="buttons">
+                  <button type="button" id="cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
+                  <input type="submit" id="register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
+                </p>
+              </div>
             </div>
 
-            <div id="passcode_div" style="display: none;">
-              <p>Please enter the passcode for this course:</p>
-              <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
-              <p class="buttons">
-                <button type="button" id="cancel_button" class="button is-small is-white" style="margin-top: 10px;">Cancel</button>
-                <input type="submit" id="register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
-              </p>
-            </div>
+            <input id="course_id" name="course_id" style="display: none;">
 
             </form>
-        </div>
 
+            <p style="font-size: x-large;">Available Courses:</p>
+
+            <div class="scroll_div">
+              {% if courses %}
+                {% for course in courses %}
+                  <div>
+                    <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                    </p>
+                    <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                  </div></br>
+                  <div>
+                    <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                    </p>
+                    <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                  </div></br>
+                  <div>
+                    <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                    </p>
+                    <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                  </div></br>
+                  <div>
+                    <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                    </p>
+                    <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                  </div></br>
+                {% end %}
+              {% else %}
+                <p>There are no available courses</p>
+              {% end %}
+            </div>
+        </div>
     </div>
 </div>
 
@@ -74,17 +113,27 @@
         div.style.display = "inline";
     }
 
-    function showPasscodeDiv() {
-        var passcode_div = document.getElementById("passcode_div");
-        passcode_div.style.display = "inline";
+    function showRegisterModal(course_id) {
+        var modal = document.getElementById("register_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var course_id_input = document.getElementById("course_id");
+        course_id_input.value = course_id;
 
         var cancelButton = document.getElementById("cancel_button");
         var registerButton = document.getElementById("register_button");
 
         cancelButton.onclick = function() {
-          passcode_div.style.display = "none";
-          var course_select = document.getElementById("course_select");
-          course_select.value = "Course";
+          modal.style.display = "none";
+        }
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
         }
     }
 

@@ -159,10 +159,11 @@ class ProfileCoursesHandler(BaseUserHandler):
             render_error(self, traceback.format_exc()) 
     def post(self, user_id):
         try:
-            course_title = self.get_body_argument("course_select")
+            course_id = self.get_body_argument("course_id")
             passcode = self.get_body_argument("passcode")
 
-            course_id = content.get_course_id_from_title(course_title)
+            course_basics = content.get_course_basics(course_id)
+            course_title = course_basics["title"]
             course_passcode = content.get_course_passcode(course_id) 
             result = ""
 
