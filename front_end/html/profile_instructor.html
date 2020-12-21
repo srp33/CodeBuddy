@@ -17,7 +17,7 @@
                     </div>
                 </div>
                 <div class="column">
-                    <div class="box has-background-grey-light" style="padding: 50px;" onclick="">
+                    <div class="box has-background-grey-light" style="padding: 50px;" onclick="showScoreSelect()">
                         <p class="has-text-white" style="text-align: center; font-size: larger;">View<br>Scores</p>
                     </div>
                 </div>
@@ -74,7 +74,7 @@
             {% end %}
             
             <div class="buttons">
-                <a class="button is-primary is-medium is-rounded" onclick="showAddModal()">Add Assistant</a>
+                <a class="button is-primary is-small is-rounded" onclick="showAddModal()">Add Assistant</a>
             </div>
             
             {% if result %}
@@ -85,6 +85,19 @@
                 {% end %}
             {% end %}
     
+        </div>
+    
+        <div id="score_select" style="display: none;">
+            {% if assignments %}
+                <h2>Select an assignment to view its scores:</h2>
+                <ul>
+                {% for assignment in assignments %}
+                    <li><a href="/view_scores/{{ course['id'] }}/{{ assignment[1]['id'] }}">{{ assignment[1]['title'] }}</a></li>
+                {% end %}
+                </ul>
+            {% else %}
+                <p>There are no scores for this course.</p>
+            {% end %}
         </div></br></br></br>
     </div>
 </div>
@@ -92,7 +105,16 @@
 <script>
 function showManageAssistants() {
     var manage_assistants = document.getElementById("manage_assistants");
+    var score_select = document.getElementById("score_select");
     manage_assistants.style.display = "inline";
+    score_select.style.display = "none";
+}
+
+function showScoreSelect() {
+    var manage_assistants = document.getElementById("manage_assistants");
+    var score_select = document.getElementById("score_select");
+    manage_assistants.style.display = "none";
+    score_select.style.display = "inline";
 }
 
 function showAddModal() {
@@ -123,7 +145,7 @@ function showRemoveModal(assistant_id) {
     modal.style.display = "block";
 
     var confirm_message = document.getElementById("confirm");
-    confirm_message.value = "Are you sure you want to remove " + assistant_id + " as an assistant for this course?";
+    confirm_message.innerHTML = "Are you sure you want to remove " + assistant_id + " as an assistant for this course?";
 
     var cancelButton = document.getElementById("remove_cancel_button");
     var removeButton = document.getElementById("remove_button");
