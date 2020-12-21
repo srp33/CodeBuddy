@@ -158,7 +158,7 @@ class ProfileCoursesHandler(BaseUserHandler):
             role = self.get_current_role()
             if role == "administrator":
                 registered_courses = content.get_courses()
-            elif role == "instructor":
+            elif role == "instructor" or role == "assistant":
                 registered_courses = content.get_course_from_role(user_id)
             else:
                 registered_courses = content.get_registered_courses(user_id)
