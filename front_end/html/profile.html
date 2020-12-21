@@ -10,6 +10,11 @@
                     class="is-active"
                 {% end %}
                 >Home</a></li>
+              <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
+                {% if page == "personal_info" %}
+                    class="is-active"
+                {% end %}
+                >Personal info</a></li>
               {% if role == "administrator" %}
                 <li><a href="/profile/admin/{{ user_info['user_id'] }}"
                   {% if page == "admin" %}
@@ -17,11 +22,20 @@
                   {% end %}
                   >Admin</a></li>
               {% end %}
-              <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
-                {% if page == "personal_info" %}
-                    class="is-active"
-                {% end %}
-                >Personal info</a></li>
+              {% if role == "instructor" %}
+                <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
+                  {% if page == "instructor" %}
+                      class="is-active"
+                  {% end %}
+                  >Instructor</a></li>
+              {% end %}
+              {% if role == "administrator" or role == "instructor" %}
+                <li><a href="/profile/manage_users"
+                  {% if page == "manage_users" %}
+                      class="is-active"
+                  {% end %}
+                  >Manage users</a></li>
+              {% end %}
             </ul>
             <p class="menu-label">
               Settings

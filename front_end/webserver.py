@@ -29,8 +29,11 @@ def make_app():
         url(r"/", HomeHandler),
         url(r"\/initialize", InitializeHandler, name="initialize"),
         url(r"\/profile\/courses\/([^\/]+)", ProfileCoursesHandler, name="profile_courses"),
-        url(r"\/profile\/admin\/([^\/]+)", ProfileAdminHandler, name="profile_admin"),
         url(r"\/profile\/personal_info\/([^\/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
+        url(r"\/profile\/admin\/([^\/]+)", ProfileAdminHandler, name="profile_admin"),
+        url(r"\/profile\/instructor\/course\/([^\/]+)", ProfileSelectCourseHandler, name="profile_select_course"),
+        url(r"\/profile\/instructor\/([^\/]+)\/([^\/]+)", ProfileInstructorHandler, name="profile_instructor"),
+        url(r"\/profile\/manage_users", ProfileManageUsersHandler, name="profile_manage_users"),
         url(r"\/profile\/preferences\/([^\/]+)", ProfilePreferencesHandler, name="profile_preferences"),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
@@ -53,11 +56,9 @@ def make_app():
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/add_instructor\/([^\/]+)", AddInstructorHandler, name="add_instructor"),
-        url(r"\/add_assistant\/([^\/]+)", AddAssistantHandler, name="add_assistant"),
         url(r"\/remove_admin\/([^\/]+)", RemoveAdminHandler, name="remove_admin"),
         url(r"\/remove_instructor\/([^\/]+)\/([^\/]+)", RemoveInstructorHandler, name="remove_instructor"),
         url(r"\/remove_assistant\/([^\/]+)\/([^\/]+)", RemoveAssistantHandler, name="remove_assistant"),
-        url(r"\/manage_users\/([^\/]+)", ManageUsersHandler, name="manage_users"),
         url(r"\/reset_timer\/([^\/]+)\/([^\/]+)\/([^\/]+)", ResetTimerHandler, name="reset_timer"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
@@ -108,7 +109,7 @@ class HomeHandler(RequestHandler):
         if (user_logged_in):
             user_info=content.get_user_info(user_id_var.get())
         else:
-            user_info = {"picture": "https://icon-library.com/images/default-profile-icon/default-profile-icon-16.jpg"}
+            user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "picture": "https://icon-library.com/images/default-profile-icon/default-profile-icon-16.jpg", "locale": "en"}
         self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_info['user_id']), user_info=user_info, user_logged_in=user_logged_in_var.get(), role=user_role_var.get())
 
 class BaseUserHandler(RequestHandler):
@@ -183,6 +184,13 @@ class ProfileCoursesHandler(BaseUserHandler):
 
             self.render("profile_courses.html", page="courses", result=result, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
+            render_error(self, traceback.format_exc()) 
+
+class ProfilePersonalInfoHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            self.render("profile_personal_info.html", page="personal_info", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+        except Exception as inst:
             render_error(self, traceback.format_exc())  
 
 class ProfileAdminHandler(BaseUserHandler):
@@ -218,12 +226,112 @@ class ProfileAdminHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
 
-class ProfilePersonalInfoHandler(BaseUserHandler):
+class ProfileSelectCourseHandler(BaseUserHandler):
     def get(self, user_id):
         try:
-            self.render("profile_personal_info.html", page="personal_info", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
+                courses = content.get_course_from_role(user_id)
+                if len(courses) > 1:
+                    self.render("profile_select_course.html", courses=courses)
+                else:
+                    self.render("profile_instructor.html", page="instructor", tab=None, course=courses[0][1], assistants=content.get_users_from_role(courses[0][0], "assistant"), result=None, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
+
+class ProfileInstructorHandler(BaseUserHandler):
+    def get (self, course_id, user_id):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
+                self.render("profile_instructor.html", page="instructor", tab=None, course=content.get_course_basics(course_id), assistants=content.get_users_from_role(course_id, "assistant"), result=None, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            else:
+                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())                
+        except Exception as inst:
+            render_error(self, traceback.format_exc()) 
+
+    def post(self, course_id, user_id):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
+                new_assistant = self.get_body_argument("new_assistant")
+                result = ""
+
+                if content.check_user_exists(new_assistant):
+                    if content.get_role(new_assistant) == "assistant":
+                        courses = content.get_course_from_role(new_assistant)
+                        for course in courses:
+                            if course[0] == course_id:
+                                result = f"{new_assistant} is already an assistant for this course."
+                    if result == "":
+                        content.add_permissions(course_id, new_assistant, "assistant")
+                        result = f"Success! {new_assistant} is now an assistant for this course."
+                else:
+                    result = f"Error: The user '{new_assistant}' does not exist."
+
+                self.render("profile_instructor.html", page="instructor", tab="manage", course=content.get_course_basics(course_id), assistants=content.get_users_from_role(course_id, "assistant"), result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            else:
+                self.render("permissions.html", user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc()) 
+
+class ProfileManageUsersHandler(BaseUserHandler):
+    def get(self):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
+                self.render("profile_manage_users.html", page="manage_users", result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            else:
+                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self):
+        try:
+            user_id=self.get_current_user()
+            remove_user = self.get_body_argument("remove_user")
+            delete_user = self.get_body_argument("delete_user")
+
+            if remove_user:
+                if content.check_user_exists(remove_user):
+                    if content.get_role(remove_user) != "student":
+                        result = f"{remove_user} is not a student - no submissions to remove."
+                    else:
+                        content.remove_user_submissions(remove_user)
+                        result = f"Success: All scores and submissions for the user '{remove_user}' have been deleted."
+                else:
+                    result = f"Error: The user '{remove_user}' does not exist."    
+
+            if delete_user:
+                if content.check_user_exists(delete_user):
+                    if content.get_role(delete_user) == "administrator":
+                        if len(content.get_users_from_role(0, "administrator")) > 1:
+                            if delete_user == user_id:
+                                #Figure out what to do when admins remove themselves
+                                content.delete_user(delete_user)
+                            else:
+                                result = f"{delete_user} is an administrator and can only be deleted by that user."
+                        else:
+                            result = f"Error: At least one administrator must remain in the system."
+                    elif content.get_role(delete_user) == "instructor":
+                        course_id = content.get_course_id_from_role(delete_user)
+                        if len(content.get_users_from_role(course_id, "instructor")) > 1:
+                            if content.get_role(user_id) == "administrator":
+                                content.delete_user(delete_user)
+                                result = f"Success: The user '{delete_user}' has been deleted."
+                            else:
+                                result = "Instructors can only be removed by administrators."
+                        else:
+                            result = f"Error: The user '{delete_user}' is the only instructor for their course. They cannot be deleted until another instructor is assigned to the course."
+                    else:
+                        content.delete_user(delete_user)
+                        result = f"Success: The user '{delete_user}' has been deleted."
+                else:
+                    result = f"Error: The user '{delete_user}' does not exist."
+
+            self.render("profile_manage_users.html", page="manage_users", result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class ProfilePreferencesHandler(BaseUserHandler):
     def get(self, user_id):
@@ -979,43 +1087,6 @@ class AddInstructorHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class AddAssistantHandler(BaseUserHandler):
-    def get(self, course):
-        try:
-            role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
-                course_basics = content.get_course_basics(course)
-                self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role(course_basics["id"], "assistant"), result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-            else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-    def post(self, course):
-        try:
-            role = self.get_current_role()
-            if role != "administrator" and role != "instructor":
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-                return
-
-            course_basics = content.get_course_basics(course)
-            new_assistant = self.get_body_argument("new_assistant")
-
-            if content.check_user_exists(new_assistant):
-                if content.get_role(new_assistant) == "administrator":
-                    result = f"Error: {new_assistant} is already an administrator and can't be given a lower role."
-                elif content.get_role(new_assistant) == "instructor":
-                    result = f"Error: {new_assistant} is already an instructor and can't be given a lower role."
-                else:
-                    content.add_permissions(course_basics["id"], new_assistant, "assistant")
-                    result = f"Success! {new_assistant} is an instructor's assistant for the {course_basics['title']} course."
-            else:
-                result = f"Error: The user '{new_assistant}' does not exist."
-
-            self.render("add_assistant.html", courses=content.get_courses(), course_basics=course_basics, assistants=content.get_users_from_role(course_basics["id"], "assistant"), result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
 class RemoveAdminHandler(BaseUserHandler):
     def post(self, user_id):
         try:
@@ -1058,16 +1129,6 @@ class RemoveInstructorHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class RemoveAssistantHandler(BaseUserHandler):
-    def get(self, course, old_assistant):
-        try:
-            role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
-                self.render("remove_assistant.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=None, old_assistant = old_assistant, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-            else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
     def post(self, course, old_assistant):
         try:
             role = self.get_current_role()
@@ -1079,67 +1140,9 @@ class RemoveAssistantHandler(BaseUserHandler):
                 result = f"Error: {old_assistant} is not an assistant."
             else:
                 content.remove_permissions(course, old_assistant, "assistant")
-                result = f"Success: {old_assistant} has been removed from the instructor assistant list."
+                result = f"Success: {old_assistant} has been removed as an assistant for this course."
 
-            self.render("remove_assistant.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-class ManageUsersHandler(BaseUserHandler):
-    def get(self, course):
-        try:
-            role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
-                self.render("manage_users.html", courses=content.get_courses(True), course_basics=content.get_course_basics(course), result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-            else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-    def post(self, course):
-        try:
-            user_id=self.get_current_user()
-            remove_user = self.get_body_argument("remove_user")
-            delete_user = self.get_body_argument("delete_user")
-
-            if remove_user:
-                if content.check_user_exists(remove_user):
-                    if content.get_role(remove_user) != "student":
-                        result = f"{remove_user} is not a student - no submissions to remove."
-                    else:
-                        content.remove_user_submissions(remove_user)
-                        result = f"Success: All scores and submissions for the user '{remove_user}' have been deleted."
-                else:
-                    result = f"Error: The user '{remove_user}' does not exist."    
-
-            if delete_user:
-                if content.check_user_exists(delete_user):
-                    if content.get_role(delete_user) == "administrator":
-                        if len(content.get_users_from_role(0, "administrator")) > 1:
-                            if delete_user == user_id:
-                                #Figure out what to do when admins remove themselves
-                                content.delete_user(delete_user)
-                            else:
-                                result = f"{delete_user} is an administrator and can only be deleted by that user."
-                        else:
-                            result = f"Error: At least one administrator must remain in the system."
-                    elif content.get_role(delete_user) == "instructor":
-                        course_id = content.get_course_id_from_role(delete_user)
-                        if len(content.get_users_from_role(course_id, "instructor")) > 1:
-                            if content.get_role(user_id) == "administrator":
-                                content.delete_user(delete_user)
-                                result = f"Success: The user '{delete_user}' has been deleted."
-                            else:
-                                result = "Instructors can only be removed by administrators."
-                        else:
-                            result = f"Error: The user '{delete_user}' is the only instructor for their course. They cannot be deleted until another instructor is assigned to the course."
-                    else:
-                        content.delete_user(delete_user)
-                        result = f"Success: The user '{delete_user}' has been deleted."
-                else:
-                    result = f"Error: The user '{delete_user}' does not exist."
-
-            self.render("manage_users.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get())
+            self.render("profile_instructor.html", page="instructor", tab="manage", course=content.get_course_basics(course_id), assistants=content.get_users_from_role(course_id, "assistant"), result=result, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

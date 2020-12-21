@@ -96,13 +96,10 @@
     <p></br>
       {% if role == "administrator" or role == "instructor" %}
         <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a> |
-        <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a> |
-        <a href="/download_all_scores/{{ course_basics["id"] }}">Download all scores</a></br>
-        <a href="/add_assistant/{{ course_basics["id"] }}">Add/remove instructor assistant</a>
+        <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
         {% if role == "administrator" %}
           | <a href="/add_instructor/{{ course_basics["id"] }}">Add/remove instructor</a>
         {% end %}
-        | <a href="/manage_users/{{ course_basics["id"] }}">Manage users</a>
       {% end %}
     </p>
   </div></br></br></br>

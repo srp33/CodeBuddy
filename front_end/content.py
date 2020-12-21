@@ -386,6 +386,20 @@ class Content:
         else:
             return False
 
+    def get_course_from_role(self, user_id):
+        courses = []
+        sql = '''SELECT p.course_id, c.title
+                 FROM permissions p
+                 INNER JOIN courses c
+                 ON p.course_id = c.course_id
+                 WHERE user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
+        for course in self.cursor.fetchall():
+            course_basics = {"id": course["course_id"], "title": course["title"]}
+            courses.append([course["course_id"], course_basics])
+        return courses
+
     def get_course_passcode(self, course_id):
         sql = '''SELECT passcode
                  FROM courses
