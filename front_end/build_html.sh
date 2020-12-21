@@ -30,7 +30,6 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html view_answer.html container_bottom.html footer.html > /app/view_answer.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html add_instructor.html container_bottom.html footer.html > /app/add_instructor.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html remove_instructor.html container_bottom.html footer.html > /app/remove_instructor.html
-cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html remove_assistant.html container_bottom.html footer.html > /app/remove_assistant.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html view_scores.html container_bottom.html footer.html > /app/view_scores.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html edit_scores.html container_bottom.html footer.html > /app/edit_scores.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html student_scores.html container_bottom.html footer.html > /app/student_scores.html
