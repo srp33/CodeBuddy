@@ -124,32 +124,32 @@
 <script>
   function showDeleteModal(assignment_id) {
     var modal = document.getElementById("delete_assignment_modal");
-        var span = document.getElementsByClassName("close")[0];
-        var confirm_text = document.getElementById("confirm_delete");
+    var span = document.getElementsByClassName("close")[0];
+    var confirm_text = document.getElementById("confirm_delete");
 
-        modal.style.display = "block";
-        confirm_text.innerHTML = 'Are you sure you want to delete this assignment?';
+    modal.style.display = "block";
+    confirm_text.innerHTML = 'Are you sure you want to delete this assignment?';
 
-        var cancelButton = document.getElementById("delete_cancel_button");
-        var deleteButton = document.getElementById("delete_button");
+    var cancelButton = document.getElementById("delete_cancel_button");
+    var deleteButton = document.getElementById("delete_button");
 
-        deleteButton.onclick = function() {
-          $.post("/delete_assignment/{{ course_basics['id'] }}/" + assignment_id);
-          modal.style.display = "none";
-          location.reload();
-        }
+    deleteButton.onclick = function() {
+      $.post("/delete_assignment/{{ course_basics['id'] }}/" + assignment_id);
+      modal.style.display = "none";
+      location.reload();
+    }
 
-        cancelButton.onclick = function() {
-          modal.style.display = "none";
-        }
+    cancelButton.onclick = function() {
+      modal.style.display = "none";
+    }
 
-        span.onclick = function() {
-          modal.style.display = "none";
-        }
-        window.onclick = function(event) {
-          if (event.target == modal) {
-            modal.style.display = "none";
-          }
-        }
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
   }
 </script>
