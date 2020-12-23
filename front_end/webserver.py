@@ -759,16 +759,6 @@ class EditAssignmentHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class DeleteAssignmentHandler(BaseUserHandler):
-    def get(self, course, assignment):
-        try:
-            role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
-                self.render("delete_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-            else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
     def post(self, course, assignment):
         try:
             role = self.get_current_role()
@@ -777,9 +767,6 @@ class DeleteAssignmentHandler(BaseUserHandler):
                 return
 
             content.delete_assignment(content.get_assignment_basics(course, assignment))
-            result = "Success: Assignment deleted."
-
-            self.render("delete_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
