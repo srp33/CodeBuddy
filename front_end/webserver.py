@@ -913,17 +913,6 @@ class EditProblemHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class DeleteProblemHandler(BaseUserHandler):
-    def get(self, course, assignment, problem):
-        try:
-            role = self.get_current_role()
-            if role == "administrator" or role == "instructor":
-                problems = content.get_problems(course, assignment)
-                self.render("delete_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get(), role=role)
-            else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
     def post(self, course, assignment, problem):
         try:
             role = self.get_current_role()
@@ -932,10 +921,6 @@ class DeleteProblemHandler(BaseUserHandler):
                 return
 
             content.delete_problem(content.get_problem_basics(course, assignment, problem))
-            result = "Success: Problem deleted."
-
-            problems = content.get_problems(course, assignment)
-            self.render("delete_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get(), role=role)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
