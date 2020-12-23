@@ -1,0 +1,163 @@
+        <!--<div class="buttons has-addons is-centered" style="margin: 10px;">
+            <a class="button is-normal is-primary is-rounded" id="current" onclick="clickCurrent()">Current Courses</a>
+            <a class="button is-normal is-primary is-light is-rounded" id="past" onclick="clickPast()">Past Courses</a>
+        </div>-->
+
+        <link rel="stylesheet" href="/static/modal.css">
+
+        <style>
+          .scroll_div {
+            height: 300px;
+            width: 100%;
+            overflow-y: auto;
+            position: relative;
+            padding-bottom: 20px;
+          }
+        </style>
+        
+        <div style="margin-bottom: 40px;">
+          <div style="margin-bottom: 40px;">
+            <h2 style="display: inline">My Courses</h2>
+            <div class="buttons is-pulled-right">
+              <a class="button is-normal is-white is-rounded" onclick="showRegistration()">Register for a course</a>
+            </div>
+          </div>
+          <div>
+            {% if registered_courses %}
+              {% for course in registered_courses %}
+                <div class="columns">
+                  <div class="column is-one-third">
+                      <div class="box has-background-link" style="padding: 50px;" onclick="window.location='/course/{{ course[1]["id"] }}';">
+                          <p class="has-text-white" style="text-align: center; font-size: larger;">{{ course[1]["title"] }}</p>
+                      </div>
+                  </div>
+                </div>
+              {% end %}
+            {% else %}
+                <p>No current courses</p>
+            {% end %}
+          </div>
+        </div>
+
+        <div id="register_div"
+          {% if not result %}
+            style="display: none;"
+          {% end %}>
+            {% if result %}
+                {% if result.startswith("Error:") %}
+                    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+                {% else %}
+                    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+                {% end %}
+            {% end %}
+
+            <form method="post" action="/profile/courses/{{ user_info['user_id'] }}">
+
+            <div id="register_modal" class="modal">
+              <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Please enter the passcode for this course:</p>
+                <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
+                <p class="buttons">
+                  <button type="button" id="cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
+                  <input type="submit" id="register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
+                </p>
+              </div>
+            </div>
+
+            <input id="course_id" name="course_id" style="display: none;">
+
+            </form>
+
+            <p style="font-size: x-large;">Available Courses:</p>
+
+            <div class="scroll_div">
+              {% if courses %}
+                {% for course in courses %}
+                  <div>
+                    <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                    </p>
+                    <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                  </div></br>
+                  <div>
+                    <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                    </p>
+                    <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                  </div></br>
+                  <div>
+                    <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                    </p>
+                    <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                  </div></br>
+                  <div>
+                    <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                    </p>
+                    <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                  </div></br>
+                {% end %}
+              {% else %}
+                <p>There are no available courses</p>
+              {% end %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showRegistration() {
+        var div = document.getElementById("register_div");
+        div.style.display = "inline";
+    }
+
+    function showRegisterModal(course_id) {
+        var modal = document.getElementById("register_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var course_id_input = document.getElementById("course_id");
+        course_id_input.value = course_id;
+
+        var cancelButton = document.getElementById("cancel_button");
+        var registerButton = document.getElementById("register_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+
+    /*function clickCurrent() {
+        var currButton = document.getElementById("current");
+        var pastButton = document.getElementById("past");
+        currButton.className = "button is-normal is-primary is-rounded";
+        pastButton.className = "button is-normal is-primary is-light is-rounded";
+
+        var currCourses = document.getElementById("currentCourses");
+        var pastCourses = document.getElementById("pastCourses");
+        currCourses.style.display = "inline";
+        pastCourses.style.display = "none";
+    }
+
+    function clickPast() {
+        var currButton = document.getElementById("current");
+        var pastButton = document.getElementById("past");
+        currButton.className = "button is-normal is-primary is-light is-rounded";
+        pastButton.className = "button is-normal is-primary is-rounded";
+
+        var currCourses = document.getElementById("currentCourses");
+        var pastCourses = document.getElementById("pastCourses");
+        currCourses.style.display = "none";
+        pastCourses.style.display = "inline";
+    }*/
+</script>

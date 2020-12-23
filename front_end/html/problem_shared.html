@@ -263,7 +263,7 @@
             <script>
             ace.require("ace/ext/language_tools");
             var editor = ace.edit("user_code", {
-                theme: "ace/theme/tomorrow",
+                theme: "ace/theme/{{ user_info['ace_theme'] }}",
                 autoScrollEditorIntoView: true,
                 minLines: 20,
                 fontSize: "12pt"
