@@ -7,15 +7,24 @@
                 {% if last_submission %}
                     <h4>Your code:</h4>
                     <pre>{{ last_submission["code"] }}</pre>
-                    <br /><br />
+                    </br>
                 {% end %}
 
-                <h4>Answer code:</h4>
+                <h4>Instructor's answer code:</h4>
                 <pre>{{ problem_details["answer_code"]}}</pre>
+                </br>
 
                 {% if len(problem_details["answer_description"]) > 0 %}
                     <h4>Instructor's comments</h4>
                     <p>{{ problem_details["answer_description"] }}</p>
+                    </br>
+                {% end %}
+
+                {% if student_submissions %}
+                    <h4>Other students' answer code:</h4>
+                    {% for submission in student_submissions %}
+                        <p>{{ submission[0] }}. <pre>{{ submission[2] }}</pre></p>
+                    {% end %}
                 {% end %}
 
             {% else %}

@@ -725,6 +725,26 @@ class Content:
             submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"]])
         return submissions
 
+    def get_student_submissions(self, course_id, assignment_id, problem_id, user_id):
+        student_submissions = []
+        index = 1
+
+        sql = '''SELECT user_id, code
+                 FROM submissions
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?
+                  AND passed = 1
+                  AND user_id != ?
+                 ORDER BY date'''
+        
+        self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id,))
+
+        for submission in self.cursor.fetchall():
+            student_submissions.append([index, submission["user_id"], submission["code"]])
+            index += 1
+        return student_submissions
+
     def specify_course_basics(self, course_basics, title, visible):
         course_basics["title"] = title
         course_basics["visible"] = visible
