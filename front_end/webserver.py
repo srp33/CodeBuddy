@@ -1087,7 +1087,7 @@ class RemoveAdminHandler(BaseUserHandler):
                 return
 
             content.remove_permissions(None, user_id, "administrator")
-            self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=self.get_current_role())
+            self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=content.get_role(user_id))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
