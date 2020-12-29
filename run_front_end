@@ -26,17 +26,23 @@ function run_container {
 
   image_name=srp33/codebuddy_${subdir_name}
 
-  docker build -t ${image_name} -f ${subdir_name}/Containerfile .
+  docker build -t ${image_name} \
+               -f ${subdir_name}/Containerfile \
+               --build-arg USER_ID=$(id -u ${USER}) \
+               --build-arg GROUP_ID=$(id -g ${USER}) \
+               .
 
   #docker run -d \
   docker run -i -t \
     --rm \
-    --read-only \
+    --memory=4g \
+    --cap-drop=ALL \
+    --log-driver=none \
     --name ${container_name} \
+    --read-only \
     ${run_args} \
     ${image_name}
 }
 
-#run_container front_end "--user $(id -u):$(id -g) --network host -e NUM_PROCESSES=1 -e PORT=9001 -e MPORT=9798 -v $(pwd)/database:/database -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
-
-run_container front_end "--user $(id -u):$(id -g) --network host -e NUM_PROCESSES=1 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v /tmp:/tmp -v $(pwd)/logs:/logs" ""
+#run_container front_end "--network host -e NUM_PROCESSES=4 -e PORT=9001 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs" ""
+run_container front_end "--network host -e NUM_PROCESSES=1 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs" ""

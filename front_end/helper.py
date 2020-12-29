@@ -56,7 +56,7 @@ def convert_markdown_to_html(text):
 
     markdown = Markdown()
     html = markdown.convert(text)
-    html = re.sub(r"<a href=\"(.+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html)
+    html = re.sub(r"<a href=\"([^\"]+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html)
     return html
 
 def format_output_as_html(output):

@@ -36,7 +36,11 @@
               var output = "";
 
               if (json_output == "")
-                  output = "<p><pre>[Your code produced no text output.]</pre></p>";
+                  {% if problem_details["output_type"] == "txt" %}
+                      output = "<p><pre>[Your code produced no output.]</pre></p>";
+                  {% else %}
+                      output = "";
+                  {% end %}
               else
                   output = "<p><pre>" + json_output + "</pre></p>";
 
@@ -46,7 +50,13 @@
             function build_image_output(json_output) {
               var output = "";
 
-              if (json_output != "")
+              if (json_output == "")
+                  {% if problem_details["output_type"] == "jpg" %}
+                      output = "<p><pre>[Your code did not produce an image.]</pre></p>";
+                  {% else %}
+                      output = "";
+                  {% end %}
+              else
                   output = "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
 
               return output;
@@ -76,17 +86,15 @@
               else {
                   result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
                   {% if problem_details["show_expected"] %}
-                      diff_output += "<h2>Difference between your output and the expected output:</h2>\n\n";
+                      if (json_data.diff.length > 0) {
+                          diff_output += "<h2>Difference between your output and the expected output:</h2>\n\n";
 
-                      {% if problem_details["output_type"] == "txt" %}
-                          if (json_data.diff.length > 0) {
+                          {% if problem_details["output_type"] == "txt" %}
                               diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                          }
-                      {% else %}
-                          if (json_data.diff.length > 0) {
+                          {% else %}
                               diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
-                          }
-                      {% end %}
+                          {% end %}
+                      }
                   {% end %}
               }
 

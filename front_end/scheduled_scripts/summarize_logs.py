@@ -1,10 +1,11 @@
-from content import *
 import glob
 import gzip
 import json
 import os
 import shutil
 import sys
+sys.path.append('/app')
+from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
@@ -53,7 +54,7 @@ def get_titles_from_ids(file_path):
                                 problem_basics = content.get_problem_basics(course_id, assignment_id, problem_id)
                                 if int(id_dict["problem_id"]) == problem_id:
                                     problem_title = problem_basics["title"]
-      
+
         new_dict[0] = id_dict["name"]
         new_dict[1] = course_title
         new_dict[2] = assignment_title

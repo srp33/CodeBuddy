@@ -452,14 +452,14 @@ class Content:
                   AND problem_id = ?
                  GROUP BY user_id
                  ORDER BY user_id'''
-                
+
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
 
         for user in self.cursor.fetchall():
             scores_dict = {"user_id": user["user_id"], "num_submissions": user["num_submissions"], "passed": user["passed"]}
             scores.append([user["user_id"], scores_dict])
 
-        return scores     
+        return scores
 
     def get_submissions_basic(self, course_id, assignment_id, problem_id, user_id):
         submissions = []
@@ -923,16 +923,18 @@ class Content:
 
         self.cursor.execute(sql, (problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"],))
 
+    #TODO: Modify the logic so that we use the SQLite dump functionality rather than custom logic.
+    #TODO: Make sure we include Emme's new table(s) in this?
     def export_data(self, course_basics, table_name, output_tsv_file_path):
         if table_name == "submissions":
             sql = '''SELECT c.title, a.title, p.title, s.user_id, s.submission_id, s.code, s.text_output, s.image_output, s.passed, s.date
                     FROM submissions s
                     INNER JOIN courses c
-                     ON c.course_id = s.course_id
+                      ON c.course_id = s.course_id
                     INNER JOIN assignments a
-                     ON a.assignment_id = s.assignment_id
+                      ON a.assignment_id = s.assignment_id
                     INNER JOIN problems p
-                     ON p.problem_id = s.problem_id
+                      ON p.problem_id = s.problem_id
                     WHERE s.course_id = ?'''
 
         else:
@@ -954,7 +956,7 @@ class Content:
             out_file.write(json.dumps(rows))
 
     def create_zip_file_path(self, descriptor):
-        temp_dir_path = "/tmp/{}".format(create_id())
+        temp_dir_path = "/database/tmp/{}".format(create_id())
         zip_file_name = f"{descriptor}.zip"
         zip_file_path = f"{temp_dir_path}/{zip_file_name}"
         return temp_dir_path, zip_file_name, zip_file_path
@@ -1008,7 +1010,7 @@ class Content:
 
         sql = '''SELECT *
                  FROM submissions
-                 WHERE course_id = ? AND assignment_id = ?
+                 WHERE course_id = ? AND assignment_id = ? AND passed = 0
                  ORDER BY problem_id, user_id, submission_id'''
         self.cursor.execute(sql, (course, assignment, ))
 

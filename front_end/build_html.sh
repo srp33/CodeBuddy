@@ -46,4 +46,6 @@ do
   cat header.html navbar_top.html navbar_bottom.html container_top.html ${page_name}.html container_bottom.html footer.html > /static/${page_name}.html
 done
 
+rm *.html
+
 cd -

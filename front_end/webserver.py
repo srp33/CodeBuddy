@@ -320,7 +320,6 @@ class ImportCourseHandler(BaseUserHandler):
                         data_file_name = problem_list[10]
                         data_contents = problem_list[11]
                         back_end = problem_list[12]
-                        expected_output = problem_list[13]
                         instructions = problem_list[14]
                         output_type = problem_list[15]
                         show_answer = bool(problem_list[16])
@@ -329,6 +328,14 @@ class ImportCourseHandler(BaseUserHandler):
                         test_code = problem_list[19]
                         date_created = convert_string_to_date(problem_list[20])
                         date_updated = convert_string_to_date(problem_list[21])
+
+                        #TODO: Think more strategically about this...
+                        expected_text_output = ""
+                        expected_image_output = ""
+                        if expected_output == "txt":
+                            expected_text_output = problem_list[13]
+                        else:
+                            expected_image_output = problem_list[13]
 
                         content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
                         content.save_problem(problem_basics, problem_details)

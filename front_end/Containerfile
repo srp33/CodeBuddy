@@ -1,47 +1,59 @@
 FROM continuumio/miniconda3
 
-#ENV USER codebuddy
+# See https://jtreminio.com/blog/running-docker-containers-as-current-host-user/#ok-so-what-actually-works
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+ARG USER=codebuddy
 
-RUN apt-get update \
- && apt-get install -y bzip2 zip \
+ADD VERSION /
+ADD Settings.yaml /
+
+RUN TIMEZONE=$(grep "time_zone: " Settings.yaml | sed -En "s/time_zone: (.*)/\1/p") \
+ && apt-get update \
+ && apt-get install -y bzip2 tzdata zip \
+ && ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime \
+ && echo "$TIMEZONE" | tee /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata \
  && apt-get -y autoremove \
  && apt-get clean \
  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
- && mkdir -p /app /conda /course /migration_scripts /static \
- && wget -O /static/jquery.min.js https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
- && curl https://raw.githubusercontent.com/jenil/bulmaswatch/gh-pages/flatly/bulmaswatch.min.css | sed -En 's/.footer\{background-color:#ecf0f1;padding:3rem 1.5rem 6rem\}/.footer\{background-color:#ecf0f1;padding:1rem 3.0rem 1rem\}/p' > /static/bulmaswatch.min.css \
- && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > /static/bulma-tooltip.min.css \
+ && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+
+RUN cd /static \
+ && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
+ && curl https://raw.githubusercontent.com/jenil/bulmaswatch/gh-pages/flatly/bulmaswatch.min.css | sed -En 's/.footer\{background-color:#ecf0f1;padding:3rem 1.5rem 6rem\}/.footer\{background-color:#ecf0f1;padding:1rem 3.0rem 1rem\}/p' > bulmaswatch.min.css \
+ && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css \
  && git clone https://github.com/ajaxorg/ace-builds.git \
- && cp -r ace-builds/src-min-noconflict/* /static/
+ && cp -r ace-builds/src-min-noconflict/* . \
+ && rm -rf ace-builds
 
-# To learn about bulmaswatch, see https://jenil.github.io/bulmaswatch/flatly.
-# This is a basic way to install bulmaswatch.
-# For more advanced used, may need to use this strategy: https://bulma.io/documentation/customize/with-node-sass/
+## To learn about bulmaswatch, see https://jenil.github.io/bulmaswatch/flatly.
+## This is a basic way to install bulmaswatch.
+## For more advanced used, may need to use this strategy: https://bulma.io/documentation/customize/with-node-sass/
 
-# This can be used for font awesome icons.
-#wget -O fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
+## This can be used for font awesome icons.
+##wget -O /static/fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
 
-ADD Settings.yaml /
-ADD VERSION /
-ADD front_end/summarize_logs.sh /etc/cron.hourly/
-ADD front_end/*_database.sh /etc/cron.hourly/
-ADD front_end/*.png /static/
-ADD front_end/favicon.ico /static/
-ADD front_end/site.webmanifest /static/
+ADD front_end/images/* /static/
 ADD front_end/build_html.sh /app/
 ADD front_end/startup.sh /app/
-ADD front_end/html/* /tmp/
+ADD front_end/scheduled_scripts/* /scheduled_scripts/
 ADD front_end/migration_scripts/* /migration_scripts/
+ADD front_end/html/* /tmp/
 ADD front_end/*.py /app/
 ADD front_end/secrets.yaml /app/
 
 RUN bash /app/build_html.sh
 
-#RUN groupadd -r $USER \
-# && useradd -r -s /bin/false -g $USER $USER \
-# && chown -R $USER:$USER /app /conda /course /tmp/img /static \
-# && chmod -R 400 /app /conda \
-# && chmod -R 700 /course /img /static
+# We'll map the user inside to the container to the user outside the container.
+# This ensures that the permissions on files shared via volumes will be 
+# translatable in both directions.
+RUN groupadd -g ${GROUP_ID} ${USER} && \
+    useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
+    install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} && \
+    chown --silent --no-dereference --recursive \
+          ${USER_ID}:${GROUP_ID} \
+          /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
 
-#USER $USER
+USER $USER
+
 ENTRYPOINT ["bash", "/app/startup.sh"]
