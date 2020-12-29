@@ -99,7 +99,12 @@
 
             function showHint() {
               var hint_div = document.getElementById("hint_div");
-              hint_div.style.display = "inline";
+              if (hint_div.style.display == "inline") {
+                hint_div.style.display = "none";
+              }
+              else {
+                hint_div.style.display = "inline";
+              }
             }
           </script>
 
