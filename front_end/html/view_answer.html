@@ -1,28 +1,34 @@
 {% if problem_basics["exists"] %}
-    {% if last_submission %}
-        {% if last_submission["passed"] %}
-            <h4>Your code:</h4>
-            <pre>{{ last_submission["code"] }}</pre>
-            <br /><br />
-
-            <h4>Answer code:</h4>
-            <pre>{{ problem_details["answer_code"]}}</pre>
-
-            {% if len(problem_details["answer_description"]) > 0 %}
-                <h4>Instructor's comments</h4>
-                <p>{{ problem_details["answer_description"] }}</p>
-            {% end %}
-        
+    {% if problem_details["show_answer"] or assignment_details["view_answer_late"] %}
+        {% if not last_submission and not assignment_details["due_date"] %}
+            <p>You don't have any submissions for this problem yet. You won't be able to view the instructor's code until you've submitted the correct answer.</p>
         {% else %}
-            <p>Either you have not yet passed this problem or you passed it previously but your most recent submission is not passing. Please make sure your code passes the problem, and then you'll be able to view the instructor's answer.</p>
+            {% if (last_submission and last_submission["passed"]) or (assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["view_answer_late"]) %}
+                {% if last_submission %}
+                    <h4>Your code:</h4>
+                    <pre>{{ last_submission["code"] }}</pre>
+                    <br /><br />
+                {% end %}
+
+                <h4>Answer code:</h4>
+                <pre>{{ problem_details["answer_code"]}}</pre>
+
+                {% if len(problem_details["answer_description"]) > 0 %}
+                    <h4>Instructor's comments</h4>
+                    <p>{{ problem_details["answer_description"] }}</p>
+                {% end %}
+
+            {% else %}
+                <p>Either you have not yet passed this problem or you passed it previously but your most recent submission is not passing. Please make sure your code passes the problem, and then you'll be able to view the instructor's answer.</p>
+            {% end %}
         {% end %}
-    {% else %}
-        <p>You don't have any submissions for this problem yet. You won't be able to view the instructor's code until you've submitted the correct answer.</p>
-    {% end %}
     
-    <p>
-        <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to problem</a>
-    </p>
+        <p>
+            <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to problem</a>
+        </p>
+    {% else %}
+        <p>You do not have permission to view the answer for this problem.</p>
+    {% end %}
 
 {% else %}
     <p>This problem does not exist.</p>
