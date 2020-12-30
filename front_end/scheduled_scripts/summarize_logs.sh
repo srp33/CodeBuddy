@@ -4,7 +4,7 @@ echo "Summarizing log files [$(date)]..."
 
 in_file_prefix="/logs/codebuddy.log"
 out_dir=/logs/summarized
-temp_file=$(mktemp)
+temp_file=~/temp_summarize_logs
 
 if [ ! -f ${in_file_prefix} ]
 then

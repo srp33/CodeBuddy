@@ -2,6 +2,7 @@
 
 echo "Vacuuming database [$(date)]..."
 
-sqlite3 /database/CodeBuddy.db "VACUUM;"
+cd /database
+sqlite3 CodeBuddy.db "VACUUM;"
 
 echo "Done vacuuming database [$(date)]..."
