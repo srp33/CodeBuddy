@@ -844,6 +844,7 @@ class Content:
         problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_text_output": row["expected_text_output"], "expected_image_output": row["expected_image_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
 
         if format_content:
+            problem_dict["expected_text_output"] = format_output_as_html(problem_dict["expected_text_output"])
             problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
             problem_dict["credit"] = convert_markdown_to_html(problem_dict["credit"])
             problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])

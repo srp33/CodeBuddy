@@ -429,7 +429,7 @@ class AssignmentHandler(BaseUserHandler):
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"))
                 else:
                     self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=content.get_problems(course, assignment, show), problem_statuses=content.get_problem_statuses(course, assignment, user_id), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, start_time=start_time, user_id=user_id, user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
-                
+
             except Exception as inst:
                 render_error(self, traceback.format_exc())
     def post(self, course, assignment):
@@ -539,7 +539,7 @@ class EditAssignmentHandler(BaseUserHandler):
             hour_options = list(range(13))
             minute_options = list(range(61))
             self.render("edit_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
-                                    
+
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -599,8 +599,10 @@ class ProblemHandler(BaseUserHandler):
             user = self.get_current_user()
             role = self.get_current_role()
             assignment_details = content.get_assignment_details(course, assignment)
+
             if role == "student" and assignment_details["has_timer"]:
                 start_time = content.get_start_time(course, assignment, user)
+
                 if not start_time or content.timer_ended(course, assignment, start_time):
                     if not assignment_details["due_date"] or assignment_details["due_date"] > datetime.datetime.now():
                         self.render("timer_error.html", user_logged_in=user_logged_in_var.get())
@@ -624,6 +626,7 @@ class EditProblemHandler(BaseUserHandler):
             if role == "administrator" or role == "instructor" or role == "assistant":
                 problems = content.get_problems(course, assignment)
                 problem_details = content.get_problem_details(course, assignment, problem)
+                problem_details["expected_text_output"] = format_output_as_html(problem_details["expected_text_output"])
 
                 self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role=role)
             else:
@@ -700,8 +703,10 @@ class EditProblemHandler(BaseUserHandler):
                                     problem_details["expected_text_output"] = text_output
                                     problem_details["expected_image_output"] = image_output
                                     problem = content.save_problem(problem_basics, problem_details)
+
                                     problem_basics = content.get_problem_basics(course, assignment, problem)
                                     problem_details = content.get_problem_details(course, assignment, problem)
+                                    problem_details["expected_text_output"] = format_output_as_html(text_output)
 
             problems = content.get_problems(course, assignment)
             self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
@@ -805,10 +810,10 @@ class SubmitHandler(BaseUserHandler):
 
             out_dict["text_output"] = format_output_as_html(text_output)
             out_dict["image_output"] = image_output
-            out_dict["diff"] = diff
+            out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
             out_dict["submission_id"] = content.save_submission(course, assignment, problem, user, code, text_output, image_output, passed)
-        
+
             problem_score = content.get_problem_score(course, assignment, problem, user)
             new_score = content.calc_problem_score(assignment_details, passed)
             if (not problem_score or problem_score < new_score):
@@ -831,7 +836,7 @@ class GetSubmissionHandler(BaseUserHandler):
 
             diff, passed = check_problem_output(problem_details["expected_text_output"], submission_info["text_output"], problem_details["expected_image_output"], submission_info["image_output"], problem_details["output_type"])
 
-            submission_info["diff"] = diff
+            submission_info["diff"] = format_output_as_html(diff)
             submission_info["text_output"] = format_output_as_html(submission_info["text_output"])
         except Exception as inst:
             submission_info["diff"] = ""
@@ -1072,7 +1077,7 @@ class ManageUsersHandler(BaseUserHandler):
                         content.remove_user_submissions(remove_user)
                         result = f"Success: All scores and submissions for the user '{remove_user}' have been deleted."
                 else:
-                    result = f"Error: The user '{remove_user}' does not exist."    
+                    result = f"Error: The user '{remove_user}' does not exist."
 
             if delete_user:
                 if content.check_user_exists(delete_user):
@@ -1160,7 +1165,7 @@ class DownloadAllScoresHandler(BaseUserHandler):
                 file_contents = content.create_scores_text(course, assignment[0])
                 with open(f"{temp_dir_path}/{assignment[0]}.csv", "w") as score_file:
                     score_file.write(file_contents)
-            
+
             content.zip_export_files(temp_dir_path, zip_file_name, zip_file_path, descriptor)
             zip_bytes = read_file(zip_file_path, "rb")
 
@@ -1330,7 +1335,7 @@ class DevelopmentLoginHandler(RequestHandler):
                     # Add static information for test user.
                     user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
                     content.add_user(user_id, user_dict)
-                    
+
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
 
                 if not target_path:
