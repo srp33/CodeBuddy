@@ -975,6 +975,43 @@ class Content:
 
         return submission_id
 
+    def copy_assignment(self, course_id, assignment_id, new_course_id):
+        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
+                 SELECT ?, title || ' copy', visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
+                 FROM assignments
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
+
+        self.cursor.execute(sql, (new_course_id, course_id, assignment_id,))
+        new_assignment_id = self.cursor.lastrowid
+
+        sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
+                 SELECT ?, ?, title || ' copy', visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
+                 FROM problems
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
+
+        self.cursor.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id,))
+
+#        sql = f'''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
+#                  SELECT {new_course_id}, title || ' copy', visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
+#                  FROM assignments
+#                  WHERE course_id = {course_id}
+#                    AND assignment_id = {assignment_id}'''
+#
+#        self.cursor.executescript(sql)
+#        new_assignment_id = self.cursor.lastrowid
+#
+#        sql = f'''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
+#                  SELECT {new_course_id}, {new_assignment_id}, title || ' copy', visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
+#                  FROM problems
+#                  WHERE course_id = {course_id}
+#                    AND assignment_id = {assignment_id}
+#                '''
+#        print(sql)
+#
+#        self.cursor.executescript(sql)
+
     def update_user(self, user_id, user_dict):
         sql = '''UPDATE users
                  SET user_json = ?
@@ -998,6 +1035,15 @@ class Content:
                   WHERE user_id = ?'''
 
         self.cursor.execute(sql, (user_id,))
+
+    def move_problem(self, course_id, assignment_id, problem_id, new_assignment_id):
+        sql = '''UPDATE problems
+                 SET assignment_id = ?
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?'''
+
+        self.cursor.execute(sql, (new_assignment_id, course_id, assignment_id, problem_id))
 
     def delete_problem(self, problem_basics):
         c_id = problem_basics["assignment"]["course"]["id"]

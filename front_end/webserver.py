@@ -37,10 +37,12 @@ def make_app():
         url(r"\/export_submissions\/([^\/]+)?", ExportSubmissionsHandler, name="export_submissions"),
         url(r"\/assignment\/([^\/]+)\/([^\/]+)", AssignmentHandler, name="assignment"),
         url(r"\/edit_assignment\/([^\/]+)\/([^\/]+)?", EditAssignmentHandler, name="edit_assignment"),
+        url(r"\/copy_assignment\/([^\/]+)\/([^\/]+)?", CopyAssignmentHandler, name="copy_assignment"),
         url(r"\/delete_assignment\/([^\/]+)\/([^\/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
         url(r"\/delete_assignment_submissions\/([^\/]+)\/([^\/]+)?", DeleteAssignmentSubmissionsHandler, name="delete_assignment_submissions"),
         url(r"\/problem\/([^\/]+)\/([^\/]+)/([^\/]+)", ProblemHandler, name="problem"),
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
+        url(r"\/move_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", MoveProblemHandler, name="move_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/delete_problem_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemSubmissionsHandler, name="delete_problem_submissions"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
@@ -543,6 +545,31 @@ class EditAssignmentHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+class CopyAssignmentHandler(BaseUserHandler):
+    def get(self, course_id, assignment_id):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
+                self.render("copy_assignment.html", course_id=course_id, assignment_id=assignment_id, course_options=[x[1] for x in content.get_courses() if str(x[0]) != course_id])
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course_id, assignment_id):
+        try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+                return
+
+            new_course_id = self.get_body_argument("new_course_id")
+            content.copy_assignment(course_id, assignment_id, new_course_id)
+
+            self.render("copy_assignment.html", course_id=course_id, assignment_id=assignment_id, course_options=None)
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 class DeleteAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
@@ -714,6 +741,31 @@ class EditProblemHandler(BaseUserHandler):
             render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
         except ReadTimeout as inst:
             render_error(self, f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds.")
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class MoveProblemHandler(BaseUserHandler):
+    def get(self, course_id, assignment_id, problem_id):
+        try:
+            role = self.get_current_role()
+            if role == "administrator" or role == "instructor":
+                self.render("move_problem.html", course_id=course_id, assignment_id=assignment_id, problem_id=problem_id, assignment_options=[x[1] for x in content.get_assignments(course_id) if str(x[0]) != assignment_id])
+            else:
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post(self, course_id, assignment_id, problem_id):
+        try:
+            role = self.get_current_role()
+            if role != "administrator" and role != "instructor":
+                self.render("permissions.html", user_logged_in=user_logged_in_var.get())
+                return
+
+            new_assignment_id = self.get_body_argument("new_assignment_id")
+            content.move_problem(course_id, assignment_id, problem_id, new_assignment_id)
+
+            self.render("move_problem.html", course_id=course_id, assignment_id=assignment_id, problem_id=problem_id, assignment_options=None)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

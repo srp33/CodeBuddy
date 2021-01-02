@@ -1,0 +1,31 @@
+<h2>Move a problem to a different assignment</h2>
+
+{% if assignment_options %}
+    <form method="post" action="/move_problem/{{ course_id }}/{{ assignment_id }}/{{ problem_id }}">
+
+    <p>
+        <select name="new_assignment_id" id="new_assignment_id">
+            {% for assignment in assignment_options %}
+                <option value="{{ assignment["id"] }}">{{ assignment["title"] }}</option>
+            {% end %}
+        </select>
+    </p>
+
+    <p>
+        <input type="submit" class="button is-info is-large is-fullwidth" value="Move" />
+    </p>
+
+    </form>
+
+    <p><br />
+        <a href="/problem/{{ course_id }}/{{ assignment_id }}/{{ problem_id }}">Back to problem</a>
+    </p>
+{% else %}
+    <article class="message is-success is-large">
+        <div class="message-body">The problem was successfully moved.</div>
+    </article>
+
+    <p><br />
+        <a href="/assignment/{{ course_id }}/{{ assignment_id }}">Back to assignment</a>
+    </p>
+{% end %}

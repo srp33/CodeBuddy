@@ -10,6 +10,9 @@ from content import *
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
 
+print("Debugging:")
+print(sys.argv)
+
 in_file_prefix = sys.argv[1]
 out_dir_path = sys.argv[2]
 temp_file_path = sys.argv[3]
