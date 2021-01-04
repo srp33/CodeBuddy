@@ -1,4 +1,5 @@
 import sys
+sys.path.append('/app')
 from helper import *
 
 in_dir_path = sys.argv[1]

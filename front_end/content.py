@@ -131,7 +131,7 @@ class Content:
                                         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
                                       );'''
-        
+
         create_submissions_table = '''CREATE TABLE IF NOT EXISTS scores (
                                         course_id integer NOT NULL,
                                         assignment_id integer NOT NULL,
@@ -213,9 +213,9 @@ class Content:
     def timer_ended(self, course_id, assignment_id, start_time):
         if not start_time:
             return False
-            
+
         curr_time = datetime.now()
-        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ") 
+        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ")
 
         sql = '''SELECT hour_timer, minute_timer
                  FROM assignments
@@ -654,14 +654,14 @@ class Content:
                   AND problem_id = ?
                  GROUP BY user_id
                  ORDER BY user_id'''
-                
+
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
 
         for user in self.cursor.fetchall():
             scores_dict = {"user_id": user["user_id"], "num_submissions": user["num_submissions"], "passed": user["passed"]}
             scores.append([user["user_id"], scores_dict])
 
-        return scores     
+        return scores
 
     def get_problem_score(self, course_id, assignment_id, problem_id, user_id):
         sql = '''SELECT score
@@ -945,6 +945,7 @@ class Content:
         problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_text_output": row["expected_text_output"], "expected_image_output": row["expected_image_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
 
         if format_content:
+            problem_dict["expected_text_output"] = format_output_as_html(problem_dict["expected_text_output"])
             problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
             problem_dict["credit"] = convert_markdown_to_html(problem_dict["credit"])
             problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
@@ -1043,7 +1044,7 @@ class Content:
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             self.cursor.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"]])
-                     
+
             assignment_basics["id"] = self.cursor.lastrowid
             assignment_basics["exists"] = True
 
@@ -1081,6 +1082,43 @@ class Content:
 
         return submission_id
 
+    def copy_assignment(self, course_id, assignment_id, new_course_id):
+        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
+                 SELECT ?, title || ' copy', visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
+                 FROM assignments
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
+
+        self.cursor.execute(sql, (new_course_id, course_id, assignment_id,))
+        new_assignment_id = self.cursor.lastrowid
+
+        sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
+                 SELECT ?, ?, title || ' copy', visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
+                 FROM problems
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
+
+        self.cursor.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id,))
+
+#        sql = f'''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
+#                  SELECT {new_course_id}, title || ' copy', visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
+#                  FROM assignments
+#                  WHERE course_id = {course_id}
+#                    AND assignment_id = {assignment_id}'''
+#
+#        self.cursor.executescript(sql)
+#        new_assignment_id = self.cursor.lastrowid
+#
+#        sql = f'''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
+#                  SELECT {new_course_id}, {new_assignment_id}, title || ' copy', visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
+#                  FROM problems
+#                  WHERE course_id = {course_id}
+#                    AND assignment_id = {assignment_id}
+#                '''
+#        print(sql)
+#
+#        self.cursor.executescript(sql)
+
     def update_user(self, user_id, user_dict):
         sql = '''UPDATE users
                  SET name = ?, given_name = ?, family_name = ?, picture = ?, locale = ?
@@ -1111,6 +1149,15 @@ class Content:
                   WHERE user_id = ?'''
 
         self.cursor.execute(sql, (user_id,))
+
+    def move_problem(self, course_id, assignment_id, problem_id, new_assignment_id):
+        sql = '''UPDATE problems
+                 SET assignment_id = ?
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?'''
+
+        self.cursor.execute(sql, (new_assignment_id, course_id, assignment_id, problem_id))
 
     def delete_problem(self, problem_basics):
         c_id = problem_basics["assignment"]["course"]["id"]
@@ -1203,6 +1250,8 @@ class Content:
 
         self.cursor.execute(sql, (problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"],))
 
+    #TODO: Modify the logic so that we use the SQLite dump functionality rather than custom logic.
+    #TODO: Make sure we include Emme's new table(s) in this?
     def create_scores_text(self, course_id, assignment_id):
         out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
         scores = self.get_assignment_scores(course_id, assignment_id)
@@ -1211,17 +1260,17 @@ class Content:
             out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']}\n"
 
         return out_file_text
-    
+
     def export_data(self, course_basics, table_name, output_tsv_file_path):
         if table_name == "submissions":
             sql = '''SELECT c.title, a.title, p.title, s.user_id, s.submission_id, s.code, s.text_output, s.image_output, s.passed, s.date
                     FROM submissions s
                     INNER JOIN courses c
-                     ON c.course_id = s.course_id
+                      ON c.course_id = s.course_id
                     INNER JOIN assignments a
-                     ON a.assignment_id = s.assignment_id
+                      ON a.assignment_id = s.assignment_id
                     INNER JOIN problems p
-                     ON p.problem_id = s.problem_id
+                      ON p.problem_id = s.problem_id
                     WHERE s.course_id = ?'''
 
         else:
@@ -1243,7 +1292,7 @@ class Content:
             out_file.write(json.dumps(rows))
 
     def create_zip_file_path(self, descriptor):
-        temp_dir_path = "/tmp/{}".format(create_id())
+        temp_dir_path = "/database/tmp/{}".format(create_id())
         zip_file_name = f"{descriptor}.zip"
         zip_file_path = f"{temp_dir_path}/{zip_file_name}"
         return temp_dir_path, zip_file_name, zip_file_path
@@ -1297,7 +1346,7 @@ class Content:
 
         sql = '''SELECT *
                  FROM submissions
-                 WHERE course_id = ? AND assignment_id = ?
+                 WHERE course_id = ? AND assignment_id = ? AND passed = 0
                  ORDER BY problem_id, user_id, submission_id'''
         self.cursor.execute(sql, (course, assignment, ))
 

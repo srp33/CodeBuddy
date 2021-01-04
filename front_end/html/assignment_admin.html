@@ -74,6 +74,7 @@
         <a href="/edit_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Edit assignment</a>
 
         {% if role == "administrator" or role == "instructor" %}
+          | <a href="/copy_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Copy assignment</a>
           | <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment</a>
           | <a href="/delete_assignment_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Delete assignment submissions</a>
         {% end %}

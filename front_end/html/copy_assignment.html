@@ -1,0 +1,31 @@
+<h2>Copy an assignment to a different course</h2>
+
+{% if course_options %}
+    <form method="post" action="/copy_assignment/{{ course_id }}/{{ assignment_id }}">
+
+    <p>
+        <select name="new_course_id" id="new_course_id">
+            {% for course in course_options %}
+                <option value="{{ course["id"] }}">{{ course["title"] }}</option>
+            {% end %}
+        </select>
+    </p>
+
+    <p>
+        <input type="submit" class="button is-info is-large is-fullwidth" value="Copy" />
+    </p>
+
+    </form>
+
+    <p><br />
+        <a href="/assignment/{{ course_id }}/{{ assignment_id }}">Back to assignment</a>
+    </p>
+{% else %}
+    <article class="message is-success is-large">
+        <div class="message-body">The assignment was copied successfully.</div>
+    </article>
+
+    <p><br />
+        <a href="/course/{{ course_id }}">Back to course</a>
+    </p>
+{% end %}
