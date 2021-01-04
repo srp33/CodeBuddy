@@ -70,7 +70,7 @@ class Content:
         create_assignments_table = '''CREATE TABLE IF NOT EXISTS assignments (
                                         course_id integer NOT NULL,
                                         assignment_id integer PRIMARY KEY AUTOINCREMENT,
-                                        title text NOT NULL UNIQUE,
+                                        title text NOT NULL,
                                         introduction text,
                                         visible integer NOT NULL,
                                         start_date timestamp,

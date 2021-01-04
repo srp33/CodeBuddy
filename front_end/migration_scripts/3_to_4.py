@@ -101,6 +101,33 @@ else:
 
                       'DROP TABLE IF EXISTS problems',
                       'ALTER TABLE problems2 RENAME TO problems'
+
+                    '''CREATE TABLE IF NOT EXISTS assignments2 (
+                        course_id integer NOT NULL,
+                        assignment_id integer PRIMARY KEY AUTOINCREMENT,
+                        title text NOT NULL,
+                        introduction text,
+                        visible integer NOT NULL,
+                        start_date timestamp,
+                        due_date timestamp,
+                        allow_late integer,
+                        late_percent real,
+                        view_answer_late integer,
+                        has_timer int NOT NULL,
+                        hour_timer int,
+                        minute_timer int,
+                        date_created timestamp NOT NULL,
+                        date_updated timestamp NOT NULL,
+                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
+                       )''',
+                    
+                    '''INSERT INTO assignments2
+                       SELECT course_id, assignment_id, title, introduction, visible, start_date, due_date, allow_late, late_percent,
+                       view_answer_late, has_timer, hour_timer, minute_timer, date_created, date_updated
+                       FROM assignment''',
+
+                       'DROP TABLE IF EXISTS assignments',
+                       'ALTER TABLE assignments2 RENAME TO assignments'
                      ]
 
     error_occurred = False
