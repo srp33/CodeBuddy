@@ -124,7 +124,7 @@ else:
                     '''INSERT INTO assignments2
                        SELECT course_id, assignment_id, title, introduction, visible, start_date, due_date, allow_late, late_percent,
                        view_answer_late, has_timer, hour_timer, minute_timer, date_created, date_updated
-                       FROM assignment''',
+                       FROM assignments''',
 
                        'DROP TABLE IF EXISTS assignments',
                        'ALTER TABLE assignments2 RENAME TO assignments'
