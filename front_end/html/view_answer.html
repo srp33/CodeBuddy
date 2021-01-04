@@ -4,21 +4,23 @@
             <p>You don't have any submissions for this problem yet. You won't be able to view the instructor's code until you've submitted the correct answer.</p>
         {% else %}
             {% if (last_submission and last_submission["passed"]) or (assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["view_answer_late"]) %}
-                {% if last_submission %}
-                    <h4>Your code:</h4>
-                    <pre>{{ last_submission["code"] }}</pre>
-                    </br>
-                {% end %}
+                <div style="background-color:rgb(250, 250, 250); padding: 10px;">
+                    {% if last_submission %}
+                        <h4>Your code:</h4>
+                        <pre>{{ last_submission["code"] }}</pre>
+                        </br>
+                    {% end %}
 
-                <h4>Instructor's answer code:</h4>
-                <pre>{{ problem_details["answer_code"]}}</pre>
-                </br>
-
-                {% if len(problem_details["answer_description"]) > 0 %}
-                    <h4>Instructor's comments</h4>
-                    <p>{{ problem_details["answer_description"] }}</p>
+                    <h4>Instructor's answer code:</h4>
+                    <pre>{{ problem_details["answer_code"]}}</pre>
                     </br>
-                {% end %}
+
+                    {% if len(problem_details["answer_description"]) > 0 %}
+                        <h4>Instructor's comments</h4>
+                        <p>{{ problem_details["answer_description"] }}</p>
+                        </br>
+                    {% end %}
+                </div></br>
 
                 {% if student_submissions %}
                     <h4>Other students' answer code:</h4>

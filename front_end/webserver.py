@@ -109,7 +109,7 @@ class HomeHandler(RequestHandler):
         if (user_logged_in):
             user_info=content.get_user_info(user_id_var.get())
         else:
-            user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "picture": "https://icon-library.com/images/default-profile-icon/default-profile-icon-16.jpg", "locale": "en"}
+            user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "picture": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjA0Lpsg840JNGLaPgVWM9QofkvAYdFPLb-g&usqp=CAU", "locale": "en"}
         self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_info['user_id']), user_info=user_info, user_logged_in=user_logged_in_var.get(), role=user_role_var.get())
 
 class BaseUserHandler(RequestHandler):
