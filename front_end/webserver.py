@@ -167,6 +167,7 @@ class ProfileCoursesHandler(BaseUserHandler):
             self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=registered_courses, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=role)
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
+            
     def post(self, user_id):
         try:
             role = self.get_current_role()
