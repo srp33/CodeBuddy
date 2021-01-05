@@ -1121,7 +1121,7 @@ class Content:
         self.cursor.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"],
         user_dict["picture"], user_dict["locale"], user_id,))
 
-    def update_user_theme(self, user_id, theme):
+    def update_user_settings(self, user_id, theme):
         sql = '''UPDATE users
                  SET ace_theme = ?
                  WHERE user_id = ?'''
