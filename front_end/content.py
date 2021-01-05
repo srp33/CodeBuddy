@@ -383,7 +383,7 @@ class Content:
         else:
             return False
 
-    def get_course_from_role(self, user_id):
+    def get_courses_connected_to_user(self, user_id):
         courses = []
         sql = '''SELECT p.course_id, c.title
                  FROM permissions p

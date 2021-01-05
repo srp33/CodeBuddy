@@ -161,7 +161,7 @@ class ProfileCoursesHandler(BaseUserHandler):
             if role == "administrator":
                 registered_courses = content.get_courses()
             elif role == "instructor" or role == "assistant":
-                registered_courses = content.get_course_from_role(user_id)
+                registered_courses = content.get_courses_connected_to_user(user_id)
             else:
                 registered_courses = content.get_registered_courses(user_id)
             self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=registered_courses, user_info=content.get_user_info(user_id), user_logged_in=user_logged_in_var.get(), role=role)
@@ -173,7 +173,7 @@ class ProfileCoursesHandler(BaseUserHandler):
             if role == "administrator":
                 registered_courses = content.get_courses()
             elif role == "instructor":
-                registered_courses = content.get_course_from_role(user_id)
+                registered_courses = content.get_courses_connected_to_user(user_id)
             else:
                 registered_courses = content.get_registered_courses(user_id)
 
@@ -248,7 +248,7 @@ class ProfileSelectCourseHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor":
-                courses = content.get_course_from_role(user_id)
+                courses = content.get_courses_connected_to_user(user_id)
                 if len(courses) > 1:
                     self.render("profile_select_course.html", courses=courses)
                 else:
@@ -276,7 +276,7 @@ class ProfileInstructorHandler(BaseUserHandler):
 
                 if content.check_user_exists(new_assistant):
                     if content.get_role(new_assistant) == "assistant":
-                        courses = content.get_course_from_role(new_assistant)
+                        courses = content.get_courses_connected_to_user(new_assistant)
                         for course in courses:
                             if course[0] == course_id:
                                 result = f"{new_assistant} is already an assistant for this course."
