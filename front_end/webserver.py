@@ -182,8 +182,9 @@ class ProfileCoursesHandler(BaseUserHandler):
             passcode = self.get_body_argument("passcode")
 
             course_basics = content.get_course_basics(course_id)
+            course_details = content.get_course_details(course_id)
             course_title = course_basics["title"]
-            course_passcode = content.get_course_passcode(course_id) 
+            course_passcode = course_details["passcode"]
             result = ""
 
             if (course_passcode == None or course_passcode == passcode):
@@ -391,7 +392,7 @@ class EditCourseHandler(BaseUserHandler):
         try:
             role = self.get_current_role()
             if role == "administrator" or role == "instructor":
-                self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course), passcode=content.get_course_passcode(course), result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+                self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course), result=None, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
             else:
                 self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
@@ -410,10 +411,10 @@ class EditCourseHandler(BaseUserHandler):
             course_basics["title"] = self.get_body_argument("title").strip()
             course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             course_details["introduction"] = self.get_body_argument("introduction").strip()
-            passcode = self.get_body_argument("passcode").strip()
+            course_details["passcode"] = self.get_body_argument("passcode").strip()
 
-            if passcode == "":
-                passcode = None
+            if course_details["passcode"] == "":
+                course_details["passcode"] = None
 
             result = "Success: Course information saved!"
 
@@ -430,12 +431,10 @@ class EditCourseHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 30 characters."
                     else:
                         #content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
-                        content.specify_course_details(course_details, course_details["introduction"], None, datetime.datetime.now())
+                        content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], None, datetime.datetime.now())
                         course = content.save_course(course_basics, course_details)
-                        if passcode != None:
-                            content.save_course_passcode(course, passcode)
 
-            self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=course_basics, course_details=course_details, passcode=passcode, result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+            self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

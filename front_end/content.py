@@ -397,17 +397,6 @@ class Content:
             courses.append([course["course_id"], course_basics])
         return courses
 
-    def get_course_passcode(self, course_id):
-        sql = '''SELECT passcode
-                 FROM courses
-                 WHERE course_id = ?'''
-        self.cursor.execute(sql, (course_id,))
-        course = self.cursor.fetchone()
-        if course:
-            return course["passcode"]
-        else:
-            return None
-
     def get_course_ids(self):
         sql = '''SELECT course_id
                  FROM courses'''
@@ -723,8 +712,9 @@ class Content:
         course_basics["title"] = title
         course_basics["visible"] = visible
 
-    def specify_course_details(self, course_details, introduction, date_created, date_updated):
+    def specify_course_details(self, course_details, introduction, passcode, date_created, date_updated):
         course_details["introduction"] = introduction
+        course_details["passcode"] = passcode
         course_details["date_updated"] = date_updated
 
         if course_details["date_created"]:
@@ -886,16 +876,16 @@ class Content:
 
     def get_course_details(self, course, format_output=False):
         if not course:
-            return {"introduction": "", "date_created": None, "date_updated": None}
+            return {"introduction": "", "passcode": None, "date_created": None, "date_updated": None}
 
-        sql = '''SELECT introduction, date_created, date_updated
+        sql = '''SELECT introduction, passcode, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 
         self.cursor.execute(sql, (int(course),))
         row = self.cursor.fetchone()
 
-        course_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
         if format_output:
             course_dict["introduction"] = convert_markdown_to_html(course_dict["introduction"])
 
@@ -1002,24 +992,18 @@ class Content:
                 return True
         return False
 
-    def save_course_passcode(self, course_id, passcode):
-        sql = '''UPDATE courses
-                    SET passcode = ?
-                    WHERE course_id = ?'''
-        self.cursor.execute(sql, (passcode, course_id,))
-
     def save_course(self, course_basics, course_details):
         if course_basics["exists"]:
             sql = '''UPDATE courses
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?
+                     SET title = ?, visible = ?, introduction = ?, passcode = ?, date_updated = ?
                      WHERE course_id = ?'''
 
-            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["date_updated"], course_basics["id"]])
+            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_updated"], course_basics["id"]])
         else:
-            sql = '''INSERT INTO courses (title, visible, introduction, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO courses (title, visible, introduction, passcode, date_created, date_updated)
+                     VALUES (?, ?, ?, ?, ?, ?)'''
 
-            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["date_created"], course_details["date_updated"]])
+            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_created"], course_details["date_updated"]])
             course_basics["id"] = self.cursor.lastrowid
             course_basics["exists"] = True
 

@@ -37,7 +37,7 @@
 </p>
 
 <p><strong>Passcode (optional): </strong><br/>Students will be required to enter this code in order to register for the course.</p>
-<p><textarea name="passcode" class="textarea is-info is-medium is-fullwidth" rows="1" style="font-family:monospace">{% if passcode %}{{ passcode }}{% end %}</textarea></p>
+<p><textarea name="passcode" class="textarea is-info is-medium is-fullwidth" rows="1" style="font-family:monospace">{% if course_details["passcode"] %}{{ course_details["passcode"] }}{% end %}</textarea></p>
 
 <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 
