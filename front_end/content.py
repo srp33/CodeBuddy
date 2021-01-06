@@ -258,12 +258,13 @@ class Content:
         self.cursor.execute(sql)
         return self.cursor.fetchone()["num_administrators"]
 
-    def get_role(self, user_id):
+    def get_role(self, course_id, user_id):
         sql = '''SELECT role
                  FROM permissions
-                 WHERE user_id = ?'''
+                 WHERE course_id = ?
+                 AND user_id = ?'''
 
-        self.cursor.execute(sql, (user_id,))
+        self.cursor.execute(sql, (course_id, user_id,))
         row = self.cursor.fetchone()
 
         if row:
@@ -1112,15 +1113,25 @@ class Content:
         self.cursor.execute(sql, (theme, user_id,))
 
     def remove_user_submissions(self, user_id):
-        sql = '''DELETE FROM scores
+        sql = '''SELECT submission_id
+                 FROM submissions
                  WHERE user_id = ?'''
-
+        
         self.cursor.execute(sql, (user_id,))
+        submissions = self.cursor.fetchall()
+        if submissions:
 
-        sql = '''DELETE FROM submissions
-                 WHERE user_id = ?'''
+            sql = '''DELETE FROM scores
+                    WHERE user_id = ?'''
+            self.cursor.execute(sql, (user_id,))
 
-        self.cursor.execute(sql, (user_id,))
+            sql = '''DELETE FROM submissions
+                    WHERE user_id = ?'''
+            self.cursor.execute(sql, (user_id,))
+
+            return True
+        else:
+            return False
 
     def delete_user(self, user_id):
         sql = f'''DELETE FROM users

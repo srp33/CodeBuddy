@@ -233,7 +233,7 @@ class ProfileAdminHandler(BaseUserHandler):
             new_admin = self.get_body_argument("new_admin")
 
             if content.check_user_exists(new_admin):
-                if content.get_role(new_admin) == "administrator":
+                if content.get_role(0, new_admin) == "administrator":
                     result = f"{new_admin} is already an administrator."
                 else:
                     content.add_admin_permissions(new_admin)
@@ -277,7 +277,7 @@ class ProfileInstructorHandler(BaseUserHandler):
                 result = ""
 
                 if content.check_user_exists(new_assistant):
-                    if content.get_role(new_assistant) == "assistant":
+                    if content.get_role(course_id, new_assistant) == "assistant":
                         courses = content.get_courses_connected_to_user(new_assistant)
                         for course in courses:
                             if course[0] == course_id:
@@ -313,17 +313,18 @@ class ProfileManageUsersHandler(BaseUserHandler):
 
             if remove_user:
                 if content.check_user_exists(remove_user):
-                    if content.get_role(remove_user) != "student":
-                        result = f"{remove_user} is not a student - no submissions to remove."
-                    else:
-                        content.remove_user_submissions(remove_user)
+                    submissions_removed = content.remove_user_submissions(remove_user)
+                    if submissions_removed:
                         result = f"Success: All scores and submissions for the user '{remove_user}' have been deleted."
+                    else:
+                        result = f"Error: The user '{remove_user}' doesn't have any submissions to remove."
                 else:
                     result = f"Error: The user '{remove_user}' does not exist."    
 
             if delete_user:
+                course_id = content.get_course_id_from_role(delete_user)
                 if content.check_user_exists(delete_user):
-                    if content.get_role(delete_user) == "administrator":
+                    if content.get_role(course_id, delete_user) == "administrator":
                         if len(content.get_users_from_role(0, "administrator")) > 1:
                             if delete_user == user_id:
                                 #Figure out what to do when admins remove themselves
@@ -332,10 +333,9 @@ class ProfileManageUsersHandler(BaseUserHandler):
                                 result = f"{delete_user} is an administrator and can only be deleted by that user."
                         else:
                             result = f"Error: At least one administrator must remain in the system."
-                    elif content.get_role(delete_user) == "instructor":
-                        course_id = content.get_course_id_from_role(delete_user)
+                    elif content.get_role(course_id, delete_user) == "instructor":
                         if len(content.get_users_from_role(course_id, "instructor")) > 1:
-                            if content.get_role(user_id) == "administrator":
+                            if content.get_role(0, user_id) == "administrator":
                                 content.delete_user(delete_user)
                                 result = f"Success: The user '{delete_user}' has been deleted."
                             else:
@@ -1128,7 +1128,7 @@ class AddInstructorHandler(BaseUserHandler):
             new_instructor = self.get_body_argument("new_inst")
 
             if content.check_user_exists(new_instructor):
-                if content.get_role(new_instructor) == "administrator":
+                if content.get_role(0, new_instructor) == "administrator":
                     result = f"Error: {new_instructor} is already an administrator and can't be given a lower role."
                 else:
                     content.add_permissions(course_basics["id"], new_instructor, "instructor")
@@ -1171,8 +1171,8 @@ class RemoveInstructorHandler(BaseUserHandler):
                 self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
                 return
 
-            if content.get_role(old_instructor) != "instructor":
-                result = f"Error: {old_instructor} is not an instructor."
+            if content.get_role(course, old_instructor) != "instructor":
+                result = f"Error: {old_instructor} is not an instructor for this course."
             else:
                 content.remove_permissions(course, old_instructor, "instructor")
                 result = f"Success: {old_instructor} has been removed from the instructor list."
@@ -1189,8 +1189,8 @@ class RemoveAssistantHandler(BaseUserHandler):
                 self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
                 return
 
-            if content.get_role(old_assistant) != "assistant":
-                result = f"Error: {old_assistant} is not an assistant."
+            if content.get_role(course, old_assistant) != "assistant":
+                result = f"Error: {old_assistant} is not an assistant for this course."
             else:
                 content.remove_permissions(course, old_assistant, "assistant")
                 result = f"Success: {old_assistant} has been removed from the instructor assistant list."
