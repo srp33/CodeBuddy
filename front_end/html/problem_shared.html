@@ -240,10 +240,8 @@
                                 passed = json_data[i][2];
 
                                 //show student's most recent submission
-                                {% if student_id != user_id %}
-                                    if (i == 0)
-                                        get_submission(submission_id, false);
-                                {% end %}
+                                if (i == 0)
+                                    get_submission(submission_id, false);
                     
                                 if (passed)
                                     button_bg_color = "#80cdc1";
@@ -255,7 +253,6 @@
                             }
 
                             submission_html += "</div><br />\n";
-
                             revert_html = "<p class='control'><button class='button is-primary is-light is-large is-half' onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button>&nbsp;</p>";
                         }
 
