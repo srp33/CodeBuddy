@@ -335,7 +335,6 @@ class ImportCourseHandler(BaseUserHandler):
                         date_created = convert_string_to_date(problem_list[20])
                         date_updated = convert_string_to_date(problem_list[21])
 
-                        #TODO: Think more strategically about this...
                         expected_text_output = ""
                         expected_image_output = ""
                         if expected_output == "txt":
@@ -676,7 +675,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
             problem_details["back_end"] = self.get_body_argument("back_end")
             problem_details["output_type"] = self.get_body_argument("output_type")
-            problem_details["answer_code"] = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required
+            problem_details["answer_code"] = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required (usually)
             problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
             problem_details["max_submissions"] = int(self.get_body_argument("max_submissions"))
             problem_details["test_code"] = self.get_body_argument("test_code_text").strip().replace("\r", "")
@@ -689,7 +688,9 @@ class EditProblemHandler(BaseUserHandler):
 
             result = "Success: The problem was saved!"
 
-            if problem_basics["title"] == "" or problem_details["instructions"] == "" or problem_details["answer_code"] == "":
+            any_response_counts = problem_details["back_end"] == "any_response"
+
+            if problem_basics["title"] == "" or problem_details["instructions"] == "" or (not any_response_counts and problem_details["answer_code"] == ""):
                 result = "Error: One of the required fields is missing."
             else:
                 if content.has_duplicate_title(content.get_problems(course, assignment), problem_basics["id"], problem_basics["title"]):
@@ -724,7 +725,7 @@ class EditProblemHandler(BaseUserHandler):
 
                                 text_output, image_output = exec_code(settings_dict, problem_details["answer_code"], problem_basics, problem_details)
 
-                                if text_output == "" and image_output == "":
+                                if not any_response_counts and text_output == "" and image_output == "":
                                     result = f"Error: No output was produced."
                                 else:
                                     problem_details["expected_text_output"] = text_output
@@ -738,9 +739,9 @@ class EditProblemHandler(BaseUserHandler):
             problems = content.get_problems(course, assignment)
             self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_id=self.get_current_user(), user_logged_in=user_logged_in_var.get(), role = self.get_current_role())
         except ConnectionError as inst:
-            render_error(self, "The front-end server was unable to contact the back-end server to check your code.")
+            render_error(self, "The front-end server was unable to contact the back-end server.")
         except ReadTimeout as inst:
-            render_error(self, f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds.")
+            render_error(self, f"Your solution timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds.")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -838,9 +839,9 @@ class RunCodeHandler(BaseUserHandler):
             out_dict["text_output"] = format_output_as_html(text_output)
             out_dict["image_output"] = image_output
         except ConnectionError as inst:
-            out_dict["text_output"] = "The front-end server was unable to contact the back-end server to check your code."
+            out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
         except ReadTimeout as inst:
-            out_dict["text_output"] = f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
+            out_dict["text_output"] = f"Your solution timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
         except Exception as inst:
             out_dict["text_output"] = format_output_as_html(traceback.format_exc())
 
@@ -858,7 +859,7 @@ class SubmitHandler(BaseUserHandler):
             assignment_details = content.get_assignment_details(course, assignment)
 
             text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, self.request)
-            diff, passed = check_problem_output(problem_details["expected_text_output"], text_output, problem_details["expected_image_output"], image_output, problem_details["output_type"])
+            diff, passed = check_problem_output(problem_details, text_output, image_output)
 
             out_dict["text_output"] = format_output_as_html(text_output)
             out_dict["image_output"] = image_output
@@ -872,9 +873,9 @@ class SubmitHandler(BaseUserHandler):
                 content.save_problem_score(course, assignment, problem, user, new_score)
 
         except ConnectionError as inst:
-            out_dict["text_output"] = "The front-end server was unable to contact the back-end server to check your code."
+            out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
         except ReadTimeout as inst:
-            out_dict["text_output"] = f"Your code timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
+            out_dict["text_output"] = f"Your solution timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds."
         except Exception as inst:
             out_dict["text_output"] = format_output_as_html(traceback.format_exc())
 
@@ -886,7 +887,7 @@ class GetSubmissionHandler(BaseUserHandler):
             problem_details = content.get_problem_details(course, assignment, problem)
             submission_info = content.get_submission_info(course, assignment, problem, student_id, submission_id)
 
-            diff, passed = check_problem_output(problem_details["expected_text_output"], submission_info["text_output"], problem_details["expected_image_output"], submission_info["image_output"], problem_details["output_type"])
+            diff, passed = check_problem_output(problem_details, submission_info["text_output"], submission_info["image_output"])
 
             submission_info["diff"] = format_output_as_html(diff)
             submission_info["text_output"] = format_output_as_html(submission_info["text_output"])

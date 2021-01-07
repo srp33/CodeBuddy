@@ -5,13 +5,19 @@ domain: codebuddy.byu.edu
 db_name: CodeBuddy.db
 back_ends:
     free_response:
-        description: a free response (not code)
+        description: Please write an answer based on the instructions provided.
+        code_completion_path: ace/mode/text
+        output_types:
+            txt: |-
+                Text
+    any_response:
+        description: Please write an answer based on the instructions provided. Any response will be given credit.
         code_completion_path: ace/mode/text
         output_types:
             txt: |-
                 Text
     r:
-        description: R code
+        description: Please write R code based on the instructions provided.
         image_name: srp33/codebuddy_r
         memory_allowed_mb: 100
         timeout_seconds: 30
@@ -22,7 +28,7 @@ back_ends:
             txt: |-
                 Text
     python:
-        description: Python code
+        description: Please write Python code based on the instructions provided.
         image_name: srp33/codebuddy_python
         memory_allowed_mb: 100
         timeout_seconds: 30

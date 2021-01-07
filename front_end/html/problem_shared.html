@@ -38,7 +38,7 @@
 
               if (json_output == "")
                   {% if problem_details["output_type"] == "txt" %}
-                      output = "<p><pre>[Your code produced no output.]</pre></p>";
+                      output = "<p><pre>[Your solution produced no output.]</pre></p>";
                   {% else %}
                       output = "";
                   {% end %}
@@ -53,7 +53,7 @@
 
               if (json_output == "")
                   {% if problem_details["output_type"] == "jpg" %}
-                      output = "<p><pre>[Your code did not produce an image.]</pre></p>";
+                      output = "<p><pre>[Your solution did not produce an image.]</pre></p>";
                   {% else %}
                       output = "";
                   {% end %}
@@ -64,18 +64,17 @@
             }
 
             function check_code(json_data) {
-              var code_output = "<h2>Your output:</h2>\n\n";
-              var diff_output = "";
               var result = "";
 
-              code_output += build_text_output(json_data.text_output);
-              code_output += build_image_output(json_data.image_output);
-
               if (json_data.passed) {
-                  result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Congratulations! Your code produces the expected output.</strong></p>\n\n";
+                  {% if problem_details["back_end"] == "any_response" %}
+                      result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
+                  {% else %}
+                      result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
+                  {% end %}
 
-                  {% if problem_details["show_answer"] %}
-                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p>"; 
+                  {% if problem_details["show_answer"] and problem_details["answer_code"] != "" %}
+                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's solution.</p>"; 
                   {% end %}
 
                   {% if next_problem %}
@@ -85,8 +84,12 @@
                   result += "</div>\n\n"
               }
               else {
-                  result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Did not pass.</strong></p>\n\n<p>Your output does not match the expected output. Please modify your code and try again.</div>\n\n";
+                  // This should never be reached when problem_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
+                  result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+
                   {% if problem_details["show_expected"] %}
+                      var diff_output = "";
+
                       if (json_data.diff.length > 0) {
                           diff_output += "<h2>Difference between your output and the expected output:</h2>\n\n";
 
@@ -96,12 +99,19 @@
                               diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
                           {% end %}
                       }
+
+                      document.getElementById("diff_output").innerHTML = diff_output;
                   {% end %}
               }
 
-              document.getElementById("code_output").innerHTML = code_output;
-              document.getElementById("diff_output").innerHTML = diff_output;
               document.getElementById("result").innerHTML = result;
+
+              {% if problem_details["back_end"] != "any_response" %}
+                  var code_output = "<h2>Your output:</h2>\n\n";
+                  code_output += build_text_output(json_data.text_output);
+                  code_output += build_image_output(json_data.image_output);
+                  document.getElementById("code_output").innerHTML = code_output;
+              {% end %}
             }
 
             function run_code() {
@@ -112,10 +122,13 @@
                     return false;
 
                 result_div = document.getElementById("result");
-                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
+                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
                 result_div.scrollIntoView();
                 document.getElementById("code_output").innerHTML = "";
-                document.getElementById("diff_output").innerHTML = "";
+
+                {% if problem_details["show_expected"] %}
+                    document.getElementById("diff_output").innerHTML = "";
+                {% end %}
 
                 post_data = { "user_code": user_code };
 
@@ -123,13 +136,13 @@
                     post_data,
                     function(data, status) {
                         var json_data = JSON.parse(data);
-                        var code_output = "<h2>Your output:</h2>\n\n";
-                        var result = "";
 
+                        var code_output = "<h2>Your output:</h2>\n\n";
                         code_output += build_text_output(json_data.text_output);
                         code_output += build_image_output(json_data.image_output);
                         document.getElementById("code_output").innerHTML = code_output;
-                        document.getElementById("result").innerHTML = result;
+
+                        document.getElementById("result").innerHTML = "";
                     })
 
                 editor.focus();
@@ -143,10 +156,16 @@
                     return false;
 
                 result_div = document.getElementById("result");
-                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your code is being executed...</div>";
+                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
                 result_div.scrollIntoView();
-                document.getElementById("code_output").innerHTML = "";
-                document.getElementById("diff_output").innerHTML = "";
+
+                {% if problem_details["back_end"] != "any_response" %}
+                    document.getElementById("code_output").innerHTML = "";
+
+                    {% if problem_details["show_expected"] %}
+                        document.getElementById("diff_output").innerHTML = "";
+                    {% end %}
+                {% end %}
 
                 post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
 
@@ -183,8 +202,17 @@
                         submission_buttons[i].style.border = "none";
                 }
 
-                document.getElementById("code_output").innerHTML = "";
-                document.getElementById("diff_output").innerHTML = "";
+                {% if problem_details["back_end"] != "any_response" %}
+                    document.getElementById("code_output").innerHTML = "";
+
+                    {% if problem_details["show_expected"] %}
+                        document.getElementById("diff_output").innerHTML = "";
+                    {% end %}
+                {% end %}
+
+                {% if problem_details["show_expected"] and problem_details["back_end"] != "any_response" %}
+                    document.getElementById("diff_output").innerHTML = "";
+                {% end %}
 
                 $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student_id }}/" + submission_id, 
                     function (data, status) {

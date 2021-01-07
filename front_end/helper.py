@@ -89,7 +89,7 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
     this_settings_dict = settings_dict["back_ends"][problem_details["back_end"]]
     code = code + "\n\n" + problem_details["test_code"]
 
-    if problem_details["back_end"] == 'free_response':
+    if problem_details["back_end"] in ['free_response', 'any_response']:
         # In this case, the code is the answer that the student provided.
         return code.strip(), ""
 
@@ -109,10 +109,13 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
 
     return response_dict["text_output"], response_dict["image_output"]
 
-def check_problem_output(expected_text, actual_text, expected_image, actual_image, output_type):
-    passed = False
+def check_problem_output(problem_details, actual_text, actual_image):
+    if problem_details["back_end"] == "any_response" and len(actual_text) > 0 or len(actual_image) > 0:
+        return "", True
 
-    if output_type == "txt":
+    if problem_details["output_type"] == "txt":
+        expected_text = problem_details["expected_text_output"]
+
         if expected_text == actual_text:
             return "", True
         if actual_text == "":
@@ -126,6 +129,8 @@ def check_problem_output(expected_text, actual_text, expected_image, actual_imag
 
         return diff_output, False
     else:
+        expected_image = problem_details["expected_image_output"]
+
         if expected_image == actual_image:
             return "", True
         if actual_image == "":
