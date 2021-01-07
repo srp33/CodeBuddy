@@ -1,0 +1,188 @@
+        <style>
+            .box:hover {
+                opacity: 0.7;
+            }
+        </style>
+
+        <link rel="stylesheet" href="/static/modal.css">
+        
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h3>Admin Menu</h3>
+        </div>
+        <div style="margin-bottom: 40px;">
+            <div class="columns">
+                <div class="column is-one-quarter">
+                    <div class="box has-background-link" style="padding: 50px;" onclick="window.location='/edit_course/';">
+                        <p class="has-text-white" style="text-align: center; font-size: larger;">Create<br>Course</p>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="box has-background-info" style="padding: 50px;" onclick="showImportCourse()">
+                        <p class="has-text-white" style="text-align: center; font-size: larger;">Import<br>Course</p>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="box has-background-grey-light" style="padding: 50px;" onclick="window.location='/summarize_logs';">
+                        <p class="has-text-white" style="text-align: center; font-size: larger;">View<br>Logs</p>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="box has-background-warning" style="padding: 50px;" onclick="showManageAdmins()">
+                        <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Administrators</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="import_div"
+          {% if tab == "import" %}
+            style="display: inline;"
+          {% else %}
+            style="display: none;"
+          {% end %}>
+            {% if result %}
+                {% if result.startswith("Error:") %}
+                    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+                {% else %}
+                    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+                {% end %}
+            {% end %}
+
+            <h2>Import a course</h2>
+            <p>Use this page to import a course that has previously been exported from this tool. The file must be zipped.</p>
+
+            <form method="post" action="/import_course" enctype="multipart/form-data">
+
+            <input type="file" name="zip_file" id="zip_file" accept=".zip"/>
+            <p style="margin-top: 10px;"><input type="submit" class="button is-small is-primary is-rounded" value="Import"/></p>
+            
+            </form>
+          
+        </div>
+
+        <div id="manage_admins"
+          {% if tab == "manage" %}
+            style="display: inline;"
+          {% else %}
+            style="display: none;"
+          {% end %}>
+
+            <div id="remove_admin_modal" class="modal">
+                <div class="modal-content">
+                    <form method="post" action="/remove_admin/{{ user_info['user_id'] }}">
+                    <span class="close">&times;</span>
+                    <p>Administrators can only be removed by themselves.</br>Are you sure you want to remove your admin privileges?</p>
+                    <p class="buttons">
+                        <a id="remove_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                        <input type="submit" id="remove_button" class="button is-small is-primary" style="margin-top: 10px;" value="Remove"/>
+                    </p>
+                    </form>
+                </div>
+            </div>
+
+            <div id="add_admin_modal" class="modal">
+                <div class="modal-content">
+                    <form method="post" action="/profile/admin/{{ user_info['user_id'] }}">
+                    <span class="close">&times;</span>
+                    <p>Add an administrator:</p>
+                    <input class="input is-medium is-link" type="text" id="new_admin" name="new_admin"/>
+                    <p class="buttons">
+                        <a id="add_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                        <input type="submit" id="add_button" class="button is-small is-primary" style="margin-top: 10px;" value="Add"/>
+                    </p>
+                    </form>
+                </div>
+            </div>
+
+            <h2>Current administrators:
+                <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Administrators can only be removed by themselves.">
+                    <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-middle; display: inline"/>
+                </label>
+            </h2>
+            
+            {% if admins %}
+                <ul>
+                {% for user in admins %}
+                    <li>{{ user }}</li>
+                {% end %}
+                </ul>
+            {% else %}
+                <p>There are no existing administrators.</p>
+            {% end %}
+            
+            <div class="buttons">
+                <a class="button is-primary is-small is-rounded" onclick="showAddModal()">Add Admin</a>
+                <a class="button is-light is-small is-rounded" onclick="showRemoveModal()">Remove Admin</a>
+            </div>
+            
+            {% if result %}
+                {% if result.startswith("Error:") %}
+                    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+                {% else %}
+                    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+                {% end %}
+            {% end %}
+            
+        </div></br></br></br>
+    </div>
+</div>
+
+<script>
+    function showManageAdmins() {
+        var manage_div = document.getElementById("manage_admins");
+        var import_div = document.getElementById("import_div");
+        manage_div.style.display = "inline";
+        import_div.style.display = "none";
+    }
+
+    function showImportCourse() {
+        var manage_div = document.getElementById("manage_admins");
+        var import_div = document.getElementById("import_div");
+        import_div.style.display = "inline";
+        manage_div.style.display = "none";
+    }
+
+    function showAddModal() {
+        var modal = document.getElementById("add_admin_modal");
+        var span = document.getElementsByClassName("close")[1];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("add_cancel_button");
+        var addButton = document.getElementById("add_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+
+    function showRemoveModal() {
+        var modal = document.getElementById("remove_admin_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("remove_cancel_button");
+        var removeButton = document.getElementById("remove_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+</script>

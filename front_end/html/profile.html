@@ -1,0 +1,57 @@
+<div class="columns" style="height: 100vh;">
+    <div class="column is-one-quarter" style="padding: 3.5rem;">
+        <aside class="menu">
+            <p class="menu-label">
+              General
+            </p>
+            <ul class="menu-list">
+              <li><a href="/profile/courses/{{ user_info['user_id'] }}"
+                {% if page == "courses" %}
+                    class="is-active"
+                {% end %}
+                >Home</a></li>
+              <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
+                {% if page == "personal_info" %}
+                    class="is-active"
+                {% end %}
+                >Personal info</a></li>
+              {% if role == "administrator" %}
+                <li><a href="/profile/admin/{{ user_info['user_id'] }}"
+                  {% if page == "admin" %}
+                      class="is-active"
+                  {% end %}
+                  >Admin</a></li>
+              {% end %}
+              {% if role == "instructor" %}
+                <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
+                  {% if page == "instructor" %}
+                      class="is-active"
+                  {% end %}
+                  >Instructor</a></li>
+              {% end %}
+              {% if role == "administrator" or role == "instructor" %}
+                <li><a href="/profile/manage_users"
+                  {% if page == "manage_users" %}
+                      class="is-active"
+                  {% end %}
+                  >Manage users</a></li>
+              {% end %}
+            </ul>
+            <p class="menu-label">
+              Settings
+            </p>
+            <ul class="menu-list">
+              <li><a href="/profile/preferences/{{ user_info['user_id'] }}"
+                {% if page == "preferences" %}
+                    class="is-active"
+                {% end %}
+                >Preferences</a></li>
+            </ul>
+        </aside>
+    </div>
+    <div class="column is-three-quarters" style="padding: 3.5rem; background-color: #f5f5f5;">
+      <div class="content">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <img src="{{ user_info['picture'] }}" alt="Profile Photo" style="border-radius: 50%; display: inline-block; vertical-align: middle; margin: 10px;"/>
+          <span style="font-size: larger;"><b>{{ user_info["name"] }}</b></span>
+        </div>
