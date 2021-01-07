@@ -100,7 +100,7 @@ else:
                        FROM problems''',
 
                       'DROP TABLE IF EXISTS problems',
-                      'ALTER TABLE problems2 RENAME TO problems'
+                      'ALTER TABLE problems2 RENAME TO problems',
 
                     '''CREATE TABLE IF NOT EXISTS assignments2 (
                         course_id integer NOT NULL,
@@ -118,8 +118,7 @@ else:
                         minute_timer int,
                         date_created timestamp NOT NULL,
                         date_updated timestamp NOT NULL,
-                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
-                       )''',
+                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE)''',
                     
                     '''INSERT INTO assignments2
                        SELECT course_id, assignment_id, title, introduction, visible, start_date, due_date, allow_late, late_percent,
