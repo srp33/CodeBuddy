@@ -6,6 +6,7 @@
   {% if len(assignments) > 0 %}
 
   <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
+  <link rel="stylesheet" href="/static/modal.css">
     
     <table class="table" id="assignment_table">
       <thead>
@@ -65,7 +66,7 @@
               </a>
             </td>
             <td>
-              <a href="/delete_assignment/{{ course_basics["id"] }}/{{ assignment[1]["id"] }}">
+              <a onclick="showDeleteModal({{ assignment[1]['id'] }})">
                 <img src="/static/trashcan.png" alt="Completed" height="25px" width="25px">
               </a> 
             </td>
@@ -74,6 +75,17 @@
       </tbody>
     </table>
   {% end %}
+
+  <div id="delete_assignment_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="confirm_delete"></p>
+        <p class="buttons">
+            <a id="delete_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+            <a id="delete_button" class="button is-small is-primary" style="margin-top: 10px;">Delete</a>
+        </p>
+    </div>
+  </div>
 
   <div>
     <a class="button is-small is-rounded is-primary" href="/edit_assignment/{{ course_basics["id"] }}/">New assignment</a>
@@ -84,13 +96,10 @@
     <p></br>
       {% if role == "administrator" or role == "instructor" %}
         <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a> |
-        <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a> |
-        <a href="/download_all_scores/{{ course_basics["id"] }}">Download all scores</a></br>
-        <a href="/add_assistant/{{ course_basics["id"] }}">Add/remove instructor assistant</a>
+        <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
         {% if role == "administrator" %}
           | <a href="/add_instructor/{{ course_basics["id"] }}">Add/remove instructor</a>
         {% end %}
-        | <a href="/manage_users/{{ course_basics["id"] }}">Manage users</a>
       {% end %}
     </p>
   </div></br></br></br>
@@ -98,3 +107,36 @@
 {% else %}
   <h2>This course does not exist.</h2>
 {% end %}
+
+<script>
+  function showDeleteModal(assignment_id) {
+    var modal = document.getElementById("delete_assignment_modal");
+    var span = document.getElementsByClassName("close")[0];
+    var confirm_text = document.getElementById("confirm_delete");
+
+    modal.style.display = "block";
+    confirm_text.innerHTML = 'Are you sure you want to delete this assignment?';
+
+    var cancelButton = document.getElementById("delete_cancel_button");
+    var deleteButton = document.getElementById("delete_button");
+
+    deleteButton.onclick = function() {
+      $.post("/delete_assignment/{{ course_basics['id'] }}/" + assignment_id);
+      modal.style.display = "none";
+      location.reload();
+    }
+
+    cancelButton.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+  }
+</script>

@@ -35,22 +35,34 @@ class Content:
     def create_sqlite_tables(self):
         create_users_table = '''CREATE TABLE IF NOT EXISTS users (
                                   user_id text PRIMARY KEY,
-                                  user_json text
+                                  name text,
+                                  given_name text,
+                                  family_name text,
+                                  picture text,
+                                  locale text,
+                                  ace_theme text NOT NULL DEFAULT "tomorrow"
                                 );'''
 
         create_permissions_table = '''CREATE TABLE IF NOT EXISTS permissions (
                                         user_id text NOT NULL,
                                         role text NOT NULL,
                                         course_id integer,
-                                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                                        PRIMARY KEY (user_id)
+                                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
                                       );'''
+
+        create_course_registration_table = '''CREATE TABLE IF NOT EXISTS course_registration (
+                                                 user_id text NOT NULL,
+                                                 course_id integer NOT NULL,
+                                                 FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                                 FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
+                                              );'''
 
         create_courses_table = '''CREATE TABLE IF NOT EXISTS courses (
                                     course_id integer PRIMARY KEY AUTOINCREMENT,
                                     title text NOT NULL UNIQUE,
                                     introduction text,
                                     visible integer NOT NULL,
+                                    passcode text,
                                     date_created timestamp NOT NULL,
                                     date_updated timestamp NOT NULL
                                   );'''
@@ -58,7 +70,7 @@ class Content:
         create_assignments_table = '''CREATE TABLE IF NOT EXISTS assignments (
                                         course_id integer NOT NULL,
                                         assignment_id integer PRIMARY KEY AUTOINCREMENT,
-                                        title text NOT NULL UNIQUE,
+                                        title text NOT NULL,
                                         introduction text,
                                         visible integer NOT NULL,
                                         start_date timestamp,
@@ -78,7 +90,7 @@ class Content:
                                      course_id integer NOT NULL,
                                      assignment_id integer NOT NULL,
                                      problem_id integer PRIMARY KEY AUTOINCREMENT,
-                                     title text NOT NULL UNIQUE,
+                                     title text NOT NULL,
                                      visible integer NOT NULL,
                                      answer_code text NOT NULL,
                                      answer_description text,
@@ -146,6 +158,7 @@ class Content:
         if self.conn is not None:
             self.cursor.execute(create_users_table)
             self.cursor.execute(create_permissions_table)
+            self.cursor.execute(create_course_registration_table)
             self.cursor.execute(create_courses_table)
             self.cursor.execute(create_assignments_table)
             self.cursor.execute(create_problems_table)
@@ -245,12 +258,13 @@ class Content:
         self.cursor.execute(sql)
         return self.cursor.fetchone()["num_administrators"]
 
-    def get_role(self, user_id):
+    def get_role(self, course_id, user_id):
         sql = '''SELECT role
                  FROM permissions
-                 WHERE user_id = ?'''
+                 WHERE course_id = ?
+                 AND user_id = ?'''
 
-        self.cursor.execute(sql, (user_id,))
+        self.cursor.execute(sql, (course_id, user_id,))
         row = self.cursor.fetchone()
 
         if row:
@@ -277,10 +291,40 @@ class Content:
         return row["course_id"]
 
     def add_user(self, user_id, user_dict):
-        sql = '''INSERT INTO users (user_id, user_json)
+        sql = '''INSERT INTO users (user_id, name, given_name, family_name, picture, locale, ace_theme)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'''
+
+        self.cursor.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"],
+        user_dict["picture"], user_dict["locale"], "tomorrow"))
+
+    def register_user_for_course(self, course_id, user_id):
+        sql = '''INSERT INTO course_registration (course_id, user_id)
                  VALUES (?, ?)'''
 
-        self.cursor.execute(sql, (user_id, json.dumps(user_dict)))
+        self.cursor.execute(sql, (course_id, user_id,))
+
+    def check_user_registered(self, course_id, user_id):
+        sql = '''SELECT *
+                 FROM course_registration
+                 WHERE course_id = ?
+                 AND user_id = ?'''
+
+        self.cursor.execute(sql, (course_id, user_id,))
+        if self.cursor.fetchone():
+            return True
+
+        return False
+
+    def get_user_info(self, user_id):
+        sql = '''SELECT *
+                 FROM users
+                 WHERE user_id = ?'''
+        
+        self.cursor.execute(sql, (user_id,))
+        user = self.cursor.fetchone()
+        user_info = {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
+                     "picture": user["picture"], "locale": user["locale"], "ace_theme": user["ace_theme"]}
+        return user_info
 
     def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role
@@ -330,6 +374,30 @@ class Content:
         self.cursor.execute(sql)
         return self.cursor.fetchone()["count"]
 
+    def check_course_exists(self, course_id):
+        sql = '''SELECT COUNT(*) AS count
+                 FROM courses
+                 WHERE course_id = ?'''
+        self.cursor.execute(sql, (course_id,))
+        if self.cursor.fetchone():
+            return True
+        else:
+            return False
+
+    def get_courses_connected_to_user(self, user_id):
+        courses = []
+        sql = '''SELECT p.course_id, c.title
+                 FROM permissions p
+                 INNER JOIN courses c
+                 ON p.course_id = c.course_id
+                 WHERE user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
+        for course in self.cursor.fetchall():
+            course_basics = {"id": course["course_id"], "title": course["title"]}
+            courses.append([course["course_id"], course_basics])
+        return courses
+
     def get_course_ids(self):
         sql = '''SELECT course_id
                  FROM courses'''
@@ -363,14 +431,14 @@ class Content:
     def get_courses(self, show_hidden=True):
         courses = []
 
-        sql = '''SELECT course_id, title, visible
+        sql = '''SELECT course_id, title, visible, introduction
                  FROM courses
                  ORDER BY title'''
         self.cursor.execute(sql)
 
         for course in self.cursor.fetchall():
             if course["visible"] or show_hidden:
-                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "exists": True}
+                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": course["introduction"], "exists": True}
                 courses.append([course["course_id"], course_basics])
 
         return courses
@@ -412,6 +480,23 @@ class Content:
                 problems.append([problem["problem_id"], problem_basics, course_id, assignment_id])
 
         return problems
+
+    def get_registered_courses(self, user_id):
+        registered_courses = []
+
+        sql = '''SELECT r.course_id, c.title
+                 FROM course_registration r
+                 INNER JOIN courses c
+                  ON r.course_id = c.course_id
+                 WHERE r.user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
+
+        for course in self.cursor.fetchall():
+            course_basics = {"id": course["course_id"], "title": course["title"]}
+            registered_courses.append([course["course_id"], course_basics])
+        
+        return registered_courses
 
     # Gets whether or not a student has passed each assignment in the course.
     def get_assignment_statuses(self, course_id, user_id):
@@ -628,8 +713,9 @@ class Content:
         course_basics["title"] = title
         course_basics["visible"] = visible
 
-    def specify_course_details(self, course_details, introduction, date_created, date_updated):
+    def specify_course_details(self, course_details, introduction, passcode, date_created, date_updated):
         course_details["introduction"] = introduction
+        course_details["passcode"] = passcode
         course_details["date_updated"] = date_updated
 
         if course_details["date_created"]:
@@ -791,16 +877,16 @@ class Content:
 
     def get_course_details(self, course, format_output=False):
         if not course:
-            return {"introduction": "", "date_created": None, "date_updated": None}
+            return {"introduction": "", "passcode": None, "date_created": None, "date_updated": None}
 
-        sql = '''SELECT introduction, date_created, date_updated
+        sql = '''SELECT introduction, passcode, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 
         self.cursor.execute(sql, (int(course),))
         row = self.cursor.fetchone()
 
-        course_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
         if format_output:
             course_dict["introduction"] = convert_markdown_to_html(course_dict["introduction"])
 
@@ -910,15 +996,15 @@ class Content:
     def save_course(self, course_basics, course_details):
         if course_basics["exists"]:
             sql = '''UPDATE courses
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?
+                     SET title = ?, visible = ?, introduction = ?, passcode = ?, date_updated = ?
                      WHERE course_id = ?'''
 
-            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["date_updated"], course_basics["id"]])
+            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_updated"], course_basics["id"]])
         else:
-            sql = '''INSERT INTO courses (title, visible, introduction, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO courses (title, visible, introduction, passcode, date_created, date_updated)
+                     VALUES (?, ?, ?, ?, ?, ?)'''
 
-            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["date_created"], course_details["date_updated"]])
+            self.cursor.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_created"], course_details["date_updated"]])
             course_basics["id"] = self.cursor.lastrowid
             course_basics["exists"] = True
 
@@ -977,7 +1063,7 @@ class Content:
 
     def copy_assignment(self, course_id, assignment_id, new_course_id):
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
-                 SELECT ?, title || ' copy', visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
+                 SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -986,7 +1072,7 @@ class Content:
         new_assignment_id = self.cursor.lastrowid
 
         sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
-                 SELECT ?, ?, title || ' copy', visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
+                 SELECT ?, ?, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
                  FROM problems
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -1014,21 +1100,38 @@ class Content:
 
     def update_user(self, user_id, user_dict):
         sql = '''UPDATE users
-                 SET user_json = ?
+                 SET name = ?, given_name = ?, family_name = ?, picture = ?, locale = ?
                  WHERE user_id = ?'''
 
-        self.cursor.execute(sql, (json.dumps(user_dict), user_id,))
+        self.cursor.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"],
+        user_dict["picture"], user_dict["locale"], user_id,))
+
+    def update_user_settings(self, user_id, theme):
+        sql = '''UPDATE users
+                 SET ace_theme = ?
+                 WHERE user_id = ?'''
+        self.cursor.execute(sql, (theme, user_id,))
 
     def remove_user_submissions(self, user_id):
-        sql = '''DELETE FROM scores
+        sql = '''SELECT submission_id
+                 FROM submissions
                  WHERE user_id = ?'''
-
+        
         self.cursor.execute(sql, (user_id,))
+        submissions = self.cursor.fetchall()
+        if submissions:
 
-        sql = '''DELETE FROM submissions
-                 WHERE user_id = ?'''
+            sql = '''DELETE FROM scores
+                    WHERE user_id = ?'''
+            self.cursor.execute(sql, (user_id,))
 
-        self.cursor.execute(sql, (user_id,))
+            sql = '''DELETE FROM submissions
+                    WHERE user_id = ?'''
+            self.cursor.execute(sql, (user_id,))
+
+            return True
+        else:
+            return False
 
     def delete_user(self, user_id):
         sql = f'''DELETE FROM users

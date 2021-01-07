@@ -33,6 +33,10 @@ RUN cd /static \
 ## This can be used for font awesome icons.
 ##wget -O /static/fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
 
+ADD Settings.yaml /
+ADD VERSION /
+ADD front_end/shared.js /static/
+ADD front_end/*.css /static/
 ADD front_end/images/* /static/
 ADD front_end/build_html.sh /app/
 ADD front_end/startup.sh /app/

@@ -1,0 +1,17 @@
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h3>Personal info</h3>
+        </div> 
+        <div class="columns">
+            <div class="column is-half is-offset-one-quarter" style="background-color: white">
+                <p><strong>First name:</strong> {{ user_info['given_name'] }}</p>
+                <p><strong>Last name:</strong> {{ user_info['family_name'] }}</p>
+                <p><strong>Email:</strong> {{ user_info['user_id'] }}</p>
+                <p><strong>Locale:</strong> {{ user_info['locale'] }}</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 5px;">
+            <p><i>Note: this information is received via Google login</i></p>
+        </div> 
+
+    </div>
+</div>

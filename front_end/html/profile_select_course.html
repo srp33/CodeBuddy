@@ -1,0 +1,8 @@
+<div style="text-align: center; margin-bottom: 40px;">
+    <h3>Please select a course before proceeding:</h3>
+    <ul>
+        {% for course in courses %}
+            <li><a href="/profile/instructor/{{ course[1]['course_id'] }}">{{ course[1]["title"] }}</a></li>
+        {% end %}
+    </ul>
+</div>

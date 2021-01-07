@@ -264,14 +264,14 @@
     <!-- Code to modify page behavior at the end of loading -->
     <script>
       var answer_code_editor = ace.edit("answer_code", {
-        theme: "ace/theme/tomorrow",
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
         autoScrollEditorIntoView: true,
         minLines: 20,
         fontSize: "12pt"
       });
 
       var test_code_editor = ace.edit("test_code", {
-        theme: "ace/theme/tomorrow",
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
         autoScrollEditorIntoView: true,
         minLines: 20,
         fontSize: "12pt"

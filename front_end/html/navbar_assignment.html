@@ -4,7 +4,7 @@
 
                     <div id="moreDropdown" class="navbar-dropdown is-size-4">
                     {% for assignment in assignments %}
-                        <a class="navbar-item " href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
+                        <a class="navbar-item" href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
                     {% end %}
                     </div>
                 {% end %}

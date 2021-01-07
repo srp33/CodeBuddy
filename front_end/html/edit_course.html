@@ -17,10 +17,10 @@
 <form method="post" action="/edit_course/{{ course_basics["id"] }}">
 
 <p><strong>Title*: </strong></p>
-<p><textarea name="title" class="textarea is-info is-normal is-medium" placeholder="Please specify a descriptive title for this course." rows="1" style="font-family:monospace" autofocus>{{ course_basics["title"] }}</textarea><br /><font color="gray">The title can only contain alphanumeric characters and spaces.</font></p>
+<p><textarea name="title" class="textarea is-info is-medium" placeholder="Please specify a descriptive title for this course." rows="1" style="font-family:monospace" autofocus>{{ course_basics["title"] }}</textarea><br /><font color="gray">The title can only contain alphanumeric characters and spaces.</font></p>
 
 <p><strong>Introduction*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this course.</p>
-<p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide an introduction for this course." rows="8" style="font-family:monospace">{{ course_details["introduction"] }}</textarea></p>
+<p><textarea name="introduction" class="textarea is-info is-medium is-fullwidth" placeholder="Please provide an introduction for this course." rows="8" style="font-family:monospace">{{ course_details["introduction"] }}</textarea></p>
 
 <p><strong>Visible: </strong>
   <div class="select is-info">
@@ -35,6 +35,9 @@
     </select>
   </div>
 </p>
+
+<p><strong>Passcode (optional): </strong><br/>Students will be required to enter this code in order to register for the course.</p>
+<p><textarea name="passcode" class="textarea is-info is-medium is-fullwidth" rows="1" style="font-family:monospace">{% if course_details["passcode"] %}{{ course_details["passcode"] }}{% end %}</textarea></p>
 
 <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
 

@@ -1,11 +1,11 @@
             {% if role == "administrator" or role == "instructor" or role == "assistant" %}
                 <p>
                     <a href="/problem_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">View scores</a> |
-                    <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a> |
+                    <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit problem</a>
             {% end %}
 
             {% if role == "administrator" or role == "instructor" %}
-                    <a href="/move_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Move problem</a> |
+                    | <a href="/move_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Move problem</a></br>
                     <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem</a> |
                     <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete problem submissions</a>
                 </p>
@@ -240,10 +240,8 @@
                                 passed = json_data[i][2];
 
                                 //show student's most recent submission
-                                {% if student_id != user_id %}
-                                    if (i == 0)
-                                        get_submission(submission_id, false);
-                                {% end %}
+                                if (i == 0)
+                                    get_submission(submission_id, false);
                     
                                 if (passed)
                                     button_bg_color = "#80cdc1";
@@ -255,7 +253,6 @@
                             }
 
                             submission_html += "</div><br />\n";
-
                             revert_html = "<p class='control'><button class='button is-primary is-light is-large is-half' onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button>&nbsp;</p>";
                         }
 
@@ -272,7 +269,7 @@
             <script>
             ace.require("ace/ext/language_tools");
             var editor = ace.edit("user_code", {
-                theme: "ace/theme/tomorrow",
+                theme: "ace/theme/{{ user_info['ace_theme'] }}",
                 autoScrollEditorIntoView: true,
                 minLines: 20,
                 fontSize: "12pt"
