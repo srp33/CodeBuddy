@@ -15,11 +15,7 @@
         <tr>
           <td><a href="/student_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student[1]["user_id"] }}">{{ student[1]["user_id"] }}</a></td>
           <td>{{ student[1]["num_submissions"] }}</td>
-          {% if student[1]["passed"] == 1 %}
-            <td>100%</td>
-          {% else %}
-            <td>0%</td>
-          {% end %}
+          <td>{{ student[1]["score"] }}%</td>
         </tr>
       {% end %}  
     </tbody>
