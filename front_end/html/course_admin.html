@@ -94,10 +94,10 @@
       <a class="button is-small is-rounded is-light" href="/export_submissions/{{ course_basics["id"] }}">Export submissions</a>   
     </p>
     <p></br>
-      {% if role == "administrator" or role == "instructor" %}
+      {% if is_administrator or is_instructor %}
         <a href="/edit_course/{{ course_basics["id"] }}">Edit course</a> |
         <a href="/delete_course/{{ course_basics["id"] }}">Delete course</a>
-        {% if role == "administrator" %}
+        {% if is_administrator %}
           | <a href="/add_instructor/{{ course_basics["id"] }}">Add/remove instructor</a>
         {% end %}
       {% end %}

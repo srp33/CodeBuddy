@@ -1,32 +1,12 @@
+<br />
 <h2>
     Welcome to CodeBuddy!
 </h2>
 
-<!--<p>
-    <img src="/static/Logo.png" width="300" alt="CodeBuddy" />
-</p>-->
-
 <p class="title is-size-5 is-spaced">
-    CodeBuddy enables educators to create coding assignments.
-</p>
-
-{% if len(courses) > 0 %}
-  <p>Please select one of the following courses:</p>
-
-  <ul>
-    {% for course in courses %}
-        <li><a href="/course/{{ course[0] }}">{{ course[1]["title"] }}</a></li>
+    {% if mode == "production" %}
+        Please <a href="/login">log in</a> to access courses.
+    {% else %}
+        Please <a href="/devlogin">log in</a> to access courses.
     {% end %}
-  </ul>
-{% else %}
-  <p>No courses have been created yet.</p>
-{% end %}
-
-<p>
-  {% if role == "administrator" %}
-    <a href="/edit_course/">Create course</a>
-    | <a href="/import_course">Import course</a>
-    | <a href="/summarize_logs">View logs</a>
-    | <a href="/add_admin">Add/remove administrator</a>
-  {% end %}
 </p>

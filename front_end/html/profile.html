@@ -15,21 +15,21 @@
                     class="is-active"
                 {% end %}
                 >Personal info</a></li>
-              {% if role == "administrator" %}
+              {% if is_administrator %}
                 <li><a href="/profile/admin/{{ user_info['user_id'] }}"
                   {% if page == "admin" %}
                       class="is-active"
                   {% end %}
                   >Admin</a></li>
               {% end %}
-              {% if role == "instructor" %}
+              {% if is_instructor %}
                 <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
                   {% if page == "instructor" %}
                       class="is-active"
                   {% end %}
                   >Instructor</a></li>
               {% end %}
-              {% if role == "administrator" or role == "instructor" %}
+              {% if is_administrator or is_instructor %}
                 <li><a href="/profile/manage_users"
                   {% if page == "manage_users" %}
                       class="is-active"

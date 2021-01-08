@@ -4,7 +4,7 @@ cd /tmp
 
 # Dynamic pages
 
-cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html home.html container_bottom.html footer.html > /app/home.html
+cat header.html navbar_top.html navbar_bottom.html container_top.html home.html container_bottom.html footer.html > /app/home.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html devlogin.html container_bottom.html footer.html > /app/devlogin.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_courses.html profile_bottom.html footer.html > /app/profile_courses.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_personal_info.html profile_bottom.html footer.html > /app/profile_personal_info.html
@@ -37,7 +37,6 @@ cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_to
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html move_problem.html container_bottom.html footer.html > /app/move_problem.html
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html copy_assignment.html container_bottom.html footer.html > /app/copy_assignment.html
 
-cat header.html navbar_top.html navbar_bottom.html container_top.html initialize.html container_bottom.html footer.html > /app/initialize.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html error.html container_bottom.html footer.html > /app/error.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html permissions.html container_bottom.html footer.html > /app/permissions.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html unavailable_assignment.html container_bottom.html footer.html > /app/unavailable_assignment.html

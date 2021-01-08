@@ -198,9 +198,6 @@ def create_id(current_objects=[], num_characters=4):
 def download_file(url):
     return requests.get(url).content
 
-def show_hidden(role):
-    return role == "administrator" or role == "instructor" or role == "assistant"
-
 def get_list_of_dates():
     years = []
     months = []

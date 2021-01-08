@@ -132,7 +132,7 @@ class Content:
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
                                       );'''
 
-        create_submissions_table = '''CREATE TABLE IF NOT EXISTS scores (
+        create_scores_table = '''CREATE TABLE IF NOT EXISTS scores (
                                         course_id integer NOT NULL,
                                         assignment_id integer NOT NULL,
                                         problem_id integer NOT NULL,
@@ -141,7 +141,7 @@ class Content:
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
                                         FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
                                         FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE,
-                                        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
                                       );'''
 
@@ -152,7 +152,7 @@ class Content:
                                                   start_time timestamp NOT NULL,
                                                   FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
                                                   FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
-                                                  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                                                  FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
                                                 );'''
 
         if self.conn is not None:
@@ -163,6 +163,7 @@ class Content:
             self.cursor.execute(create_assignments_table)
             self.cursor.execute(create_problems_table)
             self.cursor.execute(create_submissions_table)
+            self.cursor.execute(create_scores_table)
             self.cursor.execute(create_user_assignment_start_table)
         else:
             print("Error! Cannot create a database connection.")
@@ -242,7 +243,7 @@ class Content:
 
         self.cursor.execute(sql, (course_id, assignment_id, user_id))
 
-    def check_user_exists(self, user_id):
+    def user_exists(self, user_id):
         sql = '''SELECT user_id
                  FROM users
                  WHERE user_id = ?'''
@@ -250,7 +251,7 @@ class Content:
         self.cursor.execute(sql, (user_id,))
         return self.cursor.fetchone() != None
 
-    def check_administrator_exists(self):
+    def administrator_exists(self):
         sql = '''SELECT COUNT(*) AS num_administrators
                  FROM permissions
                  WHERE role = "administrator"'''
@@ -258,19 +259,32 @@ class Content:
         self.cursor.execute(sql)
         return self.cursor.fetchone()["num_administrators"]
 
-    def get_role(self, course_id, user_id):
-        sql = '''SELECT role
+    def is_administrator(self, user_id):
+        return self.user_has_role(user_id, 0, "administrator")
+
+    def user_has_role(self, user_id, course_id, role):
+        sql = '''SELECT COUNT(*) AS has_role
                  FROM permissions
-                 WHERE course_id = ?
-                 AND user_id = ?'''
+                 WHERE role = ?
+                   AND user_id = ?
+                   AND course_id = ?'''
 
-        self.cursor.execute(sql, (course_id, user_id,))
-        row = self.cursor.fetchone()
+        self.cursor.execute(sql, (role, user_id, course_id, ))
+        return self.cursor.fetchone()["has_role"] > 0
 
-        if row:
-            return row["role"]
-        else:
-            return "student"
+    def get_courses_with_role(self, user_id, role):
+        sql = '''SELECT course_id
+                 FROM permissions
+                 WHERE user_id = ?
+                   AND role = ?'''
+
+        self.cursor.execute(sql, (user_id, role, ))
+
+        course_ids = set()
+        for row in self.cursor.fetchall():
+            course_ids.add(row["course_id"])
+
+        return course_ids
 
     def get_users_from_role(self, course_id, role):
         sql = '''SELECT user_id
@@ -319,11 +333,12 @@ class Content:
         sql = '''SELECT *
                  FROM users
                  WHERE user_id = ?'''
-        
+
         self.cursor.execute(sql, (user_id,))
         user = self.cursor.fetchone()
         user_info = {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
                      "picture": user["picture"], "locale": user["locale"], "ace_theme": user["ace_theme"]}
+
         return user_info
 
     def add_permissions(self, course_id, user_id, role):
@@ -334,7 +349,7 @@ class Content:
 
         # Admins are not assigned to a particular course.
         if not course_id:
-            course_id = "0"
+            course_id = 0
 
         self.cursor.execute(sql, (user_id, int(course_id),))
 
@@ -355,8 +370,8 @@ class Content:
     def remove_permissions(self, course_id, user_id, role):
         sql = '''DELETE FROM permissions
                  WHERE user_id = ?
-                 AND role = ?
-                 AND (course_id = ? OR course_id IS NULL)'''
+                   AND role = ?
+                   AND (course_id = ? OR course_id IS NULL)'''
 
         # Admins are not assigned to a particular course.
         if not course_id:
@@ -374,7 +389,7 @@ class Content:
         self.cursor.execute(sql)
         return self.cursor.fetchone()["count"]
 
-    def check_course_exists(self, course_id):
+    def course_exists(self, course_id):
         sql = '''SELECT COUNT(*) AS count
                  FROM courses
                  WHERE course_id = ?'''
@@ -389,7 +404,7 @@ class Content:
         sql = '''SELECT p.course_id, c.title
                  FROM permissions p
                  INNER JOIN courses c
-                 ON p.course_id = c.course_id
+                   ON p.course_id = c.course_id
                  WHERE user_id = ?'''
 
         self.cursor.execute(sql, (user_id,))
@@ -495,7 +510,7 @@ class Content:
         for course in self.cursor.fetchall():
             course_basics = {"id": course["course_id"], "title": course["title"]}
             registered_courses.append([course["course_id"], course_basics])
-        
+
         return registered_courses
 
     # Gets whether or not a student has passed each assignment in the course.
@@ -550,26 +565,30 @@ class Content:
     # Gets the number of submissions a student has made for each problem
     # in an assignment and whether or not they have passed the problem.
     def get_problem_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
+        # This happens when you are creating a new assignment.
+        if not assignment_id:
+            return []
+
         sql = '''SELECT p.problem_id,
                         p.title,
                         IFNULL(MAX(s.passed), 0) AS passed,
                         COUNT(s.submission_id) AS num_submissions,
                         COUNT(s.submission_id) > 0 AND IFNULL(MAX(s.passed), 0) = 0 AS in_progress,
-						IFNULL(sc.score, 0) as score
+                        IFNULL(sc.score, 0) as score
                  FROM problems p
                  LEFT JOIN submissions s
-                  ON p.course_id = s.course_id
-                  AND p.assignment_id = s.assignment_id
-                  AND p.problem_id = s.problem_id
-                  AND (s.user_id = ? OR s.user_id IS NULL)
-				 LEFT JOIN scores sc
-				  ON p.course_id = sc.course_id
-                  AND p.assignment_id = sc.assignment_id
-                  AND p.problem_id = sc.problem_id
-				  AND (s.user_id = sc.user_id OR s.user_id IS NULL)
+                   ON p.course_id = s.course_id
+                   AND p.assignment_id = s.assignment_id
+                   AND p.problem_id = s.problem_id
+                   AND (s.user_id = ? OR s.user_id IS NULL)
+                 LEFT JOIN scores sc
+                   ON p.course_id = sc.course_id
+                   AND p.assignment_id = sc.assignment_id
+                   AND p.problem_id = sc.problem_id
+                   AND (s.user_id = sc.user_id OR s.user_id IS NULL)
                  WHERE p.course_id = ?
-                  AND p.assignment_id = ?
-                  AND p.visible = 1
+                   AND p.assignment_id = ?
+                   AND p.visible = 1
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
 
@@ -602,19 +621,19 @@ class Content:
         sql = '''SELECT user_id, (SUM(score) / b.num_problems) AS percent_passed
                  FROM scores
                  INNER JOIN (
-	              SELECT COUNT(DISTINCT problem_id) AS num_problems
-	              FROM problems
-	              WHERE course_id = ?
-	               AND assignment_id = ?
-	               AND visible = 1
+                   SELECT COUNT(DISTINCT problem_id) AS num_problems
+                   FROM problems
+                   WHERE course_id = ?
+                     AND assignment_id = ?
+                     AND visible = 1
                   ) b
                  WHERE course_id = ?
                   AND assignment_id = ?
                   AND user_id NOT IN
                    (
                     SELECT user_id
-	                FROM permissions
-	                WHERE course_id = 0 OR course_id = 1
+                    FROM permissions
+                    WHERE course_id = 0 OR course_id IS NULL
                    )
                  GROUP BY course_id, assignment_id, user_id'''
 
@@ -1116,17 +1135,17 @@ class Content:
         sql = '''SELECT submission_id
                  FROM submissions
                  WHERE user_id = ?'''
-        
+
         self.cursor.execute(sql, (user_id,))
         submissions = self.cursor.fetchall()
         if submissions:
 
             sql = '''DELETE FROM scores
-                    WHERE user_id = ?'''
+                     WHERE user_id = ?'''
             self.cursor.execute(sql, (user_id,))
 
             sql = '''DELETE FROM submissions
-                    WHERE user_id = ?'''
+                     WHERE user_id = ?'''
             self.cursor.execute(sql, (user_id,))
 
             return True

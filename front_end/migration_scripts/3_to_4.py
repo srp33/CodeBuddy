@@ -27,116 +27,15 @@ cursor.execute(check_sql)
 check_result = cursor.fetchone()["count"]
 
 if check_result > 0:
-    print("NotNeeded")
+    print("***NotNeeded***")
 else:
-    alter_sql_list = ['ALTER TABLE courses ADD COLUMN passcode text',
+    with open("/migration_scripts/3_to_4.sql") as sql_file:
+        sql_statements = sql_file.read().split(";")
 
-                    '''CREATE TABLE IF NOT EXISTS course_registration (
-                        user_id text NOT NULL,
-                        course_id integer NOT NULL,
-                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE)''',   
-
-                    '''CREATE TABLE IF NOT EXISTS users2 (
-                        user_id text PRIMARY KEY,
-                        name text,
-                        given_name text,
-                        family_name text,
-                        picture text,
-                        locale text,
-                        ace_theme text NOT NULL DEFAULT "tomorrow")''',
-
-                    '''INSERT INTO users2
-                       SELECT user_id
-                       FROM users''',
-
-                      'DROP TABLE IF EXISTS users',
-                      'ALTER TABLE users2 RENAME TO users'
-
-                    '''CREATE TABLE IF NOT EXISTS permissions2 (
-                        user_id text NOT NULL,
-                        role text NOT NULL,
-                        course_id integer,
-                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE)''',
-
-                    '''INSERT INTO permissions2
-                       SELECT user_id, role, course_id
-                       FROM permissions''',
-
-                      'DROP TABLE IF EXISTS permissions',
-                      'ALTER TABLE permissions2 RENAME TO permissions'
-
-                    '''CREATE TABLE IF NOT EXISTS problems2 (
-                        course_id integer NOT NULL,
-                        assignment_id integer NOT NULL,
-                        problem_id integer PRIMARY KEY AUTOINCREMENT,
-                        title text NOT NULL,
-                        visible integer NOT NULL,
-                        answer_code text NOT NULL,
-                        answer_description text,
-                        max_submissions integer NOT NULL,
-                        credit text,
-                        data_url text,
-                        data_file_name text,
-                        data_contents text,
-                        back_end text NOT NULL,
-                        expected_text_output text NOT NULL,
-                        expected_image_output text NOT NULL,
-                        instructions text NOT NULL,
-                        output_type text NOT NULL,
-                        show_answer integer NOT NULL,
-                        show_expected integer NOT NULL,
-                        show_test_code integer NOT NULL,
-                        test_code text,
-                        date_created timestamp NOT NULL,
-                        date_updated timestamp NOT NULL,
-                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE)''',
-
-                    '''INSERT INTO problems2
-                       SELECT course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, max_submissions, credit,
-                       data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type,
-                       show_answer, show_expected, show_test_code, test_code, date_created, date_updated
-                       FROM problems''',
-
-                      'DROP TABLE IF EXISTS problems',
-                      'ALTER TABLE problems2 RENAME TO problems',
-
-                    '''CREATE TABLE IF NOT EXISTS assignments2 (
-                        course_id integer NOT NULL,
-                        assignment_id integer PRIMARY KEY AUTOINCREMENT,
-                        title text NOT NULL,
-                        introduction text,
-                        visible integer NOT NULL,
-                        start_date timestamp,
-                        due_date timestamp,
-                        allow_late integer,
-                        late_percent real,
-                        view_answer_late integer,
-                        has_timer int NOT NULL,
-                        hour_timer int,
-                        minute_timer int,
-                        date_created timestamp NOT NULL,
-                        date_updated timestamp NOT NULL,
-                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE)''',
-                    
-                    '''INSERT INTO assignments2
-                       SELECT course_id, assignment_id, title, introduction, visible, start_date, due_date, allow_late, late_percent,
-                       view_answer_late, has_timer, hour_timer, minute_timer, date_created, date_updated
-                       FROM assignments''',
-
-                       'DROP TABLE IF EXISTS assignments',
-                       'ALTER TABLE assignments2 RENAME TO assignments'
-                     ]
-
-    error_occurred = False
-    for sql in alter_sql_list:
-        try:
-            cursor.execute(sql)
-        except:
+    try:
+        for sql in sql_statements:
             print(sql)
-            print(traceback.format_exc())
-            error_occurred = True
-
-    if not error_occurred:
-        print("Success")
+            cursor.executescript(sql)
+        print("***Success***")
+    except:
+        print(traceback.format_exc())
