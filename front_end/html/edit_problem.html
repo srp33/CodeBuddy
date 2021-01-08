@@ -1,7 +1,7 @@
 {% if problem_basics["exists"] %}
-  <h2>Edit problem</h2>
+  <h2>Edit exercise</h2>
 {% else %}
-  <h2>Create problem</h2>
+  <h2>Create exercise</h2>
 {% end %}
 
 {% if result %}
@@ -87,10 +87,10 @@
     <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" id="myForm" />
 
     <p><strong>Title*: </strong></p>
-    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this problem." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
+    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this exercise." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
 
-    <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this problem.</p>
-    <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
+    <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
+    <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this exercise." rows="8" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
 
     <p><strong>Back end: </strong>
       <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' code.">
@@ -117,7 +117,7 @@
     </p>
 
     <p><strong>Solution*: </strong></p>
-    <p>Please specify a solution for this problem. If this problem requires programming, the solution will be executed, and the output of your solution will be used as the expected output. If the back end is "free_response," your solution itself will be used as the expected output. If the back end is "any_response," you need not enter a solution. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new problem instead.</p>
+    <p>Please specify a solution for this exercise. If it requires programming, the solution will be executed, and the output of your solution will be used as the expected output. If the back end is "free_response," your solution itself will be used as the expected output. If the back end is "any_response," you need not enter a solution. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new exercise instead.</p>
     <p>
       <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide a solution." rows="20" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea>
       <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
@@ -155,7 +155,7 @@
       {% end %}
     {% end %}
 
-    <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this problem.</p> 
+    <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
     <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
 
     <p><strong>Maximum # of submissions:</strong></p>
@@ -182,12 +182,12 @@
     </p>
 
     <p><strong>Credit: </strong>
-      <br />If anyone should be given credit for creating this problem, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
+      <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
     </p>
     <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write the credit statement here." rows="4" name="credit" style="font-family:monospace">{{ problem_details["credit"] }}</textarea></p>
 
     <p><strong>Data source: </strong>
-      <br />Optionally, you can specify the URL of a data file that students will use on this problem.
+      <br />Optionally, you can specify the URL of a data file that students will use on this exercise.
       If you specify a URL, that file will be downloaded and stored on the server using the name you specify in the second box below. The maximum file size is 10 megabytes.
     </p>
     <p>
@@ -224,7 +224,7 @@
       </div>
     </p>
 
-    <p><strong>Allow students to view answer code once they correctly solve the problem: </strong>
+    <p><strong>Allow students to view answer code once they correctly solve the exercise: </strong>
       <div class="select is-info">
         <select name="show_answer" style="padding:2px;">
           {% if problem_details["show_answer"] %}

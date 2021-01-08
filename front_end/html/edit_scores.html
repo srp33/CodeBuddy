@@ -3,7 +3,7 @@
     <h2>{{ assignment_basics["title"] }}</h2>
 
     <h4>View scores for {{ student_id }}</h4>
-    <p>Click on a problem to view the student's past submissions.</p>
+    <p>Click on an exercise to view the student's past submissions.</p>
 
     {% if result %}
       {% if result.startswith("Error:") %}
@@ -21,7 +21,7 @@
         <table class="table" id="scores_table">
           <thead>
             <tr>
-              <th>Problem</th>
+              <th>Exercise</th>
               <th># Submissions</th>
               <th>Score</th>
             </tr>

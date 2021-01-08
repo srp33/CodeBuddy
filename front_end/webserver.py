@@ -894,7 +894,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
             problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
 
-            result = "Success: The problem was saved!"
+            result = "Success: The exercise was saved!"
 
             any_response_counts = problem_details["back_end"] == "any_response"
 
@@ -902,7 +902,7 @@ class EditProblemHandler(BaseUserHandler):
                 result = "Error: One of the required fields is missing."
             else:
                 if content.has_duplicate_title(content.get_problems(course, assignment), problem_basics["id"], problem_basics["title"]):
-                    result = "Error: A problem with that title already exists in this assignment."
+                    result = "Error: An exercise with that title already exists in this assignment."
                 else:
                     if len(problem_basics["title"]) > 60:
                         result = "Error: The title cannot exceed 60 characters."
@@ -1006,7 +1006,7 @@ class DeleteProblemSubmissionsHandler(BaseUserHandler):
                 return
 
             content.delete_problem_submissions(content.get_problem_basics(course, assignment, problem))
-            result = "Success: Problem submissions deleted."
+            result = "Success: Submissions deleted."
 
             problems =content.get_problems(course, assignment)
             self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_info=self.get_user_info())

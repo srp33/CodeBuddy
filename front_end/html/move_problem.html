@@ -1,4 +1,4 @@
-<h2>Move a problem to a different assignment</h2>
+<h2>Move an exercise to a different assignment</h2>
 
 {% if assignment_options %}
     <form method="post" action="/move_problem/{{ course_id }}/{{ assignment_id }}/{{ problem_id }}">
@@ -18,11 +18,11 @@
     </form>
 
     <p><br />
-        <a href="/problem/{{ course_id }}/{{ assignment_id }}/{{ problem_id }}">Back to problem</a>
+        <a href="/problem/{{ course_id }}/{{ assignment_id }}/{{ problem_id }}">Back to exercise</a>
     </p>
 {% else %}
     <article class="message is-success is-large">
-        <div class="message-body">The problem was successfully moved.</div>
+        <div class="message-body">The exercise was successfully moved.</div>
     </article>
 
     <p><br />

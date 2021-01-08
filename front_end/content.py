@@ -1098,25 +1098,6 @@ class Content:
 
         self.cursor.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id,))
 
-#        sql = f'''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
-#                  SELECT {new_course_id}, title || ' copy', visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
-#                  FROM assignments
-#                  WHERE course_id = {course_id}
-#                    AND assignment_id = {assignment_id}'''
-#
-#        self.cursor.executescript(sql)
-#        new_assignment_id = self.cursor.lastrowid
-#
-#        sql = f'''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
-#                  SELECT {new_course_id}, {new_assignment_id}, title || ' copy', visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
-#                  FROM problems
-#                  WHERE course_id = {course_id}
-#                    AND assignment_id = {assignment_id}
-#                '''
-#        print(sql)
-#
-#        self.cursor.executescript(sql)
-
     def update_user(self, user_id, user_dict):
         sql = '''UPDATE users
                  SET name = ?, given_name = ?, family_name = ?, picture = ?, locale = ?
@@ -1332,7 +1313,7 @@ class Content:
             course = row["course_id"]
             assignment = row["assignment_id"]
             problem = row["problem_id"]
-            print(f"Rebuilding course {course}, assignment {assignment}, problem {problem}")
+            print(f"Rebuilding course {course}, assignment {assignment}, exercise {problem}")
 
             problem_basics = self.get_problem_basics(course, assignment, problem)
             problem_details = self.get_problem_details(course, assignment, problem)
@@ -1361,22 +1342,15 @@ class Content:
         for row in self.cursor.fetchall():
             problem = row["problem_id"]
             user = row["user_id"]
-            ##if user != "tyler.mansfield96@gmail.com":
-            ##    continue
             submission = row["submission_id"]
             code = row["code"].replace("\r", "")
-            print(f"Rerunning submission {submission} for course {course}, assignment {assignment}, problem {problem}, user {user}.")
+            print(f"Rerunning submission {submission} for course {course}, assignment {assignment}, exercise {problem}, user {user}.")
 
             problem_basics = self.get_problem_basics(course, assignment, problem)
             problem_details = self.get_problem_details(course, assignment, problem)
 
             text_output, image_output = exec_code(self.__settings_dict, code, problem_basics, problem_details, None)
             diff, passed = check_problem_output(problem_details["expected_text_output"], text_output, problem_details["expected_image_output"], image_output, problem_details["output_type"])
-            print(text_output)
-            print(problem_details["expected_text_output"])
-            print(image_output)
-            print(problem_details["expected_image_output"])
-            print(passed)
 
             sql = '''UPDATE submissions
                      SET text_output = ?,
