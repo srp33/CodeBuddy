@@ -4,18 +4,27 @@
             <p>You don't have any submissions for this problem yet. You won't be able to view the instructor's code until you've submitted the correct answer.</p>
         {% else %}
             {% if (last_submission and last_submission["passed"]) or (assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["view_answer_late"]) %}
-                {% if last_submission %}
-                    <h4>Your solution:</h4>
-                    <pre>{{ last_submission["code"] }}</pre>
-                    <br /><br />
-                {% end %}
+                <div>
+                    {% if last_submission %}
+                        <h4>Your code:</h4>
+                        <textarea name="student_code" id="student_code" class="textarea is-info is-normal is-medium is-fullwidth" rows="10" style="font-family:monospace">{{ last_submission["code"] }}</textarea>
+                    {% end %}
 
-                <h4>Instructor's solution:</h4>
-                <pre>{{ problem_details["answer_code"]}}</pre>
+                    <h4>Instructor's answer code:</h4>
+                    <textarea name="instructor_code" id="instructor_code" class="textarea is-info is-normal is-medium is-fullwidth" rows="10" style="font-family:monospace">{{ problem_details["answer_code"]}}</textarea>
 
-                {% if len(problem_details["answer_description"]) > 0 %}
-                    <h4>Instructor's comments</h4>
-                    <p>{{ problem_details["answer_description"] }}</p>
+                    {% if len(problem_details["answer_description"]) > 0 %}
+                        <h4>Instructor's comments</h4>
+                        <p>{{ problem_details["answer_description"] }}</p>
+                        </br>
+                    {% end %}
+                </div></br>
+
+                {% if student_submissions %}
+                    <h4>Other students' answer code:</h4>
+                    {% for submission in student_submissions %}
+                        <pre>{{ submission[1] }}</pre>
+                    {% end %}
                 {% end %}
 
             {% else %}
@@ -34,3 +43,28 @@
     <p>This problem does not exist.</p>
 {% end %}
 <br /><br />
+
+<script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/mode-r.js" type="text/javascript"></script>
+<script src="/static/ext-language_tools.js"></script>
+
+<script>
+    ace.require("ace/ext/language_tools");
+    var student_code_editor = ace.edit("student_code", {
+      theme: "ace/theme/{{ user_info['ace_theme'] }}",
+      autoScrollEditorIntoView: true,
+      minLines: 10,
+      maxLines: 15,
+      fontSize: "12pt"
+    });
+    student_code_editor.getSession().setMode("{{ code_completion_path }}");
+
+    var instructor_code_editor = ace.edit("instructor_code", {
+      theme: "ace/theme/{{ user_info['ace_theme'] }}",
+      autoScrollEditorIntoView: true,
+      minLines: 10,
+      maxLines: 15,
+      fontSize: "12pt"
+    });
+    instructor_code_editor.getSession().setMode("{{ code_completion_path }}");
+</script>

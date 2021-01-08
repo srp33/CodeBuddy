@@ -94,6 +94,7 @@ class Content:
                                      visible integer NOT NULL,
                                      answer_code text NOT NULL,
                                      answer_description text,
+                                     hint text,
                                      max_submissions integer NOT NULL,
                                      credit text,
                                      data_url text,
@@ -733,6 +734,26 @@ class Content:
             submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"]])
         return submissions
 
+    def get_student_submissions(self, course_id, assignment_id, problem_id, user_id):
+        student_submissions = []
+        index = 1
+
+        sql = '''SELECT DISTINCT code
+                 FROM submissions
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?
+                  AND passed = 1
+                  AND user_id != ?
+                 ORDER BY date'''
+        
+        self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id,))
+
+        for submission in self.cursor.fetchall():
+            student_submissions.append([index, submission["code"]])
+            index += 1
+        return student_submissions
+
     def specify_course_basics(self, course_basics, title, visible):
         course_basics["title"] = title
         course_basics["visible"] = visible
@@ -772,12 +793,13 @@ class Content:
         problem_basics["title"] = title
         problem_basics["visible"] = visible
 
-    def specify_problem_details(self, problem_details, instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_text_output, expected_image_output, date_created, date_updated):
+    def specify_problem_details(self, problem_details, instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_text_output, expected_image_output, date_created, date_updated):
         problem_details["instructions"] = instructions
         problem_details["back_end"] = back_end
         problem_details["output_type"] = output_type
         problem_details["answer_code"] = answer_code
         problem_details["answer_description"] = answer_description
+        problem_details["hint"] = hint
         problem_details["max_submissions"] = max_submissions
         problem_details["test_code"] = test_code
         problem_details["credit"] = credit
@@ -937,12 +959,12 @@ class Content:
     def get_problem_details(self, course, assignment, problem, format_content=False):
         if not problem:
             return {"instructions": "", "back_end": "python",
-            "output_type": "txt", "answer_code": "", "answer_description": "", "max_submissions": 0, "test_code": "",
+            "output_type": "txt", "answer_code": "", "answer_description": "", "hint": "", "max_submissions": 0, "test_code": "",
             "credit": "", "show_expected": True, "show_test_code": True, "show_answer": True,
             "expected_text_output": "", "expected_image_output": "", "data_url": "", "data_file_name": "", "data_contents": "",
             "date_created": None, "date_updated": None}
 
-        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, show_expected, show_test_code, show_answer, expected_text_output, expected_image_output, data_url, data_file_name, data_contents, date_created, date_updated
+        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, test_code, credit, show_expected, show_test_code, show_answer, expected_text_output, expected_image_output, data_url, data_file_name, data_contents, date_created, date_updated
                  FROM problems
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -951,13 +973,14 @@ class Content:
         self.cursor.execute(sql, (int(course), int(assignment), int(problem),))
         row = self.cursor.fetchone()
 
-        problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_text_output": row["expected_text_output"], "expected_image_output": row["expected_image_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        problem_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "test_code": row["test_code"], "credit": row["credit"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "expected_text_output": row["expected_text_output"], "expected_image_output": row["expected_image_output"], "data_url": row["data_url"], "data_file_name": row["data_file_name"], "data_contents": row["data_contents"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
 
         if format_content:
             problem_dict["expected_text_output"] = format_output_as_html(problem_dict["expected_text_output"])
             problem_dict["instructions"] = convert_markdown_to_html(problem_dict["instructions"])
             problem_dict["credit"] = convert_markdown_to_html(problem_dict["credit"])
             problem_dict["answer_description"] = convert_markdown_to_html(problem_dict["answer_description"])
+            problem_dict["hint"] =  convert_markdown_to_html(problem_dict["hint"])
 
         return problem_dict
 
@@ -1057,7 +1080,7 @@ class Content:
         if problem_basics["exists"]:
             sql = '''UPDATE problems
                      SET title = ?, visible = ?,
-                         answer_code = ?, answer_description = ?, max_submissions = ?, credit = ?, data_url = ?,
+                         answer_code = ?, answer_description = ?, hint = ?, max_submissions = ?, credit = ?, data_url = ?,
                          data_file_name = ?, data_contents = ?, back_end = ?, expected_text_output = ?,
                          expected_image_output = ?, instructions = ?, output_type = ?, show_answer = ?, show_expected = ?,
                          show_test_code = ?, test_code = ?, date_updated = ?
@@ -1065,12 +1088,12 @@ class Content:
                        AND assignment_id = ?
                        AND problem_id = ?'''
 
-            self.cursor.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_text_output"], problem_details["expected_image_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
+            self.cursor.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_text_output"], problem_details["expected_image_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
         else:
-            sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            self.cursor.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_text_output"], problem_details["expected_image_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
+            self.cursor.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_text_output"], problem_details["expected_image_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
             problem_basics["id"] = self.cursor.lastrowid
             problem_basics["exists"] = True
 

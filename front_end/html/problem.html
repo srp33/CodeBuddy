@@ -96,6 +96,16 @@
               document.execCommand("copy");
               alert("Copied the text: " + copyText.value);
             }
+
+            function showHint() {
+              var hint_div = document.getElementById("hint_div");
+              if (hint_div.style.display == "inline") {
+                hint_div.style.display = "none";
+              }
+              else {
+                hint_div.style.display = "inline";
+              }
+            }
           </script>
 
           <div id="time_modal" class="modal">
@@ -144,6 +154,12 @@
 
               <pre>{{ problem_details["test_code"] }}</pre>
             {% end %}
+
+            {% if problem_details["hint"] != "" %}
+              <a class="button is-small is-light" onclick="showHint()">Hint</a>
+            {% end %}
+
+            <div id="hint_div" style="display: none;"><p style="margin-top: 10px;">{{ problem_details["hint"] }}</p></div>
 
             {% if assignment_details["has_timer"] %}
               {% if start_time %}

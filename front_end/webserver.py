@@ -551,6 +551,7 @@ class ImportCourseHandler(BaseUserHandler):
 
                         answer_code = problem_list[5]
                         answer_description = problem_list[6]
+                        hint = ""
                         max_submissions = int(problem_list[7])
                         credit = problem_list[8]
                         data_url = problem_list[9]
@@ -573,7 +574,7 @@ class ImportCourseHandler(BaseUserHandler):
                         else:
                             expected_image_output = problem_list[13]
 
-                        content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, max_submissions, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
+                        content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
                         content.save_problem(problem_basics, problem_details)
 
                     result = "Success: The course was imported!"
@@ -885,6 +886,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["output_type"] = self.get_body_argument("output_type")
             problem_details["answer_code"] = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required (usually)
             problem_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
+            problem_details["hint"] = self.get_body_argument("hint").strip().replace("\r", "")
             problem_details["max_submissions"] = int(self.get_body_argument("max_submissions"))
             problem_details["test_code"] = self.get_body_argument("test_code_text").strip().replace("\r", "")
             problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
@@ -929,7 +931,7 @@ class EditProblemHandler(BaseUserHandler):
 
                             if not result.startswith("Error:"):
                                 content.specify_problem_basics(problem_basics, problem_basics["title"], problem_basics["visible"])
-                                content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"], problem_details["answer_description"], problem_details["max_submissions"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], "", "", None, datetime.datetime.now())
+                                content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"], problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], "", "", None, datetime.datetime.now())
 
                                 text_output, image_output = exec_code(settings_dict, problem_details["answer_code"], problem_basics, problem_details)
 
@@ -1097,8 +1099,10 @@ class GetSubmissionsHandler(BaseUserHandler):
 class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, problem):
         try:
-            user_info = self.get_user_info()
-            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=content.get_problem_details(course, assignment, problem, format_content=True), problem_statuses=content.get_problem_statuses(course, assignment, user_info['user_id']), last_submission=content.get_last_submission(course, assignment, problem, user_info["user_id"]), curr_time=datetime.datetime.now(), format_content=True, user_info=user_info)
+            user = self.get_current_user()
+            problem_details = content.get_problem_details(course, assignment, problem, format_content=True)
+            back_end = settings_dict["back_ends"][problem_details["back_end"]]
+            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, problem_statuses=content.get_problem_statuses(course, assignment, user), code_completion_path=back_end["code_completion_path"], last_submission=content.get_last_submission(course, assignment, problem, user), student_submissions=content.get_student_submissions(course, assignment, problem, user), curr_time=datetime.datetime.now(), format_content=True, user_info=content.get_user_info(user))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
