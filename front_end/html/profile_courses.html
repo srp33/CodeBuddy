@@ -1,9 +1,5 @@
-        <!--<div class="buttons has-addons is-centered" style="margin: 10px;">
-            <a class="button is-normal is-primary is-rounded" id="current" onclick="clickCurrent()">Current Courses</a>
-            <a class="button is-normal is-primary is-light is-rounded" id="past" onclick="clickPast()">Past Courses</a>
-        </div>-->
-
         <link rel="stylesheet" href="/static/modal.css">
+        <script src="/static/jquery.min.js"></script>
 
         <style>
           .scroll_div {
@@ -13,7 +9,21 @@
             position: relative;
             padding-bottom: 20px;
           }
+          .course_div {
+            box-shadow: 3px 3px 6px lightgray;
+          }
         </style>
+
+        <div id="leave_course_modal" class="modal">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Are you sure you want to leave this course?</p>
+            <p class="buttons">
+              <button type="button" id="leave_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
+              <a id="leave_button" class="button is-small is-primary" style="margin-top: 10px;">Leave</a>
+            </p>
+          </div>
+        </div>
         
         <div style="margin-bottom: 40px;">
           <div style="margin-bottom: 40px;">
@@ -24,15 +34,52 @@
           </div>
           <div>
             {% if registered_courses %}
-              {% for course in registered_courses %}
-                <div class="columns">
-                  <div class="column is-one-third">
-                      <div class="box has-background-link" style="padding: 50px;" onclick="window.location='/course/{{ course[1]["id"] }}';">
-                          <p class="has-text-white" style="text-align: center; font-size: larger;">{{ course[1]["title"] }}</p>
-                      </div>
-                  </div>
+              <div class="columns">
+                <div class="column is-three-fifths">
+                  {% for course in registered_courses %}
+                    <div class="course_div box has-background-white">
+                      <article class="media">
+                        <div class="media-left">
+                          <figure class="image is-128x128">
+                            <img src="/static/default_course.png" alt="Image">
+                          </figure>
+                        </div>
+                        <div class="media-content">
+                          <div class="content">
+                            <nav class="level">
+                              <div class="level-left">
+                                <p class="level-item">
+                                  <strong>{{ course[1]["title"] }}</strong>
+                                </p>
+                              </div>
+                              <div class="level-right">
+                                <div class="dropdown is-hoverable is-right">
+                                  <div class="dropdown-trigger">
+                                    <a class="level-item">
+                                      <span class="icon is-medium">
+                                        <img src="/static/dots.png">
+                                      </span>
+                                    </a>
+                                  </div>
+                                  <div class="dropdown-menu">
+                                    <div class="dropdown-content">
+                                      <a class="dropdown-item" onclick="showLeaveCourseModal({{ course[0] }})">Leave course</a>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </nav>
+                            <!--<p>Instructor: </p>-->
+                            <div style="margin-top: 10px;">
+                              <a class="button is-small is-fullwidth is-rounded is-link" href="/course/{{ course[0] }}">View Course</a>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                  {% end %}
                 </div>
-              {% end %}
+              </div>
             {% else %}
                 <p>No current courses</p>
             {% end %}
@@ -97,7 +144,7 @@
 
     function showRegisterModal(course_id) {
         var modal = document.getElementById("register_modal");
-        var span = document.getElementsByClassName("close")[0];
+        var span = document.getElementsByClassName("close")[1];
         modal.style.display = "block";
 
         var course_id_input = document.getElementById("course_id");
@@ -119,27 +166,30 @@
         }
     }
 
-    /*function clickCurrent() {
-        var currButton = document.getElementById("current");
-        var pastButton = document.getElementById("past");
-        currButton.className = "button is-normal is-primary is-rounded";
-        pastButton.className = "button is-normal is-primary is-light is-rounded";
+    function showLeaveCourseModal(course_id) {
+        var modal = document.getElementById("leave_course_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
 
-        var currCourses = document.getElementById("currentCourses");
-        var pastCourses = document.getElementById("pastCourses");
-        currCourses.style.display = "inline";
-        pastCourses.style.display = "none";
+        var cancelButton = document.getElementById("leave_cancel_button");
+        var leaveButton = document.getElementById("leave_button");
+
+        leaveButton.onclick = function() {
+          $.post("/unregister/" + course_id + "/{{ user_info['user_id'] }}");
+          modal.style.display = "none";
+          location.reload();
+        }
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
     }
-
-    function clickPast() {
-        var currButton = document.getElementById("current");
-        var pastButton = document.getElementById("past");
-        currButton.className = "button is-normal is-primary is-light is-rounded";
-        pastButton.className = "button is-normal is-primary is-rounded";
-
-        var currCourses = document.getElementById("currentCourses");
-        var pastCourses = document.getElementById("pastCourses");
-        currCourses.style.display = "none";
-        pastCourses.style.display = "inline";
-    }*/
 </script>

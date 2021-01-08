@@ -317,6 +317,13 @@ class Content:
                  VALUES (?, ?)'''
 
         self.cursor.execute(sql, (course_id, user_id,))
+    
+    def unregister_user_from_course(self, course_id, user_id):
+        sql = '''DELETE FROM course_registration
+                 WHERE course_id = ?
+                 AND user_id = ?'''
+        
+        self.cursor.execute(sql, (course_id, user_id,))
 
     def check_user_registered(self, course_id, user_id):
         sql = '''SELECT *
@@ -413,6 +420,17 @@ class Content:
             course_basics = {"id": course["course_id"], "title": course["title"]}
             courses.append([course["course_id"], course_basics])
         return courses
+
+    def get_course_title(self, course_id):
+        sql = '''SELECT title
+                 FROM courses
+                 WHERE course_id = ?'''
+        self.cursor.execute(sql, (course_id,))
+        title = self.cursor.fetchone()
+        if title:
+            return title["title"]
+        else:
+            return None
 
     def get_course_ids(self):
         sql = '''SELECT course_id

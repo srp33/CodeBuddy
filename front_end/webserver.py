@@ -34,6 +34,7 @@ def make_app():
         url(r"\/profile\/instructor\/([^\/]+)\/([^\/]+)", ProfileInstructorHandler, name="profile_instructor"),
         url(r"\/profile\/manage_users", ProfileManageUsersHandler, name="profile_manage_users"),
         url(r"\/profile\/preferences\/([^\/]+)", ProfilePreferencesHandler, name="profile_preferences"),
+        url(r"\/unregister\/([^\/]+)\/([^\/]+)", UnregisterHandler, name="unregister"),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
         url(r"\/edit_course\/([^\/]+)?", EditCourseHandler, name="edit_course"),
         url(r"\/delete_course\/([^\/]+)?", DeleteCourseHandler, name="delete_course"),
@@ -387,6 +388,23 @@ class ProfilePreferencesHandler(BaseUserHandler):
             self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+class UnregisterHandler(BaseUserHandler):
+    def post(self, course, user_id):
+        try:
+            role = self.get_current_role()
+            if (role == "student" and self.get_current_user == user_id) or role == "administrator" or role == "instructor":
+                if content.check_user_registered(course, user_id):
+                    content.unregister_user_from_course(course, user_id)
+                    title = content.get_course_title(course)
+                    result = f"Success: The user {user_id} has been removed from {title}"
+                else:
+                    result = f"Error: The user {user_id} is not currently registered for the course \"{title}\""
+            else:
+                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+
+        except Exception as inst:
+            render_error(self, traceback.format_exc()) 
 
 class CourseHandler(BaseUserHandler):
     def get(self, course):
