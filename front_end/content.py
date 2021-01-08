@@ -729,7 +729,7 @@ class Content:
         student_submissions = []
         index = 1
 
-        sql = '''SELECT user_id, code
+        sql = '''SELECT DISTINCT code
                  FROM submissions
                  WHERE course_id = ?
                   AND assignment_id = ?
@@ -741,7 +741,7 @@ class Content:
         self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id,))
 
         for submission in self.cursor.fetchall():
-            student_submissions.append([index, submission["user_id"], submission["code"]])
+            student_submissions.append([index, submission["code"]])
             index += 1
         return student_submissions
 
