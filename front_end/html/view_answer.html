@@ -23,7 +23,7 @@
                 {% if student_submissions %}
                     <h4>Other students' answer code:</h4>
                     {% for submission in student_submissions %}
-                        <p>{{ submission[0] }}. <pre>{{ submission[1] }}</pre></p>
+                        <pre>{{ submission[1] }}</pre>
                     {% end %}
                 {% end %}
 
