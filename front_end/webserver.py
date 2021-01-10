@@ -1367,10 +1367,11 @@ class SummarizeLogsHandler(BaseUserHandler):
 
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
-        file_path = f"/static/{file_name}"
-
         if file_name.endswith(".html"):
-            self.render(file_path)
+            try:
+                self.render(file_name)
+            except Exception as inst:
+                render_error(self, traceback.format_exc())
         else:
             content_type = "text/css"
             read_mode = "r"
