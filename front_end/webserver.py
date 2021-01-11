@@ -1152,7 +1152,7 @@ class RemoveInstructorHandler(BaseUserHandler):
                 self.render("permissions.html")
                 return
 
-            if content.use_has_role(old_instructor, course, "instructor"):
+            if content.user_has_role(old_instructor, course, "instructor"):
                 result = f"Error: {old_instructor} is not an instructor for this course."
             else:
                 content.remove_permissions(course, old_instructor, "instructor")
