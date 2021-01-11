@@ -638,7 +638,7 @@ class AssignmentHandler(BaseUserHandler):
         else:
             try:
                 user_info = self.get_user_info()
-                assignment_details = content.get_assignment_details(course, assignment)
+                assignment_details = content.get_assignment_details(course, assignment, True)
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_start_time(course, assignment, user_info["user_id"])
 
