@@ -864,7 +864,7 @@ class ProblemHandler(BaseUserHandler):
 
                 if not start_time or content.timer_ended(course, assignment, start_time):
                     if not assignment_details["due_date"] or assignment_details["due_date"] > datetime.datetime.now():
-                        self.render("timer_error.html")
+                        self.render("timer_error.html", user_info=content.get_user_info(self.get_user_id()))
                         return
 
             show = self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
