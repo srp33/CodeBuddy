@@ -1,16 +1,16 @@
 {% if problem_basics["exists"] %}
     {% if problem_details["show_answer"] or assignment_details["view_answer_late"] %}
         {% if not last_submission and not assignment_details["due_date"] %}
-            <p>You don't have any submissions for this problem yet. You won't be able to view the instructor's code until you've submitted the correct answer.</p>
+            <p>You don't have any submissions for this problem yet. You won't be able to view the instructor's solution until you've submitted the correct answer.</p>
         {% else %}
             {% if (last_submission and last_submission["passed"]) or (assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["view_answer_late"]) %}
                 <div>
                     {% if last_submission %}
-                        <h4>Your code:</h4>
+                        <h4>Your solution:</h4>
                         <textarea name="student_code" id="student_code" class="textarea is-info is-normal is-medium is-fullwidth" rows="10" style="font-family:monospace">{{ last_submission["code"] }}</textarea>
                     {% end %}
 
-                    <h4>Instructor's answer code:</h4>
+                    <h4>Instructor's solution:</h4>
                     <textarea name="instructor_code" id="instructor_code" class="textarea is-info is-normal is-medium is-fullwidth" rows="10" style="font-family:monospace">{{ problem_details["answer_code"]}}</textarea>
 
                     {% if len(problem_details["answer_description"]) > 0 %}
@@ -22,7 +22,7 @@
 
                 {% if problem_details["show_student_submissions"] %}
                     {% if student_submissions %}
-                        <h4>Other students' answer code:</h4>
+                        <h4>Other students' solutions:</h4>
                         {% for submission in student_submissions %}
                             <pre>{{ submission[1] }}</pre>
                         {% end %}

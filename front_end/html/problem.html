@@ -133,7 +133,7 @@
             <p>{{ problem_details["instructions"] }}</p>
 
             {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
-              <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer code.</div></br>
+              <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div></br>
             {% end %}
             {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
               <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div></br>
@@ -219,7 +219,7 @@
               <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()' id='submit_button'>Submit</button></p>
 
               {% if problem_details["back_end"] == "any_response" %}
-                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any code that is currently in the box above.">
+                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any text that is currently in the box above.">
               {% else %}
                 <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. You can highlight a section of your solution and then hit 'Run' to test just that section. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any code that is currently in the box above.">
               {% end %}

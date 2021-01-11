@@ -93,7 +93,7 @@
     <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this problem." rows="8" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
 
     <p><strong>Back end: </strong>
-      <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' code.">
+      <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' solution.">
         <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-bottom"/>
       </label>
       <div class="select is-info">
@@ -227,7 +227,7 @@
       </div>
     </p>
 
-    <p><strong>Allow students to view answer code once they correctly solve the problem: </strong>
+    <p><strong>Allow students to view the answer once they correctly solve the problem: </strong>
       <div class="select is-info">
         <select name="show_answer" style="padding:2px;" onchange="showStudentSubmissionsDiv(this.value)">
           {% if problem_details["show_answer"] %}
