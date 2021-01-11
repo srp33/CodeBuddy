@@ -168,10 +168,10 @@ class BaseUserHandler(RequestHandler):
         return user_is_student_var.get()
 
     def is_instructor_for_course(self, course_id):
-        return course_id in user_instructor_courses_var.get()
+        return int(course_id) in user_instructor_courses_var.get()
 
     def is_assistant_for_course(self, course_id):
-        return course_id in user_assistant_courses_var.get()
+        return int(course_id) in user_assistant_courses_var.get()
 
 #class InitializeHandler(BaseUserHandler):
 #    def get(self):
