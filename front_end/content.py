@@ -555,7 +555,7 @@ class Content:
                    GROUP BY p.assignment_id, p.problem_id
                  )
                  GROUP BY assignment_id, title
-                 ORDER BY due_date'''
+                 ORDER BY title'''
 
         self.cursor.execute(sql,(user_id, int(course_id),))
 
