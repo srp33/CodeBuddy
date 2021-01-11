@@ -108,6 +108,7 @@
           <tr>
             <th>Problem</th>
             <th># Submissions</th>
+            <th>Score</th>
             <th>Completed</th>
           </tr>
         </thead>
@@ -120,6 +121,7 @@
                   <td><a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
               {% end %}
               <td>{{ problem[1]["num_submissions"] }}</td>
+              <td>{{ problem[1]["score"] }}%</td>
               {% if problem[1]["passed"] %}
                 <td><label>
                   <img src="/static/greencheck.png" alt="Completed" height="30" width="30" style="vertical-align: middle;"/>
