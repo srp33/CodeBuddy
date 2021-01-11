@@ -1107,8 +1107,24 @@ class Content:
                  SET name = ?, given_name = ?, family_name = ?, picture = ?, locale = ?
                  WHERE user_id = ?'''
 
-        self.cursor.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"],
-        user_dict["picture"], user_dict["locale"], user_id,))
+        name = "[Unknown name]"
+        given_name = "[Unknown given name]"
+        family_name = "[Unknown family name]"
+        picture = ""
+        locale = ""
+
+        if "name" in user_dict:
+            name = user_dict["name"]
+        if "given_name" in user_dict:
+            given_name = user_dict["given_name"]
+        if "family_name" in user_dict:
+            family_name = user_dict["family_name"]
+        if "picture" in user_dict:
+            picture = user_dict["picture"]
+        if "locale" in user_dict:
+            locale = user_dict["locale"]
+
+        self.cursor.execute(sql, (name, given_name, family_name, picture, locale, user_id,))
 
     def update_user_settings(self, user_id, theme):
         sql = '''UPDATE users
