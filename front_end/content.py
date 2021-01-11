@@ -765,6 +765,7 @@ class Content:
                   AND problem_id = ?
                   AND passed = 1
                   AND user_id != ?
+                 GROUP BY user_id
                  ORDER BY date'''
         
         self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id,))
@@ -1112,7 +1113,7 @@ class Content:
             self.cursor.execute(sql, [problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_text_output"], problem_details["expected_image_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_student_submissions"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_updated"], problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"]])
         else:
             sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, test_code, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             self.cursor.execute(sql, [problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["title"], problem_basics["visible"], str(problem_details["answer_code"]), problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], problem_details["data_contents"], problem_details["back_end"], problem_details["expected_text_output"], problem_details["expected_image_output"], problem_details["instructions"], problem_details["output_type"], problem_details["show_answer"], problem_details["show_student_submissions"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["test_code"], problem_details["date_created"], problem_details["date_updated"]])
             problem_basics["id"] = self.cursor.lastrowid
