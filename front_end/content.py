@@ -421,17 +421,6 @@ class Content:
             courses.append([course["course_id"], course_basics])
         return courses
 
-    def get_course_title(self, course_id):
-        sql = '''SELECT title
-                 FROM courses
-                 WHERE course_id = ?'''
-        self.cursor.execute(sql, (course_id,))
-        title = self.cursor.fetchone()
-        if title:
-            return title["title"]
-        else:
-            return None
-
     def get_course_ids(self):
         sql = '''SELECT course_id
                  FROM courses'''

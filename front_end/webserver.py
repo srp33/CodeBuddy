@@ -396,7 +396,7 @@ class UnregisterHandler(BaseUserHandler):
             if (role == "student" and self.get_current_user == user_id) or role == "administrator" or role == "instructor":
                 if content.check_user_registered(course, user_id):
                     content.unregister_user_from_course(course, user_id)
-                    title = content.get_course_title(course)
+                    title = content.get_course_basics(course)["title"]
                     result = f"Success: The user {user_id} has been removed from {title}"
                 else:
                     result = f"Error: The user {user_id} is not currently registered for the course \"{title}\""
