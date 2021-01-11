@@ -229,7 +229,7 @@
 
     <p><strong>Allow students to view answer code once they correctly solve the problem: </strong>
       <div class="select is-info">
-        <select name="show_answer" style="padding:2px;">
+        <select name="show_answer" style="padding:2px;" onchange="showStudentSubmissionsDiv(this.value)">
           {% if problem_details["show_answer"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -240,6 +240,27 @@
         </select>
       </div>
     </p>
+
+    <div id="student_submissions_div"
+      {% if problem_details["show_answer"] %}
+        style="display: inline"
+      {% else %}
+        style="display: none;"
+      {% end %}>
+      <p><strong>Allow students to see submissions from other students: </strong>
+        <div class="select is-info">
+          <select name="show_student_submissions" id="show_student_submissions" style="padding:2px;">
+            {% if problem_details["show_student_submissions"] %}
+              <option value="Yes" selected>Yes</option>
+              <option value="No">No</option>
+            {% else %}
+              <option value="Yes">Yes</option>
+              <option value="No" selected>No</option>
+            {% end %}
+          </select>
+        </div>
+      </p>
+    </div>
 
     <p><strong>Visible: </strong>
       <div class="select is-info">
@@ -287,7 +308,20 @@
       document.getElementById("myForm").onsubmit = function(evt) {
         document.getElementById("answer_code_text").value = answer_code_editor.getValue();
         document.getElementById("test_code_text").value = test_code_editor.getValue();
-    } 
+      } 
+
+      showStudentSubmissionsDiv = function(on) {
+        var student_submissions_div = document.getElementById("student_submissions_div");
+        var show_student_submissions = document.getElementById("show_student_submissions");
+
+        if (on == "Yes") {
+          student_submissions_div.style.display = "inline";
+        }
+        else {
+          show_student_submissions.value = "No";
+          student_submissions_div.style.display = "none";
+        }
+      }
     </script>
     </form>
   {% else %}

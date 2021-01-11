@@ -579,11 +579,12 @@ class ImportCourseHandler(BaseUserHandler):
                         instructions = problem_list[14]
                         output_type = problem_list[15]
                         show_answer = bool(problem_list[16])
-                        show_expected = bool(problem_list[17])
-                        show_test_code = bool(problem_list[18])
-                        test_code = problem_list[19]
-                        date_created = convert_string_to_date(problem_list[20])
-                        date_updated = convert_string_to_date(problem_list[21])
+                        show_student_submissions = bool(problem_list[17])
+                        show_expected = bool(problem_list[18])
+                        show_test_code = bool(problem_list[19])
+                        test_code = problem_list[20]
+                        date_created = convert_string_to_date(problem_list[21])
+                        date_updated = convert_string_to_date(problem_list[22])
 
                         expected_text_output = ""
                         expected_image_output = ""
@@ -913,6 +914,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
             problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
             problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
+            problem_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
 
             result = "Success: The problem was saved!"
 
@@ -949,7 +951,7 @@ class EditProblemHandler(BaseUserHandler):
 
                             if not result.startswith("Error:"):
                                 content.specify_problem_basics(problem_basics, problem_basics["title"], problem_basics["visible"])
-                                content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"], problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], "", "", None, datetime.datetime.now())
+                                content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"], problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], problem_details["show_student_submissions"], "", "", None, datetime.datetime.now())
 
                                 text_output, image_output = exec_code(settings_dict, problem_details["answer_code"], problem_basics, problem_details)
 

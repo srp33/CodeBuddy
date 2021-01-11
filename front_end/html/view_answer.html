@@ -20,10 +20,12 @@
                     {% end %}
                 </div></br>
 
-                {% if student_submissions %}
-                    <h4>Other students' answer code:</h4>
-                    {% for submission in student_submissions %}
-                        <pre>{{ submission[1] }}</pre>
+                {% if problem_details["show_student_submissions"] %}
+                    {% if student_submissions %}
+                        <h4>Other students' answer code:</h4>
+                        {% for submission in student_submissions %}
+                            <pre>{{ submission[1] }}</pre>
+                        {% end %}
                     {% end %}
                 {% end %}
 
