@@ -52,22 +52,24 @@
                                   <strong>{{ course[1]["title"] }}</strong>
                                 </p>
                               </div>
-                              <div class="level-right">
-                                <div class="dropdown is-hoverable is-right">
-                                  <div class="dropdown-trigger">
-                                    <a class="level-item">
-                                      <span class="icon is-medium">
-                                        <img src="/static/dots.png">
-                                      </span>
-                                    </a>
-                                  </div>
-                                  <div class="dropdown-menu">
-                                    <div class="dropdown-content">
-                                      <a class="dropdown-item" onclick="showLeaveCourseModal({{ course[0] }})">Leave course</a>
+                              {% if not is_administrator and not is_instructor %}
+                                <div class="level-right">
+                                  <div class="dropdown is-hoverable is-right">
+                                    <div class="dropdown-trigger">
+                                      <a class="level-item">
+                                        <span class="icon is-medium">
+                                          <img src="/static/dots.png">
+                                        </span>
+                                      </a>
+                                    </div>
+                                    <div class="dropdown-menu">
+                                      <div class="dropdown-content">
+                                        <a class="dropdown-item" onclick="showLeaveCourseModal({{ course[0] }})">Leave course</a>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
+                              {% end %}
                             </nav>
                             <!--<p>Instructor: </p>-->
                             <div style="margin-top: 10px;">

@@ -264,6 +264,18 @@ class Content:
     def is_administrator(self, user_id):
         return self.user_has_role(user_id, 0, "administrator")
 
+    def is_student(self, user_id):
+        sql = '''SELECT role
+                 FROM permissions
+                 WHERE user_id = ?'''
+
+        self.cursor.execute(sql, (user_id,))
+        role = self.cursor.fetchone()
+        if role:
+            return False
+        else:
+            return True
+
     def user_has_role(self, user_id, course_id, role):
         sql = '''SELECT COUNT(*) AS has_role
                  FROM permissions

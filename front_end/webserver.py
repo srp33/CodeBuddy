@@ -134,6 +134,7 @@ class BaseUserHandler(RequestHandler):
             if user_id:
                 user_info_var.set(content.get_user_info(user_id.decode()))
                 user_is_administrator_var.set(content.is_administrator(user_id.decode()))
+                user_is_student_var.set(content.is_student(user_id.decode()))
                 user_instructor_courses_var.set(content.get_courses_with_role(user_id.decode(), "instructor"))
                 user_assistant_courses_var.set(content.get_courses_with_role(user_id.decode(), "assistant"))
             else:
@@ -162,6 +163,9 @@ class BaseUserHandler(RequestHandler):
 
     def is_assistant(self):
         return len(user_assistant_courses_var.get()) > 0
+    
+    def is_student(self):
+        return user_is_student_var.get()
 
     def is_instructor_for_course(self, course_id):
         return course_id in user_instructor_courses_var.get()
@@ -392,8 +396,7 @@ class ProfilePreferencesHandler(BaseUserHandler):
 class UnregisterHandler(BaseUserHandler):
     def post(self, course, user_id):
         try:
-            role = self.get_current_role()
-            if (role == "student" and self.get_current_user == user_id) or role == "administrator" or role == "instructor":
+            if (self.is_student() and self.get_user_id() == user_id) or self.is_administrator() or self.is_instructor_for_course(course):
                 if content.check_user_registered(course, user_id):
                     content.unregister_user_from_course(course, user_id)
                     title = content.get_course_basics(course)["title"]
@@ -401,7 +404,7 @@ class UnregisterHandler(BaseUserHandler):
                 else:
                     result = f"Error: The user {user_id} is not currently registered for the course \"{title}\""
             else:
-                self.render("permissions.html", user_info=content.get_user_info(self.get_current_user()), user_logged_in=user_logged_in_var.get())
+                self.render("permissions.html", user_info=content.get_user_info(self.get_user_id()), user_logged_in=user_logged_in_var.get())
 
         except Exception as inst:
             render_error(self, traceback.format_exc()) 
@@ -1563,6 +1566,7 @@ if __name__ == "__main__":
 
         user_info_var = contextvars.ContextVar("user_info")
         user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
+        user_is_student_var = contextvars.ContextVar("user_is_student")
         user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
         user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
 
