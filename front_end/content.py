@@ -302,7 +302,11 @@ class Content:
 
         self.cursor.execute(sql, (user_id,))
         row = self.cursor.fetchone()
-        return row["course_id"]
+
+        if row:
+            return row["course_id"]
+        else:
+            return -1 # The user is a student.
 
     def add_user(self, user_id, user_dict):
         sql = '''INSERT INTO users (user_id, name, given_name, family_name, picture, locale, ace_theme)
