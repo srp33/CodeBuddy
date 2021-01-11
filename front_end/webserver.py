@@ -200,13 +200,6 @@ class ProfileCoursesHandler(BaseUserHandler):
 
     def post(self, user_id):
         try:
-            if self.is_administrator():
-                registered_courses = content.get_courses()
-            elif self.is_instructor():
-                registered_courses = content.get_courses_connected_to_user(user_id)
-            else:
-                registered_courses = content.get_registered_courses(user_id)
-
             course_id = self.get_body_argument("course_id")
             passcode = self.get_body_argument("passcode")
 
@@ -229,6 +222,13 @@ class ProfileCoursesHandler(BaseUserHandler):
                 result = "Error: Please enter a passcode."
             else:
                 result = "Error: Incorrect passcode."
+
+            if self.is_administrator():
+                registered_courses = content.get_courses()
+            elif self.is_instructor():
+                registered_courses = content.get_courses_connected_to_user(user_id)
+            else:
+                registered_courses = content.get_registered_courses(user_id)
 
             self.render("profile_courses.html", page="courses", result=result, courses=content.get_courses(), registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
         except Exception as inst:
