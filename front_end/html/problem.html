@@ -132,13 +132,6 @@
 
             <p>{{ problem_details["instructions"] }}</p>
 
-            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
-              <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div></br>
-            {% end %}
-            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
-              <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div></br>
-            {% end %}
-
             {% if len(problem_details["data_url"]) > 0 %}
                 <p><em>The data for this problem originated from <a href='{{ problem_details["data_url"] }}' target="_blank">here</a>.</em></p>
 
@@ -160,6 +153,15 @@
             {% end %}
 
             <div id="hint_div" style="display: none;"><p style="margin-top: 10px;">{{ problem_details["hint"] }}</p></div>
+
+            <p>
+              {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
+                <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div></br>
+              {% end %}
+              {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
+                <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div></br>
+              {% end %}
+            </p>
 
             {% if assignment_details["has_timer"] %}
               {% if start_time %}
