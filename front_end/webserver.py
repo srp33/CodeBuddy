@@ -741,8 +741,8 @@ class EditAssignmentHandler(BaseUserHandler):
                 if content.has_duplicate_title(content.get_assignments(course), assignment_basics["id"], assignment_basics["title"]):
                     result = "Error: An assignment with that title already exists."
                 else:
-                    if len(assignment_basics["title"]) > 50:
-                        result = "Error: The title cannot exceed 50 characters."
+                    if len(assignment_basics["title"]) > 80:
+                        result = "Error: The title cannot exceed 80 characters."
                     else:
                         if assignment_details["start_date"] and assignment_details["due_date"] and assignment_details["start_date"] > assignment_details["due_date"]:
                             result = "Error: The start date must be earlier than the due date."
@@ -893,8 +893,8 @@ class EditProblemHandler(BaseUserHandler):
                 if content.has_duplicate_title(content.get_problems(course, assignment), problem_basics["id"], problem_basics["title"]):
                     result = "Error: An exercise with that title already exists in this assignment."
                 else:
-                    if len(problem_basics["title"]) > 60:
-                        result = "Error: The title cannot exceed 60 characters."
+                    if len(problem_basics["title"]) > 80:
+                        result = "Error: The title cannot exceed 80 characters."
                     else:
                         #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', problem_basics["title"]):
                         #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
