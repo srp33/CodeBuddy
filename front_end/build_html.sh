@@ -2,10 +2,15 @@
 
 cd /tmp
 
+# Simple pages
+
+for page_name in about contact_us devlogin home
+do
+  cat header.html navbar_top.html navbar_bottom.html container_top.html ${page_name}.html container_bottom.html footer.html > /app/${page_name}.html
+done
+
 # Dynamic pages
 
-cat header.html navbar_top.html navbar_bottom.html container_top.html home.html container_bottom.html footer.html > /app/home.html
-cat header.html navbar_top.html navbar_bottom.html container_top.html devlogin.html container_bottom.html footer.html > /app/devlogin.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_courses.html profile_bottom.html footer.html > /app/profile_courses.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_personal_info.html profile_bottom.html footer.html > /app/profile_personal_info.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_admin.html profile_bottom.html footer.html > /app/profile_admin.html
@@ -41,13 +46,6 @@ cat header.html navbar_top.html navbar_bottom.html container_top.html error.html
 cat header.html navbar_top.html navbar_bottom.html container_top.html permissions.html container_bottom.html footer.html > /app/permissions.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html unavailable_assignment.html container_bottom.html footer.html > /app/unavailable_assignment.html
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html timer_error.html container_bottom.html footer.html > /app/timer_error.html
-
-# Static pages
-
-for page_name in about contact_us
-do
-  cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html ${page_name}.html container_bottom.html footer.html > /static/${page_name}.html
-done
 
 rm *.html
 

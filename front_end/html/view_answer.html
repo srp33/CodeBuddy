@@ -1,7 +1,7 @@
 {% if problem_basics["exists"] %}
     {% if problem_details["show_answer"] or assignment_details["view_answer_late"] %}
         {% if not last_submission and not assignment_details["due_date"] %}
-            <p>You don't have any submissions for this problem yet. You won't be able to view the instructor's solution until you've submitted the correct answer.</p>
+            <p>You don't have any submissions for this exercise yet. You won't be able to view the instructor's solution until you've submitted the correct answer.</p>
         {% else %}
             {% if (last_submission and last_submission["passed"]) or (assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["view_answer_late"]) %}
                 <div>
@@ -30,19 +30,19 @@
                 {% end %}
 
             {% else %}
-                <p>Either you have not yet passed this problem or you passed it previously but your most recent submission is not passing. Please make sure you pass the problem, and then you'll be able to view the instructor's answer.</p>
+                <p>Either you have not yet passed this exercise or you passed it previously but your most recent submission is not passing. Please make sure you pass the exercise, and then you'll be able to view the instructor's answer.</p>
             {% end %}
         {% end %}
     
         <p>
-            <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to problem</a>
+            <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Back to exercise</a>
         </p>
     {% else %}
-        <p>You do not have permission to view the answer for this problem.</p>
+        <p>You do not have permission to view the answer for this exercise.</p>
     {% end %}
 
 {% else %}
-    <p>This problem does not exist.</p>
+    <p>This exercise does not exist.</p>
 {% end %}
 <br /><br />
 

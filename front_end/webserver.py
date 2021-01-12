@@ -117,14 +117,6 @@ class HomeHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-#    def show_home_page(self):
-#        if (user_logged_in_var.get()):
-#            user_info = content.get_user_info(user_id_var.get())
-#        else:
-#            user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "picture": "https://icon-library.com/images/default-profile-icon/default-profile-icon-16.jpg", "locale": "en"}
-#
-#        self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_info['user_id']), user_info=user_info, user_logged_in=user_logged_in_var.get(), roles_dict=user_roles_var.get())
-
 class BaseUserHandler(RequestHandler):
     def prepare(self):
         try:
@@ -135,8 +127,8 @@ class BaseUserHandler(RequestHandler):
                 user_info_var.set(content.get_user_info(user_id.decode()))
                 user_is_administrator_var.set(content.is_administrator(user_id.decode()))
                 user_is_student_var.set(content.is_student(user_id.decode()))
-                user_instructor_courses_var.set(content.get_courses_with_role(user_id.decode(), "instructor"))
-                user_assistant_courses_var.set(content.get_courses_with_role(user_id.decode(), "assistant"))
+                user_instructor_courses_var.set([str(x) for x in content.get_courses_with_role(user_id.decode(), "instructor")])
+                user_assistant_courses_var.set([str(x) for x in content.get_courses_with_role(user_id.decode(), "assistant")])
             else:
                 if settings_dict["mode"] == "production":
                     self.set_secure_cookie("redirect_path", self.request.path)
@@ -145,9 +137,6 @@ class BaseUserHandler(RequestHandler):
                     self.redirect("/devlogin{}".format(self.request.path))
         except Exception as inst:
             render_error(self, traceback.format_exc())
-
-#    def get_current_user(self):
-#        return user_info_var.get()
 
     def get_user_info(self):
         return user_info_var.get()
@@ -672,7 +661,7 @@ class AssignmentHandler(BaseUserHandler):
         else:
             try:
                 user_info = self.get_user_info()
-                assignment_details = content.get_assignment_details(course, assignment)
+                assignment_details = content.get_assignment_details(course, assignment, True)
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_start_time(course, assignment, user_info["user_id"])
 
@@ -919,7 +908,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             problem_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
 
-            result = "Success: The problem was saved!"
+            result = "Success: The exercise was saved!"
 
             any_response_counts = problem_details["back_end"] == "any_response"
 
@@ -927,7 +916,7 @@ class EditProblemHandler(BaseUserHandler):
                 result = "Error: One of the required fields is missing."
             else:
                 if content.has_duplicate_title(content.get_problems(course, assignment), problem_basics["id"], problem_basics["title"]):
-                    result = "Error: A problem with that title already exists in this assignment."
+                    result = "Error: An exercise with that title already exists in this assignment."
                 else:
                     if len(problem_basics["title"]) > 60:
                         result = "Error: The title cannot exceed 60 characters."
@@ -1031,7 +1020,7 @@ class DeleteProblemSubmissionsHandler(BaseUserHandler):
                 return
 
             content.delete_problem_submissions(content.get_problem_basics(course, assignment, problem))
-            result = "Success: Problem submissions deleted."
+            result = "Success: Submissions deleted."
 
             problems =content.get_problems(course, assignment)
             self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_info=self.get_user_info())
@@ -1190,7 +1179,7 @@ class RemoveInstructorHandler(BaseUserHandler):
                 self.render("permissions.html")
                 return
 
-            if content.use_has_role(old_instructor, course, "instructor"):
+            if content.user_has_role(old_instructor, course, "instructor"):
                 result = f"Error: {old_instructor} is not an instructor for this course."
             else:
                 content.remove_permissions(course, old_instructor, "instructor")
@@ -1236,7 +1225,7 @@ class ViewScoresHandler(BaseUserHandler):
                 assignment_title = assignment_basics["title"].replace(" ", "_")
                 out_file = f"{assignment_title}.csv"
 
-                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), scores=content.get_assignment_scores(course, assignment), start_times=content.get_all_start_times(course, assignment), curr_datetime=datetime.datetime.now(), out_file=out_file, user_info=self.get_user_info())
+                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_id()), scores=content.get_assignment_scores(course, assignment), start_times=content.get_all_start_times(course, assignment), curr_datetime=datetime.datetime.now(), out_file=out_file, user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -1394,10 +1383,11 @@ class SummarizeLogsHandler(BaseUserHandler):
 
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
-        file_path = f"/static/{file_name}"
-
         if file_name.endswith(".html"):
-            self.render(file_path)
+            try:
+                self.render(file_name)
+            except Exception as inst:
+                render_error(self, traceback.format_exc())
         else:
             content_type = "text/css"
             read_mode = "r"
