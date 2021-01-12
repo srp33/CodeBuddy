@@ -1,7 +1,11 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if problem_basics["exists"] %}
-            <h2>{{ student_id }}'s submissions for "{{ problem_basics["title"] }}"</h2>
+            <h2>{{ student_id }}'s submissions</h2>
+        
+            <p><em>Assignment</em>: {{ problem_basics["assignment"]["title"] }}</p>
+        
+            <p><em>Problem</em>: {{ problem_basics["title"] }}</p>
 
             <p>{{ problem_details["instructions"] }}</p>
 
