@@ -311,13 +311,13 @@ class Content:
     def set_user_dict_defaults(self, user_dict):
         if "name" not in user_dict:
             user_dict["name"] = "[Unknown name]"
-        if "given_name" in user_dict:
+        if "given_name" not in user_dict:
             user_dict["given_name"] = "[Unknown given name]"
-        if "family_name" in user_dict:
+        if "family_name" not in user_dict:
             user_dict["family_name"] = "[Unknown family name]"
-        if "picture" in user_dict:
+        if "picture" not in user_dict:
             user_dict["picture"] = ""
-        if "locale" in user_dict:
+        if "locale" not in user_dict:
             user_dict["locale"] = ""
 
     def add_user(self, user_id, user_dict):
