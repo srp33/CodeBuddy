@@ -308,7 +308,21 @@ class Content:
         else:
             return -1 # The user is a student.
 
+    def set_user_dict_defaults(self, user_dict):
+        if "name" not in user_dict:
+            user_dict["name"] = "[Unknown name]"
+        if "given_name" in user_dict:
+            user_dict["given_name"] = "[Unknown given name]"
+        if "family_name" in user_dict:
+            user_dict["family_name"] = "[Unknown family name]"
+        if "picture" in user_dict:
+            user_dict["picture"] = ""
+        if "locale" in user_dict:
+            user_dict["locale"] = ""
+
     def add_user(self, user_id, user_dict):
+        self.set_user_dict_defaults(user_dict)
+
         sql = '''INSERT INTO users (user_id, name, given_name, family_name, picture, locale, ace_theme)
                  VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
@@ -1103,28 +1117,13 @@ class Content:
         self.cursor.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id,))
 
     def update_user(self, user_id, user_dict):
+        self.set_user_dict_defaults(user_dict)
+
         sql = '''UPDATE users
                  SET name = ?, given_name = ?, family_name = ?, picture = ?, locale = ?
                  WHERE user_id = ?'''
 
-        name = "[Unknown name]"
-        given_name = "[Unknown given name]"
-        family_name = "[Unknown family name]"
-        picture = ""
-        locale = ""
-
-        if "name" in user_dict:
-            name = user_dict["name"]
-        if "given_name" in user_dict:
-            given_name = user_dict["given_name"]
-        if "family_name" in user_dict:
-            family_name = user_dict["family_name"]
-        if "picture" in user_dict:
-            picture = user_dict["picture"]
-        if "locale" in user_dict:
-            locale = user_dict["locale"]
-
-        self.cursor.execute(sql, (name, given_name, family_name, picture, locale, user_id,))
+        self.cursor.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["picture"], user_dict["locale"], user_id,))
 
     def update_user_settings(self, user_id, theme):
         sql = '''UPDATE users
