@@ -22,7 +22,7 @@
                   {% end %}
                   >Admin</a></li>
               {% end %}
-              {% if is_instructor %}
+              {% if is_instructor or is_administrator %}
                 <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
                   {% if page == "instructor" %}
                       class="is-active"
