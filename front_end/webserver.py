@@ -125,8 +125,8 @@ class BaseUserHandler(RequestHandler):
             if user_id:
                 user_info_var.set(content.get_user_info(user_id.decode()))
                 user_is_administrator_var.set(content.is_administrator(user_id.decode()))
-                user_instructor_courses_var.set(content.get_courses_with_role(user_id.decode(), "instructor"))
-                user_assistant_courses_var.set(content.get_courses_with_role(user_id.decode(), "assistant"))
+                user_instructor_courses_var.set([str(x) for x in content.get_courses_with_role(user_id.decode(), "instructor")])
+                user_assistant_courses_var.set([str(x) for x in content.get_courses_with_role(user_id.decode(), "assistant")])
             else:
                 if settings_dict["mode"] == "production":
                     self.set_secure_cookie("redirect_path", self.request.path)
