@@ -8,7 +8,7 @@
                     <div class="select is-info">
                         <select name="new_assignment_id" id="new_assignment_id">
                             {% for assignment in assignment_options %}
-                                <option value="{{ assignment["id"] }}">{{ assignment["title"] }}</option>
+                                <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
                             {% end %}
                         </select>
                     </div>
@@ -22,17 +22,17 @@
             
             {% if is_administrator or is_instructor or is_assistant %}
                 <p>
-                    <a href="/problem_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">View scores</a> |
-                    <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit exercise</a>
+                    <a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">View scores</a> |
+                    <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Edit exercise</a>
             {% end %}
 
             {% if is_administrator or is_instructor %}
                     | <a onclick="showMoveProblemModal()">Move exercise</a></br>
-                    <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete student submissions</a>
+                    <a href="/delete_problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Delete student submissions</a>
                 </p>
             {% end %}
 
-            <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to exercise list</a><br/>
+            <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a><br/>
 
             {% if student_id == user_id %}
                 <br/><br/><br/>
@@ -117,11 +117,11 @@
                   {% end %}
 
                   {% if problem_details["show_answer"] and problem_details["answer_code"] != "" %}
-                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's solution.</p>"; 
+                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>here</a> to view the instructor's solution.</p>"; 
                   {% end %}
 
                   {% if next_problem %}
-                      result += "<p><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}'>Next exercise</a></p>\n\n";
+                      result += "<p><a href='/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_problem['id'] }}'>Next exercise</a></p>\n\n";
                   {% end %}
 
                   result += "</div>\n\n"
@@ -175,7 +175,7 @@
 
                 post_data = { "user_code": user_code };
 
-                $.post("/run_code/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
                     post_data,
                     function(data, status) {
                         var json_data = JSON.parse(data);
@@ -212,7 +212,7 @@
 
                 post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
 
-                $.post("/submit/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
                     post_data,
                     function(data, status) {
                         json_data = JSON.parse(data);
@@ -257,7 +257,7 @@
                     document.getElementById("diff_output").innerHTML = "";
                 {% end %}
 
-                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student_id }}/" + submission_id, 
+                $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}/" + submission_id, 
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         editor.setValue(json_data.code, 1);
@@ -294,7 +294,7 @@
             function show_past_submissions() {
                 submissions_div = document.getElementById("submissions");
 
-                $.get("/get_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student_id }}",
+                $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}",
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         var submission_html = "";
