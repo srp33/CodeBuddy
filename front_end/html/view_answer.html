@@ -22,8 +22,9 @@
 
                 {% if problem_details["show_student_submissions"] %}
                     {% if student_submissions %}
-                        <h4>Other students' solutions:</h4>
+                        <h4>Other students' solutions (anonymized):</h4>
                         {% for submission in student_submissions %}
+                            <p>Submission {{ submission[0] }}:</p>
                             <pre>{{ submission[1] }}</pre>
                         {% end %}
                     {% end %}
