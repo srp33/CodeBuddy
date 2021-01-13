@@ -658,11 +658,19 @@ class Content:
                    (
                     SELECT user_id
                     FROM permissions
-                    WHERE course_id = 0 OR course_id IS NULL
+                    WHERE course_id = 0 OR course_id = ?
                    )
+                  AND problem_id NOT IN
+				   (
+				    SELECT problem_id
+					FROM problems
+					WHERE course_id = ?
+					AND assignment_id = ?
+					AND visible = 0
+				   )
                  GROUP BY course_id, assignment_id, user_id'''
 
-        self.cursor.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id),))
+        self.cursor.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id),))
 
         for user in self.cursor.fetchall():
             scores_dict = {"user_id": user["user_id"], "percent_passed": user["percent_passed"]}
