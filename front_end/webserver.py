@@ -879,7 +879,7 @@ class ProblemHandler(BaseUserHandler):
             back_end = settings_dict["back_ends"][problem_details["back_end"]]
             next_prev_problems = content.get_next_prev_problems(course, assignment, problem, problems)
 
-            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_id()), curr_datetime=datetime.datetime.now(), next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_start_time(course, assignment, self.get_user_id()), user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
+            self.render("problem.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), problems=problems, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_details=problem_details, problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_problem=next_prev_problems["next"], prev_problem=next_prev_problems["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, problem, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_start_time(course, assignment, self.get_user_id()), user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
 
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -985,25 +985,19 @@ class EditProblemHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class MoveProblemHandler(BaseUserHandler):
-    def get(self, course_id, assignment_id, problem_id):
+    def post(self, course, assignment, problem):
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course_id):
-                self.render("move_problem.html", course_id=course_id, assignment_id=assignment_id, problem_id=problem_id, assignment_options=[x[1] for x in content.get_assignments(course_id) if str(x[0]) != assignment_id], user_info=self.get_user_info())
-            else:
-                self.render("permissions.html")
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-    def post(self, course_id, assignment_id, problem_id):
-        try:
-            if not self.is_administrator() and not self.is_instructor_for_course(course_id):
+            if not self.is_administrator() and not self.is_instructor_for_course(course):
                 self.render("permissions.html")
                 return
 
             new_assignment_id = self.get_body_argument("new_assignment_id")
-            content.move_problem(course_id, assignment_id, problem_id, new_assignment_id)
+            content.move_problem(course, assignment, problem, new_assignment_id)
 
-            self.render("move_problem.html", course_id=course_id, assignment_id=assignment_id, problem_id=problem_id, assignment_options=None, user_info=self.get_user_info())
+            assignment_basics = content.get_assignment_basics(course, new_assignment_id)
+            out_file = f"Assignment_{new_assignment_id}_Scores.csv"
+
+            self.render("assignment_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(course, True), problems=content.get_problems(course, new_assignment_id, True), problem_statuses=content.get_problem_statuses(course, new_assignment_id, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, new_assignment_id, True), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), out_file=out_file)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

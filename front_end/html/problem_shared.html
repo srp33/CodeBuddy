@@ -1,3 +1,23 @@
+            <link rel="stylesheet" href="/static/modal.css">
+
+            <div id="move_problem_modal" class="modal">
+                <form method="post" action="/move_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Move an exercise to a different assignment:</p>
+                    <select name="new_assignment_id" id="new_assignment_id">
+                        {% for assignment in assignment_options %}
+                            <option value="{{ assignment["id"] }}">{{ assignment["title"] }}</option>
+                        {% end %}
+                    </select>
+                    <p class="buttons">
+                        <a id="move_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                        <input type="submit" id="move_button" class="button is-small is-primary" style="margin-top: 10px;" value="Move"/>
+                    </p>
+                </div>
+                </form>
+            </div>
+            
             {% if is_administrator or is_instructor or is_assistant %}
                 <p>
                     <a href="/problem_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">View scores</a> |
@@ -5,7 +25,7 @@
             {% end %}
 
             {% if is_administrator or is_instructor %}
-                    | <a href="/move_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Move exercise</a></br>
+                    | <a onclick="showMoveProblemModal()">Move exercise</a></br>
                     <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete student submissions</a>
                 </p>
             {% end %}
@@ -17,6 +37,27 @@
             {% end %}
 
             <script>
+                function showMoveProblemModal() {
+                    var modal = document.getElementById("move_problem_modal");
+                    var span = document.getElementsByClassName("close")[0];
+                    modal.style.display = "block";
+
+                    var cancelButton = document.getElementById("move_cancel_button");
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
+
             {% if len(problem_details["data_url"]) > 0 %}
                 function show_hide_data() {
                     var button = document.getElementById("show_hide_data_button");
