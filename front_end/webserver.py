@@ -816,7 +816,7 @@ class CopyAssignmentHandler(BaseUserHandler):
             self.render("course_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(new_course_id, True), course_basics=content.get_course_basics(new_course_id), course_details=content.get_course_details(new_course_id, True), course_scores=content.get_course_scores(new_course_id), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(new_course_id))
         except Exception as inst:
             render_error(self, traceback.format_exc())
-            
+
 class DeleteAssignmentHandler(BaseUserHandler):
     def post(self, course, assignment):
         try:
@@ -988,7 +988,7 @@ class MoveProblemHandler(BaseUserHandler):
             assignment_basics = content.get_assignment_basics(course, new_assignment_id)
             out_file = f"Assignment_{new_assignment_id}_Scores.csv"
 
-            self.render("assignment_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(course, True), problems=content.get_problems(course, new_assignment_id, True), problem_statuses=content.get_problem_statuses(course, new_assignment_id, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, new_assignment_id, True), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), out_file=out_file)
+            self.render("assignment_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(course, True), problems=content.get_problems(course, new_assignment_id, True), problem_statuses=content.get_problem_statuses(course, new_assignment_id, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, new_assignment_id, True), course_options=[x[1] for x in content.get_courses() if str(x[0]) != course], user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), out_file=out_file)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
