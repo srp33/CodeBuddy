@@ -672,7 +672,7 @@ class AssignmentHandler(BaseUserHandler):
                 assignment_id = assignment_basics["id"]
                 out_file = f"Assignment_{assignment_id}_Scores.csv"
 
-                self.render("assignment_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(course, True), problems=content.get_problems(course, assignment, True), problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment, True), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), out_file=out_file)
+                self.render("assignment_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(course, True), problems=content.get_problems(course, assignment, True), problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment, True), course_options=[x[1] for x in content.get_courses() if str(x[0]) != course], user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), out_file=out_file)
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
@@ -804,28 +804,19 @@ class EditAssignmentHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class CopyAssignmentHandler(BaseUserHandler):
-    def get(self, course_id, assignment_id):
+    def post(self, course, assignment):
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course_id):
-                self.render("copy_assignment.html", course_id=course_id, assignment_id=assignment_id, course_options=[x[1] for x in content.get_courses() if str(x[0]) != course_id], user_info=self.get_user_info())
-            else:
-                self.render("permissions.html")
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-    def post(self, course_id, assignment_id):
-        try:
-            if not self.is_administrator() and not self.is_instructor_for_course(course_id):
+            if not self.is_administrator() and not self.is_instructor_for_course(course):
                 self.render("permissions.html")
                 return
 
             new_course_id = self.get_body_argument("new_course_id")
-            content.copy_assignment(course_id, assignment_id, new_course_id)
+            content.copy_assignment(course, assignment, new_course_id)
 
-            self.render("copy_assignment.html", course_id=course_id, assignment_id=assignment_id, course_options=None, user_info=self.get_user_info())
+            self.render("course_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(new_course_id, True), course_basics=content.get_course_basics(new_course_id), course_details=content.get_course_details(new_course_id, True), course_scores=content.get_course_scores(new_course_id), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(new_course_id))
         except Exception as inst:
             render_error(self, traceback.format_exc())
-
+            
 class DeleteAssignmentHandler(BaseUserHandler):
     def post(self, course, assignment):
         try:
