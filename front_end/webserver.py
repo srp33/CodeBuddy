@@ -280,33 +280,48 @@ class ProfileInstructorHandler(BaseUserHandler):
     def get (self, course_id, user_id):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course_id):
-                self.render("profile_instructor.html", page="instructor", tab=None, course=content.get_course_basics(course_id), assignments=content.get_assignments(course_id), assistants=content.get_users_from_role(course_id, "assistant"), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id))
+                self.render("profile_instructor.html", page="instructor", tab=None, course=content.get_course_basics(course_id), assignments=content.get_assignments(course_id), instructors=content.get_users_from_role(course_id, "instructor"), assistants=content.get_users_from_role(course_id, "assistant"), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id))
             else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     def post(self, course_id, user_id):
-        try:
-            if self.is_administrator() or self.is_instructor_for_course(course_id):
-                new_assistant = self.get_body_argument("new_assistant")
-                result = ""
+        try: 
+            new_assistant = self.get_body_argument("new_assistant")
+            new_instructor = self.get_body_argument("new_instructor")
+            result = ""
+            tab = ""
 
-                if content.user_exists(new_assistant):
-                    if content.user_has_role(new_assistant, course_id, "assistant"):
-                        courses = content.get_courses_connected_to_user(new_assistant)
-                        for course in courses:
-                            if course[0] == course_id:
-                                result = f"{new_assistant} is already an assistant for this course."
-                    if result == "":
-                        content.add_permissions(course_id, new_assistant, "assistant")
-                        result = f"Success! {new_assistant} is now an assistant for this course."
+            if new_assistant:
+                tab = "manage_assistants"
+                if self.is_administrator() or self.is_instructor_for_course(course_id):
+                    if content.user_exists(new_assistant):
+                        if content.user_has_role(new_assistant, course_id, "assistant"):
+                            result = f"{new_assistant} is already an assistant for this course."
+                        else:
+                            content.add_permissions(course_id, new_assistant, "assistant")
+                            result = f"Success! {new_assistant} is now an assistant for this course."
+                    else:
+                        result = f"Error: The user '{new_assistant}' does not exist."
                 else:
-                    result = f"Error: The user '{new_assistant}' does not exist."
+                    self.render("permissions.html")
 
-                self.render("profile_instructor.html", page="instructor", tab="manage", course=content.get_course_basics(course_id), assignments=content.get_assignments(course_id), assistants=content.get_users_from_role(course_id, "assistant"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id))
-            else:
-                self.render("permissions.html")
+            elif new_instructor:
+                tab = "manage_instructors"
+                if self.is_administrator():
+                    if content.user_exists(new_instructor):
+                        if content.user_has_role(new_instructor, course_id, "instructor"):
+                            result = f"{new_instructor} is already an instructor for this course."
+                        else:
+                            content.add_permissions(course_id, new_instructor, "instructor")
+                            result = f"Success! {new_instructor} is now an instructor for this course."
+                    else:
+                        result = f"Error: The user '{new_instructor}' does not exist."                   
+                else:
+                    self.render("permissions.html")
+
+            self.render("profile_instructor.html", page="instructor", tab=tab, course=content.get_course_basics(course_id), assignments=content.get_assignments(course_id), instructors=content.get_users_from_role(course_id, "instructor"), assistants=content.get_users_from_role(course_id, "assistant"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1166,28 +1181,19 @@ class RemoveAdminHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class RemoveInstructorHandler(BaseUserHandler):
-    def get(self, course, old_instructor):
-        try:
-            if self.is_administrator():
-                self.render("remove_instructor.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=None, old_instructor = old_instructor, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
-            else:
-                self.render("permissions.html")
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
     def post(self, course, old_instructor):
         try:
             if not self.is_administrator():
                 self.render("permissions.html")
                 return
 
-            if content.user_has_role(old_instructor, course, "instructor"):
+            if not content.user_has_role(old_instructor, course, "instructor"):
                 result = f"Error: {old_instructor} is not an instructor for this course."
             else:
                 content.remove_permissions(course, old_instructor, "instructor")
                 result = f"Success: {old_instructor} has been removed from the instructor list."
 
-            self.render("remove_instructor.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_instructor.html", page="instructor", tab="manage_instructors", course=content.get_course_basics(course), assignments=content.get_assignments(course), instructors=content.get_users_from_role(course, "instructor"), assistants=content.get_users_from_role(course, "assistant"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1198,13 +1204,13 @@ class RemoveAssistantHandler(BaseUserHandler):
                 self.render("permissions.html")
                 return
 
-            if content.user_has_role(old_assistant, course, "assistant"):
+            if not content.user_has_role(old_assistant, course, "assistant"):
                 result = f"Error: {old_assistant} is not an assistant for this course."
             else:
                 content.remove_permissions(course, old_assistant, "assistant")
                 result = f"Success: {old_assistant} has been removed from the instructor assistant list."
 
-            self.render("profile_instructor.html", page="instructor", tab="manage", course=content.get_course_basics(course_id), assignments=content.get_assignments(course), assistants=content.get_users_from_role(course_id, "assistant"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course))
+            self.render("profile_instructor.html", page="instructor", tab="manage_assistants", course=content.get_course_basics(course), assignments=content.get_assignments(course), instructors=content.get_users_from_role(course, "instructor"), assistants=content.get_users_from_role(course, "assistant"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

@@ -11,62 +11,122 @@
         </div>
         <div style="margin-bottom: 40px;">
             <div class="columns">
-                <div class="column is-one-third">
-                    <div class="box has-background-info" style="padding: 50px;" onclick="showManageAssistants()">
-                        <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Assistants</p>
+                {% if is_administrator %}
+                    <div class="column is-one-quarter">
+                        <div class="box has-background-link" style="padding: 50px;" onclick="showManageInstructors()">
+                            <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Instructors</p>
+                        </div>
                     </div>
-                </div>
-                <div class="column">
-                    <div class="box has-background-grey-light" style="padding: 50px;" onclick="showScoreSelect()">
-                        <p class="has-text-white" style="text-align: center; font-size: larger;">View<br>Scores</p>
+                    <div class="column">
+                {% else %}
+                    <div class="column is-one-third">
+                {% end %}
+                        <div class="box has-background-info" style="padding: 50px;" onclick="showManageAssistants()">
+                            <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Assistants</p>
+                        </div>
                     </div>
-                </div>
-                <div class="column">
-                    <div class="box has-background-warning" style="padding: 50px;" onclick="window.location='/download_all_scores/{{ course["id"] }}';">
-                        <p class="has-text-white" style="text-align: center; font-size: larger;">Download<br>All Scores</p>
+                    <div class="column">
+                        <div class="box has-background-grey-light" style="padding: 50px;" onclick="showScoreSelect()">
+                            <p class="has-text-white" style="text-align: center; font-size: larger;">View<br>Scores</p>
+                        </div>
                     </div>
-                </div>
+                    <div class="column">
+                        <div class="box has-background-warning" style="padding: 50px;" onclick="window.location='/download_all_scores/{{ course["id"] }}';">
+                            <p class="has-text-white" style="text-align: center; font-size: larger;">Download<br>All Scores</p>
+                        </div>
+                    </div>
             </div>
         </div>
 
-        <div id="manage_assistants"
-        {% if tab == "manage" %}
+        <form method="post" action="/profile/instructor/{{ course['id'] }}/{{ user_info['user_id'] }}">
+        <div id="add_instructor_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Add an instructor:</p>
+                <input class="input is-medium is-link" type="text" id="new_instructor" name="new_instructor" placeholder="Enter ID (email address) of an existing user."/>
+                <p class="buttons">
+                    <a id="add_instructor_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                    <input type="submit" id="add_instructor_button" class="button is-small is-primary" style="margin-top: 10px;" value="Add"/>
+                </p>
+            </div>
+        </div>
+
+        <div id="add_assistant_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Add an assistant:</p>
+                <input class="input is-medium is-link" type="text" id="new_assistant" name="new_assistant" placeholder="Enter ID (email address) of an existing user."/>
+                <p class="buttons">
+                    <a id="add_assistant_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                    <input type="submit" id="add_assistant_button" class="button is-small is-primary" style="margin-top: 10px;" value="Add"/>
+                </p>
+            </div>
+        </div>
+        </form>
+
+        <form id="remove_instructor_form" method="post">
+        <div id="remove_instructor_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="confirm_instructor_removal"></p>
+                <p class="buttons">
+                    <a id="remove_instructor_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                    <input type="submit" id="remove_instructor_button" class="button is-small is-primary" style="margin-top: 10px;" value="Remove"/>
+                </p>
+            </div>
+        </div>
+        </form>
+
+        <form id="remove_assistant_form" method="post">
+        <div id="remove_assistant_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="confirm_assistant_removal"></p>
+                <p class="buttons">
+                    <a id="remove_assistant_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                    <input type="submit" id="remove_assistant_button" class="button is-small is-primary" style="margin-top: 10px;" value="Remove"/>
+                </p>
+            </div>
+        </div>
+        </form>
+
+        <div id="manage_instructors"
+        {% if tab == "manage_instructors" %}
             style="display: inline;"
         {% else %}
             style="display: none;"
         {% end %}>
 
-            <div id="remove_assistant_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <p id="confirm"></p>
-                    <p class="buttons">
-                        <a id="remove_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
-                        <a id="remove_button" class="button is-small is-primary" style="margin-top: 10px;">Remove</a>
-                    </p>
-                </div>
+            <h2>Current instructors:</h2>
+            
+            {% if instructors %}
+                <ul>
+                {% for user in instructors %}
+                    <li>{{ user }} <a onclick="showRemoveInstructorModal({{ user }})">remove</a></li>
+                {% end %}
+                </ul>
+            {% else %}
+                <p>There are no existing instructors for this course.</p>
+            {% end %}
+            
+            <div class="buttons">
+                <a class="button is-primary is-small is-rounded" onclick="showAddInstructorModal()">Add Instructor</a>
             </div>
+        </div>
 
-            <div id="add_assistant_modal" class="modal">
-                <div class="modal-content">
-                    <form method="post" action="/profile/instructor/{{ course['id'] }}/{{ user_info['user_id'] }}">
-                    <span class="close">&times;</span>
-                    <p>Add an assistant:</p>
-                    <input class="input is-medium is-link" type="text" id="new_assistant" name="new_assistant" placeholder="Enter ID (email address) of an existing user."/>
-                    <p class="buttons">
-                        <a id="add_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
-                        <input type="submit" id="add_button" class="button is-small is-primary" style="margin-top: 10px;" value="Add"/>
-                    </p>
-                    </form>
-                </div>
-            </div>
+        <div id="manage_assistants"
+        {% if tab == "manage_assistants" %}
+            style="display: inline;"
+        {% else %}
+            style="display: none;"
+        {% end %}>
 
             <h2>Current assistants:</h2>
             
             {% if assistants %}
                 <ul>
                 {% for user in assistants %}
-                    <li>{{ user }} <a onclick="showRemoveModal({{ user }})">remove</a></li>
+                    <li>{{ user }} <a onclick="showRemoveAssistantModal({{ user }})">remove</a></li>
                 {% end %}
                 </ul>
             {% else %}
@@ -74,18 +134,17 @@
             {% end %}
             
             <div class="buttons">
-                <a class="button is-primary is-small is-rounded" onclick="showAddModal()">Add Assistant</a>
-            </div>
-            
-            {% if result %}
-                {% if result.startswith("Error:") %}
-                    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
-                {% else %}
-                    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
-                {% end %}
-            {% end %}
-    
+                <a class="button is-primary is-small is-rounded" onclick="showAddAssistantModal()">Add Assistant</a>
+            </div>   
         </div>
+
+        {% if result %}
+            {% if result.startswith("Error:") %}
+                <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+            {% else %}
+                <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+            {% end %}
+        {% end %}
     
         <div id="score_select" style="display: none;">
             {% if assignments %}
@@ -103,27 +162,46 @@
 </div>
 
 <script>
-function showManageAssistants() {
+function showManageInstructors() {
+    var manage_instructors = document.getElementById("manage_instructors");
     var manage_assistants = document.getElementById("manage_assistants");
     var score_select = document.getElementById("score_select");
+
+    manage_instructors.style.display = "inline";
+    manage_assistants.style.display = "none";
+    score_select.style.display = "none";
+}
+
+function showManageAssistants() {
+    var manage_instructors = document.getElementById("manage_instructors");
+    var manage_assistants = document.getElementById("manage_assistants");
+    var score_select = document.getElementById("score_select");
+
+    manage_instructors.style.display = "none";
     manage_assistants.style.display = "inline";
     score_select.style.display = "none";
 }
 
 function showScoreSelect() {
+    var manage_instructors = document.getElementById("manage_instructors");
     var manage_assistants = document.getElementById("manage_assistants");
     var score_select = document.getElementById("score_select");
+
+    manage_instructors.style.display = "none";
     manage_assistants.style.display = "none";
     score_select.style.display = "inline";
 }
 
-function showAddModal() {
-    var modal = document.getElementById("add_assistant_modal");
+function showAddInstructorModal() {
+    var modal = document.getElementById("add_instructor_modal");
     var span = document.getElementsByClassName("close")[1];
     modal.style.display = "block";
 
-    var cancelButton = document.getElementById("add_cancel_button");
-    var addButton = document.getElementById("add_button");
+    var cancelButton = document.getElementById("add_instructor_cancel_button");
+    var addButton = document.getElementById("add_instructor_button");
+
+    var tab = document.getElementById("tab");
+    tab.value = "manage_instructors";
 
     cancelButton.onclick = function() {
         modal.style.display = "none";
@@ -139,20 +217,70 @@ function showAddModal() {
     }
 }
 
-function showRemoveModal(assistant_id) {
-    var modal = document.getElementById("remove_assistant_modal");
+function showRemoveInstructorModal(instructor_id) {
+    var modal = document.getElementById("remove_instructor_modal");
     var span = document.getElementsByClassName("close")[0];
     modal.style.display = "block";
 
-    var confirm_message = document.getElementById("confirm");
+    var confirm_message = document.getElementById("confirm_instructor_removal");
+    confirm_message.innerHTML = "Are you sure you want to remove " + instructor_id + " as an instructor for this course?";
+
+    var cancelButton = document.getElementById("remove_instructor_cancel_button");
+
+    var remove_instructor_form = document.getElementById("remove_instructor_form");
+    remove_instructor_form.action = "/remove_instructor/{{ course['id'] }}/" + instructor_id;
+
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
+function showAddAssistantModal() {
+    var modal = document.getElementById("add_assistant_modal");
+    var span = document.getElementsByClassName("close")[3];
+    modal.style.display = "block";
+
+    var tab = document.getElementById("tab");
+    tab.value = "manage_assistants";
+
+    var cancelButton = document.getElementById("add_assistant_cancel_button");
+    var addButton = document.getElementById("add_assistant_button");
+
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
+function showRemoveAssistantModal(assistant_id) {
+    var modal = document.getElementById("remove_assistant_modal");
+    var span = document.getElementsByClassName("close")[2];
+    modal.style.display = "block";
+
+    var confirm_message = document.getElementById("confirm_assistant_removal");
     confirm_message.innerHTML = "Are you sure you want to remove " + assistant_id + " as an assistant for this course?";
 
-    var cancelButton = document.getElementById("remove_cancel_button");
-    var removeButton = document.getElementById("remove_button");
+    var cancelButton = document.getElementById("remove_assistant_cancel_button");
 
-    removeButton.onclick = function() {
-        $.post("/remove_assistant/{{ course['id'] }}/" + assistant_id);
-    }
+    var remove_assistant_form = document.getElementById("remove_assistant_form");
+    remove_assistant_form.action = "/remove_assistant/{{ course['id'] }}/" + assistant_id;
 
     cancelButton.onclick = function() {
         modal.style.display = "none";
