@@ -5,11 +5,13 @@
                 <div class="modal-content">
                     <span class="close">&times;</span>
                     <p>Move an exercise to a different assignment:</p>
-                    <select name="new_assignment_id" id="new_assignment_id">
-                        {% for assignment in assignment_options %}
-                            <option value="{{ assignment["id"] }}">{{ assignment["title"] }}</option>
-                        {% end %}
-                    </select>
+                    <div class="select is-info">
+                        <select name="new_assignment_id" id="new_assignment_id">
+                            {% for assignment in assignment_options %}
+                                <option value="{{ assignment["id"] }}">{{ assignment["title"] }}</option>
+                            {% end %}
+                        </select>
+                    </div>
                     <p class="buttons">
                         <a id="move_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
                         <input type="submit" id="move_button" class="button is-small is-primary" style="margin-top: 10px;" value="Move"/>
@@ -39,7 +41,7 @@
             <script>
                 function showMoveProblemModal() {
                     var modal = document.getElementById("move_problem_modal");
-                    var span = document.getElementsByClassName("close")[0];
+                    var span = document.getElementsByClassName("close")[2];
                     modal.style.display = "block";
 
                     var cancelButton = document.getElementById("move_cancel_button");
