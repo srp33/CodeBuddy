@@ -58,6 +58,7 @@
           <table class="table" id="scores_table">
             <thead>
               <tr>
+                <th>Name</th>
                 <th>Student ID</th>
                 <th>Score</th>
                 {% if assignment_details["has_timer"] %}
@@ -68,6 +69,7 @@
             <tbody>
               {% for score in scores %}
                 <tr>
+                <td>{{ score[1]["name"] }}</td>
                 <td><a href="/student_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ score[0] }}">{{ score[0] }}</a></td>
                 <td>{{ round(score[1]["percent_passed"]) }}%</td>
                 {% if assignment_details["has_timer"] %}

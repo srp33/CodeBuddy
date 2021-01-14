@@ -127,10 +127,10 @@ class Content:
                                         image_output text NOT NULL,
                                         passed integer NOT NULL,
                                         date timestamp NOT NULL,
-                                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
-                                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
-                                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE,
-                                        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
                                       );'''
 
@@ -140,10 +140,10 @@ class Content:
                                         problem_id integer NOT NULL,
                                         user_id text NOT NULL,
                                         score real NOT NULL,
-                                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
-                                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
-                                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE,
-                                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+                                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
                                       );'''
 
@@ -152,9 +152,9 @@ class Content:
                                                   course_id text NOT NULL,
                                                   assignment_id text NOT NULL,
                                                   start_time timestamp NOT NULL,
-                                                  FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE,
-                                                  FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE,
-                                                  FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+                                                  FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                                  FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                                  FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
                                                 );'''
 
         if self.conn is not None:
@@ -676,8 +676,10 @@ class Content:
     def get_assignment_scores(self, course_id, assignment_id):
         scores = []
 
-        sql = '''SELECT user_id, (SUM(score) / b.num_problems) AS percent_passed
-                 FROM scores
+        sql = '''SELECT u.name, s.user_id, (SUM(s.score) / b.num_problems) AS percent_passed
+                 FROM scores s
+                 INNER JOIN users u
+                 ON s.user_id = u.user_id
                  INNER JOIN (
                    SELECT COUNT(DISTINCT problem_id) AS num_problems
                    FROM problems
@@ -685,15 +687,15 @@ class Content:
                      AND assignment_id = ?
                      AND visible = 1
                   ) b
-                 WHERE course_id = ?
-                  AND assignment_id = ?
-                  AND user_id NOT IN
+                 WHERE s.course_id = ?
+                  AND s.assignment_id = ?
+                  AND s.user_id NOT IN
                    (
                     SELECT user_id
                     FROM permissions
                     WHERE course_id = 0 OR course_id = ?
                    )
-                  AND problem_id NOT IN
+                  AND s.problem_id NOT IN
 				   (
 				    SELECT problem_id
 					FROM problems
@@ -701,12 +703,12 @@ class Content:
 					AND assignment_id = ?
 					AND visible = 0
 				   )
-                 GROUP BY course_id, assignment_id, user_id'''
+                 GROUP BY s.course_id, s.assignment_id, s.user_id'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id),))
 
         for user in self.cursor.fetchall():
-            scores_dict = {"user_id": user["user_id"], "percent_passed": user["percent_passed"]}
+            scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"]}
             scores.append([user["user_id"], scores_dict])
 
         return scores
