@@ -27,9 +27,11 @@
         <div style="margin-bottom: 40px;">
           <div style="margin-bottom: 40px;">
             <h2 style="display: inline">My Courses</h2>
-            <div class="buttons is-pulled-right">
-              <a class="button is-normal is-white is-rounded" onclick="showRegistration()">Register for a course</a>
-            </div>
+            {% if not is_administrator and not is_instructor %}
+              <div class="buttons is-pulled-right">
+                <a class="button is-normal is-white is-rounded" onclick="showRegistration()">Register for a course</a>
+              </div>
+            {% end %}
           </div>
           <div>
             {% if registered_courses %}
@@ -99,13 +101,24 @@
 
             <form method="post" action="/profile/courses/{{ user_info["user_id"] }}">
 
-            <div id="register_modal" class="modal">
+            <div id="passcode_modal" class="modal">
               <div class="modal-content">
                 <span class="close">&times;</span>
                 <p>Please enter the passcode for this course:</p>
                 <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
                 <p class="buttons">
-                  <button type="button" id="cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
+                  <button type="button" id="passcode_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
+                  <input type="submit" id="passcode_register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
+                </p>
+              </div>
+            </div>
+
+            <div id="register_modal" class="modal">
+              <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Are you sure you want to register for this course?</p>
+                <p class="buttons">
+                  <button type="button" id="register_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
                   <input type="submit" id="register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
                 </p>
               </div>
@@ -118,11 +131,17 @@
             <p style="font-size: x-large;">Available courses:</p>
 
             <div class="scroll_div">
-              {% if courses %}
-                {% for course in courses %}
+              {% if available_courses %}
+                {% for course in available_courses %}
                   <div>
                     <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
-                      <a class="button is-normal is-primary is-rounded" onclick="showRegisterModal({{ course[1]["id"] }})" style="right: 1rem; position:absolute;">Register</a>
+                      <a class="button is-normal is-primary is-rounded" 
+                      {% if course[1]['passcode'] %}
+                        onclick="showPasscodeModal({{ course[1]['id'] }})"
+                      {% else %}
+                        onclick="showRegisterModal({{ course[1]['id'] }})"
+                      {% end %}
+                        style="right: 1rem; position:absolute;">Register</a>
                     </p>
                     <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
                   </div></br>
@@ -141,16 +160,38 @@
         div.style.display = "inline";
     }
 
-    function showRegisterModal(course_id) {
-        var modal = document.getElementById("register_modal");
+    function showPasscodeModal(course_id) {
+        var modal = document.getElementById("passcode_modal");
         var span = document.getElementsByClassName("close")[1];
         modal.style.display = "block";
 
         var course_id_input = document.getElementById("course_id");
         course_id_input.value = course_id;
 
-        var cancelButton = document.getElementById("cancel_button");
-        var registerButton = document.getElementById("register_button");
+        var cancelButton = document.getElementById("passcode_cancel_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+
+    function showRegisterModal(course_id, title) {
+        var modal = document.getElementById("register_modal");
+        var span = document.getElementsByClassName("close")[2];
+        modal.style.display = "block";
+
+        var course_id_input = document.getElementById("course_id");
+        course_id_input.value = course_id;
+
+        var cancelButton = document.getElementById("register_cancel_button");
 
         cancelButton.onclick = function() {
           modal.style.display = "none";

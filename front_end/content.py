@@ -521,6 +521,26 @@ class Content:
 
         return problems
 
+    def get_available_courses(self, user_id):
+        available_courses = []
+
+        sql = '''SELECT course_id, title, introduction, passcode
+                 FROM courses
+                 WHERE course_id NOT IN
+                 (
+                    SELECT course_id
+                    FROM course_registration
+                    WHERE user_id = ?
+                 )
+                 ORDER BY title'''
+
+        self.cursor.execute(sql, (user_id,))
+        for course in self.cursor.fetchall():
+            course_basics = {"id": course["course_id"], "title": course["title"], "introduction": course["introduction"], "passcode": course["passcode"]}
+            available_courses.append([course["course_id"], course_basics])
+
+        return available_courses
+
     def get_registered_courses(self, user_id):
         registered_courses = []
 
@@ -531,7 +551,6 @@ class Content:
                  WHERE r.user_id = ?'''
 
         self.cursor.execute(sql, (user_id,))
-
         for course in self.cursor.fetchall():
             course_basics = {"id": course["course_id"], "title": course["title"]}
             registered_courses.append([course["course_id"], course_basics])
