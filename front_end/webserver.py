@@ -48,6 +48,7 @@ def make_app():
         url(r"\/delete_assignment_submissions\/([^\/]+)\/([^\/]+)?", DeleteAssignmentSubmissionsHandler, name="delete_assignment_submissions"),
         url(r"\/problem\/([^\/]+)\/([^\/]+)/([^\/]+)", ProblemHandler, name="problem"),
         url(r"\/edit_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditProblemHandler, name="edit_problem"),
+        url(r"\/create_video_problem\/([^\/]+)\/([^\/]+)", CreateVideoProblemHandler, name="create_video_problem"),
         url(r"\/move_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", MoveProblemHandler, name="move_problem"),
         url(r"\/delete_problem\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemHandler, name="delete_problem"),
         url(r"\/delete_problem_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteProblemSubmissionsHandler, name="delete_problem_submissions"),
@@ -156,17 +157,6 @@ class BaseUserHandler(RequestHandler):
 
     def is_assistant_for_course(self, course_id):
         return course_id in user_assistant_courses_var.get()
-
-#class InitializeHandler(BaseUserHandler):
-#    def get(self):
-#        try:
-#            if content.get_user_count() == 0:
-#                self.redirect("/login")
-#            else:
-#                content.add_admin_permissions(self.get_current_user())
-#                self.render("initialize.html", user_logged_in=user_logged_in_var.get())
-#        except Exception as inst:
-#            render_error(self, traceback.format_exc())
 
 class ProfileCoursesHandler(BaseUserHandler):
     def get(self, user_id):
@@ -941,6 +931,31 @@ class EditProblemHandler(BaseUserHandler):
             render_error(self, f"Your solution timed out after {settings_dict['back_ends'][problem_details['back_end']]['timeout_seconds']} seconds.")
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+class CreateVideoProblemHandler(BaseUserHandler):
+    def post(self, course, assignment):
+        response_dict = {"message": ""}
+
+        try:
+            if not self.is_administrator() and not self.is_instructor_for_course(course):
+                response_dict["message"] = "You do not have permissions to perform this operation."
+                return
+
+            problem_basics = content.get_problem_basics(course, assignment, None)
+            problem_details = content.get_problem_details(course, assignment, None)
+
+            problem_basics["title"] = self.get_body_argument("title")
+            problem_details["instructions"] = self.get_body_argument("instructions")
+            problem_details["back_end"] = "any_response"
+            created_date = datetime.datetime.now()
+            problem_details["date_updated"] = created_date
+            problem_details["date_created"] = created_date
+
+            problem = content.save_problem(problem_basics, problem_details)
+        except Exception as inst:
+            response_dict["message"] = traceback.format_exc()
+
+        self.write(json.dumps(response_dict));
 
 class MoveProblemHandler(BaseUserHandler):
     def get(self, course_id, assignment_id, problem_id):

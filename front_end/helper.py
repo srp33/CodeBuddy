@@ -57,7 +57,7 @@ def convert_markdown_to_html(text):
     markdown = Markdown()
     html = markdown.convert(text)
     html = re.sub(r"<a href=\"([^\"]+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html)
-    html = re.sub(r"youtube:([-_a-zA-Z0-9]+)", r"<iframe width='800' height='550' src='https://www.youtube.com/embed/\1?controls=0'></iframe>", html)
+    html = re.sub(r"youtube:([-_a-zA-Z0-9]+)", r"<iframe width='800' height='550' src='https://www.youtube.com/embed/\1?controls=1'></iframe>", html)
     return html
 
 def format_output_as_html(output):
