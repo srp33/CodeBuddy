@@ -39,9 +39,30 @@
           }
         }
 
+        function showCopyAssignmentModal() {
+          var modal = document.getElementById("copy_assignment_modal");
+          var span = document.getElementsByClassName("close")[1];
+          modal.style.display = "block";
+
+          var cancelButton = document.getElementById("copy_cancel_button");
+
+          cancelButton.onclick = function() {
+              modal.style.display = "none";
+          }
+
+          span.onclick = function() {
+              modal.style.display = "none";
+          }
+          window.onclick = function(event) {
+              if (event.target == modal) {
+                  modal.style.display = "none";
+              }
+          }
+        }
+
         function showVideoModal() {
           var modal = document.getElementById("video_modal");
-          var span = document.getElementsByClassName("close")[1];
+          var span = document.getElementsByClassName("close")[2];
 
           modal.style.display = "block";
 
@@ -87,27 +108,6 @@
 
           span.onclick = function() {
             modal.style.display = "none";
-          }
-        }
-
-        function showCopyAssignmentModal() {
-          var modal = document.getElementById("copy_assignment_modal");
-          var span = document.getElementsByClassName("close")[1];
-          modal.style.display = "block";
-
-          var cancelButton = document.getElementById("copy_cancel_button");
-
-          cancelButton.onclick = function() {
-              modal.style.display = "none";
-          }
-
-          span.onclick = function() {
-              modal.style.display = "none";
-          }
-          window.onclick = function(event) {
-              if (event.target == modal) {
-                  modal.style.display = "none";
-              }
           }
         }
 

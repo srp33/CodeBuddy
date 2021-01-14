@@ -1239,10 +1239,26 @@ class Content:
         sql = '''UPDATE problems
                  SET assignment_id = ?
                  WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?'''
+
+        self.cursor.execute(sql, (new_assignment_id, course_id, assignment_id, problem_id,))
+
+        sql2 = '''UPDATE scores
+                  SET assignment_id = ?
+                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND problem_id = ?'''
 
-        self.cursor.execute(sql, (new_assignment_id, course_id, assignment_id, problem_id))
+        self.cursor.execute(sql2, (new_assignment_id, course_id, assignment_id, problem_id,))
+
+        sql3 = '''UPDATE submissions
+                  SET assignment_id = ?
+                  WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?'''
+
+        self.cursor.execute(sql3, (new_assignment_id, course_id, assignment_id, problem_id,))
 
     def delete_problem(self, problem_basics):
         c_id = problem_basics["assignment"]["course"]["id"]
