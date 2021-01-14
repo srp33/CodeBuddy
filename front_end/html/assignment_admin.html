@@ -60,7 +60,7 @@
                   return;
               }
 
-              var youtube_id = url.replace("https://www.youtube.com/watch?v=", "").replace("&feature=youtu.be", "");
+              var youtube_id = url.replace("https://youtu.be/", "").replace("https://www.youtube.com/watch?v=", "").replace("&feature=youtu.be", "");
 
               post_data = {"title": title, "instructions": instructions + "\n\nyoutube:" + youtube_id};
 
