@@ -2,7 +2,7 @@
   {% if assignment_basics["exists"] %}
     <h2>{{ assignment_basics["title"] }}</h2>
 
-    <h4>View scores for {{ student_id }}</h4>
+    <h4>View scores for {{ student_info["name"] }}</h4>
     <p>Click on an exercise to view the student's past submissions.</p>
 
     <div class="columns">
@@ -20,7 +20,7 @@
             {% for problem in problem_statuses %}
               <tr>
               {% if problem[1]["num_submissions"] > 0 %}
-                <td><a href="/student_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}/{{ student_id }}">{{ problem[1]["title"] }}</a></td>
+                <td><a href="/student_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[1]["id"] }}/{{ student_info["user_id"] }}">{{ problem[1]["title"] }}</a></td>
               {% else %}
                 <td>{{ problem[1]["title"] }}</td>
               {% end %}
@@ -33,7 +33,7 @@
 
         <br />
         <a href="/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to all scores</a> |
-        <a href="/edit_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ student_id }}">Edit scores</a>
+        <a href="/edit_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ student_info["user_id"] }}">Edit scores</a>
 
       </div>
     </div>
