@@ -391,7 +391,7 @@ class ProfilePreferencesHandler(BaseUserHandler):
             ace_theme = self.get_body_argument("ace_theme")
             content.update_user_settings(user_id, ace_theme)
             ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
-            self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=content.get_user_info(user_id), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
