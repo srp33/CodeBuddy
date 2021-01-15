@@ -729,7 +729,7 @@ class Content:
                   AND s.assignment_id = ?
                   AND s.problem_id = ?
                  GROUP BY s.user_id
-                 ORDER BY s.user_id'''
+                 ORDER BY u.name'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
 

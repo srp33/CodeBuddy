@@ -9,15 +9,17 @@
         <th>Student ID</th>
         <th># Submissions</th>
         <th>Score</th>
+        <th>View</th>
       </tr>
     </thead>
     <tbody>
       {% for student in problem_scores %}
         <tr>
           <td>{{ student[1]["name"] }}</td>
-          <td><a href="/student_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student[1]["user_id"] }}">{{ student[1]["user_id"] }}</a></td>
+          <td>{{ student[1]["user_id"] }}</td>
           <td>{{ student[1]["num_submissions"] }}</td>
           <td>{{ student[1]["score"] }}%</td>
+          <td><a href="/student_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student[1]["user_id"] }}">View</a></td>
         </tr>
       {% end %}  
     </tbody>
