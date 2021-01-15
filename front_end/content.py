@@ -716,10 +716,10 @@ class Content:
     def get_problem_scores(self, course_id, assignment_id, problem_id):
         scores = []
 
-        sql = '''SELECT s.user_id,
-                 sc.score,
-                 COUNT(s.submission_id) AS num_submissions
+        sql = '''SELECT u.name, s.user_id, sc.score, COUNT(s.submission_id) AS num_submissions
                  FROM submissions s
+                 INNER JOIN users u
+                 ON u.user_id = s.user_id
                  INNER JOIN scores sc
                  ON sc.course_id = s.course_id
                   AND sc.assignment_id = s.assignment_id
@@ -734,7 +734,7 @@ class Content:
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
 
         for user in self.cursor.fetchall():
-            scores_dict = {"user_id": user["user_id"], "num_submissions": user["num_submissions"], "score": user["score"]}
+            scores_dict = {"name": user["name"], "user_id": user["user_id"], "num_submissions": user["num_submissions"], "score": user["score"]}
             scores.append([user["user_id"], scores_dict])
 
         return scores
