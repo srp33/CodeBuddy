@@ -194,14 +194,10 @@ function showScoreSelect() {
 
 function showAddInstructorModal() {
     var modal = document.getElementById("add_instructor_modal");
-    var span = document.getElementsByClassName("close")[1];
+    var span = document.getElementsByClassName("close")[0];
     modal.style.display = "block";
 
     var cancelButton = document.getElementById("add_instructor_cancel_button");
-    var addButton = document.getElementById("add_instructor_button");
-
-    var tab = document.getElementById("tab");
-    tab.value = "manage_instructors";
 
     cancelButton.onclick = function() {
         modal.style.display = "none";
@@ -219,7 +215,7 @@ function showAddInstructorModal() {
 
 function showRemoveInstructorModal(instructor_id) {
     var modal = document.getElementById("remove_instructor_modal");
-    var span = document.getElementsByClassName("close")[0];
+    var span = document.getElementsByClassName("close")[2];
     modal.style.display = "block";
 
     var confirm_message = document.getElementById("confirm_instructor_removal");
@@ -246,14 +242,10 @@ function showRemoveInstructorModal(instructor_id) {
 
 function showAddAssistantModal() {
     var modal = document.getElementById("add_assistant_modal");
-    var span = document.getElementsByClassName("close")[3];
+    var span = document.getElementsByClassName("close")[1];
     modal.style.display = "block";
 
-    var tab = document.getElementById("tab");
-    tab.value = "manage_assistants";
-
     var cancelButton = document.getElementById("add_assistant_cancel_button");
-    var addButton = document.getElementById("add_assistant_button");
 
     cancelButton.onclick = function() {
         modal.style.display = "none";
@@ -271,7 +263,7 @@ function showAddAssistantModal() {
 
 function showRemoveAssistantModal(assistant_id) {
     var modal = document.getElementById("remove_assistant_modal");
-    var span = document.getElementsByClassName("close")[2];
+    var span = document.getElementsByClassName("close")[3];
     modal.style.display = "block";
 
     var confirm_message = document.getElementById("confirm_assistant_removal");
