@@ -28,7 +28,7 @@
             {% if assignment[1]["start_date"] and assignment[1]["start_date"] > curr_datetime %}
               <td>{{ assignment[1]["title"] }}</td>
             {% else %}
-              <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+              <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
             {% end %}
             {% if assignment[1]["start_date"] %}
               <td>
@@ -50,7 +50,7 @@
             {% else %}
               <td> </td>
             {% end %}
-            <td><progress class="progress is-small is-primary" value="{{ assignment[1]["num_passed"] }}" max="{{ assignment[1]["num_problems"] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_problems"] }}</td>
+            <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_passed'] }}" max="{{ assignment[1]['num_problems'] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_problems"] }}</td>
             {% if assignment[1]["has_timer"] %}
               <td>{{ assignment[1]["hour_timer"] }} hours {{ assignment[1]["minute_timer"] }} minutes </td>
             {% else %}

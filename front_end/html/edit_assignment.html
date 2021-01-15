@@ -15,7 +15,7 @@
 {% end %}
 
 {% if course_basics["exists"] %}
-  <form method="post" action="/edit_assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}" />
+  <form method="post" action="/edit_assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
 
   <p><strong>Title: </strong></p>
   <p><textarea name="title" class="textarea is-info is-normal is-medium" placeholder="Please specify a descriptive title for this assignment." rows="1" style="font-family:monospace" autofocus>{{ assignment_basics["title"] }}</textarea></p>
@@ -199,7 +199,7 @@
 
   <p>
       {% if assignment_basics["exists"] %}
-          <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Done editing</a>
+          <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done editing</a>
       {% end %}
   </p><br />
   </form>

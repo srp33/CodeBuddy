@@ -81,7 +81,7 @@
                 <td>Not started</td>
               {% end %}
             {% end %}
-            <td><a href="/student_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ score[0] }}">View</a></td>
+            <td><a href="/student_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">View</a></td>
             </tr>
           {% end %}    
         </tbody>
@@ -90,8 +90,8 @@
     {% end %}
 
     <br />
-    <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to assignment</a> |
-    <a href="/download_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}" download="{{ out_file }}">Download scores</a>
+    <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment</a> |
+    <a href="/download_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ out_file }}">Download scores</a>
 
   {% end %}
 {% end %}

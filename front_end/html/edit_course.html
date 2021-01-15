@@ -14,7 +14,7 @@
   {% end %}
 {% end %}
 
-<form method="post" action="/edit_course/{{ course_basics["id"] }}">
+<form method="post" action="/edit_course/{{ course_basics['id'] }}">
 
 <p><strong>Title*: </strong></p>
 <p><textarea name="title" class="textarea is-info is-medium" placeholder="Please specify a descriptive title for this course." rows="1" style="font-family:monospace" autofocus>{{ course_basics["title"] }}</textarea><br /><font color="gray">The title can only contain alphanumeric characters and spaces.</font></p>
@@ -43,7 +43,7 @@
 
 <p>
     {% if course_basics["exists"] %}
-      <a href="/course/{{ course_basics["id"] }}">Done editing</a>
+      <a href="/course/{{ course_basics['id'] }}">Done editing</a>
     {% end %}
 </p><br />
 

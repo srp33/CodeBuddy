@@ -19,7 +19,7 @@
           <td>{{ student[1]["user_id"] }}</td>
           <td>{{ student[1]["num_submissions"] }}</td>
           <td>{{ student[1]["score"] }}%</td>
-          <td><a href="/student_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student[1]["user_id"] }}">View</a></td>
+          <td><a href="/student_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student[1]['user_id'] }}">View</a></td>
         </tr>
       {% end %}  
     </tbody>
@@ -29,4 +29,4 @@
   <h2>No submissions have been made for this exercise.</h2>
 {% end %}
 
-<a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to assignment page</a>
+<a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment page</a>

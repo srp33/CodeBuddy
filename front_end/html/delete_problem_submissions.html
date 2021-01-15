@@ -12,7 +12,7 @@
   {% if assignment_basics["exists"] %}
     {% if problem_basics["exists"] %}
       {% if not result %}
-          <form method="post" action="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" />
+          <form method="post" action="/delete_problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}" />
 
           <p><strong>Title: </strong>{{ problem_basics["title"] }}</p>
 

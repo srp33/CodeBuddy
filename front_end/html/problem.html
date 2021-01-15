@@ -64,7 +64,7 @@
                   secondsSpan.innerHTML = 0;
 
                   {% if not (assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime) %}
-                    window.location.replace("/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}");
+                    window.location.replace("/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
                   {% end %}
                 }
               }
@@ -133,7 +133,7 @@
             <p>{{ problem_details["instructions"] }}</p>
 
             {% if len(problem_details["data_url"]) > 0 %}
-                <p><em>The data originated from <a href='{{ problem_details["data_url"] }}' target="_blank">here</a>.</em></p>
+                <p><em>The data originated from <a href="{{ problem_details['data_url'] }}" target="_blank">here</a>.</em></p>
 
                 <p>
                     <b>{{ problem_details["data_file_name"] }}</b>
@@ -193,10 +193,10 @@
 
                     <div class="buttons are-small is-pulled-right">
                       {% if prev_problem %}
-                        <a class="button is-light" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ prev_problem["id"] }}">Previous exercise</a>
+                        <a class="button is-light" href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_problem['id'] }}">Previous exercise</a>
                       {% end %}
                       {% if next_problem %}
-                        <a class="button is-light" href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}">Next exercise</a>
+                        <a class="button is-light" href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_problem['id'] }}">Next exercise</a>
                       {% end %}
                     </div>
                 </div>
@@ -238,7 +238,7 @@
 
             {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
               <script>document.getElementById("submit_button").disabled = true;</script>  
-              <div class='notification is-warning'><p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's answer.</p></div>
+              <div class='notification is-warning'><p>Click <a style='color:#2166ac' href="/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">here</a> to view the instructor's answer.</p></div>
             {% end %}
 
             <p><div id="result"></div></p>
@@ -254,7 +254,7 @@
                   {% if problem_details["output_type"] == "txt" %}
                     <p><pre>{{ problem_details["expected_text_output"] }}</pre></p>
                   {% else %}
-                    <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_image_output"] }}" width="100%"/></figure></p>
+                    <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details['expected_image_output'] }}" width="100%"/></figure></p>
                   {% end %}
               {% else %}
                 <p><em>This problem is configured so that the expected output is not shown.</em></p>

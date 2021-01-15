@@ -84,7 +84,7 @@
       ace.require("ace/ext/language_tools");
     </script>
 
-    <form method="post" action="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}" id="myForm" />
+    <form method="post" action="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}" id="myForm" />
 
     <p><strong>Title*: </strong></p>
     <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this exercise." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
@@ -280,7 +280,7 @@
 
     <p>
       {% if problem_basics["exists"] %}
-        <a href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Done editing</a> |
+        <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Done editing</a> |
       {% end %}
       <a href="#top">Back to top</a>
     </p>
