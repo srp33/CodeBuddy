@@ -97,9 +97,6 @@
       {% if is_administrator or is_instructor %}
         <a href="/edit_course/{{ course_basics['id'] }}">Edit course</a> |
         <a href="/delete_course/{{ course_basics['id'] }}">Delete course</a>
-        {% if is_administrator %}
-          | <a href="/add_instructor/{{ course_basics['id'] }}">Add/remove instructor</a>
-        {% end %}
       {% end %}
     </p>
   </div></br></br></br>
