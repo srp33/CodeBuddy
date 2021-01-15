@@ -132,8 +132,8 @@
 
             <p style="font-size: x-large;">Available courses:</p>
 
-            <div class="scroll_div">
-              {% if available_courses %}
+            {% if available_courses %}
+              <div class="scroll_div">
                 {% for course in available_courses %}
                   <div>
                     <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
@@ -148,10 +148,10 @@
                     <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
                   </div></br>
                 {% end %}
-              {% else %}
-                <p>There are no available courses</p>
-              {% end %}
-            </div>
+              </div>
+            {% else %}
+              <p>There are no available courses</p>
+            {% end %}
         </div>
     </div>
 </div>
