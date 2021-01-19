@@ -571,6 +571,22 @@ class Content:
 
         return registered_courses
 
+    def get_registered_students(self, course_id):
+        registered_students = []
+
+        sql = '''SELECT r.user_id, u.name
+                 FROM course_registration r
+                 INNER JOIN users u
+                 ON r.user_id = u.user_id
+                 WHERE r.course_id = ?'''
+
+        self.cursor.execute(sql, (course_id,))
+        for student in self.cursor.fetchall():
+            student_info = {"id": student["user_id"], "name": student["name"]}
+            registered_students.append([student["user_id"], student_info])
+
+        return registered_students
+
     # Gets whether or not a student has passed each assignment in the course.
     def get_assignment_statuses(self, course_id, user_id):
         sql = '''SELECT assignment_id,
