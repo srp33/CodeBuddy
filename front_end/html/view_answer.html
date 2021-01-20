@@ -1,7 +1,7 @@
 {% if problem_basics["exists"] %}
     {% if problem_details["show_answer"] or assignment_details["view_answer_late"] %}
         {% if not last_submission and not assignment_details["due_date"] %}
-            <p>You don't have any submissions for this exercise yet. You won't be able to view the instructor's solution until you've submitted the correct answer.</p>
+            <p>You do not have any submissions for this exercise yet. You will not be able to view the instructor's solution until you have submitted the correct answer.</p>
         {% else %}
             {% if (last_submission and last_submission["passed"]) or (assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["view_answer_late"]) %}
                 <div>
@@ -31,7 +31,7 @@
                 {% end %}
 
             {% else %}
-                <p>Either you have not yet passed this exercise or you passed it previously but your most recent submission is not passing. Please make sure you pass the exercise, and then you'll be able to view the instructor's answer.</p>
+                <p>Either you have not yet passed this exercise or you passed it previously but your most recent submission is not passing. Please make sure you pass the exercise, and then you will be able to view the instructor's answer.</p>
             {% end %}
         {% end %}
     
