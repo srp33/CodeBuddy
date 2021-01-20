@@ -1,3 +1,32 @@
+<style>
+    .student {
+        font-size: 14px;
+        border: 2px solid  #00b386;
+        width: 100%;
+        border-left: 12px solid  #00b386;
+        border-radius: 5px;
+        padding: 14px;
+    }
+
+    .instructor {
+        font-size: 14px;
+        border: 2px solid  #19334d;
+        width: 100%;
+        border-left: 12px solid  #19334d;
+        border-radius: 5px;
+        padding: 14px;
+    }
+
+    .extra {
+        font-size: 14px;
+        border: 2px solid  #008ae6;
+        width: 100%;
+        border-left: 12px solid  #008ae6;
+        border-radius: 5px;
+        padding: 14px;
+    }
+</style>
+
 {% if problem_basics["exists"] %}
     {% if problem_details["show_answer"] or assignment_details["view_answer_late"] %}
         {% if not last_submission and not assignment_details["due_date"] %}
@@ -7,11 +36,11 @@
                 <div>
                     {% if last_submission %}
                         <h4>Your solution:</h4>
-                        <textarea name="student_code" id="student_code" class="textarea is-info is-normal is-medium is-fullwidth" rows="10" style="font-family:monospace">{{ last_submission["code"] }}</textarea>
+                        <pre class="student">{{ last_submission["code"] }}</pre>
                     {% end %}
 
                     <h4>Instructor's solution:</h4>
-                    <textarea name="instructor_code" id="instructor_code" class="textarea is-info is-normal is-medium is-fullwidth" rows="10" style="font-family:monospace">{{ problem_details["answer_code"]}}</textarea>
+                    <pre class="instructor">{{ problem_details["answer_code"]}}</pre>
 
                     {% if len(problem_details["answer_description"]) > 0 %}
                         <h4>Instructor's comments</h4>
@@ -22,11 +51,15 @@
 
                 {% if problem_details["show_student_submissions"] %}
                     {% if student_submissions %}
-                        <h4>Other students' solutions (anonymized):</h4>
-                        {% for submission in student_submissions %}
-                            <p>Submission {{ submission[0] }}:</p>
-                            <pre>{{ submission[1] }}</pre>
-                        {% end %}
+                        <div class="buttons">
+                            <a class="button is-small is-primary is-rounded" onclick="showOtherSolutions()">Show other students' solutions (anonymized)</a>
+                        </div>
+                        <div id="other_students" style="display: none;">
+                            {% for submission in student_submissions %}
+                                <p>Submission {{ submission[0] }}:</p>
+                                <pre class="extra">{{ submission[1] }}</pre>
+                            {% end %}
+                        </div>
                     {% end %}
                 {% end %}
 
@@ -36,6 +69,7 @@
         {% end %}
     
         <p>
+            </br>
             <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Back to exercise</a>
         </p>
     {% else %}
@@ -47,27 +81,14 @@
 {% end %}
 <br /><br />
 
-<script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
-<script src="/static/mode-r.js" type="text/javascript"></script>
-<script src="/static/ext-language_tools.js"></script>
-
 <script>
-    ace.require("ace/ext/language_tools");
-    var student_code_editor = ace.edit("student_code", {
-      theme: "ace/theme/{{ user_info['ace_theme'] }}",
-      autoScrollEditorIntoView: true,
-      minLines: 10,
-      maxLines: 15,
-      fontSize: "12pt"
-    });
-    student_code_editor.getSession().setMode("{{ code_completion_path }}");
-
-    var instructor_code_editor = ace.edit("instructor_code", {
-      theme: "ace/theme/{{ user_info['ace_theme'] }}",
-      autoScrollEditorIntoView: true,
-      minLines: 10,
-      maxLines: 15,
-      fontSize: "12pt"
-    });
-    instructor_code_editor.getSession().setMode("{{ code_completion_path }}");
+    function showOtherSolutions() {
+        var solutions_div = document.getElementById("other_students");
+        if (solutions_div.style.display == "inline") {
+            solutions_div.style.display = "none";
+        }
+        else {
+            solutions_div.style.display = "inline";
+        }
+    }
 </script>
