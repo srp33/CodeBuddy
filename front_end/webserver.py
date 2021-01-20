@@ -70,6 +70,7 @@ def make_app():
         url(r"\/student_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", StudentScoresHandler, name="student_scores"),
         url(r"\/student_problem\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", StudentProblemHandler, name="student_problem"),
         url(r"\/problem_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", ProblemScoresHandler, name="problem_scores"),
+        url(r"\/problem_submissions\/([^\/]+)\/([^\/]+)\/([^\/]+)", ProblemSubmissionsHandler, name="problem_submissions"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
@@ -1350,6 +1351,16 @@ class ProblemScoresHandler(BaseUserHandler):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 self.render("problem_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_scores=content.get_problem_scores(course, assignment, problem), user_info=self.get_user_info())
+            else:
+                self.render("permissions.html")
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class ProblemSubmissionsHandler(BaseUserHandler):
+    def get(self, course, assignment, problem):
+        try:
+            if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
+                self.render("problem_submissions.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_submissions=content.get_problem_submissions(course, assignment, problem), user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
         except Exception as inst:

@@ -121,6 +121,7 @@
               <th>Exercise</th>
               <th>Visibility</th>
               <th>Scores</th>
+              <th>Submissions</th>
               <th>Edit</th>
               <th>Delete</th>
             </tr>
@@ -133,9 +134,11 @@
               {% if problem[1]["visible"] == 0 %}
                 <td>Hidden</td>
                 <td> </td>
+                <td> </td>
               {% else %}
                 <td>Visible</td>
                 <td><a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">Scores</a></td>
+                <td><a href="/problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">Submissions</a></td>
               {% end %}
               <td>
                 <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[1]['id'] }}">

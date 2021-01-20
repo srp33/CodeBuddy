@@ -822,6 +822,36 @@ class Content:
             index += 1
         return student_submissions
 
+    def get_problem_submissions(self, course_id, assignment_id, problem_id):
+        problem_submissions = []
+
+        sql = '''SELECT s.code, u.user_id, u.name, sc.score
+                 FROM submissions s
+                 INNER JOIN users u
+                 ON s.user_id = u.user_id
+                 INNER JOIN scores sc
+                 ON s.user_id = sc.user_id
+                 WHERE s.course_id = ?
+                  AND s.assignment_id = ?
+                  AND s.problem_id = ?
+                  AND passed = 1
+                  AND s.user_id  IN
+                  (
+                      SELECT user_id
+                      FROM course_registration
+                      WHERE course_id = ?
+                  )
+                 GROUP BY s.user_id
+                 ORDER BY u.name'''
+
+        self.cursor.execute(sql, (course_id, assignment_id, problem_id, course_id,))
+
+        for submission in self.cursor.fetchall():
+            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"]}
+            problem_submissions.append([submission["user_id"], submission_info])
+
+        return problem_submissions
+
     def specify_course_basics(self, course_basics, title, visible):
         course_basics["title"] = title
         course_basics["visible"] = visible

@@ -1,0 +1,61 @@
+<style>
+  .collapsible {
+    background-color: #e6e6e6;
+    color: black;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    margin-top: 10px;
+  }
+  
+  .active, .collapsible:hover {
+    background-color: #d9d9d9;
+  }
+  
+  .c-content {
+    padding: 0 18px;
+    display: none;
+    overflow: hidden;
+    background-color: #f1f1f1;
+  }
+</style>
+
+{% if len(problem_submissions) > 0 %}
+
+  <h2>Submissions for {{ problem_basics["title"] }}</h2>
+
+  {% for student in problem_submissions %}
+    <button type="button" class="collapsible">{{ student[1]["name"] }}</button>
+    <div class="c-content">
+      <p>Problem score: <strong>{{ student[1]["score"] }}%</strong></p>
+      <p>Most recent passing submission:</p>
+      <pre>{{ student[1]["code"] }}</pre>
+    </div>
+  {% end %}
+
+{% else %}
+  <h2>No submissions have been made for this exercise.</h2>
+{% end %}
+
+<a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment page</a>
+
+<script>
+  var coll = document.getElementsByClassName("collapsible");
+  var i;
+  
+  for (i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+      this.classList.toggle("active");
+      var content = this.nextElementSibling;
+      if (content.style.display === "block") {
+        content.style.display = "none";
+      } else {
+        content.style.display = "block";
+      }
+    });
+  }
+</script>
