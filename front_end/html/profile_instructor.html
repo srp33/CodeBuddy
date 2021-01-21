@@ -163,7 +163,7 @@
             {% if registered_students %}
                 <ul>
                 {% for student in registered_students %}
-                    <li>{{ student[1]['name'] }} <a onclick="showUnregisterModal({{ student[0] }})">unregister</a></li>
+                    <li>{{ student[1]['name'] }} <a onclick="showUnregisterModal('{{ student[0] }}')">unregister</a></li>
                 {% end %}
                 </ul>
             {% else %}
