@@ -338,11 +338,24 @@ class Content:
         self.cursor.execute(sql, (course_id, user_id,))
     
     def unregister_user_from_course(self, course_id, user_id):
-        sql = '''DELETE FROM course_registration
-                 WHERE course_id = ?
-                 AND user_id = ?'''
-        
-        self.cursor.execute(sql, (course_id, user_id,))
+        sql = f'''BEGIN TRANSACTION;
+
+                  DELETE FROM course_registration
+                  WHERE course_id = {course_id}
+                  AND user_id = '{user_id}';
+
+                  DELETE FROM scores
+                  WHERE course_id = {course_id}
+                  AND user_id = '{user_id}';
+
+                  DELETE FROM submissions
+                  WHERE course_id = {course_id}
+                  AND user_id = '{user_id}';
+
+                  COMMIT;
+               '''
+
+        self.cursor.executescript(sql)
 
     def check_user_registered(self, course_id, user_id):
         sql = '''SELECT *
@@ -558,6 +571,22 @@ class Content:
             registered_courses.append([course["course_id"], course_basics])
 
         return registered_courses
+
+    def get_registered_students(self, course_id):
+        registered_students = []
+
+        sql = '''SELECT r.user_id, u.name
+                 FROM course_registration r
+                 INNER JOIN users u
+                 ON r.user_id = u.user_id
+                 WHERE r.course_id = ?'''
+
+        self.cursor.execute(sql, (course_id,))
+        for student in self.cursor.fetchall():
+            student_info = {"id": student["user_id"], "name": student["name"]}
+            registered_students.append([student["user_id"], student_info])
+
+        return registered_students
 
     # Gets whether or not a student has passed each assignment in the course.
     def get_assignment_statuses(self, course_id, user_id):
@@ -1226,29 +1255,31 @@ class Content:
         self.cursor.execute(sql, (user_id,))
 
     def move_problem(self, course_id, assignment_id, problem_id, new_assignment_id):
-        sql = '''UPDATE problems
-                 SET assignment_id = ?
-                 WHERE course_id = ?
-                  AND assignment_id = ?
-                  AND problem_id = ?'''
 
-        self.cursor.execute(sql, (new_assignment_id, course_id, assignment_id, problem_id,))
+        sql = f'''BEGIN TRANSACTION;
 
-        sql2 = '''UPDATE scores
-                  SET assignment_id = ?
-                  WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND problem_id = ?'''
+                  UPDATE problems
+                  SET assignment_id = {new_assignment_id}
+                  WHERE course_id = {course_id}
+                   AND assignment_id = {assignment_id}
+                   AND problem_id = {problem_id};
 
-        self.cursor.execute(sql2, (new_assignment_id, course_id, assignment_id, problem_id,))
+                  UPDATE scores
+                  SET assignment_id = {new_assignment_id}
+                  WHERE course_id = {course_id}
+                   AND assignment_id = {assignment_id}
+                   AND problem_id = {problem_id};
 
-        sql3 = '''UPDATE submissions
-                  SET assignment_id = ?
-                  WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND problem_id = ?'''
+                  UPDATE submissions
+                  SET assignment_id = {new_assignment_id}
+                  WHERE course_id = {course_id}
+                   AND assignment_id = {assignment_id}
+                   AND problem_id = {problem_id};
 
-        self.cursor.execute(sql3, (new_assignment_id, course_id, assignment_id, problem_id,))
+                  COMMIT;
+               '''
+
+        self.cursor.executescript(sql)
 
     def delete_problem(self, problem_basics):
         c_id = problem_basics["assignment"]["course"]["id"]
