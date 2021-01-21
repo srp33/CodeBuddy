@@ -352,6 +352,10 @@ class Content:
                   WHERE course_id = {course_id}
                   AND user_id = '{user_id}';
 
+                  DELETE FROM user_assignment_start
+                  WHERE course_id = {course_id}
+                  AND user_id = '{user_id}';
+
                   COMMIT;
                '''
 
