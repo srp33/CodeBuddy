@@ -638,12 +638,12 @@ class Content:
                    ON p.course_id = s.course_id
                    AND p.assignment_id = s.assignment_id
                    AND p.problem_id = s.problem_id
-                   AND (s.user_id = ? OR s.user_id IS NULL)
+                   AND s.user_id = ?
                  LEFT JOIN scores sc
                    ON p.course_id = sc.course_id
                    AND p.assignment_id = sc.assignment_id
                    AND p.problem_id = sc.problem_id
-                   AND (s.user_id = sc.user_id OR s.user_id IS NULL)
+                   AND s.user_id = sc.user_id
                  WHERE p.course_id = ?
                    AND p.assignment_id = ?
                    AND p.visible = 1
