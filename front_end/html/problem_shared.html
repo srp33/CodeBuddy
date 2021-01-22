@@ -19,6 +19,18 @@
                 </div>
                 </form>
             </div>
+
+            <div id="delete_submissions_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Are you sure you want to delete all submissions for this problem?</p>
+                    <p><font color="red">This will also delete all scores for this problem.</font></p>
+                    <p class="buttons">
+                        <a id="delete_submissions_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                        <input type="submit" id="delete_submissions_button" class="button is-small is-primary" style="margin-top: 10px;" value="Delete"/>
+                    </p>
+                </div>
+            </div>
             
             {% if is_administrator or is_instructor or is_assistant %}
                 <p>
@@ -28,7 +40,7 @@
 
             {% if is_administrator or is_instructor %}
                     | <a onclick="showMoveProblemModal()">Move exercise</a></br>
-                    <a href="/delete_problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Delete student submissions</a>
+                    <a onclick="showDeleteSubmissionsModal()">Delete problem submissions</a>
                 </p>
             {% end %}
 
@@ -45,6 +57,34 @@
                     modal.style.display = "block";
 
                     var cancelButton = document.getElementById("move_cancel_button");
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
+
+                function showDeleteSubmissionsModal() {
+                    var modal = document.getElementById("delete_submissions_modal");
+                    var span = document.getElementsByClassName("close")[3];
+                    modal.style.display = "block";
+
+                    var deleteButton = document.getElementById("delete_submissions_button");
+                    var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+                    deleteButton.onclick = function() {
+                        $.post("/delete_problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}");
+                        modal.style.display = "none";
+                        location.reload();
+                    }
 
                     cancelButton.onclick = function() {
                         modal.style.display = "none";

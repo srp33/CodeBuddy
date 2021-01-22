@@ -60,9 +60,37 @@
           }
         }
 
+        function showDeleteSubmissionsModal() {
+          var modal = document.getElementById("delete_submissions_modal");
+          var span = document.getElementsByClassName("close")[2];
+          modal.style.display = "block";
+
+          var deleteButton = document.getElementById("delete_submissions_button");
+          var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+          deleteButton.onclick = function() {
+            $.post("/delete_assignment_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
+            modal.style.display = "none";
+            location.reload();
+          }
+
+          cancelButton.onclick = function() {
+              modal.style.display = "none";
+          }
+
+          span.onclick = function() {
+              modal.style.display = "none";
+          }
+          window.onclick = function(event) {
+              if (event.target == modal) {
+                  modal.style.display = "none";
+              }
+          }
+        }
+
         function showVideoModal() {
           var modal = document.getElementById("video_modal");
-          var span = document.getElementsByClassName("close")[2];
+          var span = document.getElementsByClassName("close")[3];
 
           modal.style.display = "block";
 
@@ -186,6 +214,18 @@
       </form>
     </div>
 
+    <div id="delete_submissions_modal" class="modal">
+      <div class="modal-content">
+          <span class="close">&times;</span>
+          <p>Are you sure you want to delete all submissions for this assignment?</p>
+          <p><font color="red">This will also delete all scores for this assignment.</font></p>
+          <p class="buttons">
+              <a id="delete_submissions_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+              <input type="submit" id="delete_submissions_button" class="button is-small is-primary" style="margin-top: 10px;" value="Delete"/>
+          </p>
+      </div>
+    </div>
+
     <div id="video_modal" class="modal">
       <div class="modal-content">
           <span class="close">&times;</span>
@@ -231,12 +271,11 @@
       </p>
       <p>
         <a href="/course/{{ course_basics['id'] }}">Back to course</a> |
-        <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a>
+        <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a></br>
 
         {% if is_administrator or is_instructor %}
-          | <a onclick="showCopyAssignmentModal()">Copy assignment</a></br>
-          <a href="/delete_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Delete assignment</a> |
-          <a href="/delete_assignment_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Delete assignment submissions</a>
+          <a onclick="showCopyAssignmentModal()">Copy assignment</a> |
+          <a onclick="showDeleteSubmissionsModal()">Delete assignment submissions</a>
         {% end %}
       </p>
     </p>

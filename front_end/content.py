@@ -1356,25 +1356,61 @@ class Content:
         self.cursor.executescript(sql)
 
     def delete_course_submissions(self, course_basics):
-        sql = '''DELETE FROM submissions
-                 WHERE course_id = ?'''
+        c_id = course_basics["id"]
 
-        self.cursor.execute(sql, (course_basics["id"],))
+        sql = f'''BEGIN TRANSACTION;
+
+                  DELETE FROM submissions
+                  WHERE course_id = {c_id};
+
+                  DELETE FROM scores
+                  WHERE course_id = {c_id};
+
+                  COMMIT;
+               '''
+
+        self.cursor.executescript(sql)
 
     def delete_assignment_submissions(self, assignment_basics):
-        sql = '''DELETE FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?'''
+        c_id = assignment_basics["course"]["id"]
+        a_id = assignment_basics["id"]
 
-        self.cursor.execute(sql, (assignment_basics["course"]["id"], assignment_basics["id"],))
+        sql = f'''BEGIN TRANSACTION;
+
+                  DELETE FROM submissions
+                  WHERE course_id = {c_id}
+                  AND assignment_id = {a_id};
+
+                  DELETE FROM scores
+                  WHERE course_id = {c_id}
+                  AND assignment_id = {a_id};
+
+                  COMMIT;
+               '''
+
+        self.cursor.executescript(sql)
 
     def delete_problem_submissions(self, problem_basics):
-        sql = '''DELETE FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND problem_id = ?'''
+        c_id = problem_basics["assignment"]["course"]["id"]
+        a_id = problem_basics["assignment"]["id"]
+        p_id = problem_basics["id"]
 
-        self.cursor.execute(sql, (problem_basics["assignment"]["course"]["id"], problem_basics["assignment"]["id"], problem_basics["id"],))
+        sql = f'''BEGIN TRANSACTION;
+
+                  DELETE FROM submissions
+                  WHERE course_id = {c_id}
+                  AND assignment_id = {a_id}
+                  AND problem_id = {p_id};
+
+                  DELETE FROM scores
+                  WHERE course_id = {c_id}
+                  AND assignment_id = {a_id}
+                  AND problem_id = {p_id};
+
+                  COMMIT;
+               '''
+
+        self.cursor.executescript(sql)
 
     #TODO: Modify the logic so that we use the SQLite dump functionality rather than custom logic.
     #TODO: Make sure we include Emme's new table(s) in this?
