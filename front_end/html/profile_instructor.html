@@ -13,7 +13,7 @@
             <div class="columns">
                 {% if is_administrator %}
                     <div class="column is-one-quarter">
-                        <div class="box has-background-link" style="padding: 50px;" onclick="showManageInstructors()">
+                        <div class="box has-background-link" style="padding: 50px;" onclick="showTab('instructor')">
                             <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Instructors</p>
                         </div>
                     </div>
@@ -21,18 +21,18 @@
                 {% else %}
                     <div class="column is-one-third">
                 {% end %}
-                        <div class="box has-background-info" style="padding: 50px;" onclick="showManageAssistants()">
+                        <div class="box has-background-info" style="padding: 50px;" onclick="showTab('assistant')">
                             <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Assistants</p>
                         </div>
                     </div>
                     <div class="column">
-                        <div class="box has-background-grey-light" style="padding: 50px;" onclick="showScoreSelect()">
-                            <p class="has-text-white" style="text-align: center; font-size: larger;">View<br>Scores</p>
+                        <div class="box has-background-warning" style="padding: 50px;" onclick="showTab('student')">
+                            <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Students</p>
                         </div>
                     </div>
                     <div class="column">
-                        <div class="box has-background-warning" style="padding: 50px;" onclick="window.location='/download_all_scores/{{ course["id"] }}';">
-                            <p class="has-text-white" style="text-align: center; font-size: larger;">Download<br>All Scores</p>
+                        <div class="box has-background-grey-light" style="padding: 50px;" onclick="showTab('score')">
+                            <p class="has-text-white" style="text-align: center; font-size: larger;">View<br>Scores</p>
                         </div>
                     </div>
             </div>
@@ -90,6 +90,19 @@
         </div>
         </form>
 
+        <form id="unregister_form" method="post">
+        <div id="unregister_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="confirm_unregistration"></p>
+                <p class="buttons">
+                    <a id="unregister_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
+                    <input type="submit" id="unregister_button" class="button is-small is-primary" style="margin-top: 10px;" value="Unregister"/>
+                </p>
+            </div>
+        </div>
+        </form>
+
         <div id="manage_instructors"
         {% if tab == "manage_instructors" %}
             style="display: inline;"
@@ -138,6 +151,26 @@
             </div>   
         </div>
 
+        <div id="manage_students"
+        {% if tab == "manage_students" %}
+            style="display: inline;"
+        {% else %}
+            style="display: none;"
+        {% end %}>
+
+            <h2>Unregister a student from {{ course['title'] }}:</h2>
+            
+            {% if registered_students %}
+                <ul>
+                {% for student in registered_students %}
+                    <li>{{ student[1]['name'] }} <a onclick="showUnregisterModal('{{ student[0] }}')">unregister</a></li>
+                {% end %}
+                </ul>
+            {% else %}
+                <p>No students are registered for this course.</p>
+            {% end %}  
+        </div>
+
         {% if result %}
             {% if result.startswith("Error:") %}
                 <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
@@ -154,6 +187,7 @@
                     <li><a href="/view_scores/{{ course['id'] }}/{{ assignment[1]['id'] }}">{{ assignment[1]['title'] }}</a></li>
                 {% end %}
                 </ul>
+                <p><a href="/download_all_scores/{{ course['id'] }}">Download all scores</a></p>
             {% else %}
                 <p>There are no scores for this course.</p>
             {% end %}
@@ -162,34 +196,29 @@
 </div>
 
 <script>
-function showManageInstructors() {
+function showTab(tab) {
     var manage_instructors = document.getElementById("manage_instructors");
     var manage_assistants = document.getElementById("manage_assistants");
-    var score_select = document.getElementById("score_select");
-
-    manage_instructors.style.display = "inline";
-    manage_assistants.style.display = "none";
-    score_select.style.display = "none";
-}
-
-function showManageAssistants() {
-    var manage_instructors = document.getElementById("manage_instructors");
-    var manage_assistants = document.getElementById("manage_assistants");
-    var score_select = document.getElementById("score_select");
-
-    manage_instructors.style.display = "none";
-    manage_assistants.style.display = "inline";
-    score_select.style.display = "none";
-}
-
-function showScoreSelect() {
-    var manage_instructors = document.getElementById("manage_instructors");
-    var manage_assistants = document.getElementById("manage_assistants");
+    var manage_students = document.getElementById("manage_students");
     var score_select = document.getElementById("score_select");
 
     manage_instructors.style.display = "none";
     manage_assistants.style.display = "none";
-    score_select.style.display = "inline";
+    manage_students.style.display = "none";
+    score_select.style.display = "none";
+
+    if (tab == "instructor") {
+        manage_instructors.style.display = "inline";
+    }
+    else if (tab == "assistant") {
+        manage_assistants.style.display = "inline";
+    }
+    else if (tab == "student") {
+        manage_students.style.display = "inline";
+    }
+    else if (tab == "score") {
+        score_select.style.display = "inline";
+    }
 }
 
 function showAddInstructorModal() {
@@ -198,11 +227,9 @@ function showAddInstructorModal() {
     modal.style.display = "block";
 
     var cancelButton = document.getElementById("add_instructor_cancel_button");
-
     cancelButton.onclick = function() {
         modal.style.display = "none";
     }
-
     span.onclick = function() {
         modal.style.display = "none";
     }
@@ -221,15 +248,13 @@ function showRemoveInstructorModal(instructor_id) {
     var confirm_message = document.getElementById("confirm_instructor_removal");
     confirm_message.innerHTML = "Are you sure you want to remove " + instructor_id + " as an instructor for this course?";
 
-    var cancelButton = document.getElementById("remove_instructor_cancel_button");
-
     var remove_instructor_form = document.getElementById("remove_instructor_form");
     remove_instructor_form.action = "/remove_instructor/{{ course['id'] }}/" + instructor_id;
 
+    var cancelButton = document.getElementById("remove_instructor_cancel_button");
     cancelButton.onclick = function() {
         modal.style.display = "none";
     }
-
     span.onclick = function() {
         modal.style.display = "none";
     }
@@ -246,11 +271,9 @@ function showAddAssistantModal() {
     modal.style.display = "block";
 
     var cancelButton = document.getElementById("add_assistant_cancel_button");
-
     cancelButton.onclick = function() {
         modal.style.display = "none";
     }
-
     span.onclick = function() {
         modal.style.display = "none";
     }
@@ -269,15 +292,38 @@ function showRemoveAssistantModal(assistant_id) {
     var confirm_message = document.getElementById("confirm_assistant_removal");
     confirm_message.innerHTML = "Are you sure you want to remove " + assistant_id + " as an assistant for this course?";
 
-    var cancelButton = document.getElementById("remove_assistant_cancel_button");
-
     var remove_assistant_form = document.getElementById("remove_assistant_form");
     remove_assistant_form.action = "/remove_assistant/{{ course['id'] }}/" + assistant_id;
 
+    var cancelButton = document.getElementById("remove_assistant_cancel_button");
     cancelButton.onclick = function() {
         modal.style.display = "none";
     }
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
 
+function showUnregisterModal(student_id) {
+    var modal = document.getElementById("unregister_modal");
+    var span = document.getElementsByClassName("close")[4];
+    modal.style.display = "block";
+
+    var confirm_message = document.getElementById("confirm_unregistration");
+    confirm_message.innerHTML = "Are you sure you want to unregister " + student_id + " from this course?";
+
+    var unregister_form = document.getElementById("unregister_form");
+    unregister_form.action = "/unregister/{{ course['id'] }}/" + student_id;
+
+    var cancelButton = document.getElementById("unregister_cancel_button");
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+    }
     span.onclick = function() {
         modal.style.display = "none";
     }
