@@ -1,14 +1,9 @@
 # Returns the number of non-admin, non-instructor, non-assistant students
 # in a given course.
 def students_course(course_id):
-    return f'''SELECT DISTINCT user_id
-               FROM users
-               WHERE user_id NOT IN
-               (
-                 SELECT user_id
-                 FROM permissions
-                 WHERE course_id = 0 OR course_id = {course_id}
-               )'''
+    return f'''SELECT user_id
+               FROM course_registration
+               WHERE course_id = {course_id}'''
 
 # Identifies which problems are visible for a given course.
 def visible_problems_course(course_id):
