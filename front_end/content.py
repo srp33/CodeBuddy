@@ -856,7 +856,7 @@ class Content:
                   AND s.assignment_id = ?
                   AND s.problem_id = ?
                   AND passed = 1
-                  AND s.user_id  IN
+                  AND s.user_id IN
                   (
                       SELECT user_id
                       FROM course_registration
