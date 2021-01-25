@@ -1,0 +1,44 @@
+.invisible {
+    display: none;
+}
+
+.visible {
+    display: inline;
+}
+
+.modal-button {
+    margin-top: 10px;
+}
+
+.tooltip-img {
+    height: 25px;
+    width: 25px;
+    vertical-align: top;
+    padding: 3px;
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+.success-message {
+    background-color: #80cdc1;
+}
+
+.error-message {
+    background-color: #f4a582;
+}
+
+.navbar-img {
+    padding-right: 8px;
+}
+
+.edit-select {
+    padding: 2px;
+}
+
+.table-icon {
+    height: 30px;
+    width: 30px;
+    vertical-align: middle;
+}

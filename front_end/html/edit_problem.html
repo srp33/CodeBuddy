@@ -6,11 +6,11 @@
 
 {% if result %}
   {% if result.startswith("Error:") %}
-    <p><div class='notification is-danger' style='background-color:#f4a582'><strong>{{ result }}</strong></div></p>
+    <p><div class="notification is-danger error-message"><strong>{{ result }}</strong></div></p>
   {% elif result.startswith("Code") %}
-    <p><pre style='background-color:#f4a582'>{{ result }}</pre></p>
+    <p><pre class="error-message">{{ result }}</pre></p>
   {% else %}
-    <p><div class='notification is-success' style='background-color:#80cdc1'><strong>{{ result }}</strong></div></p>
+    <p><div class="notification is-success success-message"><strong>{{ result }}</strong></div></p>
   {% end %}
 {% end %}
 
@@ -87,17 +87,17 @@
     <form method="post" action="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}" id="myForm" />
 
     <p><strong>Title*: </strong></p>
-    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please specify a descriptive title for this exercise." rows="1" style="font-family:monospace" autofocus>{{ problem_basics["title"] }}</textarea></p>
+    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please specify a descriptive title for this exercise." rows="1" autofocus>{{ problem_basics["title"] }}</textarea></p>
 
     <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
-    <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide instructions for this exercise." rows="8" style="font-family:monospace">{{ problem_details["instructions"] }}</textarea></p>
+    <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ problem_details["instructions"] }}</textarea></p>
 
     <p><strong>Back end: </strong>
       <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' solution.">
-        <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-bottom"/>
+        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
       </label>
       <div class="select is-info">
-        <select name="back_end" onchange="updateBackEndOptions(this.value, '')" style="padding:2px;">
+        <select name="back_end" onchange="updateBackEndOptions(this.value, '')" class="edit-select">
         {% for back_end in back_ends %}
           <option
             {% if back_end == problem_details["back_end"] %}
@@ -111,7 +111,7 @@
 
     <p><strong>Output type: </strong>
       <div class="select is-info">
-        <select name="output_type" id="output_types" style="padding:2px;">
+        <select name="output_type" id="output_types" class="edit-select">
         </select>
       </div>
     </p>
@@ -119,11 +119,11 @@
     <p><strong>Solution*: </strong></p>
     <p>Please specify a solution for this exercise. If it requires programming, the solution will be executed, and the output of your solution will be used as the expected output. If the back end is "free_response," your solution itself will be used as the expected output. If the back end is "any_response," you need not enter a solution. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new exercise instead.</p>
     <p>
-      <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide a solution." rows="20" style="font-family:monospace">{{ problem_details["answer_code"] }}</textarea>
+      <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide a solution." rows="20">{{ problem_details["answer_code"] }}</textarea>
       <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
-      <textarea name="answer_code_text" id="answer_code_text" style="display:none;"></textarea>
+      <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
       <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-        <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
       </label>
       <label class="checkbox is-pulled-right">
           Use auto-complete <input type="checkbox" id="answer_code_auto_complete" name="answer_code_auto_complete" value="true" checked onclick="update_auto_complete('answer_code_auto_complete')">
@@ -133,10 +133,10 @@
     <p><strong>Test code: </strong></p>
     <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
     <p>
-      <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please provide test code." rows="20" id="test_code" name="test_code" style="font-family:monospace">{{ problem_details["test_code"] }}</textarea>
-      <textarea name="test_code_text" id="test_code_text" style="display:none;"></textarea>
+      <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide test code." rows="20" id="test_code" name="test_code">{{ problem_details["test_code"] }}</textarea>
+      <textarea name="test_code_text" id="test_code_text" class="invisible"></textarea>
       <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-        <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
       </label>
       <label class="checkbox is-pulled-right">
           Use auto-complete <input type="checkbox" id="test_code_auto_complete" name="test_code_auto_complete" value="true" checked onclick="update_auto_complete('test_code_auto_complete')">
@@ -156,15 +156,15 @@
     {% end %}
 
     <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="10" name="answer_description" style="font-family:monospace">{{ problem_details["answer_description"] }}</textarea></p>  
+    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="10" name="answer_description">{{ problem_details["answer_description"] }}</textarea></p>  
 
     <p><strong>Problem hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an optional hint for this problem.</p> 
-    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write in Markdown." rows="4" name="hint" style="font-family:monospace">{{ problem_details["hint"] }}</textarea></p>  
+    <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="4" name="hint">{{ problem_details["hint"] }}</textarea></p>  
 
     <p><strong>Maximum # of submissions:</strong></p>
     <p>
         <div class="select is-info">
-            <select name="max_submissions" style="padding:2px;">
+            <select name="max_submissions" class="edit-select">
                 {% for i in range(101) %}
                     {% if i == 0 %}
                         {% if problem_details["max_submissions"] == i %}
@@ -187,21 +187,21 @@
     <p><strong>Credit: </strong>
       <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
     </p>
-    <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Please write the credit statement here." rows="4" name="credit" style="font-family:monospace">{{ problem_details["credit"] }}</textarea></p>
+    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write the credit statement here." rows="4" name="credit">{{ problem_details["credit"] }}</textarea></p>
 
     <p><strong>Data source: </strong>
       <br />Optionally, you can specify the URL of a data file that students will use on this exercise.
       If you specify a URL, that file will be downloaded and stored on the server using the name you specify in the second box below. The maximum file size is 10 megabytes.
     </p>
     <p>
-      URL: <textarea name="data_url" class="textarea is-info is-normal is-medium is-fullwidth" rows="1" style="font-family:monospace">{{ problem_details["data_url"] }}</textarea>
+      URL: <textarea name="data_url" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="1">{{ problem_details["data_url"] }}</textarea>
       <br />
-      File name: <textarea name="data_file_name" class="textarea is-info is-normal is-medium is-fullwidth" rows="1" style="font-family:monospace">{{ problem_details["data_file_name"] }}</textarea>
+      File name: <textarea name="data_file_name" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="1">{{ problem_details["data_file_name"] }}</textarea>
     </p>
 
     <p><strong>Show expected output: </strong>
       <div class="select is-info">
-        <select name="show_expected" style="padding:2px;">
+        <select name="show_expected" class="edit-select">
           {% if problem_details["show_expected"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -215,7 +215,7 @@
 
     <p><strong>Show test code: </strong>
       <div class="select is-info">
-        <select name="show_test_code" style="padding:2px;">
+        <select name="show_test_code" class="edit-select">
           {% if problem_details["show_test_code"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -229,7 +229,7 @@
 
     <p><strong>Allow students to view answer code once they correctly solve the exercise: </strong>
       <div class="select is-info">
-        <select name="show_answer" style="padding:2px;" onchange="showStudentSubmissionsDiv(this.value)">
+        <select name="show_answer" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
           {% if problem_details["show_answer"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -243,13 +243,13 @@
 
     <div id="student_submissions_div"
       {% if problem_details["show_answer"] %}
-        style="display: inline"
+        class="visible"
       {% else %}
-        style="display: none;"
+        class="invisible"
       {% end %}>
       <p><strong>Allow students to see submissions from other students: </strong>
         <div class="select is-info">
-          <select name="show_student_submissions" id="show_student_submissions" style="padding:2px;">
+          <select name="show_student_submissions" id="show_student_submissions" class="edit-select">
             {% if problem_details["show_student_submissions"] %}
               <option value="Yes" selected>Yes</option>
               <option value="No">No</option>
@@ -264,7 +264,7 @@
 
     <p><strong>Visible: </strong>
       <div class="select is-info">
-        <select name="is_visible" style="padding:2px;">
+        <select name="is_visible" class="edit-select">
           {% if problem_basics["visible"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>

@@ -18,14 +18,14 @@
             <span class="close">&times;</span>
             <p>Are you sure you want to leave this course?</p>
             <p class="buttons">
-              <button type="button" id="leave_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
-              <a id="leave_button" class="button is-small is-primary" style="margin-top: 10px;">Leave</a>
+              <button type="button" id="leave_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</button>
+              <a id="leave_button" class="modal-button button is-small is-primary">Leave</a>
             </p>
           </div>
         </div>
         
-        <div style="margin-bottom: 40px;">
-          <div style="margin-bottom: 40px;">
+        <div class="bottom-spacing">
+          <div class="bottom-spacing">
             <h2 style="display: inline">My Courses</h2>
             {% if not is_administrator and not is_instructor %}
               <div class="buttons is-pulled-right">
@@ -73,7 +73,7 @@
                               {% end %}
                             </nav>
                             <!--<p>Instructor: </p>-->
-                            <div style="margin-top: 10px;">
+                            <div class="modal-button">
                               <a class="button is-small is-fullwidth is-rounded is-link" href="/course/{{ course[0] }}">View Course</a>
                             </div>
                           </div>
@@ -91,13 +91,13 @@
 
         {% if result %}
           {% if result.startswith("Error:") %}
-              <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+              <p><div class="notification is-danger error-message"><strong>{{ result }}</strong></div></p>
           {% else %}
-              <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+              <p><div class="notification is-success success-message"><strong>{{ result }}</strong></div></p>
           {% end %}
         {% end %}
 
-        <div id="register_div" style="display: none;">
+        <div id="register_div" class="invisible">
 
             <form method="post" action="/profile/courses/{{ user_info["user_id"] }}">
 
@@ -109,8 +109,8 @@
                 <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
 
                 <p class="buttons">
-                  <button type="button" id="passcode_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
-                  <input type="submit" id="passcode_register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
+                  <button type="button" id="passcode_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</button>
+                  <input type="submit" id="passcode_register_button" class="modal-button button is-small is-primary" value="Register"/>
                 </p>
               </div>
             </div>
@@ -120,13 +120,13 @@
                 <span class="close">&times;</span>
                 <p>Are you sure you want to register for this course?</p>
                 <p class="buttons">
-                  <button type="button" id="register_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</button>
-                  <input type="submit" id="register_button" class="button is-small is-primary" style="margin-top: 10px;" value="Register"/>
+                  <button type="button" id="register_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</button>
+                  <input type="submit" id="register_button" class="modal-button button is-small is-primary" value="Register"/>
                 </p>
               </div>
             </div>
 
-            <input id="course_id" name="course_id" style="display: none;">
+            <input id="course_id" name="course_id" class="invisible">
 
             </form>
 
@@ -137,13 +137,13 @@
                 {% for course in available_courses %}
                   <div>
                     <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
-                      <a class="button is-normal is-primary is-rounded" 
+                      <a class="register-button button is-normal is-primary is-rounded" 
                       {% if course[1]['passcode'] %}
                         onclick="showPasscodeModal({{ course[1]['id'] }})"
                       {% else %}
                         onclick="showRegisterModal({{ course[1]['id'] }})"
                       {% end %}
-                        style="right: 1rem; position:absolute;">Register</a>
+                        >Register</a>
                     </p>
                     <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
                   </div></br>

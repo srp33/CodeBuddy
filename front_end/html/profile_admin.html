@@ -6,29 +6,29 @@
 
         <link rel="stylesheet" href="/static/modal.css">
         
-        <div style="text-align: center; margin-bottom: 40px;">
+        <div class="tab-title">
             <h3>Admin Menu</h3>
         </div>
-        <div style="margin-bottom: 40px;">
+        <div class="bottom-spacing">
             <div class="columns">
                 <div class="column is-one-quarter">
-                    <div class="box has-background-link" style="padding: 50px;" onclick="window.location='/edit_course/';">
-                        <p class="has-text-white" style="text-align: center; font-size: larger;">Create<br>Course</p>
+                    <div class="option-box box has-background-link" onclick="window.location='/edit_course/';">
+                        <p class="has-text-white option-text">Create<br>Course</p>
                     </div>
                 </div>
                 <div class="column">
-                    <div class="box has-background-info" style="padding: 50px;" onclick="showImportCourse()">
-                        <p class="has-text-white" style="text-align: center; font-size: larger;">Import<br>Course</p>
+                    <div class="option-box box has-background-info" onclick="showImportCourse()">
+                        <p class="has-text-white option-text">Import<br>Course</p>
                     </div>
                 </div>
                 <div class="column">
-                    <div class="box has-background-grey-light" style="padding: 50px;" onclick="window.location='/summarize_logs';">
-                        <p class="has-text-white" style="text-align: center; font-size: larger;">View<br>Logs</p>
+                    <div class="option-box box has-background-grey-light" onclick="window.location='/summarize_logs';">
+                        <p class="has-text-white option-text">View<br>Logs</p>
                     </div>
                 </div>
                 <div class="column">
-                    <div class="box has-background-warning" style="padding: 50px;" onclick="showManageAdmins()">
-                        <p class="has-text-white" style="text-align: center; font-size: larger;">Manage<br>Administrators</p>
+                    <div class="option-box box has-background-warning" onclick="showManageAdmins()">
+                        <p class="has-text-white option-text">Manage<br>Administrators</p>
                     </div>
                 </div>
             </div>
@@ -36,15 +36,15 @@
 
         <div id="import_div"
           {% if tab == "import" %}
-            style="display: inline;"
+            class="visible"
           {% else %}
-            style="display: none;"
+            class="invisible"
           {% end %}>
             {% if result %}
                 {% if result.startswith("Error:") %}
-                    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+                    <p><div class="notification is-danger error-message"><strong>{{ result }}</strong></div></p>
                 {% else %}
-                    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+                    <p><div class="notification is-success success-message"><strong>{{ result }}</strong></div></p>
                 {% end %}
             {% end %}
 
@@ -54,7 +54,7 @@
             <form method="post" action="/import_course" enctype="multipart/form-data">
 
             <input type="file" name="zip_file" id="zip_file" accept=".zip"/>
-            <p style="margin-top: 10px;"><input type="submit" class="button is-small is-primary is-rounded" value="Import"/></p>
+            <p class="modal-button"><input type="submit" class="button is-small is-primary is-rounded" value="Import"/></p>
             
             </form>
           
@@ -62,9 +62,9 @@
 
         <div id="manage_admins"
           {% if tab == "manage" %}
-            style="display: inline;"
+            class="visible"
           {% else %}
-            style="display: none;"
+            class="invisible"
           {% end %}>
 
             <div id="remove_admin_modal" class="modal">
@@ -73,8 +73,8 @@
                     <span class="close">&times;</span>
                     <p>Administrators can only be removed by themselves.</br>Are you sure you want to remove your admin privileges?</p>
                     <p class="buttons">
-                        <a id="remove_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
-                        <input type="submit" id="remove_button" class="button is-small is-primary" style="margin-top: 10px;" value="Remove"/>
+                        <a id="remove_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                        <input type="submit" id="remove_button" class="modal-button button is-small is-primary" value="Remove"/>
                     </p>
                     </form>
                 </div>
@@ -87,8 +87,8 @@
                     <p>Add an administrator:</p>
                     <input class="input is-medium is-link" type="text" id="new_admin" name="new_admin"/>
                     <p class="buttons">
-                        <a id="add_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
-                        <input type="submit" id="add_button" class="button is-small is-primary" style="margin-top: 10px;" value="Add"/>
+                        <a id="add_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                        <input type="submit" id="add_button" class="modal-button button is-small is-primary" value="Add"/>
                     </p>
                     </form>
                 </div>
@@ -96,7 +96,7 @@
 
             <h2>Current administrators:
                 <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Administrators can only be removed by themselves.">
-                    <img src="/static/tooltip.png" alt="Tooltip" height="20" width="20" style="vertical-align:text-middle; display: inline"/>
+                    <img src="/static/tooltip.png" alt="Tooltip" class="profile-tooltip-img"/>
                 </label>
             </h2>
             
@@ -117,9 +117,9 @@
             
             {% if result %}
                 {% if result.startswith("Error:") %}
-                    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+                    <p><div class="notification is-danger error-message"><strong>{{ result }}</strong></div></p>
                 {% else %}
-                    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+                    <p><div class="notification is-success success-message"><strong>{{ result }}</strong></div></p>
                 {% end %}
             {% end %}
             

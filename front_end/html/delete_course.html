@@ -2,9 +2,9 @@
 
 {% if result %}
   {% if result.startswith("Error:") %}
-    <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+    <p><div class="notification is-danger error-message"><strong>{{ result }}</strong></div></p>
   {% else %}
-    <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+    <p><div class="notification is-success success-message"><strong>{{ result }}</strong></div></p>
   {% end %}
 {% end %}
 

@@ -3,6 +3,7 @@
     <h2>{{ assignment_basics["title"] }}</h2>
 
     <link rel="stylesheet" href="/static/modal.css">
+    <link rel="stylesheet" href="/static/styles.css">
 
     <script>
       function showResetModal(student_id) {
@@ -39,8 +40,8 @@
         <span class="close">&times;</span>
         <p>Are you sure you want to reset this timer?</p>
         <p class="buttons">
-          <button id="cancel_button" class="button is-small is-light" style="margin-top: 10px;">Cancel</button>
-          <button id="reset_button" class="button is-small is-dark" style="margin-top: 10px;">Reset</button>
+          <button id="cancel_button" class="modal-button button is-small is-light">Cancel</button>
+          <button id="reset_button" class="modal-button button is-small is-dark">Reset</button>
         </p>
       </div>
     </div>
