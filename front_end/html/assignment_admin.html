@@ -105,7 +105,7 @@
               var url = document.getElementById("video_url").value.trim();
 
               if (title.length == 0 || instructions.length == 0 || url == 0) {
-                  document.getElementById("video_error").innerHTML = "<div class='notification is-danger'>All inputs must be specified.</div>";
+                  document.getElementById("video_error").innerHTML = "<div class='notification error-message'>All inputs must be specified.</div>";
                   return;
               }
 
@@ -124,7 +124,7 @@
                           location.reload();
                       }
                       else {
-                          document.getElementById("video_error").innerHTML = "<div class='notification is-danger'>" + message + "</div>";
+                          document.getElementById("video_error").innerHTML = "<div class='notification error-message'>" + message + "</div>";
                       }
               });
 

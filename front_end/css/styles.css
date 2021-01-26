@@ -23,10 +23,12 @@
 
 .success-message {
     background-color: #80cdc1;
+    color: white;
 }
 
 .error-message {
     background-color: #f4a582;
+    color: white;
 }
 
 .navbar-img {

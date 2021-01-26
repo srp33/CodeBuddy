@@ -151,9 +151,9 @@
 
               if (json_data.passed) {
                   {% if problem_details["back_end"] == "any_response" %}
-                      result = "<div class='notification is-success success-message' style='color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
+                      result = "<div class='notification success-message' style='color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
                   {% else %}
-                      result = "<div class='notification is-success success-message' style='color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
+                      result = "<div class='notification success-message' style='color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
                   {% end %}
 
                   {% if problem_details["show_answer"] and problem_details["answer_code"] != "" %}
@@ -168,7 +168,7 @@
               }
               else {
                   // This should never be reached when problem_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
-                  result = "<div class='notification is-danger error-message' style='color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+                  result = "<div class='notification error-message' style='color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
 
                   {% if problem_details["show_expected"] %}
                       var diff_output = "";
