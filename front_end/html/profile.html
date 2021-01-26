@@ -38,6 +38,13 @@
                   {% end %}
                   >Manage users</a></li>
               {% end %}
+              {% if is_administrator or is_instructor or is_assistant %}
+                <li><a href="/profile/error_suggestions"
+                  {% if page == "error_suggestions" %}
+                      class="is-active"
+                  {% end %}
+                  >Error suggestions</a></li>
+              {% end %}
             </ul>
             <p class="menu-label">
               Settings

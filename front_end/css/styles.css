@@ -42,3 +42,30 @@
     width: 30px;
     vertical-align: middle;
 }
+
+.student-content {
+    font-size: 14px;
+    border: 2px solid  #00b386;
+    width: 100%;
+    border-left: 12px solid  #00b386;
+    border-radius: 5px;
+    padding: 14px;
+}
+
+.instructor-content {
+    font-size: 14px;
+    border: 2px solid  #19334d;
+    width: 100%;
+    border-left: 12px solid  #19334d;
+    border-radius: 5px;
+    padding: 14px;
+}
+
+.extra-content {
+    font-size: 14px;
+    border: 2px solid  #008ae6;
+    width: 100%;
+    border-left: 12px solid  #008ae6;
+    border-radius: 5px;
+    padding: 14px;
+}

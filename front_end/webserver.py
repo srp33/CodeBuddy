@@ -33,6 +33,7 @@ def make_app():
         url(r"\/profile\/instructor\/course\/([^\/]+)", ProfileSelectCourseHandler, name="profile_select_course"),
         url(r"\/profile\/instructor\/([^\/]+)\/([^\/]+)", ProfileInstructorHandler, name="profile_instructor"),
         url(r"\/profile\/manage_users", ProfileManageUsersHandler, name="profile_manage_users"),
+        url(r"\/profile\/error_suggestions", ProfileErrorSuggestionsHandler, name="profile_error_suggestions"),
         url(r"\/profile\/preferences\/([^\/]+)", ProfilePreferencesHandler, name="profile_preferences"),
         url(r"\/unregister\/([^\/]+)\/([^\/]+)", UnregisterHandler, name="unregister"),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
@@ -176,7 +177,7 @@ class ProfileCoursesHandler(BaseUserHandler):
                 registered_courses = content.get_registered_courses(user_id)
                 available_courses = content.get_available_courses(user_id)
 
-            self.render("profile_courses.html", page="courses", result=None, available_courses=available_courses, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_courses.html", page="courses", result=None, available_courses=available_courses, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -215,14 +216,14 @@ class ProfileCoursesHandler(BaseUserHandler):
                 registered_courses = content.get_registered_courses(user_id)
                 available_courses = content.get_available_courses(user_id)
 
-            self.render("profile_courses.html", page="courses", result=result, available_courses=available_courses, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_courses.html", page="courses", result=result, available_courses=available_courses, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
 class ProfilePersonalInfoHandler(BaseUserHandler):
     def get(self, user_id):
         try:
-            self.render("profile_personal_info.html", page="personal_info", user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_personal_info.html", page="personal_info", user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -230,7 +231,7 @@ class ProfileAdminHandler(BaseUserHandler):
     def get (self, user_id):
         try:
             if self.is_administrator():
-                self.render("profile_admin.html", page="admin", tab=None, admins=content.get_users_from_role(0, "administrator"), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+                self.render("profile_admin.html", page="admin", tab=None, admins=content.get_users_from_role(0, "administrator"), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -253,7 +254,7 @@ class ProfileAdminHandler(BaseUserHandler):
             else:
                 result = f"Error: The user '{new_admin}' does not exist."
 
-            self.render("profile_admin.html", page="admin", tab="manage", admins=content.get_users_from_role(0, "administrator"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_admin.html", page="admin", tab="manage", admins=content.get_users_from_role(0, "administrator"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -266,9 +267,9 @@ class ProfileSelectCourseHandler(BaseUserHandler):
                 courses = content.get_courses_connected_to_user(user_id)
 
             if len(courses) > 1:
-                self.render("profile_select_course.html", courses=courses, page="instructor", user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+                self.render("profile_select_course.html", courses=courses, page="instructor", user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
             else:
-                self.render("profile_instructor.html", page="instructor", tab=None, course=courses[0][1], assignments=content.get_assignments(courses[0][0]), instructors=content.get_users_from_role(courses[0][0], "instructor"), assistants=content.get_users_from_role(courses[0][0], "assistant"), registered_students=content.get_registered_students(courses[0][0]), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(courses[0][0]))
+                self.render("profile_instructor.html", page="instructor", tab=None, course=courses[0][1], assignments=content.get_assignments(courses[0][0]), instructors=content.get_users_from_role(courses[0][0], "instructor"), assistants=content.get_users_from_role(courses[0][0], "assistant"), registered_students=content.get_registered_students(courses[0][0]), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(courses[0][0]), is_assistant=self.is_assistant_for_course(courses[0][0]))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -276,7 +277,7 @@ class ProfileInstructorHandler(BaseUserHandler):
     def get (self, course_id, user_id):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course_id):
-                self.render("profile_instructor.html", page="instructor", tab=None, course=content.get_course_basics(course_id), assignments=content.get_assignments(course_id), instructors=content.get_users_from_role(course_id, "instructor"), assistants=content.get_users_from_role(course_id, "assistant"), registered_students=content.get_registered_students(course_id), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id))
+                self.render("profile_instructor.html", page="instructor", tab=None, course=content.get_course_basics(course_id), assignments=content.get_assignments(course_id), instructors=content.get_users_from_role(course_id, "instructor"), assistants=content.get_users_from_role(course_id, "assistant"), registered_students=content.get_registered_students(course_id), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id), is_assistant=self.is_assistant_for_course(course_id))
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -317,7 +318,7 @@ class ProfileInstructorHandler(BaseUserHandler):
                 else:
                     self.render("permissions.html")
 
-            self.render("profile_instructor.html", page="instructor", tab=tab, course=content.get_course_basics(course_id), assignments=content.get_assignments(course_id), instructors=content.get_users_from_role(course_id, "instructor"), assistants=content.get_users_from_role(course_id, "assistant"), registered_students=content.get_registered_students(course_id), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id))
+            self.render("profile_instructor.html", page="instructor", tab=tab, course=content.get_course_basics(course_id), assignments=content.get_assignments(course_id), instructors=content.get_users_from_role(course_id, "instructor"), assistants=content.get_users_from_role(course_id, "assistant"), registered_students=content.get_registered_students(course_id), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id), is_assistant=self.is_assistant_for_course(course_id))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -325,7 +326,7 @@ class ProfileManageUsersHandler(BaseUserHandler):
     def get(self):
         try:
             if self.is_administrator() or self.is_instructor():
-                self.render("profile_manage_users.html", page="manage_users", result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+                self.render("profile_manage_users.html", page="manage_users", result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -374,7 +375,23 @@ class ProfileManageUsersHandler(BaseUserHandler):
                 else:
                     result = f"Error: The user '{delete_user}' does not exist."
 
-            self.render("profile_manage_users.html", page="manage_users", result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_manage_users.html", page="manage_users", result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class ProfileErrorSuggestionsHandler(BaseUserHandler):
+    def get(self):
+        try:
+            if self.is_administrator() or self.is_instructor() or self.is_assistant():
+                user_info=self.get_user_info()
+                if self.is_administrator():
+                    courses = content.get_courses()
+                elif self.is_instructor() or self.is_assistant():
+                    courses = content.get_courses_connected_to_user(user_info["user_id"])
+                    
+                self.render("profile_error_suggestions.html", page="error_suggestions", result=None, courses=courses, user_info=user_info, is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
+            else:
+                self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -382,7 +399,7 @@ class ProfilePreferencesHandler(BaseUserHandler):
     def get(self, user_id):
         try:
             ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
-            self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -391,7 +408,7 @@ class ProfilePreferencesHandler(BaseUserHandler):
             ace_theme = self.get_body_argument("ace_theme")
             content.update_user_settings(user_id, ace_theme)
             ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
-            self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=content.get_user_info(user_id), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=content.get_user_info(user_id), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -407,7 +424,7 @@ class UnregisterHandler(BaseUserHandler):
                     result = f"Error: The user {user_id} is not currently registered for the course \"{title}\""
 
                 if self.is_administrator() or self.is_instructor_for_course(course):
-                    self.render("profile_instructor.html", page="instructor", tab="manage_students", course=content.get_course_basics(course), assignments=content.get_assignments(course), instructors=content.get_users_from_role(course, "instructor"), assistants=content.get_users_from_role(course, "assistant"), registered_students=content.get_registered_students(course), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course))
+                    self.render("profile_instructor.html", page="instructor", tab="manage_students", course=content.get_course_basics(course), assignments=content.get_assignments(course), instructors=content.get_users_from_role(course, "instructor"), assistants=content.get_users_from_role(course, "assistant"), registered_students=content.get_registered_students(course), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
             else:
                 self.render("permissions.html", user_info=content.get_user_info(self.get_user_id()), user_logged_in=user_logged_in_var.get())
 
@@ -596,7 +613,7 @@ class ImportCourseHandler(BaseUserHandler):
             else:
                 result = "Error: The uploaded file was not recognized as a zip file."
 
-            self.render("profile_admin.html", page="admin", tab="import", admins=content.get_users_from_role(0, "administrator"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor())
+            self.render("profile_admin.html", page="admin", tab="import", admins=content.get_users_from_role(0, "administrator"), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1146,7 +1163,7 @@ class RemoveAdminHandler(BaseUserHandler):
                 return
 
             content.remove_permissions(None, user_id, "administrator")
-            self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=self.get_user_info(), is_administrator=False, is_instructor=self.is_instructor())
+            self.render("profile_courses.html", page="courses", result=None, courses=content.get_courses(), registered_courses=content.get_registered_courses(user_id), user_info=self.get_user_info(), is_administrator=False, is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1163,7 +1180,7 @@ class RemoveInstructorHandler(BaseUserHandler):
                 content.remove_permissions(course, old_instructor, "instructor")
                 result = f"Success: {old_instructor} has been removed from the instructor list."
 
-            self.render("profile_instructor.html", page="instructor", tab="manage_instructors", course=content.get_course_basics(course), assignments=content.get_assignments(course), instructors=content.get_users_from_role(course, "instructor"), assistants=content.get_users_from_role(course, "assistant"), registered_students=content.get_registered_students(course), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course))
+            self.render("profile_instructor.html", page="instructor", tab="manage_instructors", course=content.get_course_basics(course), assignments=content.get_assignments(course), instructors=content.get_users_from_role(course, "instructor"), assistants=content.get_users_from_role(course, "assistant"), registered_students=content.get_registered_students(course), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1180,7 +1197,7 @@ class RemoveAssistantHandler(BaseUserHandler):
                 content.remove_permissions(course, old_assistant, "assistant")
                 result = f"Success: {old_assistant} has been removed from the instructor assistant list."
 
-            self.render("profile_instructor.html", page="instructor", tab="manage_assistants", course=content.get_course_basics(course), assignments=content.get_assignments(course), instructors=content.get_users_from_role(course, "instructor"), assistants=content.get_users_from_role(course, "assistant"), registered_students=content.get_registered_students(course), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course))
+            self.render("profile_instructor.html", page="instructor", tab="manage_assistants", course=content.get_course_basics(course), assignments=content.get_assignments(course), instructors=content.get_users_from_role(course, "instructor"), assistants=content.get_users_from_role(course, "assistant"), registered_students=content.get_registered_students(course), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

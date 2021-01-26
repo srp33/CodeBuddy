@@ -17,6 +17,7 @@ cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html prof
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_select_course.html profile_bottom.html footer.html > /app/profile_select_course.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_instructor.html profile_bottom.html footer.html > /app/profile_instructor.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_manage_users.html profile_bottom.html footer.html > /app/profile_manage_users.html
+cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_error_suggestions.html profile_bottom.html footer.html > /app/profile_error_suggestions.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_preferences.html profile_bottom.html footer.html > /app/profile_preferences.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html course.html container_bottom.html footer.html > /app/course.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html course_admin.html container_bottom.html footer.html > /app/course_admin.html
