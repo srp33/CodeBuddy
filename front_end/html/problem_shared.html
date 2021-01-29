@@ -312,25 +312,6 @@
                 return false;
             }
 
-            function update_auto_complete() {
-                ac_box = document.getElementById("auto_complete");
-
-                if (ac_box.checked) {
-                    editor.setOptions({
-                    enableBasicAutocompletion: false,
-                    enableSnippets: true,
-                    enableLiveAutocompletion: true
-                    });
-                }
-                else {
-                    editor.setOptions({
-                    enableBasicAutocompletion: false,
-                    enableSnippets: false,
-                    enableLiveAutocompletion: false
-                    });
-                }
-            }
-
             function show_past_submissions() {
                 submissions_div = document.getElementById("submissions");
 
@@ -385,9 +366,15 @@
                 minLines: 20,
                 fontSize: "12pt"
             });
+            if ({{ user_info["use_auto_complete"] }}) {
+                editor.setOptions({
+                enableBasicAutocompletion: false,
+                enableSnippets: true,
+                enableLiveAutocompletion: true
+                });
+            }
             editor.focus();
             editor.getSession().setMode("{{ code_completion_path }}");
-            update_auto_complete();
 
             show_past_submissions();
             last_submission_id = {{ num_submissions }};
