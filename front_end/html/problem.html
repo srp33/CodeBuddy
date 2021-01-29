@@ -5,7 +5,7 @@
         <link rel="stylesheet" href="/static/modal.css">
         <link rel="stylesheet" href="/static/timer.css">
     
-          <script>         
+          <script>
             function startTimer() {
               start_time_js = new Date("{{ start_time }}");
               start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
@@ -106,6 +106,38 @@
                 hint_div.style.display = "inline";
               }
             }
+
+            function showHelpRequestModal() {
+                var modal = document.getElementById("help_request_modal");
+                var span = document.getElementsByClassName("close")[2];
+                modal.style.display = "block";
+
+                /*var user_code = editor.getSelectedText();
+                if (user_code.trim() == "")
+                    user_code = editor.getValue();
+                var post_data = { "user_code": user_code };*/
+
+                var submitButton = document.getElementById("submit_request_button");
+                submitButton.onclick = function() {
+                  $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}");
+                  modal.style.display = "none";
+                  location.reload();
+                }
+
+                var cancelButton = document.getElementById("cancel_request_button");
+                cancelButton.onclick = function() {
+                  modal.style.display = "none";
+                }
+
+                span.onclick = function() {
+                  modal.style.display = "none";
+                }
+                window.onclick = function(event) {
+                  if (event.target == modal) {
+                    modal.style.display = "none";
+                  }
+                }
+            }
           </script>
 
           <div id="time_modal" class="modal">
@@ -121,6 +153,19 @@
               <p>Share this link with an instructor or assistant:</p>
               <input class="input is-medium is-primary" type="text" id="share_link" value="https://{{ domain }}/student_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}" readonly>
               <button class="modal-button button is-small is-primary" onclick="copyLink()">Copy Link</button>
+            </div>
+          </div>
+
+          <div id="help_request_modal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
+              <p>Please write a comment to help us better understand what you need help with:</p>
+              <input class="input is-medium is-primary" type="text" id="student_comment" name="student_comment">
+              <p class="buttons">
+                <a id="cancel_request_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                <a id="submit_request_button" class="modal-button button is-small is-primary">Submit</a>
+              </p>
             </div>
           </div>
 
@@ -204,12 +249,9 @@
 
             <p>
                 <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
-                <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-                  <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
-                </label>
-                <label class="checkbox is-pulled-right">
-                    Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
-                </label>
+                <div class="buttons are-small is-pulled-right">
+                  <a class="button is-light" onclick="showHelpRequestModal()">I need help</a>
+                </div>
             </p>
 
             <div class="field is-grouped">

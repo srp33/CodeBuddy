@@ -33,7 +33,7 @@ def make_app():
         url(r"\/profile\/instructor\/course\/([^\/]+)", ProfileSelectCourseHandler, name="profile_select_course"),
         url(r"\/profile\/instructor\/([^\/]+)\/([^\/]+)", ProfileInstructorHandler, name="profile_instructor"),
         url(r"\/profile\/manage_users", ProfileManageUsersHandler, name="profile_manage_users"),
-        url(r"\/profile\/error_suggestions", ProfileErrorSuggestionsHandler, name="profile_error_suggestions"),
+        url(r"\/profile\/help_requests", ProfileHelpRequestsHandler, name="profile_help_requests"),
         url(r"\/profile\/preferences\/([^\/]+)", ProfilePreferencesHandler, name="profile_preferences"),
         url(r"\/unregister\/([^\/]+)\/([^\/]+)", UnregisterHandler, name="unregister"),
         url(r"\/course\/([^\/]+)", CourseHandler, name="course"),
@@ -72,6 +72,8 @@ def make_app():
         url(r"\/student_problem\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", StudentProblemHandler, name="student_problem"),
         url(r"\/problem_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", ProblemScoresHandler, name="problem_scores"),
         url(r"\/problem_submissions\/([^\/]+)\/([^\/]+)\/([^\/]+)", ProblemSubmissionsHandler, name="problem_submissions"),
+        url(r"\/help_requests\/([^\/]+)", HelpRequestsHandler, name="help_requests"),
+        url(r"\/submit_request\/([^\/]+)\/([^\/]+)\/([^\/]+)", SubmitHelpRequestHandler, name="submit_request"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),
         url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
@@ -379,7 +381,7 @@ class ProfileManageUsersHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-class ProfileErrorSuggestionsHandler(BaseUserHandler):
+class ProfileHelpRequestsHandler(BaseUserHandler):
     def get(self):
         try:
             if self.is_administrator() or self.is_instructor() or self.is_assistant():
@@ -389,7 +391,7 @@ class ProfileErrorSuggestionsHandler(BaseUserHandler):
                 elif self.is_instructor() or self.is_assistant():
                     courses = content.get_courses_connected_to_user(user_info["user_id"])
                     
-                self.render("profile_error_suggestions.html", page="error_suggestions", result=None, courses=courses, user_info=user_info, is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
+                self.render("profile_help_requests.html", page="help_requests", result=None, courses=courses, user_info=user_info, is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -406,7 +408,8 @@ class ProfilePreferencesHandler(BaseUserHandler):
     def post(self, user_id):
         try:
             ace_theme = self.get_body_argument("ace_theme")
-            content.update_user_settings(user_id, ace_theme)
+            use_auto_complete = self.get_body_argument("use_auto_complete") == "Yes"
+            content.update_user_settings(user_id, ace_theme, use_auto_complete)
             ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
             self.render("profile_preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=content.get_user_info(user_id), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
@@ -1343,6 +1346,49 @@ class ProblemSubmissionsHandler(BaseUserHandler):
                 self.render("problem_submissions.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), problem_submissions=content.get_problem_submissions(course, assignment, problem), user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class HelpRequestsHandler(BaseUserHandler):
+    def get(self, course):
+        try:
+            if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
+                self.render("help_requests.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), help_requests=content.get_help_requests(course), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
+            else:
+                self.render("permissions.html")
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+    def post (self, course):
+        try:
+            if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
+
+                user_id = self.get_user_id()
+                #error_message = self.get_body_argument("error_container")
+                #error_suggestion = self.get_body_argument("error_suggestion")
+
+                #content.help_request_suggestion(user_id, error_message, error_suggestion)
+
+                self.render("help_requests.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), help_requests=content.get_help_requests(course), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
+            else:
+                self.render("permissions.html")
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class SubmitHelpRequestHandler(BaseUserHandler):
+    def post(self, course, assignment, problem):
+        try:
+            user_id = self.get_user_id()
+            code = self.get_body_argument("user_code").replace("\r", "")
+            student_comment = self.get_body_argument("student_comment")
+            problem_basics = content.get_problem_basics(course, assignment, problem)
+            problem_details = content.get_problem_details(course, assignment, problem)
+
+            text_output, image_output = exec_code(settings_dict, code, problem_basics, problem_details, request=None)
+            text_output = format_output_as_html(text_output)
+
+            content.save_help_request(course, assignment, problem, user_id, code, text_output, image_output, student_comment)
+
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

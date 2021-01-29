@@ -40,7 +40,8 @@ class Content:
                                   family_name text,
                                   picture text,
                                   locale text,
-                                  ace_theme text NOT NULL DEFAULT "tomorrow"
+                                  ace_theme text NOT NULL DEFAULT "tomorrow",
+                                  use_auto_complete integer NOT NULL DEFAULT 1
                                 );'''
 
         create_permissions_table = '''CREATE TABLE IF NOT EXISTS permissions (
@@ -134,6 +135,23 @@ class Content:
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
                                       );'''
 
+        create_help_requests_table = '''CREATE TABLE IF NOT EXISTS help_requests (
+                                            course_id integer NOT NULL,
+                                            assignment_id integer NOT NULL,
+                                            problem_id integer NOT NULL,
+                                            user_id text NOT NULL,
+                                            code text NOT NULL,
+                                            text_output text NOT NULL,
+                                            image_output text NOT NULL,
+                                            student_comment text,
+                                            suggestion text,
+                                            FOREIGN KEY (course_id) REFERENCES courses (course_id) ON UPDATE CASCADE,
+                                            FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON UPDATE CASCADE,
+                                            FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON UPDATE CASCADE,
+                                            FOREIGN KEY (user_id) REFERENCES users(user_id) ON UPDATE CASCADE,
+                                            PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
+                                         );'''
+
         create_scores_table = '''CREATE TABLE IF NOT EXISTS scores (
                                         course_id integer NOT NULL,
                                         assignment_id integer NOT NULL,
@@ -165,6 +183,7 @@ class Content:
             self.cursor.execute(create_assignments_table)
             self.cursor.execute(create_problems_table)
             self.cursor.execute(create_submissions_table)
+            self.cursor.execute(create_help_requests_table)
             self.cursor.execute(create_scores_table)
             self.cursor.execute(create_user_assignment_start_table)
         else:
@@ -381,7 +400,7 @@ class Content:
         self.cursor.execute(sql, (user_id,))
         user = self.cursor.fetchone()
         user_info = {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
-                     "picture": user["picture"], "locale": user["locale"], "ace_theme": user["ace_theme"]}
+                     "picture": user["picture"], "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"]}
 
         return user_info
 
@@ -843,6 +862,28 @@ class Content:
             index += 1
         return student_submissions
 
+    def get_help_requests(self, course_id):
+        help_requests = []
+
+        sql = '''SELECT c.title as course_title, a.title as assignment_title, p.title as problem_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion
+                 FROM help_requests r
+                 INNER JOIN users u
+                  ON r.user_id = u.user_id
+                 INNER JOIN courses c
+                  ON r.course_id = c.course_id
+                 INNER JOIN assignments a
+                  ON r.assignment_id = a.assignment_id
+                 INNER JOIN problems p
+                  ON r.problem_id = p.problem_id
+                 WHERE r.course_id = ?'''
+
+        self.cursor.execute(sql, (course_id,))
+
+        for request in self.cursor.fetchall():
+            help_requests.append({"course_title": request["course_title"], "assignment_title": request["assignment_title"], "problem_title": request["problem_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"]})
+
+        return help_requests
+
     def specify_course_basics(self, course_basics, title, visible):
         course_basics["title"] = title
         course_basics["visible"] = visible
@@ -1198,6 +1239,24 @@ class Content:
 
         return submission_id
 
+    def save_help_request(self, course, assignment, problem, user_id, code, text_output, image_output, student_comment):
+        sql = '''INSERT INTO help_requests (course_id, assignment_id, problem_id, user_id, code, text_output, image_output, student_comment)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+
+        self.cursor.execute(sql, (course, assignment, problem, user_id, code, text_output, image_output, student_comment,))
+
+    def save_help_request_suggestion(self, course, assignment, problem, user_id, code, suggestion):
+
+        sql = '''UPDATE help_requests
+                  SET suggestion = ?
+                  WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND problem_id = ?
+                   AND user_id = ?
+                   AND code = ?'''
+
+        self.cursor.execute(sql, (suggestion, course, assignment, problem, user_id, code,))
+
     def copy_assignment(self, course_id, assignment_id, new_course_id):
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer)
                  SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer
@@ -1225,11 +1284,11 @@ class Content:
 
         self.cursor.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["picture"], user_dict["locale"], user_id,))
 
-    def update_user_settings(self, user_id, theme):
+    def update_user_settings(self, user_id, theme, use_auto_complete):
         sql = '''UPDATE users
-                 SET ace_theme = ?
+                 SET ace_theme = ?, use_auto_complete = ?
                  WHERE user_id = ?'''
-        self.cursor.execute(sql, (theme, user_id,))
+        self.cursor.execute(sql, (theme, use_auto_complete, user_id,))
 
     def remove_user_submissions(self, user_id):
         sql = '''SELECT submission_id
