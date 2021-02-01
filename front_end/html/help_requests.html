@@ -1,8 +1,8 @@
 <link rel="stylesheet" href="/static/modal.css">
 
-<h2 style="text-align: center;">Error Messaging Dashboard</h2>
+<h2 style="text-align: center;">Help Requests Dashboard</h2>
 
-<h4>Error messages for {{ course_basics["title"] }}</h4>
+<h4>Help requests for {{ course_basics["title"] }}</h4>
 <table class="table is-striped" id="error_table">
     <thead>
       <tr>
@@ -22,7 +22,7 @@
           <td>{{ request["user_id"] }}</td>  
           <td>{{ request["assignment_title"] }}</td> 
           <td>{{ request["problem_title"] }}</td>
-          <td><a class="button is-small is-link" onclick="showSuggestionModal(`{{ request['text_output'] }}`)">View Error</a></td>
+          <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View Request</a></td>
           {% if request["suggestion"] %}
             <td><label>
                 <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
@@ -37,49 +37,3 @@
     {% end %}    
     </tbody>
 </table>
-
-<div id="suggestion_modal" class="modal">
-    <div class="modal-content">
-        <form method="post" action="/help_requests/{{ course_basics['id'] }}">
-        <span class="close">&times;</span>
-        <h4>Error message:</h4>
-        <pre id="error_message"></pre>
-        <h4>Make a suggestion:</h4>
-        <textarea id="error_suggestion" name="error_suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="5"></textarea>
-        <p class="buttons">
-            <a id="suggestion_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-            <input type="submit" id="suggestion_submit_button" class="modal-button button is-small is-primary" value="Submit"/>
-        </p>
-        <input class="invisible" id="error_container" name="error_container">
-        </form>
-    </div>
-</div>
-
-<script>
-    function showSuggestionModal(error_message) {
-        var modal = document.getElementById("suggestion_modal");
-        var span = document.getElementsByClassName("close")[0];
-        modal.style.display = "block";
-
-        var message = document.getElementById("error_message");
-        message.innerHTML = error_message;
-
-        var container = document.getElementById("error_container");
-        container.value = error_message;
-
-        var cancelButton = document.getElementById("suggestion_cancel_button");
-
-        cancelButton.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    }
-</script>
