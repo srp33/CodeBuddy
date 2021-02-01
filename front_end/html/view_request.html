@@ -1,0 +1,95 @@
+<h2>View help request</h2>
+<h4 class="light-heading">Assignment: {{ assignment_basics["title"] }}</h4>
+<h4 class="light-heading">Problem: {{ problem_basics["title"] }}</h4><br>
+
+<form method="post" action="/view_requests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ help_request['user_id'] }}">
+
+<h4>Help request for {{ help_request["name"] }}</h4>
+<div>
+    <p><strong>Comment:</strong></p>
+    <pre class="comment">{{ help_request["student_comment"] }}</pre>
+    <p><strong>Code:</strong></p>
+    <pre class="student-content">{{ help_request["code"] }}</pre>
+    {% if help_request["text_output"] %}
+        <p><strong>Text output:</strong></p>
+        <pre class="instructor-content">{{ help_request["text_output"] }}</pre>
+    {% end %}
+    {% if help_request["image_output"] %}
+        <p><strong>Image output:</strong></p>
+        <pre class="instructor-content">{{ help_request["image_output"] }}</pre>
+    {% end %}
+    <div class="buttons">
+        <a class="button is-small is-link is-light is-rounded" onclick="showSuggestionDiv()">Write suggestion</a>
+        <a id="submit_button" class="button is-small is-link is-rounded invisible">Submit suggestion</a>
+    </div>
+    <div id="suggestion_div" class="invisible">
+        <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student."></textarea>
+    </div>
+</div><br>
+
+</form>
+
+{% if problem_help_requests %}
+    {% if len(problem_help_requests) == 1 %}
+        <p><strong>There is 1 other help request for this problem</strong></p>
+    {% else %}
+        <p><strong>There are {{ len(problem_help_requests) }} other help requests for this problem</strong></p>
+    {% end %}
+{% end %}
+<div class="buttons">
+    <a class="button is-small is-primary is-light is-rounded" href="/help_requests/{{ course_basics['id'] }}">Back to all requests</a>
+    {% if problem_help_requests %}
+        <a id="other_button" class="button is-small is-primary is-rounded" onclick="showOtherRequests()">Show other requests</a>
+    {% end %}
+</div>
+
+<div id="other_requests" class="invisible">
+    {% for request in problem_help_requests %}
+        <div class="help_request_div">
+            <h4>Help request for {{ request["name"] }}</h4>
+            <p><strong>Comment:</strong></p>
+            <pre class="comment">{{ request["student_comment"] }}</pre>
+            <p><strong>Code:</strong></p>
+            <pre class="student-content">{{ request["code"] }}</pre>
+            {% if request["text_output"] %}
+                <p><strong>Text output:</strong></p>
+                <pre class="instructor-content">{{ request["text_output"] }}</pre>
+            {% end %}
+            {% if request["image_output"] %}
+                <p><strong>Image output:</strong></p>
+                <pre class="instructor-content">{{ request["image_output"] }}</pre>
+            {% end %}
+        </div>
+    {% end %}
+</div><br><br>
+
+<script>
+    function showOtherRequests() {
+        var other_div = document.getElementById("other_requests");
+        if (other_div.style.display == "inline") {
+            other_div.style.display = "none";
+        }
+        else {
+            other_div.style.display = "inline";
+        }
+    }
+
+    function showSuggestionDiv() {
+        var suggestion_div = document.getElementById("suggestion_div");
+        suggestion_div.style.display = "inline";
+    }
+
+    $("#other_button").click(function() {
+        $('html,body').animate({
+            scrollTop: $("#other_requests").offset().top},
+            'slow');
+    });
+
+    $('#suggestion').on('keyup', function() {
+        if (this.value.length) {
+            $('#submit_button').show();
+        }else{
+            $('#submit_button').hide();
+        }
+    });
+</script>
