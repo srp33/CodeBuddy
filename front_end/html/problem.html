@@ -112,14 +112,13 @@
                 var span = document.getElementsByClassName("close")[2];
                 modal.style.display = "block";
 
-                /*var user_code = editor.getSelectedText();
-                if (user_code.trim() == "")
-                    user_code = editor.getValue();
-                var post_data = { "user_code": user_code };*/
-
                 var submitButton = document.getElementById("submit_request_button");
                 submitButton.onclick = function() {
-                  $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}");
+                  var user_code = editor.getValue();
+                  var student_comment = document.getElementById("student_comment").value;
+                  var post_data = { "user_code": user_code, "student_comment": student_comment };
+                  
+                  $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}", post_data);
                   modal.style.display = "none";
                   location.reload();
                 }
