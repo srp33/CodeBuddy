@@ -664,14 +664,14 @@ class Content:
                    ON p.course_id = sc.course_id
                    AND p.assignment_id = sc.assignment_id
                    AND p.problem_id = sc.problem_id
-                   AND (s.user_id = sc.user_id OR s.user_id IS NULL)
+                   AND (sc.user_id = ? OR sc.user_id IS NULL)
                  WHERE p.course_id = ?
                    AND p.assignment_id = ?
                    AND p.visible = 1
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
 
-        self.cursor.execute(sql,(user_id, int(course_id), int(assignment_id),))
+        self.cursor.execute(sql,(user_id, user_id, int(course_id), int(assignment_id),))
 
         problem_statuses = []
         for row in self.cursor.fetchall():
