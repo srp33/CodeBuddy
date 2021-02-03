@@ -1,15 +1,23 @@
 <h2>View help request</h2>
-<h4 class="light-heading">Assignment: {{ assignment_basics["title"] }}</h4>
-<h4 class="light-heading">Problem: {{ problem_basics["title"] }}</h4><br>
+<p class="light-heading">Assignment: {{ assignment_basics["title"] }}<br>
+Problem: {{ problem_basics["title"] }}</p><br>
 
-<form method="post" action="/view_requests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ help_request['user_id'] }}">
+{% if result %}
+  {% if result.startswith("Error:") %}
+    <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+  {% else %}
+    <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
+  {% end %}
+{% end %}
+
+<form method="post" action="/view_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ help_request['user_id'] }}">
 
 <h4>Help request for {{ help_request["name"] }}</h4>
 <div>
     <p><strong>Comment:</strong></p>
     <pre class="comment">{{ help_request["student_comment"] }}</pre>
     <p><strong>Code:</strong></p>
-    <pre class="student-content">{{ help_request["code"] }}</pre>
+    <pre class="instructor-content">{{ help_request["code"] }}</pre>
     {% if help_request["text_output"] %}
         <p><strong>Text output:</strong></p>
         <pre class="instructor-content">{{ help_request["text_output"] }}</pre>
@@ -20,10 +28,17 @@
     {% end %}
     <div class="buttons">
         <a class="button is-small is-link is-light is-rounded" onclick="showSuggestionDiv()">Write suggestion</a>
-        <a id="submit_button" class="button is-small is-link is-rounded invisible">Submit suggestion</a>
+        {% if help_request["suggestion"] and not help_request["approved"] and not is_assistant %}
+            <input type="submit" id="approve_button" class="button is-small is-link is-rounded" value="Approve suggestion"/>
+        {% end %}
+        <input type="submit" id="submit_button" class="button is-small is-link is-rounded invisible" value="Submit suggestion"/>
     </div>
-    <div id="suggestion_div" class="invisible">
-        <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student."></textarea>
+    <div id="suggestion_div"
+    {% if not help_request["suggestion"] %}
+        class="invisible"
+    {% end %}>
+        <p><strong>Suggestion:</strong></p>
+        <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
     </div>
 </div><br>
 
@@ -88,6 +103,7 @@
     $('#suggestion').on('keyup', function() {
         if (this.value.length) {
             $('#submit_button').show();
+            $('#approve_button').hide();
         }else{
             $('#submit_button').hide();
         }

@@ -31,21 +31,28 @@
                   {% end %}
                   >Instructor</a></li>
               {% end %}
-              {% if is_administrator or is_instructor %}
-                <li><a href="/profile/manage_users"
-                  {% if page == "manage_users" %}
-                      class="is-active"
-                  {% end %}
-                  >Manage users</a></li>
-              {% end %}
-              {% if is_administrator or is_instructor or is_assistant %}
-                <li><a href="/profile/help_requests"
-                  {% if page == "help_requests" %}
-                      class="is-active"
-                  {% end %}
-                  >Help requests</a></li>
-              {% end %}
             </ul>
+            {% if is_administrator or is_instructor or is_assistant %}
+              <p class="menu-label">
+                Tools
+              </p>
+              <ul class="menu-list">
+                {% if is_administrator or is_instructor %}
+                  <li><a href="/profile/manage_users"
+                    {% if page == "manage_users" %}
+                        class="is-active"
+                    {% end %}
+                    >Manage users</a></li>
+                {% end %}
+                {% if is_administrator or is_instructor or is_assistant %}
+                  <li><a href="/profile/help_requests"
+                    {% if page == "help_requests" %}
+                        class="is-active"
+                    {% end %}
+                    >Help requests</a></li>
+                {% end %}
+              </ul>
+            {% end %}
             <p class="menu-label">
               Settings
             </p>
