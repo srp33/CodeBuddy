@@ -890,7 +890,7 @@ class Content:
     def get_problem_help_requests(self, course_id, assignment_id, problem_id, user_id):
         help_requests = []
 
-        sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved
+        sql = '''SELECT r.course_id, r.assignment_id, r.problem_id, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved
                  FROM help_requests r
                  INNER JOIN users u
                   ON r.user_id = u.user_id
@@ -903,7 +903,7 @@ class Content:
         self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id,))
 
         for request in self.cursor.fetchall():
-            help_requests.append({"user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"]})
+            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "problem_id": request["problem_id"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"]})
 
         return help_requests
 

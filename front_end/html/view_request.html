@@ -26,19 +26,15 @@ Problem: {{ problem_basics["title"] }}</p><br>
         <p><strong>Image output:</strong></p>
         <pre class="instructor-content">{{ help_request["image_output"] }}</pre>
     {% end %}
-    <div class="buttons">
-        <a class="button is-small is-link is-light is-rounded" onclick="showSuggestionDiv()">Write suggestion</a>
+    <div id="suggestion_div">
+        <p><strong>Suggestion:</strong></p>
+        <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
+    </div>
+    <div class="buttons space-buttons">
         {% if help_request["suggestion"] and not help_request["approved"] and not is_assistant %}
             <input type="submit" id="approve_button" class="button is-small is-link is-rounded" value="Approve suggestion"/>
         {% end %}
         <input type="submit" id="submit_button" class="button is-small is-link is-rounded invisible" value="Submit suggestion"/>
-    </div>
-    <div id="suggestion_div"
-    {% if not help_request["suggestion"] %}
-        class="invisible"
-    {% end %}>
-        <p><strong>Suggestion:</strong></p>
-        <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
     </div>
 </div><br>
 
@@ -74,6 +70,9 @@ Problem: {{ problem_basics["title"] }}</p><br>
                 <p><strong>Image output:</strong></p>
                 <pre class="instructor-content">{{ request["image_output"] }}</pre>
             {% end %}
+            <div class="buttons space-buttons">
+                <a class="button is-small is-link is-rounded" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}">View suggestion</a>
+            </div>
         </div>
     {% end %}
 </div><br><br>
@@ -87,11 +86,6 @@ Problem: {{ problem_basics["title"] }}</p><br>
         else {
             other_div.style.display = "inline";
         }
-    }
-
-    function showSuggestionDiv() {
-        var suggestion_div = document.getElementById("suggestion_div");
-        suggestion_div.style.display = "inline";
     }
 
     $("#other_button").click(function() {
