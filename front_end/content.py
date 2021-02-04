@@ -1289,6 +1289,14 @@ class Content:
 
         self.cursor.execute(sql, (course, assignment, problem, user_id, code, text_output, image_output, student_comment, 0, date,))
 
+    def delete_help_request(self, course, assignment, problem, user_id):
+        sql = '''DELETE FROM help_requests
+                 WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND problem_id = ?
+                  AND user_id = ?'''
+        self.cursor.execute(sql, (course, assignment, problem, user_id,))
+
     def save_help_request_suggestion(self, course, assignment, problem, user_id, suggestion, approved):
 
         sql = '''UPDATE help_requests

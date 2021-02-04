@@ -95,3 +95,13 @@
     margin-top: 25px;
     padding: 20px;
 }
+
+.buttons {
+    margin-top: 10px;
+}
+
+td > button {
+    border: none;
+    background-color: white;
+    cursor: pointer;
+}
