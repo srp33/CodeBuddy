@@ -17,7 +17,7 @@ Problem: {{ problem_basics["title"] }}</p><br>
     <p><strong>Comment:</strong></p>
     <pre class="comment">{{ help_request["student_comment"] }}</pre>
     <p><strong>Code:</strong></p>
-    <pre class="instructor-content">{{ help_request["code"] }}</pre>
+    <textarea id="editor" class="textarea is-info monospace" rows="20">{{ help_request["code"] }}</textarea>
     {% if help_request["text_output"] %}
         <p><strong>Text output:</strong></p>
         <pre class="instructor-content">{{ help_request["text_output"] }}</pre>
@@ -26,7 +26,7 @@ Problem: {{ problem_basics["title"] }}</p><br>
         <p><strong>Image output:</strong></p>
         <pre class="instructor-content">{{ help_request["image_output"] }}</pre>
     {% end %}
-    <div id="suggestion_div">
+    <div class="suggestion-div">
         <p><strong>Suggestion:</strong></p>
         {% if help_request["suggestion"] %}
             <p class="light-heading">Suggester: {{ help_request["suggester"] }}<br>
@@ -86,6 +86,16 @@ Problem: {{ problem_basics["title"] }}</p><br>
 </div><br><br>
 
 <script>
+    ace.require("ace/ext/language_tools");
+    var editor = ace.edit("editor", {
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        maxLines: 40,
+        fontSize: "12pt",
+        mode: "ace/mode/r"
+    });
+
     function showOtherRequests() {
         var other_div = document.getElementById("other_requests");
         if (other_div.style.display == "inline") {
