@@ -18,6 +18,12 @@ Problem: {{ problem_basics["title"] }}</p><br>
     <pre class="comment">{{ help_request["student_comment"] }}</pre>
     <p><strong>Code:</strong></p>
     <textarea id="editor" class="textarea is-info monospace" rows="20">{{ help_request["code"] }}</textarea>
+    <div class="buttons">
+        <a id="show_answer_button" class="button is-small is-primary is-rounded" onclick="showAnswerCode()">View answer code</a>
+    </div>
+    <div id="answer_code" class="invisible">
+        <textarea id="answer_editor" class="textarea is-info monospace" rows="20">{{ problem_details["answer_code"] }}</textarea>
+    </div>
     {% if help_request["text_output"] %}
         <p><strong>Text output:</strong></p>
         <pre class="instructor-content">{{ help_request["text_output"] }}</pre>
@@ -96,6 +102,15 @@ Problem: {{ problem_basics["title"] }}</p><br>
         mode: "ace/mode/r"
     });
 
+    var answer_editor = ace.edit("answer_editor", {
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        maxLines: 40,
+        fontSize: "12pt",
+        mode: "ace/mode/r"
+    });
+
     function showOtherRequests() {
         var other_div = document.getElementById("other_requests");
         if (other_div.style.display == "inline") {
@@ -103,6 +118,20 @@ Problem: {{ problem_basics["title"] }}</p><br>
         }
         else {
             other_div.style.display = "inline";
+        }
+    }
+
+    function showAnswerCode() {
+        var answer_code = document.getElementById("answer_code");
+        var answer_button = document.getElementById("show_answer_button");
+
+        if (answer_code.style.display == "inline") {
+            answer_code.style.display = "none";
+            answer_button.innerHTML = "View answer code";
+        }
+        else {
+            answer_code.style.display = "inline";
+            answer_button.innerHTML = "Hide answer code";
         }
     }
 
