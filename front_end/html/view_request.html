@@ -28,6 +28,14 @@ Problem: {{ problem_basics["title"] }}</p><br>
     {% end %}
     <div id="suggestion_div">
         <p><strong>Suggestion:</strong></p>
+        {% if help_request["suggestion"] %}
+            <p class="light-heading">Suggester: {{ help_request["suggester"] }}<br>
+            {% if help_request["approved"] %}
+                Approver: {{ help_request["approver"] }}</p>
+            {% else %}
+                Approver: Not yet approved</p>
+            {% end %}
+        {% end %}
         <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
     </div>
     <div class="buttons space-buttons">

@@ -183,15 +183,17 @@
             </div>
           </div>
 
-          <div id="suggestion_modal" class="modal">
-            <div class="modal-content">
-              <span class="close">&times;</span>
-              <p>Your comment from the help request:</p>
-              <textarea class="textarea is-info monospace text-18" rows="3">{{ help_request["student_comment"] }}</textarea>
-              <br><p>Instructor's suggestion:</p>
-              <textarea class="textarea is-primary monospace text-18" rows="3">{{ help_request["suggestion"] }}</textarea>
+          {% if  help_request and help_request["student_comment"] and help_request["suggestion"] %}
+            <div id="suggestion_modal" class="modal">
+              <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Your comment from the help request:</p>
+                <textarea class="textarea is-info monospace text-18" rows="3">{{ help_request["student_comment"] }}</textarea>
+                <br><p>Instructor's suggestion:</p>
+                <textarea class="textarea is-primary monospace text-18" rows="3">{{ help_request["suggestion"] }}</textarea>
+              </div>
             </div>
-          </div>
+          {% end %}
 
             <div>
                 <h2 style="display: inline-block;">{{ problem_basics["assignment"]["title"] }}</h2>

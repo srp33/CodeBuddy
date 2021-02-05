@@ -1393,11 +1393,17 @@ class ViewHelpRequestsHandler(BaseUserHandler):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 suggestion = self.get_body_argument("suggestion")
+                user_id = self.get_user_id()
                 if self.is_assistant_for_course(course):
-                    content.save_help_request_suggestion(course, assignment, problem, student_id, suggestion, 0)
+                    content.save_help_request_suggestion(course, assignment, problem, student_id, suggestion, 0, user_id, None)
                     result = "Success: suggestion submitted for approval"
                 else:
-                    content.save_help_request_suggestion(course, assignment, problem, student_id, suggestion, 1)
+                    help_request = content.get_help_request(course, assignment, problem, student_id)
+                    if help_request["suggester_id"]:
+                        suggester_id = help_request["suggester_id"]
+                    else:
+                        suggester_id = user_id
+                    content.save_help_request_suggestion(course, assignment, problem, student_id, suggestion, 1, suggester_id, user_id)
                     result = "Success: suggestion saved"
 
                 self.render("view_request.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=content.get_assignment_basics(course, assignment), problems=content.get_problems(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), help_request=content.get_help_request(course, assignment, problem, student_id), problem_help_requests=content.get_problem_help_requests(course, assignment, problem, student_id), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
