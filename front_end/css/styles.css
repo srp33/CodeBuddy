@@ -21,6 +21,10 @@
     font-family: monospace;
 }
 
+.text-18 {
+    font-size: 18px;
+}
+
 .success-message {
     background-color: #80cdc1;
     color: white;

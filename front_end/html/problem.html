@@ -108,34 +108,49 @@
             }
 
             function showHelpRequestModal() {
-                var modal = document.getElementById("help_request_modal");
-                var span = document.getElementsByClassName("close")[2];
-                modal.style.display = "block";
+              var modal = document.getElementById("help_request_modal");
+              var span = document.getElementsByClassName("close")[2];
+              modal.style.display = "block";
 
-                var submitButton = document.getElementById("submit_request_button");
-                submitButton.onclick = function() {
-                  var user_code = editor.getValue();
-                  var student_comment = document.getElementById("student_comment").value;
-                  var post_data = { "user_code": user_code, "student_comment": student_comment };
-                  
-                  $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}", post_data);
-                  modal.style.display = "none";
-                  location.reload();
-                }
+              var submitButton = document.getElementById("submit_request_button");
+              submitButton.onclick = function() {
+                var user_code = editor.getValue();
+                var student_comment = document.getElementById("student_comment").value;
+                var post_data = { "user_code": user_code, "student_comment": student_comment };
+                
+                $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}", post_data);
+                modal.style.display = "none";
+                location.reload();
+              }
 
-                var cancelButton = document.getElementById("cancel_request_button");
-                cancelButton.onclick = function() {
-                  modal.style.display = "none";
-                }
+              var cancelButton = document.getElementById("cancel_request_button");
+              cancelButton.onclick = function() {
+                modal.style.display = "none";
+              }
 
-                span.onclick = function() {
+              span.onclick = function() {
+                modal.style.display = "none";
+              }
+              window.onclick = function(event) {
+                if (event.target == modal) {
                   modal.style.display = "none";
                 }
-                window.onclick = function(event) {
-                  if (event.target == modal) {
-                    modal.style.display = "none";
-                  }
+              }
+            }
+
+            function showSuggestionModal() {
+              var modal = document.getElementById("suggestion_modal");
+              var span = document.getElementsByClassName("close")[3];
+              modal.style.display = "block";
+
+              span.onclick = function() {
+                modal.style.display = "none";
+              }
+              window.onclick = function(event) {
+                if (event.target == modal) {
+                  modal.style.display = "none";
                 }
+              }
             }
           </script>
 
@@ -165,6 +180,16 @@
                 <a id="cancel_request_button" class="modal-button button is-small is-primary is-light">Cancel</a>
                 <a id="submit_request_button" class="modal-button button is-small is-primary">Submit</a>
               </p>
+            </div>
+          </div>
+
+          <div id="suggestion_modal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <p>Your comment from the help request:</p>
+              <textarea class="textarea is-info monospace text-18" rows="3">{{ help_request["student_comment"] }}</textarea>
+              <br><p>Instructor's suggestion:</p>
+              <textarea class="textarea is-primary monospace text-18" rows="3">{{ help_request["suggestion"] }}</textarea>
             </div>
           </div>
 
@@ -249,7 +274,15 @@
             <p>
                 <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
                 <div class="buttons are-small is-pulled-right">
-                  <a class="button is-light" onclick="showHelpRequestModal()">I need help</a>
+                  {% if help_request %}
+                    {% if help_request["approved"] %}
+                      <a class="button is-success" onclick="showSuggestionModal()">Suggestion made!</a>
+                    {% else %}
+                      <a class="button is-warning is-light">Request pending</a>
+                    {% end %}
+                  {% else %}
+                    <a class="button is-light" onclick="showHelpRequestModal()">I need help</a>
+                  {% end %}
                 </div>
             </p>
 
