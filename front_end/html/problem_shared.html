@@ -1,23 +1,105 @@
+            <link rel="stylesheet" href="/static/modal.css">
+
+            <div id="move_problem_modal" class="modal">
+                <form method="post" action="/move_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Move an exercise to a different assignment:</p>
+                    <div class="select is-info">
+                        <select name="new_assignment_id" id="new_assignment_id">
+                            {% for assignment in assignment_options %}
+                                <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
+                            {% end %}
+                        </select>
+                    </div>
+                    <p class="buttons">
+                        <a id="move_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                        <input type="submit" id="move_button" class="modal-button button is-small is-primary" value="Move"/>
+                    </p>
+                </div>
+                </form>
+            </div>
+
+            <div id="delete_submissions_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Are you sure you want to delete all submissions for this problem?</p>
+                    <p><font color="red">This will also delete all scores for this problem.</font></p>
+                    <p class="buttons">
+                        <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                        <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
+                    </p>
+                </div>
+            </div>
+            
             {% if is_administrator or is_instructor or is_assistant %}
                 <p>
-                    <a href="/problem_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">View scores</a> |
-                    <a href="/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Edit exercise</a>
+                    <a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">View scores</a> |
+                    <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Edit exercise</a>
             {% end %}
 
             {% if is_administrator or is_instructor %}
-                    | <a href="/move_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Move exercise</a></br>
-                    <a href="/delete_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete exercise</a> |
-                    <a href="/delete_problem_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}">Delete student submissions</a>
+                    | <a onclick="showMoveProblemModal()">Move exercise</a></br>
+                    <a onclick="showDeleteSubmissionsModal()">Delete problem submissions</a>
                 </p>
             {% end %}
 
-            <a href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Back to exercise list</a><br/>
+            <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a><br/>
 
             {% if student_id == user_id %}
                 <br/><br/><br/>
             {% end %}
 
             <script>
+                function showMoveProblemModal() {
+                    var modal = document.getElementById("move_problem_modal");
+                    var span = document.getElementsByClassName("close")[2];
+                    modal.style.display = "block";
+
+                    var cancelButton = document.getElementById("move_cancel_button");
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
+
+                function showDeleteSubmissionsModal() {
+                    var modal = document.getElementById("delete_submissions_modal");
+                    var span = document.getElementsByClassName("close")[3];
+                    modal.style.display = "block";
+
+                    var deleteButton = document.getElementById("delete_submissions_button");
+                    var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+                    deleteButton.onclick = function() {
+                        $.post("/delete_problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}");
+                        modal.style.display = "none";
+                        location.reload();
+                    }
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
+
             {% if len(problem_details["data_url"]) > 0 %}
                 function show_hide_data() {
                     var button = document.getElementById("show_hide_data_button");
@@ -69,24 +151,24 @@
 
               if (json_data.passed) {
                   {% if problem_details["back_end"] == "any_response" %}
-                      result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
+                      result = "<div class='notification success-message' style='color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
                   {% else %}
-                      result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
+                      result = "<div class='notification success-message' style='color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
                   {% end %}
 
                   {% if problem_details["show_answer"] and problem_details["answer_code"] != "" %}
-                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}'>here</a> to view the instructor's solution.</p>"; 
+                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>here</a> to view the instructor's solution.</p>"; 
                   {% end %}
 
                   {% if next_problem %}
-                      result += "<p><a href='/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ next_problem["id"] }}'>Next exercise</a></p>\n\n";
+                      result += "<p><a href='/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_problem['id'] }}'>Next exercise</a></p>\n\n";
                   {% end %}
 
                   result += "</div>\n\n"
               }
               else {
                   // This should never be reached when problem_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
-                  result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+                  result = "<div class='notification error-message' style='color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
 
                   {% if problem_details["show_expected"] %}
                       var diff_output = "";
@@ -133,7 +215,7 @@
 
                 post_data = { "user_code": user_code };
 
-                $.post("/run_code/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
                     post_data,
                     function(data, status) {
                         var json_data = JSON.parse(data);
@@ -170,7 +252,7 @@
 
                 post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
 
-                $.post("/submit/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}",
+                $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
                     post_data,
                     function(data, status) {
                         json_data = JSON.parse(data);
@@ -215,7 +297,7 @@
                     document.getElementById("diff_output").innerHTML = "";
                 {% end %}
 
-                $.get("/get_submission/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student_id }}/" + submission_id, 
+                $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}/" + submission_id, 
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         editor.setValue(json_data.code, 1);
@@ -252,7 +334,7 @@
             function show_past_submissions() {
                 submissions_div = document.getElementById("submissions");
 
-                $.get("/get_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem_basics["id"] }}/{{ student_id }}",
+                $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}",
                     function (data, status) {
                         var json_data = JSON.parse(data);
                         var submission_html = "";

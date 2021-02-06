@@ -1,7 +1,7 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if problem_basics["exists"] %}
-            <h2>{{ student_id }}'s submissions</h2>
+            <h2>{{ student_info["name"] }}'s submissions</h2>
         
             <p><em>Assignment</em>: {{ problem_basics["assignment"]["title"] }}</p>
         
@@ -10,7 +10,7 @@
             <p>{{ problem_details["instructions"] }}</p>
 
             {% if len(problem_details["data_url"]) > 0 %}
-                <p><em>The data originated from <a href='{{ problem_details["data_url"] }}' target="_blank">here</a>.</em></p>
+                <p><em>The data originated from <a href="{{ problem_details['data_url'] }}" target="_blank">here</a>.</em></p>
 
                 <p>
                     <b>{{ problem_details["data_file_name"] }}</b>
@@ -30,9 +30,9 @@
             </p>
 
             <p>
-                <textarea class="textarea is-info is-normal is-medium is-fullwidth" placeholder="Type your solution here" rows="15" id="user_code" style="font-family:monospace"></textarea>
+                <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
                 <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-                    <img src="/static/tooltip.png" alt="Tooltip" height="25" width="25" style="vertical-align:top; padding:3px"/>
+                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
                 </label>
                 <label class="checkbox is-pulled-right">
                     Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
@@ -52,7 +52,7 @@
               {% if problem_details["output_type"] == "txt" %}
                   <p><pre>{{ problem_details["expected_text_output"] }}</pre></p>
               {% else %}
-                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details["expected_image_output"] }}" width="100%"/></figure></p>
+                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details['expected_image_output'] }}" width="100%"/></figure></p>
               {% end %}
 
               {% if problem_details["back_end"] != "any_response" %}

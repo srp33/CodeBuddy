@@ -1,16 +1,16 @@
             <div class="navbar-item has-dropdown is-hoverable">
                 {% if len(problems) > 0 %}
-                    <a class="navbar-link" href="/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}">Exercises</a>
+                    <a class="navbar-link" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Exercises</a>
 
                     <div id="moreDropdown" class="navbar-dropdown is-size-4">
                         {% for problem in problem_statuses %}
-                            <a class="navbar-item " href="/problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ problem[0] }}">
+                            <a class="navbar-item " href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">
                                 {% if problem[1]["passed"] %}
-                                    <img src="/static/greencheck.png" alt="Completed" style="padding-right: 8px;"/>
+                                    <img src="/static/greencheck.png" alt="Completed" class="navbar-img"/>
                                 {% elif problem[1]["in_progress"] %}
-                                    <img src="/static/inprogress.png" alt="In progress" style="padding-right: 8px;"/>
+                                    <img src="/static/inprogress.png" alt="In progress" class="navbar-img"/>
                                 {% else %}
-                                    <img src="/static/unchecked.png" alt="Not completed" style="padding-right: 8px;"/>
+                                    <img src="/static/unchecked.png" alt="Not completed" class="navbar-img"/>
                                 {% end %}
                                 {{ problem[1]["title"] }}
                             </a>

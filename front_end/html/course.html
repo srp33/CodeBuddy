@@ -28,7 +28,7 @@
             {% if assignment[1]["start_date"] and assignment[1]["start_date"] > curr_datetime %}
               <td>{{ assignment[1]["title"] }}</td>
             {% else %}
-              <td><a href="/assignment/{{ course_basics["id"] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+              <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
             {% end %}
             {% if assignment[1]["start_date"] %}
               <td>
@@ -50,7 +50,7 @@
             {% else %}
               <td> </td>
             {% end %}
-            <td><progress class="progress is-small is-primary" value="{{ assignment[1]["num_passed"] }}" max="{{ assignment[1]["num_problems"] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_problems"] }}</td>
+            <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_passed'] }}" max="{{ assignment[1]['num_problems'] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_problems"] }}</td>
             {% if assignment[1]["has_timer"] %}
               <td>{{ assignment[1]["hour_timer"] }} hours {{ assignment[1]["minute_timer"] }} minutes </td>
             {% else %}
@@ -58,16 +58,16 @@
             {% end %}
             {% if assignment[1]["passed"] %}
               <td><label>
-                <img src="/static/greencheck.png" alt="Completed" height="30" width="30" style="vertical-align: middle;"/>
+                <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
               </label>Completed</td>
             {% else %}
                 {% if assignment[1]["in_progress"] %}
                   <td><label>
-                  <img src="/static/inprogress.png" alt="In progress" height="30" width="30" style="vertical-align: middle;"/>
+                  <img src="/static/inprogress.png" alt="In progress" class="table-icon"/>
                   </label>In progress</td>
                 {% else %}
                   <td><label>
-                    <img src="/static/unchecked.png" alt="Not completed" height="30" width="30" style="vertical-align: middle;"/>
+                    <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
                   </label>Not started</td>
                 {% end %}
             {% end %}

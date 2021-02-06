@@ -1,5 +1,5 @@
        
-        <div style="text-align: center; margin-bottom: 40px;">
+        <div class="tab-title">
             <h3>Preferences</h3>
         </div> 
 
@@ -9,7 +9,7 @@
             <div class="column is-one-third">
                 <p><strong>Text editor theme:</strong></p>
                 <div class="select is-info" style="margin-bottom: 10px;">
-                    <select name="ace_theme" style="padding:2px;" onchange="changeTheme(this.value)">
+                    <select name="ace_theme" class="edit-select" onchange="changeTheme(this.value)">
                         {% for theme in ace_themes %}
                             {% if theme == user_info["ace_theme"] %}
                                 <option selected>{{ theme }}</option>
@@ -25,7 +25,7 @@
             </div>
             <div class="column is-two-thirds">
                 <div id="ace_div">
-                    <textarea name="preview" id="preview" class="textarea is-info" rows="10" style="font-family:monospace">
+                    <textarea name="preview" id="preview" class="textarea is-info monospace" rows="10">
                     cloneAnimals = function(vec, x) {
                         newvec = rep(vec, each = x+1)
                         return(sort(newvec))
