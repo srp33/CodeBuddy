@@ -336,7 +336,7 @@ class Content:
                  VALUES (?, ?)'''
 
         self.cursor.execute(sql, (course_id, user_id,))
-    
+
     def unregister_user_from_course(self, course_id, user_id):
         sql = f'''BEGIN TRANSACTION;
 
@@ -835,7 +835,7 @@ class Content:
                   AND user_id != ?
                  GROUP BY user_id
                  ORDER BY date'''
-        
+
         self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id,))
 
         for submission in self.cursor.fetchall():
