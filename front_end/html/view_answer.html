@@ -54,7 +54,7 @@
                         <div class="buttons">
                             <a class="button is-small is-primary is-rounded" onclick="showOtherSolutions()">Show other students' solutions (anonymized)</a>
                         </div>
-                        <div id="other_students" style="display: none;">
+                        <div id="other_students" class="invisible">
                             {% for submission in student_submissions %}
                                 <p>Submission {{ submission[0] }}:</p>
                                 <pre class="extra">{{ submission[1] }}</pre>

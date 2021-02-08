@@ -13,11 +13,23 @@
                         </select>
                     </div>
                     <p class="buttons">
-                        <a id="move_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
-                        <input type="submit" id="move_button" class="button is-small is-primary" style="margin-top: 10px;" value="Move"/>
+                        <a id="move_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                        <input type="submit" id="move_button" class="modal-button button is-small is-primary" value="Move"/>
                     </p>
                 </div>
                 </form>
+            </div>
+
+            <div id="delete_submissions_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Are you sure you want to delete all submissions for this problem?</p>
+                    <p><font color="red">This will also delete all scores for this problem.</font></p>
+                    <p class="buttons">
+                        <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                        <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
+                    </p>
+                </div>
             </div>
             
             {% if is_administrator or is_instructor or is_assistant %}
@@ -28,7 +40,7 @@
 
             {% if is_administrator or is_instructor %}
                     | <a onclick="showMoveProblemModal()">Move exercise</a></br>
-                    <a href="/delete_problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Delete student submissions</a>
+                    <a onclick="showDeleteSubmissionsModal()">Delete problem submissions</a>
                 </p>
             {% end %}
 
@@ -45,6 +57,34 @@
                     modal.style.display = "block";
 
                     var cancelButton = document.getElementById("move_cancel_button");
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
+
+                function showDeleteSubmissionsModal() {
+                    var modal = document.getElementById("delete_submissions_modal");
+                    var span = document.getElementsByClassName("close")[3];
+                    modal.style.display = "block";
+
+                    var deleteButton = document.getElementById("delete_submissions_button");
+                    var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+                    deleteButton.onclick = function() {
+                        $.post("/delete_problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}");
+                        modal.style.display = "none";
+                        location.reload();
+                    }
 
                     cancelButton.onclick = function() {
                         modal.style.display = "none";
@@ -111,9 +151,9 @@
 
               if (json_data.passed) {
                   {% if problem_details["back_end"] == "any_response" %}
-                      result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
+                      result = "<div class='notification success-message' style='color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
                   {% else %}
-                      result = "<div class='notification is-success' style='background-color:#80cdc1; color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
+                      result = "<div class='notification success-message' style='color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
                   {% end %}
 
                   {% if problem_details["show_answer"] and problem_details["answer_code"] != "" %}
@@ -128,7 +168,7 @@
               }
               else {
                   // This should never be reached when problem_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
-                  result = "<div class='notification is-danger' style='background-color:#f4a582; color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+                  result = "<div class='notification error-message' style='color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
 
                   {% if problem_details["show_expected"] %}
                       var diff_output = "";

@@ -77,7 +77,7 @@
       </script>
 
       <form method="post" action="/assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
-      <div id="clockdiv" style="display: none;">
+      <div id="clockdiv" class="invisible">
         <div>
           <span class="hours"></span>
           <div class="smalltext">Hours</div>
@@ -92,7 +92,7 @@
         </div>
       </div>
 
-      <textarea name="start_time" id="start_time" style="display:none;"></textarea>
+      <textarea name="start_time" id="start_time" class="invisible"></textarea>
 
       {% if assignment_details["has_timer"] %}
         {% if not start_time %}
@@ -124,16 +124,16 @@
               <td>{{ problem[1]["score"] }}%</td>
               {% if problem[1]["passed"] %}
                 <td><label>
-                  <img src="/static/greencheck.png" alt="Completed" height="30" width="30" style="vertical-align: middle;"/>
+                  <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
                 </label>Completed</td>
               {% else %}
                 {% if problem[1]["in_progress"] %}
                   <td><label>
-                  <img src="/static/inprogress.png" alt="In progress" height="30" width="30" style="vertical-align: middle;"/>
+                  <img src="/static/inprogress.png" alt="In progress" class="table-icon"/>
                   </label>In progress</td>
                 {% else %}
                   <td><label>
-                    <img src="/static/unchecked.png" alt="Not completed" height="30" width="30" style="vertical-align: middle;"/>
+                    <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
                   </label>Not started</td>
                 {% end %}
               {% end %}

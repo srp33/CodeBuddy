@@ -1,4 +1,4 @@
-    <div style="text-align: center; margin-bottom: 40px;">
+    <div class="tab-title">
       <h3>Manage Users</h3>
     </div>
 
@@ -7,20 +7,20 @@
     <div>
       <p><strong>Remove all submissions for an existing user:</strong></p>
       <input class="input is-medium is-link" type="text" name="remove_user" placeholder="Enter ID (email address) of an existing user."/>
-      <input type="submit" id="remove_button" class="button is-small is-primary is-rounded" style="margin-top: 10px;" value="Remove"/>
+      <input type="submit" id="remove_button" class="modal-button button is-small is-primary is-rounded" value="Remove"/>
     </div>
 
     <div style="padding-top: 30px;">
       <p><strong>Delete an existing user:</strong></p>
       <input class="input is-medium is-link" type="text" name="delete_user" placeholder="Enter ID (email address) of an existing user."/>
-      <input type="submit" id="delete_button" class="button is-small is-primary is-rounded" style="margin-top: 10px;" value="Remove"/>
+      <input type="submit" id="delete_button" class="modal-button button is-small is-primary is-rounded" value="Remove"/>
     </div>
 
     {% if result %}
         {% if result.startswith("Error:") %}
-            <p><div class='notification is-danger' style='background-color: #f4a582'><strong>{{ result }}</strong></div></p>
+            <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
         {% else %}
-            <p><div class='notification is-success' style='background-color: #80cdc1'><strong>{{ result }}</strong></div></p>
+            <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
         {% end %}
     {% end %}
 

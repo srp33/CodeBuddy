@@ -1,7 +1,7 @@
 <script src="/static/jquery.min.js"></script>
 
 <div class="columns" style="height: 100vh;">
-    <div class="column is-one-quarter" style="padding: 3.5rem;">
+    <div class="column is-one-quarter profile-menu">
         <aside class="menu">
             <p class="menu-label">
               General
@@ -51,9 +51,9 @@
             </ul>
         </aside>
     </div>
-    <div class="column is-three-quarters" style="padding: 3.5rem; background-color: #f5f5f5;">
+    <div class="column is-three-quarters profile-main">
       <div class="content">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <img src="{{ user_info['picture'] }}" alt="Profile Photo" style="border-radius: 50%; display: inline-block; vertical-align: middle; margin: 10px;"/>
+        <div class="photo-div">
+          <img src="{{ user_info['picture'] }}" alt="Profile Photo" class="profile-photo"/>
           <span style="font-size: larger;"><b>{{ user_info["name"] }}</b></span>
         </div>

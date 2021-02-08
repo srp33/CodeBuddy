@@ -1,7 +1,7 @@
 # Returns the number of non-admin, non-instructor, non-assistant students
 # in a given course.
 def students_course(course_id):
-    return f'''SELECT DISTINCT user_id
+    return f'''SELECT user_id
                FROM course_registration
                WHERE course_id = {course_id}'''
 

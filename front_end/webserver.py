@@ -500,15 +500,6 @@ class DeleteCourseHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class DeleteCourseSubmissionsHandler(BaseUserHandler):
-    def get(self, course):
-        try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
-                self.render("delete_course_submissions.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=None, user_info=self.get_user_info())
-            else:
-                self.render("permissions.html")
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
     def post(self, course):
         try:
             if not self.is_administrator() and not self.is_instructor_for_course(course):
@@ -516,9 +507,6 @@ class DeleteCourseSubmissionsHandler(BaseUserHandler):
                 return
 
             content.delete_course_submissions(content.get_course_basics(course))
-            result = "Success: Course submissions deleted."
-
-            self.render("delete_course_submissions.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), result=result, user_info=self.get_user_info())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -828,15 +816,6 @@ class DeleteAssignmentHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class DeleteAssignmentSubmissionsHandler(BaseUserHandler):
-    def get(self, course, assignment):
-        try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
-                self.render("delete_assignment_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), result=None, user_info=self.get_user_info())
-            else:
-                self.render("permissions.html")
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
     def post(self, course, assignment):
         try:
             if not self.is_administrator() and not self.is_instructor_for_course(course):
@@ -844,9 +823,6 @@ class DeleteAssignmentSubmissionsHandler(BaseUserHandler):
                 return
 
             content.delete_assignment_submissions(content.get_assignment_basics(course, assignment))
-            result = "Success: Assignment submissions deleted."
-
-            self.render("delete_assignment_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=content.get_problems(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), result=result, user_info=self.get_user_info())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -1028,17 +1004,6 @@ class DeleteProblemHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
 class DeleteProblemSubmissionsHandler(BaseUserHandler):
-    def get(self, course, assignment, problem):
-        try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
-                problems = content.get_problems(course, assignment)
-
-                self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=None, user_info=self.get_user_info())
-            else:
-                self.render("permissions.html")
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
     def post(self, course, assignment, problem):
         try:
             if not self.is_administrator() and not self.is_instructor_for_course(course):
@@ -1046,10 +1011,6 @@ class DeleteProblemSubmissionsHandler(BaseUserHandler):
                 return
 
             content.delete_problem_submissions(content.get_problem_basics(course, assignment, problem))
-            result = "Success: Submissions deleted."
-
-            problems =content.get_problems(course, assignment)
-            self.render("delete_problem_submissions.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=content.get_problem_basics(course, assignment, problem), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), result=result, user_info=self.get_user_info())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

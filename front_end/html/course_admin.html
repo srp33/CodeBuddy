@@ -81,8 +81,20 @@
         <span class="close">&times;</span>
         <p id="confirm_delete"></p>
         <p class="buttons">
-            <a id="delete_cancel_button" class="button is-small is-primary is-light" style="margin-top: 10px;">Cancel</a>
-            <a id="delete_button" class="button is-small is-primary" style="margin-top: 10px;">Delete</a>
+            <a id="delete_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+            <a id="delete_button" class="modal-button button is-small is-primary">Delete</a>
+        </p>
+    </div>
+  </div>
+
+  <div id="delete_submissions_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Are you sure you want to delete all submissions for this course?</p>
+        <p><font color="red">This will also delete all scores for this course.</font></p>
+        <p class="buttons">
+            <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+            <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
         </p>
     </div>
   </div>
@@ -96,7 +108,8 @@
     <p></br>
       {% if is_administrator or is_instructor %}
         <a href="/edit_course/{{ course_basics['id'] }}">Edit course</a> |
-        <a href="/delete_course/{{ course_basics['id'] }}">Delete course</a>
+        <a href="/delete_course/{{ course_basics['id'] }}">Delete course</a> |
+        <a onclick="showDeleteSubmissionsModal()">Delete course submissions</a>
       {% end %}
     </p>
   </div></br></br></br>
@@ -134,6 +147,34 @@
       if (event.target == modal) {
         modal.style.display = "none";
       }
+    }
+  }
+
+  function showDeleteSubmissionsModal() {
+    var modal = document.getElementById("delete_submissions_modal");
+    var span = document.getElementsByClassName("close")[1];
+    modal.style.display = "block";
+
+    var deleteButton = document.getElementById("delete_submissions_button");
+    var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+    deleteButton.onclick = function() {
+      $.post("/delete_course_submissions/{{ course_basics['id'] }}");
+      modal.style.display = "none";
+      location.reload();
+    }
+
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
     }
   }
 </script>
