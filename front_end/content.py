@@ -1297,6 +1297,11 @@ class Content:
                    AND assignment_id = {a_id}
                    AND problem_id = {p_id};
 
+                 DELETE FROM scores
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id}
+                   AND problem_id = {p_id};
+
                  DELETE FROM problems
                  WHERE course_id = {c_id}
                    AND assignment_id = {a_id}
@@ -1314,6 +1319,10 @@ class Content:
         sql = f'''BEGIN TRANSACTION;
 
                  DELETE FROM submissions
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id};
+
+                 DELETE FROM scores
                  WHERE course_id = {c_id}
                    AND assignment_id = {a_id};
 
