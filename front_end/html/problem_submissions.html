@@ -1,0 +1,82 @@
+<style>
+  .collapsible {
+    background-color: white;
+    font-size: 20px;
+    text-align: left;
+    cursor: pointer;
+    border: 2px solid  #19334d;
+    width: 100%;
+    border-left: 12px solid  #19334d;
+    border-radius: 5px;
+    padding: 14px;
+    margin-top: 10px;
+  }
+  
+  .active, .collapsible:hover {
+    background-color: #f8f8f8;
+  }
+  
+  .c-content {
+    padding: 0 18px;
+    display: none;
+  }
+</style>
+
+{% if len(problem_submissions) > 0 %}
+
+  <div>
+    <h2 style="display: inline-block;">Submissions for {{ problem_basics["title"] }}</h2>
+    <div class="buttons is-pulled-right">
+      <a class="button is-small is-rounded is-primary" onclick="showAllSubmissions()">Show All</a>
+      <a class="button is-small is-rounded is-primary is-light" onclick="hideAllSubmissions()">Hide All</a>
+    </div>
+  </div>
+
+  {% for student in problem_submissions %}
+    <button type="button" class="collapsible">{{ student[1]["name"] }}</button>
+    <div class="c-content">
+      <p>Problem score: <strong>{{ student[1]["score"] }}%</strong></p>
+      <p>Most recent passing submission:</p>
+      <pre>{{ student[1]["code"] }}</pre>
+    </div>
+  {% end %}
+
+{% else %}
+  <h2>No submissions have been made for this exercise.</h2>
+{% end %}
+
+<div style="margin-top: 15px; margin-bottom: 80px;">
+  <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment page</a>
+</div>
+
+<script>
+  var coll = document.getElementsByClassName("collapsible");
+  var content = document.getElementsByClassName("c-content");
+  var i;
+  
+  for (i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+      this.classList.toggle("active");
+      var content = this.nextElementSibling;
+      if (content.style.display === "block") {
+        content.style.display = "none";
+      } else {
+        content.style.display = "block";
+      }
+    });
+  }
+
+  function showAllSubmissions() {
+    for (i = 0; i < content.length; i++) {
+      content[i].style.display = "block";
+      coll[i].classList.add("active");
+    }
+  }
+
+  function hideAllSubmissions() {
+    for (i = 0; i < content.length; i++) {
+      content[i].style.display = "none";
+      coll[i].classList.remove("active");
+    }
+  }
+</script>
