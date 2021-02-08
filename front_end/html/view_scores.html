@@ -74,9 +74,9 @@
             {% if assignment_details["has_timer"] %}
               {% if score[0] in start_times %}
                 {% if start_times[score[0]]["timer_ended"] %}
-                  <td>Timer ended <a onclick="showResetModal({{ score[0] }})">(reset)</a></td>
+                  <td>Timer ended <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
                 {% else %}
-                  <td>In progress <a onclick="showResetModal({{ score[0] }})">(reset)</a></td>
+                  <td>In progress <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
                 {% end %}
               {% else %}
                 <td>Not started</td>
