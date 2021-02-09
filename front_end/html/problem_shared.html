@@ -31,18 +31,18 @@
                     </p>
                 </div>
             </div>
-            
-            {% if is_administrator or is_instructor or is_assistant %}
-                <p>
+
+            <p>           
+                {% if is_administrator or is_instructor or is_assistant %}
                     <a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">View scores</a> |
                     <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Edit exercise</a>
-            {% end %}
+                {% end %}
 
-            {% if is_administrator or is_instructor %}
+                {% if is_administrator or is_instructor %}
                     | <a onclick="showMoveProblemModal()">Move exercise</a></br>
                     <a onclick="showDeleteSubmissionsModal()">Delete problem submissions</a>
-                </p>
-            {% end %}
+                {% end %}
+            </p>
 
             <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a><br/>
 

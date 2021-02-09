@@ -682,19 +682,19 @@ class Content:
                    ON p.course_id = s.course_id
                    AND p.assignment_id = s.assignment_id
                    AND p.problem_id = s.problem_id
-                   AND (s.user_id = ? OR s.user_id IS NULL)
+                   AND s.user_id = ?
                  LEFT JOIN scores sc
                    ON p.course_id = sc.course_id
                    AND p.assignment_id = sc.assignment_id
                    AND p.problem_id = sc.problem_id
-                   AND (s.user_id = sc.user_id OR s.user_id IS NULL)
+                   AND (sc.user_id = ? OR sc.user_id IS NULL)
                  WHERE p.course_id = ?
                    AND p.assignment_id = ?
                    AND p.visible = 1
                  GROUP BY p.assignment_id, p.problem_id
                  ORDER BY p.title'''
 
-        self.cursor.execute(sql,(user_id, int(course_id), int(assignment_id),))
+        self.cursor.execute(sql,(user_id, user_id, int(course_id), int(assignment_id),))
 
         problem_statuses = []
         for row in self.cursor.fetchall():
@@ -936,6 +936,35 @@ class Content:
             return help_request
         else:
             return None
+    def get_problem_submissions(self, course_id, assignment_id, problem_id):
+        problem_submissions = []
+
+        sql = '''SELECT s.code, u.user_id, u.name, sc.score
+                 FROM submissions s
+                 INNER JOIN users u
+                 ON s.user_id = u.user_id
+                 INNER JOIN scores sc
+                 ON s.user_id = sc.user_id
+                 WHERE s.course_id = ?
+                  AND s.assignment_id = ?
+                  AND s.problem_id = ?
+                  AND passed = 1
+                  AND s.user_id IN
+                  (
+                      SELECT user_id
+                      FROM course_registration
+                      WHERE course_id = ?
+                  )
+                 GROUP BY s.user_id
+                 ORDER BY u.name'''
+
+        self.cursor.execute(sql, (course_id, assignment_id, problem_id, course_id,))
+
+        for submission in self.cursor.fetchall():
+            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"]}
+            problem_submissions.append([submission["user_id"], submission_info])
+
+        return problem_submissions
 
     def specify_course_basics(self, course_basics, title, visible):
         course_basics["title"] = title
@@ -1327,8 +1356,8 @@ class Content:
         self.cursor.execute(sql, (new_course_id, course_id, assignment_id,))
         new_assignment_id = self.cursor.lastrowid
 
-        sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
-                 SELECT ?, ?, title, visible, answer_code, answer_description, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
+        sql = '''INSERT INTO problems (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated)
+                 SELECT ?, ?, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_url, data_file_name, data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, test_code, date_created, date_updated
                  FROM problems
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -1416,6 +1445,11 @@ class Content:
                    AND assignment_id = {a_id}
                    AND problem_id = {p_id};
 
+                 DELETE FROM scores
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id}
+                   AND problem_id = {p_id};
+
                  DELETE FROM problems
                  WHERE course_id = {c_id}
                    AND assignment_id = {a_id}
@@ -1433,6 +1467,10 @@ class Content:
         sql = f'''BEGIN TRANSACTION;
 
                  DELETE FROM submissions
+                 WHERE course_id = {c_id}
+                   AND assignment_id = {a_id};
+
+                 DELETE FROM scores
                  WHERE course_id = {c_id}
                    AND assignment_id = {a_id};
 

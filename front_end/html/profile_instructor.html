@@ -226,6 +226,8 @@ function showAddInstructorModal() {
     var span = document.getElementsByClassName("close")[0];
     modal.style.display = "block";
 
+    document.getElementById("new_instructor").focus();
+
     var cancelButton = document.getElementById("add_instructor_cancel_button");
     cancelButton.onclick = function() {
         modal.style.display = "none";
@@ -269,6 +271,8 @@ function showAddAssistantModal() {
     var modal = document.getElementById("add_assistant_modal");
     var span = document.getElementsByClassName("close")[1];
     modal.style.display = "block";
+
+    document.getElementById("new_assistant").focus();
 
     var cancelButton = document.getElementById("add_assistant_cancel_button");
     cancelButton.onclick = function() {

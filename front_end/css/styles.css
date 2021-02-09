@@ -117,3 +117,7 @@ td > button {
     background-color: white;
     cursor: pointer;
 }
+
+.ace_gutter {
+    z-index: auto !important;
+}
