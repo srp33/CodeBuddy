@@ -44,3 +44,7 @@
     width: 30px;
     vertical-align: middle;
 }
+
+.ace_gutter {
+    z-index: auto !important;
+}
