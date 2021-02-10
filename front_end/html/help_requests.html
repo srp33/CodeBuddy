@@ -4,52 +4,52 @@
 
 <h4>Help requests for {{ course_basics["title"] }}</h4>
 <table class="table" id="request_table">
-    <thead>
+  <thead>
+    <tr>
+      <th>Student Name</th>
+      <th>Assignment Title</th>
+      <th>Problem Title</th>
+      <th>Request</th>
+      <th>Suggestion Made</th>
+      <th>Approved</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% if help_requests %}
+    {% for request in help_requests %}
       <tr>
-        <th>Student Name</th>
-        <th>Assignment Title</th>
-        <th>Problem Title</th>
-        <th>Request</th>
-        <th>Suggestion Made</th>
-        <th>Approved</th>
-        <th>Delete</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% if help_requests %}
-      {% for request in help_requests %}
-        <tr>
-          <td>{{ request["name"] }}</td>
-          <td>{{ request["assignment_title"] }}</td> 
-          <td>{{ request["problem_title"] }}</td>
-          <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View Request</a></td>
-          {% if request["suggestion"] %}
-            <td>
-              <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
-            </td>
-          {% else %}
-            <td>
-              <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
-            </td>
-          {% end %}
-          {% if request["approved"] %}
-            <td>
-              <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
-            </td>
-          {% else %}
-            <td>
-                <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
-            </td>
-          {% end %}
-          <form method="post" action="/delete_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}">
+        <td>{{ request["name"] }}</td>
+        <td>{{ request["assignment_title"] }}</td> 
+        <td>{{ request["problem_title"] }}</td>
+        <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View Request</a></td>
+        {% if request["suggestion"] %}
           <td>
-            <button type="submit">
-              <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
-            </button>
+            <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
           </td>
-          </form>
-        </tr>
-      {% end %}
-    {% end %}    
-    </tbody>
+        {% else %}
+          <td>
+            <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
+          </td>
+        {% end %}
+        {% if request["approved"] %}
+          <td>
+            <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
+          </td>
+        {% else %}
+          <td>
+              <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
+          </td>
+        {% end %}
+        <form method="post" action="/delete_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}">
+        <td>
+          <button type="submit">
+            <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
+          </button>
+        </td>
+        </form>
+      </tr>
+    {% end %}
+  {% end %}    
+  </tbody>
 </table>
