@@ -183,17 +183,15 @@
             </div>
           </div>
 
-          {% if  help_request and help_request["student_comment"] and help_request["suggestion"] %}
-            <div id="suggestion_modal" class="modal">
-              <div class="modal-content">
-                <span class="close">&times;</span>
-                <p>Your comment from the help request:</p>
-                <textarea class="textarea is-info monospace text-18" rows="3">{{ help_request["student_comment"] }}</textarea>
-                <br><p>Instructor's suggestion:</p>
-                <textarea class="textarea is-primary monospace text-18" rows="3">{{ help_request["suggestion"] }}</textarea>
-              </div>
+          <div id="suggestion_modal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <p>Your comment from the help request:</p>
+              <textarea class="textarea is-info monospace text-18" rows="3">{{ help_request["student_comment"] }}</textarea>
+              <br><p>Instructor's suggestion:</p>
+              <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
             </div>
-          {% end %}
+          </div>
 
             <div>
                 <h2 style="display: inline-block;">{{ problem_basics["assignment"]["title"] }}</h2>
@@ -280,7 +278,7 @@
                     {% if help_request["approved"] %}
                       <a class="button is-success" onclick="showSuggestionModal()">Suggestion made!</a>
                     {% else %}
-                      <a class="button is-warning is-light">Request pending</a>
+                      <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
                     {% end %}
                   {% else %}
                     <a class="button is-light" onclick="showHelpRequestModal()">I need help</a>

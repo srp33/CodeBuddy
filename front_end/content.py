@@ -889,6 +889,29 @@ class Content:
 
         return help_requests
 
+    def get_student_help_requests(self, user_id):
+        help_requests = []
+
+        sql = '''SELECT r.course_id, a.assignment_id, p.problem_id, c.title as course_title, a.title as assignment_title, p.title as problem_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id
+                 FROM help_requests r
+                 INNER JOIN users u
+                  ON r.user_id = u.user_id
+                 INNER JOIN courses c
+                  ON r.course_id = c.course_id
+                 INNER JOIN assignments a
+                  ON r.assignment_id = a.assignment_id
+                 INNER JOIN problems p
+                  ON r.problem_id = p.problem_id
+                 WHERE r.user_id = ?
+                 ORDER BY r.date DESC'''
+
+        self.cursor.execute(sql, (user_id,))
+
+        for request in self.cursor.fetchall():
+            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "problem_id": request["problem_id"], "course_title": request["course_title"], "assignment_title": request["assignment_title"], "problem_title": request["problem_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"]})
+
+        return help_requests
+
     def get_problem_help_requests(self, course_id, assignment_id, problem_id, user_id):
         help_requests = []
 
@@ -910,14 +933,10 @@ class Content:
         return help_requests
 
     def get_help_request(self, course_id, assignment_id, problem_id, user_id):
-        sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, v.name as suggester, x.name as approver
+        sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id
                  FROM help_requests r
                  INNER JOIN users u
                   ON r.user_id = u.user_id
-                 INNER JOIN users v
-				  ON r.suggester_id = v.user_id
-				 INNER JOIN users x
-				  ON r.approver_id = x.user_id
                  WHERE r.course_id = ?
                   AND r.assignment_id = ?
                   AND r.problem_id = ?
@@ -927,7 +946,7 @@ class Content:
 
         request = self.cursor.fetchone()
         if request:
-            help_request = {"user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "approved": request["approved"], "suggester_id": request["suggester_id"], "suggester": request["suggester"], "approver_id": request["approver_id"], "approver": request["approver"]}
+            help_request = {"user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"]}
             if request["suggestion"]:
                 help_request["suggestion"] = request["suggestion"]
             else:
@@ -936,6 +955,7 @@ class Content:
             return help_request
         else:
             return None
+            
     def get_problem_submissions(self, course_id, assignment_id, problem_id):
         problem_submissions = []
 
