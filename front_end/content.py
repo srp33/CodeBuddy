@@ -51,7 +51,7 @@ class Content:
                                         FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
                                       );'''
 
-        create_course_registration_table = '''CREATE TABLE IF NOT EXISTS course_registration (
+        create_course_registration_table = '''CREATE TABLE IF NOT EXISTS course_registrations (
                                                  user_id text NOT NULL,
                                                  course_id integer NOT NULL,
                                                  FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -169,7 +169,7 @@ class Content:
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
                                       );'''
 
-        create_user_assignment_start_table = '''CREATE TABLE IF NOT EXISTS user_assignment_start (
+        create_user_assignment_start_table = '''CREATE TABLE IF NOT EXISTS user_assignment_starts (
                                                   user_id text NOT NULL,
                                                   course_id text NOT NULL,
                                                   assignment_id text NOT NULL,
@@ -955,7 +955,7 @@ class Content:
             return help_request
         else:
             return None
-            
+
     def get_problem_submissions(self, course_id, assignment_id, problem_id):
         problem_submissions = []
 
