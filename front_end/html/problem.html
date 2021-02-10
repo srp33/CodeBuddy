@@ -189,9 +189,9 @@
             <div class="modal-content">
               <span class="close">&times;</span>
               <p>Your comment from the help request:</p>
-              <textarea class="textarea is-info monospace text-18" rows="3">{{ help_request["student_comment"] }}</textarea>
+              <textarea class="textarea is-info monospace text-18" rows="3">{% if help_request and help_request["student_comment"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
               <br><p>Instructor's suggestion:</p>
-              <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
+              <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
             </div>
           </div>
 
