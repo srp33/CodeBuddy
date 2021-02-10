@@ -19,7 +19,7 @@ Problem: {{ problem_basics["title"] }}</p><br>
     <p><strong>Code:</strong></p>
     <textarea id="editor" class="textarea is-info monospace" rows="20">{{ help_request["code"] }}</textarea>
     <div class="buttons">
-        <a id="show_answer_button" class="button is-small is-primary is-rounded" onclick="showAnswerCode()">View answer code</a>
+        <a id="show_answer_button" class="button is-small is-primary is-rounded" onclick="showAnswerCode()">View solution</a>
     </div>
     <div id="answer_code" class="invisible">
         <textarea id="answer_editor" class="textarea is-info monospace" rows="20">{{ problem_details["answer_code"] }}</textarea>
@@ -35,12 +35,12 @@ Problem: {{ problem_basics["title"] }}</p><br>
     <div class="suggestion-div">
         <p><strong>Suggestion:</strong></p>
         {% if help_request["suggestion"] %}
-            <p class="light-heading">Suggester: {{ help_request["suggester"] }}<br>
+            <!--<p class="light-heading">Suggester: <br>
             {% if help_request["approved"] %}
-                Approver: {{ help_request["approver"] }}</p>
+                Approver: </p>
             {% else %}
                 Approver: Not yet approved</p>
-            {% end %}
+            {% end %}-->
         {% end %}
         <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
     </div>

@@ -284,12 +284,12 @@
             <div class="buttons are-small is-pulled-right">
               {% if help_request %}
                 {% if help_request["approved"] %}
-                  <a class="button is-success" onclick="showSuggestionModal()">Suggestion made!</a>
+                  <a class="button success-message" onclick="showSuggestionModal()">View suggestion</a>
                 {% else %}
                   <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
                 {% end %}
               {% else %}
-                <a class="button is-light" onclick="showHelpRequestModal()">I need help</a>
+                <a class="button is-light" onclick="showHelpRequestModal()">Request help</a>
               {% end %}
             </div>
           </p>
