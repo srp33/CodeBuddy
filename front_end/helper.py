@@ -51,7 +51,7 @@ def is_old_file(file_path, days=30):
     return age_in_days > days
 
 def convert_markdown_to_html(text):
-    if len(text) == 0:
+    if not text or len(text) == 0:
         return ""
 
     markdown = Markdown()
