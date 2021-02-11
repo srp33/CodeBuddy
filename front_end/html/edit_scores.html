@@ -1,57 +1,56 @@
 {% if course_basics["exists"] %}
-  {% if assignment_basics["exists"] %}
-    <h2>{{ assignment_basics["title"] }}</h2>
+    {% if assignment_basics["exists"] %}
+        <h2>{{ assignment_basics["title"] }}</h2>
 
-    <h4>View scores for {{ student_id }}</h4>
-    <p>Click on an exercise to view the student's past submissions.</p>
+        <h4>View scores for {{ student_id }}</h4>
+        <p>Click on an exercise to view the student's past submissions.</p>
 
-    {% if result %}
-      {% if result.startswith("Error:") %}
-        <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
-      {% elif result.startswith("Success:") %}
-        <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
-      {% end %}
+        {% if result %}
+            {% if result.startswith("Error:") %}
+                <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+            {% elif result.startswith("Success:") %}
+                <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
+            {% end %}
+        {% end %}
+
+        <div class="columns">
+            <div class="column is-half">
+
+                <form method="post" action="/edit_scores/{{ course_basics['id']}}/{{ assignment_basics['id'] }}/{{ student_id }}">
+
+                <table class="table" id="scores_table">
+                    <thead>
+                        <tr>
+                        <th>Exercise</th>
+                        <th># Submissions</th>
+                        <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for problem in problem_statuses %}
+                        <tr>
+                            {% if problem[1]["num_submissions"] > 0 %}
+                                <td><a href="/student_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[1]['id'] }}/{{ student_id }}">{{ problem[1]["title"] }}</a></td>
+                            {% else %}
+                                <td>{{ problem[1]["title"] }}</td>
+                            {% end %}
+                            <td>{{ problem[1]["num_submissions"] }}</td>
+                            <td><input class="input is-medium is-link" style="width: 50px;" id="{{ problem[1]['id'] }}" name="{{ problem[1]['id'] }}" type="text" datainput value="{{ round(problem[1]['score']) }}"></td>
+                        </tr>
+                    {% end %}    
+                    </tbody>
+                </table>
+
+                <p><input type="submit" class="button is-primary is-large is-fullwidth" value="Save"/></p>        
+                <br>
+                <a href="/view_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to all scores</a> |
+                <a href="/edit_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit scores</a>
+
+                </form>
+
+            </div>
+        </div>
+
     {% end %}
-
-    <div class="columns">
-      <div class="column is-half">
-
-        <form method="post" action="/edit_scores/{{ course_basics['id']}}/{{ assignment_basics['id'] }}/{{ student_id }}">
-
-        <table class="table" id="scores_table">
-          <thead>
-            <tr>
-              <th>Exercise</th>
-              <th># Submissions</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for problem in problem_statuses %}
-              <tr>
-              {% if problem[1]["num_submissions"] > 0 %}
-                <td><a href="/student_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[1]['id'] }}/{{ student_id }}">{{ problem[1]["title"] }}</a></td>
-              {% else %}
-                <td>{{ problem[1]["title"] }}</td>
-              {% end %}
-              <td>{{ problem[1]["num_submissions"] }}</td>
-              <td><input class="input is-medium is-link" style="width: 50px;" id="{{ problem[1]['id'] }}" name="{{ problem[1]['id'] }}" type="text" datainput value="{{ round(problem[1]['score']) }}"></td>
-              </tr>
-            {% end %}    
-          </tbody>
-        </table>
-
-        <p><input type="submit" class="button is-primary is-large is-fullwidth" value="Save" /></p>        
-
-        <br />
-        <a href="/view_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to all scores</a> |
-        <a href="/edit_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit scores</a>
-
-        </form>
-
-      </div>
-    </div>
-
-  {% end %}
 {% end %}
-<br /><br />
+<br><br>
