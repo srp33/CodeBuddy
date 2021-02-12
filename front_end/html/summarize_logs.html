@@ -2,132 +2,137 @@
 <form method="post" action="/summarize_logs">
 
 <div class="columns">
-  <div class="column is-half">
-    <h3>Summarized logs</h3>
-    <div class="field is-grouped">
-      <div class="control">
-        <label class="label">Select file</label>
-        <div class="select is-link is-medium">
-          <select id="file_select" name="file_select">
-            <option selected disabled>Select file</option>
-            <option value="logs/summarized/HitsAnyUser.tsv.gz">HitsAnyUser</option>
-            <option value="logs/summarized/HitsPerUser.tsv.gz">HitsPerUser</option>
-            <option value="logs/summarized/LoadDuration.tsv.gz">LoadDuration</option>
-          </select>
-        </div>
-      </div>
-      <div class="control">
-        <label class="label">Filter by page</label>
-        <div class="select is-link is-medium">
-          <select id="filter_select" name="filter_select">
-            <option selected>No filter</option>
-            {% for item in filter_list %}
-              <option>{{ item }}</option>
-            {% end %}
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="control">
-      <label class="label">Filter by date</label>
-      <div class="field is-grouped">
-        <div class="control">
-          <label class="label">Year</label>
-          <div class="select is-link is-medium">
-            <select id="year_select" name="year_select">
-              <option selected>No filter</option>
-              {% for year in years %}
-              <option>{{ year }}</option>
-              {% end %}
-            </select>
-          </div>
+    <div class="column is-half">
+        <h3>Summarized logs</h3>
+        <div class="field is-grouped">
+            <div class="control">
+                <label class="label">Select file</label>
+                <div class="select is-link is-medium">
+                    <select id="file_select" name="file_select">
+                        <option selected disabled>Select file</option>
+                        <option value="logs/summarized/HitsAnyUser.tsv.gz">HitsAnyUser</option>
+                        <option value="logs/summarized/HitsPerUser.tsv.gz">HitsPerUser</option>
+                        <option value="logs/summarized/LoadDuration.tsv.gz">LoadDuration</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control">
+                <label class="label">Filter by page</label>
+                <div class="select is-link is-medium">
+                    <select id="filter_select" name="filter_select">
+                        <option selected>No filter</option>
+                        {% for item in filter_list %}
+                            <option>{{ item }}</option>
+                        {% end %}
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="control">
-          <label class="label">Month</label>
-          <div class="select is-link is-medium">
-            <select id="month_select" name="month_select">
-              <option selected>No filter</option>
-                {% for month in months %}
-                  <option>{{ month }}</option>
-                {% end %}
-            </select>
-          </div>
+            <label class="label">Filter by date</label>
+            <div class="field is-grouped">
+                <div class="control">
+                    <label class="label">Year</label>
+                    <div class="select is-link is-medium">
+                        <select id="year_select" name="year_select">
+                            <option selected>No filter</option>
+                            {% for year in years %}
+                                <option>{{ year }}</option>
+                            {% end %}
+                        </select>
+                    </div>
+                </div>
+                <div class="control">
+                    <label class="label">Month</label>
+                    <div class="select is-link is-medium">
+                        <select id="month_select" name="month_select">
+                            <option selected>No filter</option>
+                            {% for month in months %}
+                                <option>{{ month }}</option>
+                            {% end %}
+                        </select>
+                    </div>
+                </div>
+                <div class="control">
+                    <label class="label">Day</label>
+                    <div class="select is-link is-medium">
+                        <select id="day_select" name="day_select">
+                            <option selected>No filter</option>
+                            {% for day in days %}
+                                <option>{{ day }}</option>
+                            {% end %}
+                        </select>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="control">
-          <label class="label">Day</label>
-          <div class="select is-link is-medium">
-            <select id="day_select" name="day_select">
-              <option selected>No filter</option>
-                {% for day in days %}
-                  <option>{{ day }}</option>
-                {% end %}
-            </select>
-          </div>
+        <div class="buttons">
+            <a href="/profile/admin/{{ user_info['user_id'] }}" class="button is-small is-light is-rounded">Return to admin menu</a>
+            <input type="submit" class="button is-small is-link is-rounded" value="Submit"/>
         </div>
-      </div>
     </div>
-    <div class="buttons">
-      <a href="/profile/admin/{{ user_info['user_id'] }}" class="button is-small is-light is-rounded">Return to admin menu</a>
-      <input type="submit" class="button is-small is-link is-rounded" value="Submit"/>
+    <div class="column is-half">
+        <h4>Download log files</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Download Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Hits Any User</td>
+                    <td><a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz">Download</a></td>
+                </tr>
+                <tr>
+                    <td>Hits Per User</td>
+                    <td><a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz">Download</a></td>
+                </tr>
+                <tr>
+                    <td>Load Duration</td>
+                    <td><a href="/logs/summarized/LoadDuration.tsv.gz" download="LoadDuration.tsv.gz">Download</a></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-  </div>
-  <div class="column is-half">
-    <h4>Download log files</h4>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>File Name</th>
-          <th>Download Link</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Hits Any User</td>
-          <td><a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz">Download</a></td>
-        </tr>
-        <tr>
-          <td>Hits Per User</td>
-          <td><a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz">Download</a></td>
-        </tr>
-        <tr>
-          <td>Load Duration</td>
-          <td><a href="/logs/summarized/LoadDuration.tsv.gz" download="LoadDuration.tsv.gz">Download</a></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
 </div>
 
 
 <script type="text/javascript">
-  window.onload = function() {
-    var selItem = sessionStorage.getItem("file_item");  
-    $('#file_select').val(selItem);
-    var filItem = sessionStorage.getItem("filter_item");  
-    $('#filter_select').val(filItem);
-    var yrItem = sessionStorage.getItem("year_item");  
-    $('#year_select').val(yrItem);
-    var mnItem = sessionStorage.getItem("month_item");  
-    $('#month_select').val(mnItem);
-    var dyItem = sessionStorage.getItem("day_item");  
-    $('#day_select').val(dyItem);
+    window.onload = function() {
+        var selItem = sessionStorage.getItem("file_item");  
+        $('#file_select').val(selItem);
+        var filItem = sessionStorage.getItem("filter_item");  
+        $('#filter_select').val(filItem);
+        var yrItem = sessionStorage.getItem("year_item");  
+        $('#year_select').val(yrItem);
+        var mnItem = sessionStorage.getItem("month_item");  
+        $('#month_select').val(mnItem);
+        var dyItem = sessionStorage.getItem("day_item");  
+        $('#day_select').val(dyItem);
     }
+
     $('#file_select').change(function() { 
         var selVal = $(this).val();
         sessionStorage.setItem("file_item", selVal);
     });
+
     $('#filter_select').change(function() { 
         var filVal = $(this).val();
         sessionStorage.setItem("filter_item", filVal);
     });
+
     $('#year_select').change(function() { 
         var yrVal = $(this).val();
         sessionStorage.setItem("year_item", yrVal);
     });
+
     $('#month_select').change(function() { 
         var mnVal = $(this).val();
         sessionStorage.setItem("month_item", mnVal);
     });
+
     $('#day_select').change(function() { 
         var dyVal = $(this).val();
         sessionStorage.setItem("day_item", dyVal);
@@ -137,40 +142,40 @@
 </form>
 
 {% if show_table %}
-  <table class="table is-striped" id="Table1">
-    <thead>
-      <tr>
-        <th>Line</th>
-        <th>Year</th>
-        <th>Month</th>
-        <th>Day</th>
-        <th>Hour</th>
-        <th>Value</th>
-        <th>Page</th>
-        <th>Course Title</th>
-        <th>Assignment Title</th>
-        <th>Exercise Title</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for line_num, line in log_dict.items() %}
-      {% if line[8] == filter %}
-        <tr>
-          <th>{{ line_num }}</th>
-        {% for item in line %}
-          <td>{{ item }}</td> 
-        {% end %}     
-        </tr>
-      {% elif filter == "No filter" %}
-        <tr>
-          <th>{{ line_num }}</th>
-        {% for item in line %}
-          <td>{{ item }}</td> 
-        {% end %}     
-        </tr>
-      {% end %}
-    {% end %}    
-    </tbody>
-  </table>
+    <table class="table is-striped" id="Table1">
+        <thead>
+            <tr>
+                <th>Line</th>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Day</th>
+                <th>Hour</th>
+                <th>Value</th>
+                <th>Page</th>
+                <th>Course Title</th>
+                <th>Assignment Title</th>
+                <th>Exercise Title</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for line_num, line in log_dict.items() %}
+            {% if line[8] == filter %}
+                <tr>
+                    <th>{{ line_num }}</th>
+                    {% for item in line %}
+                        <td>{{ item }}</td> 
+                    {% end %}     
+                </tr>
+            {% elif filter == "No filter" %}
+                <tr>
+                    <th>{{ line_num }}</th>
+                    {% for item in line %}
+                        <td>{{ item }}</td> 
+                    {% end %}     
+                </tr>
+            {% end %}
+        {% end %}    
+        </tbody>
+    </table>
 {% end %}  
-<br /><br />
+<br><br>
