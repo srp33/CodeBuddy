@@ -67,11 +67,6 @@
                 <p>Either you have not yet passed this exercise or you passed it previously but your most recent submission is not passing. Please make sure you pass the exercise, and then you will be able to view the instructor's answer.</p>
             {% end %}
         {% end %}
-    
-        <p>
-            <br />
-            <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Back to exercise</a>
-        </p>
 
     {% elif problem_details["show_student_submissions"] %}
         {% if student_submissions %}
@@ -86,6 +81,11 @@
     {% else %}
         <p>You do not have permission to view the answer for this exercise.</p>
     {% end %}
+
+    <p>
+        <br />
+        <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Back to exercise</a>
+    </p>
 
 {% else %}
     <p>This exercise does not exist.</p>
