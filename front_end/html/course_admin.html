@@ -104,14 +104,14 @@
             <a class="button is-small is-rounded is-light" href="/export_course/{{ course_basics['id'] }}">Export course</a>
             <a class="button is-small is-rounded is-light" href="/export_submissions/{{ course_basics['id'] }}">Export submissions</a>   
         </p>
-        <p></br>
+        <p><br />
         {% if is_administrator or is_instructor %}
             <a href="/edit_course/{{ course_basics['id'] }}">Edit course</a> |
             <a href="/delete_course/{{ course_basics['id'] }}">Delete course</a> |
             <a onclick="showDeleteSubmissionsModal()">Delete course submissions</a>
         {% end %}
         </p>
-    </div></br></br></br>
+    </div><br /><br /><br />
 
 {% else %}
     <h2>This course does not exist.</h2>

@@ -39,7 +39,7 @@
             {% end %}
 
             {% if is_administrator or is_instructor %}
-                | <a onclick="showMoveProblemModal()">Move exercise</a></br>
+                | <a onclick="showMoveProblemModal()">Move exercise</a><br />
                 <a onclick="showDeleteSubmissionsModal()">Delete problem submissions</a>
             {% end %}
             </p>
@@ -47,7 +47,7 @@
             <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a><br/>
 
             {% if student_id == user_id %}
-                <br><br><br>
+                <br /><br /><br />
             {% end %}
 
             <script>

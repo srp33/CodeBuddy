@@ -45,9 +45,9 @@
                 {% if len(problem_details["answer_description"]) > 0 %}
                     <h4>Instructor's comments</h4>
                     <p>{{ problem_details["answer_description"] }}</p>
-                    <br>
+                    <br />
                 {% end %}
-                </div><br>
+                </div><br />
 
                 {% if problem_details["show_student_submissions"] %}
                     {% if student_submissions %}
@@ -69,7 +69,7 @@
         {% end %}
     
         <p>
-            <br>
+            <br />
             <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Back to exercise</a>
         </p>
     {% else %}
@@ -79,7 +79,7 @@
 {% else %}
     <p>This exercise does not exist.</p>
 {% end %}
-<br><br>
+<br /><br />
 
 <script>
     function showOtherSolutions() {
