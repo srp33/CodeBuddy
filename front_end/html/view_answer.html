@@ -34,20 +34,20 @@
         {% else %}
             {% if (last_submission and last_submission["passed"]) or (assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["view_answer_late"]) %}
                 <div>
-                    {% if last_submission %}
-                        <h4>Your solution:</h4>
-                        <pre class="student">{{ last_submission["code"] }}</pre>
-                    {% end %}
+                {% if last_submission %}
+                    <h4>Your solution:</h4>
+                    <pre class="student">{{ last_submission["code"] }}</pre>
+                {% end %}
 
                     <h4>Instructor's solution:</h4>
                     <pre class="instructor">{{ problem_details["answer_code"]}}</pre>
 
-                    {% if len(problem_details["answer_description"]) > 0 %}
-                        <h4>Instructor's comments</h4>
-                        <p>{{ problem_details["answer_description"] }}</p>
-                        </br>
-                    {% end %}
-                </div></br>
+                {% if len(problem_details["answer_description"]) > 0 %}
+                    <h4>Instructor's comments</h4>
+                    <p>{{ problem_details["answer_description"] }}</p>
+                    <br>
+                {% end %}
+                </div><br>
 
                 {% if problem_details["show_student_submissions"] %}
                     {% if student_submissions %}
@@ -55,10 +55,10 @@
                             <a class="button is-small is-primary is-rounded" onclick="showOtherSolutions()">Show other students' solutions (anonymized)</a>
                         </div>
                         <div id="other_students" class="invisible">
-                            {% for submission in student_submissions %}
-                                <p>Submission {{ submission[0] }}:</p>
-                                <pre class="extra">{{ submission[1] }}</pre>
-                            {% end %}
+                        {% for submission in student_submissions %}
+                            <p>Submission {{ submission[0] }}:</p>
+                            <pre class="extra">{{ submission[1] }}</pre>
+                        {% end %}
                         </div>
                     {% end %}
                 {% end %}
@@ -69,7 +69,7 @@
         {% end %}
     
         <p>
-            </br>
+            <br>
             <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Back to exercise</a>
         </p>
     {% else %}
@@ -79,7 +79,7 @@
 {% else %}
     <p>This exercise does not exist.</p>
 {% end %}
-<br /><br />
+<br><br>
 
 <script>
     function showOtherSolutions() {
