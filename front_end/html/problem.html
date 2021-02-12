@@ -238,7 +238,7 @@
 
             {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
               <script>document.getElementById("submit_button").disabled = true;</script>  
-              <div class='notification is-warning'><p>Click <a style='color:#2166ac' href="/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">here</a> to view the instructor's answer.</p></div>
+              <div class='notification is-warning'><p>Click <a style='color:#2166ac' href="/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">here</a> to view the instructor's solution.</p></div>
             {% end %}
 
             <p><div id="result"></div></p>

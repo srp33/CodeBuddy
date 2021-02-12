@@ -158,6 +158,8 @@
 
                   {% if problem_details["show_answer"] and problem_details["answer_code"] != "" %}
                       result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>here</a> to view the instructor's solution.</p>"; 
+                  {% elif problem_details["show_student_submissions"] %}
+                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>here</a> to view other students' solutions.</p>"; 
                   {% end %}
 
                   {% if next_problem %}

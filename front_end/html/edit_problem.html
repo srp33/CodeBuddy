@@ -227,9 +227,9 @@
       </div>
     </p>
 
-    <p><strong>Allow students to view answer code once they correctly solve the exercise: </strong>
+    <p><strong>Allow students to view the instructor's solution after they pass the exercise: </strong>
       <div class="select is-info">
-        <select name="show_answer" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
+        <select name="show_answer" class="edit-select">
           {% if problem_details["show_answer"] %}
             <option value="Yes" selected>Yes</option>
             <option value="No">No</option>
@@ -241,26 +241,19 @@
       </div>
     </p>
 
-    <div id="student_submissions_div"
-      {% if problem_details["show_answer"] %}
-        class="visible"
-      {% else %}
-        class="invisible"
-      {% end %}>
-      <p><strong>Allow students to see submissions from other students: </strong>
-        <div class="select is-info">
-          <select name="show_student_submissions" id="show_student_submissions" class="edit-select">
-            {% if problem_details["show_student_submissions"] %}
-              <option value="Yes" selected>Yes</option>
-              <option value="No">No</option>
-            {% else %}
-              <option value="Yes">Yes</option>
-              <option value="No" selected>No</option>
-            {% end %}
-          </select>
-        </div>
-      </p>
-    </div>
+    <p><strong>Allow students to see submissions from other students: </strong>
+      <div class="select is-info">
+        <select name="show_student_submissions" id="show_student_submissions" class="edit-select">
+          {% if problem_details["show_student_submissions"] %}
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+            <option value="No" selected>No</option>
+          {% end %}
+        </select>
+      </div>
+    </p>
 
     <p><strong>Visible: </strong>
       <div class="select is-info">
@@ -310,18 +303,6 @@
         document.getElementById("test_code_text").value = test_code_editor.getValue();
       } 
 
-      showStudentSubmissionsDiv = function(on) {
-        var student_submissions_div = document.getElementById("student_submissions_div");
-        var show_student_submissions = document.getElementById("show_student_submissions");
-
-        if (on == "Yes") {
-          student_submissions_div.style.display = "inline";
-        }
-        else {
-          show_student_submissions.value = "No";
-          student_submissions_div.style.display = "none";
-        }
-      }
     </script>
     </form>
   {% else %}

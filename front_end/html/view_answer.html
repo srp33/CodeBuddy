@@ -72,6 +72,17 @@
             </br>
             <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Back to exercise</a>
         </p>
+
+    {% elif problem_details["show_student_submissions"] %}
+        {% if student_submissions %}
+            <h4>Other students' solutions:</h4>
+            <div>
+                {% for submission in student_submissions %}
+                    <p>Submission {{ submission[0] }}:</p>
+                    <pre class="extra">{{ submission[1] }}</pre>
+                {% end %}
+            </div>
+        {% end %}
     {% else %}
         <p>You do not have permission to view the answer for this exercise.</p>
     {% end %}
