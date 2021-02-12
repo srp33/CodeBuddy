@@ -3,47 +3,43 @@
 <div class="columns" style="height: 100vh;">
     <div class="column is-one-quarter profile-menu">
         <aside class="menu">
-            <p class="menu-label">
-              General
-            </p>
+            <p class="menu-label">General</p>
             <ul class="menu-list">
-              <li><a href="/profile/courses/{{ user_info['user_id'] }}"
+                <li><a href="/profile/courses/{{ user_info['user_id'] }}"
                 {% if page == "courses" %}
                     class="is-active"
                 {% end %}
                 >Home</a></li>
-              <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
+                <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
                 {% if page == "personal_info" %}
                     class="is-active"
                 {% end %}
                 >Personal info</a></li>
-              {% if is_administrator %}
-                <li><a href="/profile/admin/{{ user_info['user_id'] }}"
-                  {% if page == "admin" %}
-                      class="is-active"
-                  {% end %}
-                  >Admin</a></li>
-              {% end %}
-              {% if is_instructor or is_administrator %}
-                <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
-                  {% if page == "instructor" %}
-                      class="is-active"
-                  {% end %}
-                  >Instructor</a></li>
-              {% end %}
-              {% if is_administrator or is_instructor %}
-                <li><a href="/profile/manage_users"
-                  {% if page == "manage_users" %}
-                      class="is-active"
-                  {% end %}
-                  >Manage users</a></li>
-              {% end %}
+                {% if is_administrator %}
+                    <li><a href="/profile/admin/{{ user_info['user_id'] }}"
+                    {% if page == "admin" %}
+                        class="is-active"
+                    {% end %}
+                    >Admin</a></li>
+                {% end %}
+                {% if is_instructor or is_administrator %}
+                    <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
+                    {% if page == "instructor" %}
+                        class="is-active"
+                    {% end %}
+                    >Instructor</a></li>
+                {% end %}
+                {% if is_administrator or is_instructor %}
+                    <li><a href="/profile/manage_users"
+                    {% if page == "manage_users" %}
+                        class="is-active"
+                    {% end %}
+                    >Manage users</a></li>
+                {% end %}
             </ul>
-            <p class="menu-label">
-              Settings
-            </p>
+            <p class="menu-label">Settings</p>
             <ul class="menu-list">
-              <li><a href="/profile/preferences/{{ user_info['user_id'] }}"
+                <li><a href="/profile/preferences/{{ user_info['user_id'] }}"
                 {% if page == "preferences" %}
                     class="is-active"
                 {% end %}
@@ -52,8 +48,8 @@
         </aside>
     </div>
     <div class="column is-three-quarters profile-main">
-      <div class="content">
-        <div class="photo-div">
-          <img src="{{ user_info['picture'] }}" alt="Profile Photo" class="profile-photo"/>
-          <span style="font-size: larger;"><b>{{ user_info["name"] }}</b></span>
-        </div>
+        <div class="content">
+            <div class="photo-div">
+                <img src="{{ user_info['picture'] }}" alt="Profile Photo" class="profile-photo"/>
+                <span style="font-size: larger;"><b>{{ user_info["name"] }}</b></span>
+            </div>

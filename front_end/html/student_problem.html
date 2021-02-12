@@ -45,20 +45,20 @@
 
             <p><div id="result"></div></p>
 
-              <div>
+            <div>
                 <h2 style="display: inline">Expected output:</h2>
-              </div>
+            </div>
 
-              {% if problem_details["output_type"] == "txt" %}
-                  <p><pre>{{ problem_details["expected_text_output"] }}</pre></p>
-              {% else %}
-                  <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details['expected_image_output'] }}" width="100%"/></figure></p>
-              {% end %}
+            {% if problem_details["output_type"] == "txt" %}
+                <p><pre>{{ problem_details["expected_text_output"] }}</pre></p>
+            {% else %}
+                <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details['expected_image_output'] }}" width="100%"/></figure></p>
+            {% end %}
 
-              {% if problem_details["back_end"] != "any_response" %}
-                  <p><span id="code_output"></span></p>
+            {% if problem_details["back_end"] != "any_response" %}
+                <p><span id="code_output"></span></p>
 
-                  {% if problem_details["show_expected"] %}
-                      <p><span id="diff_output"></span></p>
-                  {% end %}
-              {% end %}
+                {% if problem_details["show_expected"] %}
+                    <p><span id="diff_output"></span></p>
+                {% end %}
+            {% end %}

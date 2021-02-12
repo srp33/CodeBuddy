@@ -1,13 +1,13 @@
             </div>
             <div class="navbar-end">
-              <div class="navbar-item has-dropdown is-hoverable">
-                  <a class="navbar-link">{{ user_info["given_name"] }}</a>
-                  <div class="navbar-dropdown is-size-5 is-right">
-                      <a class="navbar-item" href="/profile/courses/{{ user_info['user_id'] }}">Home</a>
-                      <a class="navbar-item" href="/profile/personal_info/{{ user_info['user_id'] }}">View profile</a>
-                      <a class="navbar-item" href="/profile/preferences/{{ user_info['user_id'] }}">Settings</a>
-                      <hr class="navbar-divider">
-                      <a class="navbar-item" href="/logout">Log out</a>
-                  </div>
-              </div>
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">{{ user_info["given_name"] }}</a>
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/profile/courses/{{ user_info['user_id'] }}">Home</a>
+                        <a class="navbar-item" href="/profile/personal_info/{{ user_info['user_id'] }}">View profile</a>
+                        <a class="navbar-item" href="/profile/preferences/{{ user_info['user_id'] }}">Settings</a>
+                        <hr class="navbar-divider">
+                        <a class="navbar-item" href="/logout">Log out</a>
+                    </div>
+                </div>
             </div>
