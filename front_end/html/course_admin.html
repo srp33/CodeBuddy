@@ -1,180 +1,179 @@
 {% if course_basics["exists"] %}
-  <h2>{{ course_basics["title"] }}</h2>
+    <h2>{{ course_basics["title"] }}</h2>
+    <p>{{ course_details["introduction"] }}</p>
 
-  <p>{{ course_details["introduction"] }}</p>
+    {% if len(assignments) > 0 %}
 
-  {% if len(assignments) > 0 %}
-
-  <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
-  <link rel="stylesheet" href="/static/modal.css">
+        <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
+        <link rel="stylesheet" href="/static/modal.css">
     
-    <table class="table" id="assignment_table">
-      <thead>
-        <tr>
-          <th>Assignment</th>
-          <th>Visibility</th>
-          <th>Start Date</th>
-          <th>Due Date</th>
-          <th># Students Completed</th>
-          <th>Avg Score</th>
-          <th>Edit</th>
-          <th>Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for assignment in assignments %}
-          <tr>
-            <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
-            {% if assignment[1]["visible"] == 0 %}
-              <td>Hidden</td>
-              <td> </td>
-              <td> </td>
-              <td> </td>
-              <td> </td>
-            {% else %}
-              <td>Visible</td>
-              {% if assignment[1]["start_date"] %}
-                <td>
-                  <script>
-                    var s = new Date("{{ assignment[1]['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-                    document.write(convertDate(s));
-                  </script>
-                </td>
-              {% else %}
-                <td> </td>
-              {% end %}
-              {% if assignment[1]["due_date"] %} 
-                <td>
-                  <script>
-                    var d = new Date("{{ assignment[1]['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-                    document.write(convertDate(d));
-                  </script>
-                </td>
-              {% else %}
-                <td> </td>
-              {% end %}
-              <td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
-              {% if course_scores[assignment[1]["id"]]["avg_score"] %}
-                <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
-              {% else %}
-                <td>No scores yet</td>
-              {% end %}
+        <table class="table" id="assignment_table">
+            <thead>
+                <tr>
+                    <th>Assignment</th>
+                    <th>Visibility</th>
+                    <th>Start Date</th>
+                    <th>Due Date</th>
+                    <th># Students Completed</th>
+                    <th>Avg Score</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for assignment in assignments %}
+                <tr>
+                    <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+                    {% if assignment[1]["visible"] == 0 %}
+                        <td>Hidden</td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                    {% else %}
+                        <td>Visible</td>
+                        {% if assignment[1]["start_date"] %}
+                            <td>
+                                <script>
+                                    var s = new Date("{{ assignment[1]['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+                                    document.write(convertDate(s));
+                                </script>
+                            </td>
+                        {% else %}
+                            <td> </td>
+                        {% end %}
+                        {% if assignment[1]["due_date"] %} 
+                            <td>
+                                <script>
+                                    var d = new Date("{{ assignment[1]['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+                                    document.write(convertDate(d));
+                                </script>
+                            </td>
+                        {% else %}
+                            <td> </td>
+                        {% end %}
+                        <td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
+                        {% if course_scores[assignment[1]["id"]]["avg_score"] %}
+                            <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
+                        {% else %}
+                            <td>No scores yet</td>
+                        {% end %}
+                    {% end %}
+                    <td>
+                        <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">
+                            <img src="/static/editicon.png" alt="Edit assignment" height="25px" width="25px">
+                        </a>
+                    </td>
+                    <td>
+                        <a onclick="showDeleteModal({{ assignment[1]['id'] }})">
+                            <img src="/static/trashcan.png" alt="Completed" height="25px" width="25px">
+                        </a>
+                    </td>
+                </tr>
             {% end %}
-            <td>
-              <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">
-                <img src="/static/editicon.png" alt="Edit assignment" height="25px" width="25px">
-              </a>
-            </td>
-            <td>
-              <a onclick="showDeleteModal({{ assignment[1]['id'] }})">
-                <img src="/static/trashcan.png" alt="Completed" height="25px" width="25px">
-              </a> 
-            </td>
-          </tr>
+            </tbody>
+        </table>
+    {% end %}
+
+    <div id="delete_assignment_modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="confirm_delete"></p>
+            <p class="buttons">
+                <a id="delete_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                <a id="delete_button" class="modal-button button is-small is-primary">Delete</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="delete_submissions_modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Are you sure you want to delete all submissions for this course?</p>
+            <p><font color="red">This will also delete all scores for this course.</font></p>
+            <p class="buttons">
+                <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
+            </p>
+        </div>
+    </div>
+
+    <div>
+        <a class="button is-small is-rounded is-primary" href="/edit_assignment/{{ course_basics['id'] }}/">New assignment</a>
+        <p class="buttons is-pulled-right">
+            <a class="button is-small is-rounded is-light" href="/export_course/{{ course_basics['id'] }}">Export course</a>
+            <a class="button is-small is-rounded is-light" href="/export_submissions/{{ course_basics['id'] }}">Export submissions</a>   
+        </p>
+        <p><br />
+        {% if is_administrator or is_instructor %}
+            <a href="/edit_course/{{ course_basics['id'] }}">Edit course</a> |
+            <a href="/delete_course/{{ course_basics['id'] }}">Delete course</a> |
+            <a onclick="showDeleteSubmissionsModal()">Delete course submissions</a>
         {% end %}
-      </tbody>
-    </table>
-  {% end %}
-
-  <div id="delete_assignment_modal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <p id="confirm_delete"></p>
-        <p class="buttons">
-            <a id="delete_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-            <a id="delete_button" class="modal-button button is-small is-primary">Delete</a>
         </p>
-    </div>
-  </div>
-
-  <div id="delete_submissions_modal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>Are you sure you want to delete all submissions for this course?</p>
-        <p><font color="red">This will also delete all scores for this course.</font></p>
-        <p class="buttons">
-            <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-            <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
-        </p>
-    </div>
-  </div>
-
-  <div>
-    <a class="button is-small is-rounded is-primary" href="/edit_assignment/{{ course_basics['id'] }}/">New assignment</a>
-    <p class="buttons is-pulled-right">
-      <a class="button is-small is-rounded is-light" href="/export_course/{{ course_basics['id'] }}">Export course</a>
-      <a class="button is-small is-rounded is-light" href="/export_submissions/{{ course_basics['id'] }}">Export submissions</a>   
-    </p>
-    <p></br>
-      {% if is_administrator or is_instructor %}
-        <a href="/edit_course/{{ course_basics['id'] }}">Edit course</a> |
-        <a href="/delete_course/{{ course_basics['id'] }}">Delete course</a> |
-        <a onclick="showDeleteSubmissionsModal()">Delete course submissions</a>
-      {% end %}
-    </p>
-  </div></br></br></br>
+    </div><br /><br /><br />
 
 {% else %}
-  <h2>This course does not exist.</h2>
+    <h2>This course does not exist.</h2>
 {% end %}
 
 <script>
-  function showDeleteModal(assignment_id) {
-    var modal = document.getElementById("delete_assignment_modal");
-    var span = document.getElementsByClassName("close")[0];
-    var confirm_text = document.getElementById("confirm_delete");
+    function showDeleteModal(assignment_id) {
+        var modal = document.getElementById("delete_assignment_modal");
+        var span = document.getElementsByClassName("close")[0];
+        var confirm_text = document.getElementById("confirm_delete");
 
-    modal.style.display = "block";
-    confirm_text.innerHTML = 'Are you sure you want to delete this assignment?';
+        modal.style.display = "block";
+        confirm_text.innerHTML = 'Are you sure you want to delete this assignment?';
 
-    var cancelButton = document.getElementById("delete_cancel_button");
-    var deleteButton = document.getElementById("delete_button");
+        var cancelButton = document.getElementById("delete_cancel_button");
+        var deleteButton = document.getElementById("delete_button");
 
-    deleteButton.onclick = function() {
-      $.post("/delete_assignment/{{ course_basics['id'] }}/" + assignment_id);
-      modal.style.display = "none";
-      location.reload();
-    }
+        deleteButton.onclick = function() {
+            $.post("/delete_assignment/{{ course_basics['id'] }}/" + assignment_id);
+            modal.style.display = "none";
+            location.reload();
+        }
 
-    cancelButton.onclick = function() {
-      modal.style.display = "none";
-    }
-
-    span.onclick = function() {
-      modal.style.display = "none";
-    }
-    window.onclick = function(event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
-    }
-  }
-
-  function showDeleteSubmissionsModal() {
-    var modal = document.getElementById("delete_submissions_modal");
-    var span = document.getElementsByClassName("close")[1];
-    modal.style.display = "block";
-
-    var deleteButton = document.getElementById("delete_submissions_button");
-    var cancelButton = document.getElementById("delete_submissions_cancel_button");
-
-    deleteButton.onclick = function() {
-      $.post("/delete_course_submissions/{{ course_basics['id'] }}");
-      modal.style.display = "none";
-      location.reload();
-    }
-
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-    window.onclick = function(event) {
-        if (event.target == modal) {
+        cancelButton.onclick = function() {
             modal.style.display = "none";
         }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     }
-  }
+
+    function showDeleteSubmissionsModal() {
+        var modal = document.getElementById("delete_submissions_modal");
+        var span = document.getElementsByClassName("close")[1];
+        modal.style.display = "block";
+
+        var deleteButton = document.getElementById("delete_submissions_button");
+        var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+        deleteButton.onclick = function() {
+            $.post("/delete_course_submissions/{{ course_basics['id'] }}");
+            modal.style.display = "none";
+            location.reload();
+        }
+
+        cancelButton.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
 </script>

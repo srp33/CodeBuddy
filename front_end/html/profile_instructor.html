@@ -11,30 +11,30 @@
         </div>
         <div class="bottom-spacing">
             <div class="columns">
-                {% if is_administrator %}
-                    <div class="column is-one-quarter">
-                        <div class="option-box box has-background-link" onclick="showTab('instructor')">
-                            <p class="has-text-white option-text">Manage<br>Instructors</p>
-                        </div>
+            {% if is_administrator %}
+                <div class="column is-one-quarter">
+                    <div class="option-box box has-background-link" onclick="showTab('instructor')">
+                        <p class="has-text-white option-text">Manage<br />Instructors</p>
                     </div>
-                    <div class="column">
-                {% else %}
-                    <div class="column is-one-third">
-                {% end %}
-                        <div class="option-box box has-background-info" onclick="showTab('assistant')">
-                            <p class="has-text-white option-text">Manage<br>Assistants</p>
-                        </div>
+                </div>
+                <div class="column">
+            {% else %}
+                <div class="column is-one-third">
+            {% end %}
+                    <div class="option-box box has-background-info" onclick="showTab('assistant')">
+                        <p class="has-text-white option-text">Manage<br />Assistants</p>
                     </div>
-                    <div class="column">
-                        <div class="option-box box has-background-warning" onclick="showTab('student')">
-                            <p class="has-text-white option-text">Manage<br>Students</p>
-                        </div>
+                </div>
+                <div class="column">
+                    <div class="option-box box has-background-warning" onclick="showTab('student')">
+                        <p class="has-text-white option-text">Manage<br />Students</p>
                     </div>
-                    <div class="column">
-                        <div class="option-box box has-background-grey-light" onclick="showTab('score')">
-                            <p class="has-text-white option-text">View<br>Scores</p>
-                        </div>
+                </div>
+                <div class="column">
+                    <div class="option-box box has-background-grey-light" onclick="showTab('score')">
+                        <p class="has-text-white option-text">View<br />Scores</p>
                     </div>
+                </div>
             </div>
         </div>
 
@@ -191,150 +191,150 @@
             {% else %}
                 <p>There are no scores for this course.</p>
             {% end %}
-        </div></br></br></br>
+        </div><br /><br /><br />
     </div>
 </div>
 
 <script>
-function showTab(tab) {
-    var manage_instructors = document.getElementById("manage_instructors");
-    var manage_assistants = document.getElementById("manage_assistants");
-    var manage_students = document.getElementById("manage_students");
-    var score_select = document.getElementById("score_select");
+    function showTab(tab) {
+        var manage_instructors = document.getElementById("manage_instructors");
+        var manage_assistants = document.getElementById("manage_assistants");
+        var manage_students = document.getElementById("manage_students");
+        var score_select = document.getElementById("score_select");
 
-    manage_instructors.style.display = "none";
-    manage_assistants.style.display = "none";
-    manage_students.style.display = "none";
-    score_select.style.display = "none";
+        manage_instructors.style.display = "none";
+        manage_assistants.style.display = "none";
+        manage_students.style.display = "none";
+        score_select.style.display = "none";
 
-    if (tab == "instructor") {
-        manage_instructors.style.display = "inline";
-    }
-    else if (tab == "assistant") {
-        manage_assistants.style.display = "inline";
-    }
-    else if (tab == "student") {
-        manage_students.style.display = "inline";
-    }
-    else if (tab == "score") {
-        score_select.style.display = "inline";
-    }
-}
-
-function showAddInstructorModal() {
-    var modal = document.getElementById("add_instructor_modal");
-    var span = document.getElementsByClassName("close")[0];
-    modal.style.display = "block";
-
-    document.getElementById("new_instructor").focus();
-
-    var cancelButton = document.getElementById("add_instructor_cancel_button");
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
-    }
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
+        if (tab == "instructor") {
+            manage_instructors.style.display = "inline";
+        }
+        else if (tab == "assistant") {
+            manage_assistants.style.display = "inline";
+        }
+        else if (tab == "student") {
+            manage_students.style.display = "inline";
+        }
+        else if (tab == "score") {
+            score_select.style.display = "inline";
         }
     }
-}
 
-function showRemoveInstructorModal(instructor_id) {
-    var modal = document.getElementById("remove_instructor_modal");
-    var span = document.getElementsByClassName("close")[2];
-    modal.style.display = "block";
+    function showAddInstructorModal() {
+        var modal = document.getElementById("add_instructor_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
 
-    var confirm_message = document.getElementById("confirm_instructor_removal");
-    confirm_message.innerHTML = "Are you sure you want to remove " + instructor_id + " as an instructor for this course?";
+        document.getElementById("new_instructor").focus();
 
-    var remove_instructor_form = document.getElementById("remove_instructor_form");
-    remove_instructor_form.action = "/remove_instructor/{{ course['id'] }}/" + instructor_id;
-
-    var cancelButton = document.getElementById("remove_instructor_cancel_button");
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
-    }
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-    window.onclick = function(event) {
-        if (event.target == modal) {
+        var cancelButton = document.getElementById("add_instructor_cancel_button");
+        cancelButton.onclick = function() {
             modal.style.display = "none";
         }
-    }
-}
-
-function showAddAssistantModal() {
-    var modal = document.getElementById("add_assistant_modal");
-    var span = document.getElementsByClassName("close")[1];
-    modal.style.display = "block";
-
-    document.getElementById("new_assistant").focus();
-
-    var cancelButton = document.getElementById("add_assistant_cancel_button");
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
-    }
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-    window.onclick = function(event) {
-        if (event.target == modal) {
+        span.onclick = function() {
             modal.style.display = "none";
         }
-    }
-}
-
-function showRemoveAssistantModal(assistant_id) {
-    var modal = document.getElementById("remove_assistant_modal");
-    var span = document.getElementsByClassName("close")[3];
-    modal.style.display = "block";
-
-    var confirm_message = document.getElementById("confirm_assistant_removal");
-    confirm_message.innerHTML = "Are you sure you want to remove " + assistant_id + " as an assistant for this course?";
-
-    var remove_assistant_form = document.getElementById("remove_assistant_form");
-    remove_assistant_form.action = "/remove_assistant/{{ course['id'] }}/" + assistant_id;
-
-    var cancelButton = document.getElementById("remove_assistant_cancel_button");
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
-    }
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
         }
     }
-}
 
-function showUnregisterModal(student_id) {
-    var modal = document.getElementById("unregister_modal");
-    var span = document.getElementsByClassName("close")[4];
-    modal.style.display = "block";
+    function showRemoveInstructorModal(instructor_id) {
+        var modal = document.getElementById("remove_instructor_modal");
+        var span = document.getElementsByClassName("close")[2];
+        modal.style.display = "block";
 
-    var confirm_message = document.getElementById("confirm_unregistration");
-    confirm_message.innerHTML = "Are you sure you want to unregister " + student_id + " from this course?";
+        var confirm_message = document.getElementById("confirm_instructor_removal");
+        confirm_message.innerHTML = "Are you sure you want to remove " + instructor_id + " as an instructor for this course?";
 
-    var unregister_form = document.getElementById("unregister_form");
-    unregister_form.action = "/unregister/{{ course['id'] }}/" + student_id;
+        var remove_instructor_form = document.getElementById("remove_instructor_form");
+        remove_instructor_form.action = "/remove_instructor/{{ course['id'] }}/" + instructor_id;
 
-    var cancelButton = document.getElementById("unregister_cancel_button");
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
-    }
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-    window.onclick = function(event) {
-        if (event.target == modal) {
+        var cancelButton = document.getElementById("remove_instructor_cancel_button");
+        cancelButton.onclick = function() {
             modal.style.display = "none";
         }
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     }
-}
+
+    function showAddAssistantModal() {
+        var modal = document.getElementById("add_assistant_modal");
+        var span = document.getElementsByClassName("close")[1];
+        modal.style.display = "block";
+
+        document.getElementById("new_assistant").focus();
+
+        var cancelButton = document.getElementById("add_assistant_cancel_button");
+        cancelButton.onclick = function() {
+            modal.style.display = "none";
+        }
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
+
+    function showRemoveAssistantModal(assistant_id) {
+        var modal = document.getElementById("remove_assistant_modal");
+        var span = document.getElementsByClassName("close")[3];
+        modal.style.display = "block";
+
+        var confirm_message = document.getElementById("confirm_assistant_removal");
+        confirm_message.innerHTML = "Are you sure you want to remove " + assistant_id + " as an assistant for this course?";
+
+        var remove_assistant_form = document.getElementById("remove_assistant_form");
+        remove_assistant_form.action = "/remove_assistant/{{ course['id'] }}/" + assistant_id;
+
+        var cancelButton = document.getElementById("remove_assistant_cancel_button");
+        cancelButton.onclick = function() {
+            modal.style.display = "none";
+        }
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
+
+    function showUnregisterModal(student_id) {
+        var modal = document.getElementById("unregister_modal");
+        var span = document.getElementsByClassName("close")[4];
+        modal.style.display = "block";
+
+        var confirm_message = document.getElementById("confirm_unregistration");
+        confirm_message.innerHTML = "Are you sure you want to unregister " + student_id + " from this course?";
+
+        var unregister_form = document.getElementById("unregister_form");
+        unregister_form.action = "/unregister/{{ course['id'] }}/" + student_id;
+
+        var cancelButton = document.getElementById("unregister_cancel_button");
+        cancelButton.onclick = function() {
+            modal.style.display = "none";
+        }
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
 </script>

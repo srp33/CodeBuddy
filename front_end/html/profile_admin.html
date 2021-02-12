@@ -13,22 +13,22 @@
             <div class="columns">
                 <div class="column is-one-quarter">
                     <div class="option-box box has-background-link" onclick="window.location='/edit_course/';">
-                        <p class="has-text-white option-text">Create<br>Course</p>
+                        <p class="has-text-white option-text">Create<br />Course</p>
                     </div>
                 </div>
                 <div class="column">
                     <div class="option-box box has-background-info" onclick="showImportCourse()">
-                        <p class="has-text-white option-text">Import<br>Course</p>
+                        <p class="has-text-white option-text">Import<br />Course</p>
                     </div>
                 </div>
                 <div class="column">
                     <div class="option-box box has-background-grey-light" onclick="window.location='/summarize_logs';">
-                        <p class="has-text-white option-text">View<br>Logs</p>
+                        <p class="has-text-white option-text">View<br />Logs</p>
                     </div>
                 </div>
                 <div class="column">
                     <div class="option-box box has-background-warning" onclick="showManageAdmins()">
-                        <p class="has-text-white option-text">Manage<br>Administrators</p>
+                        <p class="has-text-white option-text">Manage<br />Administrators</p>
                     </div>
                 </div>
             </div>
@@ -71,7 +71,7 @@
                 <div class="modal-content">
                     <form method="post" action="/remove_admin/{{ user_info['user_id'] }}">
                     <span class="close">&times;</span>
-                    <p>Administrators can only be removed by themselves.</br>Are you sure you want to remove your admin privileges?</p>
+                    <p>Administrators can only be removed by themselves.<br />Are you sure you want to remove your admin privileges?</p>
                     <p class="buttons">
                         <a id="remove_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
                         <input type="submit" id="remove_button" class="modal-button button is-small is-primary" value="Remove"/>
@@ -123,7 +123,7 @@
                 {% end %}
             {% end %}
             
-        </div></br></br></br>
+        </div><br /><br /><br />
     </div>
 </div>
 

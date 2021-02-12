@@ -1,315 +1,317 @@
 {% if course_basics["exists"] %}
-  {% if assignment_basics["exists"] %}
-    <h2>Edit assignment</h2>
-  {% else %}
-    <h2>Create assignment</h2>
-  {% end %}
+    {% if assignment_basics["exists"] %}
+        <h2>Edit assignment</h2>
+    {% else %}
+        <h2>Create assignment</h2>
+    {% end %}
 {% end %}
 
 {% if result %}
-  {% if result.startswith("Error:") %}
-    <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
-  {% else %}
-    <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
-  {% end %}
+    {% if result.startswith("Error:") %}
+        <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+    {% else %}
+        <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
+    {% end %}
 {% end %}
 
 {% if course_basics["exists"] %}
-  <form method="post" action="/edit_assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
+    <form method="post" action="/edit_assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
 
-  <p><strong>Title: </strong></p>
-  <p><textarea name="title" class="textarea is-info is-normal is-medium monospace" placeholder="Please specify a descriptive title for this assignment." rows="1" autofocus>{{ assignment_basics["title"] }}</textarea></p>
+    <p><strong>Title: </strong></p>
+    <p><textarea name="title" class="textarea is-info is-normal is-medium monospace" placeholder="Please specify a descriptive title for this assignment." rows="1" autofocus>{{ assignment_basics["title"] }}</textarea></p>
 
-  <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
-  <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide an introduction for this assignment." rows="8">{{ assignment_details["introduction"] }}</textarea></p>
+    <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
+    <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide an introduction for this assignment." rows="8">{{ assignment_details["introduction"] }}</textarea></p>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-  <p><strong>Start date: </strong><br />If a start date is specified, students will be unable to view this assignment before the start date and time.</p>
-  <div class="select is-info">
-    <select name="has_start_date" onchange="showStartOptions(this.value)" class="edit-select">
-      <option
-        {% if not assignment_details["start_date"] %}
-          selected
-        {% end %}
-      >None</option>
-      <option
-        {% if assignment_details["start_date"] %}
-          selected
-        {% end %}
-      >Select</option>
-    </select>
-  </div>
-  <div id="start_date"
-  {% if assignment_details["start_date"] %}
-    class="visible"
-  {% else %}
-    class="invisible"
-  {% end %}>
-    <input class="is-medium" id="start_date_picker" name="start_date_picker" type="text" data-input>
-  </div>
-
-  <p><strong>Due date: </strong></p>
-  <div class="select is-info">
-    <select name="has_due_date" onchange="showDueOptions(this.value)" class="edit-select">
-      <option
-        {% if not assignment_details["due_date"] %}
-          selected
-        {% end %}
-      >None</option>
-      <option
-        {% if assignment_details["due_date"] %}
-          selected
-        {% end %}
-      >Select</option>
-    </select>
-  </div>
-  <div id="due_date"
-  {% if assignment_details["due_date"] %}
-    class="visible"
-  {% else %}
-    class="invisible"
-  {% end %}>
-    <input class="is-medium" id="due_date_picker" name="due_date_picker" type="text" data-input>
-  </div>
-
-  <div id="allow_late"
-  {% if assignment_details["due_date"] %}
-    class="visible"
-  {% else %}
-    class="invisible"
-  {% end %}>
-    <p><strong>Allow late submissions: </strong>
-      <div class="select is-info">
-        <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" class="edit-select">
-          {% if assignment_details["allow_late"] %}
-            <option value="Yes" selected>Yes</option>
-            <option value="No">No</option>
-          {% else %}
-            <option value="Yes">Yes</option>
-            <option value="No" selected>No</option>
-          {% end %}
-        </select>
-      </div>
-    </p>
-  </div>
-
-  <div id="late_percent"
-  {% if assignment_details["allow_late"] %}
-    class="visible"
-  {% else %}
-    class="invisible"
-  {% end %}>
-    <p><strong>Select percentage of points students can earn back with late submissions: </strong>
-      <div class="select is-info">
-        <select id="late_percent_select" name="late_percent_select" class="edit-select">
-          {% for percent in percentage_options %}
-            {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
-              <option selected>{{ percent }}%</option>
-            {% else %}
-              <option>{{ percent }}%</option>
-            {% end %}
-          {% end %}
-        </select>
-      </div>
-    </p>
-  </div>
-
-  <div id="view_answer_late"
-  {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
-    class="invisible"
-  {% else %}
-    class="visible"
-  {% end %}>
-    <p><strong>Allow students to view the answer after the due date has passed: </strong>
-      <div class="select is-info">
-        <select id="view_late_select" name="view_late_select" class="edit-select">
-          {% if assignment_details["view_answer_late"] %}
-            <option value="Yes" selected>Yes</option>
-            <option value="No">No</option>
-          {% else %}
-            <option value="Yes">Yes</option>
-            <option value="No" selected>No</option>
-          {% end %}
-        </select>
-      </div>
-    </p>
-  </div>
-  
-  <p><strong>Timer: </strong><br />Here you can specify the time a student has to complete this assignment. Once a students begins this assignment, they cannot pause the timer.</p>
-  <div class="select is-info">
-    <select name="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
-      <option
-        {% if assignment_details["has_timer"] == 0 %}
-          selected
-        {% end %}
-      >Off</option>
-      <option
-        {% if assignment_details["has_timer"] == 1 %}
-          selected
-        {% end %}
-      >On</option>
-    </select>
-  </div>
-
-  <div id="timer_div" class="select is-info" 
-    {% if assignment_details["has_timer"] == 1 %}
-      class="visible"
-    {% else %}
-      class="invisible"
-    {% end %}>
-    <label for="hour_select">Hours:</label>
-    <select id="hour_select" name="hour_select" style="display: inline;">
-      {% for hour in hour_options %}
-        <option
-          {% if hour == assignment_details["hour_timer"] %}
-            selected
-          {% end %}
-        >{{ hour }}</option>
-      {% end %}
-    </select>
-    <label for="minute_select">Minutes:</label>
-    <select id="minute_select" name="minute_select" style="display: inline;">
-      {% for minute in minute_options %}
-        <option
-          {% if minute == assignment_details["minute_timer"] %}
-            selected
-          {% end %}
-        >{{ minute }}</option>
-      {% end %}
-    </select>
-  </div>
-
-  <p><strong>Visible: </strong>
+    <p><strong>Start date: </strong><br />If a start date is specified, students will be unable to view this assignment before the start date and time.</p>
     <div class="select is-info">
-      <select name="is_visible" class="edit-select">
-        {% if assignment_basics["visible"] %}
-          <option value="Yes" selected>Yes</option>
-          <option value="No">No</option>
-        {% else %}
-          <option value="Yes">Yes</option>
-          <option value="No" selected>No</option>
-        {% end %}
-      </select>
+        <select name="has_start_date" onchange="showStartOptions(this.value)" class="edit-select">
+            <option
+            {% if not assignment_details["start_date"] %}
+                selected
+            {% end %}
+            >None</option>
+            <option
+            {% if assignment_details["start_date"] %}
+                selected
+            {% end %}
+            >Select</option>
+        </select>
     </div>
-  </p>
+    <div id="start_date"
+    {% if assignment_details["start_date"] %}
+        class="visible"
+    {% else %}
+        class="invisible"
+    {% end %}>
+        <input class="is-medium" id="start_date_picker" name="start_date_picker" type="text" data-input>
+    </div>
 
-  <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
+    <p><strong>Due date: </strong></p>
+    <div class="select is-info">
+        <select name="has_due_date" onchange="showDueOptions(this.value)" class="edit-select">
+            <option
+            {% if not assignment_details["due_date"] %}
+                selected
+            {% end %}
+            >None</option>
+            <option
+            {% if assignment_details["due_date"] %}
+                selected
+            {% end %}
+            >Select</option>
+        </select>
+    </div>
+    <div id="due_date"
+    {% if assignment_details["due_date"] %}
+        class="visible"
+    {% else %}
+        class="invisible"
+    {% end %}>
+        <input class="is-medium" id="due_date_picker" name="due_date_picker" type="text" data-input>
+    </div>
 
-  <p>
-      {% if assignment_basics["exists"] %}
-          <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done editing</a>
-      {% end %}
-  </p><br />
-  </form>
+    <div id="allow_late"
+    {% if assignment_details["due_date"] %}
+        class="visible"
+    {% else %}
+        class="invisible"
+    {% end %}>
+        <p><strong>Allow late submissions: </strong>
+            <div class="select is-info">
+                <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" class="edit-select">
+                {% if assignment_details["allow_late"] %}
+                    <option value="Yes" selected>Yes</option>
+                    <option value="No">No</option>
+                {% else %}
+                    <option value="Yes">Yes</option>
+                    <option value="No" selected>No</option>
+                {% end %}
+                </select>
+            </div>
+        </p>
+    </div>
+
+    <div id="late_percent"
+    {% if assignment_details["allow_late"] %}
+        class="visible"
+    {% else %}
+        class="invisible"
+    {% end %}>
+        <p><strong>Select percentage of points students can earn back with late submissions: </strong>
+            <div class="select is-info">
+                <select id="late_percent_select" name="late_percent_select" class="edit-select">
+                {% for percent in percentage_options %}
+                    {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
+                        <option selected>{{ percent }}%</option>
+                    {% else %}
+                        <option>{{ percent }}%</option>
+                    {% end %}
+                {% end %}
+                </select>
+            </div>
+        </p>
+    </div>
+
+    <div id="view_answer_late"
+    {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
+        class="invisible"
+    {% else %}
+        class="visible"
+    {% end %}>
+        <p><strong>Allow students to view the answer after the due date has passed: </strong>
+            <div class="select is-info">
+                <select id="view_late_select" name="view_late_select" class="edit-select">
+                {% if assignment_details["view_answer_late"] %}
+                    <option value="Yes" selected>Yes</option>
+                    <option value="No">No</option>
+                {% else %}
+                    <option value="Yes">Yes</option>
+                    <option value="No" selected>No</option>
+                {% end %}
+                </select>
+            </div>
+        </p>
+    </div>
+  
+    <p><strong>Timer: </strong><br />Here you can specify the time a student has to complete this assignment. Once a students begins this assignment, they cannot pause the timer.</p>
+    <div class="select is-info">
+        <select name="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
+            <option
+            {% if assignment_details["has_timer"] == 0 %}
+                selected
+            {% end %}
+            >Off</option>
+            <option
+            {% if assignment_details["has_timer"] == 1 %}
+                selected
+            {% end %}
+            >On</option>
+        </select>
+    </div>
+
+    <div id="timer_div" class="select is-info" 
+    {% if assignment_details["has_timer"] == 1 %}
+        class="visible"
+    {% else %}
+        class="invisible"
+    {% end %}>
+        <label for="hour_select">Hours:</label>
+        <select id="hour_select" name="hour_select" style="display: inline;">
+        {% for hour in hour_options %}
+            <option
+            {% if hour == assignment_details["hour_timer"] %}
+                selected
+            {% end %}
+            >{{ hour }}</option>
+        {% end %}
+        </select>
+        <label for="minute_select">Minutes:</label>
+        <select id="minute_select" name="minute_select" style="display: inline;">
+        {% for minute in minute_options %}
+            <option
+            {% if minute == assignment_details["minute_timer"] %}
+                selected
+            {% end %}
+            >{{ minute }}</option>
+        {% end %}
+        </select>
+    </div>
+
+    <p><strong>Visible: </strong>
+        <div class="select is-info">
+            <select name="is_visible" class="edit-select">
+            {% if assignment_basics["visible"] %}
+                <option value="Yes" selected>Yes</option>
+                <option value="No">No</option>
+            {% else %}
+                <option value="Yes">Yes</option>
+                <option value="No" selected>No</option>
+            {% end %}
+            </select>
+        </div>
+    </p>
+
+    <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
+
+    <p>
+    {% if assignment_basics["exists"] %}
+        <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done editing</a>
+    {% end %}
+    </p><br />
+
+    </form>
 {% else %}
-  This course has not been created yet.
+    This course has not been created yet.
 {% end %}
 <br /><br />
 
 <script>
 
-  var start_date_picker = flatpickr("#start_date_picker", {
-    enableTime: true,
-    dateFormat: 'Z',
-    altInput: true,
-    altFormat: 'Y-m-d G:i K'
-  });
-  start_date_picker.setDate(setStartDate(),false,'Y-m-d G:i K');
+    var start_date_picker = flatpickr("#start_date_picker", {
+        enableTime: true,
+        dateFormat: 'Z',
+        altInput: true,
+        altFormat: 'Y-m-d G:i K'
+    });
+    start_date_picker.setDate(setStartDate(),false,'Y-m-d G:i K');
 
-  var due_date_picker = flatpickr("#due_date_picker", {
-    enableTime: true,
-    dateFormat: 'Z',
-    altInput: true,
-    altFormat: 'Y-m-d G:i K'
-  });
-  due_date_picker.setDate(setDueDate(),false,'Y-m-d G:i K');
+    var due_date_picker = flatpickr("#due_date_picker", {
+        enableTime: true,
+        dateFormat: 'Z',
+        altInput: true,
+        altFormat: 'Y-m-d G:i K'
+    });
+    due_date_picker.setDate(setDueDate(),false,'Y-m-d G:i K');
 
-  function setStartDate() {
-    {% if assignment_details["start_date"] %}
-      var start_date = new Date("{{ assignment_details['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-    {% else %}
-      var start_date = new Date();
-    {% end %}
-    return start_date;
-  }
+    function setStartDate() {
+        {% if assignment_details["start_date"] %}
+            var start_date = new Date("{{ assignment_details['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+        {% else %}
+            var start_date = new Date();
+        {% end %}
+        return start_date;
+    }
 
-  function setDueDate() {
-    {% if assignment_details["due_date"] %}
-      var due_date = new Date("{{ assignment_details['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-    {% else %}
-      var due_date = new Date();
-    {% end %}
-    return due_date;
-  }
+    function setDueDate() {
+        {% if assignment_details["due_date"] %}
+            var due_date = new Date("{{ assignment_details['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+        {% else %}
+            var due_date = new Date();
+        {% end %}
+        return due_date;
+    }
 
-  function showStartOptions(on) {
-    var start_date = document.getElementById("start_date");
-    if (on == "None") {
-      start_date.style.display = "none";
+    function showStartOptions(on) {
+        var start_date = document.getElementById("start_date");
+        if (on == "None") {
+            start_date.style.display = "none";
+        }
+        else {
+            start_date.style.display = "inline";
+        }
     }
-    else {
-      start_date.style.display = "inline";
-    }
-  }
 
-  function showDueOptions(on) {
-    var due_date = document.getElementById("due_date");
-    var allow_late = document.getElementById("allow_late");
-    var view_answer_late = document.getElementById("view_answer_late");
-    var late_percent = document.getElementById("late_percent");
+    function showDueOptions(on) {
+        var due_date = document.getElementById("due_date");
+        var allow_late = document.getElementById("allow_late");
+        var view_answer_late = document.getElementById("view_answer_late");
+        var late_percent = document.getElementById("late_percent");
 
-    if (on == "None") {
-      due_date.style.display = "none";
-      allow_late.style.display = "none";
-      view_answer_late.style.display = "none";
-      late_percent.style.display = "none";
+        if (on == "None") {
+            due_date.style.display = "none";
+            allow_late.style.display = "none";
+            view_answer_late.style.display = "none";
+            late_percent.style.display = "none";
+        }
+        else {
+            due_date.style.display = "inline";
+            turnOnAllowLate();
+        }
     }
-    else {
-      due_date.style.display = "inline";
-      turnOnAllowLate();
-    }
-  }
 
-  function showLatePercentOptions(on) {
-    var late_percent = document.getElementById("late_percent");
-    var view_answer_late = document.getElementById("view_answer_late");
-    var view_late_select =  document.getElementById("view_late_select");
-    if (on == "Yes") {
-      late_percent.style.display = "inline";
-      view_late_select.value = "No";
-      view_answer_late.style.display = "none";
-    }
-    else {
-      late_percent.style.display = "none";
-      view_answer_late.style.display = "inline";
-    }
-  }
+    function showLatePercentOptions(on) {
+        var late_percent = document.getElementById("late_percent");
+        var view_answer_late = document.getElementById("view_answer_late");
+        var view_late_select =  document.getElementById("view_late_select");
 
-  function turnOnAllowLate() {
-    var allow_late = document.getElementById("allow_late");
-    var view_answer_late = document.getElementById("view_answer_late");
-    var late_percent = document.getElementById("late_percent");
+        if (on == "Yes") {
+            late_percent.style.display = "inline";
+            view_late_select.value = "No";
+            view_answer_late.style.display = "none";
+        }
+        else {
+            late_percent.style.display = "none";
+            view_answer_late.style.display = "inline";
+        }
+    }
 
-    allow_late.style.display = "inline";
-    if ({{ assignment_details["allow_late"] }}) {
-      late_percent.style.display = "inline";
-      view_answer_late.style.display = "none";
-    }
-    else {
-      late_percent.style.display = "none";
-      view_answer_late.style.display = "inline";
-    }
-  }
+    function turnOnAllowLate() {
+        var allow_late = document.getElementById("allow_late");
+        var view_answer_late = document.getElementById("view_answer_late");
+        var late_percent = document.getElementById("late_percent");
 
-  function showTimerOptions(on) {
-    var timer_div = document.getElementById("timer_div");
-    if (on == "On") {
-      timer_div.style.display = "inline";
+        allow_late.style.display = "inline";
+            if ({{ assignment_details["allow_late"] }}) {
+            late_percent.style.display = "inline";
+            view_answer_late.style.display = "none";
+        }
+        else {
+            late_percent.style.display = "none";
+            view_answer_late.style.display = "inline";
+        }
     }
-    else {
-      timer_div.style.display = "none";
+
+    function showTimerOptions(on) {
+        var timer_div = document.getElementById("timer_div");
+        if (on == "On") {
+            timer_div.style.display = "inline";
+        }
+        else {
+            timer_div.style.display = "none";
+        }
     }
-  }
 </script>

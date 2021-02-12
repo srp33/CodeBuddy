@@ -7,9 +7,9 @@
                     <p>Move an exercise to a different assignment:</p>
                     <div class="select is-info">
                         <select name="new_assignment_id" id="new_assignment_id">
-                            {% for assignment in assignment_options %}
-                                <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
-                            {% end %}
+                        {% for assignment in assignment_options %}
+                            <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
+                        {% end %}
                         </select>
                     </div>
                     <p class="buttons">
@@ -33,21 +33,21 @@
             </div>
 
             <p>           
-                {% if is_administrator or is_instructor or is_assistant %}
-                    <a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">View scores</a> |
-                    <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Edit exercise</a>
-                {% end %}
+            {% if is_administrator or is_instructor or is_assistant %}
+                <a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">View scores</a> |
+                <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Edit exercise</a>
+            {% end %}
 
-                {% if is_administrator or is_instructor %}
-                    | <a onclick="showMoveProblemModal()">Move exercise</a></br>
-                    <a onclick="showDeleteSubmissionsModal()">Delete problem submissions</a>
-                {% end %}
+            {% if is_administrator or is_instructor %}
+                | <a onclick="showMoveProblemModal()">Move exercise</a><br />
+                <a onclick="showDeleteSubmissionsModal()">Delete problem submissions</a>
+            {% end %}
             </p>
 
             <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a><br/>
 
             {% if student_id == user_id %}
-                <br/><br/><br/>
+                <br /><br /><br />
             {% end %}
 
             <script>
@@ -100,279 +100,277 @@
                     }
                 }
 
-            {% if len(problem_details["data_url"]) > 0 %}
-                function show_hide_data() {
-                    var button = document.getElementById("show_hide_data_button");
-                    var data_panel = document.getElementById("data_panel");
+                {% if len(problem_details["data_url"]) > 0 %}
+                    function show_hide_data() {
+                        var button = document.getElementById("show_hide_data_button");
+                        var data_panel = document.getElementById("data_panel");
 
-                    if (data_panel.hidden) {
-                        button.innerHTML = "Hide";
-                        data_panel.hidden = false;
+                        if (data_panel.hidden) {
+                            button.innerHTML = "Hide";
+                            data_panel.hidden = false;
+                        }
+                        else {
+                            button.innerHTML = "Show";
+                            data_panel.hidden = true;
+                        }
                     }
-                    else {
-                        button.innerHTML = "Show";
-                        data_panel.hidden = true;
-                    }
-                }
-            {% end %}
-
-            function build_text_output(json_output) {
-              var output = "";
-
-              if (json_output == "")
-                  {% if problem_details["output_type"] == "txt" %}
-                      output = "<p><pre>[Your solution produced no output.]</pre></p>";
-                  {% else %}
-                      output = "";
-                  {% end %}
-              else
-                  output = "<p><pre>" + json_output + "</pre></p>";
-
-              return output;
-            }
-
-            function build_image_output(json_output) {
-              var output = "";
-
-              if (json_output == "")
-                  {% if problem_details["output_type"] == "jpg" %}
-                      output = "<p><pre>[Your solution did not produce an image.]</pre></p>";
-                  {% else %}
-                      output = "";
-                  {% end %}
-              else
-                  output = "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
-
-              return output;
-            }
-
-            function check_code(json_data) {
-              var result = "";
-
-              if (json_data.passed) {
-                  {% if problem_details["back_end"] == "any_response" %}
-                      result = "<div class='notification success-message' style='color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
-                  {% else %}
-                      result = "<div class='notification success-message' style='color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
-                  {% end %}
-
-                  {% if problem_details["show_answer"] and problem_details["answer_code"] != "" %}
-                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>here</a> to view the instructor's solution.</p>"; 
-                  {% elif problem_details["show_student_submissions"] %}
-                      result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>here</a> to view other students' solutions.</p>"; 
-                  {% end %}
-
-                  {% if next_problem %}
-                      result += "<p><a href='/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_problem['id'] }}'>Next exercise</a></p>\n\n";
-                  {% end %}
-
-                  result += "</div>\n\n"
-              }
-              else {
-                  // This should never be reached when problem_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
-                  result = "<div class='notification error-message' style='color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
-
-                  {% if problem_details["show_expected"] %}
-                      var diff_output = "";
-
-                      if (json_data.diff.length > 0) {
-                          diff_output += "<h2>Difference between your output and the expected output:</h2>\n\n";
-
-                          {% if problem_details["output_type"] == "txt" %}
-                              diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                          {% else %}
-                              diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
-                          {% end %}
-                      }
-
-                      document.getElementById("diff_output").innerHTML = diff_output;
-                  {% end %}
-              }
-
-              document.getElementById("result").innerHTML = result;
-
-              {% if problem_details["back_end"] != "any_response" %}
-                  var code_output = "<h2>Your output:</h2>\n\n";
-                  code_output += build_text_output(json_data.text_output);
-                  code_output += build_image_output(json_data.image_output);
-                  document.getElementById("code_output").innerHTML = code_output;
-              {% end %}
-            }
-
-            function run_code() {
-                user_code = editor.getSelectedText();
-                if (user_code.trim() == "")
-                    user_code = editor.getValue();
-                if (user_code.trim() == "")
-                    return false;
-
-                result_div = document.getElementById("result");
-                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
-                result_div.scrollIntoView();
-                document.getElementById("code_output").innerHTML = "";
-
-                {% if problem_details["show_expected"] %}
-                    document.getElementById("diff_output").innerHTML = "";
                 {% end %}
 
-                post_data = { "user_code": user_code };
+                function build_text_output(json_output) {
+                    var output = "";
 
-                $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
-                    post_data,
-                    function(data, status) {
-                        var json_data = JSON.parse(data);
+                    if (json_output == "")
+                        {% if problem_details["output_type"] == "txt" %}
+                            output = "<p><pre>[Your solution produced no output.]</pre></p>";
+                        {% else %}
+                            output = "";
+                        {% end %}
+                    else
+                        output = "<p><pre>" + json_output + "</pre></p>";
 
+                    return output;
+                }
+
+                function build_image_output(json_output) {
+                    var output = "";
+
+                    if (json_output == "")
+                        {% if problem_details["output_type"] == "jpg" %}
+                            output = "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                        {% else %}
+                            output = "";
+                        {% end %}
+                    else
+                        output = "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
+
+                    return output;
+                }
+
+                function check_code(json_data) {
+                    var result = "";
+
+                    if (json_data.passed) {
+                        {% if problem_details["back_end"] == "any_response" %}
+                            result = "<div class='notification success-message' style='color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
+                        {% else %}
+                            result = "<div class='notification success-message' style='color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
+                        {% end %}
+
+                        {% if problem_details["show_answer"] and problem_details["answer_code"] != "" %}
+                            result += "<p>Click <a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>here</a> to view the instructor's solution.</p>"; 
+                        {% end %}
+
+                        {% if next_problem %}
+                            result += "<p><a href='/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_problem['id'] }}'>Next exercise</a></p>\n\n";
+                        {% end %}
+
+                        result += "</div>\n\n"
+                    }
+                    else {
+                        // This should never be reached when problem_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
+                        result = "<div class='notification error-message' style='color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+
+                        {% if problem_details["show_expected"] %}
+                            var diff_output = "";
+
+                            if (json_data.diff.length > 0) {
+                                diff_output += "<h2>Difference between your output and the expected output:</h2>\n\n";
+
+                                {% if problem_details["output_type"] == "txt" %}
+                                    diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                {% else %}
+                                    diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
+                                {% end %}
+                            }
+
+                            document.getElementById("diff_output").innerHTML = diff_output;
+                        {% end %}
+                    }
+
+                    document.getElementById("result").innerHTML = result;
+
+                    {% if problem_details["back_end"] != "any_response" %}
                         var code_output = "<h2>Your output:</h2>\n\n";
                         code_output += build_text_output(json_data.text_output);
                         code_output += build_image_output(json_data.image_output);
                         document.getElementById("code_output").innerHTML = code_output;
+                    {% end %}
+                }
 
-                        document.getElementById("result").innerHTML = "";
-                    })
+                function run_code() {
+                    user_code = editor.getSelectedText();
+                    if (user_code.trim() == "")
+                        user_code = editor.getValue();
+                    if (user_code.trim() == "")
+                        return false;
 
-                editor.focus();
-                return false;
-            }
+                    result_div = document.getElementById("result");
+                    result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
+                    result_div.scrollIntoView();
+                    document.getElementById("code_output").innerHTML = "";
 
-            function submit() {
-                user_code = editor.getValue();
+                    {% if problem_details["show_expected"] %}
+                        document.getElementById("diff_output").innerHTML = "";
+                    {% end %}
 
-                if (user_code.trim() == "")
+                    post_data = { "user_code": user_code };
+
+                    $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
+                        post_data,
+                        function(data, status) {
+                            var json_data = JSON.parse(data);
+
+                            var code_output = "<h2>Your output:</h2>\n\n";
+                            code_output += build_text_output(json_data.text_output);
+                            code_output += build_image_output(json_data.image_output);
+                            document.getElementById("code_output").innerHTML = code_output;
+
+                            document.getElementById("result").innerHTML = "";
+                        })
+
+                    editor.focus();
                     return false;
+                }
 
-                result_div = document.getElementById("result");
-                result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
-                result_div.scrollIntoView();
+                function submit() {
+                    user_code = editor.getValue();
 
-                {% if problem_details["back_end"] != "any_response" %}
-                    document.getElementById("code_output").innerHTML = "";
+                    if (user_code.trim() == "")
+                        return false;
 
-                    {% if problem_details["show_expected"] %}
+                    result_div = document.getElementById("result");
+                    result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
+                    result_div.scrollIntoView();
+
+                    {% if problem_details["back_end"] != "any_response" %}
+                        document.getElementById("code_output").innerHTML = "";
+
+                        {% if problem_details["show_expected"] %}
+                            document.getElementById("diff_output").innerHTML = "";
+                        {% end %}
+                    {% end %}
+
+                    post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
+
+                    $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
+                        post_data,
+                        function(data, status) {
+                            json_data = JSON.parse(data);
+                            check_code(json_data);
+
+                            show_past_submissions();
+                            if (json_data.submission_id != "") {
+                                last_submission_id = json_data.submission_id;
+
+                                {% if problem_details["max_submissions"] > 0 %}
+                                document.getElementById("num_submissions").innerHTML = last_submission_id;
+
+                                if (last_submission_id >= {{ problem_details["max_submissions"] }})
+                                    document.getElementById("submit_button").disabled = true;
+                                {% end %}
+                            }
+                        });
+
+                    editor.focus();
+                    return false;
+                }
+
+                function get_submission(submission_id, scroll) {
+                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
+                    var i;
+                    for (i = 0; i < submission_buttons.length; i++) {
+                        if (submission_buttons[i].id == submission_id)
+                            submission_buttons[i].style.border = "solid #34495e";
+                        else
+                            submission_buttons[i].style.border = "none";
+                    }
+
+                    {% if problem_details["back_end"] != "any_response" %}
+                        document.getElementById("code_output").innerHTML = "";
+
+                        {% if problem_details["show_expected"] %}
+                            document.getElementById("diff_output").innerHTML = "";
+                        {% end %}
+                    {% end %}
+
+                    {% if problem_details["show_expected"] and problem_details["back_end"] != "any_response" %}
                         document.getElementById("diff_output").innerHTML = "";
                     {% end %}
-                {% end %}
 
-                post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
+                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}/" + submission_id, 
+                        function (data, status) {
+                            var json_data = JSON.parse(data);
+                            editor.setValue(json_data.code, 1);
+                            check_code(json_data);
+                        });
 
-                $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
-                    post_data,
-                    function(data, status) {
-                        json_data = JSON.parse(data);
-                        check_code(json_data);
+                    if (scroll)
+                        document.getElementById("your_code_header").scrollIntoView();
 
-                        show_past_submissions();
-                        if (json_data.submission_id != "") {
-                            last_submission_id = json_data.submission_id;
+                    editor.focus();
 
-                            {% if problem_details["max_submissions"] > 0 %}
-                            document.getElementById("num_submissions").innerHTML = last_submission_id;
-
-                            if (last_submission_id >= {{ problem_details["max_submissions"] }})
-                                document.getElementById("submit_button").disabled = true;
-                            {% end %}
-                        }
-                    });
-
-                editor.focus();
-                return false;
-            }
-
-            function get_submission(submission_id, scroll) {
-                var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                var i;
-                for (i = 0; i < submission_buttons.length; i++) {
-                    if (submission_buttons[i].id == submission_id)
-                        submission_buttons[i].style.border = "solid #34495e";
-                    else
-                        submission_buttons[i].style.border = "none";
+                    return false;
                 }
 
-                {% if problem_details["back_end"] != "any_response" %}
-                    document.getElementById("code_output").innerHTML = "";
+                function update_auto_complete() {
+                    ac_box = document.getElementById("auto_complete");
 
-                    {% if problem_details["show_expected"] %}
-                        document.getElementById("diff_output").innerHTML = "";
-                    {% end %}
-                {% end %}
-
-                {% if problem_details["show_expected"] and problem_details["back_end"] != "any_response" %}
-                    document.getElementById("diff_output").innerHTML = "";
-                {% end %}
-
-                $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}/" + submission_id, 
-                    function (data, status) {
-                        var json_data = JSON.parse(data);
-                        editor.setValue(json_data.code, 1);
-                        check_code(json_data);
-                    });
-
-                if (scroll)
-                    document.getElementById("your_code_header").scrollIntoView();
-
-                editor.focus();
-
-                return false;
-            }
-
-            function update_auto_complete() {
-                ac_box = document.getElementById("auto_complete");
-
-                if (ac_box.checked) {
-                    editor.setOptions({
-                    enableBasicAutocompletion: false,
-                    enableSnippets: true,
-                    enableLiveAutocompletion: true
-                    });
+                    if (ac_box.checked) {
+                        editor.setOptions({
+                        enableBasicAutocompletion: false,
+                        enableSnippets: true,
+                        enableLiveAutocompletion: true
+                        });
+                    }
+                    else {
+                        editor.setOptions({
+                        enableBasicAutocompletion: false,
+                        enableSnippets: false,
+                        enableLiveAutocompletion: false
+                        });
+                    }
                 }
-                else {
-                    editor.setOptions({
-                    enableBasicAutocompletion: false,
-                    enableSnippets: false,
-                    enableLiveAutocompletion: false
-                    });
-                }
-            }
 
-            function show_past_submissions() {
-                submissions_div = document.getElementById("submissions");
+                function show_past_submissions() {
+                    submissions_div = document.getElementById("submissions");
 
-                $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}",
-                    function (data, status) {
-                        var json_data = JSON.parse(data);
-                        var submission_html = "";
-                        var revert_html = "";
+                    $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}",
+                        function (data, status) {
+                            var json_data = JSON.parse(data);
+                            var submission_html = "";
+                            var revert_html = "";
 
-                        if (json_data.length > 0) {
-                            submission_html += "<h2>Past submissions:</h2>\n";
-                            submission_html += "<div class='buttons'>\n";
+                            if (json_data.length > 0) {
+                                submission_html += "<h2>Past submissions:</h2>\n";
+                                submission_html += "<div class='buttons'>\n";
 
-                            var i;
-                            for (i = 0; i < json_data.length; i++) {
-                                submission_id = json_data[i][0];
-                                the_date = json_data[i][1];
-                                passed = json_data[i][2];
+                                var i;
+                                for (i = 0; i < json_data.length; i++) {
+                                    submission_id = json_data[i][0];
+                                    the_date = json_data[i][1];
+                                    passed = json_data[i][2];
 
-                                //show student's most recent submission
-                                if (i == 0)
-                                    get_submission(submission_id, false);
-                    
-                                if (passed)
-                                    button_bg_color = "#80cdc1";
-                                else
-                                    button_bg_color = "#f4a582";
+                                    //show student's most recent submission
+                                    if (i == 0)
+                                        get_submission(submission_id, false);
+                        
+                                    if (passed)
+                                        button_bg_color = "#80cdc1";
+                                    else
+                                        button_bg_color = "#f4a582";
 
-                                var submission_date = new Date(the_date).toLocaleString();
-                                submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                    var submission_date = new Date(the_date).toLocaleString();
+                                    submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                }
+
+                                submission_html += "</div><br />\n";
+                                revert_html = "<p class='control'><button class='button is-primary is-light is-large is-half' onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button>&nbsp;</p>";
                             }
 
-                            submission_html += "</div><br />\n";
-                            revert_html = "<p class='control'><button class='button is-primary is-light is-large is-half' onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button>&nbsp;</p>";
-                        }
-
-                        submissions_div.innerHTML = submission_html;
-                        revert_div.innerHTML = revert_html;
-                    });
-            }
+                            submissions_div.innerHTML = submission_html;
+                            revert_div.innerHTML = revert_html;
+                        });
+                }
             </script>
 
             <script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -398,11 +396,11 @@
                 document.getElementById("submit_button").disabled = true;
             </script>
         {% else %}
-          <p>This exercise does not exist.</p>
+            <p>This exercise does not exist.</p>
         {% end %}
     {% else %}
-      <p>This assignment does not exist.</p>
+        <p>This assignment does not exist.</p>
     {% end %}
 {% else %}
-  <p>This course does not exist.</p>
+    <p>This course does not exist.</p>
 {% end %}
