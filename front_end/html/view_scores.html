@@ -1,98 +1,99 @@
 {% if course_basics["exists"] %}
-  {% if assignment_basics["exists"] %}
-    <h2>{{ assignment_basics["title"] }}</h2>
+    {% if assignment_basics["exists"] %}
+        <h2>{{ assignment_basics["title"] }}</h2>
 
-    <link rel="stylesheet" href="/static/modal.css">
+        <link rel="stylesheet" href="/static/modal.css">
+        <link rel="stylesheet" href="/static/styles.css">
 
-    <script>
-      function showResetModal(student_id) {
-        var modal = document.getElementById("reset_modal");
-        var span = document.getElementsByClassName("close")[0];
-        modal.style.display = "block";
+        <script>
+            function showResetModal(student_id) {
+                var modal = document.getElementById("reset_modal");
+                var span = document.getElementsByClassName("close")[0];
+                modal.style.display = "block";
 
-        var cancelButton = document.getElementById("cancel_button");
-        var resetButton = document.getElementById("reset_button");
+                var cancelButton = document.getElementById("cancel_button");
+                var resetButton = document.getElementById("reset_button");
 
-        resetButton.onclick = function() {
-          $.post("/reset_timer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + student_id);
-          modal.style.display = "none";
-          location.reload();
-        }
+                resetButton.onclick = function() {
+                    $.post("/reset_timer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + student_id);
+                    modal.style.display = "none";
+                    location.reload();
+                }
 
-        cancelButton.onclick = function() {
-          modal.style.display = "none";
-        }
+                cancelButton.onclick = function() {
+                    modal.style.display = "none";
+                }
 
-        span.onclick = function() {
-          modal.style.display = "none";
-        }
-        window.onclick = function(event) {
-          if (event.target == modal) {
-            modal.style.display = "none";
-          }
-        }
-      }
-    </script>
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+            }
+        </script>
 
-    <div id="reset_modal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>Are you sure you want to reset this timer?</p>
-        <p class="buttons">
-          <button id="cancel_button" class="modal-button button is-small is-light">Cancel</button>
-          <button id="reset_button" class="modal-button button is-small is-dark">Reset</button>
-        </p>
-      </div>
-    </div>
+        <div id="reset_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Are you sure you want to reset this timer?</p>
+                <p class="buttons">
+                    <button id="cancel_button" class="modal-button button is-small is-light">Cancel</button>
+                    <button id="reset_button" class="modal-button button is-small is-dark">Reset</button>
+                </p>
+            </div>
+        </div>
 
-    {% if len(scores) == 0 %}
-      <p><strong>No submissions have been made for this assignment.</strong></p>
-    {% else %}
+        {% if len(scores) == 0 %}
+            <p><strong>No submissions have been made for this assignment.</strong></p>
+        {% else %}
 
-      <h4>View scores</h4>
-      <p>Click on the View button to view a student's score and past submissions for each exercise in this assignment.</p>
+            <h4>View scores</h4>
+            <p>Click on the View button to view a student's score and past submissions for each exercise in this assignment.</p>
 
-      <table class="table" id="scores_table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Student ID</th>
-            <th>Score</th>
-            {% if assignment_details["has_timer"] %}
-              <th>Timer</th>
-            {% end %}
-            <th>View</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for score in scores %}
-            <tr>
-            <td>{{ score[1]["name"] }}</td>
-            <td>{{ score[0] }}</td>
-            <td>{{ round(score[1]["percent_passed"]) }}%</td>
-            {% if assignment_details["has_timer"] %}
-              {% if score[0] in start_times %}
-                {% if start_times[score[0]]["timer_ended"] %}
-                  <td>Timer ended <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
-                {% else %}
-                  <td>In progress <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
-                {% end %}
-              {% else %}
-                <td>Not started</td>
-              {% end %}
-            {% end %}
-            <td><a href="/student_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">View</a></td>
-            </tr>
-          {% end %}    
-        </tbody>
-      </table>
+            <table class="table" id="scores_table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Student ID</th>
+                        <th>Score</th>
+                        {% if assignment_details["has_timer"] %}
+                        <th>Timer</th>
+                        {% end %}
+                        <th>View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for score in scores %}
+                    <tr>
+                        <td>{{ score[1]["name"] }}</td>
+                        <td>{{ score[0] }}</td>
+                        <td>{{ round(score[1]["percent_passed"]) }}%</td>
+                        {% if assignment_details["has_timer"] %}
+                            {% if score[0] in start_times %}
+                                {% if start_times[score[0]]["timer_ended"] %}
+                                <td>Timer ended <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
+                                {% else %}
+                                <td>In progress <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
+                                {% end %}
+                            {% else %}
+                                <td>Not started</td>
+                            {% end %}
+                        {% end %}
+                        <td><a href="/student_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">View</a></td>
+                    </tr>
+                {% end %}    
+                </tbody>
+            </table>
 
-    {% end %}
+        {% end %}
 
     <br />
     <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment</a> |
     <a href="/download_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ out_file }}">Download scores</a>
 
-  {% end %}
+    {% end %}
 {% end %}
 <br /><br />

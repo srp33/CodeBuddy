@@ -1,11 +1,11 @@
 <h2>Delete course</h2>
 
 {% if result %}
-  {% if result.startswith("Error:") %}
-    <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
-  {% else %}
-    <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
-  {% end %}
+    {% if result.startswith("Error:") %}
+        <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+    {% else %}
+        <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
+    {% end %}
 {% end %}
 
 {% if course_basics["exists"] %}

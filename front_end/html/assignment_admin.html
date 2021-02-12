@@ -1,292 +1,292 @@
 {% if course_basics["exists"] %}
-  <h2>{{ assignment_basics["title"] }}</h2>
+    <h2>{{ assignment_basics["title"] }}</h2>
 
-  {% if assignment_basics["exists"] %}
-    <p>{{ assignment_details["introduction"] }}</p>
+    {% if assignment_basics["exists"] %}
+        <p>{{ assignment_details["introduction"] }}</p>
 
-      <link rel="stylesheet" href="/static/modal.css">
+        <link rel="stylesheet" href="/static/modal.css">
 
-      <script>
-        function showDeleteModal(problem_id) {
-          var modal = document.getElementById("delete_problem_modal");
-          var span = document.getElementsByClassName("close")[0];
-          var confirm_text = document.getElementById("confirm_delete");
+        <script>
+            function showDeleteModal(problem_id) {
+                var modal = document.getElementById("delete_problem_modal");
+                var span = document.getElementsByClassName("close")[0];
+                var confirm_text = document.getElementById("confirm_delete");
 
-          modal.style.display = "block";
-          confirm_text.innerHTML = 'Are you sure you want to delete this exercise?';
+                modal.style.display = "block";
+                confirm_text.innerHTML = 'Are you sure you want to delete this exercise?';
 
-          var cancelButton = document.getElementById("delete_cancel_button");
-          var deleteButton = document.getElementById("delete_button");
+                var cancelButton = document.getElementById("delete_cancel_button");
+                var deleteButton = document.getElementById("delete_button");
 
-          deleteButton.onclick = function() {
-            $.post("/delete_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + problem_id);
-            modal.style.display = "none";
-            location.reload();
-          }
+                deleteButton.onclick = function() {
+                    $.post("/delete_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + problem_id);
+                    modal.style.display = "none";
+                    location.reload();
+                }
 
-          cancelButton.onclick = function() {
-            modal.style.display = "none";
-          }
+                cancelButton.onclick = function() {
+                    modal.style.display = "none";
+                }
 
-          span.onclick = function() {
-            modal.style.display = "none";
-          }
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
 
-          window.onclick = function(event) {
-            if (event.target == modal) {
-              modal.style.display = "none";
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                    modal.style.display = "none";
+                    }
+                }
             }
-          }
-        }
 
-        function showCopyAssignmentModal() {
-          var modal = document.getElementById("copy_assignment_modal");
-          var span = document.getElementsByClassName("close")[1];
-          modal.style.display = "block";
+            function showCopyAssignmentModal() {
+                var modal = document.getElementById("copy_assignment_modal");
+                var span = document.getElementsByClassName("close")[1];
+                modal.style.display = "block";
 
-          var cancelButton = document.getElementById("copy_cancel_button");
+                var cancelButton = document.getElementById("copy_cancel_button");
 
-          cancelButton.onclick = function() {
-              modal.style.display = "none";
-          }
+                cancelButton.onclick = function() {
+                    modal.style.display = "none";
+                }
 
-          span.onclick = function() {
-              modal.style.display = "none";
-          }
-          window.onclick = function(event) {
-              if (event.target == modal) {
-                  modal.style.display = "none";
-              }
-          }
-        }
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+            }
 
-        function showDeleteSubmissionsModal() {
-          var modal = document.getElementById("delete_submissions_modal");
-          var span = document.getElementsByClassName("close")[2];
-          modal.style.display = "block";
+            function showDeleteSubmissionsModal() {
+                var modal = document.getElementById("delete_submissions_modal");
+                var span = document.getElementsByClassName("close")[2];
+                modal.style.display = "block";
 
-          var deleteButton = document.getElementById("delete_submissions_button");
-          var cancelButton = document.getElementById("delete_submissions_cancel_button");
+                var deleteButton = document.getElementById("delete_submissions_button");
+                var cancelButton = document.getElementById("delete_submissions_cancel_button");
 
-          deleteButton.onclick = function() {
-            $.post("/delete_assignment_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
-            modal.style.display = "none";
-            location.reload();
-          }
+                deleteButton.onclick = function() {
+                    $.post("/delete_assignment_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
+                    modal.style.display = "none";
+                    location.reload();
+                }
 
-          cancelButton.onclick = function() {
-              modal.style.display = "none";
-          }
+                cancelButton.onclick = function() {
+                    modal.style.display = "none";
+                }
 
-          span.onclick = function() {
-              modal.style.display = "none";
-          }
-          window.onclick = function(event) {
-              if (event.target == modal) {
-                  modal.style.display = "none";
-              }
-          }
-        }
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+            }
 
-        function showVideoModal() {
-          var modal = document.getElementById("video_modal");
-          var span = document.getElementsByClassName("close")[3];
+            function showVideoModal() {
+                var modal = document.getElementById("video_modal");
+                var span = document.getElementsByClassName("close")[3];
 
-          modal.style.display = "block";
-          document.getElementById("video_title").focus();
+                modal.style.display = "block";
+                document.getElementById("video_title").focus();
 
-          var cancelButton = document.getElementById("video_cancel_button");
-          var createButton = document.getElementById("video_create_button");
-          document.getElementById("video_title").focus();
-          document.getElementById("video_error").innerHTML = "";
+                var cancelButton = document.getElementById("video_cancel_button");
+                var createButton = document.getElementById("video_create_button");
+                document.getElementById("video_title").focus();
+                document.getElementById("video_error").innerHTML = "";
 
-          createButton.onclick = function() {
-              var title = document.getElementById("video_title").value.trim();
-              var instructions = document.getElementById("video_instructions").value.trim();
-              var url = document.getElementById("video_url").value.trim();
+                createButton.onclick = function() {
+                    var title = document.getElementById("video_title").value.trim();
+                    var instructions = document.getElementById("video_instructions").value.trim();
+                    var url = document.getElementById("video_url").value.trim();
 
-              if (title.length == 0 || instructions.length == 0 || url == 0) {
-                  document.getElementById("video_error").innerHTML = "<div class='notification error-message'>All inputs must be specified.</div>";
-                  return;
-              }
+                    if (title.length == 0 || instructions.length == 0 || url == 0) {
+                        document.getElementById("video_error").innerHTML = "<div class='notification error-message'>All inputs must be specified.</div>";
+                        return;
+                    }
 
-              var youtube_id = url.replace("https://youtu.be/", "").replace("https://www.youtube.com/watch?v=", "").replace("&feature=youtu.be", "");
+                    var youtube_id = url.replace("https://youtu.be/", "").replace("https://www.youtube.com/watch?v=", "").replace("&feature=youtu.be", "");
 
-              post_data = {"title": title, "instructions": instructions + "\n\nyoutube:" + youtube_id};
+                    post_data = {"title": title, "instructions": instructions + "\n\nyoutube:" + youtube_id};
 
-              $.post("/create_video_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
-                  post_data,
-                  function(data, status) {
-                      var message = JSON.parse(data)["message"];
+                    $.post("/create_video_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                        post_data,
+                        function(data, status) {
+                            var message = JSON.parse(data)["message"];
 
-                      if (message == "") {
-                          document.getElementById("video_error").innerHTML = "";
-                          modal.style.display = "none";
-                          location.reload();
-                      }
-                      else {
-                          document.getElementById("video_error").innerHTML = "<div class='notification error-message'>" + message + "</div>";
-                      }
-              });
+                            if (message == "") {
+                                document.getElementById("video_error").innerHTML = "";
+                                modal.style.display = "none";
+                                location.reload();
+                            }
+                            else {
+                                document.getElementById("video_error").innerHTML = "<div class='notification error-message'>" + message + "</div>";
+                            }
+                    });
 
-          }
+                }
 
-          cancelButton.onclick = function() {
-            modal.style.display = "none";
-          }
+                cancelButton.onclick = function() {
+                    modal.style.display = "none";
+                }
 
-          span.onclick = function() {
-            modal.style.display = "none";
-          }
-        }
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+            }
 
-      </script>
+        </script>
 
-      {% if len(problems) > 0 %}
+        {% if len(problems) > 0 %}
 
-        <table class="table" id="assignment_table">
-          <thead>
-            <tr>
-              <th>Exercise</th>
-              <th>Visibility</th>
-              <th>Scores</th>
-              <th>Submissions</th>
-              <th>Edit</th>
-              <th>Delete</th>
-            </tr>
-          </thead>
-          <tbody>
+            <table class="table" id="assignment_table">
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Visibility</th>
+                        <th>Scores</th>
+                        <th>Submissions</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
 
-          {% for problem in problems %}
-            <tr>
-              <td><a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
-              {% if problem[1]["visible"] == 0 %}
-                <td>Hidden</td>
-                <td> </td>
-                <td> </td>
-              {% else %}
-                <td>Visible</td>
-                <td><a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">Scores</a></td>
-                <td><a href="/problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">Submissions</a></td>
-              {% end %}
-              <td>
-                <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[1]['id'] }}">
-                  <img src="/static/editicon.png" alt="Edit exercise" height="25px" width="25px">
-                </a>
-              </td>
-              <td>
-                <a onclick="showDeleteModal({{ problem[1]['id'] }})">
-                  <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
-                </a> 
-              </td>
-            </tr>
-          {% end %}  
-          </tbody>
-        </table>
-    {% else %}
-      <p><strong>No exercises have been created for this assignment.</strong></p>
-    {% end %}
+                {% for problem in problems %}
+                    <tr>
+                        <td><a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
+                        {% if problem[1]["visible"] == 0 %}
+                            <td>Hidden</td>
+                            <td> </td>
+                            <td> </td>
+                        {% else %}
+                            <td>Visible</td>
+                            <td><a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">Scores</a></td>
+                            <td><a href="/problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">Submissions</a></td>
+                        {% end %}
+                        <td>
+                            <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[1]['id'] }}">
+                                <img src="/static/editicon.png" alt="Edit exercise" height="25px" width="25px">
+                            </a>
+                        </td>
+                        <td>
+                            <a onclick="showDeleteModal({{ problem[1]['id'] }})">
+                                <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
+                            </a> 
+                        </td>
+                    </tr>
+                {% end %}  
+                </tbody>
+            </table>
 
-    <div id="delete_problem_modal" class="modal">
-      <div class="modal-content">
-          <span class="close">&times;</span>
-          <p id="confirm_delete"></p>
-          <p class="buttons">
-              <a id="delete_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-              <a id="delete_button" class="modal-button button is-small is-primary">Delete</a>
-          </p>
-      </div>
-    </div>
-
-    <div id="copy_assignment_modal" class="modal">
-      <form method="post" action="/copy_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
-      <div class="modal-content">
-          <span class="close">&times;</span>
-          <p>Copy an assignment to a different course:</p>
-          <div class="select is-info">
-            <select name="new_course_id" id="new_course_id">
-              {% for course in course_options %}
-                  <option value="{{ course['id'] }}">{{ course["title"] }}</option>
-              {% end %}
-            </select>
-          </div>
-          <p class="buttons">
-              <a id="copy_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-              <input type="submit" id="copy_button" class="modal-button button is-small is-primary" value="Copy"/>
-          </p>
-      </div>
-      </form>
-    </div>
-
-    <div id="delete_submissions_modal" class="modal">
-      <div class="modal-content">
-          <span class="close">&times;</span>
-          <p>Are you sure you want to delete all submissions for this assignment?</p>
-          <p><font color="red">This will also delete all scores for this assignment.</font></p>
-          <p class="buttons">
-              <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-              <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
-          </p>
-      </div>
-    </div>
-
-    <div id="video_modal" class="modal">
-      <div class="modal-content">
-          <span class="close">&times;</span>
-          <p><strong>Create video exercise</strong></p>
-          
-          <p>Use this option to create an exercise that displays a YouTube video and asks the user to submit a response based on a prompt in the video.</p>
-
-          <p>Title:
-            <input class="input is-medium is-link" type="text" id="video_title" name="video_title"/>
-          </p>
-
-          <p>Instructions:
-            <input class="input is-medium is-link" type="text" id="video_instructions" name="video_instructions" value="Please watch this video and then enter the requested response."/>
-          </p>
-
-          <p>YouTube video URL:
-            <input class="input is-medium is-link" type="text" id="video_url" name="video_url"/>
-          </p>
-
-          <div id="video_error"></div>
-
-          <p class="buttons">
-              <input type="submit" id="video_create_button" class="modal-button button is-small is-primary" value="Create"/>
-              <button type="button" id="video_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</button>
-          </p>
-      </div>
-    </div>
-
-    <p>
-      <p>
-        <a class="button is-small is-rounded is-primary" onclick="window.location.href='/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">
-          <span>New exercise</span>
-        </a>
-        &nbsp;
-        <a class="button is-small is-rounded is-light" onclick="showVideoModal()">
-          <span>New video exercise</span>
-        </a>
-      </p>
-      <p>
-        <a class="button is-small is-rounded is-link" onclick="window.location.href='/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}';">
-          <span>View scores</span>
-        </a>
-      </p>
-      <p>
-        <a href="/course/{{ course_basics['id'] }}">Back to course</a> |
-        <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a></br>
-
-        {% if is_administrator or is_instructor %}
-          <a onclick="showCopyAssignmentModal()">Copy assignment</a> |
-          <a onclick="showDeleteSubmissionsModal()">Delete assignment submissions</a>
+        {% else %}
+            <p><strong>No exercises have been created for this assignment.</strong></p>
         {% end %}
-      </p>
-    </p>
-  {% else %}
-    <p>This assignment does not exist.</p>
-  {% end %}
+
+        <div id="delete_problem_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="confirm_delete"></p>
+                <p class="buttons">
+                    <a id="delete_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                    <a id="delete_button" class="modal-button button is-small is-primary">Delete</a>
+                </p>
+            </div>
+        </div>
+
+        <div id="copy_assignment_modal" class="modal">
+            <form method="post" action="/copy_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Copy an assignment to a different course:</p>
+                <div class="select is-info">
+                    <select name="new_course_id" id="new_course_id">
+                    {% for course in course_options %}
+                        <option value="{{ course['id'] }}">{{ course["title"] }}</option>
+                    {% end %}
+                    </select>
+                </div>
+                <p class="buttons">
+                    <a id="copy_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                    <input type="submit" id="copy_button" class="modal-button button is-small is-primary" value="Copy"/>
+                </p>
+            </div>
+            </form>
+        </div>
+
+        <div id="delete_submissions_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Are you sure you want to delete all submissions for this assignment?</p>
+                <p><font color="red">This will also delete all scores for this assignment.</font></p>
+                <p class="buttons">
+                    <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                    <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
+                </p>
+            </div>
+        </div>
+
+        <div id="video_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p><strong>Create video exercise</strong></p>               
+                <p>Use this option to create an exercise that displays a YouTube video and asks the user to submit a response based on a prompt in the video.</p>
+
+                <p>Title:
+                    <input class="input is-medium is-link" type="text" id="video_title" name="video_title"/>
+                </p>
+
+                <p>Instructions:
+                    <input class="input is-medium is-link" type="text" id="video_instructions" name="video_instructions" value="Please watch this video and then enter the requested response."/>
+                </p>
+
+                <p>YouTube video URL:
+                    <input class="input is-medium is-link" type="text" id="video_url" name="video_url"/>
+                </p>
+
+                <div id="video_error"></div>
+
+                <p class="buttons">
+                    <input type="submit" id="video_create_button" class="modal-button button is-small is-primary" value="Create"/>
+                    <button type="button" id="video_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</button>
+                </p>
+            </div>
+        </div>
+
+        <p>
+            <p>
+                <a class="button is-small is-rounded is-primary" onclick="window.location.href='/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">
+                    <span>New exercise</span>
+                </a>
+                &nbsp;
+                <a class="button is-small is-rounded is-light" onclick="showVideoModal()">
+                    <span>New video exercise</span>
+                </a>
+            </p>
+            <p>
+                <a class="button is-small is-rounded is-link" onclick="window.location.href='/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}';">
+                    <span>View scores</span>
+                </a>
+            </p>
+            <p>
+                <a href="/course/{{ course_basics['id'] }}">Back to course</a> |
+                <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a><br />
+
+                {% if is_administrator or is_instructor %}
+                    <a onclick="showCopyAssignmentModal()">Copy assignment</a> |
+                    <a onclick="showDeleteSubmissionsModal()">Delete assignment submissions</a>
+                {% end %}
+            </p>
+        </p>
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
 {% else %}
-  <p>This course does not exist.</p>
+    <p>This course does not exist.</p>
 {% end %}
 <br /><br />
