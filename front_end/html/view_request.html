@@ -1,13 +1,13 @@
 <h2>View help request</h2>
-<p class="light-heading">Assignment: {{ assignment_basics["title"] }}<br>
-Problem: {{ problem_basics["title"] }}</p><br>
+<p class="light-heading">Assignment: {{ assignment_basics["title"] }}<br />
+Problem: {{ problem_basics["title"] }}</p><br />
 
 {% if result %}
-  {% if result.startswith("Error:") %}
-    <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
-  {% else %}
-    <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
-  {% end %}
+    {% if result.startswith("Error:") %}
+        <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+    {% else %}
+        <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
+    {% end %}
 {% end %}
 
 <form method="post" action="/view_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ help_request['user_id'] }}">
@@ -35,7 +35,7 @@ Problem: {{ problem_basics["title"] }}</p><br>
     <div class="suggestion-div">
         <p><strong>Suggestion:</strong></p>
         {% if help_request["suggestion"] %}
-            <!--<p class="light-heading">Suggester: <br>
+            <!--<p class="light-heading">Suggester: <br />
             {% if help_request["approved"] %}
                 Approver: </p>
             {% else %}
@@ -50,7 +50,7 @@ Problem: {{ problem_basics["title"] }}</p><br>
         {% end %}
         <input type="submit" id="submit_button" class="button is-small is-link is-rounded invisible" value="Submit suggestion"/>
     </div>
-</div><br>
+</div><br />
 
 </form>
 
@@ -89,7 +89,7 @@ Problem: {{ problem_basics["title"] }}</p><br>
             </div>
         </div>
     {% end %}
-</div><br><br>
+</div><br /><br />
 
 <script>
     ace.require("ace/ext/language_tools");
@@ -127,11 +127,11 @@ Problem: {{ problem_basics["title"] }}</p><br>
 
         if (answer_code.style.display == "inline") {
             answer_code.style.display = "none";
-            answer_button.innerHTML = "View answer code";
+            answer_button.innerHTML = "View solution";
         }
         else {
             answer_code.style.display = "inline";
-            answer_button.innerHTML = "Hide answer code";
+            answer_button.innerHTML = "Hide solution";
         }
     }
 
