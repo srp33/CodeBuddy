@@ -121,3 +121,14 @@ td > button {
 .ace_gutter {
     z-index: auto !important;
 }
+
+#filter_container {
+    width: 100%;
+    overflow: hidden;
+    padding-bottom: 0px;
+}
+
+#filter_container input {
+    display: inline;
+    width: 50%;
+}
