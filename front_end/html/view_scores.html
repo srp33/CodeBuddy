@@ -49,7 +49,6 @@
         {% if len(scores) == 0 %}
             <p><strong>No submissions have been made for this assignment.</strong></p>
         {% else %}
-
             <h4>View scores</h4>
             <p>Click on the View button to view a student's score and past submissions for each exercise in this assignment.</p>
 
@@ -89,10 +88,9 @@
             </table>
 
         {% end %}
-
     <br />
     <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment</a> |
-    <a href="/download_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ out_file }}">Download scores</a>
+    <a href="/download_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ download_file_name }}">Download scores</a>
 
     {% end %}
 {% end %}

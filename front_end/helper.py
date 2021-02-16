@@ -199,6 +199,10 @@ def create_id(current_objects=[], num_characters=4):
 def download_file(url):
     return requests.get(url).content
 
+def get_scores_download_file_name(assignment_basics):
+    assignment_title = assignment_basics["title"].replace(" ", "_")
+    return f"Scores__{assignment_title}.csv"
+
 def get_list_of_dates():
     years = []
     months = []
