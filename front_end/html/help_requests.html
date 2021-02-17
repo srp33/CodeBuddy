@@ -42,7 +42,7 @@
             <td>{{ request["name"] }}</td>
             <td>{{ request["assignment_title"] }}</td> 
             <td>{{ request["problem_title"] }}</td>
-            <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View Request</a></td>
+            <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View</a></td>
             {% if request["suggestion"] %}
                 <td>
                     <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
