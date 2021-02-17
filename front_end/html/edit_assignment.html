@@ -14,188 +14,218 @@
     {% end %}
 {% end %}
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 {% if course_basics["exists"] %}
     <form method="post" action="/edit_assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
 
-    <p><strong>Title: </strong></p>
-    <p><textarea name="title" class="textarea is-info is-normal is-medium monospace" placeholder="Please specify a descriptive title for this assignment." rows="1" autofocus>{{ assignment_basics["title"] }}</textarea></p>
-
-    <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
-    <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide an introduction for this assignment." rows="8">{{ assignment_details["introduction"] }}</textarea></p>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-    <p><strong>Start date: </strong><br />If a start date is specified, students will be unable to view this assignment before the start date and time.</p>
-    <div class="select is-info">
-        <select name="has_start_date" onchange="showStartOptions(this.value)" class="edit-select">
-            <option
-            {% if not assignment_details["start_date"] %}
-                selected
-            {% end %}
-            >None</option>
-            <option
-            {% if assignment_details["start_date"] %}
-                selected
-            {% end %}
-            >Select</option>
-        </select>
-    </div>
-    <div id="start_date"
-    {% if assignment_details["start_date"] %}
-        class="visible"
-    {% else %}
-        class="invisible"
-    {% end %}>
-        <input class="is-medium" id="start_date_picker" name="start_date_picker" type="text" data-input>
-    </div>
-
-    <p><strong>Due date: </strong></p>
-    <div class="select is-info">
-        <select name="has_due_date" onchange="showDueOptions(this.value)" class="edit-select">
-            <option
-            {% if not assignment_details["due_date"] %}
-                selected
-            {% end %}
-            >None</option>
-            <option
-            {% if assignment_details["due_date"] %}
-                selected
-            {% end %}
-            >Select</option>
-        </select>
-    </div>
-    <div id="due_date"
-    {% if assignment_details["due_date"] %}
-        class="visible"
-    {% else %}
-        class="invisible"
-    {% end %}>
-        <input class="is-medium" id="due_date_picker" name="due_date_picker" type="text" data-input>
-    </div>
-
-    <div id="allow_late"
-    {% if assignment_details["due_date"] %}
-        class="visible"
-    {% else %}
-        class="invisible"
-    {% end %}>
-        <p><strong>Allow late submissions: </strong>
-            <div class="select is-info">
-                <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" class="edit-select">
-                {% if assignment_details["allow_late"] %}
-                    <option value="Yes" selected>Yes</option>
-                    <option value="No">No</option>
-                {% else %}
-                    <option value="Yes">Yes</option>
-                    <option value="No" selected>No</option>
-                {% end %}
-                </select>
+    <div class="shadow-box">
+        <div class="row-container">
+            <div class="a-title-container">
+                <p><strong>Title: </strong></p>
+                <p><textarea name="title" class="textarea is-info is-normal is-medium monospace" placeholder="Please specify a descriptive title for this assignment." rows="1" autofocus>{{ assignment_basics["title"] }}</textarea></p>
             </div>
-        </p>
+
+            <div class="a-visible">
+                <p><strong>Visible: </strong>
+                    <div class="select is-info">
+                        <select name="is_visible" class="edit-select">
+                        {% if assignment_basics["visible"] %}
+                            <option value="Yes" selected>Yes</option>
+                            <option value="No">No</option>
+                        {% else %}
+                            <option value="Yes">Yes</option>
+                            <option value="No" selected>No</option>
+                        {% end %}
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <div class="instructions-container">
+            <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
+            <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide an introduction for this assignment." rows="8">{{ assignment_details["introduction"] }}</textarea></p>
+        </div>
     </div>
 
-    <div id="late_percent"
-    {% if assignment_details["allow_late"] %}
-        class="visible"
-    {% else %}
-        class="invisible"
-    {% end %}>
-        <p><strong>Select percentage of points students can earn back with late submissions: </strong>
-            <div class="select is-info">
-                <select id="late_percent_select" name="late_percent_select" class="edit-select">
-                {% for percent in percentage_options %}
-                    {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
-                        <option selected>{{ percent }}%</option>
+    <div class="shadow-box">
+        <div class="row-container">
+            <div class="date-container">
+                <div>
+                    <p style="display: inline"><strong>Start date:</strong></p>
+                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a start date is specified, students will be unable to view this assignment before the start date and time.">
+                        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                    </label>
+                </div>
+                <div class="select is-info">
+                    <select name="has_start_date" onchange="showStartOptions(this.value)" class="edit-select">
+                        <option
+                        {% if not assignment_details["start_date"] %}
+                            selected
+                        {% end %}
+                        >None</option>
+                        <option
+                        {% if assignment_details["start_date"] %}
+                            selected
+                        {% end %}
+                        >Select</option>
+                    </select>
+                </div>
+                <div id="start_date"
+                {% if assignment_details["start_date"] %}
+                    class="visible"
+                {% else %}
+                    class="invisible"
+                {% end %}>
+                    <input class="is-medium" id="start_date_picker" name="start_date_picker" type="text" data-input>
+                </div>
+            </div>
+
+            <div class="date-container">
+                <div>
+                    <p style="display: inline"><strong>Due date:</strong></p>
+                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a due date is specified, students will be unable to view the problems in this assignment after the due date unless late submissions or viewing the solution late is enabled.">
+                        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                    </label>
+                </div>
+                <div class="select is-info">
+                    <select name="has_due_date" onchange="showDueOptions(this.value)" class="edit-select">
+                        <option
+                        {% if not assignment_details["due_date"] %}
+                            selected
+                        {% end %}
+                        >None</option>
+                        <option
+                        {% if assignment_details["due_date"] %}
+                            selected
+                        {% end %}
+                        >Select</option>
+                    </select>
+                </div>
+                <div id="due_date"
+                {% if assignment_details["due_date"] %}
+                    class="visible"
+                {% else %}
+                    class="invisible"
+                {% end %}>
+                    <input class="is-medium" id="due_date_picker" name="due_date_picker" type="text" data-input>
+                </div>
+            </div>
+        </div>
+
+        <div id="allow_late"
+        {% if assignment_details["due_date"] %}
+            class="visible"
+        {% else %}
+            class="invisible"
+        {% end %}>
+            <p id="allow_late_text"><strong>Allow late submissions: </strong>
+                <div class="select is-info">
+                    <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" class="edit-select">
+                    {% if assignment_details["allow_late"] %}
+                        <option value="Yes" selected>Yes</option>
+                        <option value="No">No</option>
                     {% else %}
-                        <option>{{ percent }}%</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
                     {% end %}
-                {% end %}
-                </select>
-            </div>
-        </p>
-    </div>
+                    </select>
+                </div>
+            </p>
+        </div>
 
-    <div id="view_answer_late"
-    {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
-        class="invisible"
-    {% else %}
-        class="visible"
-    {% end %}>
-        <p><strong>Allow students to view the answer after the due date has passed: </strong>
-            <div class="select is-info">
-                <select id="view_late_select" name="view_late_select" class="edit-select">
-                {% if assignment_details["view_answer_late"] %}
-                    <option value="Yes" selected>Yes</option>
-                    <option value="No">No</option>
-                {% else %}
-                    <option value="Yes">Yes</option>
-                    <option value="No" selected>No</option>
-                {% end %}
-                </select>
-            </div>
-        </p>
+        <div id="late_percent"
+        {% if assignment_details["allow_late"] %}
+            class="visible"
+        {% else %}
+            class="invisible"
+        {% end %}>
+            <p><strong>Select percentage of points students can earn back with late submissions: </strong>
+                <div class="select is-info">
+                    <select id="late_percent_select" name="late_percent_select" class="edit-select">
+                    {% for percent in percentage_options %}
+                        {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
+                            <option selected>{{ percent }}%</option>
+                        {% else %}
+                            <option>{{ percent }}%</option>
+                        {% end %}
+                    {% end %}
+                    </select>
+                </div>
+            </p>
+        </div>
+
+        <div id="view_answer_late"
+        {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
+            class="invisible"
+        {% else %}
+            class="visible"
+        {% end %}>
+            <p><strong>Allow students to view the answer after the due date has passed: </strong>
+                <div class="select is-info">
+                    <select id="view_late_select" name="view_late_select" class="edit-select">
+                    {% if assignment_details["view_answer_late"] %}
+                        <option value="Yes" selected>Yes</option>
+                        <option value="No">No</option>
+                    {% else %}
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    {% end %}
+                    </select>
+                </div>
+            </p>
+        </div>
     </div>
   
-    <p><strong>Timer: </strong><br />Here you can specify the time a student has to complete this assignment. Once a students begins this assignment, they cannot pause the timer.</p>
-    <div class="select is-info">
-        <select name="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
-            <option
-            {% if assignment_details["has_timer"] == 0 %}
-                selected
-            {% end %}
-            >Off</option>
-            <option
-            {% if assignment_details["has_timer"] == 1 %}
-                selected
-            {% end %}
-            >On</option>
-        </select>
-    </div>
-
-    <div id="timer_div" class="select is-info" 
-    {% if assignment_details["has_timer"] == 1 %}
-        class="visible"
-    {% else %}
-        class="invisible"
-    {% end %}>
-        <label for="hour_select">Hours:</label>
-        <select id="hour_select" name="hour_select" style="display: inline;">
-        {% for hour in hour_options %}
-            <option
-            {% if hour == assignment_details["hour_timer"] %}
-                selected
-            {% end %}
-            >{{ hour }}</option>
-        {% end %}
-        </select>
-        <label for="minute_select">Minutes:</label>
-        <select id="minute_select" name="minute_select" style="display: inline;">
-        {% for minute in minute_options %}
-            <option
-            {% if minute == assignment_details["minute_timer"] %}
-                selected
-            {% end %}
-            >{{ minute }}</option>
-        {% end %}
-        </select>
-    </div>
-
-    <p><strong>Visible: </strong>
+    <div class="shadow-box">
+        <p><strong>Timer: </strong><br />Here you can specify the time a student has to complete this assignment. Once a students begins this assignment, they cannot pause the timer.</p>
         <div class="select is-info">
-            <select name="is_visible" class="edit-select">
-            {% if assignment_basics["visible"] %}
-                <option value="Yes" selected>Yes</option>
-                <option value="No">No</option>
-            {% else %}
-                <option value="Yes">Yes</option>
-                <option value="No" selected>No</option>
+            <select name="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
+                <option
+                {% if assignment_details["has_timer"] %}
+                    selected
+                {% end %}
+                >Off</option>
+                <option
+                {% if assignment_details["has_timer"] %}
+                    selected
+                {% end %}
+                >On</option>
+            </select>
+        </div>
+
+        <div id="timer_div" class="select is-info" 
+        {% if assignment_details["has_timer"] %}
+            style="display: inline;"
+        {% else %}
+            style="display: none;"
+        {% end %}>
+            <label for="hour_select">Hours:</label>
+            <select id="hour_select" name="hour_select" style="display: inline;">
+            {% for hour in hour_options %}
+                <option
+                {% if hour == assignment_details["hour_timer"] %}
+                    selected
+                {% end %}
+                >{{ hour }}</option>
+            {% end %}
+            </select>
+            <label for="minute_select">Minutes:</label>
+            <select id="minute_select" name="minute_select" style="display: inline;">
+            {% for minute in minute_options %}
+                <option
+                {% if minute == assignment_details["minute_timer"] %}
+                    selected
+                {% end %}
+                >{{ minute }}</option>
             {% end %}
             </select>
         </div>
-    </p>
+    </div>
 
-    <p><input type="submit" class="button is-info is-large is-fullwidth" value="Save" /></p>
+    <p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
 
     <p>
     {% if assignment_basics["exists"] %}
