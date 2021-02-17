@@ -18,6 +18,3 @@ result = subprocess.run(f"python {code_file_path}", shell=True, stdout=subproces
 # This makes the error message a little more user friendly.
 result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
 print(re.sub(r"File \"\/sandbox\/code\", (line \d+)", r"Error on \1", result))
-
-#except Exception as err:
-#    print(traceback.format_exc())
