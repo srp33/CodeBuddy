@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="/static/modal.css">
+<script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
 
 <h2 style="text-align: center;">Help Requests Dashboard</h2>
 
@@ -18,6 +19,7 @@
 <table class="table" id="request_table">
     <thead>
         <tr>
+            <th>Date</th>
             <th>Student Name</th>
             <th>Assignment Title</th>
             <th>Problem Title</th>
@@ -31,6 +33,12 @@
     {% if help_requests %}
         {% for request in help_requests %}
         <tr>
+            <td>
+                <script>
+                    var s = new Date("{{ request['date'].strftime('%Y-%m-%dT%H:%M:%S.%f') }}");
+                    document.write(convertDate(s));
+                </script>
+            </td>
             <td>{{ request["name"] }}</td>
             <td>{{ request["assignment_title"] }}</td> 
             <td>{{ request["problem_title"] }}</td>
