@@ -50,12 +50,15 @@
                             opt.selected = true;
                     }
 
-                    answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
-                    test_code_editor.getSession().setMode(json_data["code_completion_path"]);
-                });
-            }
+                    ot_select.appendChild(opt);
+                }
 
-      ace.require("ace/ext/language_tools");
+                answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
+                test_code_editor.getSession().setMode(json_data["code_completion_path"]);
+            });
+        }
+
+        ace.require("ace/ext/language_tools");
     </script>
 
         <div class="shadow-box">
