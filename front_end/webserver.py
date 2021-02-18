@@ -289,7 +289,7 @@ class ProfileInstructorHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
     def post(self, course_id, user_id):
-        try: 
+        try:
             new_assistant = self.get_body_argument("new_assistant")
             new_instructor = self.get_body_argument("new_instructor")
             result = ""
@@ -319,7 +319,7 @@ class ProfileInstructorHandler(BaseUserHandler):
                             content.add_permissions(course_id, new_instructor, "instructor")
                             result = f"Success! {new_instructor} is now an instructor for this course."
                     else:
-                        result = f"Error: The user '{new_instructor}' does not exist."                   
+                        result = f"Error: The user '{new_instructor}' does not exist."
                 else:
                     self.render("permissions.html")
 
@@ -442,7 +442,7 @@ class UnregisterHandler(BaseUserHandler):
                 self.render("permissions.html", user_info=content.get_user_info(self.get_user_id()), user_logged_in=user_logged_in_var.get())
 
         except Exception as inst:
-            render_error(self, traceback.format_exc()) 
+            render_error(self, traceback.format_exc())
 
 class CourseHandler(BaseUserHandler):
     def get(self, course):
@@ -686,10 +686,8 @@ class AssignmentHandler(BaseUserHandler):
         if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
             try:
                 assignment_basics = content.get_assignment_basics(course, assignment)
-                assignment_id = assignment_basics["id"]
-                out_file = f"Assignment_{assignment_id}_Scores.csv"
 
-                self.render("assignment_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(course, True), problems=content.get_problems(course, assignment, True), problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment, True), course_options=[x[1] for x in content.get_courses() if str(x[0]) != course], user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course), out_file=out_file)
+                self.render("assignment_admin.html", courses=content.get_courses(True), assignments=content.get_assignments(course, True), problems=content.get_problems(course, assignment, True), problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment, True), course_options=[x[1] for x in content.get_courses() if str(x[0]) != course], user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course), download_file_name=get_scores_download_file_name(assignment_basics))
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
@@ -1230,10 +1228,8 @@ class ViewScoresHandler(BaseUserHandler):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 assignment_basics = content.get_assignment_basics(course, assignment)
-                assignment_title = assignment_basics["title"].replace(" ", "_")
-                out_file = f"{assignment_title}.csv"
 
-                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_id()), scores=content.get_assignment_scores(course, assignment), start_times=content.get_all_start_times(course, assignment), curr_datetime=datetime.datetime.now(), out_file=out_file, user_info=self.get_user_info())
+                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment), problems=content.get_problems(course, assignment), problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_id()), scores=content.get_assignment_scores(course, assignment), start_times=content.get_all_start_times(course, assignment), curr_datetime=datetime.datetime.now(), download_file_name=get_scores_download_file_name(assignment_basics), user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
         except Exception as inst:

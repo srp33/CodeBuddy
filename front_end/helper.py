@@ -51,7 +51,7 @@ def is_old_file(file_path, days=30):
     return age_in_days > days
 
 def convert_markdown_to_html(text):
-    if len(text) == 0:
+    if not text or len(text) == 0:
         return ""
 
     markdown = Markdown()
@@ -198,6 +198,10 @@ def create_id(current_objects=[], num_characters=4):
 
 def download_file(url):
     return requests.get(url).content
+
+def get_scores_download_file_name(assignment_basics):
+    assignment_title = assignment_basics["title"].replace(" ", "_")
+    return f"Scores__{assignment_title}.csv"
 
 def get_list_of_dates():
     years = []

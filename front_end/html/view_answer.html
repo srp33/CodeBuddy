@@ -1,7 +1,7 @@
 {% if problem_basics["exists"] %}
-    {% if problem_details["show_answer"] or assignment_details["view_answer_late"] %}
+    {% if problem_details["show_answer"] or assignment_details["view_answer_late"] or problem_details["show_student_submissions"] %}
         {% if not last_submission and not assignment_details["due_date"] %}
-            <p>You do not have any submissions for this exercise yet. You will not be able to view the instructor's solution until you have submitted the correct answer.</p>
+            <p>You do not have any submissions for this exercise yet. You must first submit a passing solution.</p>
         {% else %}
             {% if (last_submission and last_submission["passed"]) or (assignment_details["due_date"] and curr_time > assignment_details["due_date"] and assignment_details["view_answer_late"]) %}
                 <div>
@@ -10,44 +10,47 @@
                     <pre class="student-content">{{ last_submission["code"] }}</pre>
                 {% end %}
 
-                    <h4>Instructor's solution:</h4>
-                    <pre class="instructor-content">{{ problem_details["answer_code"]}}</pre>
+                {% if problem_details["show_answer"] %}
+                    {% if problem_details["answer_code"] != "" %}
+                        <h4>Instructor's solution:</h4>
+                        <pre class="instructor">{{ problem_details["answer_code"]}}</pre>
+                    {% end %}
 
-                {% if len(problem_details["answer_description"]) > 0 %}
-                    <h4>Instructor's comments</h4>
-                    <p>{{ problem_details["answer_description"] }}</p>
-                    <br />
+                    {% if problem_details["answer_description"] != "" %}
+                        <h4>Instructor's comments:</h4>
+                        <p>{{ problem_details["answer_description"] }}</p>
+                        <br />
+                    {% end %}
                 {% end %}
                 </div><br />
 
                 {% if problem_details["show_student_submissions"] %}
                     {% if student_submissions %}
-                        <div class="buttons">
-                            <a class="button is-small is-primary is-rounded" onclick="showOtherSolutions()">Show other students' solutions (anonymized)</a>
-                        </div>
-                        <div id="other_students" class="invisible">
+                        {% if problem_details["show_answer"] and (problem_details["answer_code"] != "" or problem_details["answer_description"] != "") %}
+                            <div class="buttons">
+                                <a class="button is-small is-primary is-rounded" id="other_button" onclick="showOtherSolutions()"></a>
+                            </div>
+
+                            <div id="other_solutions" style="display: inline">
+                        {% else %}
+                            <h4>Others' solutions (anonymized):</h4>
+
+                            <div id="other_solutions">
+                        {% end %}
+
                         {% for submission in student_submissions %}
                             <p>Submission {{ submission[0] }}:</p>
                             <pre class="extra-content">{{ submission[1] }}</pre>
                         {% end %}
                         </div>
+                    {% else %}
+                        <p>No other solutions are available at this time.</p>
                     {% end %}
                 {% end %}
 
             {% else %}
                 <p>Either you have not yet passed this exercise or you passed it previously but your most recent submission is not passing. Please make sure you pass the exercise, and then you will be able to view the instructor's answer.</p>
             {% end %}
-        {% end %}
-
-    {% elif problem_details["show_student_submissions"] %}
-        {% if student_submissions %}
-            <h4>Other students' solutions:</h4>
-            <div>
-                {% for submission in student_submissions %}
-                    <p>Submission {{ submission[0] }}:</p>
-                    <pre class="extra-content">{{ submission[1] }}</pre>
-                {% end %}
-            </div>
         {% end %}
     {% else %}
         <p>You do not have permission to view the answer for this exercise.</p>
@@ -63,14 +66,24 @@
 {% end %}
 <br /><br />
 
-<script>
-    function showOtherSolutions() {
-        var solutions_div = document.getElementById("other_students");
-        if (solutions_div.style.display == "inline") {
-            solutions_div.style.display = "none";
+{% if problem_details["show_student_submissions"] %}
+    <script>
+        function showOtherSolutions() {
+            var solutions_div = document.getElementById("other_solutions");
+            var other_button = document.getElementById("other_button");
+
+            if (solutions_div.style.display == "inline") {
+                solutions_div.style.display = "none";
+                other_button.innerHTML = "Show others' solutions (anonymized)";
+            }
+            else {
+                solutions_div.style.display = "inline";
+                other_button.innerHTML = "Hide others' solutions";
+            }
         }
-        else {
-            solutions_div.style.display = "inline";
-        }
-    }
+
+        {% if problem_details["show_answer"] and (problem_details["answer_code"] != "" or problem_details["answer_description"] != "") %}
+            showOtherSolutions();
+        {% end %}
 </script>
+{% end %}
