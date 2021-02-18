@@ -1,5 +1,9 @@
+<form method="post" action="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}" id="myForm" />
 {% if problem_basics["exists"] %}
-    <h2>Edit exercise</h2>
+    <div class="row-container">
+        <h2>Edit exercise</h2>
+        <p><input type="submit" class="button is-info is-small is-rounded" value="Save" /></p>
+    </div>
 {% else %}
     <h2>Create exercise</h2>
 {% end %}
@@ -83,8 +87,6 @@
 
             ace.require("ace/ext/language_tools");
         </script>
-
-        <form method="post" action="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}" id="myForm" />
 
         <div class="shadow-box">
             <div class="row-container">
