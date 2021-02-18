@@ -20,7 +20,7 @@ cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html prof
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_preferences.html profile_bottom.html footer.html > /app/profile_preferences.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html course.html container_bottom.html footer.html > /app/course.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html course_admin.html container_bottom.html footer.html > /app/course_admin.html
-cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html edit_course.html container_bottom.html footer.html > /app/edit_course.html
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html edit_course.html container_bottom.html footer.html > /app/edit_course.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html delete_course.html container_bottom.html footer.html > /app/delete_course.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html assignment.html container_bottom.html footer.html > /app/assignment.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_problem.html navbar_menu.html navbar_bottom.html container_top.html assignment_admin.html container_bottom.html footer.html > /app/assignment_admin.html
