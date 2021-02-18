@@ -140,12 +140,6 @@
                 <p>
                     <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ problem_details["test_code"] }}</textarea>
                     <textarea name="test_code_text" id="test_code_text" class="invisible"></textarea>
-                    <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-                        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
-                    </label>
-                    <label class="checkbox is-pulled-right">
-                        Use auto-complete <input type="checkbox" id="test_code_auto_complete" name="test_code_auto_complete" value="true" checked onclick="update_auto_complete('test_code_auto_complete')">
-                    </label>
                 </p>
             </div>
 
@@ -174,12 +168,6 @@
                     <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide a solution." rows="10">{{ problem_details["answer_code"] }}</textarea>
                     <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
                     <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
-                    <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-                        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
-                    </label>
-                    <label class="checkbox is-pulled-right">
-                        Use auto-complete <input type="checkbox" id="answer_code_auto_complete" name="answer_code_auto_complete" value="true" checked onclick="update_auto_complete('answer_code_auto_complete')">
-                    </label>
                 </p>
             </div>
 
@@ -313,8 +301,6 @@
             });
 
             updateBackEndOptions('{{ problem_details["back_end"] }}', '{{ problem_details["output_type"] }}');
-            update_auto_complete('answer_code_auto_complete');
-            update_auto_complete('test_code_auto_complete');
 
             document.getElementById("myForm").onsubmit = function(evt) {
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
