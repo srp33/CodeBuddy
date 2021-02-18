@@ -5,13 +5,14 @@
 
 <h4>Help requests for {{ course_basics["title"] }}</h4>
 <div id="filter_container">
-    <input class="input is-info is-medium" id="filter_input" type="text" onkeyup="filterStatus()" placeholder="Search">
+    <input class="input is-info is-medium" id="filter_input" type="text" onkeyup="filterRequests()" placeholder="Search">
     <div class="select is-info">
-        <select id="filter_status" onchange="filterStatus()" class="edit-select">
+        <select id="filter_status" onchange="filterRequests()" class="edit-select">
             <option selected disabled>Filter status</option>
             <option>All</option>
-            <option>Approved</option>
-            <option>Not approved</option>
+            <option>Suggestion made and approved</option>
+            <option>Suggestion made and not approved</option>
+            <option>Suggestion not yet made</option>
         </select>
     </div>
 </div>
@@ -75,7 +76,7 @@
 </table>
 
 <script>
-    function filterStatus() {
+    function filterRequests() {
         var input, select, filter, table, tr, td, i;
         input = document.getElementById("filter_input");
         select = document.getElementById("filter_status");
@@ -89,25 +90,31 @@
         for (i = 1; i < tr.length; i++) {
             tr[i].style.display = "";
 
-            td = tr[i].getElementsByTagName("td")[5];
-            if (td) {
-                var icon = td.getElementsByTagName('img')[0].alt;
-                if (status_filter == "APPROVED" && icon != "Completed") {
+            td_s = tr[i].getElementsByTagName("td")[5];
+            td_a = tr[i].getElementsByTagName("td")[6];
+            if (td_s && td_a) {
+                var icon_s = td_s.getElementsByTagName('img')[0].alt;
+                var icon_a = td_a.getElementsByTagName('img')[0].alt;
+
+                if (status_filter == "SUGGESTION MADE AND APPROVED" && (icon_s != "Completed" || icon_a != "Completed")) {
                     tr[i].style.display = "none";
                 } 
-                else if (status_filter == "NOT APPROVED" && icon != "Not completed") {
+                else if (status_filter == "SUGGESTION MADE AND NOT APPROVED" && ((icon_s != "Completed") || (icon_s == "Completed" && icon_a == "Completed"))) {
+                    tr[i].style.display = "none";
+                }
+                else if (status_filter == "SUGGESTION NOT YET MADE" && icon_s == "Completed") {
                     tr[i].style.display = "none";
                 }
             }
 
-            for (var j = 0; j < 3; j++) {
+            for (var j = 1; j < 4; j++) {
                 cell = tr[i].getElementsByTagName("td")[j];
                 if (cell) {
                     if (cell.innerHTML.toUpperCase().indexOf(filter) > -1) {
                         break;
                     } 
                 }
-                if (j == 2) {
+                if (j == 3) {
                     tr[i].style.display = "none";
                 }
             }       
