@@ -748,7 +748,8 @@ class Content:
 					AND assignment_id = ?
 					AND visible = 0
 				   )
-                 GROUP BY s.course_id, s.assignment_id, s.user_id'''
+                 GROUP BY s.course_id, s.assignment_id, s.user_id
+                 ORDER BY u.name'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id),))
 
