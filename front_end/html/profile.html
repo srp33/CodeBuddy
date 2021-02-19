@@ -7,7 +7,7 @@
                 {% if page == "courses" %}
                     class="is-active"
                 {% end %}
-                >Home</a></li>
+                >Courses</a></li>
                 <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
                 {% if page == "personal_info" %}
                     class="is-active"
@@ -18,14 +18,14 @@
                     {% if page == "admin" %}
                         class="is-active"
                     {% end %}
-                    >Admin</a></li>
+                    >Admin menu</a></li>
                 {% end %}
                 {% if is_instructor or is_administrator %}
                     <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
                     {% if page == "instructor" %}
                         class="is-active"
                     {% end %}
-                    >Instructor</a></li>
+                    >Instructor menu</a></li>
                 {% end %}
             </ul>
             <p class="menu-label">Tools</p>
