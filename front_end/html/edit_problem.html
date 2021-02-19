@@ -54,6 +54,7 @@
                 }
 
                 answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
+                starter_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 test_code_editor.getSession().setMode(json_data["code_completion_path"]);
             });
         }
@@ -138,33 +139,6 @@
 
         <div class="shadow-box">
             <div>
-                <p><strong>Test code: </strong></p>
-                <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
-                <p>
-                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ problem_details["test_code"] }}</textarea>
-                    <textarea name="test_code_text" id="test_code_text" class="invisible"></textarea>
-                </p>
-            </div>
-
-            <div>
-                <p><strong>Show test code: </strong>
-                    <div class="select is-info">
-                        <select name="show_test_code" class="edit-select">
-                        {% if problem_details["show_test_code"] %}
-                            <option value="Yes" selected>Yes</option>
-                            <option value="No">No</option>
-                        {% else %}
-                            <option value="Yes">Yes</option>
-                            <option value="No" selected>No</option>
-                        {% end %}
-                        </select>
-                    </div>
-                </p>
-            </div>
-        </div>
-
-        <div class="shadow-box">
-            <div>
                 <p><strong>Solution*: </strong></p>
                 <p>Please specify a solution for this exercise. If it requires programming, the solution will be executed, and the output of your solution will be used as the expected output. If the back end is "free_response," your solution itself will be used as the expected output. If the back end is "any_response," you need not enter a solution. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new exercise instead.</p>
                 <p>
@@ -193,6 +167,44 @@
                     <div class="select is-info">
                         <select name="show_expected" class="edit-select">
                         {% if problem_details["show_expected"] %}
+                            <option value="Yes" selected>Yes</option>
+                            <option value="No">No</option>
+                        {% else %}
+                            <option value="Yes">Yes</option>
+                            <option value="No" selected>No</option>
+                        {% end %}
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <div class="shadow-box">
+            <div>
+                <p><strong>Starter code: </strong></p>
+                <p>Starter code will be given to a student when they haven't made any submissions yet. They'll be able to add to this code in order to solve the exercise.</p>
+                <p>
+                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide starter code." rows="10" id="starter_code" name="starter_code">{% if problem_details["starter_code"] %}{{ problem_details["starter_code"] }}{% end %}</textarea>
+                    <textarea name="starter_code_text" id="starter_code_text" class="invisible"></textarea>
+                </p>
+            </div>
+        </div>
+
+        <div class="shadow-box">
+            <div>
+                <p><strong>Test code: </strong></p>
+                <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
+                <p>
+                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ problem_details["test_code"] }}</textarea>
+                    <textarea name="test_code_text" id="test_code_text" class="invisible"></textarea>
+                </p>
+            </div>
+
+            <div>
+                <p><strong>Show test code: </strong>
+                    <div class="select is-info">
+                        <select name="show_test_code" class="edit-select">
+                        {% if problem_details["show_test_code"] %}
                             <option value="Yes" selected>Yes</option>
                             <option value="No">No</option>
                         {% else %}
@@ -295,6 +307,14 @@
                 fontSize: "12pt"
             });
 
+            var starter_code_editor = ace.edit("starter_code", {
+                theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                autoScrollEditorIntoView: true,
+                minLines: 10,
+                maxLines: 15,
+                fontSize: "12pt"
+            });
+
             var test_code_editor = ace.edit("test_code", {
                 theme: "ace/theme/{{ user_info['ace_theme'] }}",
                 autoScrollEditorIntoView: true,
@@ -307,6 +327,7 @@
 
             document.getElementById("myForm").onsubmit = function(evt) {
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
+                document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
             } 
 

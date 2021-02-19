@@ -282,7 +282,7 @@
         </p>
 
         <p>
-            <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
+            <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code">{% if problem_details["starter_code"] and num_submissions == 0 %}{{ problem_details["starter_code"] }}{% end %}</textarea>
             <div class="buttons are-small is-pulled-right">
                 {% if help_request %}
                     {% if help_request["approved"] %}
