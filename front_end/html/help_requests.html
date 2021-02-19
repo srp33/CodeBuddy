@@ -26,7 +26,11 @@
             <th>Problem Title</th>
             <th>Request</th>
             <th>Suggestion Made</th>
-            <th>Approved</th>
+            <th>Approved
+                <label class="has-tooltip-multiline" data-tooltip="Assistants can make suggestions, but they must be approved by an instructor or admin before the student will be able to see them.">
+                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                </label>
+            </th>
             <th>Delete</th>
         </tr>
     </thead>
@@ -74,6 +78,10 @@
     {% end %}    
     </tbody>
 </table>
+
+<div>
+    <a href="/profile/help_requests">Back to tools</a>
+</div>
 
 <script>
     function filterRequests() {
