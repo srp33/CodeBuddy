@@ -2,8 +2,8 @@
 
             <!--The next two divs contain the modals for this page-->
 
-            <div id="move_problem_modal" class="modal">
-                <form method="post" action="/move_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">
+            <div id="move_exercise_modal" class="modal">
+                <form method="post" action="/move_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
                 <div class="modal-content">
                     <!--<span class="close">&times;</span>-->
                     <p>Move an exercise to a different assignment:</p>
@@ -25,8 +25,8 @@
             <div id="delete_submissions_modal" class="modal">
                 <div class="modal-content">
                     <!--<span class="close">&times;</span>-->
-                    <p>Are you sure you want to delete all submissions for this problem?</p>
-                    <p><font color="red">This will also delete all scores for this problem.</font></p>
+                    <p>Are you sure you want to delete all submissions for this exercise?</p>
+                    <p><font color="red">This will also delete all scores for this exercise.</font></p>
                     <p class="buttons">
                         <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
                         <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
@@ -38,13 +38,13 @@
 
             <p>           
             {% if is_administrator or is_instructor or is_assistant %}
-                <a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">View scores</a> |
-                <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Edit exercise</a>
+                <a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a> |
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
             {% end %}
 
             {% if is_administrator or is_instructor %}
-                | <a onclick="showMoveProblemModal()">Move exercise</a><br />
-                <a onclick="showDeleteSubmissionsModal()">Delete problem submissions</a>
+                | <a onclick="showMoveexerciseModal()">Move exercise</a><br />
+                <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
             {% end %}
             </p>
 
@@ -55,8 +55,8 @@
             {% end %}
 
             <script>
-                function showMoveProblemModal() {
-                    var modal = document.getElementById("move_problem_modal");
+                function showMoveexerciseModal() {
+                    var modal = document.getElementById("move_exercise_modal");
                     //var span = document.getElementsByClassName("close")[4];
                     modal.style.display = "block";
 
@@ -86,7 +86,7 @@
                     var cancelButton = document.getElementById("delete_submissions_cancel_button");
 
                     deleteButton.onclick = function() {
-                        $.post("/delete_problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}");
+                        $.post("/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}");
                         modal.style.display = "none";
                         location.reload();
                     }
@@ -106,7 +106,7 @@
                     }
                 }
 
-                {% if len(problem_details["data_url"]) > 0 %}
+                {% if len(exercise_details["data_url"]) > 0 %}
                     function show_hide_data() {
                         var button = document.getElementById("show_hide_data_button");
                         var data_panel = document.getElementById("data_panel");
@@ -126,7 +126,7 @@
                     var output = "";
 
                     if (json_output == "")
-                        {% if problem_details["output_type"] == "txt" %}
+                        {% if exercise_details["output_type"] == "txt" %}
                             output = "<p><pre>[Your solution produced no output.]</pre></p>";
                         {% else %}
                             output = "";
@@ -141,7 +141,7 @@
                     var output = "";
 
                     if (json_output == "")
-                        {% if problem_details["output_type"] == "jpg" %}
+                        {% if exercise_details["output_type"] == "jpg" %}
                             output = "<p><pre>[Your solution did not produce an image.]</pre></p>";
                         {% else %}
                             output = "";
@@ -156,35 +156,35 @@
                     var result = "";
 
                     if (json_data.passed) {
-                        {% if problem_details["back_end"] == "any_response" %}
+                        {% if exercise_details["back_end"] == "any_response" %}
                             result = "<div class='notification success-message' style='color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
                         {% else %}
                             result = "<div class='notification success-message' style='color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
                         {% end %}
 
-                        {% if problem_details["show_student_submissions"] %}
-                            result += "<p><a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>View others' solutions</a>.</p>";
-                        {% elif problem_details["show_answer"] and (problem_details["answer_code"] != "" or problem_details["answer_description"] != "") %}
-                            result += "<p><a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}'>View the instructor's solution</a>.</p>";
+                        {% if exercise_details["show_student_submissions"] %}
+                            result += "<p><a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a>.</p>";
+                        {% elif exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
+                            result += "<p><a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a>.</p>";
                         {% end %}
 
-                        {% if next_problem %}
-                            result += "<p><a href='/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_problem['id'] }}'>Next exercise</a></p>\n\n";
+                        {% if next_exercise %}
+                            result += "<p><a href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
                         {% end %}
 
                         result += "</div>\n\n"
                     }
                     else {
-                        // This should never be reached when problem_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
+                        // This should never be reached when exercise_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
                         result = "<div class='notification error-message' style='color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
 
-                        {% if problem_details["show_expected"] %}
+                        {% if exercise_details["show_expected"] %}
                             var diff_output = "";
 
                             if (json_data.diff.length > 0) {
                                 diff_output += "<h2>Difference between your output and the expected output:</h2>\n\n";
 
-                                {% if problem_details["output_type"] == "txt" %}
+                                {% if exercise_details["output_type"] == "txt" %}
                                     diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
                                 {% else %}
                                     diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
@@ -197,7 +197,7 @@
 
                     document.getElementById("result").innerHTML = result;
 
-                    {% if problem_details["back_end"] != "any_response" %}
+                    {% if exercise_details["back_end"] != "any_response" %}
                         var code_output = "<h2>Your output:</h2>\n\n";
                         code_output += build_text_output(json_data.text_output);
                         code_output += build_image_output(json_data.image_output);
@@ -217,13 +217,13 @@
                     result_div.scrollIntoView();
                     document.getElementById("code_output").innerHTML = "";
 
-                    {% if problem_details["show_expected"] %}
+                    {% if exercise_details["show_expected"] %}
                         document.getElementById("diff_output").innerHTML = "";
                     {% end %}
 
                     post_data = { "user_code": user_code };
 
-                    $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
+                    $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
                         post_data,
                         function(data, status) {
                             var json_data = JSON.parse(data);
@@ -250,17 +250,17 @@
                     result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
                     result_div.scrollIntoView();
 
-                    {% if problem_details["back_end"] != "any_response" %}
+                    {% if exercise_details["back_end"] != "any_response" %}
                         document.getElementById("code_output").innerHTML = "";
 
-                        {% if problem_details["show_expected"] %}
+                        {% if exercise_details["show_expected"] %}
                             document.getElementById("diff_output").innerHTML = "";
                         {% end %}
                     {% end %}
 
                     post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
 
-                    $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}",
+                    $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
                         post_data,
                         function(data, status) {
                             json_data = JSON.parse(data);
@@ -270,10 +270,10 @@
                             if (json_data.submission_id != "") {
                                 last_submission_id = json_data.submission_id;
 
-                                {% if problem_details["max_submissions"] > 0 %}
+                                {% if exercise_details["max_submissions"] > 0 %}
                                 document.getElementById("num_submissions").innerHTML = last_submission_id;
 
-                                if (last_submission_id >= {{ problem_details["max_submissions"] }})
+                                if (last_submission_id >= {{ exercise_details["max_submissions"] }})
                                     document.getElementById("submit_button").disabled = true;
                                 {% end %}
                             }
@@ -293,19 +293,19 @@
                             submission_buttons[i].style.border = "none";
                     }
 
-                    {% if problem_details["back_end"] != "any_response" %}
+                    {% if exercise_details["back_end"] != "any_response" %}
                         document.getElementById("code_output").innerHTML = "";
 
-                        {% if problem_details["show_expected"] %}
+                        {% if exercise_details["show_expected"] %}
                             document.getElementById("diff_output").innerHTML = "";
                         {% end %}
                     {% end %}
 
-                    {% if problem_details["show_expected"] and problem_details["back_end"] != "any_response" %}
+                    {% if exercise_details["show_expected"] and exercise_details["back_end"] != "any_response" %}
                         document.getElementById("diff_output").innerHTML = "";
                     {% end %}
 
-                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}/" + submission_id, 
+                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id, 
                         function (data, status) {
                             var json_data = JSON.parse(data);
                             editor.setValue(json_data.code, 1);
@@ -323,7 +323,7 @@
                 function show_past_submissions() {
                     submissions_div = document.getElementById("submissions");
 
-                    $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student_id }}",
+                    $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
                         function (data, status) {
                             var json_data = JSON.parse(data);
                             var submission_html = "";
@@ -383,7 +383,7 @@
             show_past_submissions();
             last_submission_id = {{ num_submissions }};
 
-            if ({{ problem_details["max_submissions"] }} > 0 && last_submission_id >= {{ problem_details["max_submissions"] }})
+            if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
                 document.getElementById("submit_button").disabled = true;
             </script>
         {% else %}

@@ -1,5 +1,5 @@
-{% if len(problem_scores) > 0 %}
-    <h2>Scores for {{ problem_basics["title"] }}</h2>
+{% if len(exercise_scores) > 0 %}
+    <h2>Scores for {{ exercise_basics["title"] }}</h2>
 
     <table class="table" id="scores_table">
         <thead>
@@ -12,13 +12,13 @@
             </tr>
         </thead>
         <tbody>
-        {% for student in problem_scores %}
+        {% for student in exercise_scores %}
             <tr>
                 <td>{{ student[1]["name"] }}</td>
                 <td>{{ student[1]["user_id"] }}</td>
                 <td>{{ student[1]["num_submissions"] }}</td>
                 <td>{{ student[1]["score"] }}%</td>
-                <td><a href="/student_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ student[1]['user_id'] }}">View</a></td>
+                <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student[1]['user_id'] }}">View</a></td>
             </tr>
         {% end %}  
         </tbody>

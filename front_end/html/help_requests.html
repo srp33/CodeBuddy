@@ -23,7 +23,7 @@
             <th>Date</th>
             <th>Student Name</th>
             <th>Assignment Title</th>
-            <th>Problem Title</th>
+            <th>exercise Title</th>
             <th>Request</th>
             <th>Suggestion Made</th>
             <th>Approved
@@ -46,8 +46,8 @@
             </td>
             <td>{{ request["name"] }}</td>
             <td>{{ request["assignment_title"] }}</td> 
-            <td>{{ request["problem_title"] }}</td>
-            <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View</a></td>
+            <td>{{ request["exercise_title"] }}</td>
+            <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View</a></td>
             {% if request["suggestion"] %}
                 <td>
                     <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
@@ -66,7 +66,7 @@
                     <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
                 </td>
             {% end %}
-            <form method="post" action="/delete_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}">
+            <form method="post" action="/delete_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">
             <td>
                 <button type="submit">
                     <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
