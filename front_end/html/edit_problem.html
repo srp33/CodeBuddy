@@ -218,14 +218,14 @@
         </div>
 
         <div class="shadow-box">
-            <div>
-                <p><strong>Answer description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
-                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ problem_details["answer_description"] }}</textarea></p>  
+            <div class="hint-container">
+                <p><strong>Problem hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this problem.</p> 
+                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ problem_details["hint"] }}</textarea></p>  
             </div>
 
-            <div class="hint-container">
-                <p><strong>Problem hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an optional hint for this problem.</p> 
-                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ problem_details["hint"] }}</textarea></p>  
+            <div>
+                <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
+                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ problem_details["answer_description"] }}</textarea></p>  
             </div>
 
             <div class="row-container">

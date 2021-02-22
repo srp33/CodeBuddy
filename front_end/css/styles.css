@@ -184,3 +184,11 @@ td > button {
 #allow_late_text {
     margin-top: 15px;
 }
+
+.hint-div {
+    font-size: 14px;
+    border: 2px solid  #00b386;
+    border-radius: 5px;
+    margin-top: 10px;
+    padding: 0 10px 0 10px;
+}

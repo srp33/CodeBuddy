@@ -103,7 +103,7 @@
                     hint_div.style.display = "none";
                 }
                 else {
-                    hint_div.style.display = "inline";
+                    hint_div.style.display = "block";
                 }
             }
 
@@ -222,10 +222,10 @@
         {% end %}
 
         {% if problem_details["hint"] != "" %}
-            <a class="button is-small is-light" onclick="showHint()">Hint</a>
+            <a class="button is-small is-link" onclick="showHint()">Hint</a>
         {% end %}
 
-        <div id="hint_div" class="invisible"><p style="margin-top: 10px;">{{ problem_details["hint"] }}</p></div>
+        <div id="hint_div" class="invisible hint-div"><p style="margin-top: 10px;">{{ problem_details["hint"] }}</p></div>
 
         <!--Notification messages at the top of the page for when the due date has passed-->
 
