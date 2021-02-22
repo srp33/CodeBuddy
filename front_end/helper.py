@@ -86,20 +86,20 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(settings_dict, code, problem_basics, problem_details, request=None):
-    this_settings_dict = settings_dict["back_ends"][problem_details["back_end"]]
-    code = code + "\n\n" + problem_details["test_code"]
+def exec_code(settings_dict, code, exercise_basics, exercise_details, request=None):
+    this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
+    code = code + "\n\n" + exercise_details["test_code"]
 
-    if problem_details["back_end"] in ['free_response', 'any_response']:
+    if exercise_details["back_end"] in ['free_response', 'any_response']:
         # In this case, the code is the answer that the student provided.
         return code.strip(), ""
 
     timeout = this_settings_dict["timeout_seconds"] + 2
     data_dict = {"image_name": this_settings_dict["image_name"],
                  "code": code,
-                 "data_file_name": problem_details["data_file_name"],
-                 "data_contents": problem_details["data_contents"],
-                 "output_type": problem_details["output_type"],
+                 "data_file_name": exercise_details["data_file_name"],
+                 "data_contents": exercise_details["data_contents"],
+                 "output_type": exercise_details["output_type"],
                  "memory_allowed_mb": this_settings_dict["memory_allowed_mb"],
                  "timeout_seconds": timeout
                  }
@@ -110,12 +110,12 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
 
     return response_dict["text_output"], response_dict["image_output"]
 
-def check_problem_output(problem_details, actual_text, actual_image):
-    if problem_details["back_end"] == "any_response" and len(actual_text) > 0 or len(actual_image) > 0:
+def check_exercise_output(exercise_details, actual_text, actual_image):
+    if exercise_details["back_end"] == "any_response" and len(actual_text) > 0 or len(actual_image) > 0:
         return "", True
 
-    if problem_details["output_type"] == "txt":
-        expected_text = problem_details["expected_text_output"]
+    if exercise_details["output_type"] == "txt":
+        expected_text = exercise_details["expected_text_output"]
 
         if expected_text == actual_text:
             return "", True
@@ -130,7 +130,7 @@ def check_problem_output(problem_details, actual_text, actual_image):
 
         return diff_output, False
     else:
-        expected_image = problem_details["expected_image_output"]
+        expected_image = exercise_details["expected_image_output"]
 
         if expected_image == actual_image:
             return "", True
