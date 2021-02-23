@@ -51,7 +51,7 @@ class Content:
                                         FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
                                       );'''
 
-        create_course_registration_table = '''CREATE TABLE IF NOT EXISTS course_registrations (
+        create_course_registrations_table = '''CREATE TABLE IF NOT EXISTS course_registrations (
                                                  user_id text NOT NULL,
                                                  course_id integer NOT NULL,
                                                  FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -170,7 +170,7 @@ class Content:
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
                                       );'''
 
-        create_user_assignment_start_table = '''CREATE TABLE IF NOT EXISTS user_assignment_starts (
+        create_user_assignment_starts_table = '''CREATE TABLE IF NOT EXISTS user_assignment_starts (
                                                   user_id text NOT NULL,
                                                   course_id text NOT NULL,
                                                   assignment_id text NOT NULL,
@@ -183,28 +183,28 @@ class Content:
         if self.conn is not None:
             self.cursor.execute(create_users_table)
             self.cursor.execute(create_permissions_table)
-            self.cursor.execute(create_course_registration_table)
+            self.cursor.execute(create_course_registrations_table)
             self.cursor.execute(create_courses_table)
             self.cursor.execute(create_assignments_table)
             self.cursor.execute(create_problems_table)
             self.cursor.execute(create_submissions_table)
             self.cursor.execute(create_help_requests_table)
             self.cursor.execute(create_scores_table)
-            self.cursor.execute(create_user_assignment_start_table)
+            self.cursor.execute(create_user_assignment_starts_table)
         else:
             print("Error! Cannot create a database connection.")
 
     def set_start_time(self, course_id, assignment_id, user_id, start_time):
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
 
-        sql = '''INSERT INTO user_assignment_start (course_id, assignment_id, user_id, start_time)
+        sql = '''INSERT INTO user_assignment_starts (course_id, assignment_id, user_id, start_time)
                  VALUES (?, ?, ?, ?)'''
 
         self.cursor.execute(sql, (course_id, assignment_id, user_id, start_time,))
 
     def get_start_time(self, course_id, assignment_id, user_id):
         sql = '''SELECT start_time
-                 FROM user_assignment_start
+                 FROM user_assignment_starts
                  WHERE course_id = ?
                   AND assignment_id = ?
                   AND user_id = ?'''
@@ -218,7 +218,7 @@ class Content:
         start_times = {}
 
         sql = '''SELECT user_id, start_time
-                 FROM user_assignment_start
+                 FROM user_assignment_starts
                  WHERE course_id = ?
                   AND assignment_id = ?'''
 
@@ -262,7 +262,7 @@ class Content:
         return False
 
     def reset_timer(self, course_id, assignment_id, user_id):
-        sql = '''DELETE FROM user_assignment_start
+        sql = '''DELETE FROM user_assignment_starts
                  WHERE course_id = ?
                   AND assignment_id = ?
                   AND user_id = ?'''
@@ -356,7 +356,7 @@ class Content:
         user_dict["picture"], user_dict["locale"], "tomorrow"))
 
     def register_user_for_course(self, course_id, user_id):
-        sql = '''INSERT INTO course_registration (course_id, user_id)
+        sql = '''INSERT INTO course_registrations (course_id, user_id)
                  VALUES (?, ?)'''
 
         self.cursor.execute(sql, (course_id, user_id,))
@@ -364,7 +364,7 @@ class Content:
     def unregister_user_from_course(self, course_id, user_id):
         sql = f'''BEGIN TRANSACTION;
 
-                  DELETE FROM course_registration
+                  DELETE FROM course_registrations
                   WHERE course_id = {course_id}
                   AND user_id = '{user_id}';
 
@@ -376,7 +376,7 @@ class Content:
                   WHERE course_id = {course_id}
                   AND user_id = '{user_id}';
 
-                  DELETE FROM user_assignment_start
+                  DELETE FROM user_assignment_starts
                   WHERE course_id = {course_id}
                   AND user_id = '{user_id}';
 
@@ -387,7 +387,7 @@ class Content:
 
     def check_user_registered(self, course_id, user_id):
         sql = '''SELECT *
-                 FROM course_registration
+                 FROM course_registrations
                  WHERE course_id = ?
                  AND user_id = ?'''
 
@@ -572,7 +572,7 @@ class Content:
                  WHERE course_id NOT IN
                  (
                     SELECT course_id
-                    FROM course_registration
+                    FROM course_registrations
                     WHERE user_id = ?
                  )
                  ORDER BY title'''
@@ -588,7 +588,7 @@ class Content:
         registered_courses = []
 
         sql = '''SELECT r.course_id, c.title
-                 FROM course_registration r
+                 FROM course_registrations r
                  INNER JOIN courses c
                   ON r.course_id = c.course_id
                  WHERE r.user_id = ?'''
@@ -604,7 +604,7 @@ class Content:
         registered_students = []
 
         sql = '''SELECT r.user_id, u.name
-                 FROM course_registration r
+                 FROM course_registrations r
                  INNER JOIN users u
                  ON r.user_id = u.user_id
                  WHERE r.course_id = ?'''
@@ -974,7 +974,7 @@ class Content:
                   AND s.user_id IN
                   (
                       SELECT user_id
-                      FROM course_registration
+                      FROM course_registrations
                       WHERE course_id = ?
                   )
                  GROUP BY s.user_id
