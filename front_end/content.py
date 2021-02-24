@@ -749,7 +749,7 @@ class Content:
 					AND visible = 0
 				   )
                  GROUP BY s.course_id, s.assignment_id, s.user_id
-                 ORDER BY u.name'''
+                 ORDER BY u.family_name, u.given_name'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id),))
 
@@ -775,7 +775,7 @@ class Content:
                   AND s.assignment_id = ?
                   AND s.problem_id = ?
                  GROUP BY s.user_id
-                 ORDER BY u.name'''
+                 ORDER BY u.family_name, u.given_name'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id),))
 
@@ -978,7 +978,7 @@ class Content:
                       WHERE course_id = ?
                   )
                  GROUP BY s.user_id
-                 ORDER BY u.name'''
+                 ORDER BY u.family_name, u.given_name'''
 
         self.cursor.execute(sql, (course_id, assignment_id, problem_id, course_id,))
 
