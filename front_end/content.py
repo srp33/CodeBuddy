@@ -206,8 +206,8 @@ class Content:
         sql = '''SELECT start_time
                  FROM user_assignment_starts
                  WHERE course_id = ?
-                  AND assignment_id = ?
-                  AND user_id = ?'''
+                   AND assignment_id = ?
+                   AND user_id = ?'''
 
         self.cursor.execute(sql, (course_id, assignment_id, user_id,))
         row = self.cursor.fetchone()
@@ -220,7 +220,7 @@ class Content:
         sql = '''SELECT user_id, start_time
                  FROM user_assignment_starts
                  WHERE course_id = ?
-                  AND assignment_id = ?'''
+                   AND assignment_id = ?'''
 
         self.cursor.execute(sql, (course_id, assignment_id,))
         for row in self.cursor.fetchall():
@@ -241,7 +241,7 @@ class Content:
         sql = '''SELECT hour_timer, minute_timer
                  FROM assignments
                  WHERE course_id = ?
-                 AND assignment_id = ?'''
+                   AND assignment_id = ?'''
         self.cursor.execute(sql, (course_id, assignment_id,))
         row = self.cursor.fetchone()
 
@@ -264,8 +264,8 @@ class Content:
     def reset_timer(self, course_id, assignment_id, user_id):
         sql = '''DELETE FROM user_assignment_starts
                  WHERE course_id = ?
-                  AND assignment_id = ?
-                  AND user_id = ?'''
+                   AND assignment_id = ?
+                   AND user_id = ?'''
 
         self.cursor.execute(sql, (course_id, assignment_id, user_id))
 
@@ -366,19 +366,19 @@ class Content:
 
                   DELETE FROM course_registrations
                   WHERE course_id = {course_id}
-                  AND user_id = '{user_id}';
+                    AND user_id = '{user_id}';
 
                   DELETE FROM scores
                   WHERE course_id = {course_id}
-                  AND user_id = '{user_id}';
+                    AND user_id = '{user_id}';
 
                   DELETE FROM submissions
                   WHERE course_id = {course_id}
-                  AND user_id = '{user_id}';
+                    AND user_id = '{user_id}';
 
                   DELETE FROM user_assignment_starts
                   WHERE course_id = {course_id}
-                  AND user_id = '{user_id}';
+                    AND user_id = '{user_id}';
 
                   COMMIT;
                '''
@@ -386,10 +386,10 @@ class Content:
         self.cursor.executescript(sql)
 
     def check_user_registered(self, course_id, user_id):
-        sql = '''SELECT *
+        sql = '''SELECT 1
                  FROM course_registrations
                  WHERE course_id = ?
-                 AND user_id = ?'''
+                   AND user_id = ?'''
 
         self.cursor.execute(sql, (course_id, user_id,))
         if self.cursor.fetchone():
@@ -533,7 +533,7 @@ class Content:
                         a.title as assignment_title, a.visible as assignment_visible, a.start_date, a.due_date
                  FROM assignments a
                  INNER JOIN courses c
-                  ON c.course_id = a.course_id
+                   ON c.course_id = a.course_id
                  WHERE c.course_id = ?
                  ORDER BY a.title'''
         self.cursor.execute(sql, (course_id,))
@@ -590,7 +590,7 @@ class Content:
         sql = '''SELECT r.course_id, c.title
                  FROM course_registrations r
                  INNER JOIN courses c
-                  ON r.course_id = c.course_id
+                   ON r.course_id = c.course_id
                  WHERE r.user_id = ?'''
 
         self.cursor.execute(sql, (user_id,))
@@ -606,7 +606,7 @@ class Content:
         sql = '''SELECT r.user_id, u.name
                  FROM course_registrations r
                  INNER JOIN users u
-                 ON r.user_id = u.user_id
+                   ON r.user_id = u.user_id
                  WHERE r.course_id = ?'''
 
         self.cursor.execute(sql, (course_id,))
@@ -724,7 +724,7 @@ class Content:
         sql = '''SELECT u.name, s.user_id, (SUM(s.score) / b.num_problems) AS percent_passed
                  FROM scores s
                  INNER JOIN users u
-                 ON s.user_id = u.user_id
+                   ON s.user_id = u.user_id
                  INNER JOIN (
                    SELECT COUNT(DISTINCT problem_id) AS num_problems
                    FROM problems
@@ -733,20 +733,20 @@ class Content:
                      AND visible = 1
                   ) b
                  WHERE s.course_id = ?
-                  AND s.assignment_id = ?
-                  AND s.user_id NOT IN
+                   AND s.assignment_id = ?
+                   AND s.user_id NOT IN
                    (
                     SELECT user_id
                     FROM permissions
                     WHERE course_id = 0 OR course_id = ?
                    )
-                  AND s.problem_id NOT IN
+                   AND s.problem_id NOT IN
 				   (
 				    SELECT problem_id
 					FROM problems
 					WHERE course_id = ?
-					AND assignment_id = ?
-					AND visible = 0
+					  AND assignment_id = ?
+					  AND visible = 0
 				   )
                  GROUP BY s.course_id, s.assignment_id, s.user_id
                  ORDER BY u.family_name, u.given_name'''
@@ -765,15 +765,15 @@ class Content:
         sql = '''SELECT u.name, s.user_id, sc.score, COUNT(s.submission_id) AS num_submissions
                  FROM submissions s
                  INNER JOIN users u
-                 ON u.user_id = s.user_id
+                   ON u.user_id = s.user_id
                  INNER JOIN scores sc
-                 ON sc.course_id = s.course_id
-                  AND sc.assignment_id = s.assignment_id
-                  AND sc.problem_id = s.problem_id
-                  AND sc.user_id = s.user_id
+                   ON sc.course_id = s.course_id
+                   AND sc.assignment_id = s.assignment_id
+                   AND sc.problem_id = s.problem_id
+                   AND sc.user_id = s.user_id
                  WHERE s.course_id = ?
-                  AND s.assignment_id = ?
-                  AND s.problem_id = ?
+                   AND s.assignment_id = ?
+                   AND s.problem_id = ?
                  GROUP BY s.user_id
                  ORDER BY u.family_name, u.given_name'''
 
@@ -789,17 +789,15 @@ class Content:
         sql = '''SELECT score
                  FROM scores
                  WHERE course_id = ?
-                  AND assignment_id = ?
-                  AND problem_id = ?
-                  AND user_id = ?'''
+                   AND assignment_id = ?
+                   AND problem_id = ?
+                   AND user_id = ?'''
 
         self.cursor.execute(sql, (int(course_id), int(assignment_id), int(problem_id), user_id,))
 
         row = self.cursor.fetchone()
         if row:
             return row["score"]
-        else:
-            return None
 
     def calc_problem_score(self, assignment_details, passed):
         score = 0
@@ -819,9 +817,9 @@ class Content:
             sql = '''UPDATE scores
                      SET score = ?
                      WHERE course_id = ?
-                      AND assignment_id = ?
-                      AND problem_id = ?
-                      AND user_id = ?'''
+                       AND assignment_id = ?
+                       AND problem_id = ?
+                       AND user_id = ?'''
 
             self.cursor.execute(sql, (new_score, course_id, assignment_id, problem_id, user_id))
 
@@ -854,10 +852,10 @@ class Content:
         sql = '''SELECT DISTINCT code
                  FROM submissions
                  WHERE course_id = ?
-                  AND assignment_id = ?
-                  AND problem_id = ?
-                  AND passed = 1
-                  AND user_id != ?
+                   AND assignment_id = ?
+                   AND problem_id = ?
+                   AND passed = 1
+                   AND user_id != ?
                  GROUP BY user_id
                  ORDER BY date'''
 
@@ -874,13 +872,13 @@ class Content:
         sql = '''SELECT r.course_id, a.assignment_id, p.problem_id, c.title as course_title, a.title as assignment_title, p.title as problem_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.date
                  FROM help_requests r
                  INNER JOIN users u
-                  ON r.user_id = u.user_id
+                   ON r.user_id = u.user_id
                  INNER JOIN courses c
-                  ON r.course_id = c.course_id
+                   ON r.course_id = c.course_id
                  INNER JOIN assignments a
-                  ON r.assignment_id = a.assignment_id
+                   ON r.assignment_id = a.assignment_id
                  INNER JOIN problems p
-                  ON r.problem_id = p.problem_id
+                   ON r.problem_id = p.problem_id
                  WHERE r.course_id = ?
                  ORDER BY r.date DESC'''
 
@@ -897,13 +895,13 @@ class Content:
         sql = '''SELECT r.course_id, a.assignment_id, p.problem_id, c.title as course_title, a.title as assignment_title, p.title as problem_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id
                  FROM help_requests r
                  INNER JOIN users u
-                  ON r.user_id = u.user_id
+                   ON r.user_id = u.user_id
                  INNER JOIN courses c
-                  ON r.course_id = c.course_id
+                   ON r.course_id = c.course_id
                  INNER JOIN assignments a
-                  ON r.assignment_id = a.assignment_id
+                   ON r.assignment_id = a.assignment_id
                  INNER JOIN problems p
-                  ON r.problem_id = p.problem_id
+                   ON r.problem_id = p.problem_id
                  WHERE r.user_id = ?
                  ORDER BY r.date DESC'''
 
@@ -920,11 +918,11 @@ class Content:
         sql = '''SELECT r.course_id, r.assignment_id, r.problem_id, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id
                  FROM help_requests r
                  INNER JOIN users u
-                  ON r.user_id = u.user_id
+                   ON r.user_id = u.user_id
                  WHERE r.course_id = ?
-                  AND r.assignment_id = ?
-                  AND r.problem_id = ?
-                  AND NOT r.user_id = ?
+                   AND r.assignment_id = ?
+                   AND r.problem_id = ?
+                   AND NOT r.user_id = ?
                  ORDER BY r.date DESC'''
 
         self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id,))
@@ -938,11 +936,11 @@ class Content:
         sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id
                  FROM help_requests r
                  INNER JOIN users u
-                  ON r.user_id = u.user_id
+                   ON r.user_id = u.user_id
                  WHERE r.course_id = ?
-                  AND r.assignment_id = ?
-                  AND r.problem_id = ?
-                  AND r.user_id = ?'''
+                   AND r.assignment_id = ?
+                   AND r.problem_id = ?
+                   AND r.user_id = ?'''
 
         self.cursor.execute(sql, (course_id, assignment_id, problem_id, user_id,))
 
@@ -955,8 +953,6 @@ class Content:
                 help_request["suggestion"] = None
 
             return help_request
-        else:
-            return None
 
     def get_problem_submissions(self, course_id, assignment_id, problem_id):
         problem_submissions = []
@@ -964,19 +960,19 @@ class Content:
         sql = '''SELECT s.code, u.user_id, u.name, sc.score
                  FROM submissions s
                  INNER JOIN users u
-                 ON s.user_id = u.user_id
+                   ON s.user_id = u.user_id
                  INNER JOIN scores sc
-                 ON s.user_id = sc.user_id
+                   ON s.user_id = sc.user_id
                  WHERE s.course_id = ?
-                  AND s.assignment_id = ?
-                  AND s.problem_id = ?
-                  AND passed = 1
-                  AND s.user_id IN
-                  (
+                   AND s.assignment_id = ?
+                   AND s.problem_id = ?
+                   AND passed = 1
+                   AND s.user_id IN
+                   (
                       SELECT user_id
                       FROM course_registrations
                       WHERE course_id = ?
-                  )
+                   )
                  GROUP BY s.user_id
                  ORDER BY u.family_name, u.given_name'''
 
@@ -1140,8 +1136,6 @@ class Content:
 
         if last_submission_id > 0:
             return self.get_submission_info(course, assignment, problem, user, last_submission_id)
-        else:
-            return None
 
     def get_submission_info(self, course, assignment, problem, user, submission):
         sql = '''SELECT code, text_output, image_output, passed, date
@@ -1352,9 +1346,9 @@ class Content:
     def delete_help_request(self, course, assignment, problem, user_id):
         sql = '''DELETE FROM help_requests
                  WHERE course_id = ?
-                  AND assignment_id = ?
-                  AND problem_id = ?
-                  AND user_id = ?'''
+                   AND assignment_id = ?
+                   AND problem_id = ?
+                   AND user_id = ?'''
         self.cursor.execute(sql, (course, assignment, problem, user_id,))
 
     def save_help_request_suggestion(self, course, assignment, problem, user_id, suggestion, approved, suggester_id, approver_id):
@@ -1362,9 +1356,9 @@ class Content:
         sql = '''UPDATE help_requests
                   SET suggestion = ?, approved = ?, suggester_id = ?, approver_id = ?
                   WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND problem_id = ?
-                   AND user_id = ?'''
+                    AND assignment_id = ?
+                    AND problem_id = ?
+                    AND user_id = ?'''
 
         self.cursor.execute(sql, (suggestion, approved, suggester_id, approver_id, course, assignment, problem, user_id,))
     
@@ -1435,20 +1429,20 @@ class Content:
                   UPDATE problems
                   SET assignment_id = {new_assignment_id}
                   WHERE course_id = {course_id}
-                   AND assignment_id = {assignment_id}
-                   AND problem_id = {problem_id};
+                    AND assignment_id = {assignment_id}
+                    AND problem_id = {problem_id};
 
                   UPDATE scores
                   SET assignment_id = {new_assignment_id}
                   WHERE course_id = {course_id}
-                   AND assignment_id = {assignment_id}
-                   AND problem_id = {problem_id};
+                    AND assignment_id = {assignment_id}
+                    AND problem_id = {problem_id};
 
                   UPDATE submissions
                   SET assignment_id = {new_assignment_id}
                   WHERE course_id = {course_id}
-                   AND assignment_id = {assignment_id}
-                   AND problem_id = {problem_id};
+                    AND assignment_id = {assignment_id}
+                    AND problem_id = {problem_id};
 
                   COMMIT;
                '''
@@ -1558,11 +1552,11 @@ class Content:
 
                   DELETE FROM submissions
                   WHERE course_id = {c_id}
-                  AND assignment_id = {a_id};
+                    AND assignment_id = {a_id};
 
                   DELETE FROM scores
                   WHERE course_id = {c_id}
-                  AND assignment_id = {a_id};
+                    AND assignment_id = {a_id};
 
                   COMMIT;
                '''
@@ -1578,13 +1572,13 @@ class Content:
 
                   DELETE FROM submissions
                   WHERE course_id = {c_id}
-                  AND assignment_id = {a_id}
-                  AND problem_id = {p_id};
+                    AND assignment_id = {a_id}
+                    AND problem_id = {p_id};
 
                   DELETE FROM scores
                   WHERE course_id = {c_id}
-                  AND assignment_id = {a_id}
-                  AND problem_id = {p_id};
+                    AND assignment_id = {a_id}
+                    AND problem_id = {p_id};
 
                   COMMIT;
                '''

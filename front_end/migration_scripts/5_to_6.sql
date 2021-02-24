@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS help_requests (
 
 ALTER TABLE users ADD COLUMN use_auto_complete integer NOT NULL DEFAULT 1;
 
-ALTER TABLE problems ADD COLUMN starter_code text;
+ALTER TABLE problems ADD COLUMN starter_code text NOT NULL DEFAULT "";
 
 ALTER TABLE course_registration RENAME TO course_registrations;
 
