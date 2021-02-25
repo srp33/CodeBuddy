@@ -1,0 +1,152 @@
+<h2>View help request</h2>
+<p class="light-heading">Assignment: {{ assignment_basics["title"] }}<br />
+Problem: {{ problem_basics["title"] }}</p><br />
+
+{% if result %}
+    {% if result.startswith("Error:") %}
+        <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+    {% else %}
+        <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
+    {% end %}
+{% end %}
+
+<form method="post" action="/view_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ help_request['user_id'] }}">
+
+<h4>Help request for {{ help_request["name"] }}</h4>
+<div>
+    <p><strong>Comment:</strong></p>
+    <pre class="comment">{{ help_request["student_comment"] }}</pre>
+    <p><strong>Code:</strong></p>
+    <textarea id="editor" class="textarea is-info monospace" rows="20">{{ help_request["code"] }}</textarea>
+    <div class="buttons">
+        <a id="show_answer_button" class="button is-small is-primary is-rounded" onclick="showAnswerCode()">View solution</a>
+    </div>
+    <div id="answer_code" class="invisible">
+        <textarea id="answer_editor" class="textarea is-info monospace" rows="20">{{ problem_details["answer_code"] }}</textarea>
+    </div>
+    {% if help_request["text_output"] %}
+        <p><strong>Text output:</strong></p>
+        <pre class="instructor-content">{{ help_request["text_output"] }}</pre>
+    {% end %}
+    {% if help_request["image_output"] %}
+        <p><strong>Image output:</strong></p>
+        <pre class="instructor-content">{{ help_request["image_output"] }}</pre>
+    {% end %}
+    <div class="suggestion-div">
+        <p><strong>Suggestion:</strong></p>
+        {% if help_request["suggestion"] %}
+            <!--<p class="light-heading">Suggester: <br />
+            {% if help_request["approved"] %}
+                Approver: </p>
+            {% else %}
+                Approver: Not yet approved</p>
+            {% end %}-->
+        {% end %}
+        <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
+    </div>
+    <div class="buttons space-buttons">
+        {% if help_request["suggestion"] and not help_request["approved"] and not is_assistant %}
+            <input type="submit" id="approve_button" class="button is-small is-link is-rounded" value="Approve suggestion"/>
+        {% end %}
+        <input type="submit" id="submit_button" class="button is-small is-link is-rounded invisible" value="Submit suggestion"/>
+    </div>
+</div><br />
+
+</form>
+
+{% if problem_help_requests %}
+    {% if len(problem_help_requests) == 1 %}
+        <p><strong>There is 1 other help request for this problem</strong></p>
+    {% else %}
+        <p><strong>There are {{ len(problem_help_requests) }} other help requests for this problem</strong></p>
+    {% end %}
+{% end %}
+<div class="buttons">
+    <a class="button is-small is-primary is-light is-rounded" href="/help_requests/{{ course_basics['id'] }}">Back to all requests</a>
+    {% if problem_help_requests %}
+        <a id="other_button" class="button is-small is-primary is-rounded" onclick="showOtherRequests()">Show other requests</a>
+    {% end %}
+</div>
+
+<div id="other_requests" class="invisible">
+    {% for request in problem_help_requests %}
+        <div class="help_request_div">
+            <h4>Help request for {{ request["name"] }}</h4>
+            <p><strong>Comment:</strong></p>
+            <pre class="comment">{{ request["student_comment"] }}</pre>
+            <p><strong>Code:</strong></p>
+            <pre class="student-content">{{ request["code"] }}</pre>
+            {% if request["text_output"] %}
+                <p><strong>Text output:</strong></p>
+                <pre class="instructor-content">{{ request["text_output"] }}</pre>
+            {% end %}
+            {% if request["image_output"] %}
+                <p><strong>Image output:</strong></p>
+                <pre class="instructor-content">{{ request["image_output"] }}</pre>
+            {% end %}
+            <div class="buttons space-buttons">
+                <a class="button is-small is-link is-rounded" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}">View suggestion</a>
+            </div>
+        </div>
+    {% end %}
+</div><br /><br />
+
+<script>
+    ace.require("ace/ext/language_tools");
+    var editor = ace.edit("editor", {
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        maxLines: 40,
+        fontSize: "12pt",
+        mode: "ace/mode/r"
+    });
+
+    var answer_editor = ace.edit("answer_editor", {
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        maxLines: 40,
+        fontSize: "12pt",
+        mode: "ace/mode/r"
+    });
+
+    function showOtherRequests() {
+        var other_div = document.getElementById("other_requests");
+        if (other_div.style.display == "inline") {
+            other_div.style.display = "none";
+        }
+        else {
+            other_div.style.display = "inline";
+        }
+    }
+
+    function showAnswerCode() {
+        var answer_code = document.getElementById("answer_code");
+        var answer_button = document.getElementById("show_answer_button");
+
+        if (answer_code.style.display == "inline") {
+            answer_code.style.display = "none";
+            answer_button.innerHTML = "View solution";
+        }
+        else {
+            answer_code.style.display = "inline";
+            answer_button.innerHTML = "Hide solution";
+        }
+    }
+
+    $("#other_button").click(function() {
+        $('html,body').animate({
+            scrollTop: $("#other_requests").offset().top},
+            'slow');
+    });
+
+    $('#suggestion').on('keyup', function() {
+        if (this.value.length) {
+            $('#submit_button').show();
+            $('#approve_button').hide();
+        }else{
+            $('#submit_button').hide();
+        }
+    });
+</script>

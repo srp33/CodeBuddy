@@ -18,7 +18,21 @@
                             {% end %}
                         {% end %}
                     </select>
-                </div><br />
+                </div>
+
+                <p><strong>Use auto-complete: </strong></p>
+                <div class="select is-info">
+                    <select name="use_auto_complete" class="edit-select" onchange="updateAutoComplete(this.value)">
+                    {% if user_info["use_auto_complete"] %}
+                        <option value="Yes" selected>Yes</option>
+                        <option value="No">No</option>
+                    {% else %}
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    {% end %}
+                    </select>
+                </div>
+
                 <div class="buttons">
                     <input type="submit" class="button is-small is-link is-rounded" value="Save" />
                 </div>
@@ -42,10 +56,6 @@
     </div>
 </div>
 
-<script src="/static/ace.js" type="text/javascript" charset="utf-8"></script>
-<script src="/static/mode-r.js" type="text/javascript"></script>
-<script src="/static/ext-language_tools.js"></script>
-
 <script>
     ace.require("ace/ext/language_tools");
     var preview_editor = ace.edit("preview", {
@@ -56,9 +66,28 @@
         fontSize: "12pt",
         mode: "ace/mode/r"
     });
+    
+    updateAutoComplete({{ user_info["use_auto_complete"] }});
     editor.focus();
 
     function changeTheme(theme) {
         preview_editor.setTheme("ace/theme/" + theme);
+    }
+
+    function updateAutoComplete(use_auto_complete) {
+        if (use_auto_complete == "Yes" || use_auto_complete == 1) {
+            preview_editor.setOptions({
+            enableBasicAutocompletion: false,
+            enableSnippets: true,
+            enableLiveAutocompletion: true
+            });
+        }
+        else {
+            preview_editor.setOptions({
+            enableBasicAutocompletion: false,
+            enableSnippets: false,
+            enableLiveAutocompletion: false
+            });
+        }
     }
 </script>

@@ -103,11 +103,61 @@
                     hint_div.style.display = "none";
                 }
                 else {
-                    hint_div.style.display = "inline";
+                    hint_div.style.display = "block";
+                }
+            }
+
+            function showHelpRequestModal() {
+                var modal = document.getElementById("help_request_modal");
+                var span = document.getElementsByClassName("close")[2];
+                modal.style.display = "block";
+
+                var submitButton = document.getElementById("submit_request_button");
+                submitButton.onclick = function() {
+                    var user_code = editor.getValue();
+                    var student_comment = document.getElementById("student_comment").value;
+                    var post_data = { "user_code": user_code, "student_comment": student_comment };
+                    
+                    $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}", post_data);
+                    modal.style.display = "none";
+                    location.reload();
+                }
+
+                var cancelButton = document.getElementById("cancel_request_button");
+                cancelButton.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                      modal.style.display = "none";
+                    }
+                }
+            }
+
+            function showSuggestionModal() {
+                var modal = document.getElementById("suggestion_modal");
+                var span = document.getElementsByClassName("close")[3];
+                modal.style.display = "block";
+
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                      modal.style.display = "none";
+                    }
                 }
             }
         </script>
 
+        <!--The next four divs contain all of the modals for this page-->
+          
         <div id="time_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
@@ -123,6 +173,31 @@
                 <button class="modal-button button is-small is-primary" onclick="copyLink()">Copy Link</button>
             </div>
         </div>
+
+        <div id="help_request_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
+                <p>Please write a comment to help us better understand what you need help with:</p>
+                <input class="input is-medium is-primary" type="text" id="student_comment" name="student_comment">
+                <p class="buttons">
+                    <a id="cancel_request_button" class="modal-button button is-small is-primary is-light">Cancel</a>
+                    <a id="submit_request_button" class="modal-button button is-small is-primary">Submit</a>
+                </p>
+            </div>
+        </div>
+
+        <div id="suggestion_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Your comment from the help request:</p>
+                <textarea class="textarea is-info monospace text-18" rows="3">{% if help_request and help_request["student_comment"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
+                <br><p>Instructor's suggestion:</p>
+                <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
+            </div>
+        </div>
+
+        <!--Below is the code for showing the problem title, instructions, data url and contents, test code, and hint-->
 
         <div>
             <h2 style="display: inline-block;">{{ problem_basics["assignment"]["title"] }}</h2>
@@ -147,39 +222,45 @@
         {% end %}
 
         {% if problem_details["hint"] != "" %}
-            <a class="button is-small is-light" onclick="showHint()">Hint</a>
+            <a class="button is-small is-link" onclick="showHint()">Hint</a>
         {% end %}
 
-        <div id="hint_div" class="invisible"><p style="margin-top: 10px;">{{ problem_details["hint"] }}</p></div>
+        <div id="hint_div" class="invisible hint-div"><p style="margin-top: 10px;">{{ problem_details["hint"] }}</p></div>
+
+        <!--Notification messages at the top of the page for when the due date has passed-->
 
         <p>
-            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
-                <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div><br />
-            {% end %}
-            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
-                <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div><br />
-            {% end %}
+        {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
+            <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div></br>
+        {% end %}
+        {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
+            <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div></br>
+        {% end %}
         </p>
+
+        <!--Here's the assignment timer.-->
 
         {% if assignment_details["has_timer"] %}
             {% if start_time %}
                 <div id="clockdiv">
-                    <div>
-                        <span class="hours"></span>
-                        <div class="smalltext">Hours</div>
-                    </div>
-                    <div>
-                        <span class="minutes"></span>
-                        <div class="smalltext">Minutes</div>
-                    </div>
-                    <div>
-                        <span class="seconds"></span>
-                        <div class="smalltext">Seconds</div>
-                    </div>
+                <div>
+                    <span class="hours"></span>
+                    <div class="smalltext">Hours</div>
+                </div>
+                <div>
+                    <span class="minutes"></span>
+                    <div class="smalltext">Minutes</div>
+                </div>
+                <div>
+                    <span class="seconds"></span>
+                    <div class="smalltext">Seconds</div>
+                </div>
                 </div>
                 <script>startTimer();</script>
             {% end %}
         {% end %}
+
+        <!--Below is the ace text editor and all of the elements that appear around it-->
 
         <p>
             <div>
@@ -201,42 +282,51 @@
         </p>
 
         <p>
-            <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
-            <label class="is-pulled-right has-tooltip-multiline has-tooltip-left" data-tooltip="Auto-completion speeds up the coding process by reducing typos and other common mistakes.">
-                <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
-            </label>
-            <label class="checkbox is-pulled-right">
-                Use auto-complete <input type="checkbox" id="auto_complete" name="auto_complete" value="true" checked onclick="update_auto_complete()">
-            </label>
+            <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code">{% if problem_details["starter_code"] and num_submissions == 0 %}{{ problem_details["starter_code"] }}{% end %}</textarea>
+            <div class="buttons are-small is-pulled-right">
+                {% if help_request %}
+                    {% if help_request["approved"] %}
+                        <a class="button success-message" onclick="showSuggestionModal()">View suggestion</a>
+                    {% else %}
+                        <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
+                    {% end %}
+                {% else %}
+                    <a class="button is-light" onclick="showHelpRequestModal()">Request help</a>
+                {% end %}
+            </div>
         </p>
 
         <div class="field is-grouped">
-        {% if problem_details["back_end"] != "any_response" %}
-            <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run</button></p>
-        {% end %}
+            {% if problem_details["back_end"] != "any_response" %}
+                <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run</button></p>
+            {% end %}
+            
             <div id="revert_div"></div>
 
             <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()' id='submit_button'>Submit</button></p>
 
-        {% if problem_details["back_end"] == "any_response" %}
-            <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any text that is currently in the box above.">
-        {% else %}
-            <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. You can highlight a section of your solution and then hit 'Run' to test just that section. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any code that is currently in the box above.">
-        {% end %}
+            {% if problem_details["back_end"] == "any_response" %}
+                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any text that is currently in the box above.">
+            {% else %}
+                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. You can highlight a section of your solution and then hit 'Run' to test just that section. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any code that is currently in the box above.">
+            {% end %}
+
                 <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
             </p>
         </div>
 
         <div>
-        {% if problem_details["max_submissions"] > 0 %}
-            <label style="padding-left: 10px;">You have made <span id="num_submissions">{{ num_submissions }}</span> of {{ problem_details["max_submissions"] }} allowed submission(s)</label>
-        {% end %}
+            {% if problem_details["max_submissions"] > 0 %}
+                <label style="padding-left: 10px;">You have made <span id="num_submissions">{{ num_submissions }}</span> of {{ problem_details["max_submissions"] }} allowed submission(s)</label>
+            {% end %}
         </div>
 
         {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
             <script>document.getElementById("submit_button").disabled = true;</script>  
             <div class='notification is-warning'><p>Click <a style='color:#2166ac' href="/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">here</a> to view the instructor's answer.</p></div>
         {% end %}
+
+        <!--Below is all of the code that shows the output, past submissions, and messaging once a solution has been run or submitted-->
 
         <p><div id="result"></div></p>
 
@@ -245,7 +335,7 @@
                 <div>
                     <h2 style="display: inline">Expected output:</h2>
                     <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your solution with the expected output to find and fix errors, as needed.">
-                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
                     </label>
                 </div>
                 {% if problem_details["output_type"] == "txt" %}

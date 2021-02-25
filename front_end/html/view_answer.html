@@ -1,32 +1,3 @@
-<style>
-    .student {
-        font-size: 14px;
-        border: 2px solid  #00b386;
-        width: 100%;
-        border-left: 12px solid  #00b386;
-        border-radius: 5px;
-        padding: 14px;
-    }
-
-    .instructor {
-        font-size: 14px;
-        border: 2px solid  #19334d;
-        width: 100%;
-        border-left: 12px solid  #19334d;
-        border-radius: 5px;
-        padding: 14px;
-    }
-
-    .extra {
-        font-size: 14px;
-        border: 2px solid  #008ae6;
-        width: 100%;
-        border-left: 12px solid  #008ae6;
-        border-radius: 5px;
-        padding: 14px;
-    }
-</style>
-
 {% if problem_basics["exists"] %}
     {% if problem_details["show_answer"] or assignment_details["view_answer_late"] or problem_details["show_student_submissions"] %}
         {% if not last_submission and not assignment_details["due_date"] %}
@@ -36,7 +7,7 @@
                 <div>
                 {% if last_submission %}
                     <h4>Your solution:</h4>
-                    <pre class="student">{{ last_submission["code"] }}</pre>
+                    <pre class="student-content">{{ last_submission["code"] }}</pre>
                 {% end %}
 
                 {% if problem_details["show_answer"] %}
@@ -69,7 +40,7 @@
 
                         {% for submission in student_submissions %}
                             <p>Submission {{ submission[0] }}:</p>
-                            <pre class="extra">{{ submission[1] }}</pre>
+                            <pre class="extra-content">{{ submission[1] }}</pre>
                         {% end %}
                         </div>
                     {% else %}

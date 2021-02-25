@@ -201,6 +201,10 @@ def download_file(url):
 
 def get_scores_download_file_name(assignment_basics):
     assignment_title = assignment_basics["title"].replace(" ", "_")
+    special_chars = ["\"", "\'", "$", "&", "^", "%", "?", "*", ">", "<", "/", "\\", ":", "|"]
+    for char in special_chars:
+        assignment_title = assignment_title.replace(char, "")
+
     return f"Scores__{assignment_title}.csv"
 
 def get_list_of_dates():

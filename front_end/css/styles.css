@@ -1,3 +1,12 @@
+.container {
+    padding-top: 3.5rem;
+}
+
+.container-color {
+    background-color: #f5f5f5;
+    padding: 3.5rem;
+}
+
 .invisible {
     display: none;
 }
@@ -19,6 +28,10 @@
 
 .monospace {
     font-family: monospace;
+}
+
+.text-18 {
+    font-size: 18px;
 }
 
 .success-message {
@@ -45,6 +58,137 @@
     vertical-align: middle;
 }
 
+.student-content {
+    font-size: 14px;
+    border: 2px solid  #00b386;
+    width: 100%;
+    border-left: 12px solid  #00b386;
+    border-radius: 5px;
+    padding: 14px;
+    background-color: white;
+}
+
+.instructor-content {
+    font-size: 14px;
+    border: 2px solid  #19334d;
+    width: 100%;
+    border-left: 12px solid  #19334d;
+    border-radius: 5px;
+    padding: 14px;
+    background-color: white;
+}
+
+.extra-content {
+    font-size: 14px;
+    border: 2px solid  #0095e3;
+    width: 100%;
+    border-left: 12px solid  #0095e3;
+    border-radius: 5px;
+    padding: 14px;
+    background-color: white;
+}
+
+.comment {
+    font-size: 14px;
+    border: 2px solid  #0095e3;
+    width: 100%;
+    border-radius: 5px;
+    padding: 14px;
+    background-color: white;
+}
+
+.light-heading {
+    font-weight: normal !important;
+}
+
+.help_request_div {
+    background-color: #f5f5f5;
+    border: 2px solid  #f5f5f5;
+    border-radius: 15px;
+    margin-top: 25px;
+    padding: 20px;
+}
+
+.suggestion-div {
+    background-color: #f5f5f5;
+    border: 2px solid  #f5f5f5;
+    border-radius: 15px;
+    margin-top: 10px;
+    padding: 20px;
+}
+
+.space-buttons {
+    margin-top: 10px;
+}
+
+td > button {
+    border: none;
+    background-color: white;
+    cursor: pointer;
+}
+
 .ace_gutter {
     z-index: auto !important;
+}
+
+#filter_container {
+    width: 100%;
+    overflow: hidden;
+    padding-bottom: 0px;
+}
+
+#filter_container input {
+    display: inline;
+    width: 50%;
+}
+
+.shadow-box {
+    box-shadow: 3px 3px 6px lightgray;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: white;
+    margin-bottom: 30px;
+}
+
+.row-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.title-container {
+    width: 50%;
+}
+
+.a-title-container {
+    width: 80%;
+}
+
+.a-visible {
+    margin-right: 100px;
+}
+
+.instructions-container {
+    margin-top: 15px;
+}
+
+.hint-container {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.date-container {
+    width: 45%;
+}
+
+#allow_late_text {
+    margin-top: 15px;
+}
+
+.hint-div {
+    font-size: 14px;
+    border: 2px solid  #00b386;
+    border-radius: 5px;
+    margin-top: 10px;
+    padding: 0 10px 0 10px;
 }

@@ -1,5 +1,3 @@
-<script src="/static/jquery.min.js"></script>
-
 <div class="columns" style="height: 100vh;">
     <div class="column is-one-quarter profile-menu">
         <aside class="menu">
@@ -9,7 +7,7 @@
                 {% if page == "courses" %}
                     class="is-active"
                 {% end %}
-                >Home</a></li>
+                >Courses</a></li>
                 <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
                 {% if page == "personal_info" %}
                     class="is-active"
@@ -20,22 +18,38 @@
                     {% if page == "admin" %}
                         class="is-active"
                     {% end %}
-                    >Admin</a></li>
+                    >Admin menu</a></li>
                 {% end %}
                 {% if is_instructor or is_administrator %}
                     <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
                     {% if page == "instructor" %}
                         class="is-active"
                     {% end %}
-                    >Instructor</a></li>
+                    >Instructor menu</a></li>
                 {% end %}
-                {% if is_administrator or is_instructor %}
-                    <li><a href="/profile/manage_users"
-                    {% if page == "manage_users" %}
-                        class="is-active"
-                    {% end %}
-                    >Manage users</a></li>
+            </ul>
+            <p class="menu-label">Tools</p>
+            <ul class="menu-list">
+            {% if is_administrator or is_instructor %}
+                <li><a href="/profile/manage_users"
+                {% if page == "manage_users" %}
+                    class="is-active"
                 {% end %}
+                >Manage users</a></li>
+            {% end %}
+            {% if is_administrator or is_instructor or is_assistant %}
+                <li><a href="/profile/help_requests"
+                {% if page == "help_requests" %}
+                    class="is-active"
+                {% end %}
+                >Help requests</a></li>
+            {% else %}
+                <li><a href="/profile/student_help_requests"
+                {% if page == "help_requests" %}
+                    class="is-active"
+                {% end %}
+                >Help requests</a></li>
+            {% end %}
             </ul>
             <p class="menu-label">Settings</p>
             <ul class="menu-list">

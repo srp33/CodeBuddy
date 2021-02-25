@@ -2,7 +2,7 @@
 # in a given course.
 def students_course(course_id):
     return f'''SELECT user_id
-               FROM course_registration
+               FROM course_registrations
                WHERE course_id = {course_id}'''
 
 # Identifies which problems are visible for a given course.

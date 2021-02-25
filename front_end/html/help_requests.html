@@ -1,0 +1,131 @@
+<link rel="stylesheet" href="/static/modal.css">
+<script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
+
+<h2 style="text-align: center;">Help Requests Dashboard</h2>
+
+<h4>Help requests for {{ course_basics["title"] }}</h4>
+<div id="filter_container">
+    <input class="input is-info is-medium" id="filter_input" type="text" onkeyup="filterRequests()" placeholder="Search">
+    <div class="select is-info">
+        <select id="filter_status" onchange="filterRequests()" class="edit-select">
+            <option selected disabled>Filter status</option>
+            <option>All</option>
+            <option>Suggestion made and approved</option>
+            <option>Suggestion made and not approved</option>
+            <option>Suggestion not yet made</option>
+        </select>
+    </div>
+</div>
+
+<table class="table" id="request_table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Student Name</th>
+            <th>Assignment Title</th>
+            <th>Problem Title</th>
+            <th>Request</th>
+            <th>Suggestion Made</th>
+            <th>Approved
+                <label class="has-tooltip-multiline" data-tooltip="Assistants can make suggestions, but they must be approved by an instructor or admin before the student will be able to see them.">
+                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                </label>
+            </th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if help_requests %}
+        {% for request in help_requests %}
+        <tr>
+            <td>
+                <script>
+                    var s = new Date("{{ request['date'].strftime('%Y-%m-%dT%H:%M:%S.%f') }}");
+                    document.write(convertDate(s));
+                </script>
+            </td>
+            <td>{{ request["name"] }}</td>
+            <td>{{ request["assignment_title"] }}</td> 
+            <td>{{ request["problem_title"] }}</td>
+            <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View</a></td>
+            {% if request["suggestion"] %}
+                <td>
+                    <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
+                </td>
+            {% else %}
+                <td>
+                    <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
+                </td>
+            {% end %}
+            {% if request["approved"] %}
+                <td>
+                    <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
+                </td>
+            {% else %}
+                <td>
+                    <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
+                </td>
+            {% end %}
+            <form method="post" action="/delete_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}">
+            <td>
+                <button type="submit">
+                    <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
+                </button>
+            </td>
+            </form>
+        </tr>
+        {% end %}
+    {% end %}    
+    </tbody>
+</table>
+
+<div>
+    <a href="/profile/help_requests">Back to tools</a>
+</div>
+
+<script>
+    function filterRequests() {
+        var input, select, filter, table, tr, td, i;
+        input = document.getElementById("filter_input");
+        select = document.getElementById("filter_status");
+
+        filter = input.value.toUpperCase();
+        status_filter = select.value.toUpperCase();
+
+        table = document.getElementById("request_table");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 1; i < tr.length; i++) {
+            tr[i].style.display = "";
+
+            td_s = tr[i].getElementsByTagName("td")[5];
+            td_a = tr[i].getElementsByTagName("td")[6];
+            if (td_s && td_a) {
+                var icon_s = td_s.getElementsByTagName('img')[0].alt;
+                var icon_a = td_a.getElementsByTagName('img')[0].alt;
+
+                if (status_filter == "SUGGESTION MADE AND APPROVED" && (icon_s != "Completed" || icon_a != "Completed")) {
+                    tr[i].style.display = "none";
+                } 
+                else if (status_filter == "SUGGESTION MADE AND NOT APPROVED" && ((icon_s != "Completed") || (icon_s == "Completed" && icon_a == "Completed"))) {
+                    tr[i].style.display = "none";
+                }
+                else if (status_filter == "SUGGESTION NOT YET MADE" && icon_s == "Completed") {
+                    tr[i].style.display = "none";
+                }
+            }
+
+            for (var j = 1; j < 4; j++) {
+                cell = tr[i].getElementsByTagName("td")[j];
+                if (cell) {
+                    if (cell.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                        break;
+                    } 
+                }
+                if (j == 3) {
+                    tr[i].style.display = "none";
+                }
+            }       
+        }
+    }
+</script>
