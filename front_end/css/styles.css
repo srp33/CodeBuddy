@@ -192,3 +192,13 @@ td > button {
     margin-top: 10px;
     padding: 0 10px 0 10px;
 }
+
+.file-cta {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px 10px 20px;
+}
+
+.file-name {
+    padding: 10px 20px 10px 20px;
+}
