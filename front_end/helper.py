@@ -195,9 +195,6 @@ def create_id(current_objects=[], num_characters=4):
 
     return new_id
 
-def download_file(url):
-    return requests.get(url).content
-
 def get_scores_download_file_name(assignment_basics):
     assignment_title = assignment_basics["title"].replace(" ", "_")
     special_chars = ["\"", "\'", "$", "&", "^", "%", "?", "*", ">", "<", "/", "\\", ":", "|"]
