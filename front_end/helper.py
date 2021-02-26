@@ -97,8 +97,7 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
     timeout = this_settings_dict["timeout_seconds"] + 2
     data_dict = {"image_name": this_settings_dict["image_name"],
                  "code": code,
-                 "data_file_name": problem_details["data_file_name"],
-                 "data_contents": problem_details["data_contents"],
+                 "data_files": problem_details["data_files"],
                  "output_type": problem_details["output_type"],
                  "memory_allowed_mb": this_settings_dict["memory_allowed_mb"],
                  "timeout_seconds": timeout
