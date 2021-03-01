@@ -202,3 +202,8 @@ td > button {
 .file-name {
     padding: 10px 20px 10px 20px;
 }
+
+.space-div {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
