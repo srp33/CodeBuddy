@@ -598,20 +598,18 @@ class ImportCourseHandler(BaseUserHandler):
                         hint = ""
                         max_submissions = int(problem_list[7])
                         credit = problem_list[8]
-                        data_url = problem_list[9]
-                        data_file_name = problem_list[10]
-                        data_contents = problem_list[11]
-                        back_end = problem_list[12]
-                        instructions = problem_list[14]
-                        output_type = problem_list[15]
-                        show_answer = bool(problem_list[16])
-                        show_student_submissions = bool(problem_list[17])
-                        show_expected = bool(problem_list[18])
-                        show_test_code = bool(problem_list[19])
-                        starter_code = problem_list[20]
-                        test_code = problem_list[21]
-                        date_created = convert_string_to_date(problem_list[22])
-                        date_updated = convert_string_to_date(problem_list[23])
+                        data_files = problem_list[9]
+                        back_end = problem_list[10]
+                        instructions = problem_list[12]
+                        output_type = problem_list[13]
+                        show_answer = bool(problem_list[14])
+                        show_student_submissions = bool(problem_list[15])
+                        show_expected = bool(problem_list[16])
+                        show_test_code = bool(problem_list[17])
+                        starter_code = problem_list[18]
+                        test_code = problem_list[19]
+                        date_created = convert_string_to_date(problem_list[20])
+                        date_updated = convert_string_to_date(problem_list[21])
 
                         expected_text_output = ""
                         expected_image_output = ""
@@ -620,7 +618,7 @@ class ImportCourseHandler(BaseUserHandler):
                         else:
                             expected_image_output = problem_list[13]
 
-                        content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
+                        content.specify_problem_details(problem_details, instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_files, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
                         content.save_problem(problem_basics, problem_details)
 
                     result = "Success: The course was imported!"
@@ -914,12 +912,12 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["starter_code"] = self.get_body_argument("starter_code_text").strip().replace("\r", "")
             problem_details["test_code"] = self.get_body_argument("test_code_text").strip().replace("\r", "")
             problem_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
-            problem_details["data_url"] = self.get_body_argument("data_url").strip().replace("\r", "")
-            problem_details["data_file_name"] = self.get_body_argument("data_file_name").strip().replace("\r", "")
             problem_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
             problem_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
             problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             problem_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
+
+            files = self.request.files      
 
             result = "Success: The exercise was saved!"
 
@@ -937,26 +935,25 @@ class EditProblemHandler(BaseUserHandler):
                         #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', problem_basics["title"]):
                         #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                         #else:
-                        if (problem_details["data_url"] == "" and problem_details["data_file_name"] != "") or (problem_details["data_url"] != "" and problem_details["data_file_name"] == ""):
-                            result = "Error: If a data URL or file name is specified, both must be specified."
-                        else:
-                            if problem_details["data_url"] == "":
-                                data_contents = b""
-                            else:
-                                if not problem_details["data_file_name"] in problem_details["instructions"]:
-                                    data_file_name = problem_details["data_file_name"]
-                                    result = f"Error: You must mention {data_file_name} at least once in the instructions."
-                                else:
-                                    data_contents = download_file(problem_details["data_url"])
+                            if files:
+                                data_files = {}
+                                total_size = 0
 
-                                    # Make sure the file is not larger than 10 MB.
-                                    if len(data_contents) > 10 * 1024 * 1024:
-                                        data_url = problem_details["data_url"]
-                                        result = f"Error: The file at {data_url} is too large ({len(data_contents)} bytes)."
+                                #create data_files dictionary
+                                for fileInput, fileContents in files.items():
+                                    for i in range(len(fileContents)):
+                                        data_files[fileContents[i]["filename"]] = fileContents[i]["body"].decode("utf-8")
+                                        total_size += len(fileContents[i]["body"])
 
+                                problem_details["data_files"].update(data_files)
+
+                                # Make sure total file size is not larger than 10 MB across all files.
+                                if total_size > 10 * 1024 * 1024:
+                                    result = f"Error: Your total file size is too large ({total_size} bytes)."
+                                    
                             if not result.startswith("Error:"):
                                 content.specify_problem_basics(problem_basics, problem_basics["title"], problem_basics["visible"])
-                                content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"], problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["starter_code"], problem_details["test_code"], problem_details["credit"], problem_details["data_url"], problem_details["data_file_name"], data_contents.decode(), problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], problem_details["show_student_submissions"], "", "", None, datetime.datetime.now())
+                                content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"], problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["starter_code"], problem_details["test_code"], problem_details["credit"], problem_details["data_files"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], problem_details["show_student_submissions"], "", "", None, datetime.datetime.now())
 
                                 text_output, image_output = exec_code(settings_dict, problem_details["answer_code"], problem_basics, problem_details)
 
