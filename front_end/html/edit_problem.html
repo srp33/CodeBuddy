@@ -114,7 +114,7 @@
                 </div>
             </div>
 
-            <div class="instructions-container">
+            <div class="top-space">
                 <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
                 <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ problem_details["instructions"] }}</textarea></p>
             </div>
@@ -131,6 +131,8 @@
                 <p><strong>Data file(s): </strong>
                     <br />Optionally, you can upload data files that students will use on this exercise. To upload more than one, select multiple files in a single upload or click "Add another file". The maximum total file size is 10 megabytes across all files.
                 </p>
+                <div id="uploaded_files" class="uploaded-files"></div>
+                <input id="file_container" name="file_container" style="display: none;"></input>
                 <div id="data_file" class="file is-small has-name space-div">
                     <label class="file-label">
                         <input class="file-input" type="file" name="data" multiple>
@@ -230,7 +232,7 @@
         </div>
 
         <div class="shadow-box">
-            <div class="hint-container">
+            <div class="space-div">
                 <p><strong>Problem hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this problem.</p> 
                 <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ problem_details["hint"] }}</textarea></p>  
             </div>
@@ -390,19 +392,42 @@
 
             const container = document.querySelector("#file_upload");
 
-            if ({{ len(problem_details["data_files"]) }} > 0) {
-                for (let i = 0; i < {{ len(problem_details["data_files"]) }}; i++) {
-                    if (i != 0) {
-                        showAddFile();
-                    }
-                    var file_list = container.querySelectorAll("div.file");
-                    var curr_file = file_list[i];
-                    var fileInput = curr_file.querySelector("input");
-                    var fileName = curr_file.querySelector("span.file-name");
+            {% if problem_details["data_files"] != "" %}
+                data_file_div = document.getElementById("data_file");
+                data_file_div.style.display = "none";
+                var uploaded_files = JSON.parse('{{ json_files }}');
+                var file_container = document.getElementById("file_container");
+                file_container.value = JSON.stringify(uploaded_files);
 
-                    fileName.textContent = {{ list(problem_details['data_files'].keys()) }}[i];
+                upload_div = document.getElementById("uploaded_files");
+                for (let i = 0; i < {{ len(problem_details["data_files"]) }}; i++) {
+                    var file_div = document.createElement("div");
+                    file_div.setAttribute("class", "uploaded-file");
+                    file_div.setAttribute("id", i);
+
+                    var text = document.createElement("p");
+                    text.setAttribute("class", "file-text");
+                    var file_name = document.createTextNode({{ list(problem_details['data_files'].keys()) }}[i]);
+                    text.appendChild(file_name);
+
+                    var d_button = document.createElement("button");
+                    d_button.classList.add("button", "is-small", "is-link", "is-inverted");
+                    d_button.textContent = "X";
+
+                    d_button.addEventListener("click", function(event) {
+                        event.preventDefault();
+                        delete uploaded_files[{{ list(problem_details['data_files'].keys()) }}[i]];
+                        file_container.value = JSON.stringify(uploaded_files);
+
+                        var file_div_to_remove = document.getElementById(i);
+                        file_div_to_remove.style.display = "none";
+                    });
+
+                    file_div.appendChild(text);
+                    file_div.appendChild(d_button);
+                    upload_div.appendChild(file_div);
                 }
-            }
+            {% end %}
 
             updateFiles();
 
