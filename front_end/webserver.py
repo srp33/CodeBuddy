@@ -917,7 +917,11 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             problem_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
 
-            files = self.request.files      
+            old_files = self.get_body_argument("file_container")
+            new_files = self.request.files 
+            if old_files:
+                old_files = json.loads(old_files)
+                problem_details["data_files"] = old_files  
 
             result = "Success: The exercise was saved!"
 
@@ -935,12 +939,12 @@ class EditProblemHandler(BaseUserHandler):
                         #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', problem_basics["title"]):
                         #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                         #else:
-                            if files:
+                            if new_files:
                                 data_files = {}
                                 total_size = 0
 
                                 #create data_files dictionary
-                                for fileInput, fileContents in files.items():
+                                for fileInput, fileContents in new_files.items():
                                     for i in range(len(fileContents)):
                                         data_files[fileContents[i]["filename"]] = fileContents[i]["body"].decode("utf-8")
                                         total_size += len(fileContents[i]["body"])
@@ -969,7 +973,7 @@ class EditProblemHandler(BaseUserHandler):
                                     problem_details["expected_text_output"] = format_output_as_html(text_output)
 
             problems = content.get_problems(course, assignment)
-            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, json_files=json.dumps(problem_details["data_files"]), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info())
+            self.render("edit_problem.html", courses=content.get_courses(), assignments=content.get_assignments(course), problems=problems, problem_statuses=content.get_problem_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), problem_basics=problem_basics, problem_details=problem_details, json_files=json.dumps(problem_details["data_files"]).replace("\\", "\\\\"), next_prev_problems=content.get_next_prev_problems(course, assignment, problem, problems), code_completion_path=settings_dict["back_ends"][problem_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server.")
         except ReadTimeout as inst:
