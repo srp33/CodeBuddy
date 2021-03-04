@@ -15,6 +15,15 @@
     display: inline;
 }
 
+.top-space {
+    margin-top: 15px;
+}
+
+.space-div {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
 .modal-button {
     margin-top: 10px;
 }
@@ -168,21 +177,8 @@ td > button {
     margin-right: 100px;
 }
 
-.instructions-container {
-    margin-top: 15px;
-}
-
-.hint-container {
-    margin-top: 15px;
-    margin-bottom: 15px;
-}
-
 .date-container {
     width: 45%;
-}
-
-#allow_late_text {
-    margin-top: 15px;
 }
 
 .hint-div {
@@ -203,7 +199,22 @@ td > button {
     padding: 10px 20px 10px 20px;
 }
 
-.space-div {
-    margin-top: 10px;
-    margin-bottom: 10px;
+.uploaded-files {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.uploaded-file {
+    padding: 5px 15px 10px 15px;
+    display: inline-block;
+}
+
+.file-text {
+    display: inline-block;
+}
+
+.show-button {
+    margin-left: 10px;
 }
