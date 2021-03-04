@@ -106,22 +106,6 @@
                     }
                 }
 
-                {% if len(problem_details["data_url"]) > 0 %}
-                    function show_hide_data() {
-                        var button = document.getElementById("show_hide_data_button");
-                        var data_panel = document.getElementById("data_panel");
-
-                        if (data_panel.hidden) {
-                            button.innerHTML = "Hide";
-                            data_panel.hidden = false;
-                        }
-                        else {
-                            button.innerHTML = "Show";
-                            data_panel.hidden = true;
-                        }
-                    }
-                {% end %}
-
                 function build_text_output(json_output) {
                     var output = "";
 
