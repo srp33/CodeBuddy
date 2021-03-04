@@ -15,6 +15,15 @@
     display: inline;
 }
 
+.top-space {
+    margin-top: 15px;
+}
+
+.space-div {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
 .modal-button {
     margin-top: 10px;
 }
@@ -157,7 +166,7 @@ td > button {
 }
 
 .title-container {
-    width: 50%;
+    width: 48%;
 }
 
 .a-title-container {
@@ -168,21 +177,8 @@ td > button {
     margin-right: 100px;
 }
 
-.instructions-container {
-    margin-top: 15px;
-}
-
-.hint-container {
-    margin-top: 15px;
-    margin-bottom: 15px;
-}
-
 .date-container {
     width: 45%;
-}
-
-#allow_late_text {
-    margin-top: 15px;
 }
 
 .hint-div {
@@ -191,4 +187,34 @@ td > button {
     border-radius: 5px;
     margin-top: 10px;
     padding: 0 10px 0 10px;
+}
+
+.file-cta {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px 10px 20px;
+}
+
+.file-name {
+    padding: 10px 20px 10px 20px;
+}
+
+.uploaded-files {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.uploaded-file {
+    padding: 5px 15px 10px 15px;
+    display: inline-block;
+}
+
+.file-text {
+    display: inline-block;
+}
+
+.show-button {
+    margin-left: 10px;
 }

@@ -14,8 +14,7 @@ import traceback
 class ExecInfo(BaseModel):
     image_name: str
     code: str
-    data_file_name: str
-    data_contents: str
+    data_files: dict
     output_type: str
     memory_allowed_mb: int
     timeout_seconds: int
@@ -45,9 +44,10 @@ def exec(info: ExecInfo):
         with open(f"{tmp_dir_path}/code", "w") as code_file:
             code_file.write(info.code)
 
-        if info.data_file_name != "":
-            with open(f"{tmp_dir_path}/{info.data_file_name}", "w") as data_file:
-                data_file.write(info.data_contents)
+        if info.data_files != "":
+            for key, value in info.data_files.items():
+                with open(f"{tmp_dir_path}/{key}", "w") as data_file:
+                    data_file.write(value)
 
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
         docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code {info.output_type}"

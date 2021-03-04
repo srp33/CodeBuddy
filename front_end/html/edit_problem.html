@@ -1,4 +1,4 @@
-<form method="post" action="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}" id="myForm" />
+<form enctype='multipart/form-data' method="post" action="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}" id="myForm">
 {% if problem_basics["exists"] %}
     <div class="row-container">
         <h2>Edit exercise</h2>
@@ -114,7 +114,7 @@
                 </div>
             </div>
 
-            <div class="instructions-container">
+            <div class="top-space">
                 <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
                 <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ problem_details["instructions"] }}</textarea></p>
             </div>
@@ -123,18 +123,32 @@
         <div class="shadow-box">
             <p><strong>Credit: </strong>
                 <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
+                <br />Please provide a link to the data source(s) if you obtained the dataset from someone else.
             </p>
             <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ problem_details["credit"] }}</textarea></p>
     
-            <p><strong>Data source: </strong>
-                <br />Optionally, you can specify the URL of a data file that students will use on this exercise.
-                    If you specify a URL, that file will be downloaded and stored on the server using the name you specify in the second box below. The maximum file size is 10 megabytes.
-            </p>
-            <p>
-                URL: <textarea name="data_url" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="1">{{ problem_details["data_url"] }}</textarea>
-                <br />
-                File name: <textarea name="data_file_name" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="1">{{ problem_details["data_file_name"] }}</textarea>
-            </p>
+            <div id="file_upload">
+                <p><strong>Data file(s): </strong>
+                    <br />Optionally, you can upload data files that students will use on this exercise. To upload more than one, select multiple files in a single upload or click "Add another file". The maximum total file size is 10 megabytes across all files.
+                </p>
+                <div id="uploaded_files" class="uploaded-files"></div>
+                <input id="file_container" name="file_container" style="display: none;"></input>
+                <div id="data_file" class="file is-small has-name space-div">
+                    <label class="file-label">
+                        <input class="file-input" type="file" name="data" multiple>
+                        <span class="file-cta">
+                            <span class="file-icon">
+                            <i class="fas fa-upload"></i>
+                            </span>
+                            <span class="file-label">Choose a file…</span>
+                        </span>
+                        <span class="file-name"></span>
+                    </label>
+                </div>
+            </div>
+            <div id="add_file">
+                <a onclick="showAddFile()">Add another file</a>
+            </div>
         </div>
 
         <div class="shadow-box">
@@ -218,7 +232,7 @@
         </div>
 
         <div class="shadow-box">
-            <div class="hint-container">
+            <div class="space-div">
                 <p><strong>Problem hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this problem.</p> 
                 <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ problem_details["hint"] }}</textarea></p>  
             </div>
@@ -330,6 +344,110 @@
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
             } 
+
+            var index = 1;
+
+            function showAddFile() {
+                var file_div = document.createElement("div");
+                file_div.classList.add("file", "is-small", "has-name", "space-div");
+
+                var file_label = document.createElement("label");
+                file_label.className = "file-label";
+
+                var file_input = document.createElement("input");
+                file_input.className = "file-input";
+                file_input.setAttribute("name", "data" + index);
+                index += 1;
+                file_input.type = "file";
+                file_input.multiple = true;
+                file_label.appendChild(file_input);
+
+                var file_span = document.createElement("span");
+                file_span.className = "file-cta";
+
+                var icon_span = document.createElement("span");
+                icon_span.className = "file-icon";
+                var icon = document.createElement("i");
+                icon.classList.add("fas", "fa-upload");
+                icon_span.appendChild(icon);
+                file_span.appendChild(icon_span);
+                
+                var label_span = document.createElement("span");
+                label_span.className = "file-label";
+                label_span.innerHTML = "Choose a file...";
+                file_span.appendChild(label_span);
+                file_label.appendChild(file_span);
+
+                var name_span = document.createElement("span");
+                name_span.className = "file-name";
+                file_label.appendChild(name_span);
+
+                file_div.appendChild(file_label);
+
+                var file_upload_div = document.getElementById("file_upload");
+                file_upload_div.appendChild(file_div);
+
+                updateFiles();
+            }
+
+            const container = document.querySelector("#file_upload");
+
+            {% if problem_details["data_files"] != "" %}
+                data_file_div = document.getElementById("data_file");
+                data_file_div.style.display = "none";
+                var uploaded_files = JSON.parse('{{ json_files }}');
+                var file_container = document.getElementById("file_container");
+                file_container.value = JSON.stringify(uploaded_files);
+
+                upload_div = document.getElementById("uploaded_files");
+                for (let i = 0; i < {{ len(problem_details["data_files"]) }}; i++) {
+                    var file_div = document.createElement("div");
+                    file_div.setAttribute("class", "uploaded-file");
+                    file_div.setAttribute("id", i);
+
+                    var text = document.createElement("p");
+                    text.setAttribute("class", "file-text");
+                    var file_name = document.createTextNode({{ list(problem_details['data_files'].keys()) }}[i]);
+                    text.appendChild(file_name);
+
+                    var d_button = document.createElement("button");
+                    d_button.classList.add("button", "is-small", "is-link", "is-inverted");
+                    d_button.textContent = "X";
+
+                    d_button.addEventListener("click", function(event) {
+                        event.preventDefault();
+                        delete uploaded_files[{{ list(problem_details['data_files'].keys()) }}[i]];
+                        file_container.value = JSON.stringify(uploaded_files);
+
+                        var file_div_to_remove = document.getElementById(i);
+                        file_div_to_remove.style.display = "none";
+                    });
+
+                    file_div.appendChild(text);
+                    file_div.appendChild(d_button);
+                    upload_div.appendChild(file_div);
+                }
+            {% end %}
+
+            updateFiles();
+
+            function updateFiles() {
+                var files = container.querySelectorAll("div.file");
+
+                files.forEach(function(file) {
+                    var fileInput = file.querySelector("input");
+                    var fileName = file.querySelector("span.file-name");
+
+                    fileInput.onchange = () => {
+                        if (fileInput.files.length == 1) {
+                            fileName.textContent = fileInput.files[0].name;
+                        }
+                        else if (fileInput.files.length > 1) {
+                            fileName.textContent = fileInput.files.length + " files";
+                        }
+                    }
+                });
+            }
 
         </script>
         </form>

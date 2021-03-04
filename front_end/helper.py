@@ -97,8 +97,7 @@ def exec_code(settings_dict, code, problem_basics, problem_details, request=None
     timeout = this_settings_dict["timeout_seconds"] + 2
     data_dict = {"image_name": this_settings_dict["image_name"],
                  "code": code,
-                 "data_file_name": problem_details["data_file_name"],
-                 "data_contents": problem_details["data_contents"],
+                 "data_files": problem_details["data_files"],
                  "output_type": problem_details["output_type"],
                  "memory_allowed_mb": this_settings_dict["memory_allowed_mb"],
                  "timeout_seconds": timeout
@@ -195,9 +194,6 @@ def create_id(current_objects=[], num_characters=4):
         new_id = ''.join(random.choice(string.ascii_letters) for i in range(num_characters))
 
     return new_id
-
-def download_file(url):
-    return requests.get(url).content
 
 def get_scores_download_file_name(assignment_basics):
     assignment_title = assignment_basics["title"].replace(" ", "_")
