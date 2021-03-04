@@ -921,7 +921,9 @@ class EditProblemHandler(BaseUserHandler):
             new_files = self.request.files 
             if old_files:
                 old_files = json.loads(old_files)
-                problem_details["data_files"] = old_files  
+                problem_details["data_files"] = old_files 
+            else:
+                problem_details["data_files"] = {}
 
             result = "Success: The exercise was saved!"
 
