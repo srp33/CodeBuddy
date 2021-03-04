@@ -37,20 +37,29 @@ else:
             print(sql)
             cursor.executescript(sql)
 
-        insert_old_data_sql = '''UPDATE problems2
-                                 SET credit = (SELECT credit || ' The data originated from [here](' || data_url || ').' 
-                                               FROM problems
-                                               WHERE problems2.problem_id=problems.problem_id)'''
+        credit_exists = '''SELECT credit, problem_id
+                           FROM problems'''
+        
+        cursor.execute(credit_exists)
+        for row in cursor.fetchall():
+            if row["credit"] != "":
+                insert_old_data_sql = '''UPDATE problems2
+                                         SET credit = (SELECT credit || ' The data originated from [here](' || data_url || ').' 
+                                                       FROM problems
+                                                       WHERE problem_id = ?)'''
 
-        cursor.execute(insert_old_data_sql)
+                cursor.execute(insert_old_data_sql, (row["problem_id"],))
 
         data_sql = '''SELECT data_file_name, data_contents, problem_id
                       FROM problems'''
 
         cursor.execute(data_sql)
         for row in cursor.fetchall():
-            data_dict = {row["data_file_name"]: row["data_contents"]}
-            data_string = json.dumps(data_dict)
+            if row["data_file_name"] != "":
+                data_dict = {row["data_file_name"]: row["data_contents"]}
+                data_string = json.dumps(data_dict)
+            else:
+                data_string = ""
 
             insert_data_sql = '''UPDATE problems2
                                  SET data_files = ?
