@@ -145,6 +145,7 @@ def check_problem_output(problem_details, actual_text, actual_image):
             diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
 
         return diff_output, diff_percent < max_diff_percent # Pass if they are similar enough.
+        #return diff_output, diff_percent == 0 # Pass if they are identical.
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")

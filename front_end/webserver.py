@@ -393,7 +393,7 @@ class ProfileHelpRequestsHandler(BaseUserHandler):
                     courses = content.get_courses()
                 elif self.is_instructor() or self.is_assistant():
                     courses = content.get_courses_connected_to_user(user_info["user_id"])
-                    
+
                 self.render("profile_help_requests.html", page="help_requests", result=None, courses=courses, user_info=user_info, is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
             else:
                 self.render("permissions.html")
@@ -402,7 +402,7 @@ class ProfileHelpRequestsHandler(BaseUserHandler):
 
 class ProfileStudentHelpRequestsHandler(BaseUserHandler):
     def get(self):
-        try:                   
+        try:
             self.render("profile_student_help_requests.html", page="help_requests", result=None, user_info=self.get_user_info(), help_requests=content.get_student_help_requests(self.get_user_id()), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -918,7 +918,7 @@ class EditProblemHandler(BaseUserHandler):
             problem_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
 
             old_files = self.get_body_argument("file_container")
-            new_files = self.request.files 
+            new_files = self.request.files
             if old_files and old_files != "{}":
                 old_files = json.loads(old_files)
                 problem_details["data_files"] = old_files
@@ -957,7 +957,7 @@ class EditProblemHandler(BaseUserHandler):
                                 # Make sure total file size is not larger than 10 MB across all files.
                                 if total_size > 10 * 1024 * 1024:
                                     result = f"Error: Your total file size is too large ({total_size} bytes)."
-                                    
+
                             if not result.startswith("Error:"):
                                 content.specify_problem_basics(problem_basics, problem_basics["title"], problem_basics["visible"])
                                 content.specify_problem_details(problem_details, problem_details["instructions"], problem_details["back_end"], problem_details["output_type"], problem_details["answer_code"], problem_details["answer_description"], problem_details["hint"], problem_details["max_submissions"], problem_details["starter_code"], problem_details["test_code"], problem_details["credit"], problem_details["data_files"], problem_details["show_expected"], problem_details["show_test_code"], problem_details["show_answer"], problem_details["show_student_submissions"], "", "", None, datetime.datetime.now())
@@ -1620,22 +1620,23 @@ if __name__ == "__main__":
 
         # Check to see whether there is a database migration script (should only be one per version).
         # If so, make a backup copy of the database and then do the migration.
-        migration_file_path = glob.glob(f"/migration_scripts/*_to_{version}.py")
-        if len(migration_file_path) > 0:
-            run_command("bash /etc/cron.hourly/back_up_database.sh")
+        for v in range(6, int(version) + 1):
+            migration_file_path = glob.glob(f"/migration_scripts/{v - 1}_to_{v}.py")
 
-            print(f"Checking database status...")
-            result = run_command(f"python {migration_file_path[0]}")
+            if len(migration_file_path) > 0:
+                run_command("bash /etc/cron.hourly/back_up_database.sh")
 
-            if "***NotNeeded***" in result:
-                print("Database migration not needed.")
-            elif "***Success***" in result:
-                print(f"Database successfully migrated to version {version} using {migration_file_path[0]}.")
-            else:
-                print(f"Database migration failed using {migration_file_path[0]} so rolling back...")
-                print(result)
-                run_command("bash /etc/cron.hourly/restore_database.sh")
+                print(f"Checking database status for version {v}...")
+                result = run_command(f"python {migration_file_path[0]}")
 
+                if "***NotNeeded***" in result:
+                    print("Database migration not needed.")
+                elif "***Success***" in result:
+                    print(f"Database successfully migrated to version {v} using {migration_file_path[0]}.")
+                else:
+                    print(f"Database migration failed using {migration_file_path[0]} so rolling back...")
+                    print(result)
+                    run_command("bash /etc/cron.hourly/restore_database.sh")
         content.create_sqlite_tables()
 
         ##for assignment_title in ["18 - Biostatistics - Analyzing proportions"]:
