@@ -392,7 +392,7 @@
 
             const container = document.querySelector("#file_upload");
 
-            {% if problem_details["data_files"] != "" %}
+            {% if exercise_details["data_files"] != "" %}
                 data_file_div = document.getElementById("data_file");
                 data_file_div.style.display = "none";
                 var uploaded_files = JSON.parse('{{ json_files }}');
@@ -400,14 +400,14 @@
                 file_container.value = JSON.stringify(uploaded_files);
 
                 upload_div = document.getElementById("uploaded_files");
-                for (let i = 0; i < {{ len(problem_details["data_files"]) }}; i++) {
+                for (let i = 0; i < {{ len(exercise_details["data_files"]) }}; i++) {
                     var file_div = document.createElement("div");
                     file_div.setAttribute("class", "uploaded-file");
                     file_div.setAttribute("id", i);
 
                     var text = document.createElement("p");
                     text.setAttribute("class", "file-text");
-                    var file_name = document.createTextNode({{ list(problem_details['data_files'].keys()) }}[i]);
+                    var file_name = document.createTextNode({{ list(exercise_details['data_files'].keys()) }}[i]);
                     text.appendChild(file_name);
 
                     var d_button = document.createElement("button");
@@ -416,7 +416,7 @@
 
                     d_button.addEventListener("click", function(event) {
                         event.preventDefault();
-                        delete uploaded_files[{{ list(problem_details['data_files'].keys()) }}[i]];
+                        delete uploaded_files[{{ list(exercise_details['data_files'].keys()) }}[i]];
                         file_container.value = JSON.stringify(uploaded_files);
 
                         var file_div_to_remove = document.getElementById(i);

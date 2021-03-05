@@ -156,8 +156,8 @@
             }
 
             function showDataFiles() {
-                {% if problem_details["data_files"] != "" %}
-                    {% for file_name, file_contents in problem_details["data_files"].items() %}
+                {% if exercise_details["data_files"] != "" %}
+                    {% for file_name, file_contents in exercise_details["data_files"].items() %}
                         var p = document.createElement("p");
                         var node = document.createTextNode("{{ file_name }}");
                         p.appendChild(node);
@@ -242,7 +242,7 @@
 
         <p>{{ exercise_details["instructions"] }}</p>
 
-        {% if problem_details["data_files"] != "" %}
+        {% if exercise_details["data_files"] != "" %}
             <div id="data_file_div"></div>
             <div class="top-space">
                 <pre id="data_panel" hidden></pre>

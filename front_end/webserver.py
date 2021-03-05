@@ -598,7 +598,7 @@ class ImportCourseHandler(BaseUserHandler):
                         hint = ""
                         max_submissions = int(exercise_list[7])
                         credit = exercise_list[8]
-                        data_files = problem_list[9]
+                        data_files = exercise_list[9]
                         back_end = exercise_list[10]
                         instructions = exercise_list[12]
                         output_type = exercise_list[13]
