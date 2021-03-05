@@ -598,20 +598,18 @@ class ImportCourseHandler(BaseUserHandler):
                         hint = ""
                         max_submissions = int(exercise_list[7])
                         credit = exercise_list[8]
-                        data_url = exercise_list[9]
-                        data_file_name = exercise_list[10]
-                        data_contents = exercise_list[11]
-                        back_end = exercise_list[12]
-                        instructions = exercise_list[14]
-                        output_type = exercise_list[15]
-                        show_answer = bool(exercise_list[16])
-                        show_student_submissions = bool(exercise_list[17])
-                        show_expected = bool(exercise_list[18])
-                        show_test_code = bool(exercise_list[19])
-                        starter_code = exercise_list[20]
-                        test_code = exercise_list[21]
-                        date_created = convert_string_to_date(exercise_list[22])
-                        date_updated = convert_string_to_date(exercise_list[23])
+                        data_files = problem_list[9]
+                        back_end = exercise_list[10]
+                        instructions = exercise_list[12]
+                        output_type = exercise_list[13]
+                        show_answer = bool(exercise_list[14])
+                        show_student_submissions = bool(exercise_list[15])
+                        show_expected = bool(exercise_list[16])
+                        show_test_code = bool(exercise_list[17])
+                        starter_code = exercise_list[18]
+                        test_code = exercise_list[19]
+                        date_created = convert_string_to_date(exercise_list[20])
+                        date_updated = convert_string_to_date(exercise_list[21])
 
                         expected_text_output = ""
                         expected_image_output = ""
@@ -620,7 +618,7 @@ class ImportCourseHandler(BaseUserHandler):
                         else:
                             expected_image_output = exercise_list[13]
 
-                        content.specify_exercise_details(exercise_details, instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_url, data_file_name, data_contents, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
+                        content.specify_exercise_details(exercise_details, instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_files, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
                         content.save_exercise(exercise_basics, exercise_details)
 
                     result = "Success: The course was imported!"
@@ -887,7 +885,7 @@ class EditExerciseHandler(BaseUserHandler):
                 exercise_details = content.get_exercise_details(course, assignment, exercise)
                 exercise_details["expected_text_output"] = format_output_as_html(exercise_details["expected_text_output"])
 
-                self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, next_prev_exercises=content.get_next_prev_exercises(course, assignment, exercise, exercises), code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info())
+                self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, json_files=json.dumps(exercise_details["data_files"]).replace("\\", "\\\\"), next_prev_exercises=content.get_next_prev_exercises(course, assignment, exercise, exercises), code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -914,12 +912,18 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["starter_code"] = self.get_body_argument("starter_code_text").strip().replace("\r", "")
             exercise_details["test_code"] = self.get_body_argument("test_code_text").strip().replace("\r", "")
             exercise_details["credit"] = self.get_body_argument("credit").strip().replace("\r", "")
-            exercise_details["data_url"] = self.get_body_argument("data_url").strip().replace("\r", "")
-            exercise_details["data_file_name"] = self.get_body_argument("data_file_name").strip().replace("\r", "")
             exercise_details["show_expected"] = self.get_body_argument("show_expected") == "Yes"
             exercise_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
             exercise_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             exercise_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
+
+            old_files = self.get_body_argument("file_container")
+            new_files = self.request.files 
+            if old_files and old_files != "{}":
+                old_files = json.loads(old_files)
+                exercise_details["data_files"] = old_files
+            else:
+                exercise_details["data_files"] = ""
 
             result = "Success: The exercise was saved!"
 
@@ -937,26 +941,26 @@ class EditExerciseHandler(BaseUserHandler):
                         #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', exercise_basics["title"]):
                         #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                         #else:
-                        if (exercise_details["data_url"] == "" and exercise_details["data_file_name"] != "") or (exercise_details["data_url"] != "" and exercise_details["data_file_name"] == ""):
-                            result = "Error: If a data URL or file name is specified, both must be specified."
-                        else:
-                            if exercise_details["data_url"] == "":
-                                data_contents = b""
-                            else:
-                                if not exercise_details["data_file_name"] in exercise_details["instructions"]:
-                                    data_file_name = exercise_details["data_file_name"]
-                                    result = f"Error: You must mention {data_file_name} at least once in the instructions."
-                                else:
-                                    data_contents = download_file(exercise_details["data_url"])
+                            if new_files:
+                                data_files = {}
+                                exercise_details["data_files"] = {}
+                                total_size = 0
 
-                                    # Make sure the file is not larger than 10 MB.
-                                    if len(data_contents) > 10 * 1024 * 1024:
-                                        data_url = exercise_details["data_url"]
-                                        result = f"Error: The file at {data_url} is too large ({len(data_contents)} bytes)."
+                                #create data_files dictionary
+                                for fileInput, fileContents in new_files.items():
+                                    for i in range(len(fileContents)):
+                                        data_files[fileContents[i]["filename"]] = fileContents[i]["body"].decode("utf-8")
+                                        total_size += len(fileContents[i]["body"])
 
+                                exercise_details["data_files"].update(data_files)
+
+                                # Make sure total file size is not larger than 10 MB across all files.
+                                if total_size > 10 * 1024 * 1024:
+                                    result = f"Error: Your total file size is too large ({total_size} bytes)."
+                                    
                             if not result.startswith("Error:"):
                                 content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
-                                content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_url"], exercise_details["data_file_name"], data_contents.decode(), exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now())
+                                content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now())
 
                                 text_output, image_output = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
@@ -972,7 +976,7 @@ class EditExerciseHandler(BaseUserHandler):
                                     exercise_details["expected_text_output"] = format_output_as_html(text_output)
 
             exercises = content.get_exercises(course, assignment)
-            self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_details=exercise_details, next_prev_exercises=content.get_next_prev_exercises(course, assignment, exercise, exercises), code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info())
+            self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_details=exercise_details, json_files=json.dumps(exercise_details["data_files"]).replace("\\", "\\\\"), next_prev_exercises=content.get_next_prev_exercises(course, assignment, exercise, exercises), code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server.")
         except ReadTimeout as inst:

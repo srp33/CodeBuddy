@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        <div class="instructions-container">
+        <div class="top-space">
             <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
             <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide an introduction for this assignment." rows="8">{{ assignment_details["introduction"] }}</textarea></p>
         </div>
@@ -121,7 +121,7 @@
         {% else %}
             class="invisible"
         {% end %}>
-            <p id="allow_late_text"><strong>Allow late submissions: </strong>
+            <p class="top-space"><strong>Allow late submissions: </strong>
                 <div class="select is-info">
                     <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" class="edit-select">
                     {% if assignment_details["allow_late"] %}

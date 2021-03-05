@@ -9,16 +9,6 @@
 
             <p>{{ exercise_details["instructions"] }}</p>
 
-            {% if len(exercise_details["data_url"]) > 0 %}
-                <p><em>The data originated from <a href="{{ exercise_details['data_url'] }}" target="_blank">here</a>.</em></p>
-
-                <p>
-                    <b>{{ exercise_details["data_file_name"] }}</b>
-                    <button id="show_hide_data_button" onclick="show_hide_data()">Show</button>
-                </p>
-                <pre id="data_panel" hidden>{{ exercise_details["data_contents"] }}</pre>
-            {% end %}
-
             <h2>Instructor's solution:</h2>
 
             <pre>{{ exercise_details["answer_code"]}}</pre>

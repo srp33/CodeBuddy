@@ -99,7 +99,7 @@
 
             function showHint() {
                 var hint_div = document.getElementById("hint_div");
-                if (hint_div.style.display == "inline") {
+                if (hint_div.style.display == "block") {
                     hint_div.style.display = "none";
                 }
                 else {
@@ -154,6 +154,41 @@
                     }
                 }
             }
+
+            function showDataFiles() {
+                {% if problem_details["data_files"] != "" %}
+                    {% for file_name, file_contents in problem_details["data_files"].items() %}
+                        var p = document.createElement("p");
+                        var node = document.createTextNode("{{ file_name }}");
+                        p.appendChild(node);
+
+                        var b = document.createElement("button");
+                        b.classList.add("button", "is-link", "is-light", "show-button")
+                        b.setAttribute("id", "{{ file_name }}");
+                        b.innerHTML = "Show";
+                        b.addEventListener("click", function() {
+                            var data_panel = document.getElementById("data_panel");
+                            var button = document.getElementById("{{ file_name }}");
+                            data_panel.innerHTML = `{{ file_contents }}`;
+
+                            if (data_panel.hidden) {
+                                button.innerHTML = "Hide";
+                                data_panel.hidden = false;
+                            }
+                            else {
+                                button.innerHTML = "Show";
+                                data_panel.hidden = true;
+                            }
+                        });
+                        p.appendChild(b);
+
+                        var data_div = document.getElementById("data_file_div");
+                        data_div.appendChild(p);
+
+                    {% end %}
+                {% end %}
+            }
+
         </script>
 
         <!--The next four divs contain all of the modals for this page-->
@@ -207,13 +242,12 @@
 
         <p>{{ exercise_details["instructions"] }}</p>
 
-        {% if len(exercise_details["data_url"]) > 0 %}
-            <p><em>The data originated from <a href="{{ exercise_details['data_url'] }}" target="_blank">here</a>.</em></p>
-            <p>
-                <b>{{ exercise_details["data_file_name"] }}</b>
-                <button id="show_hide_data_button" onclick="show_hide_data()">Show</button>
-            </p>
-            <pre id="data_panel" hidden>{{ exercise_details["data_contents"] }}</pre>
+        {% if problem_details["data_files"] != "" %}
+            <div id="data_file_div"></div>
+            <div class="top-space">
+                <pre id="data_panel" hidden></pre>
+            </div>
+            <script>showDataFiles()</script>
         {% end %}
 
         {% if exercise_details["show_test_code"] and len(exercise_details["test_code"]) > 0 %}
@@ -222,7 +256,9 @@
         {% end %}
 
         {% if exercise_details["hint"] != "" %}
-            <a class="button is-small is-link" onclick="showHint()">Hint</a>
+            <div class="top-space">
+                <a class="button is-small is-link" onclick="showHint()">Hint</a>
+            </div>
         {% end %}
 
         <div id="hint_div" class="invisible hint-div"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
