@@ -1,6 +1,6 @@
 <h2>View help request</h2>
 <p class="light-heading">Assignment: {{ assignment_basics["title"] }}<br />
-Problem: {{ problem_basics["title"] }}</p><br />
+Exercise: {{ exercise_basics["title"] }}</p><br />
 
 {% if result %}
     {% if result.startswith("Error:") %}
@@ -10,7 +10,7 @@ Problem: {{ problem_basics["title"] }}</p><br />
     {% end %}
 {% end %}
 
-<form method="post" action="/view_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}/{{ help_request['user_id'] }}">
+<form method="post" action="/view_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ help_request['user_id'] }}">
 
 <h4>Help request for {{ help_request["name"] }}</h4>
 <div>
@@ -22,7 +22,7 @@ Problem: {{ problem_basics["title"] }}</p><br />
         <a id="show_answer_button" class="button is-small is-primary is-rounded" onclick="showAnswerCode()">View solution</a>
     </div>
     <div id="answer_code" class="invisible">
-        <textarea id="answer_editor" class="textarea is-info monospace" rows="20">{{ problem_details["answer_code"] }}</textarea>
+        <textarea id="answer_editor" class="textarea is-info monospace" rows="20">{{ exercise_details["answer_code"] }}</textarea>
     </div>
     {% if help_request["text_output"] %}
         <p><strong>Text output:</strong></p>
@@ -54,22 +54,22 @@ Problem: {{ problem_basics["title"] }}</p><br />
 
 </form>
 
-{% if problem_help_requests %}
-    {% if len(problem_help_requests) == 1 %}
-        <p><strong>There is 1 other help request for this problem</strong></p>
+{% if exercise_help_requests %}
+    {% if len(exercise_help_requests) == 1 %}
+        <p><strong>There is 1 other help request for this exercise</strong></p>
     {% else %}
-        <p><strong>There are {{ len(problem_help_requests) }} other help requests for this problem</strong></p>
+        <p><strong>There are {{ len(exercise_help_requests) }} other help requests for this exercise</strong></p>
     {% end %}
 {% end %}
 <div class="buttons">
     <a class="button is-small is-primary is-light is-rounded" href="/help_requests/{{ course_basics['id'] }}">Back to all requests</a>
-    {% if problem_help_requests %}
+    {% if exercise_help_requests %}
         <a id="other_button" class="button is-small is-primary is-rounded" onclick="showOtherRequests()">Show other requests</a>
     {% end %}
 </div>
 
 <div id="other_requests" class="invisible">
-    {% for request in problem_help_requests %}
+    {% for request in exercise_help_requests %}
         <div class="help_request_div">
             <h4>Help request for {{ request["name"] }}</h4>
             <p><strong>Comment:</strong></p>
@@ -85,7 +85,7 @@ Problem: {{ problem_basics["title"] }}</p><br />
                 <pre class="instructor-content">{{ request["image_output"] }}</pre>
             {% end %}
             <div class="buttons space-buttons">
-                <a class="button is-small is-link is-rounded" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['problem_id'] }}/{{ request['user_id'] }}">View suggestion</a>
+                <a class="button is-small is-link is-rounded" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View suggestion</a>
             </div>
         </div>
     {% end %}

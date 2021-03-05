@@ -1,17 +1,17 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
-        {% if problem_basics["exists"] %}
+        {% if exercise_basics["exists"] %}
             <h2>{{ student_info["name"] }}'s submissions</h2>
         
-            <p><em>Assignment</em>: {{ problem_basics["assignment"]["title"] }}</p>
+            <p><em>Assignment</em>: {{ exercise_basics["assignment"]["title"] }}</p>
         
-            <p><em>Problem</em>: {{ problem_basics["title"] }}</p>
+            <p><em>Exercise</em>: {{ exercise_basics["title"] }}</p>
 
-            <p>{{ problem_details["instructions"] }}</p>
+            <p>{{ exercise_details["instructions"] }}</p>
 
             <h2>Instructor's solution:</h2>
 
-            <pre>{{ problem_details["answer_code"]}}</pre>
+            <pre>{{ exercise_details["answer_code"]}}</pre>
 
             <p>
                 <div>
@@ -34,16 +34,16 @@
                 <h2 style="display: inline">Expected output:</h2>
             </div>
 
-            {% if problem_details["output_type"] == "txt" %}
-                <p><pre>{{ problem_details["expected_text_output"] }}</pre></p>
+            {% if exercise_details["output_type"] == "txt" %}
+                <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
             {% else %}
-                <p><figure class="img"><img src="data:image/jpg;base64,{{ problem_details['expected_image_output'] }}" width="100%"/></figure></p>
+                <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
             {% end %}
 
-            {% if problem_details["back_end"] != "any_response" %}
+            {% if exercise_details["back_end"] != "any_response" %}
                 <p><span id="code_output"></span></p>
 
-                {% if problem_details["show_expected"] %}
+                {% if exercise_details["show_expected"] %}
                     <p><span id="diff_output"></span></p>
                 {% end %}
             {% end %}

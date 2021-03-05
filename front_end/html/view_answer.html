@@ -1,5 +1,5 @@
-{% if problem_basics["exists"] %}
-    {% if problem_details["show_answer"] or assignment_details["view_answer_late"] or problem_details["show_student_submissions"] %}
+{% if exercise_basics["exists"] %}
+    {% if exercise_details["show_answer"] or assignment_details["view_answer_late"] or exercise_details["show_student_submissions"] %}
         {% if not last_submission and not assignment_details["due_date"] %}
             <p>You do not have any submissions for this exercise yet. You must first submit a passing solution.</p>
         {% else %}
@@ -10,23 +10,23 @@
                     <pre class="student-content">{{ last_submission["code"] }}</pre>
                 {% end %}
 
-                {% if problem_details["show_answer"] %}
-                    {% if problem_details["answer_code"] != "" %}
+                {% if exercise_details["show_answer"] %}
+                    {% if exercise_details["answer_code"] != "" %}
                         <h4>Instructor's solution:</h4>
-                        <pre class="instructor">{{ problem_details["answer_code"]}}</pre>
+                        <pre class="instructor">{{ exercise_details["answer_code"]}}</pre>
                     {% end %}
 
-                    {% if problem_details["answer_description"] != "" %}
+                    {% if exercise_details["answer_description"] != "" %}
                         <h4>Instructor's comments:</h4>
-                        <p>{{ problem_details["answer_description"] }}</p>
+                        <p>{{ exercise_details["answer_description"] }}</p>
                         <br />
                     {% end %}
                 {% end %}
                 </div><br />
 
-                {% if problem_details["show_student_submissions"] %}
+                {% if exercise_details["show_student_submissions"] %}
                     {% if student_submissions %}
-                        {% if problem_details["show_answer"] and (problem_details["answer_code"] != "" or problem_details["answer_description"] != "") %}
+                        {% if exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
                             <div class="buttons">
                                 <a class="button is-small is-primary is-rounded" id="other_button" onclick="showOtherSolutions()"></a>
                             </div>
@@ -58,7 +58,7 @@
 
     <p>
         <br />
-        <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Back to exercise</a>
+        <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Back to exercise</a>
     </p>
 
 {% else %}
@@ -66,7 +66,7 @@
 {% end %}
 <br /><br />
 
-{% if problem_details["show_student_submissions"] %}
+{% if exercise_details["show_student_submissions"] %}
     <script>
         function showOtherSolutions() {
             var solutions_div = document.getElementById("other_solutions");
@@ -82,7 +82,7 @@
             }
         }
 
-        {% if problem_details["show_answer"] and (problem_details["answer_code"] != "" or problem_details["answer_description"] != "") %}
+        {% if exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
             showOtherSolutions();
         {% end %}
 </script>

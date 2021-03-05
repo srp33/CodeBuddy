@@ -17,15 +17,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                    {% for problem in problem_statuses %}
+                    {% for exercise in exercise_statuses %}
                         <tr>
-                        {% if problem[1]["num_submissions"] > 0 %}
-                            <td><a href="/student_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[1]['id'] }}/{{ student_info['user_id'] }}">{{ problem[1]["title"] }}</a></td>
+                        {% if exercise[1]["num_submissions"] > 0 %}
+                            <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}/{{ student_info['user_id'] }}">{{ exercise[1]["title"] }}</a></td>
                         {% else %}
-                            <td>{{ problem[1]["title"] }}</td>
+                            <td>{{ exercise[1]["title"] }}</td>
                         {% end %}
-                            <td>{{ problem[1]["num_submissions"] }}</td>
-                            <td>{{ round(problem[1]["score"]) }}%</td>
+                            <td>{{ exercise[1]["num_submissions"] }}</td>
+                            <td>{{ round(exercise[1]["score"]) }}%</td>
                         </tr>
                     {% end %}    
                     </tbody>

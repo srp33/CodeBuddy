@@ -86,7 +86,7 @@
             <div class="date-container">
                 <div>
                     <p style="display: inline"><strong>Due date:</strong></p>
-                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a due date is specified, students will be unable to view the problems in this assignment after the due date unless late submissions or viewing the solution late is enabled.">
+                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a due date is specified, students will be unable to view the exercises in this assignment after the due date unless late submissions or viewing the solution late is enabled.">
                         <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
                     </label>
                 </div>
@@ -223,6 +223,22 @@
             {% end %}
             </select>
         </div>
+    </div>
+
+    <div class="shadow-box">
+        <p><strong>Enable help requests for exercises in this assignment: </strong>
+            <div class="select is-info">
+                <select id="enable_help_requests" name="enable_help_requests" class="edit-select">
+                {% if assignment_details["enable_help_requests"] %}
+                    <option value="Yes" selected>Yes</option>
+                    <option value="No">No</option>
+                {% else %}
+                    <option value="Yes">Yes</option>
+                    <option value="No" selected>No</option>
+                {% end %}
+                </select>
+            </div>
+        </p>
     </div>
 
     <p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
