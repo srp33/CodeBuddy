@@ -155,39 +155,18 @@
                 }
             }
 
-            function showDataFiles() {
-                {% if exercise_details["data_files"] != "" %}
-                    {% for file_name, file_contents in exercise_details["data_files"].items() %}
-                        var p = document.createElement("p");
-                        var node = document.createTextNode("{{ file_name }}");
+            function showHideData(dataPanelID, dataButtonID) {
+                var data_panel = document.getElementById(dataPanelID);
+                var data_button = document.getElementById(dataButtonID);
 
-                        p.appendChild(node);
-
-                        var b = document.createElement("button");
-                        b.classList.add("button", "is-light", "show-button")
-                        b.setAttribute("id", "{{ file_name }}");
-                        b.innerHTML = "Show";
-                        b.addEventListener("click", function() {
-                            var data_panel = document.getElementById("data_panel");
-                            var button = document.getElementById("{{ file_name }}");
-                            data_panel.innerHTML = `{{ file_contents }}`;
-
-                            if (data_panel.hidden) {
-                                button.innerHTML = "Hide";
-                                data_panel.hidden = false;
-                            }
-                            else {
-                                button.innerHTML = "Show";
-                                data_panel.hidden = true;
-                            }
-                        });
-
-                        p.appendChild(b);
-
-                        var data_div = document.getElementById("data_file_div");
-                        data_div.appendChild(p);
-                    {% end %}
-                {% end %}
+                if (data_panel.hidden) {
+                    data_panel.hidden = false;
+                    data_button.innerHTML = "Hide";
+                }
+                else {
+                    data_panel.hidden = true;
+                    data_button.innerHTML = "Show";
+                }
             }
         </script>
 
@@ -248,11 +227,18 @@
         {% end %}
 
         {% if exercise_details["data_files"] != "" %}
-            <div id="data_file_div"></div>
-                <div class="top-space">
-                    <pre id="data_panel" hidden></pre>
-                </div>
-            <script>showDataFiles()</script>
+            <h4>Data files:</h4>
+            <div id="data_file_div" class="top-space">
+                {% for key_index in range(len(exercise_details["data_files"])) %}
+                    <p>
+                        <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ list(exercise_details['data_files'].keys())[key_index] }}">{{ list(exercise_details["data_files"].keys())[key_index] }}</a>
+                        <button class="button is-light is-size-6" id="data_button_{{ key_index }}" onclick="showHideData('data_panel_{{ key_index }}', 'data_button_{{ key_index }}')">Show</button>
+                    </p>
+                    <pre id="data_panel_{{ key_index }}" hidden>
+                        {{ exercise_details["data_files"][list(exercise_details["data_files"].keys())[key_index]].strip() }}
+                    </pre>
+                {% end %}
+            </div>
         {% end %}
 
         {% if exercise_details["hint"] != "" %}

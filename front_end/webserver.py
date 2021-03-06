@@ -67,6 +67,7 @@ def make_app():
         url(r"\/remove_assistant\/([^\/]+)\/([^\/]+)", RemoveAssistantHandler, name="remove_assistant"),
         url(r"\/reset_timer\/([^\/]+)\/([^\/]+)\/([^\/]+)", ResetTimerHandler, name="reset_timer"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
+        url(r"\/download_file\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DownloadFileHandler, name="download_file"),
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
         url(r"\/download_all_scores\/([^\/]+)", DownloadAllScoresHandler, name="download_all_scores"),
         url(r"\/edit_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", EditScoresHandler, name="edit_scores"),
@@ -1242,6 +1243,16 @@ class ViewScoresHandler(BaseUserHandler):
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+class DownloadFileHandler(BaseUserHandler):
+    def get(self, course, assignment, exercise, file_name):
+        try:
+            file_contents = content.get_exercise_details(course, assignment, exercise)["data_files"][file_name]
+            self.set_header("Content-type", "application/octet-stream")
+            self.set_header("Content-Disposition", "attachment")
+            self.write(file_contents)
+        except Exception as inst:
+            self.write(traceback.format_exc())
 
 class DownloadScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
