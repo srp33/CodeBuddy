@@ -7,8 +7,8 @@
         <link rel="stylesheet" href="/static/modal.css">
 
         <script>
-            function showDeleteModal(problem_id) {
-                var modal = document.getElementById("delete_problem_modal");
+            function showDeleteModal(exercise_id) {
+                var modal = document.getElementById("delete_exercise_modal");
                 var span = document.getElementsByClassName("close")[0];
                 var confirm_text = document.getElementById("confirm_delete");
 
@@ -19,7 +19,7 @@
                 var deleteButton = document.getElementById("delete_button");
 
                 deleteButton.onclick = function() {
-                    $.post("/delete_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + problem_id);
+                    $.post("/delete_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_id);
                     modal.style.display = "none";
                     location.reload();
                 }
@@ -114,7 +114,7 @@
 
                     post_data = {"title": title, "instructions": instructions + "\n\nyoutube:" + youtube_id};
 
-                    $.post("/create_video_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                    $.post("/create_video_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
                         post_data,
                         function(data, status) {
                             var message = JSON.parse(data)["message"];
@@ -142,7 +142,7 @@
 
         </script>
 
-        {% if len(problems) > 0 %}
+        {% if len(exercises) > 0 %}
 
             <table class="table" id="assignment_table">
                 <thead>
@@ -157,25 +157,25 @@
                 </thead>
                 <tbody>
 
-                {% for problem in problems %}
+                {% for exercise in exercises %}
                     <tr>
-                        <td><a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
-                        {% if problem[1]["visible"] == 0 %}
+                        <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a></td>
+                        {% if exercise[1]["visible"] == 0 %}
                             <td>Hidden</td>
                             <td> </td>
                             <td> </td>
                         {% else %}
                             <td>Visible</td>
-                            <td><a href="/problem_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">Scores</a></td>
-                            <td><a href="/problem_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">Submissions</a></td>
+                            <td><a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Scores</a></td>
+                            <td><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Submissions</a></td>
                         {% end %}
                         <td>
-                            <a href="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[1]['id'] }}">
+                            <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}">
                                 <img src="/static/editicon.png" alt="Edit exercise" height="25px" width="25px">
                             </a>
                         </td>
                         <td>
-                            <a onclick="showDeleteModal({{ problem[1]['id'] }})">
+                            <a onclick="showDeleteModal({{ exercise[1]['id'] }})">
                                 <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
                             </a> 
                         </td>
@@ -188,7 +188,7 @@
             <p><strong>No exercises have been created for this assignment.</strong></p>
         {% end %}
 
-        <div id="delete_problem_modal" class="modal">
+        <div id="delete_exercise_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <p id="confirm_delete"></p>
@@ -260,7 +260,7 @@
 
         <p>
             <p>
-                <a class="button is-small is-rounded is-primary" onclick="window.location.href='/edit_problem/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">
+                <a class="button is-small is-rounded is-primary" onclick="window.location.href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">
                     <span>New exercise</span>
                 </a>
                 &nbsp;

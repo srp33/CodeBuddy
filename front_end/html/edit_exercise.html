@@ -1,5 +1,5 @@
-<form enctype='multipart/form-data' method="post" action="/edit_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}" id="myForm">
-{% if problem_basics["exists"] %}
+<form enctype='multipart/form-data' method="post" action="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}" id="myForm" />
+{% if exercise_basics["exists"] %}
     <div class="row-container">
         <h2>Edit exercise</h2>
         <p><input type="submit" class="button is-info is-small is-rounded" value="Save" /></p>
@@ -66,7 +66,7 @@
             <div class="row-container">
                 <div class="title-container">
                     <p><strong>Title*: </strong></p>
-                    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please specify a descriptive title for this exercise." rows="1" autofocus>{{ problem_basics["title"] }}</textarea></p>
+                    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please specify a descriptive title." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
                 </div>
 
                 <div>
@@ -78,7 +78,7 @@
                             <select name="back_end" onchange="updateBackEndOptions(this.value, '')" class="edit-select">
                             {% for back_end in back_ends %}
                                 <option
-                                {% if back_end == problem_details["back_end"] %}
+                                {% if back_end == exercise_details["back_end"] %}
                                     selected
                                 {% end %}
                                 >{{ back_end }}</option>
@@ -101,7 +101,7 @@
                     <p><strong>Visible: </strong>
                         <div class="select is-info">
                             <select name="is_visible" class="edit-select">
-                            {% if problem_basics["visible"] %}
+                            {% if exercise_basics["visible"] %}
                                 <option value="Yes" selected>Yes</option>
                                 <option value="No">No</option>
                             {% else %}
@@ -116,7 +116,7 @@
 
             <div class="top-space">
                 <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
-                <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ problem_details["instructions"] }}</textarea></p>
+                <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ exercise_details["instructions"] }}</textarea></p>
             </div>
         </div>
 
@@ -125,7 +125,7 @@
                 <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
                 <br />Please provide a link to the data source(s) if you obtained the dataset from someone else.
             </p>
-            <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ problem_details["credit"] }}</textarea></p>
+            <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ exercise_details["credit"] }}</textarea></p>
     
             <div id="file_upload">
                 <p><strong>Data file(s): </strong>
@@ -156,22 +156,22 @@
                 <p><strong>Solution*: </strong></p>
                 <p>Please specify a solution for this exercise. If it requires programming, the solution will be executed, and the output of your solution will be used as the expected output. If the back end is "free_response," your solution itself will be used as the expected output. If the back end is "any_response," you need not enter a solution. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new exercise instead.</p>
                 <p>
-                    <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide a solution." rows="10">{{ problem_details["answer_code"] }}</textarea>
+                    <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide a solution." rows="10">{{ exercise_details["answer_code"] }}</textarea>
                     <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
                     <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
                 </p>
             </div>
 
             <div>
-            {% if problem_basics["exists"] %}
+            {% if exercise_basics["exists"] %}
                 <p><strong>Output:</strong><br />
     
-                {% if problem_details["expected_text_output"] != "" %}
-                    <p><pre><code>{{ problem_details["expected_text_output"] }}</code></pre></p>
+                {% if exercise_details["expected_text_output"] != "" %}
+                    <p><pre><code>{{ exercise_details["expected_text_output"] }}</code></pre></p>
                 {% end %}
     
-                {% if problem_details["expected_image_output"] != "" %}
-                    <p><figure class='img'><img src='data:image/jpg;base64,{{ problem_details["expected_image_output"] }}' width='95%' /></figure></p>
+                {% if exercise_details["expected_image_output"] != "" %}
+                    <p><figure class='img'><img src='data:image/jpg;base64,{{ exercise_details["expected_image_output"] }}' width='95%' /></figure></p>
                 {% end %}
             {% end %}
             </div>
@@ -180,7 +180,7 @@
                 <p><strong>Show expected output: </strong>
                     <div class="select is-info">
                         <select name="show_expected" class="edit-select">
-                        {% if problem_details["show_expected"] %}
+                        {% if exercise_details["show_expected"] %}
                             <option value="Yes" selected>Yes</option>
                             <option value="No">No</option>
                         {% else %}
@@ -198,7 +198,7 @@
                 <p><strong>Starter code: </strong></p>
                 <p>Starter code will be given to a student when they haven't made any submissions yet. They'll be able to add to this code in order to solve the exercise.</p>
                 <p>
-                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide starter code." rows="10" id="starter_code" name="starter_code">{% if problem_details["starter_code"] %}{{ problem_details["starter_code"] }}{% end %}</textarea>
+                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide starter code." rows="10" id="starter_code" name="starter_code">{% if exercise_details["starter_code"] %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
                     <textarea name="starter_code_text" id="starter_code_text" class="invisible"></textarea>
                 </p>
             </div>
@@ -209,7 +209,7 @@
                 <p><strong>Test code: </strong></p>
                 <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
                 <p>
-                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ problem_details["test_code"] }}</textarea>
+                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ exercise_details["test_code"] }}</textarea>
                     <textarea name="test_code_text" id="test_code_text" class="invisible"></textarea>
                 </p>
             </div>
@@ -218,7 +218,7 @@
                 <p><strong>Show test code: </strong>
                     <div class="select is-info">
                         <select name="show_test_code" class="edit-select">
-                        {% if problem_details["show_test_code"] %}
+                        {% if exercise_details["show_test_code"] %}
                             <option value="Yes" selected>Yes</option>
                             <option value="No">No</option>
                         {% else %}
@@ -233,13 +233,13 @@
 
         <div class="shadow-box">
             <div class="space-div">
-                <p><strong>Problem hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this problem.</p> 
-                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ problem_details["hint"] }}</textarea></p>  
+                <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p> 
+                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>  
             </div>
 
             <div>
                 <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
-                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ problem_details["answer_description"] }}</textarea></p>  
+                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>  
             </div>
 
             <div class="row-container">
@@ -247,7 +247,7 @@
                     <p><strong>Allow students to view the instructor's solution after they pass the exercise: </strong>
                         <div class="select is-info">
                             <select name="show_answer" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
-                            {% if problem_details["show_answer"] %}
+                            {% if exercise_details["show_answer"] %}
                                 <option value="Yes" selected>Yes</option>
                                 <option value="No">No</option>
                             {% else %}
@@ -263,7 +263,7 @@
                     <p><strong>Allow students to see submissions from other students: </strong>
                         <div class="select is-info">
                             <select name="show_student_submissions" id="show_student_submissions" class="edit-select">
-                            {% if problem_details["show_student_submissions"] %}
+                            {% if exercise_details["show_student_submissions"] %}
                                 <option value="Yes" selected>Yes</option>
                                 <option value="No">No</option>
                             {% else %}
@@ -282,13 +282,13 @@
                             <select name="max_submissions" class="edit-select">
                             {% for i in range(101) %}
                                 {% if i == 0 %}
-                                    {% if problem_details["max_submissions"] == i %}
+                                    {% if exercise_details["max_submissions"] == i %}
                                         <option value="0" selected>Unlimited</option>
                                     {% else %}
                                         <option value="0">Unlimited</option>
                                     {% end %}
                                 {% else %}
-                                    {% if problem_details["max_submissions"] == i %}
+                                    {% if exercise_details["max_submissions"] == i %}
                                         <option selected>{{ i }}</option>
                                     {% else %}
                                         <option>{{ i }}</option>
@@ -305,8 +305,8 @@
         <p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
 
         <p>
-        {% if problem_basics["exists"] %}
-            <a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem_basics['id'] }}">Done editing</a> |
+        {% if exercise_basics["exists"] %}
+            <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Done editing</a> |
         {% end %}
             <a href="#top">Back to top</a>
         </p>
@@ -337,7 +337,7 @@
                 fontSize: "12pt"
             });
 
-            updateBackEndOptions('{{ problem_details["back_end"] }}', '{{ problem_details["output_type"] }}');
+            updateBackEndOptions('{{ exercise_details["back_end"] }}', '{{ exercise_details["output_type"] }}');
 
             document.getElementById("myForm").onsubmit = function(evt) {
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
@@ -392,7 +392,7 @@
 
             const container = document.querySelector("#file_upload");
 
-            {% if problem_details["data_files"] != "" %}
+            {% if exercise_details["data_files"] != "" %}
                 data_file_div = document.getElementById("data_file");
                 data_file_div.style.display = "none";
                 var uploaded_files = JSON.parse('{{ json_files }}');
@@ -400,14 +400,14 @@
                 file_container.value = JSON.stringify(uploaded_files);
 
                 upload_div = document.getElementById("uploaded_files");
-                for (let i = 0; i < {{ len(problem_details["data_files"]) }}; i++) {
+                for (let i = 0; i < {{ len(exercise_details["data_files"]) }}; i++) {
                     var file_div = document.createElement("div");
                     file_div.setAttribute("class", "uploaded-file");
                     file_div.setAttribute("id", i);
 
                     var text = document.createElement("p");
                     text.setAttribute("class", "file-text");
-                    var file_name = document.createTextNode({{ list(problem_details['data_files'].keys()) }}[i]);
+                    var file_name = document.createTextNode({{ list(exercise_details['data_files'].keys()) }}[i]);
                     text.appendChild(file_name);
 
                     var d_button = document.createElement("button");
@@ -416,7 +416,7 @@
 
                     d_button.addEventListener("click", function(event) {
                         event.preventDefault();
-                        delete uploaded_files[{{ list(problem_details['data_files'].keys()) }}[i]];
+                        delete uploaded_files[{{ list(exercise_details['data_files'].keys()) }}[i]];
                         file_container.value = JSON.stringify(uploaded_files);
 
                         var file_div_to_remove = document.getElementById(i);

@@ -22,20 +22,20 @@
     }
 </style>
 
-{% if len(problem_submissions) > 0 %}
+{% if len(exercise_submissions) > 0 %}
 
     <div>
-        <h2 style="display: inline-block;">Submissions for {{ problem_basics["title"] }}</h2>
+        <h2 style="display: inline-block;">Submissions for {{ exercise_basics["title"] }}</h2>
         <div class="buttons is-pulled-right">
             <a class="button is-small is-rounded is-primary" onclick="showAllSubmissions()">Show All</a>
             <a class="button is-small is-rounded is-primary is-light" onclick="hideAllSubmissions()">Hide All</a>
         </div>
     </div>
 
-    {% for student in problem_submissions %}
+    {% for student in exercise_submissions %}
         <button type="button" class="collapsible">{{ student[1]["name"] }}</button>
         <div class="c-content">
-            <p>Problem score: <strong>{{ student[1]["score"] }}%</strong></p>
+            <p>exercise score: <strong>{{ student[1]["score"] }}%</strong></p>
             <p>Most recent passing submission:</p>
             <pre>{{ student[1]["code"] }}</pre>
         </div>

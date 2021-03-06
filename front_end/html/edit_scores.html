@@ -27,15 +27,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                    {% for problem in problem_statuses %}
+                    {% for exercise in exercise_statuses %}
                         <tr>
-                            {% if problem[1]["num_submissions"] > 0 %}
-                                <td><a href="/student_problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[1]['id'] }}/{{ student_id }}">{{ problem[1]["title"] }}</a></td>
+                            {% if exercise[1]["num_submissions"] > 0 %}
+                                <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}/{{ student_id }}">{{ exercise[1]["title"] }}</a></td>
                             {% else %}
-                                <td>{{ problem[1]["title"] }}</td>
+                                <td>{{ exercise[1]["title"] }}</td>
                             {% end %}
-                            <td>{{ problem[1]["num_submissions"] }}</td>
-                            <td><input class="input is-medium is-link" style="width: 50px;" id="{{ problem[1]['id'] }}" name="{{ problem[1]['id'] }}" type="text" datainput value="{{ round(problem[1]['score']) }}"></td>
+                            <td>{{ exercise[1]["num_submissions"] }}</td>
+                            <td><input class="input is-medium is-link" style="width: 50px;" id="{{ exercise[1]['id'] }}" name="{{ exercise[1]['id'] }}" type="text" datainput value="{{ round(exercise[1]['score']) }}"></td>
                         </tr>
                     {% end %}    
                     </tbody>

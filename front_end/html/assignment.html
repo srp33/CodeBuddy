@@ -12,7 +12,7 @@
             <br /> 
         {% end %}
 
-        {% if len(problem_statuses) > 0 %}
+        {% if len(exercise_statuses) > 0 %}
 
             <link rel="stylesheet" href="/static/timer.css">
 
@@ -112,21 +112,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for problem in problem_statuses %}
+                {% for exercise in exercise_statuses %}
                     <tr>
                         {% if assignment_details["has_timer"] and not start_time and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
-                            <td>{{ problem[1]["title"] }}</td>
+                            <td>{{ exercise[1]["title"] }}</td>
                         {% else %}
-                            <td><a href="/problem/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ problem[0] }}">{{ problem[1]["title"] }}</a></td>
+                            <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a></td>
                         {% end %}
-                        <td>{{ problem[1]["num_submissions"] }}</td>
-                        <td>{{ problem[1]["score"] }}%</td>
-                        {% if problem[1]["passed"] %}
+                        <td>{{ exercise[1]["num_submissions"] }}</td>
+                        <td>{{ exercise[1]["score"] }}%</td>
+                        {% if exercise[1]["passed"] %}
                             <td><label>
                                 <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
                             </label>Completed</td>
                         {% else %}
-                            {% if problem[1]["in_progress"] %}
+                            {% if exercise[1]["in_progress"] %}
                                 <td><label>
                                     <img src="/static/inprogress.png" alt="In progress" class="table-icon"/>
                                 </label>In progress</td>
