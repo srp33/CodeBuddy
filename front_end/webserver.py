@@ -970,7 +970,7 @@ class EditExerciseHandler(BaseUserHandler):
                                 if not any_response_counts and text_output == "" and image_output == "":
                                     result = f"Error: No output was produced."
                                 else:
-                                    exercise_details["expected_text_output"] = text_output
+                                    exercise_details["expected_text_output"] = text_output.strip()
                                     exercise_details["expected_image_output"] = image_output
                                     exercise = content.save_exercise(exercise_basics, exercise_details)
 
