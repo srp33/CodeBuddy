@@ -105,6 +105,7 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
 
     middle_layer_port = os.environ['MPORT']
     response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
+
     response_dict = json.loads(response.content)
 
     return response_dict["text_output"], response_dict["image_output"]
