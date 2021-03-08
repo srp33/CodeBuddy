@@ -1371,8 +1371,8 @@ class Content:
         self.cursor.execute(sql, (new_course_id, course_id, assignment_id,))
         new_assignment_id = self.cursor.lastrowid
 
-        sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, starter_code, test_code, date_created, date_updated)
-                 SELECT ?, ?, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_expected, show_test_code, starter_code, test_code, date_created, date_updated
+        sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated)
+                 SELECT ?, ?, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated
                  FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?'''
