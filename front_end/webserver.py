@@ -694,7 +694,7 @@ class AssignmentHandler(BaseUserHandler):
                 user_info = self.get_user_info()
                 assignment_details = content.get_assignment_details(course, assignment, True)
                 curr_datetime = datetime.datetime.now()
-                start_time = content.get_start_time(course, assignment, user_info["user_id"])
+                start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
 
                 if assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
@@ -711,9 +711,9 @@ class AssignmentHandler(BaseUserHandler):
             show = self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
             user_info = self.get_user_info()
             start_time = self.get_body_argument("start_time")
-            content.set_start_time(course, assignment, user_info["user_id"], start_time)
+            content.set_user_assignment_start_time(course, assignment, user_info["user_id"], start_time)
 
-            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=content.get_exercises(course, assignment, show), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_start_time(course, assignment, user_info["user_id"]), user_info=user_info)
+            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=content.get_exercises(course, assignment, show), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_user_assignment_start_time(course, assignment, user_info["user_id"]), user_info=user_info)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -862,9 +862,9 @@ class ExerciseHandler(BaseUserHandler):
             assignment_details = content.get_assignment_details(course, assignment)
 
             if not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course) and assignment_details["has_timer"]:
-                start_time = content.get_start_time(course, assignment, self.get_user_id())
+                start_time = content.get_user_assignment_start_time(course, assignment, self.get_user_id())
 
-                if not start_time or content.timer_ended(course, assignment, start_time):
+                if not start_time or content.user_assignment_start_timer_ended(course, assignment, start_time):
                     if not assignment_details["due_date"] or assignment_details["due_date"] > datetime.datetime.now():
                         self.render("timer_error.html", user_info=content.get_user_info(self.get_user_id()))
                         return
@@ -875,7 +875,7 @@ class ExerciseHandler(BaseUserHandler):
             back_end = settings_dict["back_ends"][exercise_details["back_end"]]
             next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
-            self.render("exercise.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_start_time(course, assignment, self.get_user_id()), help_request=content.get_help_request(course, assignment, exercise, self.get_user_id()), user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
+            self.render("exercise.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=content.get_help_request(course, assignment, exercise, self.get_user_id()), user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
 
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -1225,7 +1225,7 @@ class ResetTimerHandler(BaseUserHandler):
     async def post(self, course, assignment, user):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
-                content.reset_timer(course, assignment, user)
+                content.reset_user_assignment_start_timer(course, assignment, user)
             else:
                 self.render("permissions.html")
 
@@ -1238,7 +1238,7 @@ class ViewScoresHandler(BaseUserHandler):
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 assignment_basics = content.get_assignment_basics(course, assignment)
 
-                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment), exercises=content.get_exercises(course, assignment), exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), scores=content.get_assignment_scores(course, assignment), start_times=content.get_all_start_times(course, assignment), curr_datetime=datetime.datetime.now(), download_file_name=get_scores_download_file_name(assignment_basics), user_info=self.get_user_info())
+                self.render("view_scores.html", courses=content.get_courses(), course_basics=content.get_course_basics(course), assignments=content.get_assignments(course), assignment_basics=assignment_basics, assignment_details=content.get_assignment_details(course, assignment), exercises=content.get_exercises(course, assignment), exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), scores=content.get_assignment_scores(course, assignment), start_times=content.get_all_user_assignment_start_times(course, assignment), curr_datetime=datetime.datetime.now(), download_file_name=get_scores_download_file_name(assignment_basics), user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
         except Exception as inst:
