@@ -1418,7 +1418,6 @@ class Content:
         self.cursor.execute(sql, (user_id,))
 
     def move_exercise(self, course_id, assignment_id, exercise_id, new_assignment_id):
-
         sql = f'''BEGIN TRANSACTION;
 
                   UPDATE exercises

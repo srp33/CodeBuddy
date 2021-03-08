@@ -1100,10 +1100,13 @@ class SubmitHandler(BaseUserHandler):
 
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
+            out_dict["passed"] = False
         except ReadTimeout as inst:
             out_dict["text_output"] = f"Your solution timed out after {settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
+            out_dict["passed"] = False
         except Exception as inst:
             out_dict["text_output"] = format_output_as_html(traceback.format_exc())
+            out_dict["passed"] = False
 
         self.write(json.dumps(out_dict))
 
