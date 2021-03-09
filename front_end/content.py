@@ -868,7 +868,7 @@ class Content:
     def get_help_requests(self, course_id):
         help_requests = []
 
-        sql = '''SELECT r.course_id, a.assignment_id, e.exercise_id, c.title as course_title, a.title as assignment_title, e.title as exercise_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.date
+        sql = '''SELECT r.course_id, a.assignment_id, e.exercise_id, c.title as course_title, a.title as assignment_title, e.title as exercise_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.date, r.more_info_needed
                  FROM help_requests r
                  INNER JOIN users u
                    ON r.user_id = u.user_id
@@ -884,14 +884,14 @@ class Content:
         self.cursor.execute(sql, (course_id,))
 
         for request in self.cursor.fetchall():
-            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "course_title": request["course_title"], "assignment_title": request["assignment_title"], "exercise_title": request["exercise_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "date": request["date"]})
+            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "course_title": request["course_title"], "assignment_title": request["assignment_title"], "exercise_title": request["exercise_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "date": request["date"], "more_info_needed": request["more_info_needed"]})
 
         return help_requests
 
     def get_student_help_requests(self, user_id):
         help_requests = []
 
-        sql = '''SELECT r.course_id, a.assignment_id, e.exercise_id, c.title as course_title, a.title as assignment_title, e.title as exercise_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id
+        sql = '''SELECT r.course_id, a.assignment_id, e.exercise_id, c.title as course_title, a.title as assignment_title, e.title as exercise_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.more_info_needed
                  FROM help_requests r
                  INNER JOIN users u
                    ON r.user_id = u.user_id
@@ -907,14 +907,14 @@ class Content:
         self.cursor.execute(sql, (user_id,))
 
         for request in self.cursor.fetchall():
-            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "course_title": request["course_title"], "assignment_title": request["assignment_title"], "exercise_title": request["exercise_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"]})
+            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "course_title": request["course_title"], "assignment_title": request["assignment_title"], "exercise_title": request["exercise_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]})
 
         return help_requests
 
     def get_exercise_help_requests(self, course_id, assignment_id, exercise_id, user_id):
         help_requests = []
 
-        sql = '''SELECT r.course_id, r.assignment_id, r.exercise_id, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id
+        sql = '''SELECT r.course_id, r.assignment_id, r.exercise_id, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.more_info_needed
                  FROM help_requests r
                  INNER JOIN users u
                    ON r.user_id = u.user_id
@@ -927,12 +927,12 @@ class Content:
         self.cursor.execute(sql, (course_id, assignment_id, exercise_id, user_id,))
 
         for request in self.cursor.fetchall():
-            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"]})
+            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]})
 
         return help_requests
 
     def get_help_request(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id
+        sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.more_info_needed
                  FROM help_requests r
                  INNER JOIN users u
                    ON r.user_id = u.user_id
@@ -945,7 +945,7 @@ class Content:
 
         request = self.cursor.fetchone()
         if request:
-            help_request = {"user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"]}
+            help_request = {"user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]}
             if request["suggestion"]:
                 help_request["suggestion"] = request["suggestion"]
             else:
@@ -1337,11 +1337,20 @@ class Content:
         return submission_id
 
     def save_help_request(self, course, assignment, exercise, user_id, code, text_output, image_output, student_comment, date):
-        sql = '''INSERT INTO help_requests (course_id, assignment_id, exercise_id, user_id, code, text_output, image_output, student_comment, approved, date)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        sql = '''INSERT INTO help_requests (course_id, assignment_id, exercise_id, user_id, code, text_output, image_output, student_comment, approved, date, more_info_needed)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.cursor.execute(sql, (course, assignment, exercise, user_id, code, text_output, image_output, student_comment, 0, date,))
+        self.cursor.execute(sql, (course, assignment, exercise, user_id, code, text_output, image_output, student_comment, 0, date, 0,))
 
+    def update_help_request(self, course, assignment, exercise, user_id, student_comment):
+        sql = '''UPDATE help_requests
+                 SET student_comment = ?, more_info_needed = ?
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+        self.cursor.execute(sql, (student_comment, 0, course, assignment, exercise, user_id,))
+    
     def delete_help_request(self, course, assignment, exercise, user_id):
         sql = '''DELETE FROM help_requests
                  WHERE course_id = ?
@@ -1350,16 +1359,16 @@ class Content:
                    AND user_id = ?'''
         self.cursor.execute(sql, (course, assignment, exercise, user_id,))
 
-    def save_help_request_suggestion(self, course, assignment, exercise, user_id, suggestion, approved, suggester_id, approver_id):
+    def save_help_request_suggestion(self, course, assignment, exercise, user_id, suggestion, approved, suggester_id, approver_id, more_info_needed):
 
         sql = '''UPDATE help_requests
-                  SET suggestion = ?, approved = ?, suggester_id = ?, approver_id = ?
-                  WHERE course_id = ?
-                    AND assignment_id = ?
-                    AND exercise_id = ?
-                    AND user_id = ?'''
+                 SET suggestion = ?, approved = ?, suggester_id = ?, approver_id = ?, more_info_needed = ?
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
 
-        self.cursor.execute(sql, (suggestion, approved, suggester_id, approver_id, course, assignment, exercise, user_id,))
+        self.cursor.execute(sql, (suggestion, approved, suggester_id, approver_id, more_info_needed, course, assignment, exercise, user_id,))
     
     def copy_assignment(self, course_id, assignment_id, new_course_id):
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer)
