@@ -65,7 +65,7 @@ class Content:
             self.execute(sql)
 
     def get_database_version(self):
-        sql = '''SELECT MAX(version)
+        sql = '''SELECT MAX(version) AS version
                  FROM metadata'''
 
         return self.fetchone(sql)["version"]
