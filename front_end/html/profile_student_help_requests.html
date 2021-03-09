@@ -1,49 +1,55 @@
-      <div class="tab-title">
-        <h3>My Help Requests</h3>
-        <p>Listed below are your open and resolved help requests. You can open a new help request from any exercise page.</p>
-      </div> 
+            <div class="tab-title">
+                <h3>My Help Requests</h3>
+                <p>Listed below are your open and resolved help requests. You can open a new help request from any exercise page.</p>
+            </div> 
 
-      {% if help_requests %}
-        <table class="table" id="request-table">
-          <thead>
-            <tr>
-              <th>Assignment Title</th>
-              <th>exercise Title</th>
-              <th>Request</th>
-              <th>Suggestion Made</th>
-              <!--<th>Delete</th>-->
-            </tr>
-          </thead>
-          <tbody>
-            {% for request in help_requests %}
-              <tr>
-                <td>{{ request["assignment_title"] }}</td> 
-                <td>{{ request["exercise_title"] }}</td>
-                <td><a href="/exercise/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}" class="button is-small is-link">View Request</a></td>
-                {% if request["suggestion"] %}
-                  <td>
-                    <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
-                  </td>
-                {% else %}
-                  <td>
-                    <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
-                  </td>
-                {% end %}
-                <!--<form method="post" action="/delete_request/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">
-                  <td>
-                    <button id="profile-button" type="submit">
-                      <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
-                    </button>
-                  </td>
-                </form>-->
-              </tr>
-            {% end %}   
-          </tbody>
-        </table>
-      {% else %}
-        <p>No help requests</p>
-      {% end %}
+            {% if help_requests %}
+            <table class="table" id="request-table">
+                <thead>
+                    <tr>
+                        <th>Assignment Title</th>
+                        <th>Exercise Title</th>
+                        <th>Request</th>
+                        <th>More Info Needed</th>
+                        <th>Suggestion Made</th>
+                        <!--<th>Delete</th>-->
+                    </tr>
+                </thead>
+                <tbody>
+                {% for request in help_requests %}
+                    <tr>
+                        <td>{{ request["assignment_title"] }}</td> 
+                        <td>{{ request["exercise_title"] }}</td>
+                        <td><a href="/exercise/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}" class="button is-small is-link">View Request</a></td>
+                        {% if request["more_info_needed"] %}
+                            <td class="is-warning">Yes</td>
+                        {% else %}
+                            <td>No</td>
+                        {% end %}
+                        {% if request["suggestion"] %}
+                            <td>
+                                <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
+                            </td>
+                        {% else %}
+                            <td>
+                                <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
+                            </td>
+                        {% end %}
+                        <!--<form method="post" action="/delete_request/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">
+                        <td>
+                            <button id="profile-button" type="submit">
+                            <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
+                            </button>
+                        </td>
+                        </form>-->
+                    </tr>
+                {% end %}   
+                </tbody>
+            </table>
+            {% else %}
+                <p>No help requests</p>
+            {% end %}
 
+        </div>
     </div>
-  </div>
 </div>
