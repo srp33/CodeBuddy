@@ -32,7 +32,12 @@ class Content:
         self.cursor.close()
         self.conn.close()
 
+    # This function creates tables as they were in version 5. Subsequent changes
+    #   to the database are implemented as migration scripts.
     def create_sqlite_tables(self):
+        create_metadata_table = '''CREATE TABLE IF NOT EXISTS metadata (version integer NOT NULL);'''
+        create_metadata_table2 = '''INSERT INTO metadata (version) VALUES (5);'''
+
         create_users_table = '''CREATE TABLE IF NOT EXISTS users (
                                   user_id text PRIMARY KEY,
                                   name text,
@@ -40,8 +45,7 @@ class Content:
                                   family_name text,
                                   picture text,
                                   locale text,
-                                  ace_theme text NOT NULL DEFAULT "tomorrow",
-                                  use_auto_complete integer NOT NULL DEFAULT 1
+                                  ace_theme text NOT NULL DEFAULT "tomorrow"
                                 );'''
 
         create_permissions_table = '''CREATE TABLE IF NOT EXISTS permissions (
@@ -51,7 +55,7 @@ class Content:
                                         FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
                                       );'''
 
-        create_course_registrations_table = '''CREATE TABLE IF NOT EXISTS course_registrations (
+        create_course_registration_table = '''CREATE TABLE IF NOT EXISTS course_registration (
                                                  user_id text NOT NULL,
                                                  course_id integer NOT NULL,
                                                  FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -79,7 +83,6 @@ class Content:
                                         allow_late integer,
                                         late_percent real,
                                         view_answer_late integer,
-                                        enable_help_requests integer,
                                         has_timer int NOT NULL,
                                         hour_timer int,
                                         minute_timer int,
@@ -88,10 +91,10 @@ class Content:
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
                                       );'''
 
-        create_exercises_table = '''CREATE TABLE IF NOT EXISTS exercises (
+        create_problems_table = '''CREATE TABLE IF NOT EXISTS problems (
                                      course_id integer NOT NULL,
                                      assignment_id integer NOT NULL,
-                                     exercise_id integer PRIMARY KEY AUTOINCREMENT,
+                                     problem_id integer PRIMARY KEY AUTOINCREMENT,
                                      title text NOT NULL,
                                      visible integer NOT NULL,
                                      answer_code text NOT NULL,
@@ -99,7 +102,9 @@ class Content:
                                      hint text,
                                      max_submissions integer NOT NULL,
                                      credit text,
-                                     data_files text,
+                                     data_url text,
+                                     data_file_name text,
+                                     data_contents text,
                                      back_end text NOT NULL,
                                      expected_text_output text NOT NULL,
                                      expected_image_output text NOT NULL,
@@ -109,7 +114,6 @@ class Content:
                                      show_student_submissions integer NOT NULL,
                                      show_expected integer NOT NULL,
                                      show_test_code integer NOT NULL,
-                                     starter_code text,
                                      test_code text,
                                      date_created timestamp NOT NULL,
                                      date_updated timestamp NOT NULL,
@@ -120,7 +124,7 @@ class Content:
         create_submissions_table = '''CREATE TABLE IF NOT EXISTS submissions (
                                         course_id integer NOT NULL,
                                         assignment_id integer NOT NULL,
-                                        exercise_id integer NOT NULL,
+                                        problem_id integer NOT NULL,
                                         user_id text NOT NULL,
                                         submission_id integer NOT NULL,
                                         code text NOT NULL,
@@ -130,46 +134,25 @@ class Content:
                                         date timestamp NOT NULL,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                                        FOREIGN KEY (exercise_id) REFERENCES exercises (exercise_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                                        PRIMARY KEY (course_id, assignment_id, exercise_id, user_id, submission_id)
+                                        PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
                                       );'''
-
-        create_help_requests_table = '''CREATE TABLE IF NOT EXISTS help_requests (
-                                            course_id integer NOT NULL,
-                                            assignment_id integer NOT NULL,
-                                            exercise_id integer NOT NULL,
-                                            user_id text NOT NULL,
-                                            code text NOT NULL,
-                                            text_output text NOT NULL,
-                                            image_output text NOT NULL,
-                                            student_comment text,
-                                            suggestion text,
-                                            approved integer NOT NULL,
-                                            suggester_id text,
-                                            approver_id text,
-                                            date timestamp NOT NULL,
-                                            FOREIGN KEY (course_id) REFERENCES courses (course_id) ON UPDATE CASCADE,
-                                            FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON UPDATE CASCADE,
-                                            FOREIGN KEY (exercise_id) REFERENCES exercises (exercise_id) ON UPDATE CASCADE,
-                                            FOREIGN KEY (user_id) REFERENCES users(user_id) ON UPDATE CASCADE,
-                                            PRIMARY KEY (course_id, assignment_id, exercise_id, user_id)
-                                         );'''
 
         create_scores_table = '''CREATE TABLE IF NOT EXISTS scores (
                                         course_id integer NOT NULL,
                                         assignment_id integer NOT NULL,
-                                        exercise_id integer NOT NULL,
+                                        problem_id integer NOT NULL,
                                         user_id text NOT NULL,
                                         score real NOT NULL,
                                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                                        FOREIGN KEY (exercise_id) REFERENCES exercises (exercise_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE ON UPDATE CASCADE,
                                         FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                                        PRIMARY KEY (course_id, assignment_id, exercise_id, user_id)
+                                        PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
                                       );'''
 
-        create_user_assignment_starts_table = '''CREATE TABLE IF NOT EXISTS user_assignment_starts (
+        create_user_assignment_start_table = '''CREATE TABLE IF NOT EXISTS user_assignment_start (
                                                   user_id text NOT NULL,
                                                   course_id text NOT NULL,
                                                   assignment_id text NOT NULL,
@@ -180,18 +163,31 @@ class Content:
                                                 );'''
 
         if self.conn is not None:
+            self.cursor.execute(create_metadata_table)
+            self.cursor.execute(create_metadata_table2)
             self.cursor.execute(create_users_table)
             self.cursor.execute(create_permissions_table)
-            self.cursor.execute(create_course_registrations_table)
+            self.cursor.execute(create_course_registration_table)
             self.cursor.execute(create_courses_table)
             self.cursor.execute(create_assignments_table)
-            self.cursor.execute(create_exercises_table)
+            self.cursor.execute(create_problems_table)
             self.cursor.execute(create_submissions_table)
-            self.cursor.execute(create_help_requests_table)
             self.cursor.execute(create_scores_table)
-            self.cursor.execute(create_user_assignment_starts_table)
+            self.cursor.execute(create_user_assignment_start_table)
         else:
             print("Error! Cannot create a database connection.")
+
+    def get_database_version(self):
+        sql = '''SELECT version
+                 FROM metadata'''
+        self.cursor.execute(sql)
+
+        return self.cursor.fetchone()["version"]
+
+    def update_database_version(self, version):
+        sql = '''UPDATE metadata
+                 SET version = ?'''
+        self.cursor.execute(sql, (version,))
 
     def set_start_time(self, course_id, assignment_id, user_id, start_time):
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
@@ -1186,8 +1182,8 @@ class Content:
 
     def get_exercise_details(self, course, assignment, exercise, format_content=False):
         if not exercise:
-            return {"instructions": "", "back_end": "python", "output_type": "txt", "answer_code": "", "answer_description": "", "hint": "", 
-            "max_submissions": 0, "starter_code": "", "test_code": "", "credit": "", "data_files": "", "show_expected": True, "show_test_code": True, "show_answer": True, 
+            return {"instructions": "", "back_end": "python", "output_type": "txt", "answer_code": "", "answer_description": "", "hint": "",
+            "max_submissions": 0, "starter_code": "", "test_code": "", "credit": "", "data_files": "", "show_expected": True, "show_test_code": True, "show_answer": True,
             "show_student_submissions": False, "expected_text_output": "", "expected_image_output": "", "data_files": "", "date_created": None, "date_updated": None}
 
         sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_files, show_expected, show_test_code, show_answer, show_student_submissions, expected_text_output, expected_image_output, data_files, date_created, date_updated
@@ -1199,7 +1195,7 @@ class Content:
         self.cursor.execute(sql, (int(course), int(assignment), int(exercise),))
         row = self.cursor.fetchone()
 
-        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "test_code": row["test_code"], "credit": row["credit"], "data_files": row["data_files"], "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "show_student_submissions": row["show_student_submissions"], "expected_text_output": row["expected_text_output"], "expected_image_output": row["expected_image_output"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "test_code": row["test_code"], "credit": row["credit"], "data_files": row["data_files"].strip(), "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "show_student_submissions": row["show_student_submissions"], "expected_text_output": row["expected_text_output"].strip(), "expected_image_output": row["expected_image_output"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
 
         if row["data_files"]:
             exercise_dict["data_files"] = json.loads(row["data_files"])
@@ -1308,7 +1304,7 @@ class Content:
     def save_exercise(self, exercise_basics, exercise_details):
         if exercise_basics["exists"]:
             sql = '''UPDATE exercises
-                     SET title = ?, visible = ?, answer_code = ?, answer_description = ?, hint = ?, max_submissions = ?, 
+                     SET title = ?, visible = ?, answer_code = ?, answer_description = ?, hint = ?, max_submissions = ?,
                          credit = ?, data_files = ?, back_end = ?, expected_text_output = ?, expected_image_output = ?,
                          instructions = ?, output_type = ?, show_answer = ?, show_student_submissions = ?, show_expected = ?,
                          show_test_code = ?, starter_code = ?, test_code = ?, date_updated = ?
@@ -1319,7 +1315,7 @@ class Content:
             self.cursor.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["answer_code"]), exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["show_answer"], exercise_details["show_student_submissions"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["date_updated"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
         else:
             sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             self.cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["answer_code"]), exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["show_answer"], exercise_details["show_student_submissions"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["date_created"], exercise_details["date_updated"]])
             exercise_basics["id"] = self.cursor.lastrowid
@@ -1431,7 +1427,6 @@ class Content:
         self.cursor.execute(sql, (user_id,))
 
     def move_exercise(self, course_id, assignment_id, exercise_id, new_assignment_id):
-
         sql = f'''BEGIN TRANSACTION;
 
                   UPDATE exercises

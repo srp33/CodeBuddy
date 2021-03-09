@@ -10,8 +10,8 @@ from content import *
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
 
-print("Debugging:")
-print(sys.argv)
+#print("Debugging:")
+#print(sys.argv)
 
 in_file_prefix = sys.argv[1]
 out_dir_path = sys.argv[2]
@@ -131,7 +131,7 @@ def save_summaries(summary_dict, out_dir_path):
         else:
             # Write header for output file
             with gzip.open(out_file_path, 'w') as out_file:
-                out_file.write("Timestamp\tCourse_ID\tAssignment_ID\texercise_ID\tValue\tName\tCourse_Name\tAssignment_Name\tExercise_Name\n".encode())
+                out_file.write("Timestamp\tCourse_ID\tAssignment_ID\tExercise_ID\tValue\tName\tCourse_Title\tAssignment_Title\tExercise_Title\n".encode())
 
         with gzip.open(out_file_path, 'a') as out_file:
             for timestamp, value_dict in sorted(statistic_dict.items()):

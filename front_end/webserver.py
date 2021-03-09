@@ -7,6 +7,7 @@ import html
 import io
 import json
 import logging
+import os
 import re
 import sys
 from tornado.auth import GoogleOAuth2Mixin
@@ -66,6 +67,7 @@ def make_app():
         url(r"\/remove_assistant\/([^\/]+)\/([^\/]+)", RemoveAssistantHandler, name="remove_assistant"),
         url(r"\/reset_timer\/([^\/]+)\/([^\/]+)\/([^\/]+)", ResetTimerHandler, name="reset_timer"),
         url(r"\/view_scores\/([^\/]+)\/([^\/]+)", ViewScoresHandler, name="view_scores"),
+        url(r"\/download_file\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", DownloadFileHandler, name="download_file"),
         url(r"\/download_scores\/([^\/]+)\/([^\/]+)", DownloadScoresHandler, name="download_scores"),
         url(r"\/download_all_scores\/([^\/]+)", DownloadAllScoresHandler, name="download_all_scores"),
         url(r"\/edit_scores\/([^\/]+)\/([^\/]+)\/([^\/]+)", EditScoresHandler, name="edit_scores"),
@@ -393,7 +395,7 @@ class ProfileHelpRequestsHandler(BaseUserHandler):
                     courses = content.get_courses()
                 elif self.is_instructor() or self.is_assistant():
                     courses = content.get_courses_connected_to_user(user_info["user_id"])
-                    
+
                 self.render("profile_help_requests.html", page="help_requests", result=None, courses=courses, user_info=user_info, is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
             else:
                 self.render("permissions.html")
@@ -402,7 +404,7 @@ class ProfileHelpRequestsHandler(BaseUserHandler):
 
 class ProfileStudentHelpRequestsHandler(BaseUserHandler):
     def get(self):
-        try:                   
+        try:
             self.render("profile_student_help_requests.html", page="help_requests", result=None, user_info=self.get_user_info(), help_requests=content.get_student_help_requests(self.get_user_id()), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -919,7 +921,7 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
 
             old_files = self.get_body_argument("file_container")
-            new_files = self.request.files 
+            new_files = self.request.files
             if old_files and old_files != "{}":
                 old_files = json.loads(old_files)
                 exercise_details["data_files"] = old_files
@@ -958,7 +960,7 @@ class EditExerciseHandler(BaseUserHandler):
                                 # Make sure total file size is not larger than 10 MB across all files.
                                 if total_size > 10 * 1024 * 1024:
                                     result = f"Error: Your total file size is too large ({total_size} bytes)."
-                                    
+
                             if not result.startswith("Error:"):
                                 content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
                                 content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now())
@@ -968,7 +970,7 @@ class EditExerciseHandler(BaseUserHandler):
                                 if not any_response_counts and text_output == "" and image_output == "":
                                     result = f"Error: No output was produced."
                                 else:
-                                    exercise_details["expected_text_output"] = text_output
+                                    exercise_details["expected_text_output"] = text_output.strip()
                                     exercise_details["expected_image_output"] = image_output
                                     exercise = content.save_exercise(exercise_basics, exercise_details)
 
@@ -1098,10 +1100,13 @@ class SubmitHandler(BaseUserHandler):
 
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
+            out_dict["passed"] = False
         except ReadTimeout as inst:
             out_dict["text_output"] = f"Your solution timed out after {settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
+            out_dict["passed"] = False
         except Exception as inst:
             out_dict["text_output"] = format_output_as_html(traceback.format_exc())
+            out_dict["passed"] = False
 
         self.write(json.dumps(out_dict))
 
@@ -1241,6 +1246,16 @@ class ViewScoresHandler(BaseUserHandler):
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+class DownloadFileHandler(BaseUserHandler):
+    def get(self, course, assignment, exercise, file_name):
+        try:
+            file_contents = content.get_exercise_details(course, assignment, exercise)["data_files"][file_name]
+            self.set_header("Content-type", "application/octet-stream")
+            self.set_header("Content-Disposition", "attachment")
+            self.write(file_contents)
+        except Exception as inst:
+            self.write(traceback.format_exc())
 
 class DownloadScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
@@ -1622,28 +1637,31 @@ if __name__ == "__main__":
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
         content = Content(settings_dict)
+        content.create_sqlite_tables()
 
-        version = read_file("VERSION").rstrip()
+        database_version = content.get_database_version()
+        code_version = int(read_file("VERSION").rstrip())
 
         # Check to see whether there is a database migration script (should only be one per version).
         # If so, make a backup copy of the database and then do the migration.
-        migration_file_path = glob.glob(f"/migration_scripts/*_to_{version}.py")
-        if len(migration_file_path) > 0:
+        for v in range(database_version, code_version):
+            migration_file_path = f"/migration_scripts/{v}_to_{v + 1}.py"
+
             run_command("bash /etc/cron.hourly/back_up_database.sh")
 
-            print(f"Checking database status...")
-            result = run_command(f"python {migration_file_path[0]}")
+            print(f"Checking database status for version {v}...")
+            result = run_command(f"python {migration_file_path}")
 
             if "***NotNeeded***" in result:
                 print("Database migration not needed.")
             elif "***Success***" in result:
-                print(f"Database successfully migrated to version {version} using {migration_file_path[0]}.")
+                print(f"Database successfully migrated to version {v} using {migration_file_path}.")
+                content.update_database_version(code_version)
             else:
-                print(f"Database migration failed using {migration_file_path[0]} so rolling back...")
+                print(f"Database migration failed using {migration_file_path} so rolling back...")
                 print(result)
                 run_command("bash /etc/cron.hourly/restore_database.sh")
-
-        content.create_sqlite_tables()
+                break
 
         ##for assignment_title in ["18 - Biostatistics - Analyzing proportions"]:
         ##    content.rebuild_exercises(assignment_title)

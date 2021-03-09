@@ -94,7 +94,7 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
         # In this case, the code is the answer that the student provided.
         return code.strip(), ""
 
-    timeout = this_settings_dict["timeout_seconds"] + 2
+    timeout = this_settings_dict["timeout_seconds"]
     data_dict = {"image_name": this_settings_dict["image_name"],
                  "code": code,
                  "data_files": exercise_details["data_files"],
@@ -105,12 +105,13 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
 
     middle_layer_port = os.environ['MPORT']
     response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
+
     response_dict = json.loads(response.content)
 
     return response_dict["text_output"], response_dict["image_output"]
 
 def check_exercise_output(exercise_details, actual_text, actual_image):
-    if exercise_details["back_end"] == "any_response" and len(actual_text) > 0 or len(actual_image) > 0:
+    if exercise_details["back_end"] == "any_response" and (len(actual_text) > 0 or len(actual_image) > 0):
         return "", True
 
     if exercise_details["output_type"] == "txt":
@@ -139,12 +140,12 @@ def check_exercise_output(exercise_details, actual_text, actual_image):
         diff_image, diff_percent = diff_jpg(expected_image, actual_image)
 
         diff_output = ""
-        max_diff_percent = 1.0
-        if diff_percent > max_diff_percent:
+        if diff_percent < 10.0:
             # Only return diff output if the differences are relatively small.
             diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
 
-        return diff_output, diff_percent < max_diff_percent # Pass if they are similar enough.
+        #return diff_output, diff_percent < 1.0 # Pass if they are similar.
+        return diff_output, diff_percent == 0 # Pass if they are identical.
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
