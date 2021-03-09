@@ -1,6 +1,12 @@
 <link rel="stylesheet" href="/static/modal.css">
 <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
 
+<style>
+    tr {
+        font-size: 16px;
+    }
+</style>
+
 <h2 style="text-align: center;">Help Requests Dashboard</h2>
 
 <h4>Help requests for {{ course_basics["title"] }}</h4>
@@ -22,16 +28,21 @@
         <tr>
             <th>Date</th>
             <th>Student Name</th>
-            <th>Assignment Title</th>
-            <th>exercise Title</th>
+            <th>Assignment</th>
+            <th>Exercise</th>
             <th>Request</th>
+            <th>More Info Needed
+                <label class="has-tooltip-multiline" data-tooltip="Once the student sees this request and gives more information, this flag will be removed automatically.">
+                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                </label>
+            </th>
             <th>Suggestion Made</th>
             <th>Approved
                 <label class="has-tooltip-multiline" data-tooltip="Assistants can make suggestions, but they must be approved by an instructor or admin before the student will be able to see them.">
                     <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
                 </label>
             </th>
-            <th>Delete</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -48,6 +59,11 @@
             <td>{{ request["assignment_title"] }}</td> 
             <td>{{ request["exercise_title"] }}</td>
             <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View</a></td>
+            {% if request["more_info_needed"] %}
+                <td>Yes</td>
+            {% else %}
+                <td>No</td>
+            {% end %}
             {% if request["suggestion"] %}
                 <td>
                     <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
@@ -98,8 +114,8 @@
         for (i = 1; i < tr.length; i++) {
             tr[i].style.display = "";
 
-            td_s = tr[i].getElementsByTagName("td")[5];
-            td_a = tr[i].getElementsByTagName("td")[6];
+            td_s = tr[i].getElementsByTagName("td")[6];
+            td_a = tr[i].getElementsByTagName("td")[7];
             if (td_s && td_a) {
                 var icon_s = td_s.getElementsByTagName('img')[0].alt;
                 var icon_a = td_a.getElementsByTagName('img')[0].alt;
