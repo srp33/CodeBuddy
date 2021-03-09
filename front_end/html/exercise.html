@@ -212,8 +212,18 @@
         <div id="help_request_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
-                <p>Please write a comment to help us better understand what you need help with:</p>
+                {% if help_request and help_request["more_info_needed"] %}
+                    <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></strog></p>
+                    <p>Your previous comment:<br />{{ help_request["student_comment"] }}</p>
+                    {% if help_request["suggestion"] %}
+                        <p>Comment made by your instructor/assistant:<br />{{ help_request["suggestion"] }}</p>
+                    {% end %}
+                    <br />
+                    <p>Please write a new comment to help us better understand what you need help with:</p>
+                {% else %}
+                    <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
+                    <p>Please write a comment to help us better understand what you need help with:</p>
+                {% end %}
                 <input class="input is-medium is-primary" type="text" id="student_comment" name="student_comment">
                 <p class="buttons">
                     <a id="cancel_request_button" class="modal-button button is-small is-primary is-light">Cancel</a>
@@ -324,6 +334,8 @@
                     {% if help_request %}
                         {% if help_request["approved"] %}
                             <a class="button success-message" onclick="showSuggestionModal()">View suggestion</a>
+                        {% elif help_request["more_info_needed"] %}
+                            <a class="button is-warning is-light" onclick="showHelpRequestModal()">More info needed</a>
                         {% else %}
                             <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
                         {% end %}
