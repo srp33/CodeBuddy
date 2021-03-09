@@ -43,6 +43,8 @@ Exercise: {{ exercise_basics["title"] }}</p><br />
             {% end %}-->
         {% end %}
         <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
+        <input type="checkbox" id="more_info" name="more_info_needed" value="More info needed" {% if help_request['more_info_needed'] %} checked {% end %}>
+        <label for="more_info">More info needed</label>
     </div>
     <div class="buttons space-buttons">
         {% if help_request["suggestion"] and not help_request["approved"] and not is_assistant %}
