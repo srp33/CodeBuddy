@@ -2,7 +2,10 @@
 {% if exercise_basics["exists"] %}
     <div class="row-container">
         <h2>Edit exercise</h2>
-        <p><input type="submit" class="button is-info is-small is-rounded" value="Save" /></p>
+        <p>
+            <input type="submit" class="button is-info is-small is-rounded" value="Save" />
+            <button class="button is-light is-small is-rounded" onclick="location.href='/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ exercise_basics["id"] }}'; return false;">Done</button>
+        </p>
     </div>
 {% else %}
     <h2>Create exercise</h2>
@@ -67,7 +70,7 @@
             <div class="row-container bottom-space">
                 <div class="a-title-container">
                     <p><strong>Title*: </strong></p>
-                    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please specify a descriptive title for this exercise." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
+                    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please specify a descriptive title." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
                 </div>
                 <div class="a-visible">
                     <p><strong>Visible: </strong>

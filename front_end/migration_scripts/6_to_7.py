@@ -39,16 +39,17 @@ else:
 
         credit_exists = '''SELECT credit, problem_id
                            FROM problems'''
-        
+
         cursor.execute(credit_exists)
         for row in cursor.fetchall():
             if row["credit"] != "":
                 insert_old_data_sql = '''UPDATE problems2
-                                         SET credit = (SELECT credit || ' The data originated from [here](' || data_url || ').' 
+                                         SET credit = (SELECT credit || ' The data originated from [here](' || data_url || ').'
                                                        FROM problems
-                                                       WHERE problem_id = ?)'''
+                                                       WHERE problem_id = ?)
+                                         WHERE problem_id = ?'''
 
-                cursor.execute(insert_old_data_sql, (row["problem_id"],))
+                cursor.execute(insert_old_data_sql, (row["problem_id"], row["problem_id"], ))
 
         data_sql = '''SELECT data_file_name, data_contents, problem_id
                       FROM problems'''

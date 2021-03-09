@@ -250,8 +250,8 @@
                             json_data = JSON.parse(data);
                             check_code(json_data);
 
-                            show_past_submissions();
                             if (json_data.submission_id != "") {
+                                show_past_submissions();
                                 last_submission_id = json_data.submission_id;
 
                                 {% if exercise_details["max_submissions"] > 0 %}

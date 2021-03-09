@@ -50,20 +50,21 @@ def exec(info: ExecInfo):
                     data_file.write(value)
 
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code {info.output_type}"
+        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
+        docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
+        stdout = result.stdout.decode().replace(docker_warning, "").strip()
+
         # Check whether the command timed out.
-        if result.returncode == 137:
+        if result.returncode == 137 or stdout == "Killed":
             return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": ""}
 
         text_output_lines = []
         image_output = ""
 
-        docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
-
-        for text_output_line in result.stdout.decode().split("\n"):
+        for text_output_line in stdout.split("\n"):
             text_output_line = text_output_line.strip()
             if text_output_line == "" or text_output_line == docker_warning:
                 continue
