@@ -74,8 +74,8 @@ class Content:
         sql = '''DELETE FROM metadata'''
         self.execute(sql)
 
-        sql = '''UPDATE metadata
-                 SET version = ?'''
+        sql = '''INSERT INTO metadata (version)
+                 VALUES (?)'''
         self.execute(sql, (version,))
 
     def set_start_time(self, course_id, assignment_id, user_id, start_time):
