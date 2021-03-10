@@ -32,7 +32,7 @@ back_ends:
         timeout_seconds: 30
         code_completion_path: ace/mode/python
         output_types:
-            jpg:
+            jpg: |-
                 Image (matplotlib or seaborn)
             txt: |-
                 Text
