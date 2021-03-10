@@ -1633,7 +1633,7 @@ if __name__ == "__main__":
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
         content = Content(settings_dict)
-        content.create_sqlite_tables()
+        content.create_database_tables()
 
         database_version = content.get_database_version()
         code_version = int(read_file("VERSION").rstrip())
