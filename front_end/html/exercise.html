@@ -193,18 +193,16 @@
                 <span class="close">&times;</span>
                 {% if help_request and help_request["more_info_needed"] %}
                     <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></strog></p>
-                    <p>Your previous comment:<br />
-                    <span class="green-text">{{ help_request["student_comment"] }}</span></p>
                     {% if help_request["suggestion"] %}
                         <p>Comment made by your instructor/assistant:<br />
                         <span class="green-text">{{ help_request["suggestion"] }}</span></p>
                     {% end %}
-                    <p>Please write a new comment to help us better understand what you need help with:</p>
+                    <p>Please update your comment to help us better understand what you need help with:</p>
                 {% else %}
                     <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
                     <p>Please write a comment to help us better understand what you need help with:</p>
                 {% end %}
-                <input class="input is-medium is-primary" type="text" id="student_comment" name="student_comment">
+                <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" id="student_comment" name="student_comment">{% if help_request and help_request["more_info_needed"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
                 <p class="buttons">
                     <a id="cancel_request_button" class="modal-button button is-small is-primary is-light">Cancel</a>
                     <a id="submit_request_button" class="modal-button button is-small is-primary">Submit</a>

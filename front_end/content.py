@@ -1163,12 +1163,12 @@ class Content:
 
     def update_help_request(self, course, assignment, exercise, user_id, student_comment):
         sql = '''UPDATE help_requests
-                 SET student_comment = ?, more_info_needed = ?
+                 SET student_comment = ?, more_info_needed = ?, suggestion = ?, approved = ?
                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?
                    AND user_id = ?'''
-        self.cursor.execute(sql, (student_comment, 0, course, assignment, exercise, user_id,))
+        self.execute(sql, (student_comment, 0, None, 0, course, assignment, exercise, user_id,))
     
     def delete_help_request(self, course, assignment, exercise, user_id):
         sql = '''DELETE FROM help_requests
