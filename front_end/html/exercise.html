@@ -232,7 +232,7 @@
                 {% for key_index in range(len(exercise_details["data_files"])) %}
                     <p>
                         <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ list(exercise_details['data_files'].keys())[key_index] }}">{{ list(exercise_details["data_files"].keys())[key_index] }}</a>
-                        <button class="button is-light is-size-6" id="data_button_{{ key_index }}" onclick="showHideData('data_panel_{{ key_index }}', 'data_button_{{ key_index }}')">Show</button>
+                        <a class="button is-small is-light" id="data_button_{{ key_index }}" onclick="showHideData('data_panel_{{ key_index }}', 'data_button_{{ key_index }}')">Show</a>
                     </p>
                     <pre id="data_panel_{{ key_index }}" hidden>
                         {{ exercise_details["data_files"][list(exercise_details["data_files"].keys())[key_index]].strip() }}
@@ -243,7 +243,7 @@
 
         {% if exercise_details["hint"] != "" %}
             <div class="top-space">
-                <a class="button is-small is-link" onclick="showHint()">Hint</a>
+                <button class="button is-small is-link" onclick="showHint()">Hint</button>
             </div>
         {% end %}
 
