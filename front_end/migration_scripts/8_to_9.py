@@ -20,13 +20,12 @@ version = read_file("/VERSION").rstrip()
 
 # This tells us whether the migration has already happened.
 check_sql = '''SELECT COUNT(*) AS count
-               FROM pragma_table_info("help_requests")
-               WHERE name = "more_info_needed"'''
+               FROM metadata'''
 
 cursor.execute(check_sql)
 check_result = cursor.fetchone()["count"]
 
-if check_result > 0:
+if check_result == 1:
     print("***NotNeeded***")
 else:
     with open("/migration_scripts/8_to_9.sql") as sql_file:

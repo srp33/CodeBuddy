@@ -1,1 +1,2 @@
-ALTER TABLE help_requests ADD COLUMN more_info_needed integer DEFAULT 0;
+DELETE FROM metadata
+WHERE version = 5;
