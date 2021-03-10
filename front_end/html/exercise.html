@@ -193,11 +193,12 @@
                 <span class="close">&times;</span>
                 {% if help_request and help_request["more_info_needed"] %}
                     <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></strog></p>
-                    <p>Your previous comment:<br />{{ help_request["student_comment"] }}</p>
+                    <p>Your previous comment:<br />
+                    <span class="green-text">{{ help_request["student_comment"] }}</span></p>
                     {% if help_request["suggestion"] %}
-                        <p>Comment made by your instructor/assistant:<br />{{ help_request["suggestion"] }}</p>
+                        <p>Comment made by your instructor/assistant:<br />
+                        <span class="green-text">{{ help_request["suggestion"] }}</span></p>
                     {% end %}
-                    <br />
                     <p>Please write a new comment to help us better understand what you need help with:</p>
                 {% else %}
                     <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
