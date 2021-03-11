@@ -107,13 +107,13 @@ class Content:
 
         for row in self.fetchall(sql, (course_id, assignment_id,)):
             start_time = datetime.strftime(row["start_time"], "%a, %d %b %Y %H:%M:%S ")
-            timer_ended = self.user_assignment_start_timer_ended(course_id, assignment_id, start_time)
+            timer_ended = self.has_user_assignment_start_timer_ended(course_id, assignment_id, start_time)
             time_info = {"start_time": row["start_time"], "timer_ended": timer_ended}
             start_times[row["user_id"]] = time_info
 
         return start_times
 
-    def user_assignment_start_timer_ended(self, course_id, assignment_id, start_time):
+    def has_user_assignment_start_timer_ended(self, course_id, assignment_id, start_time):
         if not start_time:
             return False
 

@@ -866,7 +866,7 @@ class ExerciseHandler(BaseUserHandler):
             if not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course) and assignment_details["has_timer"]:
                 start_time = content.get_user_assignment_start_time(course, assignment, self.get_user_id())
 
-                if not start_time or content.user_assignment_start_timer_ended(course, assignment, start_time):
+                if not start_time or content.has_user_assignment_start_timer_ended(course, assignment, start_time):
                     if not assignment_details["due_date"] or assignment_details["due_date"] > datetime.datetime.now():
                         self.render("timer_error.html", user_info=content.get_user_info(self.get_user_id()))
                         return
