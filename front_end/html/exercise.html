@@ -318,7 +318,7 @@
                 <div class="buttons are-small is-pulled-right">
                     {% if help_request %}
                         {% if help_request["more_info_needed"] %}
-                            <a class="button is-warning is-light" onclick="showHelpRequestModal()">More info needed</a>
+                            <a class="button is-danger is-light" onclick="showHelpRequestModal()">More info needed</a>
                         {% elif help_request["approved"] %}
                             <a class="button success-message" onclick="showSuggestionModal()">View suggestion</a>
                         {% else %}
