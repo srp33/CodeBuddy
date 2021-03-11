@@ -22,7 +22,7 @@ back_ends:
         code_completion_path: ace/mode/r
         output_types:
             jpg: |-
-                Image (base graphics or ggplot2)
+                Image (ggplot2)
             txt: |-
                 Text
     python:
