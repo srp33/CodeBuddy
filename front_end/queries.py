@@ -174,24 +174,23 @@ def user_exercise_status_course(course_id):
                WHERE s.course_id = {course_id}
                GROUP BY s.assignment_id, s.exercise_id, s.user_id'''
 
+def num_registered_students(course_id):
+    return f'''SELECT COUNT(*) AS num_registered_students
+               FROM course_registrations
+               WHERE course_id = {course_id}'''
+
 ## Calculates the average score across all students for each assignment in a course,
 ## as well as the number of students who have completed each assignment and the number
 ## of students total for the course.
 def assignment_summary_course(course_id):
     return f'''
       WITH
-        course_info AS (
-          SELECT COUNT(*) AS num_registered_students
-          FROM course_registrations
-          WHERE course_id = {course_id}
-        ),
-
         assignment_info AS (
           SELECT assignment_id, COUNT(*) * 100.0 AS points_possible
           FROM exercises
           WHERE course_id = {course_id}
             AND visible = 1
-            AND assignment_id IN (SELECT assignment_id FROM assignments WHERE visible = 1)
+            /*AND assignment_id IN (SELECT assignment_id FROM assignments WHERE visible = 1)*/
           GROUP BY assignment_id
         ),
 
@@ -207,14 +206,13 @@ def assignment_summary_course(course_id):
             a.assignment_id,
            (score / points_possible) * 100.0 AS percentage,
            points_possible = score AS completed
-          FROM course_info c, assignment_info a
+          FROM assignment_info a
           INNER JOIN assignment_score_info s
             ON a.assignment_id = s.assignment_id
         )
 
       SELECT e.assignment_id,
-        c.num_registered_students AS num_students,
         SUM(e.completed) AS num_students_completed,
-        ROUND(SUM(e.percentage) / c.num_registered_students, 1) AS avg_score
-      FROM exercise_info e, course_info c
+        SUM(e.percentage) AS total_percentage
+      FROM exercise_info e
       GROUP BY e.assignment_id'''

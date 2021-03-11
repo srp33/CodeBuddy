@@ -553,18 +553,28 @@ class Content:
 
         return exercise_statuses
 
-    def get_course_scores(self, course_id):
-        scores = {}
+    def get_course_scores(self, course_id, assignments):
+        course_scores = {}
+
+        sql = num_registered_students(course_id)
+        num_students = self.fetchone(sql)["num_registered_students"]
 
         for row in self.fetchall(assignment_summary_course(course_id)):
-            scores_dict = {"assignment_id": row["assignment_id"],
+            assignment_dict = {"assignment_id": row["assignment_id"],
                     "num_students_completed": row["num_students_completed"],
-                    "num_students": row["num_students"],
-                    "avg_score": row["avg_score"]}
+                    "num_students": num_students,
+                    "avg_score": "{:.1f}".format(row["total_percentage"] / num_students)}
 
-            scores[row["assignment_id"]] = scores_dict
+            course_scores[row["assignment_id"]] = assignment_dict
 
-        return scores
+        for assignment in assignments:
+            if assignment[0] not in course_scores:
+                course_scores[assignment[0]] = {"assignment_id": assignment[0],
+                    "num_students_completed": 0,
+                    "num_students": num_students,
+                    "avg_score": "0.0"}
+
+        return course_scores
 
     # Gets all users who have submitted on a particular assignment
     # and creates a list of their average scores for the assignment.
@@ -1171,7 +1181,7 @@ class Content:
                    AND exercise_id = ?
                    AND user_id = ?'''
         self.execute(sql, (student_comment, 0, None, 0, course, assignment, exercise, user_id,))
-    
+
     def delete_help_request(self, course, assignment, exercise, user_id):
         sql = '''DELETE FROM help_requests
                  WHERE course_id = ?
@@ -1190,7 +1200,7 @@ class Content:
                    AND user_id = ?'''
 
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
-    
+
     def copy_assignment(self, course_id, assignment_id, new_course_id):
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer)
                  SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer
