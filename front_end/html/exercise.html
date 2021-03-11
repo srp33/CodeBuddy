@@ -112,6 +112,8 @@
                 var span = document.getElementsByClassName("close")[2];
                 modal.style.display = "block";
 
+                document.getElementById("student_comment").focus();
+
                 var submitButton = document.getElementById("submit_request_button");
                 submitButton.onclick = function() {
                     var user_code = editor.getValue();
