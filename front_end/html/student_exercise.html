@@ -2,10 +2,12 @@
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
             <h2>{{ student_info["name"] }}'s submissions</h2>
-        
-            <p><em>Assignment</em>: {{ exercise_basics["assignment"]["title"] }}</p>
-        
-            <p><em>Exercise</em>: {{ exercise_basics["title"] }}</p>
+
+            <div>
+                <h4 style="display: inline-block;">{{ exercise_basics["assignment"]["title"] }}</h4>
+                <br /><h5>{{ exercise_basics["title"] }}</h5>
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}" class="button is-small is-light is-pulled-right">View exercise</a>
+            </div>
 
             <p>{{ exercise_details["instructions"] }}</p>
 
