@@ -1,6 +1,6 @@
-<h2>View help request</h2>
+<h2>View help request for {{ help_request["name"] }}</h2>
 <p class="light-heading">Assignment: {{ assignment_basics["title"] }}<br />
-Exercise: {{ exercise_basics["title"] }}</p><br />
+Exercise: {{ exercise_basics["title"] }}</p>
 
 {% if result %}
     {% if result.startswith("Error:") %}
@@ -10,19 +10,27 @@ Exercise: {{ exercise_basics["title"] }}</p><br />
     {% end %}
 {% end %}
 
+<p>{{ exercise_details["instructions"] }}</p>
+
 <form method="post" action="/view_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ help_request['user_id'] }}">
 
-<h4>Help request for {{ help_request["name"] }}</h4>
 <div>
-    <p><strong>Comment:</strong></p>
+    <p><strong>Student comment:</strong></p>
     <pre class="comment">{{ help_request["student_comment"] }}</pre>
     <p><strong>Code:</strong></p>
     <textarea id="editor" class="textarea is-info monospace" rows="20">{{ help_request["code"] }}</textarea>
     <div class="buttons">
-        <a id="show_answer_button" class="button is-small is-primary is-rounded" onclick="showAnswerCode()">View solution</a>
+        <button type="button" id="show_answer_button" class="button is-small is-primary is-rounded" onclick="showAnswerCode()">View solution</button>
+        <button type="button" id="show_test_code_button" class="button is-small is-primary is-rounded" onclick="showTestCode()" {% if not exercise_details['test_code'] %}disabled{% end %}>View test code</button>
+        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="This button is disabled if the exercise doesn't include test code.">
+            <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+        </label>
     </div>
     <div id="answer_code" class="invisible">
         <textarea id="answer_editor" class="textarea is-info monospace" rows="20">{{ exercise_details["answer_code"] }}</textarea>
+    </div>
+    <div id="test_code" class="invisible">
+        <textarea id="test_code_editor" class="textarea is-info monospace" rows="20">{{ exercise_details["test_code"] }}</textarea>
     </div>
     {% if help_request["text_output"] %}
         <p><strong>Text output:</strong></p>
@@ -43,6 +51,8 @@ Exercise: {{ exercise_basics["title"] }}</p><br />
             {% end %}-->
         {% end %}
         <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
+        <input type="checkbox" id="more_info" name="more_info_needed" value="More info needed" {% if help_request['more_info_needed'] %} checked {% end %}>
+        <label for="more_info">More info needed</label>
     </div>
     <div class="buttons space-buttons">
         {% if help_request["suggestion"] and not help_request["approved"] and not is_assistant %}
@@ -111,6 +121,15 @@ Exercise: {{ exercise_basics["title"] }}</p><br />
         mode: "ace/mode/r"
     });
 
+    var test_code_editor = ace.edit("test_code_editor", {
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        maxLines: 40,
+        fontSize: "12pt",
+        mode: "ace/mode/r"
+    });
+
     function showOtherRequests() {
         var other_div = document.getElementById("other_requests");
         if (other_div.style.display == "inline") {
@@ -124,6 +143,8 @@ Exercise: {{ exercise_basics["title"] }}</p><br />
     function showAnswerCode() {
         var answer_code = document.getElementById("answer_code");
         var answer_button = document.getElementById("show_answer_button");
+        var test_code = document.getElementById("test_code");
+        var test_code_button = document.getElementById("show_test_code_button");
 
         if (answer_code.style.display == "inline") {
             answer_code.style.display = "none";
@@ -131,7 +152,27 @@ Exercise: {{ exercise_basics["title"] }}</p><br />
         }
         else {
             answer_code.style.display = "inline";
+            test_code.style.display = "none";
             answer_button.innerHTML = "Hide solution";
+            test_code_button.innerHTML = "View test code";
+        }
+    }
+
+    function showTestCode() {
+        var answer_code = document.getElementById("answer_code");
+        var answer_button = document.getElementById("show_answer_button");
+        var test_code = document.getElementById("test_code");
+        var test_code_button = document.getElementById("show_test_code_button");
+
+        if (test_code.style.display == "inline") {
+            test_code.style.display = "none";
+            test_code_button.innerHTML = "View test code";
+        }
+        else {
+            test_code.style.display = "inline";
+            answer_code.style.display = "none";
+            test_code_button.innerHTML = "Hide test code";
+            answer_button.innerHTML = "View solution";
         }
     }
 

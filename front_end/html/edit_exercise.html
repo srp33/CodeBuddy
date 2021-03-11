@@ -41,6 +41,7 @@
                     description = json_data["output_types"][key];
 
                     var opt = document.createElement('option');
+                    opt.style.width = "50px";
                     opt.innerHTML = description;
                     opt.value = key;
 
@@ -66,13 +67,30 @@
     </script>
 
         <div class="shadow-box">
-            <div class="row-container">
-                <div class="title-container">
+            <div class="row-container bottom-space">
+                <div class="a-title-container">
                     <p><strong>Title*: </strong></p>
                     <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please specify a descriptive title." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
                 </div>
+                <div class="a-visible">
+                    <p><strong>Visible: </strong>
+                        <div class="select is-info">
+                            <select name="is_visible" class="edit-select">
+                            {% if exercise_basics["visible"] %}
+                                <option value="Yes" selected>Yes</option>
+                                <option value="No">No</option>
+                            {% else %}
+                                <option value="Yes">Yes</option>
+                                <option value="No" selected>No</option>
+                            {% end %}
+                            </select>
+                        </div>
+                    </p>
+                </div>
+            </div>
 
-                <div>
+            <div class="front-row-container">
+                <div class="a-visible">
                     <p><strong>Back end: </strong>
                         <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' solution.">
                             <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
@@ -95,22 +113,6 @@
                     <p><strong>Output type: </strong>
                         <div class="select is-info">
                             <select name="output_type" id="output_types" class="edit-select">
-                            </select>
-                        </div>
-                    </p>
-                </div>
-
-                <div>
-                    <p><strong>Visible: </strong>
-                        <div class="select is-info">
-                            <select name="is_visible" class="edit-select">
-                            {% if exercise_basics["visible"] %}
-                                <option value="Yes" selected>Yes</option>
-                                <option value="No">No</option>
-                            {% else %}
-                                <option value="Yes">Yes</option>
-                                <option value="No" selected>No</option>
-                            {% end %}
                             </select>
                         </div>
                     </p>
@@ -240,7 +242,7 @@
                 <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>  
             </div>
 
-            <div>
+            <div class="bottom-space">
                 <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
                 <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>  
             </div>
@@ -261,7 +263,9 @@
                         </div>
                     </p>
                 </div>
+            </div>
 
+            <div class="row-container">
                 <div>
                     <p><strong>Allow students to see submissions from other students: </strong>
                         <div class="select is-info">
@@ -277,7 +281,9 @@
                         </div>
                     </p>
                 </div>
-                
+            </div>
+
+            <div class="row-container">  
                 <div>
                     <p><strong>Maximum # of submissions:</strong></p>
                     <p>
