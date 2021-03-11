@@ -174,32 +174,47 @@ def user_exercise_status_course(course_id):
                WHERE s.course_id = {course_id}
                GROUP BY s.assignment_id, s.exercise_id, s.user_id'''
 
-# Calculates the average score across all students for each assignment in a course,
-# as well as the number of students who have completed each assignment and the number
-# of students total for the course.
+## Calculates the average score across all students for each assignment in a course,
+## as well as the number of students who have completed each assignment and the number
+## of students total for the course.
 def assignment_summary_course(course_id):
-    return f'''WITH const
-               AS (SELECT COUNT(*) AS num_students FROM ({students_course(course_id)}))
+    return f'''
+      WITH
+        course_info AS (
+          SELECT COUNT(*) AS num_registered_students
+          FROM course_registrations
+          WHERE course_id = {course_id}
+        ),
 
-               SELECT a.assignment_id,
-                      a.title,
-                      IFNULL(b.num_passed, 0) AS num_students_completed,
-                      const.num_students AS num_students,
-                      ROUND(IFNULL(b.total_percent, 0) / const.num_students, 1) AS avg_score
-               FROM ({visible_assignments_course(course_id)}) a, const
-               LEFT JOIN
-               (
-                 SELECT assignment_id, SUM(percent_passed > 0) AS num_passed, SUM(percent_passed) AS total_percent
-                 FROM
-                 (
-                   SELECT sc.assignment_id, sc.user_id, SUM(sc.score) / nve.exercise_count AS percent_passed
-                   FROM ({students_course(course_id)}) st
-                   LEFT JOIN scores sc
-                     ON st.user_id = sc.user_id
-                   INNER JOIN ({num_visible_exercises_course(course_id)}) nve
-                     ON sc.assignment_id = nve.assignment_id
-                   GROUP BY sc.assignment_id, sc.user_id
-                 )
-               GROUP BY assignment_id
-               ) b
-                 ON a.assignment_id = b.assignment_id'''
+        assignment_info AS (
+          SELECT assignment_id, COUNT(*) * 100.0 AS points_possible
+          FROM exercises
+          WHERE course_id = {course_id}
+            AND visible = 1
+            AND assignment_id IN (SELECT assignment_id FROM assignments WHERE visible = 1)
+          GROUP BY assignment_id
+        ),
+
+        assignment_score_info AS (
+          SELECT assignment_id, SUM(score) AS score
+          FROM scores
+          WHERE course_id = {course_id}
+          GROUP BY assignment_id, user_id
+        ),
+
+        exercise_info AS (
+          SELECT
+            a.assignment_id,
+           (score / points_possible) * 100.0 AS percentage,
+           points_possible = score AS completed
+          FROM course_info c, assignment_info a
+          INNER JOIN assignment_score_info s
+            ON a.assignment_id = s.assignment_id
+        )
+
+      SELECT e.assignment_id,
+        c.num_registered_students AS num_students,
+        SUM(e.completed) AS num_students_completed,
+        ROUND(SUM(e.percentage) / c.num_registered_students, 1) AS avg_score
+      FROM exercise_info e, course_info c
+      GROUP BY e.assignment_id'''

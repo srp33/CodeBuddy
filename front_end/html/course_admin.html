@@ -52,7 +52,9 @@
                         {% else %}
                             <td> </td>
                         {% end %}
+
                         <td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
+
                         {% if course_scores[assignment[1]["id"]]["avg_score"] %}
                             <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
                         {% else %}

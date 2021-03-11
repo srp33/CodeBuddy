@@ -556,10 +556,12 @@ class Content:
     def get_course_scores(self, course_id):
         scores = {}
 
-        sql = assignment_summary_course(course_id)
+        for row in self.fetchall(assignment_summary_course(course_id)):
+            scores_dict = {"assignment_id": row["assignment_id"],
+                    "num_students_completed": row["num_students_completed"],
+                    "num_students": row["num_students"],
+                    "avg_score": row["avg_score"]}
 
-        for row in self.fetchall(sql):
-            scores_dict = {"assignment_id": row["assignment_id"], "title": row["title"], "num_students_completed": row["num_students_completed"], "num_students": row["num_students"], "avg_score": row["avg_score"]}
             scores[row["assignment_id"]] = scores_dict
 
         return scores
@@ -589,13 +591,13 @@ class Content:
                     WHERE course_id = 0 OR course_id = ?
                    )
                    AND s.exercise_id NOT IN
-				   (
-				    SELECT exercise_id
-					FROM exercises
-					WHERE course_id = ?
-					  AND assignment_id = ?
-					  AND visible = 0
-				   )
+                   (
+                     SELECT exercise_id
+                     FROM exercises
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND visible = 0
+                   )
                  GROUP BY s.course_id, s.assignment_id, s.user_id
                  ORDER BY u.family_name, u.given_name'''
 
