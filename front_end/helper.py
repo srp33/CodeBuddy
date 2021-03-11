@@ -156,6 +156,13 @@ def convert_dict_to_yaml(the_dict):
 def load_yaml_dict(yaml_text):
     return load(yaml_text, Loader=Loader)
 
+def escape_json_string(json_string):
+    chars = ["\\","\'","\""]
+    for char in chars:
+        json_string = json_string.replace(char, "\\" + char)
+        
+    return json_string
+
 def diff_strings(expected, actual):
     expected = expected.rstrip()
     actual = actual.rstrip()
