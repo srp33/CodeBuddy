@@ -144,8 +144,8 @@ def check_exercise_output(exercise_details, actual_text, actual_image):
             # Only return diff output if the differences are relatively small.
             diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
 
-        #return diff_output, diff_percent < 1.0 # Pass if they are similar.
-        return diff_output, diff_percent == 0 # Pass if they are identical.
+        return diff_output, diff_percent < 0.01 # Pass if they are similar.
+        #return diff_output, diff_percent == 0 # Pass if they are identical.
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
@@ -160,7 +160,7 @@ def escape_json_string(json_string):
     chars = ["\\","\'","\""]
     for char in chars:
         json_string = json_string.replace(char, "\\" + char)
-        
+
     return json_string
 
 def diff_strings(expected, actual):
