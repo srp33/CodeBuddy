@@ -10,6 +10,7 @@ import math
 import os
 from queries import *
 import re
+import spacy
 import sqlite3
 import yaml
 from yaml import load
@@ -784,19 +785,55 @@ class Content:
 
             return help_request
 
+    def compare_help_requests(self, course_id, assignment_id, exercise_id, user_id):
+        sql = '''SELECT code
+                 FROM help_requests
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+        row = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
+        orig_code = re.sub("#.*", "", row["code"])
+
+        sql = '''SELECT r.user_id, u.name, r.code, r.student_comment, r.suggestion
+                 FROM help_requests r
+                 INNER JOIN users u
+                   ON r.user_id = u.user_id
+                 WHERE r.course_id = ?
+                   AND r.assignment_id = ?
+                   AND r.exercise_id = ?
+                   AND NOT r.user_id = ?'''
+        requests = self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,))
+
+        nlp = spacy.load('en_core_web_sm')
+        orig = nlp(orig_code)
+        sim_dict = []
+
+        for request in requests:
+            curr = nlp(re.sub("#.*", "", request["code"]))
+            psim = curr.similarity(orig)
+            print(psim)
+            if psim >= .70:
+                request_info = {"user_id": request["user_id"], "name": request["name"], "code": request["code"], "student_comment": request["student_comment"], "suggestion": request["suggestion"]}
+                sim_dict.append(request_info)
+                
+        return sim_dict
+
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = '''SELECT s.code, u.user_id, u.name, sc.score
+        sql = '''SELECT s.code, u.user_id, u.name, sc.score, s.passed
                  FROM submissions s
                  INNER JOIN users u
                    ON s.user_id = u.user_id
                  INNER JOIN scores sc
                    ON s.user_id = sc.user_id
+                   AND s.course_id = sc.course_id
+				   AND s.assignment_id = sc.assignment_id
+				   AND s.exercise_id = sc.exercise_id
                  WHERE s.course_id = ?
                    AND s.assignment_id = ?
                    AND s.exercise_id = ?
-                   AND passed = 1
                    AND s.user_id IN
                    (
                       SELECT user_id
@@ -807,7 +844,7 @@ class Content:
                  ORDER BY u.family_name, u.given_name'''
 
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
-            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"]}
+            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"]}
             exercise_submissions.append([submission["user_id"], submission_info])
 
         return exercise_submissions

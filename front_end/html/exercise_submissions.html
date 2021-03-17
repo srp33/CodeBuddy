@@ -10,9 +10,26 @@
         border-radius: 5px;
         padding: 14px;
         margin-top: 10px;
-  }
+    }
+
+    .collapsible-f {
+        background-color: white;
+        font-size: 20px;
+        text-align: left;
+        cursor: pointer;
+        border: 2px solid  #f4a582;
+        width: 100%;
+        border-left: 12px solid  #f4a582;
+        border-radius: 5px;
+        padding: 14px;
+        margin-top: 10px;
+    }
   
     .active, .collapsible:hover {
+        background-color: #f8f8f8;
+    }
+
+    .active, .collapsible-f:hover {
         background-color: #f8f8f8;
     }
   
@@ -33,12 +50,21 @@
     </div>
 
     {% for student in exercise_submissions %}
-        <button type="button" class="collapsible">{{ student[1]["name"] }}</button>
-        <div class="c-content">
-            <p>exercise score: <strong>{{ student[1]["score"] }}%</strong></p>
-            <p>Most recent passing submission:</p>
-            <pre>{{ student[1]["code"] }}</pre>
-        </div>
+        {% if student[1]["passed"] %}
+            <button type="button" class="clickable collapsible">{{ student[1]["name"] }}</button>
+            <div class="c-content">
+                <p>Exercise score: <strong>{{ student[1]["score"] }}%</strong></p>
+                <p>Most recent submission:</p>
+                <pre>{{ student[1]["code"] }}</pre>
+            </div>
+        {% else %}
+            <button type="button" class="clickable collapsible-f">{{ student[1]["name"] }}</button>
+            <div class="c-content">
+                <p>No passing score yet.</p>
+                <p>Most recent submission:</p>
+                <pre>{{ student[1]["code"] }}</pre>
+            </div>
+        {% end %}
     {% end %}
 
 {% else %}
@@ -50,7 +76,7 @@
 </div>
 
 <script>
-    var coll = document.getElementsByClassName("collapsible");
+    var coll = document.getElementsByClassName("clickable");
     var content = document.getElementsByClassName("c-content");
     var i;
   
