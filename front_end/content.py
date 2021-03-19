@@ -748,7 +748,14 @@ class Content:
         return help_requests
 
     def get_exercise_help_requests(self, course_id, assignment_id, exercise_id, user_id):
-        help_requests = []
+        sql = '''SELECT text_output
+                 FROM help_requests
+                 WHERE course_id = ?
+                 AND assignment_id = ?
+                 AND exercise_id = ?
+                 AND user_id = ?'''
+        row = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
+        orig_output = re.sub("#.*", "", row["text_output"])
 
         sql = '''SELECT r.course_id, r.assignment_id, r.exercise_id, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.more_info_needed
                  FROM help_requests r
@@ -760,10 +767,19 @@ class Content:
                    AND NOT r.user_id = ?
                  ORDER BY r.date DESC'''
 
-        for request in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
-            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]})
+        requests = self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,))
 
-        return help_requests
+        nlp = spacy.load('en_core_web_sm')
+        orig = nlp(orig_output)
+        help_requests = []
+
+        for request in requests:
+            curr = nlp(re.sub("#.*", "", request["text_output"]))
+            psim = curr.similarity(orig)
+            request_info = {"psim": psim, "course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]}
+            help_requests.append(request_info)
+                
+        return sorted(help_requests, key=lambda x: x["psim"], reverse=True)
 
     def get_help_request(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.more_info_needed
@@ -786,38 +802,43 @@ class Content:
             return help_request
 
     def compare_help_requests(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''SELECT code
-                 FROM help_requests
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?'''
-        row = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
-        orig_code = re.sub("#.*", "", row["code"])
-
-        sql = '''SELECT r.user_id, u.name, r.code, r.student_comment, r.suggestion
+        sql = '''SELECT r.text_output, e.expected_text_output
                  FROM help_requests r
-                 INNER JOIN users u
-                   ON r.user_id = u.user_id
+                 INNER JOIN exercises e
+                   ON e.course_id = r.course_id
+                   AND e.assignment_id = r.assignment_id
+                   AND e.exercise_id = r.exercise_id
                  WHERE r.course_id = ?
                    AND r.assignment_id = ?
                    AND r.exercise_id = ?
-                   AND NOT r.user_id = ?'''
-        requests = self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,))
+                   AND r.user_id = ?'''
+        row = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
+        if row["text_output"] != row["expected_text_output"]:
+            orig_output = re.sub("#.*", "", row["text_output"])
+            #print(orig_output)
 
-        nlp = spacy.load('en_core_web_sm')
-        orig = nlp(orig_code)
-        sim_dict = []
+            sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.student_comment, r.suggestion
+                    FROM help_requests r
+                    INNER JOIN users u
+                      ON r.user_id = u.user_id
+                    WHERE r.course_id = ?
+                      AND NOT r.user_id = ?'''
+            requests = self.fetchall(sql, (course_id, user_id,))
 
-        for request in requests:
-            curr = nlp(re.sub("#.*", "", request["code"]))
-            psim = curr.similarity(orig)
-            print(psim)
-            if psim >= .70:
-                request_info = {"user_id": request["user_id"], "name": request["name"], "code": request["code"], "student_comment": request["student_comment"], "suggestion": request["suggestion"]}
-                sim_dict.append(request_info)
-                
-        return sim_dict
+            nlp = spacy.load('en_core_web_sm')
+            orig = nlp(orig_output)
+            sim_dict = []
+
+            for request in requests:
+                #print(request["text_output"])
+                curr = nlp(re.sub("#.*", "", request["text_output"]))
+                psim = curr.similarity(orig)
+                #print(psim)
+                if psim >= .90:
+                    request_info = {"user_id": request["user_id"], "name": request["name"], "student_comment": request["student_comment"],  "code": request["code"], "text_output": request["text_output"], "suggestion": request["suggestion"]}
+                    sim_dict.append(request_info)
+                    
+            return sim_dict
 
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []

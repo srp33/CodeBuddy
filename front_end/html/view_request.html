@@ -81,7 +81,10 @@ Exercise: {{ exercise_basics["title"] }}</p>
 <div id="other_requests" class="invisible">
     {% for request in exercise_help_requests %}
         <div class="help_request_div">
-            <h4>Help request for {{ request["name"] }}</h4>
+            <div class="spread-div">
+                <h4>Help request for {{ request["name"] }}</h4>
+                <p><strong>Percent similarity: {{ round(request["psim"] * 100, 2) }}%</strong></p>
+            </div>
             <p><strong>Comment:</strong></p>
             <pre class="comment">{{ request["student_comment"] }}</pre>
             <p><strong>Code:</strong></p>
