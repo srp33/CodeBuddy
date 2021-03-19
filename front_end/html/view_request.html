@@ -1,4 +1,58 @@
-<h2>View help request for {{ help_request["name"] }}</h2>
+<link rel="stylesheet" href="/static/modal.css">
+
+<script>
+    function showSimilarRequestsModal() {
+        var modal = document.getElementById("similar_requests_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
+</script>
+
+<div id="similar_requests_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        {% for request in similar_requests %}
+            <button type="button" class="spread-div clickable collapsible">
+                <p id="first-p">Help request for {{ request["name"] }}</p>
+                <p><strong>Percent similarity: {{ round(request["psim"] * 100, 2) }}%</strong></p>
+            </button>
+            <div class="c-content">
+                <p><strong>Comment:</strong></p>
+                <pre class="comment">{{ request["student_comment"] }}</pre>
+                <p><strong>Code:</strong></p>
+                <pre class="student-content">{{ request["code"] }}</pre>
+                <p><strong>Text output:</strong></p>
+                <pre class="instructor-content">{{ request["text_output"] }}</pre>
+                <div class="buttons space-buttons">
+                    <a class="button is-small is-link is-rounded" href="/view_request/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
+                </div>
+            </div>
+        {% end %}
+    </div>
+</div>
+
+<div class="spread-div">
+    <h2>View help request for {{ help_request["name"] }}</h2>
+    {% if similar_requests %}
+        <button class="button is-small is-rounded is-link" onclick="showSimilarRequestsModal()">
+            {% if len(similar_requests) == 1 %}
+                1 similar request
+            {% else %}
+                {{ len(similar_requests) }} similar requests
+            {% end %}
+        </button>
+    {% end %}
+</div>
 <p class="light-heading">Assignment: {{ assignment_basics["title"] }}<br />
 Exercise: {{ exercise_basics["title"] }}</p>
 
@@ -98,7 +152,7 @@ Exercise: {{ exercise_basics["title"] }}</p>
                 <pre class="instructor-content">{{ request["image_output"] }}</pre>
             {% end %}
             <div class="buttons space-buttons">
-                <a class="button is-small is-link is-rounded" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View suggestion</a>
+                <a class="button is-small is-link is-rounded" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
             </div>
         </div>
     {% end %}
@@ -193,4 +247,20 @@ Exercise: {{ exercise_basics["title"] }}</p>
             $('#submit_button').hide();
         }
     });
+
+    var coll = document.getElementsByClassName("clickable");
+    var content = document.getElementsByClassName("c-content");
+    var i;
+  
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        });
+    }
 </script>

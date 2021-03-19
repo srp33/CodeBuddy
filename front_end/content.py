@@ -817,7 +817,7 @@ class Content:
             orig_output = re.sub("#.*", "", row["text_output"])
             #print(orig_output)
 
-            sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.student_comment, r.suggestion
+            sql = '''SELECT r.course_id, r.assignment_id, r.exercise_id, r.user_id, u.name, r.code, r.text_output, r.student_comment, r.suggestion
                     FROM help_requests r
                     INNER JOIN users u
                       ON r.user_id = u.user_id
@@ -835,7 +835,7 @@ class Content:
                 psim = curr.similarity(orig)
                 #print(psim)
                 if psim >= .90:
-                    request_info = {"user_id": request["user_id"], "name": request["name"], "student_comment": request["student_comment"],  "code": request["code"], "text_output": request["text_output"], "suggestion": request["suggestion"]}
+                    request_info = {"psim": psim, "course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "student_comment": request["student_comment"],  "code": request["code"], "text_output": request["text_output"], "suggestion": request["suggestion"]}
                     sim_dict.append(request_info)
                     
             return sim_dict

@@ -232,3 +232,46 @@ td > button {
     display: flex;
     justify-content: space-between;
 }
+
+.collapsible {
+    background-color: white;
+    font-size: 20px;
+    text-align: left;
+    cursor: pointer;
+    border: 2px solid  #19334d;
+    width: 100%;
+    border-left: 12px solid  #19334d;
+    border-radius: 5px;
+    padding: 14px;
+    margin-top: 10px;
+}
+
+.collapsible-f {
+    background-color: white;
+    font-size: 20px;
+    text-align: left;
+    cursor: pointer;
+    border: 2px solid  #f4a582;
+    width: 100%;
+    border-left: 12px solid  #f4a582;
+    border-radius: 5px;
+    padding: 14px;
+    margin-top: 10px;
+}
+
+.active, .collapsible:hover {
+    background-color: #f8f8f8;
+}
+
+.active, .collapsible-f:hover {
+    background-color: #f8f8f8;
+}
+
+.c-content {
+    padding: 0 18px;
+    display: none;
+}
+
+#first-p {
+    margin-bottom: 0;
+}
