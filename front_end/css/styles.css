@@ -275,3 +275,20 @@ td > button {
 #first-p {
     margin-bottom: 0;
 }
+
+.tall-button {
+    height: 100%;
+    width: 30px;
+    background-color: #00b386;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.padded-div {
+    padding: 20px;
+    width: 95%;
+    overflow-y: auto;
+    padding-bottom: 120px;
+}

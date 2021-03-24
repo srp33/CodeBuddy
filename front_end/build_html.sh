@@ -36,7 +36,7 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 cat header.html javascript_container.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_top.html student_exercise.html exercise_shared.html student_exercise_back_button.html container_bottom.html footer.html > /app/student_exercise.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html exercise_scores.html container_bottom.html footer.html > /app/exercise_scores.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html help_requests.html container_bottom.html footer.html > /app/help_requests.html
-cat header.html javascript_container.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_top.html view_request.html container_bottom.html footer.html > /app/view_request.html
+cat header.html javascript_container.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html view_request.html container_bottom.html footer.html > /app/view_request.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_top.html exercise_submissions.html container_bottom.html footer.html > /app/exercise_submissions.html
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_top.html summarize_logs.html container_bottom.html footer.html > /app/summarize_logs.html
 
