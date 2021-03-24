@@ -394,7 +394,10 @@
         {% end %}
 
         {% if len(exercise_details["credit"]) > 0 %}
-            <p><em>Credit: {{ exercise_details["credit"] }}</em></p>
+        <div class="front-row-container">
+            <p style="padding-right: 5px;"><em>Credit: </em></p>
+            <p><em>{{ exercise_details["credit"] }}</em></p>
+        </div>
         {% end %}  
 
         <div id="submissions"></div>
