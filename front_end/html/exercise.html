@@ -141,9 +141,37 @@
                 }
             }
 
+            function showMatchingModal() {
+                var modal = document.getElementById("matching_modal");
+                var span = document.getElementsByClassName("close")[3];
+                modal.style.display = "block";
+
+                var deleteButton = document.getElementById("delete_request_button");
+                deleteButton.onclick = function() {
+                    $.post("/delete_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}");
+                    modal.style.display = "none";
+                    location.reload();
+                }
+
+                var keepButton = document.getElementById("keep_request_button");
+                keepButton.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                      modal.style.display = "none";
+                    }
+                }
+            }
+
             function showSuggestionModal() {
                 var modal = document.getElementById("suggestion_modal");
-                var span = document.getElementsByClassName("close")[3];
+                var span = document.getElementsByClassName("close")[4];
                 modal.style.display = "block";
 
                 span.onclick = function() {
@@ -194,7 +222,7 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 {% if help_request and help_request["more_info_needed"] %}
-                    <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></strog></p>
+                    <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></p>
                     {% if help_request["suggestion"] %}
                         <p>Comment made by your instructor/assistant:<br />
                         <span class="green-text">{{ help_request["suggestion"] }}</span></p>
@@ -208,6 +236,19 @@
                 <p class="buttons">
                     <a id="cancel_request_button" class="modal-button button is-small is-primary is-light">Cancel</a>
                     <a id="submit_request_button" class="modal-button button is-small is-primary">Submit</a>
+                </p>
+            </div>
+        </div>
+
+        <div id="matching_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p><strong>A student in this class previously submitted a help request with the same output as your request. The instructor/assistant made this suggestion:</strong></p>
+                <span class="green-text">{{ same_suggestion }}</span></p>
+                <p>If this suggestion is helpful, do you want to cancel your own request?</p>
+                <p class="buttons">
+                    <a id="delete_request_button" class="modal-button button is-small is-primary is-light">Cancel request</a>
+                    <a id="keep_request_button" class="modal-button button is-small is-primary">Keep request</a>
                 </p>
             </div>
         </div>
@@ -321,6 +362,8 @@
                     {% if help_request %}
                         {% if help_request["more_info_needed"] %}
                             <a class="button is-danger is-light" onclick="showHelpRequestModal()">More info needed</a>
+                        {% elif same_suggestion %}
+                            <a class="button is-success is-light" onclick="showMatchingModal()">Matching suggestion</a>
                         {% elif help_request["approved"] %}
                             <a class="button success-message" onclick="showSuggestionModal()">View suggestion</a>
                         {% else %}
