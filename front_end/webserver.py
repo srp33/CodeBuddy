@@ -497,8 +497,8 @@ class EditCourseHandler(BaseUserHandler):
                     #if re.search(r"[^\w ]", title):
                     #    result = "Error: The title can only contain alphanumeric characters and spaces."
                     #else:
-                    if len(course_basics["title"]) > 30:
-                        result = "Error: The title cannot exceed 30 characters."
+                    if len(course_basics["title"]) > 80:
+                        result = "Error: The title cannot exceed 80 characters."
                     else:
                         #content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
                         content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], None, datetime.datetime.now())
@@ -876,7 +876,7 @@ class ExerciseHandler(BaseUserHandler):
             exercise_details = content.get_exercise_details(course, assignment, exercise, format_content=True)
             back_end = settings_dict["back_ends"][exercise_details["back_end"]]
             next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
-            
+
             help_request = content.get_help_request(course, assignment, exercise, self.get_user_id())
             same_suggestion = None
             if help_request and not help_request["approved"]:
