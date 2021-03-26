@@ -12,6 +12,10 @@
             .course_div {
                 box-shadow: 3px 3px 6px lightgray;
             }
+
+            .scrollable {
+                overflow-y: auto;
+            }
         </style>
 
         <div id="leave_course_modal" class="modal">
@@ -25,7 +29,7 @@
             </div>
         </div>
         
-        <div class="bottom-spacing">
+        <div>
             <div class="bottom-spacing">
                 <h2 style="display: inline">My Courses</h2>
                 {% if not is_administrator and not is_instructor %}
@@ -36,7 +40,7 @@
             </div>
             <div>
             {% if registered_courses %}
-                <div class="columns">
+                <div class="columns scrollable">
                     <div class="column is-three-fifths">
                     {% for course in registered_courses %}
                         <div class="course_div box has-background-white">
