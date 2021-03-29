@@ -123,7 +123,7 @@ class HomeHandler(RequestHandler):
                 if user_id:
                     self.redirect(f"/profile/courses/{user_id.decode()}")
                 else:
-                    self.render("home.html", mode=settings_dict["mode"])
+                    self.render("home.html", mode=settings_dict["mode"], courses=content.get_available_courses(None))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
