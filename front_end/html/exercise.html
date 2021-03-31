@@ -73,7 +73,7 @@
                 var timeinterval = setInterval(updateClock,1000);
             }
 
-            function showLinkModal() {
+            /*function showLinkModal() {
                 var modal = document.getElementById("share_modal");
                 var span = document.getElementsByClassName("close")[1];
                 var copyText = document.getElementById("share_link");
@@ -87,7 +87,7 @@
                         modal.style.display = "none";
                     }
                 }
-            }
+            }*/
 
             function copyLink() {
                 var copyText = document.getElementById("share_link");
@@ -109,7 +109,7 @@
 
             function showHelpRequestModal() {
                 var modal = document.getElementById("help_request_modal");
-                var span = document.getElementsByClassName("close")[2];
+                var span = document.getElementsByClassName("close")[1];
                 modal.style.display = "block";
 
                 document.getElementById("student_comment").focus();
@@ -143,7 +143,7 @@
 
             function showMatchingModal() {
                 var modal = document.getElementById("matching_modal");
-                var span = document.getElementsByClassName("close")[3];
+                var span = document.getElementsByClassName("close")[2];
                 modal.style.display = "block";
 
                 var deleteButton = document.getElementById("delete_request_button");
@@ -171,7 +171,7 @@
 
             function showSuggestionModal() {
                 var modal = document.getElementById("suggestion_modal");
-                var span = document.getElementsByClassName("close")[4];
+                var span = document.getElementsByClassName("close")[3];
                 modal.style.display = "block";
 
                 span.onclick = function() {
