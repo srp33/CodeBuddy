@@ -1,5 +1,6 @@
 code_file_path = commandArgs()[9]
-output_type = commandArgs()[10]
+test_code_file_path = commandArgs()[10]
+output_type = commandArgs()[11]
 
 # Code that didn't work right for both base R graphics and ggplot2
 #exec_jpg <- function(code) {
@@ -28,6 +29,11 @@ exec_jpg <- function(code) {
 }
 
 code <- readChar(code_file_path, file.info(code_file_path)$size)
+
+if (file.exists(test_code_file_path)) {
+  test_code <- readChar(test_code_file_path, file.info(test_code_file_path)$size)
+  code <- paste(code, test_code, sep="\n\n")
+}
 
 if (output_type == "txt") {
   suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=code)))))

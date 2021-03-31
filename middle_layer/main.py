@@ -14,6 +14,7 @@ import traceback
 class ExecInfo(BaseModel):
     image_name: str
     code: str
+    test_code: str
     data_files: dict
     output_type: str
     memory_allowed_mb: int
@@ -44,13 +45,18 @@ def exec(info: ExecInfo):
         with open(f"{tmp_dir_path}/code", "w") as code_file:
             code_file.write(info.code)
 
-        if info.data_files != "":
-            for key, value in info.data_files.items():
-                with open(f"{tmp_dir_path}/{key}", "w") as data_file:
-                    data_file.write(value)
+        # Save the test code to a file that will be accessible inside the container.
+        if len(info.test_code) > 0:
+            with open(f"{tmp_dir_path}/test_code", "w") as test_file:
+                test_file.write(info.test_code)
+
+        # Save any data files so they will be accessible inside the container.
+        for key, value in info.data_files.items():
+            with open(f"{tmp_dir_path}/{key}", "w") as data_file:
+                data_file.write(value)
 
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code {info.output_type}"
+        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/test_code {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
