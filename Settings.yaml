@@ -37,7 +37,7 @@ back_ends:
             txt: |-
                 Text
     python_script:
-        description: Please write a Python script based on the instructions provided.
+        description: Please write Python code based on the instructions provided. Your code will be stored in a script called code.py.
         image_name: srp33/codebuddy_python_script
         memory_allowed_mb: 100
         timeout_seconds: 30
