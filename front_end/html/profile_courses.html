@@ -34,7 +34,7 @@
                 <h2 style="display: inline">My Courses</h2>
                 {% if not is_administrator and not is_instructor %}
                     <div class="buttons is-pulled-right">
-                        <a class="button is-normal is-white is-rounded" onclick="showRegistration()">Register for a course</a>
+                        <a class="button is-primary" onclick="showRegistration()">Register for a course</a>
                     </div>
                 {% end %}
             </div>
@@ -47,7 +47,7 @@
                             <article class="media">
                                 <div class="media-left">
                                     <figure class="image is-128x128">
-                                        <img src="/static/default_course.png" alt="Image">
+                                        <img src="/static/dark_default_course.png" alt="Image">
                                     </figure>
                                 </div>
                                 <div class="media-content">
@@ -79,7 +79,7 @@
                                         </nav>
                                         <!--<p>Instructor: </p>-->
                                         <div class="modal-button">
-                                            <a class="button is-small is-fullwidth is-rounded is-link" href="/course/{{ course[0] }}">View Course</a>
+                                            <a class="button is-fullwidth is-dark" href="/course/{{ course[0] }}">View Course</a>
                                         </div>
                                     </div>
                                 </div>
@@ -111,7 +111,7 @@
                     <span class="close">&times;</span>
 
                     <p>Please enter the passcode for this course:</p>
-                    <input class="input is-medium is-link" type="text" id="passcode" name="passcode"/>
+                    <input class="input is-medium is-primary" type="text" id="passcode" name="passcode"/>
 
                     <p class="buttons">
                         <button type="button" id="passcode_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</button>
@@ -142,7 +142,7 @@
                 {% for course in available_courses %}
                     <div>
                         <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
-                            <a class="register-button button is-normal is-primary is-rounded" 
+                            <a class="register-button button is-white" 
                             {% if course[1]['passcode'] %}
                                 onclick="showPasscodeModal({{ course[1]['id'] }})"
                             {% else %}

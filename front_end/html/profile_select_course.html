@@ -1,6 +1,8 @@
-<div class="tab-title">
-    <h3>Please select a course before proceeding:</h3>
-    {% for course in courses %}
-        <p><a href="/profile/instructor/{{ course[1]['id'] }}/{{ user_info['user_id'] }}">{{ course[1]["title"] }}</a></p>
-    {% end %}
+        <div class="tab-title">
+            <h3>Please select a course before proceeding:</h3>
+            {% for course in courses %}
+                <p><a href="/profile/instructor/{{ course[1]['id'] }}/{{ user_info['user_id'] }}">{{ course[1]["title"] }}</a></p>
+            {% end %}
+        </div>
+    </div>
 </div>
