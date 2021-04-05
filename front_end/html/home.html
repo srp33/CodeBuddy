@@ -10,16 +10,6 @@
         document.getElementById("title").style.fontWeight = "bold";
         document.getElementById("introduction").innerHTML = course_introduction;
 
-        var registerButton = document.getElementById("register_button");
-        registerButton.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        var cancelButton = document.getElementById("cancel_button");
-        cancelButton.onclick = function() {
-            modal.style.display = "none";
-        }
-
         span.onclick = function() {
             modal.style.display = "none";
         }
@@ -39,9 +29,9 @@
         
             <div class="top-space">
                 {% if mode == "production" %}
-                    <a class="button is-link is-rounded is-medium" href="/login">Sign in</a>
+                    <a class="button is-primary is-medium" href="/login">Sign in</a>
                 {% else %}
-                    <a class="button is-link is-rounded is-medium" href="/devlogin">Sign in</a>
+                    <a class="button is-primary is-medium" href="/devlogin">Sign in</a>
                 {% end %}
             </div>
         </div>
@@ -73,7 +63,7 @@
                                     {% end %}
                                 </div>
                                 <p>Instructor: </p>
-                                <a class="button is-rounded is-link" onclick="showCourseModal('{{ course[1]['title'] }}', `{{ course[1]['introduction'] }}`)">View details</a>
+                                <a class="button is-primary" onclick="showCourseModal('{{ course[1]['title'] }}', `{{ course[1]['introduction'] }}`)">View details</a>
                             </div>
                         </div>
                     </article>
@@ -87,10 +77,6 @@
             <span class="close">&times;</span>
             <p id="title"></p>
             <p id="introduction"></p>
-            <p class="buttons">
-                <a id="cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                <a id="register_button" class="modal-button button is-small is-primary">Register</a>
-            </p>
         </div>
     </div>
 </div>

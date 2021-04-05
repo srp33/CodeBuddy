@@ -1,8 +1,11 @@
             <div class="navbar-item has-dropdown is-hoverable">
                 {% if len(exercises) > 0 %}
-                    <a class="navbar-link" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Exercises</a>
+                    <a class="navbar-link is-arrowless" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
+                        Exercises
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </a>
 
-                    <div id="moreDropdown" class="navbar-dropdown is-size-4">
+                    <div id="moreDropdown" class="navbar-dropdown">
                         {% for exercise in exercise_statuses %}
                             <a class="navbar-item " href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">
                                 {% if exercise[1]["passed"] %}
