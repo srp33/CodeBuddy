@@ -24,12 +24,12 @@
         <div class="row-container">
             <div class="a-title-container">
                 <p><strong>Title: </strong></p>
-                <p><textarea name="title" class="textarea is-info is-normal is-medium monospace" placeholder="Please specify a descriptive title for this assignment." rows="1" autofocus>{{ assignment_basics["title"] }}</textarea></p>
+                <p><textarea name="title" class="textarea is-primary monospace" placeholder="Please specify a descriptive title for this assignment." rows="1" autofocus>{{ assignment_basics["title"] }}</textarea></p>
             </div>
 
             <div class="a-visible">
                 <p><strong>Visible: </strong>
-                    <div class="select is-info">
+                    <div class="select is-primary">
                         <select name="is_visible" class="edit-select">
                         {% if assignment_basics["visible"] %}
                             <option value="Yes" selected>Yes</option>
@@ -46,7 +46,7 @@
 
         <div class="top-space">
             <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
-            <p><textarea name="introduction" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide an introduction for this assignment." rows="8">{{ assignment_details["introduction"] }}</textarea></p>
+            <p><textarea name="introduction" class="textarea is-primary is-fullwidth monospace" placeholder="Please provide an introduction for this assignment." rows="8">{{ assignment_details["introduction"] }}</textarea></p>
         </div>
     </div>
 
@@ -59,7 +59,7 @@
                         <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
                     </label>
                 </div>
-                <div class="select is-info">
+                <div class="select is-primary">
                     <select name="has_start_date" onchange="showStartOptions(this.value)" class="edit-select">
                         <option
                         {% if not assignment_details["start_date"] %}
@@ -90,7 +90,7 @@
                         <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
                     </label>
                 </div>
-                <div class="select is-info">
+                <div class="select is-primary">
                     <select name="has_due_date" onchange="showDueOptions(this.value)" class="edit-select">
                         <option
                         {% if not assignment_details["due_date"] %}
@@ -122,7 +122,7 @@
             class="invisible"
         {% end %}>
             <p class="top-space"><strong>Allow late submissions: </strong>
-                <div class="select is-info">
+                <div class="select is-primary">
                     <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" class="edit-select">
                     {% if assignment_details["allow_late"] %}
                         <option value="Yes" selected>Yes</option>
@@ -143,7 +143,7 @@
             class="invisible"
         {% end %}>
             <p><strong>Select percentage of points students can earn back with late submissions: </strong>
-                <div class="select is-info">
+                <div class="select is-primary">
                     <select id="late_percent_select" name="late_percent_select" class="edit-select">
                     {% for percent in percentage_options %}
                         {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
@@ -164,7 +164,7 @@
             class="visible"
         {% end %}>
             <p><strong>Allow students to view the answer after the due date has passed: </strong>
-                <div class="select is-info">
+                <div class="select is-primary">
                     <select id="view_late_select" name="view_late_select" class="edit-select">
                     {% if assignment_details["view_answer_late"] %}
                         <option value="Yes" selected>Yes</option>
@@ -181,7 +181,7 @@
   
     <div class="shadow-box">
         <p><strong>Timer: </strong><br />Here you can specify the time a student has to complete this assignment. Once a students begins this assignment, they cannot pause the timer.</p>
-        <div class="select is-info">
+        <div class="select is-primary">
             <select name="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
                 <option
                 {% if assignment_details["has_timer"] %}
@@ -196,7 +196,7 @@
             </select>
         </div>
 
-        <div id="timer_div" class="select is-info" 
+        <div id="timer_div" class="select is-primary" 
         {% if assignment_details["has_timer"] %}
             style="display: inline;"
         {% else %}
@@ -227,7 +227,7 @@
 
     <div class="shadow-box">
         <p><strong>Enable help requests for exercises in this assignment: </strong>
-            <div class="select is-info">
+            <div class="select is-primary">
                 <select id="enable_help_requests" name="enable_help_requests" class="edit-select">
                 {% if assignment_details["enable_help_requests"] %}
                     <option value="Yes" selected>Yes</option>
@@ -241,13 +241,13 @@
         </p>
     </div>
 
-    <p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
+    <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
 
     <p>
     {% if assignment_basics["exists"] %}
         <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done editing</a>
     {% end %}
-    </p><br />
+    </p>
 
     </form>
 {% else %}

@@ -20,12 +20,12 @@
     <div class="row-container">
         <div class="a-title-container">
             <p><strong>Title*: </strong></p>
-            <p><textarea name="title" class="textarea is-info is-medium monospace" placeholder="Please specify a descriptive title for this course." rows="1" autofocus>{{ course_basics["title"] }}</textarea>
+            <p><textarea name="title" class="textarea is-primary is-medium monospace" placeholder="Please specify a descriptive title for this course." rows="1" autofocus>{{ course_basics["title"] }}</textarea>
         </div>
 
         <div class="a-visible">
             <p><strong>Visible: </strong>
-                <div class="select is-info">
+                <div class="select is-primary">
                     <select name="is_visible" class="edit-select">
                     {% if course_basics["visible"] %}
                         <option value="Yes" selected>Yes</option>
@@ -42,21 +42,21 @@
 
     <div class="top-space">
         <p><strong>Introduction*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this course.</p>
-        <p><textarea name="introduction" class="textarea is-info is-medium is-fullwidth monospace" placeholder="Please provide an introduction for this course." rows="8">{{ course_details["introduction"] }}</textarea></p>
+        <p><textarea name="introduction" class="textarea is-primary is-medium is-fullwidth monospace" placeholder="Please provide an introduction for this course." rows="8">{{ course_details["introduction"] }}</textarea></p>
     </div>
 </div>
 
 <div class="shadow-box">
     <p><strong>Passcode (optional): </strong><br/>Students will be required to enter this code in order to register for the course.</p>
-    <p><textarea name="passcode" class="textarea is-info is-medium is-fullwidth monospace" rows="1">{% if course_details["passcode"] %}{{ course_details["passcode"] }}{% end %}</textarea></p>
+    <p><textarea name="passcode" class="textarea is-primary is-medium is-fullwidth monospace" rows="1">{% if course_details["passcode"] %}{{ course_details["passcode"] }}{% end %}</textarea></p>
 </div>
 
-<p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
+<p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
 
 <p>
 {% if course_basics["exists"] %}
     <a href="/course/{{ course_basics['id'] }}">Done editing</a>
 {% end %}
-</p><br />
+</p>
 
 </form>

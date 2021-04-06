@@ -3,8 +3,8 @@
     <div class="row-container">
         <h2>Edit exercise</h2>
         <p>
-            <input type="submit" class="button is-info is-small is-rounded" value="Save" />
-            <button class="button is-light is-small is-rounded" onclick="location.href='/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ exercise_basics["id"] }}'; return false;">Done</button>
+            <input type="submit" class="button is-dark" value="Save" />
+            <button class="button is-white" onclick="location.href='/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ exercise_basics["id"] }}'; return false;">Done</button>
         </p>
     </div>
 {% else %}
@@ -70,11 +70,11 @@
             <div class="row-container bottom-space">
                 <div class="a-title-container">
                     <p><strong>Title*: </strong></p>
-                    <p><textarea name="title" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please specify a descriptive title." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
+                    <p><textarea name="title" class="textarea is-primary is-fullwidth monospace" placeholder="Please specify a descriptive title." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
                 </div>
                 <div class="a-visible">
                     <p><strong>Visible: </strong>
-                        <div class="select is-info">
+                        <div class="select is-primary">
                             <select name="is_visible" class="edit-select">
                             {% if exercise_basics["visible"] %}
                                 <option value="Yes" selected>Yes</option>
@@ -95,7 +95,7 @@
                         <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' solution.">
                             <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
                         </label>
-                        <div class="select is-info">
+                        <div class="select is-primary">
                             <select name="back_end" onchange="updateBackEndOptions(this.value, '')" class="edit-select">
                             {% for back_end in back_ends %}
                                 <option
@@ -111,7 +111,7 @@
 
                 <div>
                     <p><strong>Output type: </strong>
-                        <div class="select is-info">
+                        <div class="select is-primary">
                             <select name="output_type" id="output_types" class="edit-select">
                             </select>
                         </div>
@@ -121,7 +121,7 @@
 
             <div class="top-space">
                 <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
-                <p><textarea name="instructions" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ exercise_details["instructions"] }}</textarea></p>
+                <p><textarea name="instructions" class="textarea is-primary is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ exercise_details["instructions"] }}</textarea></p>
             </div>
         </div>
 
@@ -130,7 +130,7 @@
                 <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
                 <br />Please provide a link to the data source(s) if you obtained the dataset from someone else.
             </p>
-            <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ exercise_details["credit"] }}</textarea></p>
+            <textarea class="textarea is-primary is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ exercise_details["credit"] }}</textarea></p>
     
             <div id="file_upload">
                 <p><strong>Data file(s): </strong>
@@ -161,7 +161,7 @@
                 <p><strong>Solution*: </strong></p>
                 <p>Please specify a solution for this exercise. If it requires programming, the solution will be executed, and the output of your solution will be used as the expected output. If the back end is "free_response," your solution itself will be used as the expected output. If the back end is "any_response," you need not enter a solution. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new exercise instead.</p>
                 <p>
-                    <textarea name="answer_code" id="answer_code" class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide a solution." rows="10">{{ exercise_details["answer_code"] }}</textarea>
+                    <textarea name="answer_code" id="answer_code" class="textarea is-fullwidth monospace" placeholder="Please provide a solution." rows="10">{{ exercise_details["answer_code"] }}</textarea>
                     <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
                     <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
                 </p>
@@ -183,7 +183,7 @@
 
             <div>
                 <p><strong>Show expected output: </strong>
-                    <div class="select is-info">
+                    <div class="select is-primary">
                         <select name="show_expected" class="edit-select">
                         {% if exercise_details["show_expected"] %}
                             <option value="Yes" selected>Yes</option>
@@ -203,7 +203,7 @@
                 <p><strong>Starter code: </strong></p>
                 <p>Starter code will be given to a student when they haven't made any submissions yet. They'll be able to add to this code in order to solve the exercise.</p>
                 <p>
-                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide starter code." rows="10" id="starter_code" name="starter_code">{% if exercise_details["starter_code"] %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide starter code." rows="10" id="starter_code" name="starter_code">{% if exercise_details["starter_code"] %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
                     <textarea name="starter_code_text" id="starter_code_text" class="invisible"></textarea>
                 </p>
             </div>
@@ -214,14 +214,14 @@
                 <p><strong>Test code: </strong></p>
                 <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
                 <p>
-                    <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ exercise_details["test_code"] }}</textarea>
+                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ exercise_details["test_code"] }}</textarea>
                     <textarea name="test_code_text" id="test_code_text" class="invisible"></textarea>
                 </p>
             </div>
 
             <div>
                 <p><strong>Show test code: </strong>
-                    <div class="select is-info">
+                    <div class="select is-primary">
                         <select name="show_test_code" class="edit-select">
                         {% if exercise_details["show_test_code"] %}
                             <option value="Yes" selected>Yes</option>
@@ -239,18 +239,18 @@
         <div class="shadow-box">
             <div class="space-div">
                 <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p> 
-                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>  
+                <p><textarea class="textarea is-primary is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>  
             </div>
 
             <div class="bottom-space">
                 <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
-                <p><textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>  
+                <p><textarea class="textarea is-primary is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>  
             </div>
 
-            <div class="row-container">
+            <div class="row-container bottom-space">
                 <div>
                     <p><strong>Allow students to view the instructor's solution after they pass the exercise: </strong>
-                        <div class="select is-info">
+                        <div class="select is-primary">
                             <select name="show_answer" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
                             {% if exercise_details["show_answer"] %}
                                 <option value="Yes" selected>Yes</option>
@@ -265,10 +265,10 @@
                 </div>
             </div>
 
-            <div class="row-container">
+            <div class="row-container bottom-space">
                 <div>
                     <p><strong>Allow students to see submissions from other students: </strong>
-                        <div class="select is-info">
+                        <div class="select is-primary">
                             <select name="show_student_submissions" id="show_student_submissions" class="edit-select">
                             {% if exercise_details["show_student_submissions"] %}
                                 <option value="Yes" selected>Yes</option>
@@ -283,11 +283,11 @@
                 </div>
             </div>
 
-            <div class="row-container">  
+            <div class="row-container bottom-space">  
                 <div>
                     <p><strong>Maximum # of submissions:</strong></p>
                     <p>
-                        <div class="select is-info">
+                        <div class="select is-primary">
                             <select name="max_submissions" class="edit-select">
                             {% for i in range(101) %}
                                 {% if i == 0 %}
@@ -311,7 +311,7 @@
             </div>
         </div>
 
-        <p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
+        <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
 
         <p>
         {% if exercise_basics["exists"] %}
@@ -420,7 +420,7 @@
                     text.appendChild(file_name);
 
                     var d_button = document.createElement("button");
-                    d_button.classList.add("button", "is-small", "is-link", "is-inverted");
+                    d_button.classList.add("button", "is-small", "is-primary", "is-inverted");
                     d_button.textContent = "X";
 
                     d_button.addEventListener("click", function(event) {
@@ -466,4 +466,3 @@
 {% else %}
     This course has not been created yet.
 {% end %}
-<br /><br />
