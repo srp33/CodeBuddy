@@ -25,15 +25,15 @@
                 <tr>
                     <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
                     {% if assignment[1]["visible"] == 0 %}
-                        <td>Hidden</td>
+                        <td class="has-text-centered">Hidden</td>
                         <td> </td>
                         <td> </td>
                         <td> </td>
                         <td> </td>
                     {% else %}
-                        <td>Visible</td>
+                        <td class="has-text-centered">Visible</td>
                         {% if assignment[1]["start_date"] %}
-                            <td>
+                            <td class="has-text-centered">
                                 <script>
                                     var s = new Date("{{ assignment[1]['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
                                     document.write(convertDate(s));
@@ -43,7 +43,7 @@
                             <td> </td>
                         {% end %}
                         {% if assignment[1]["due_date"] %} 
-                            <td>
+                            <td class="has-text-centered">
                                 <script>
                                     var d = new Date("{{ assignment[1]['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
                                     document.write(convertDate(d));
@@ -52,21 +52,21 @@
                         {% else %}
                             <td> </td>
                         {% end %}
-                        <td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
+                        <td class="has-text-centered">{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
                         {% if course_scores[assignment[1]["id"]]["avg_score"] %}
-                            <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
+                            <td class="has-text-centered">{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
                         {% else %}
-                            <td>No scores yet</td>
+                            <td class="has-text-centered">No scores yet</td>
                         {% end %}
                     {% end %}
-                    <td>
+                    <td class="has-text-centered">
                         <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">
-                            <img src="/static/editicon.png" alt="Edit assignment" height="25px" width="25px">
+                            <i class="fas fa-edit"></i>
                         </a>
                     </td>
-                    <td>
+                    <td class="has-text-centered">
                         <a onclick="showDeleteModal({{ assignment[1]['id'] }})">
-                            <img src="/static/trashcan.png" alt="Completed" height="25px" width="25px">
+                            <i class="fas fa-trash-alt"></i>
                         </a>
                     </td>
                 </tr>
@@ -80,8 +80,8 @@
             <span class="close">&times;</span>
             <p id="confirm_delete"></p>
             <p class="buttons">
-                <a id="delete_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                <a id="delete_button" class="modal-button button is-small is-primary">Delete</a>
+                <a id="delete_cancel_button" class="modal-button button is-light">Cancel</a>
+                <a id="delete_button" class="modal-button button is-dark">Delete</a>
             </p>
         </div>
     </div>
@@ -92,14 +92,14 @@
             <p>Are you sure you want to delete all submissions for this course?</p>
             <p><font color="red">This will also delete all scores for this course.</font></p>
             <p class="buttons">
-                <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
+                <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
+                <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
             </p>
         </div>
     </div>
 
     <div>
-        <a class="button is-small is-rounded is-primary" href="/edit_assignment/{{ course_basics['id'] }}/">New assignment</a>
+        <a class="button is-dark" href="/edit_assignment/{{ course_basics['id'] }}/">New assignment</a>
         <!--<p class="buttons is-pulled-right">
             <a class="button is-small is-rounded is-light" href="">Export course</a>
             <a class="button is-small is-rounded is-light" href="">Export submissions</a>   

@@ -161,22 +161,22 @@
                     <tr>
                         <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a></td>
                         {% if exercise[1]["visible"] == 0 %}
-                            <td>Hidden</td>
+                            <td class="has-text-centered">Hidden</td>
                             <td> </td>
                             <td> </td>
                         {% else %}
-                            <td>Visible</td>
-                            <td><a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Scores</a></td>
-                            <td><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Submissions</a></td>
+                            <td class="has-text-centered">Visible</td>
+                            <td class="has-text-centered"><a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Scores</a></td>
+                            <td class="has-text-centered"><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Submissions</a></td>
                         {% end %}
-                        <td>
+                        <td class="has-text-centered">
                             <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}">
-                                <img src="/static/editicon.png" alt="Edit exercise" height="25px" width="25px">
+                                <i class="fas fa-edit"></i>
                             </a>
                         </td>
-                        <td>
+                        <td class="has-text-centered">
                             <a onclick="showDeleteModal({{ exercise[1]['id'] }})">
-                                <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
+                                <i class="fas fa-trash-alt"></i>
                             </a> 
                         </td>
                     </tr>
@@ -193,8 +193,8 @@
                 <span class="close">&times;</span>
                 <p id="confirm_delete"></p>
                 <p class="buttons">
-                    <a id="delete_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <a id="delete_button" class="modal-button button is-small is-primary">Delete</a>
+                    <a id="delete_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <a id="delete_button" class="modal-button button is-dark">Delete</a>
                 </p>
             </div>
         </div>
@@ -204,7 +204,7 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <p>Copy an assignment to a different course:</p>
-                <div class="select is-info">
+                <div class="select is-primary">
                     <select name="new_course_id" id="new_course_id">
                     {% for course in course_options %}
                         <option value="{{ course['id'] }}">{{ course["title"] }}</option>
@@ -212,8 +212,8 @@
                     </select>
                 </div>
                 <p class="buttons">
-                    <a id="copy_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <input type="submit" id="copy_button" class="modal-button button is-small is-primary" value="Copy"/>
+                    <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <input type="submit" id="copy_button" class="modal-button button is-dark" value="Copy"/>
                 </p>
             </div>
             </form>
@@ -225,8 +225,8 @@
                 <p>Are you sure you want to delete all submissions for this assignment?</p>
                 <p><font color="red">This will also delete all scores for this assignment.</font></p>
                 <p class="buttons">
-                    <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
+                    <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
                 </p>
             </div>
         </div>
@@ -238,38 +238,38 @@
                 <p>Use this option to create an exercise that displays a YouTube video and asks the user to submit a response based on a prompt in the video.</p>
 
                 <p>Title:
-                    <input class="input is-medium is-link" type="text" id="video_title" name="video_title"/>
+                    <input class="input is-medium is-primary" type="text" id="video_title" name="video_title"/>
                 </p>
 
                 <p>Instructions:
-                    <input class="input is-medium is-link" type="text" id="video_instructions" name="video_instructions" value="Please watch this video and then enter the requested response."/>
+                    <input class="input is-medium is-primary" type="text" id="video_instructions" name="video_instructions" value="Please watch this video and then enter the requested response."/>
                 </p>
 
                 <p>YouTube video URL:
-                    <input class="input is-medium is-link" type="text" id="video_url" name="video_url"/>
+                    <input class="input is-medium is-primary" type="text" id="video_url" name="video_url"/>
                 </p>
 
                 <div id="video_error"></div>
 
                 <p class="buttons">
-                    <input type="submit" id="video_create_button" class="modal-button button is-small is-primary" value="Create"/>
-                    <button type="button" id="video_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</button>
+                    <button type="button" id="video_cancel_button" class="modal-button button is-light">Cancel</button>
+                    <input type="submit" id="video_create_button" class="modal-button button is-dark" value="Create"/>
                 </p>
             </div>
         </div>
 
         <p>
             <p>
-                <a class="button is-small is-rounded is-primary" onclick="window.location.href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">
+                <a class="button is-dark" onclick="window.location.href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">
                     <span>New exercise</span>
                 </a>
                 &nbsp;
-                <a class="button is-small is-rounded is-light" onclick="showVideoModal()">
+                <a class="button is-light" onclick="showVideoModal()">
                     <span>New video exercise</span>
                 </a>
             </p>
             <p>
-                <a class="button is-small is-rounded is-link" onclick="window.location.href='/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}';">
+                <a class="button is-primary" onclick="window.location.href='/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}';">
                     <span>View scores</span>
                 </a>
             </p>

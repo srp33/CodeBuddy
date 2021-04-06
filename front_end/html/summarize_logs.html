@@ -7,7 +7,7 @@
         <div class="field is-grouped">
             <div class="control">
                 <label class="label">Select file</label>
-                <div class="select is-link is-medium">
+                <div class="select is-primary is-medium">
                     <select id="file_select" name="file_select">
                         <option selected disabled>Select file</option>
                         <option value="logs/summarized/HitsAnyUser.tsv.gz">HitsAnyUser</option>
@@ -18,7 +18,7 @@
             </div>
             <div class="control">
                 <label class="label">Filter by page</label>
-                <div class="select is-link is-medium">
+                <div class="select is-primary is-medium">
                     <select id="filter_select" name="filter_select">
                         <option selected>No filter</option>
                         {% for item in filter_list %}
@@ -33,7 +33,7 @@
             <div class="field is-grouped">
                 <div class="control">
                     <label class="label">Year</label>
-                    <div class="select is-link is-medium">
+                    <div class="select is-primary is-medium">
                         <select id="year_select" name="year_select">
                             <option selected>No filter</option>
                             {% for year in years %}
@@ -44,7 +44,7 @@
                 </div>
                 <div class="control">
                     <label class="label">Month</label>
-                    <div class="select is-link is-medium">
+                    <div class="select is-primary is-medium">
                         <select id="month_select" name="month_select">
                             <option selected>No filter</option>
                             {% for month in months %}
@@ -55,7 +55,7 @@
                 </div>
                 <div class="control">
                     <label class="label">Day</label>
-                    <div class="select is-link is-medium">
+                    <div class="select is-primary is-medium">
                         <select id="day_select" name="day_select">
                             <option selected>No filter</option>
                             {% for day in days %}
@@ -66,9 +66,9 @@
                 </div>
             </div>
         </div>
-        <div class="buttons">
-            <a href="/profile/admin/{{ user_info['user_id'] }}" class="button is-small is-light is-rounded">Return to admin menu</a>
-            <input type="submit" class="button is-small is-link is-rounded" value="Submit"/>
+        <div class="buttons top-space">
+            <a href="/profile/admin/{{ user_info['user_id'] }}" class="button is-light">Return to admin menu</a>
+            <input type="submit" class="button is-primary" value="Submit"/>
         </div>
     </div>
     <div class="column is-half">
@@ -163,14 +163,14 @@
                 <tr>
                     <th>{{ line_num }}</th>
                     {% for item in line %}
-                        <td>{{ item }}</td> 
+                        <td class="has-text-centered">{{ item }}</td> 
                     {% end %}     
                 </tr>
             {% elif filter == "No filter" %}
                 <tr>
                     <th>{{ line_num }}</th>
                     {% for item in line %}
-                        <td>{{ item }}</td> 
+                        <td class="has-text-centered">{{ item }}</td> 
                     {% end %}     
                 </tr>
             {% end %}
