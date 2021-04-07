@@ -1,10 +1,10 @@
 {% if len(exercise_submissions) > 0 %}
 
     <div>
-        <h2 style="display: inline-block;">Submissions for {{ exercise_basics["title"] }}</h2>
+        <h4 style="display: inline-block;">Submissions for {{ exercise_basics["title"] }}</h4>
         <div class="buttons is-pulled-right">
-            <a class="button is-small is-rounded is-primary" onclick="showAllSubmissions()">Show All</a>
-            <a class="button is-small is-rounded is-primary is-light" onclick="hideAllSubmissions()">Hide All</a>
+            <a class="button is-dark" onclick="showAllSubmissions()">Show All</a>
+            <a class="button is-light" onclick="hideAllSubmissions()">Hide All</a>
         </div>
     </div>
 

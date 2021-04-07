@@ -1,40 +1,30 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
-            <h2>{{ student_info["name"] }}'s submissions</h2>
+            <div class="student-exercise-notification">{{ student_info["name"] }}'s submissions</div>
 
-            <div>
-                <h4 style="display: inline-block;">{{ exercise_basics["assignment"]["title"] }}</h4>
-                <br /><h5>{{ exercise_basics["title"] }}</h5>
-                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}" class="button is-small is-light is-pulled-right">View exercise</a>
+            <div class="row-container">
+                <div class="e-title-container">
+                    <h4 style="display: inline-block;">{{ exercise_basics["assignment"]["title"] }}: {{ exercise_basics["title"] }}</h4>
+                </div>
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}" class="button is-light is-pulled-right">View exercise</a>
             </div>
 
-            <p>{{ exercise_details["instructions"] }}</p>
+            <div class="instructions">
+                <h6>Instructions:</h6>
+                <div class="smaller-font">{{ exercise_details["instructions"] }}</div>
+            </div>
 
-            <h2>Instructor's solution:</h2>
+            <h6>Instructor's solution:</h6>
 
             <pre>{{ exercise_details["answer_code"]}}</pre>
 
-            <p>
-                <div>
-                    <h2 id="your_code_header" style="display: inline">Student's solution:</h2>
-                </div>
-            </p>
+            <h6 id="your_code_header" style="display: inline">Student's solution:</h6>
+            <textarea class="textarea is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
 
-            <p>
-                <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
-            </p>
-            <br />
-            
-            <div id="revert_div" hidden></div>
+            <div id="result"></div>
 
-            <div id="submissions"></div>
-
-            <p><div id="result"></div></p>
-
-            <div>
-                <h2 style="display: inline">Expected output:</h2>
-            </div>
+            <h6 style="display: inline">Expected output:</h6>
 
             {% if exercise_details["output_type"] == "txt" %}
                 <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
@@ -49,3 +39,5 @@
                     <p><span id="diff_output"></span></p>
                 {% end %}
             {% end %}
+
+            <div id="submissions"></div>

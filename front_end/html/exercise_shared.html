@@ -7,7 +7,7 @@
                 <div class="modal-content">
                     <!--<span class="close">&times;</span>-->
                     <p>Move an exercise to a different assignment:</p>
-                    <div class="select is-info">
+                    <div class="select is-light">
                         <select name="new_assignment_id" id="new_assignment_id">
                         {% for assignment in assignment_options %}
                             <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
@@ -15,8 +15,8 @@
                         </select>
                     </div>
                     <p class="buttons">
-                        <a id="move_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                        <input type="submit" id="move_button" class="modal-button button is-small is-primary" value="Move"/>
+                        <a id="move_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="move_button" class="modal-button button is-dark" value="Move"/>
                     </p>
                 </div>
                 </form>
@@ -28,8 +28,8 @@
                     <p>Are you sure you want to delete all submissions for this exercise?</p>
                     <p><font color="red">This will also delete all scores for this exercise.</font></p>
                     <p class="buttons">
-                        <a id="delete_submissions_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                        <input type="submit" id="delete_submissions_button" class="modal-button button is-small is-primary" value="Delete"/>
+                        <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
                     </p>
                 </div>
             </div>
@@ -51,7 +51,7 @@
             <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a><br/>
 
             {% if student_id == user_id %}
-                <br /><br /><br />
+                <br /><br />
             {% end %}
 
             <script>
@@ -141,32 +141,32 @@
 
                     if (json_data.passed) {
                         {% if exercise_details["back_end"] == "any_response" %}
-                            result = "<div class='notification success-message' style='color:#34495e'><p><strong>Thank you for your submission.</strong></p>\n\n";
+                            result = "<div class='notification success-message' style='color:white'><p><strong>Thank you for your submission.</strong></p>\n\n";
                         {% else %}
-                            result = "<div class='notification success-message' style='color:#34495e'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
+                            result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
                         {% end %}
 
                         {% if exercise_details["show_student_submissions"] %}
-                            result += "<p><a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a>.</p>";
+                            result += "<p><a style='color: #363636' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a></p>";
                         {% elif exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
-                            result += "<p><a style='color:#2166ac' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a>.</p>";
+                            result += "<p><a style='color: #363636' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
                         {% end %}
 
                         {% if next_exercise %}
-                            result += "<p><a href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
+                            result += "<p><a style='color: #363636' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
                         {% end %}
 
                         result += "</div>\n\n"
                     }
                     else {
                         // This should never be reached when exercise_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
-                        result = "<div class='notification error-message' style='color:#34495e'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+                        result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
 
                         {% if exercise_details["show_expected"] %}
                             var diff_output = "";
 
                             if (json_data.diff.length > 0) {
-                                diff_output += "<h2>Difference between your output and the expected output:</h2>\n\n";
+                                diff_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
 
                                 {% if exercise_details["output_type"] == "txt" %}
                                     diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
@@ -182,7 +182,7 @@
                     document.getElementById("result").innerHTML = result;
 
                     {% if exercise_details["back_end"] != "any_response" %}
-                        var code_output = "<h2>Your output:</h2>\n\n";
+                        var code_output = "<h6>Your output:</h6>\n\n";
                         code_output += build_text_output(json_data.text_output);
                         code_output += build_image_output(json_data.image_output);
                         document.getElementById("code_output").innerHTML = code_output;
@@ -197,7 +197,7 @@
                         return false;
 
                     result_div = document.getElementById("result");
-                    result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
+                    result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
                     result_div.scrollIntoView();
                     document.getElementById("code_output").innerHTML = "";
 
@@ -212,7 +212,7 @@
                         function(data, status) {
                             var json_data = JSON.parse(data);
 
-                            var code_output = "<h2>Your output:</h2>\n\n";
+                            var code_output = "<h6>Your output:</h6>\n\n";
                             code_output += build_text_output(json_data.text_output);
                             code_output += build_image_output(json_data.image_output);
                             document.getElementById("code_output").innerHTML = code_output;
@@ -231,7 +231,7 @@
                         return false;
 
                     result_div = document.getElementById("result");
-                    result_div.innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
+                    result_div.innerHTML = "<div class='notification is-warning smaller-font'>Please wait while your solution is being executed...</div>";
                     result_div.scrollIntoView();
 
                     {% if exercise_details["back_end"] != "any_response" %}
@@ -314,7 +314,7 @@
                             var revert_html = "";
 
                             if (json_data.length > 0) {
-                                submission_html += "<h2>Past submissions:</h2>\n";
+                                submission_html += "<h6>Past submissions:</h6>\n";
                                 submission_html += "<div class='buttons'>\n";
 
                                 var i;
@@ -328,20 +328,18 @@
                                         get_submission(submission_id, false);
                         
                                     if (passed)
-                                        button_bg_color = "#80cdc1";
+                                        button_bg_color = "#00d1b2";
                                     else
                                         button_bg_color = "#f4a582";
 
                                     var submission_date = new Date(the_date).toLocaleString();
-                                    submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #34495e; width: 315px' class='button is-primary is-medium' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                    submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #363636; width: 315px' class='button' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
                                 }
 
                                 submission_html += "</div><br />\n";
-                                revert_html = "<p class='control'><button class='button is-primary is-light is-large is-half' onclick='get_submission(last_submission_id, false)'>Revert to previous submission</button>&nbsp;</p>";
                             }
 
                             submissions_div.innerHTML = submission_html;
-                            revert_div.innerHTML = revert_html;
                         });
                 }
             </script>

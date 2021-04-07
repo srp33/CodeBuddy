@@ -20,24 +20,26 @@
     </div>
     <div class="padded-div">
     {% for request in similar_requests %}
-        <button type="button" class="spread-div clickable collapsible">
-            <p id="first-p">Help request for {{ request["name"] }}</p>
-            <p><strong>Percent similarity: {{ round(request["psim"] * 100, 2) }}%</strong></p>
-        </button>
-        <div class="c-content">
-            <p><strong>Comment:</strong></p>
-            <pre class="comment">{{ request["student_comment"] }}</pre>
-            <p><strong>Code:</strong></p>
-            <pre class="student-content">{{ request["code"] }}</pre>
-            <p><strong>Text output:</strong></p>
-            <pre class="instructor-content">{{ request["text_output"] }}</pre>
-            {% if request["suggestion"] %}
-                <p><strong>Suggestion:</strong></p>
-                <pre>{{ request["suggestion"] }}</pre>
-                <button class="button is-small is-link is-rounded is-inverted" onclick="useSuggestion(`{{ request['suggestion'] }}`)">Use this suggestion for the request I'm viewing</button>
-            {% end %}
-            <div class="buttons space-buttons">
-                <a class="button is-small is-link is-rounded" href="/view_request/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
+        <div class="bottom-space">
+            <button type="button" class="spread-div clickable collapsible">
+                <p id="first-p">Help request for {{ request["name"] }}</p>
+                <p><strong>Percent similarity: {{ round(request["psim"] * 100, 2) }}%</strong></p>
+            </button>
+            <div class="c-content">
+                <p><strong>Comment:</strong></p>
+                <pre class="comment">{{ request["student_comment"] }}</pre>
+                <p><strong>Code:</strong></p>
+                <pre class="student-content">{{ request["code"] }}</pre>
+                <p><strong>Text output:</strong></p>
+                <pre class="instructor-content">{{ request["text_output"] }}</pre>
+                {% if request["suggestion"] %}
+                    <p><strong>Suggestion:</strong></p>
+                    <pre>{{ request["suggestion"] }}</pre>
+                    <button class="button is-primary is-inverted" onclick="useSuggestion(`{{ request['suggestion'] }}`)">Use this suggestion for the request I'm viewing</button>
+                {% end %}
+                <div class="buttons space-buttons">
+                    <a class="button is-dark" href="/view_request/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
+                </div>
             </div>
         </div>
     {% end %}
@@ -48,9 +50,9 @@
     <div class="content is-medium">
 
         <div class="spread-div">
-            <h2>View help request for {{ help_request["name"] }}</h2>
+            <h4>View help request for {{ help_request["name"] }}</h4>
             {% if similar_requests %}
-                <button class="button is-small is-rounded is-link" onclick="showMovingDiv()">
+                <button class="button is-primary" onclick="showMovingDiv()">
                     {% if len(similar_requests) == 1 %}
                         1 similar request
                     {% else %}
@@ -59,8 +61,7 @@
                 </button>
             {% end %}
         </div>
-        <p class="light-heading">Assignment: {{ assignment_basics["title"] }}<br />
-        Exercise: {{ exercise_basics["title"] }}</p>
+        <h6>{{ assignment_basics["title"] }}: {{ exercise_basics["title"] }}</h6>
 
         {% if result %}
             {% if result.startswith("Error:") %}
@@ -70,38 +71,41 @@
             {% end %}
         {% end %}
 
-        <p>{{ exercise_details["instructions"] }}</p>
+        <div class="instructions">
+            <h6>Instructions:</h6>
+            <div class="smaller-font">{{ exercise_details["instructions"] }}</div>
+        </div>
 
         <form method="post" action="/view_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ help_request['user_id'] }}">
 
         <div>
-            <p><strong>Student comment:</strong></p>
+            <h6>Student comment:</h6>
             <pre class="comment">{{ help_request["student_comment"] }}</pre>
-            <p><strong>Code:</strong></p>
-            <textarea id="editor" class="textarea is-info monospace" rows="20">{{ help_request["code"] }}</textarea>
+            <h6>Code:</h6>
+            <textarea id="editor" class="textarea monospace" rows="20">{{ help_request["code"] }}</textarea>
             <div class="buttons">
-                <button type="button" id="show_answer_button" class="button is-small is-primary is-rounded" onclick="showAnswerCode()">View solution</button>
-                <button type="button" id="show_test_code_button" class="button is-small is-primary is-rounded" onclick="showTestCode()" {% if not exercise_details['test_code'] %}disabled{% end %}>View test code</button>
+                <button type="button" id="show_answer_button" class="button is-dark" onclick="showAnswerCode()">View solution</button>
+                <button type="button" id="show_test_code_button" class="button is-dark" onclick="showTestCode()" {% if not exercise_details['test_code'] %}disabled{% end %}>View test code</button>
                 <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="This button is disabled if the exercise doesn't include test code.">
-                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                    <i class="far fa-question-circle"></i>
                 </label>
             </div>
             <div id="answer_code" class="invisible">
-                <textarea id="answer_editor" class="textarea is-info monospace" rows="20">{{ exercise_details["answer_code"] }}</textarea>
+                <textarea id="answer_editor" class="textarea monospace" rows="20">{{ exercise_details["answer_code"] }}</textarea>
             </div>
             <div id="test_code" class="invisible">
-                <textarea id="test_code_editor" class="textarea is-info monospace" rows="20">{{ exercise_details["test_code"] }}</textarea>
+                <textarea id="test_code_editor" class="textarea monospace" rows="20">{{ exercise_details["test_code"] }}</textarea>
             </div>
             {% if help_request["text_output"] %}
-                <p><strong>Text output:</strong></p>
+                <h6>Text output:</h6>
                 <pre class="instructor-content">{{ help_request["text_output"] }}</pre>
             {% end %}
             {% if help_request["image_output"] %}
-                <p><strong>Image output:</strong></p>
+                <h6>Image output:</h6>
                 <pre class="instructor-content">{{ help_request["image_output"] }}</pre>
             {% end %}
             <div class="suggestion-div">
-                <p><strong>Suggestion:</strong></p>
+                <h6>Suggestion:</h6>
                 {% if help_request["suggestion"] %}
                     <!--<p class="light-heading">Suggester: <br />
                     {% if help_request["approved"] %}
@@ -110,15 +114,15 @@
                         Approver: Not yet approved</p>
                     {% end %}-->
                 {% end %}
-                <textarea name="suggestion" id="suggestion" class="textarea is-info is-normal is-medium is-fullwidth monospace" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
+                <textarea name="suggestion" id="suggestion" class="textarea is-fullwidth" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
                 <input type="checkbox" id="more_info" name="more_info_needed" value="More info needed" {% if help_request['more_info_needed'] %} checked {% end %}>
                 <label for="more_info">More info needed</label>
             </div>
             <div class="buttons space-buttons">
                 {% if help_request["suggestion"] and not help_request["approved"] and not is_assistant %}
-                    <input type="submit" id="approve_button" class="button is-small is-link is-rounded" value="Approve suggestion"/>
+                    <input type="submit" id="approve_button" class="button is-primary" value="Approve suggestion"/>
                 {% end %}
-                <input type="submit" id="submit_button" class="button is-small is-link is-rounded invisible" value="Submit suggestion"/>
+                <input type="submit" id="submit_button" class="button is-dark invisible" value="Submit suggestion"/>
             </div>
         </div><br />
 
@@ -132,9 +136,9 @@
             {% end %}
         {% end %}
         <div class="buttons">
-            <a class="button is-small is-primary is-light is-rounded" href="/help_requests/{{ course_basics['id'] }}">Back to all requests</a>
+            <a class="button is-light" href="/help_requests/{{ course_basics['id'] }}">Back to all requests</a>
             {% if exercise_help_requests %}
-                <a id="other_button" class="button is-small is-primary is-rounded" onclick="showOtherRequests()">Show other requests</a>
+                <a id="other_button" class="button is-dark" onclick="showOtherRequests()">Show other requests</a>
             {% end %}
         </div>
 
@@ -158,7 +162,7 @@
                         <pre class="instructor-content">{{ request["image_output"] }}</pre>
                     {% end %}
                     <div class="buttons space-buttons">
-                        <a class="button is-small is-link is-rounded" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
+                        <a class="button is-dark" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
                     </div>
                 </div>
             {% end %}

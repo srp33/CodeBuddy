@@ -6,12 +6,11 @@
     }
 </style>
 
-<h2 style="text-align: center;">Help Requests Dashboard</h2>
+<h2 class="bottom-space" style="text-align: center;">Help requests for {{ course_basics["title"] }}</h2>
 
-<h4>Help requests for {{ course_basics["title"] }}</h4>
 <div id="filter_container">
-    <input class="input is-info is-medium" id="filter_input" type="text" onkeyup="filterRequests()" placeholder="Search">
-    <div class="select is-info">
+    <input class="input is-primary is-medium" id="filter_input" type="text" onkeyup="filterRequests()" placeholder="Search">
+    <div class="select is-primary">
         <select id="filter_status" onchange="filterRequests()" class="edit-select">
             <option selected disabled>Filter status</option>
             <option>All</option>
@@ -30,15 +29,15 @@
             <th>Assignment</th>
             <th>Exercise</th>
             <th>Request</th>
-            <th>More Info Needed
-                <label class="has-tooltip-multiline" data-tooltip="Once the student sees this request and gives more information, this flag will be removed automatically.">
-                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+            <th>MIF
+                <label class="has-tooltip-multiline" data-tooltip="More info needed: Once the student sees this request and gives more information, this flag will be removed automatically.">
+                    <i class="far fa-question-circle"></i>
                 </label>
             </th>
             <th>Suggestion Made</th>
             <th>Approved
                 <label class="has-tooltip-multiline" data-tooltip="Assistants can make suggestions, but they must be approved by an instructor or admin before the student will be able to see them.">
-                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                    <i class="far fa-question-circle"></i>
                 </label>
             </th>
             <th></th>
@@ -57,7 +56,7 @@
             <td>{{ request["name"] }}</td>
             <td>{{ request["assignment_title"] }}</td> 
             <td>{{ request["exercise_title"] }}</td>
-            <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}" class="button is-small is-link">View</a></td>
+            <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}" class="button is-primary">View</a></td>
             {% if request["more_info_needed"] %}
                 <td>Yes</td>
             {% else %}
@@ -84,7 +83,7 @@
             <form method="post" action="/delete_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">
             <td>
                 <button type="submit">
-                    <img src="/static/trashcan.png" alt="Delete exercise" height="25px" width="25px">
+                    <i class="fas fa-trash-alt fa-lg"></i>
                 </button>
             </td>
             </form>
