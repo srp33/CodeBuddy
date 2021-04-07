@@ -1,5 +1,5 @@
 {% if course_basics["exists"] %}
-    <h2>{{ assignment_basics["title"] }}</h2>
+    <h4>{{ assignment_basics["title"] }}</h4>
 
     {% if assignment_basics["exists"] %}
         <p>{{ assignment_details["introduction"] }}</p>
@@ -258,32 +258,23 @@
             </div>
         </div>
 
-        <p>
-            <p>
-                <a class="button is-dark" onclick="window.location.href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">
-                    <span>New exercise</span>
-                </a>
-                &nbsp;
-                <a class="button is-light" onclick="showVideoModal()">
-                    <span>New video exercise</span>
-                </a>
-            </p>
-            <p>
-                <a class="button is-primary" onclick="window.location.href='/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}';">
-                    <span>View scores</span>
-                </a>
-            </p>
-            <p>
-                <a href="/course/{{ course_basics['id'] }}">Back to course</a>
-                | <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a>
-                | <a href="/download_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ download_file_name }}">Download scores</a><br />
+        <div style="display: inline;">
+            <div class="buttons">
+                <button class="button is-dark" onclick="window.location.href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">New exercise</button>
+                <button class="button is-light" onclick="showVideoModal()">New video exercise</button>
+            </div>
+            <button class="button is-primary is-pulled-right" onclick="window.location.href='/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}';">View scores</button>
+        </div>
+        <div>
+            <a href="/course/{{ course_basics['id'] }}">Back to course</a>
+            | <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a>
+            | <a href="/download_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ download_file_name }}">Download scores</a><br />
 
-                {% if is_administrator or is_instructor %}
-                    <a onclick="showCopyAssignmentModal()">Copy assignment</a>
-                    | <a onclick="showDeleteSubmissionsModal()">Delete assignment submissions</a>
-                {% end %}
-            </p>
-        </p>
+            {% if is_administrator or is_instructor %}
+                <a onclick="showCopyAssignmentModal()">Copy assignment</a>
+                | <a onclick="showDeleteSubmissionsModal()">Delete assignment submissions</a>
+            {% end %}
+        </div>
     {% else %}
         <p>This assignment does not exist.</p>
     {% end %}

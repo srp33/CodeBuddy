@@ -1,6 +1,6 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
-        <h2>{{ assignment_basics["title"] }}</h2>
+        <h4>{{ assignment_basics["title"] }}</h4>
 
         <link rel="stylesheet" href="/static/modal.css">
         <link rel="stylesheet" href="/static/styles.css">
@@ -49,7 +49,6 @@
         {% if len(scores) == 0 %}
             <p><strong>No submissions have been made for this assignment.</strong></p>
         {% else %}
-            <h4>View scores</h4>
             <p>Click on the View button to view a student's score and past submissions for each exercise in this assignment.</p>
 
             <table class="table" id="scores_table">
@@ -67,21 +66,21 @@
                 <tbody>
                 {% for score in scores %}
                     <tr>
-                        <td>{{ score[1]["name"] }}</td>
-                        <td>{{ score[0] }}</td>
-                        <td>{{ round(score[1]["percent_passed"]) }}%</td>
+                        <td class="has-text-centered">{{ score[1]["name"] }}</td>
+                        <td class="has-text-centered">{{ score[0] }}</td>
+                        <td class="has-text-centered">{{ round(score[1]["percent_passed"]) }}%</td>
                         {% if assignment_details["has_timer"] %}
                             {% if score[0] in start_times %}
                                 {% if start_times[score[0]]["timer_ended"] %}
-                                <td>Timer ended <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
+                                <td class="has-text-centered">Timer ended <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
                                 {% else %}
-                                <td>In progress <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
+                                <td class="has-text-centered">In progress <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
                                 {% end %}
                             {% else %}
-                                <td>Not started</td>
+                                <td class="has-text-centered">Not started</td>
                             {% end %}
                         {% end %}
-                        <td><a href="/student_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">View</a></td>
+                        <td class="has-text-centered"><a href="/student_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">View</a></td>
                     </tr>
                 {% end %}    
                 </tbody>
