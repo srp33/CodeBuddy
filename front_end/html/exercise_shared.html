@@ -48,7 +48,7 @@
             {% end %}
             </p>
 
-            <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a><br/>
+            <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a>
 
             {% if student_id == user_id %}
                 <br /><br />
@@ -330,10 +330,10 @@
                                     if (passed)
                                         button_bg_color = "#00d1b2";
                                     else
-                                        button_bg_color = "#f4a582";
+                                        button_bg_color = "#FF9138";
 
                                     var submission_date = new Date(the_date).toLocaleString();
-                                    submission_html += `<button style='background-color: ${button_bg_color}; display: block; color: #363636; width: 315px' class='button' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                    submission_html += `<button style='background-color: ${button_bg_color}; border-color: ${button_bg_color}; display: block; color: #363636; width: 315px' class='button' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
                                 }
 
                                 submission_html += "</div><br />\n";

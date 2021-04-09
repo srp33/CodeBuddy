@@ -85,6 +85,7 @@ def make_app():
         url(r"/login", GoogleLoginHandler, name="login"),
         url(r"/devlogin(/.+)?", DevelopmentLoginHandler, name="devlogin"),
         url(r"/logout", LogoutHandler, name="logout"),
+        url(r"/test", TestHandler, name="test"),
     ], autoescape=None)
 
 #        url(r"\/initialize", InitializeHandler, name="initialize"),
@@ -170,6 +171,13 @@ class BaseUserHandler(RequestHandler):
 
     def is_student_for_course(self, course_id):
         return not self.is_administrator() and not self.is_instructor_for_course(course_id) and not self.is_assistant_for_course(course_id)
+
+class TestHandler(RequestHandler):
+    def get(self):
+        try:
+            self.render("test.html")
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
 class ProfileCoursesHandler(BaseUserHandler):
     def get(self, user_id):

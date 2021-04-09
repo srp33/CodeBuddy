@@ -272,10 +272,10 @@
 
             <div class="buttons is-pulled-right">
             {% if prev_exercise %}
-                <a class="button is-light" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+                <a class="button is-white" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
             {% end %}
             {% if next_exercise %}
-                <a class="button is-light" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+                <a class="button is-white" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
             {% end %}
             </div>
             <!--<button class="button is-light is-pulled-right" onclick="showLinkModal()">Share</button>-->
@@ -308,7 +308,7 @@
                 {% for key_index in range(len(exercise_details["data_files"])) %}
                     <p>
                         <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ list(exercise_details['data_files'].keys())[key_index] }}">{{ list(exercise_details["data_files"].keys())[key_index] }}</a>
-                        <a class="button is-light" id="data_button_{{ key_index }}" onclick="showHideData('data_panel_{{ key_index }}', 'data_button_{{ key_index }}')">Show</a>
+                        <a class="button is-white" id="data_button_{{ key_index }}" onclick="showHideData('data_panel_{{ key_index }}', 'data_button_{{ key_index }}')">Show</a>
                     </p>
                     <pre id="data_panel_{{ key_index }}" hidden>
                         {{ exercise_details["data_files"][list(exercise_details["data_files"].keys())[key_index]].strip() }}
