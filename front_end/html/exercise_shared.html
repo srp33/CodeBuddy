@@ -231,7 +231,7 @@
                         return false;
 
                     result_div = document.getElementById("result");
-                    result_div.innerHTML = "<div class='notification is-warning smaller-font'>Please wait while your solution is being executed...</div>";
+                    result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
                     result_div.scrollIntoView();
 
                     {% if exercise_details["back_end"] != "any_response" %}
