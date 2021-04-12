@@ -723,13 +723,14 @@ class Content:
           FROM exercise_info e
           GROUP BY e.assignment_id'''
 
-        for row in self.fetchall(sql, (course_id, course_id, )):
-            assignment_dict = {"assignment_id": row["assignment_id"],
-                    "num_students_completed": row["num_students_completed"],
-                    "num_students": num_students,
-                    "avg_score": "{:.1f}".format(row["total_percentage"] / num_students)}
-
-            course_scores[row["assignment_id"]] = assignment_dict
+#        for row in self.fetchall(sql, (course_id, course_id, )):
+#            x = 1
+#            assignment_dict = {"assignment_id": row["assignment_id"],
+#                    "num_students_completed": row["num_students_completed"],
+#                    "num_students": num_students,
+#                    "avg_score": "{:.1f}".format(row["total_percentage"] / num_students)}
+#
+#            course_scores[row["assignment_id"]] = assignment_dict
 
         for assignment in assignments:
             if assignment[0] not in course_scores:

@@ -14,8 +14,8 @@
                     <th>Visibility</th>
                     <th>Start Date</th>
                     <th>Due Date</th>
-                    <th># Completed</th>
-                    <th>Avg. Score</th>
+                    <!--<th># Completed</th>-->
+                    <!--<th>Avg. Score</th>-->
                     <th>Edit</th>
                     <th>Delete</th>
                 </tr>
@@ -28,8 +28,8 @@
                         <td>Hidden</td>
                         <td> </td>
                         <td> </td>
-                        <td> </td>
-                        <td> </td>
+                        <!--<td> </td>
+                        <td> </td>-->
                     {% else %}
                         <td>Visible</td>
                         {% if assignment[1]["start_date"] %}
@@ -53,13 +53,13 @@
                             <td> </td>
                         {% end %}
 
-                        <td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
+                        <!--<td>{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
 
                         {% if course_scores[assignment[1]["id"]]["avg_score"] %}
                             <td>{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
                         {% else %}
                             <td>No scores yet</td>
-                        {% end %}
+                        {% end %}-->
                     {% end %}
                     <td>
                         <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">

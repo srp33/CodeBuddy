@@ -4,7 +4,7 @@ output_type="$3"
 
 if [[ "$output_type" == "jpg" ]]
 then
-  python mod_code_for_jpg.py /sandbox/code
+  python /mod_code_for_jpg.py /sandbox/code
 fi
 
 if [ -f "$test_code_file_path" ]
