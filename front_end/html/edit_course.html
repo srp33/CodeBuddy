@@ -1,10 +1,17 @@
-<h2>
+<form method="post" action="/edit_course/{{ course_basics['id'] }}">
+
 {% if course_basics["exists"] %}
-    Edit course
+<div class="row-container">
+    <h2>Edit course</h2>
+    <p>
+        <input type="submit" class="button is-dark" value="Save" />
+        <button class="button is-white" onclick="location.href='/course/{{ course_basics["id"] }}'; return false;">Done</button>
+    </p>
+</div>
 {% else %}
-    Create course
+    <h2>Create course</h2>
 {% end %}
-</h2>
+
 
 {% if result %}
     {% if result.startswith("Error:") %}
@@ -13,8 +20,6 @@
         <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
     {% end %}
 {% end %}
-
-<form method="post" action="/edit_course/{{ course_basics['id'] }}">
 
 <div class="shadow-box">
     <div class="row-container">
@@ -55,7 +60,7 @@
 
 <p>
 {% if course_basics["exists"] %}
-    <a href="/course/{{ course_basics['id'] }}">Done editing</a>
+    <a href="/course/{{ course_basics['id'] }}">Done</a>
 {% end %}
 </p>
 

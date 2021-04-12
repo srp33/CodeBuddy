@@ -5,6 +5,12 @@
         <p>
             <input type="submit" class="button is-dark" value="Save" />
             <button class="button is-white" onclick="location.href='/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ exercise_basics["id"] }}'; return false;">Done</button>
+            {% if prev_exercise %}
+                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+            {% end %}
+            {% if next_exercise %}
+                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+            {% end %}
         </p>
     </div>
 {% else %}
@@ -315,7 +321,7 @@
 
         <p>
         {% if exercise_basics["exists"] %}
-            <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Done editing</a> |
+            <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Done</a> |
         {% end %}
             <a href="#top">Back to top</a>
         </p>

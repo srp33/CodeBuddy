@@ -1,6 +1,16 @@
+<form method="post" action="/edit_assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
-        <h2>Edit assignment</h2>
+        <div class="row-container">
+            <h2>Edit assignment</h2>
+            <p>
+                <input type="submit" class="button is-dark" value="Save" />
+                <button class="button is-white" onclick="location.href='/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}'; return false;">Done</button>
+            </p>
+        </div>
     {% else %}
         <h2>Create assignment</h2>
     {% end %}
@@ -14,11 +24,7 @@
     {% end %}
 {% end %}
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 {% if course_basics["exists"] %}
-    <form method="post" action="/edit_assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
 
     <div class="shadow-box">
         <div class="row-container">
@@ -245,7 +251,7 @@
 
     <p>
     {% if assignment_basics["exists"] %}
-        <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done editing</a>
+        <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done</a>
     {% end %}
     </p>
 

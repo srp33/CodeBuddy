@@ -271,6 +271,9 @@
             </div>
 
             <div class="buttons is-pulled-right">
+            {% if is_administrator or is_instructor or is_assistant %}
+                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+            {% end %}
             {% if prev_exercise %}
                 <a class="button is-white" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
             {% end %}

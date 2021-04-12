@@ -38,8 +38,7 @@
 
             <p>           
             {% if is_administrator or is_instructor or is_assistant %}
-                <a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a> |
-                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+                <a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a>
             {% end %}
 
             {% if is_administrator or is_instructor %}
