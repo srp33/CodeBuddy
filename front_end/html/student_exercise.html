@@ -3,11 +3,14 @@
         {% if exercise_basics["exists"] %}
             <div class="student-exercise-notification">{{ student_info["name"] }}'s submissions</div>
 
-            <div class="row-container">
+            <div class="row-container bottom-space">
                 <div class="e-title-container">
                     <h4 style="display: inline-block;">{{ exercise_basics["assignment"]["title"] }}: {{ exercise_basics["title"] }}</h4>
                 </div>
-                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}" class="button is-light is-pulled-right">View exercise</a>
+                <div class="buttons is-pulled-right">
+                    <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+                    <a class="button is-white" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View exercise</a>
+                </div>
             </div>
 
             <div class="instructions">
@@ -22,22 +25,30 @@
             <h6 id="your_code_header" style="display: inline">Student's solution:</h6>
             <textarea class="textarea is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
 
-            <div id="result"></div>
-
-            <h6 style="display: inline">Expected output:</h6>
-
-            {% if exercise_details["output_type"] == "txt" %}
-                <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
-            {% else %}
-                <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
-            {% end %}
-
-            {% if exercise_details["back_end"] != "any_response" %}
-                <p><span id="code_output"></span></p>
-
-                {% if exercise_details["show_expected"] %}
-                    <p><span id="diff_output"></span></p>
+            <div class="buttons">
+                {% if exercise_details["back_end"] != "any_response" %}
+                    <a class="button is-medium is-primary" onclick='run_code()'>Run</a>
                 {% end %}
-            {% end %}
+            </div>
+
+            <div id="result"></div>
+            
+            <div class="top-space">
+                <h6 style="display: inline">Expected output:</h6>
+
+                {% if exercise_details["output_type"] == "txt" %}
+                    <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
+                {% else %}
+                    <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
+                {% end %}
+
+                {% if exercise_details["back_end"] != "any_response" %}
+                    <p><span id="code_output"></span></p>
+
+                    {% if exercise_details["show_expected"] %}
+                        <p><span id="diff_output"></span></p>
+                    {% end %}
+                {% end %}
+            </div>
 
             <div id="submissions"></div>
