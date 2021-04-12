@@ -70,11 +70,11 @@
             <div class="row-container bottom-space">
                 <div class="a-title-container">
                     <p><strong>Title*: </strong></p>
-                    <p><textarea name="title" class="textarea is-primary is-fullwidth monospace" placeholder="Please specify a descriptive title." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
+                    <p><textarea name="title" class="textarea is-grey is-fullwidth monospace" placeholder="Please specify a descriptive title." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
                 </div>
                 <div class="a-visible">
                     <p><strong>Visible: </strong>
-                        <div class="select is-primary">
+                        <div class="select is-grey">
                             <select name="is_visible" class="edit-select">
                             {% if exercise_basics["visible"] %}
                                 <option value="Yes" selected>Yes</option>
@@ -95,7 +95,7 @@
                         <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' solution.">
                             <i class="far fa-question-circle"></i>
                         </label>
-                        <div class="select is-primary">
+                        <div class="select is-grey">
                             <select name="back_end" onchange="updateBackEndOptions(this.value, '')" class="edit-select">
                             {% for back_end in back_ends %}
                                 <option
@@ -111,7 +111,7 @@
 
                 <div>
                     <p><strong>Output type: </strong>
-                        <div class="select is-primary">
+                        <div class="select is-grey">
                             <select name="output_type" id="output_types" class="edit-select">
                             </select>
                         </div>
@@ -121,7 +121,7 @@
 
             <div class="top-space">
                 <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
-                <p><textarea name="instructions" class="textarea is-primary is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ exercise_details["instructions"] }}</textarea></p>
+                <p><textarea name="instructions" class="textarea is-grey is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ exercise_details["instructions"] }}</textarea></p>
             </div>
         </div>
 
@@ -130,7 +130,7 @@
                 <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
                 <br />Please provide a link to the data source(s) if you obtained the dataset from someone else.
             </p>
-            <textarea class="textarea is-primary is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ exercise_details["credit"] }}</textarea></p>
+            <textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ exercise_details["credit"] }}</textarea></p>
     
             <div id="file_upload">
                 <p><strong>Data file(s): </strong>
@@ -183,7 +183,7 @@
 
             <div>
                 <p><strong>Show expected output: </strong>
-                    <div class="select is-primary">
+                    <div class="select is-grey">
                         <select name="show_expected" class="edit-select">
                         {% if exercise_details["show_expected"] %}
                             <option value="Yes" selected>Yes</option>
@@ -221,7 +221,7 @@
 
             <div>
                 <p><strong>Show test code: </strong>
-                    <div class="select is-primary">
+                    <div class="select is-grey">
                         <select name="show_test_code" class="edit-select">
                         {% if exercise_details["show_test_code"] %}
                             <option value="Yes" selected>Yes</option>
@@ -239,18 +239,18 @@
         <div class="shadow-box">
             <div class="space-div">
                 <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p> 
-                <p><textarea class="textarea is-primary is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>  
+                <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>  
             </div>
 
             <div class="bottom-space">
                 <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
-                <p><textarea class="textarea is-primary is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>  
+                <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>  
             </div>
 
             <div class="row-container bottom-space">
                 <div>
                     <p><strong>Allow students to view the instructor's solution after they pass the exercise: </strong>
-                        <div class="select is-primary">
+                        <div class="select is-grey">
                             <select name="show_answer" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
                             {% if exercise_details["show_answer"] %}
                                 <option value="Yes" selected>Yes</option>
@@ -268,7 +268,7 @@
             <div class="row-container bottom-space">
                 <div>
                     <p><strong>Allow students to see submissions from other students: </strong>
-                        <div class="select is-primary">
+                        <div class="select is-grey">
                             <select name="show_student_submissions" id="show_student_submissions" class="edit-select">
                             {% if exercise_details["show_student_submissions"] %}
                                 <option value="Yes" selected>Yes</option>
@@ -287,7 +287,7 @@
                 <div>
                     <p><strong>Maximum # of submissions:</strong></p>
                     <p>
-                        <div class="select is-primary">
+                        <div class="select is-grey">
                             <select name="max_submissions" class="edit-select">
                             {% for i in range(101) %}
                                 {% if i == 0 %}
