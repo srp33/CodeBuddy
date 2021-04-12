@@ -15,8 +15,10 @@ $family-sans-serif: "Nunito", sans-serif;
 $grey-dark: $brown;
 $grey-light: $beige-light;*/
 $primary: #1AB28C;
-/*$link: $pink;
-$widescreen-enabled: false;
+$link: #1AB28C;
+$link-visited: #1AB28C;
+$link-focus-border: #363636;
+/*$widescreen-enabled: false;
 $fullhd-enabled: false;
 
 // Update some of Bulma's component variables
@@ -35,13 +37,13 @@ $input-shadow: none;*/
 @import "../node_modules/bulma/sass/elements/progress.sass";
 @import "../node_modules/bulma/sass/elements/table.sass";
 @import "../node_modules/bulma/sass/elements/title.sass";
+@import "../node_modules/bulma/sass/elements/notification.sass";
 @import "../node_modules/bulma/sass/form/_all.sass";
 @import "../node_modules/bulma/sass/grid/columns.sass";
 @import "../node_modules/bulma/sass/components/navbar.sass";
 @import "../node_modules/bulma/sass/components/dropdown.sass";
 @import "../node_modules/bulma/sass/components/menu.sass";
 @import "../node_modules/bulma/sass/components/media.sass";
-@import "../node_modules/bulma/sass/components/modal.sass";
-@import "../node_modules/bulma/sass/layout/hero.sass";
-@import "../node_modules/bulma/sass/layout/section.sass";
-@import "../node_modules/bulma/sass/layout/footer.sass";
+//@import "../node_modules/bulma/sass/components/modal.sass";
+@import "../node_modules/bulma/sass/layout/_all.sass";
+@import "../node_modules/bulma/sass/helpers/_all.sass";

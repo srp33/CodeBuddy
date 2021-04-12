@@ -2,10 +2,6 @@
     font-family: 'Lato', sans-serif;
 }
 
-a {
-    color: #00d1b2;
-}
-
 .has-background-light {
     background-color: #f5f5f5 !important;
 }
@@ -17,10 +13,6 @@ a {
 .container-color {
     background-color: #f5f5f5;
     padding: 3.5rem;
-}
-
-.is-active {
-    background-color: #00d1b2 !important;
 }
 
 .invisible {
@@ -115,7 +107,7 @@ pre {
 }
 
 .success-message {
-    background-color: #00d1b2;
+    background-color: #1AB28C;
     color: white;
 }
 
@@ -161,9 +153,9 @@ pre {
 
 .student-content {
     font-size: 14px;
-    border: 2px solid  #00d1b2;
+    border: 2px solid  #1AB28C;
     width: 100%;
-    border-left: 12px solid  #00d1b2;
+    border-left: 12px solid  #1AB28C;
     border-radius: 5px;
     padding: 14px;
     background-color: white;
@@ -191,7 +183,7 @@ pre {
 
 .comment {
     font-size: 14px;
-    border: 2px solid  #00d1b2;
+    border: 2px solid  #1AB28C;
     width: 100%;
     border-radius: 5px;
     padding: 14px;
@@ -280,8 +272,9 @@ td > button {
 }
 
 .hint-div {
-    border: 2px solid  #00d1b2;
+    border: 2px solid  #1AB28C;
     border-radius: 5px;
+    background-color: white;
     margin-top: 10px;
     padding: 0 10px 0 10px;
 }
@@ -367,7 +360,7 @@ td > button {
 .tall-button {
     height: 100%;
     width: 30px;
-    background-color: #00d1b2;
+    background-color: #1AB28C;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -414,9 +407,14 @@ td > button {
 
 .student-exercise-notification {
     color: white;
-    background-color: #00d1b2;
+    background-color: #1AB28C;
     border-radius: 5px;
     padding: 20px;
     font-size: 20px;
     margin-bottom: 20px;
+}
+
+.has-background-orange {
+    background-color: #FF9138;
+    color: white;
 }
