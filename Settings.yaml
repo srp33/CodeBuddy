@@ -22,12 +22,23 @@ back_ends:
         code_completion_path: ace/mode/r
         output_types:
             jpg: |-
-                Image (base graphics or ggplot2)
+                Image (ggplot2)
             txt: |-
                 Text
     python:
         description: Please write Python code based on the instructions provided.
         image_name: srp33/codebuddy_python
+        memory_allowed_mb: 100
+        timeout_seconds: 30
+        code_completion_path: ace/mode/python
+        output_types:
+            jpg: |-
+                Image (matplotlib or seaborn)
+            txt: |-
+                Text
+    python_script:
+        description: Please write Python code based on the instructions provided. Your code will be stored in a script called code.py.
+        image_name: srp33/codebuddy_python_script
         memory_allowed_mb: 100
         timeout_seconds: 30
         code_completion_path: ace/mode/python

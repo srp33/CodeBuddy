@@ -305,7 +305,7 @@
             <pre class="smaller-font">{{ exercise_details["test_code"] }}</pre>
         {% end %}
 
-        {% if exercise_details["data_files"] != "" %}
+        {% if len(exercise_details["data_files"]) > 0 %}
             <h6>Data files:</h6>
             <div id="data_file_div" class="top-space">
                 {% for key_index in range(len(exercise_details["data_files"])) %}

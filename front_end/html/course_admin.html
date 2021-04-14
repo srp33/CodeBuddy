@@ -14,8 +14,8 @@
                     <th>Visibility</th>
                     <th>Start Date</th>
                     <th>Due Date</th>
-                    <th># Students Completed</th>
-                    <th>Avg Score</th>
+                    <!--<th># Completed</th>-->
+                    <!--<th>Avg. Score</th>-->
                     <th>Edit</th>
                     <th>Delete</th>
                 </tr>
@@ -28,8 +28,8 @@
                         <td class="has-text-centered">Hidden</td>
                         <td> </td>
                         <td> </td>
-                        <td> </td>
-                        <td> </td>
+                        <!--<td> </td>
+                        <td> </td>-->
                     {% else %}
                         <td class="has-text-centered">Visible</td>
                         {% if assignment[1]["start_date"] %}
@@ -52,12 +52,14 @@
                         {% else %}
                             <td> </td>
                         {% end %}
-                        <td class="has-text-centered">{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
+
+                        <!--<td class="has-text-centered">{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
+
                         {% if course_scores[assignment[1]["id"]]["avg_score"] %}
                             <td class="has-text-centered">{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
                         {% else %}
                             <td class="has-text-centered">No scores yet</td>
-                        {% end %}
+                        {% end %}-->
                     {% end %}
                     <td class="has-text-centered">
                         <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">

@@ -9,7 +9,6 @@ import io
 import json
 import math
 import os
-from queries import *
 import re
 import spacy
 import sqlite3
@@ -18,6 +17,9 @@ from yaml import load
 from yaml import Loader
 import zipfile
 
+# IMPORTANT: When creating/modifying queries that include any user input,
+#            please follow the recommendations on this page:
+#            https://realpython.com/prevent-python-sql-injection/
 class Content:
     def __init__(self, settings_dict):
         self.__settings_dict = settings_dict
@@ -63,8 +65,132 @@ class Content:
     # This function creates tables as they were in version 5. Subsequent changes
     #   to the database are implemented as migration scripts.
     def create_database_tables(self):
-        for sql in database_tables():
-            self.execute(sql)
+        self.execute('''CREATE TABLE IF NOT EXISTS metadata (version integer NOT NULL);''')
+        self.execute('''INSERT INTO metadata (version) VALUES (5);''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS users (
+                          user_id text PRIMARY KEY,
+                          name text,
+                          given_name text,
+                          family_name text,
+                          picture text,
+                          locale text,
+                          ace_theme text NOT NULL DEFAULT "tomorrow"
+                     );''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS permissions (
+                          user_id text NOT NULL,
+                          role text NOT NULL,
+                          course_id integer,
+                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
+                     );''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS course_registration (
+                          user_id text NOT NULL,
+                          course_id integer NOT NULL,
+                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
+                     );''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS courses (
+                          course_id integer PRIMARY KEY AUTOINCREMENT,
+                          title text NOT NULL UNIQUE,
+                          introduction text,
+                          visible integer NOT NULL,
+                          passcode text,
+                          date_created timestamp NOT NULL,
+                          date_updated timestamp NOT NULL
+                     );''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS assignments (
+                          course_id integer NOT NULL,
+                          assignment_id integer PRIMARY KEY AUTOINCREMENT,
+                          title text NOT NULL,
+                          introduction text,
+                          visible integer NOT NULL,
+                          start_date timestamp,
+                          due_date timestamp,
+                          allow_late integer,
+                          late_percent real,
+                          view_answer_late integer,
+                          has_timer int NOT NULL,
+                          hour_timer int,
+                          minute_timer int,
+                          date_created timestamp NOT NULL,
+                          date_updated timestamp NOT NULL,
+                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
+                     );''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS problems (
+                          course_id integer NOT NULL,
+                          assignment_id integer NOT NULL,
+                          problem_id integer PRIMARY KEY AUTOINCREMENT,
+                          title text NOT NULL,
+                          visible integer NOT NULL,
+                          answer_code text NOT NULL,
+                          answer_description text,
+                          hint text,
+                          max_submissions integer NOT NULL,
+                          credit text,
+                          data_url text,
+                          data_file_name text,
+                          data_contents text,
+                          back_end text NOT NULL,
+                          expected_text_output text NOT NULL,
+                          expected_image_output text NOT NULL,
+                          instructions text NOT NULL,
+                          output_type text NOT NULL,
+                          show_answer integer NOT NULL,
+                          show_student_submissions integer NOT NULL,
+                          show_expected integer NOT NULL,
+                          show_test_code integer NOT NULL,
+                          test_code text,
+                          date_created timestamp NOT NULL,
+                          date_updated timestamp NOT NULL,
+                          FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                          FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE
+                     );''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS submissions (
+                          course_id integer NOT NULL,
+                          assignment_id integer NOT NULL,
+                          problem_id integer NOT NULL,
+                          user_id text NOT NULL,
+                          submission_id integer NOT NULL,
+                          code text NOT NULL,
+                          text_output text NOT NULL,
+                          image_output text NOT NULL,
+                          passed integer NOT NULL,
+                          date timestamp NOT NULL,
+                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        PRIMARY KEY (course_id, assignment_id, problem_id, user_id, submission_id)
+                     );''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS scores (
+                          course_id integer NOT NULL,
+                          assignment_id integer NOT NULL,
+                          problem_id integer NOT NULL,
+                          user_id text NOT NULL,
+                          score real NOT NULL,
+                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (problem_id) REFERENCES problems (problem_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
+                     );''')
+
+        self.execute('''CREATE TABLE IF NOT EXISTS user_assignment_start (
+                          user_id text NOT NULL,
+                          course_id text NOT NULL,
+                          assignment_id text NOT NULL,
+                          start_time timestamp NOT NULL,
+                        FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
+                     );''')
 
     def get_database_version(self):
         sql = '''SELECT MAX(version) AS version
@@ -239,21 +365,21 @@ class Content:
         self.execute(sql, (course_id, user_id,))
 
     def unregister_user_from_course(self, course_id, user_id):
-        self.execute(f'''DELETE FROM course_registrations
-                                WHERE course_id = {course_id}
-                                  AND user_id = '{user_id}' ''')
+        self.execute('''DELETE FROM course_registrations
+                        WHERE course_id = ?
+                          AND user_id = ?''', (course_id, user_id, ))
 
-        self.execute(f'''DELETE FROM scores
-                                WHERE course_id = {course_id}
-                                  AND user_id = '{user_id}' ''')
+        self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND user_id = ?''', (course_id, user_id, ))
 
-        self.execute(f'''DELETE FROM submissions
-                                WHERE course_id = {course_id}
-                                  AND user_id = '{user_id}' ''')
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?
+                          AND user_id = ?''', (course_id, user_id, ))
 
-        self.execute(f'''DELETE FROM user_assignment_starts
-                                WHERE course_id = {course_id}
-                                  AND user_id = '{user_id}' ''')
+        self.execute('''DELETE FROM user_assignment_starts
+                        WHERE course_id = ?
+                          AND user_id = ?''', (course_id, user_id, ))
 
     def check_user_registered(self, course_id, user_id):
         sql = '''SELECT 1
@@ -555,16 +681,67 @@ class Content:
 
         return exercise_statuses
 
-    def get_course_scores(self, course_id):
-        scores = {}
+    ## Calculates the average score across all students for each assignment in a course,
+    ## as well as the number of students who have completed each assignment.
+    def get_course_scores(self, course_id, assignments):
+        course_scores = {}
 
-        sql = assignment_summary_course(course_id)
+        sql = '''SELECT COUNT(*) AS num_registered_students
+                   FROM course_registrations
+                   WHERE course_id = ?'''
+        num_students = self.fetchone(sql, (course_id, ))["num_registered_students"]
 
-        for row in self.fetchall(sql):
-            scores_dict = {"assignment_id": row["assignment_id"], "title": row["title"], "num_students_completed": row["num_students_completed"], "num_students": row["num_students"], "avg_score": row["avg_score"]}
-            scores[row["assignment_id"]] = scores_dict
+        sql = '''
+          WITH
+            assignment_info AS (
+              SELECT assignment_id, COUNT(*) * 100.0 AS points_possible
+              FROM exercises
+              WHERE course_id = ?
+                AND visible = 1
+                /*AND assignment_id IN (SELECT assignment_id FROM assignments WHERE visible = 1)*/
+              GROUP BY assignment_id
+            ),
 
-        return scores
+            assignment_score_info AS (
+              SELECT assignment_id, SUM(score) AS score
+              FROM scores
+              WHERE course_id = ?
+              GROUP BY assignment_id, user_id
+            ),
+
+            exercise_info AS (
+              SELECT
+                a.assignment_id,
+               (score / points_possible) * 100.0 AS percentage,
+               points_possible = score AS completed
+              FROM assignment_info a
+              INNER JOIN assignment_score_info s
+                ON a.assignment_id = s.assignment_id
+            )
+
+          SELECT e.assignment_id,
+            SUM(e.completed) AS num_students_completed,
+            SUM(e.percentage) AS total_percentage
+          FROM exercise_info e
+          GROUP BY e.assignment_id'''
+
+#        for row in self.fetchall(sql, (course_id, course_id, )):
+#            x = 1
+#            assignment_dict = {"assignment_id": row["assignment_id"],
+#                    "num_students_completed": row["num_students_completed"],
+#                    "num_students": num_students,
+#                    "avg_score": "{:.1f}".format(row["total_percentage"] / num_students)}
+#
+#            course_scores[row["assignment_id"]] = assignment_dict
+
+        for assignment in assignments:
+            if assignment[0] not in course_scores:
+                course_scores[assignment[0]] = {"assignment_id": assignment[0],
+                    "num_students_completed": 0,
+                    "num_students": num_students,
+                    "avg_score": "0.0"}
+
+        return course_scores
 
     # Gets all users who have submitted on a particular assignment
     # and creates a list of their average scores for the assignment.
@@ -591,13 +768,13 @@ class Content:
                     WHERE course_id = 0 OR course_id = ?
                    )
                    AND s.exercise_id NOT IN
-				   (
-				    SELECT exercise_id
-					FROM exercises
-					WHERE course_id = ?
-					  AND assignment_id = ?
-					  AND visible = 0
-				   )
+                   (
+                     SELECT exercise_id
+                     FROM exercises
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND visible = 0
+                   )
                  GROUP BY s.course_id, s.assignment_id, s.user_id
                  ORDER BY u.family_name, u.given_name'''
 
@@ -1305,7 +1482,7 @@ class Content:
                    AND exercise_id = ?
                    AND user_id = ?'''
         self.execute(sql, (student_comment, 0, None, 0, course, assignment, exercise, user_id,))
-    
+
     def delete_help_request(self, course, assignment, exercise, user_id):
         sql = '''DELETE FROM help_requests
                  WHERE course_id = ?
@@ -1324,7 +1501,7 @@ class Content:
                    AND user_id = ?'''
 
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
-    
+
     def copy_assignment(self, course_id, assignment_id, new_course_id):
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer)
                  SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer
@@ -1378,123 +1555,123 @@ class Content:
             return False
 
     def delete_user(self, user_id):
-        sql = f'''DELETE FROM users
+        sql = '''DELETE FROM users
                   WHERE user_id = ?'''
 
         self.execute(sql, (user_id,))
 
     def move_exercise(self, course_id, assignment_id, exercise_id, new_assignment_id):
-        self.execute(f'''UPDATE exercises
-                         SET assignment_id = {new_assignment_id}
-                         WHERE course_id = {course_id}
-                           AND assignment_id = {assignment_id}
-                           AND exercise_id = {exercise_id}''')
+        self.execute('''UPDATE exercises
+                        SET assignment_id = ?
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
 
-        self.execute(f'''UPDATE scores
-                         SET assignment_id = {new_assignment_id}
-                         WHERE course_id = {course_id}
-                           AND assignment_id = {assignment_id}
-                           AND exercise_id = {exercise_id}''')
+        self.execute('''UPDATE scores
+                        SET assignment_id = ?
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
 
-        self.execute(f'''UPDATE submissions
-                         SET assignment_id = {new_assignment_id}
-                         WHERE course_id = {course_id}
-                           AND assignment_id = {assignment_id}
-                           AND exercise_id = {exercise_id}''')
+        self.execute('''UPDATE submissions
+                        SET assignment_id = ?
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
 
     def delete_exercise(self, exercise_basics):
-        c_id = exercise_basics["assignment"]["course"]["id"]
-        a_id = exercise_basics["assignment"]["id"]
-        e_id = exercise_basics["id"]
+        course_id = exercise_basics["assignment"]["course"]["id"]
+        assignment_id = exercise_basics["assignment"]["id"]
+        exercise_id = exercise_basics["id"]
 
-        self.execute(f'''DELETE FROM submissions
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}
-                           AND exercise_id = {e_id}''')
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
-        self.execute(f'''DELETE FROM scores
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}
-                           AND exercise_id = {e_id}''')
+        self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
-        self.execute(f'''DELETE FROM exercises
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}
-                           AND exercise_id = {e_id}''')
+        self.execute('''DELETE FROM exercises
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
     def delete_assignment(self, assignment_basics):
-        c_id = assignment_basics["course"]["id"]
-        a_id = assignment_basics["id"]
+        course_id = assignment_basics["course"]["id"]
+        assignment_id = assignment_basics["id"]
 
-        self.execute(f'''DELETE FROM submissions
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}''')
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
-        self.execute(f'''DELETE FROM scores
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}''')
+        self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
-        self.execute(f'''DELETE FROM exercises
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}''')
+        self.execute('''DELETE FROM exercises
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
-        self.execute(f'''DELETE FROM assignments
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}''')
+        self.execute('''DELETE FROM assignments
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
     def delete_course(self, course_basics):
-        c_id = course_basics["id"]
+        course_id = course_basics["id"]
 
-        self.execute(f'''DELETE FROM submissions
-                         WHERE course_id = {c_id}''')
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?''', (course_id, ))
 
-        self.execute(f'''DELETE FROM exercises
-                         WHERE course_id = {c_id}''')
+        self.execute('''DELETE FROM exercises
+                        WHERE course_id = ?''', (course_id, ))
 
-        self.execute(f'''DELETE FROM assignments
-                         WHERE course_id = {c_id}''')
+        self.execute('''DELETE FROM assignments
+                        WHERE course_id = ?''', (course_id, ))
 
-        self.execute(f'''DELETE FROM courses
-                         WHERE course_id = {c_id}''')
+        self.execute('''DELETE FROM courses
+                        WHERE course_id = ?''', (course_id, ))
 
-        self.execute(f'''DELETE FROM permissions
-                         WHERE course_id = {c_id}''')
+        self.execute('''DELETE FROM permissions
+                        WHERE course_id = ?''', (course_id, ))
 
     def delete_course_submissions(self, course_basics):
-        c_id = course_basics["id"]
+        course_id = course_basics["id"]
 
-        self.execute(f'''DELETE FROM submissions
-                        WHERE course_id = {c_id}''')
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?''', (course_id, ))
 
-        self.execute(f'''DELETE FROM scores
-                        WHERE course_id = {c_id}''')
+        self.execute('''DELETE FROM scores
+                        WHERE course_id = ?''', (course_id, ))
 
     def delete_assignment_submissions(self, assignment_basics):
-        c_id = assignment_basics["course"]["id"]
-        a_id = assignment_basics["id"]
+        course_id = assignment_basics["course"]["id"]
+        assignment_id = assignment_basics["id"]
 
-        self.execute(f'''DELETE FROM submissions
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}''')
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
-        self.execute(f'''DELETE FROM scores
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}''')
+        self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
     def delete_exercise_submissions(self, exercise_basics):
-        c_id = exercise_basics["assignment"]["course"]["id"]
-        a_id = exercise_basics["assignment"]["id"]
-        e_id = exercise_basics["id"]
+        course_id = exercise_basics["assignment"]["course"]["id"]
+        assignment_id = exercise_basics["assignment"]["id"]
+        exercise_id = exercise_basics["id"]
 
-        self.execute(f'''DELETE FROM submissions
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}
-                           AND exercise_id = {e_id}''')
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
-        self.execute(f'''DELETE FROM scores
-                         WHERE course_id = {c_id}
-                           AND assignment_id = {a_id}
-                           AND exercise_id = {e_id}''')
+        self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
     def create_scores_text(self, course_id, assignment_id):
         out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"

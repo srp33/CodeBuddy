@@ -88,7 +88,6 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
 
 def exec_code(settings_dict, code, exercise_basics, exercise_details, request=None):
     this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
-    code = code + "\n\n" + exercise_details["test_code"]
 
     if exercise_details["back_end"] in ['free_response', 'any_response']:
         # In this case, the code is the answer that the student provided.
@@ -96,7 +95,8 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
 
     timeout = this_settings_dict["timeout_seconds"]
     data_dict = {"image_name": this_settings_dict["image_name"],
-                 "code": code,
+                 "code": code.strip(),
+                 "test_code": exercise_details["test_code"].strip(),
                  "data_files": exercise_details["data_files"],
                  "output_type": exercise_details["output_type"],
                  "memory_allowed_mb": this_settings_dict["memory_allowed_mb"],
@@ -144,8 +144,8 @@ def check_exercise_output(exercise_details, actual_text, actual_image):
             # Only return diff output if the differences are relatively small.
             diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
 
-        #return diff_output, diff_percent < 1.0 # Pass if they are similar.
-        return diff_output, diff_percent == 0 # Pass if they are identical.
+        return diff_output, diff_percent < 0.01 # Pass if they are similar.
+        #return diff_output, diff_percent == 0 # Pass if they are identical.
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
@@ -160,7 +160,7 @@ def escape_json_string(json_string):
     chars = ["\\","\'","\""]
     for char in chars:
         json_string = json_string.replace(char, "\\" + char)
-        
+
     return json_string
 
 def diff_strings(expected, actual):
