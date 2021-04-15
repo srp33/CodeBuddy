@@ -353,7 +353,7 @@
         <!--Below is the ace text editor and all of the elements that appear around it-->
 
         <p class="top-space">
-            <textarea class="textarea is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code">{% if exercise_details["starter_code"] and num_submissions == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+            <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and num_submissions == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
             {% if assignment_details["enable_help_requests"] %}
                 <div class="buttons is-pulled-right">
                     {% if help_request %}

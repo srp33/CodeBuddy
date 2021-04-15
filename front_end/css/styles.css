@@ -2,6 +2,10 @@
     font-family: 'Lato', sans-serif;
 }
 
+.ace_editor p, .ace_editor div { 
+    font-family: 'Monaco', 'Menlo', 'Droid Sans Mono', 'Courier New', monospace !important;
+}
+
 .has-background-light {
     background-color: #f5f5f5 !important;
 }
