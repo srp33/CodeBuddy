@@ -351,13 +351,13 @@
                 minLines: 20,
                 fontSize: "12pt"
             });
-            if ({{ user_info["use_auto_complete"] }}) {
+            {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
                 editor.setOptions({
-                enableBasicAutocompletion: false,
-                enableSnippets: true,
-                enableLiveAutocompletion: true
+                    enableBasicAutocompletion: false,
+                    enableSnippets: true,
+                    enableLiveAutocompletion: true
                 });
-            }
+            {% end %}
             editor.focus();
             editor.getSession().setMode("{{ code_completion_path }}");
 
