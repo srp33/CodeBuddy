@@ -408,6 +408,7 @@
             const container = document.querySelector("#file_upload");
 
             {% if exercise_details["data_files"] != "" %}
+                // add previously uploaded files to the page
                 data_file_div = document.getElementById("data_file");
                 data_file_div.style.display = "none";
                 var uploaded_files = JSON.parse('{{ json_files }}');
@@ -422,7 +423,9 @@
 
                     var text = document.createElement("p");
                     text.setAttribute("class", "file-text");
-                    var file_name = document.createTextNode({{ list(exercise_details['data_files'].keys()) }}[i]);
+
+                    // sort data files alphabetically by file name
+                    var file_name = document.createTextNode({{ sorted({k.lower(): v for k, v in exercise_details['data_files'].items()}.keys()) }}[i]);
                     text.appendChild(file_name);
 
                     var d_button = document.createElement("button");
@@ -431,7 +434,7 @@
 
                     d_button.addEventListener("click", function(event) {
                         event.preventDefault();
-                        delete uploaded_files[{{ list(exercise_details['data_files'].keys()) }}[i]];
+                        delete uploaded_files[{{ sorted({k.lower(): v for k, v in exercise_details['data_files'].items()}.keys()) }}[i]];
                         file_container.value = JSON.stringify(uploaded_files);
 
                         var file_div_to_remove = document.getElementById(i);
