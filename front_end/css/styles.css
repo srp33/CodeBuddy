@@ -422,3 +422,7 @@ td > button {
     background-color: #FF9138;
     color: white;
 }
+
+.right-space {
+    margin-right: 20px;
+}

@@ -3,6 +3,9 @@
     <div class="row-container">
         <h2>Edit exercise</h2>
         <p>
+            {% if result %}
+                <a href="#code-output" class="right-space">View code output</a>
+            {% end %}
             <input type="submit" class="button is-dark" value="Save" />
             <button class="button is-white" onclick="location.href='/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ exercise_basics["id"] }}'; return false;">Done</button>
             {% if prev_exercise %}
@@ -171,7 +174,7 @@
                 <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
             </div>
 
-            <div>
+            <div id="code-output">
             {% if exercise_basics["exists"] %}
                 <p><strong>Output:</strong><br />
     
