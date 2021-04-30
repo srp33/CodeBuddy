@@ -54,18 +54,16 @@
                                     <div class="content">
                                         <nav class="level">
                                         <div class="level-left">
-                                            <p class="level-item">
+                                            <div class="level-item">
                                                 <strong>{{ course[1]["title"] }}</strong>
-                                            </p>
+                                            </div>
                                         </div>
                                         {% if not is_administrator and not is_instructor %}
                                             <div class="level-right">
                                                 <div class="dropdown is-hoverable is-right">
                                                     <div class="dropdown-trigger">
                                                         <a class="level-item">
-                                                            <span class="icon is-medium">
-                                                                <img src="/static/dots.png">
-                                                            </span>
+                                                            <img class="icon" src="/static/dots.png">
                                                         </a>
                                                     </div>
                                                     <div class="dropdown-menu">
