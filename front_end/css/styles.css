@@ -386,17 +386,6 @@ td > button {
     margin-bottom: 15px;
 }
 
-.footer {
-    background-color: white;
-    padding: 1rem 1rem 1rem 4rem;
-}
-
-.footer-flex {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-
 .columns {
     margin-bottom: 0 !important;
 }
@@ -425,4 +414,38 @@ td > button {
 
 .right-space {
     margin-right: 20px;
+}
+
+.passing-btn-color {
+    background-color: #00d1b2;
+    border-color: #00d1b2;
+    color: #363636;
+}
+
+.failing-btn-color {
+    background-color: #FF9138;
+    border-color: #FF9138;
+    color: #363636;
+}
+
+.grey-text {
+    color: #363636; 
+}
+
+.footer {
+    background-color: white;
+    padding: 1rem 1rem 1rem 4rem;
+}
+
+.footer-flex {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.footer-version {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }

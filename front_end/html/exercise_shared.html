@@ -146,13 +146,13 @@
                         {% end %}
 
                         {% if exercise_details["show_student_submissions"] %}
-                            result += "<p><a style='color: #363636' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a></p>";
+                            result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a></p>";
                         {% elif exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
-                            result += "<p><a style='color: #363636' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
+                            result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
                         {% end %}
 
                         {% if next_exercise %}
-                            result += "<p><a style='color: #363636' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
+                            result += "<p><a class='grey-text' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
                         {% end %}
 
                         result += "</div>\n\n"
@@ -327,12 +327,12 @@
                                         get_submission(submission_id, false);
                         
                                     if (passed)
-                                        button_bg_color = "#00d1b2";
+                                        button_bg_color = "passing-btn-color";
                                     else
-                                        button_bg_color = "#FF9138";
+                                        button_bg_color = "failing-btn-color";
 
                                     var submission_date = new Date(the_date).toLocaleString();
-                                    submission_html += `<button style='background-color: ${button_bg_color}; border-color: ${button_bg_color}; display: block; color: #363636; width: 315px' class='button' id='${submission_id}' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                    submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
                                 }
 
                                 submission_html += "</div><br />\n";
