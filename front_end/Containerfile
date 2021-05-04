@@ -68,6 +68,7 @@ ADD front_end/*.py /app/
 ADD front_end/secrets.yaml /app/
 
 RUN bash /app/build_html.sh
+ && sed -i 's/VERSION/{r VERSION}/I' footer.html
 
 # We'll map the user inside to the container to the user outside the container.
 # This ensures that the permissions on files shared via volumes will be 
