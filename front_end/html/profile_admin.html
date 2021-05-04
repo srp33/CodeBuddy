@@ -12,7 +12,7 @@
         <div class="bottom-spacing">
             <div class="columns">
                 <div class="column is-one-third">
-                    <div class="option-box box has-background-link" onclick="window.location='/edit_course/';">
+                    <div class="option-box box has-background-primary" onclick="window.location='/edit_course/';">
                         <p class="has-text-white option-text">Create<br />Course</p>
                     </div>
                 </div>
@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 <div class="column">
-                    <div class="option-box box has-background-warning" onclick="showManageAdmins()">
+                    <div class="option-box box has-background-orange" onclick="showManageAdmins()">
                         <p class="has-text-white option-text">Manage<br />Administrators</p>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
             <form method="post" action="/import_course" enctype="multipart/form-data">
 
             <input type="file" name="zip_file" id="zip_file" accept=".zip"/>
-            <p class="modal-button"><input type="submit" class="button is-small is-primary is-rounded" value="Import"/></p>
+            <p class="modal-button"><input type="submit" class="button is-dark" value="Import"/></p>
             
             </form>
           
@@ -73,8 +73,8 @@
                     <span class="close">&times;</span>
                     <p>Administrators can only be removed by themselves.<br />Are you sure you want to remove your admin privileges?</p>
                     <p class="buttons">
-                        <a id="remove_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                        <input type="submit" id="remove_button" class="modal-button button is-small is-primary" value="Remove"/>
+                        <a id="remove_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="remove_button" class="modal-button button is-dark" value="Remove"/>
                     </p>
                     </form>
                 </div>
@@ -85,10 +85,10 @@
                     <form method="post" action="/profile/admin/{{ user_info['user_id'] }}">
                     <span class="close">&times;</span>
                     <p>Add an administrator:</p>
-                    <input class="input is-medium is-link" type="text" id="new_admin" name="new_admin" placeholder="Enter ID (email address) of an existing user."/>
+                    <input class="input is-medium is-primary" type="text" id="new_admin" name="new_admin" placeholder="Enter ID (email address) of an existing user."/>
                     <p class="buttons">
-                        <a id="add_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                        <input type="submit" id="add_button" class="modal-button button is-small is-primary" value="Add"/>
+                        <a id="add_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="add_button" class="modal-button button is-dark" value="Add"/>
                     </p>
                     </form>
                 </div>
@@ -96,7 +96,7 @@
 
             <h2>Current administrators:
                 <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Administrators can only be removed by themselves.">
-                    <img src="/static/tooltip.png" alt="Tooltip" class="profile-tooltip-img"/>
+                    <i class="far fa-question-circle"></i>
                 </label>
             </h2>
             
@@ -111,8 +111,8 @@
             {% end %}
             
             <div class="buttons">
-                <a class="button is-primary is-small is-rounded" onclick="showAddModal()">Add Admin</a>
-                <a class="button is-light is-small is-rounded" onclick="showRemoveModal()">Remove Admin</a>
+                <a class="button is-dark" onclick="showAddModal()">Add Admin</a>
+                <a class="button is-light" onclick="showRemoveModal()">Remove Admin</a>
             </div>
             
             {% if result %}

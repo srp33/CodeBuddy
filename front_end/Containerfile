@@ -9,10 +9,12 @@ ADD VERSION /
 ADD Settings.yaml /
 
 RUN apt-get update \
- && apt-get install -y bzip2 zip \
+ && apt-get install -y bzip2 zip nodejs npm vim \
  && apt-get -y autoremove \
  && apt-get clean \
  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
+ && conda install -c conda-forge spacy \
+ && python -m spacy download en_core_web_sm \
  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
 
 #RUN TIMEZONE=$(grep "time_zone: " Settings.yaml | sed -En "s/time_zone: (.*)/\1/p") \
@@ -24,10 +26,24 @@ RUN apt-get update \
 # && apt-get clean \
 # && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
 # && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ADD front_end/aux/*.py /tmp/
 
 RUN cd /static \
+ && mkdir bulma \
+ && npm init -y \
+ && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json \
+ && npm install node-sass --save-dev \
+ && npm install bulma --save-dev \
+ && mkdir sass \ 
+ && echo "@charset \"utf-8\";" > sass/mystyles.scss \ 
+ && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss \
+ && python /tmp/modify_package.py
+
+ADD front_end/css/*.scss /static/sass/
+
+RUN cd /static \
+ && npm run css-build \
  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
- && curl https://raw.githubusercontent.com/jenil/bulmaswatch/gh-pages/flatly/bulmaswatch.min.css | sed -En 's/.footer\{background-color:#ecf0f1;padding:3rem 1.5rem 6rem\}/.footer\{background-color:#ecf0f1;padding:1rem 3.0rem 1rem\}/p' > bulmaswatch.min.css \
  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css \
  && git clone https://github.com/ajaxorg/ace-builds.git \
  && cp -r ace-builds/src-min-noconflict/* . \
@@ -40,7 +56,7 @@ RUN cd /static \
 ## This can be used for font awesome icons.
 ##wget -O /static/fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
 
-ADD front_end/css/* /static/
+ADD front_end/css/*.css /static/
 ADD front_end/images/* /static/
 ADD front_end/js/* /static/
 ADD front_end/build_html.sh /app/
@@ -52,6 +68,7 @@ ADD front_end/*.py /app/
 ADD front_end/secrets.yaml /app/
 
 RUN bash /app/build_html.sh
+ && sed -i 's/VERSION/{r VERSION}/I' footer.html
 
 # We'll map the user inside to the container to the user outside the container.
 # This ensures that the permissions on files shared via volumes will be 

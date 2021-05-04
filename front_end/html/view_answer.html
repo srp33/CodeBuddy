@@ -28,7 +28,7 @@
                     {% if student_submissions %}
                         {% if exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
                             <div class="buttons">
-                                <a class="button is-small is-primary is-rounded" id="other_button" onclick="showOtherSolutions()"></a>
+                                <a class="button is-dark" id="other_button" onclick="showOtherSolutions()"></a>
                             </div>
 
                             <div id="other_solutions" style="display: inline">
