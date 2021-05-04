@@ -4,6 +4,8 @@ cd /tmp
 
 # Simple pages
 
+python modify_version.py
+
 for page_name in about contact_us devlogin
 do
   cat header.html navbar_top.html navbar_bottom.html container_color.html ${page_name}.html container_bottom.html footer.html > /app/${page_name}.html

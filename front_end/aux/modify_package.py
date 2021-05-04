@@ -9,4 +9,3 @@ with open(file_path) as read_file:
 
 with open(file_path, "w") as write_file:
     write_file.write(json.dumps(contents_dict, indent=2))
-    

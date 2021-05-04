@@ -126,6 +126,7 @@ class HomeHandler(RequestHandler):
                 else:
                     self.render("home.html", mode=settings_dict["mode"], courses=content.get_available_courses(None))
         except Exception as inst:
+            print(traceback.format_exc())
             render_error(self, traceback.format_exc())
 
 class BaseUserHandler(RequestHandler):
@@ -997,7 +998,7 @@ class EditExerciseHandler(BaseUserHandler):
 
             exercises = content.get_exercises(course, assignment)
             next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
-            
+
             self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info())
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server.")
