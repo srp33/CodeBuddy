@@ -108,9 +108,6 @@ class HomeHandler(RequestHandler):
         try:
             user_id = self.get_secure_cookie("user_id")
 
-            self.client_ip = self.request.headers.get("X-Real-IP") or \
-                        self.request.headers.get("X-Forwarded-For") or \
-                        self.request.remote_ip
 
             if content.get_user_count() > 0 and not content.administrator_exists():
                 if user_id:
@@ -704,8 +701,12 @@ class AssignmentHandler(BaseUserHandler):
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
 
+                client_ip = self.request.headers.get("X-Real-IP") or \
+                                 self.request.headers.get("X-Forwarded-For") or \
+                                 self.request.remote_ip
+
                 # Zach was here
-                if self.client_ip not in assignment_details["valid_ip_addresses"]:
+                if client_ip not in assignment_details["valid_ip_addresses"]:
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
