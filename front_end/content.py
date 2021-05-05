@@ -1311,11 +1311,13 @@ class Content:
             self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["access_restricted"], assignment_basics["course"]["id"], assignment_basics["id"]])
             if assignment_details["access_restricted"]:
                 print("HERE ZACH!", assignment_details["valid_ip_addresses"])
-                sql = '''INSERT INTO valid_ip_addresses (assignment_id, ip_address)
+                sql = '''DELETE FROM valid_ip_addresses
+                         WHERE assignment_id = ?
+                         INSERT INTO valid_ip_addresses (assignment_id, ip_address)
                          VALUES (?, ?)'''
 
                 for address in assignment_details["valid_ip_addresses"]:
-                    self.execute(sql, [assignment_basics["id"], address])
+                    self.execute(sql, [assignment_basics["id"], assignment_basics["id"], address])
 
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, access_restricted)
