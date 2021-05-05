@@ -1021,11 +1021,13 @@ class Content:
         assignment_details["hour_timer"] = hour_timer
         assignment_details["minute_timer"] = minute_timer
         assignment_details["access_restricted"] = access_restricted
+        assignment_details["valid_ip_addresses"] = []
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
         else:
             assignment_details["date_created"] = date_updated
+
 
     def specify_exercise_basics(self, exercise_basics, title, visible):
         exercise_basics["title"] = title
