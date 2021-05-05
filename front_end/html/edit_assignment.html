@@ -252,7 +252,7 @@
                 {% end %}
             </select>
         {% if assignment_details["access_restricted"] %}
-        <textarea name="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1">{% for address in assignment_details["valid_ip_addresses"] %} {{address}},{% end %}</textarea>
+        <textarea name="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1">{% for address in assignment_details["valid_ip_addresses"] %}{{address}},{% end %}</textarea>
         {% end %}
     </div>
     <p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
