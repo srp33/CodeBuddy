@@ -707,7 +707,6 @@ class AssignmentHandler(BaseUserHandler):
 
                 # Zach was here
                 print(client_ip)
-                for address in assignment_details["valid_ip_addresses"]:
                 if client_ip not in assignment_details["valid_ip_addresses"]:
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
