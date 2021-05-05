@@ -765,6 +765,8 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["access_restricted"] = self.get_body_argument("access_restricted") == "Yes"
             if assignment_details["access_restricted"]:
                 assignment_details["valid_ip_addresses"] = self.get_body_argument("valid_ip_addresses").strip().split(",")
+            else:
+                assignment_details["valid_ip_addresses"] = []
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
