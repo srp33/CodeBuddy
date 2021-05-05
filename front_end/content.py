@@ -1312,12 +1312,14 @@ class Content:
             if assignment_details["access_restricted"]:
                 print("HERE ZACH!", assignment_details["valid_ip_addresses"])
                 sql = '''DELETE FROM valid_ip_addresses
-                         WHERE assignment_id = ?;
-                         INSERT INTO valid_ip_addresses (assignment_id, ip_address)
+                         WHERE assignment_id = ?'''
+                self.execute(sql, [assignment_basics["id"],])
+
+                sql = '''INSERT INTO valid_ip_addresses (assignment_id, ip_address)
                          VALUES (?, ?);'''
 
                 for address in assignment_details["valid_ip_addresses"]:
-                    self.execute(sql, [assignment_basics["id"], assignment_basics["id"], address])
+                    self.execute(sql, [assignment_basics["id"], address])
 
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, access_restricted)
