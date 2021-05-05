@@ -1322,6 +1322,11 @@ class Content:
                     if address != '':
                         print(address)
                         self.execute(sql, [assignment_basics["id"], address])
+            else:
+                print("HERE ZACH!", assignment_details["valid_ip_addresses"])
+                sql = '''DELETE FROM valid_ip_addresses
+                                        WHERE assignment_id = ?'''
+                self.execute(sql, [assignment_basics["id"], ])
 
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, access_restricted)
