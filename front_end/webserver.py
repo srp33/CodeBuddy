@@ -802,6 +802,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["view_answer_late"] = view_answer_late
             assignment_details["hour_timer"] = hour_timer
             assignment_details["minute_timer"] = minute_timer
+            assignment_details["valid_ip_addresses"] = []
 
             result = "Success: Assignment information saved!"
 
