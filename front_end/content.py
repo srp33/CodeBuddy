@@ -1319,7 +1319,8 @@ class Content:
                          VALUES (?, ?);'''
 
                 for address in assignment_details["valid_ip_addresses"]:
-                    self.execute(sql, [assignment_basics["id"], address])
+                    if address != "":
+                        self.execute(sql, [assignment_basics["id"], address])
 
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, access_restricted)
