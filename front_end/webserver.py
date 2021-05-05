@@ -762,7 +762,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
-            assignment_details["access_restricted"] = self.get_body_argument("access_restricted") == "Yes"
+            assignment_details["access_restricted"] = True # self.get_body_argument("access_restricted") == "Yes"
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
