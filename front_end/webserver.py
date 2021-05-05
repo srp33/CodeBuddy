@@ -763,6 +763,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
             assignment_details["access_restricted"] = self.get_body_argument("access_restricted") == "Yes"
+            assignment_details["valid_ip_addresses"] = self.get_body_argument("valid_ip_addresses").strip().split(",")
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
@@ -803,7 +804,6 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["view_answer_late"] = view_answer_late
             assignment_details["hour_timer"] = hour_timer
             assignment_details["minute_timer"] = minute_timer
-            assignment_details["valid_ip_addresses"] = []
 
             result = "Success: Assignment information saved!"
 
@@ -823,7 +823,7 @@ class EditAssignmentHandler(BaseUserHandler):
                             #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                             #else:
                             #content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
-                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["access_restricted"])
+                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["access_restricted"], assignment_details["valid_ip_addresses"])
                             assignment = content.save_assignment(assignment_basics, assignment_details)
 
             percentage_options = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]

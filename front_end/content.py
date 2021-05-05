@@ -1008,7 +1008,7 @@ class Content:
         assignment_basics["title"] = title
         assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, access_restricted):
+    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, access_restricted, valid_ip_addresses):
         assignment_details["introduction"] = introduction
         assignment_details["date_updated"] = date_updated
         assignment_details["start_date"] = start_date
@@ -1021,7 +1021,7 @@ class Content:
         assignment_details["hour_timer"] = hour_timer
         assignment_details["minute_timer"] = minute_timer
         assignment_details["access_restricted"] = access_restricted
-        assignment_details["valid_ip_addresses"] = []
+        assignment_details["valid_ip_addresses"] = valid_ip_addresses
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -1309,11 +1309,24 @@ class Content:
                        AND assignment_id = ?'''
 
             self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["access_restricted"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            if assignment_details["access_restricted"]:
+                sql = '''UPDATE valid_ip_addresses
+                         SET ip_address = ?
+                         WHERE assignment_id = ?'''
+                for address in assignment_details["valid_ip_addresses"]:
+                    self.execute(sql, [address, assignment_basics["id"]])
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, access_restricted)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["access_restricted"]])
+
+            if assignment_details["access_restricted"]:
+                sql = '''INSERT INTO valid_ip_addresses (assignment_id, ip_address)
+                         VALUES (?, ?)'''
+
+                for address in assignment_details["valid_ip_addresses"]:
+                    self.execute(sql, [assignment_basics["id"], address])
 
             assignment_basics["exists"] = True
 
