@@ -1319,7 +1319,8 @@ class Content:
                          VALUES (?, ?);'''
 
                 for address in assignment_details["valid_ip_addresses"]:
-                    if address != "":
+                    if address != '':
+                        print(address)
                         self.execute(sql, [assignment_basics["id"], address])
 
         else:
