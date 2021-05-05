@@ -242,8 +242,8 @@
     </div>
     <div class="shadow-box">
         <p><strong>Restrict assignment access to valid IP addresses: </strong></br>separate valid addresses by a comma without spaces.</p>
-            <select id="restrict_access" name="restrict_access" class="edit-select">
-                {% if assignment_details["restrict_access"] %}
+            <select id="access_restricted" name="access_restricted" class="edit-select">
+                {% if assignment_details["access_restricted"] %}
                 <option value="Yes" selected>Yes</option>
                 <option value="No">No</option>
                 {% else %}
@@ -251,7 +251,7 @@
                 <option value="No" selected>No</option>
                 {% end %}
             </select>
-        {% if assignment_details["restrict_access"] %}
+        {% if assignment_details["access_restricted"] %}
         <textarea name="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1"> assignment_details["valid_ip_addresses"]</textarea>
         {% end %}
     </div>
