@@ -108,6 +108,10 @@ class HomeHandler(RequestHandler):
         try:
             user_id = self.get_secure_cookie("user_id")
 
+            client_ip = self.request.headers.get("X-Real-IP") or \
+                        self.request.headers.get("X-Forwarded-For") or \
+                        self.request.remote_ip
+
             if content.get_user_count() > 0 and not content.administrator_exists():
                 if user_id:
                     content.add_admin_permissions(user_id.decode())
@@ -1681,7 +1685,6 @@ if __name__ == "__main__":
         server.bind(int(os.environ['PORT']))
         server.start(int(os.environ['NUM_PROCESSES']))
 
-        client_ip = tornado.httpserver.remote_ip
         user_info_var = contextvars.ContextVar("user_info")
         user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
         user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
