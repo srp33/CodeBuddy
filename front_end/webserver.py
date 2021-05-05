@@ -710,6 +710,7 @@ class AssignmentHandler(BaseUserHandler):
                 for address in assignment_details["valid_ip_addresses"]:
                     print("valid ip:",address)
                 if client_ip not in assignment_details["valid_ip_addresses"]:
+                    print("YIKES")
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
