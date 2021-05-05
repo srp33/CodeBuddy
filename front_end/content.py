@@ -1312,9 +1312,9 @@ class Content:
             if assignment_details["access_restricted"]:
                 print("HERE ZACH!", assignment_details["valid_ip_addresses"])
                 sql = '''DELETE FROM valid_ip_addresses
-                         WHERE assignment_id = ?
+                         WHERE assignment_id = ?;
                          INSERT INTO valid_ip_addresses (assignment_id, ip_address)
-                         VALUES (?, ?)'''
+                         VALUES (?, ?);'''
 
                 for address in assignment_details["valid_ip_addresses"]:
                     self.execute(sql, [assignment_basics["id"], assignment_basics["id"], address])
