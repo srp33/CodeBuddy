@@ -242,7 +242,7 @@
     </div>
     <div class="shadow-box">
         <p><strong>Restrict assignment access to valid IP addresses: </strong></br>separate valid addresses by a comma without spaces.</p>
-            <select id="access_restricted" name="access_restricted" class="edit-select">
+            <select id="access_restricted" onchange="showValidIPAddresses(this.value)" name="access_restricted" class="edit-select">
                 {% if assignment_details["access_restricted"] %}
                 <option value="Yes" selected>Yes</option>
                 <option value="No">No</option>
@@ -361,6 +361,15 @@
         else {
             late_percent.style.display = "none";
             view_answer_late.style.display = "inline";
+        }
+    }
+    function showValidIPAddresses(yes) {
+        var valid_ip_addresses = document.getElementById("valid_ip_addresses");
+        if (yes == "Yes") {
+            valid_ip_addresses.style.display = inline";
+        }
+        else {
+            valid_ip_addresses.style.display = "none";
         }
     }
 
