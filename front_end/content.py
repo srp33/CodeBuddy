@@ -637,6 +637,7 @@ class Content:
                  ORDER BY title'''
 
         assignment_statuses = []
+        print("HERE ZACH")
         for row in self.fetchall(sql, (user_id, int(course_id),)):
             print(row)
             assignment_dict = {"id": row["assignment_id"], "title": row["title"], "start_date": row["start_date"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_exercises": row["num_exercises"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
