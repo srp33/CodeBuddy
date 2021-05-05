@@ -108,9 +108,9 @@ class HomeHandler(RequestHandler):
         try:
             user_id = self.get_secure_cookie("user_id")
 
-            self.client_ip = self.request.headers.get("X-Real-IP") or \
-                        self.request.headers.get("X-Forwarded-For") or \
-                        self.request.remote_ip
+            # self.client_ip = self.request.headers.get("X-Real-IP") or \
+            #            self.request.headers.get("X-Forwarded-For") or \
+            #            self.request.remote_ip
 
             if content.get_user_count() > 0 and not content.administrator_exists():
                 if user_id:
