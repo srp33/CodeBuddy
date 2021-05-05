@@ -700,7 +700,14 @@ class AssignmentHandler(BaseUserHandler):
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
 
-                if assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
+                # Zach was here
+                if client_ip not in assignment_details["valid_ip_addresses"]:
+                    self.render("unavailable_assignment.html", courses=content.get_courses(),
+                                assignments=content.get_assignments(course),
+                                course_basics=content.get_course_basics(course),
+                                assignment_basics=content.get_assignment_basics(course, assignment), error="start",
+                                start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
+                elif assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
                 elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"), user_info=user_info)
@@ -810,7 +817,7 @@ class EditAssignmentHandler(BaseUserHandler):
                             #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                             #else:
                             #content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
-                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"])
+                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["access_restricted"])
                             assignment = content.save_assignment(assignment_basics, assignment_details)
 
             percentage_options = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
@@ -1674,6 +1681,7 @@ if __name__ == "__main__":
         server.bind(int(os.environ['PORT']))
         server.start(int(os.environ['NUM_PROCESSES']))
 
+        client_ip = tornado.httpserver.remote_ip
         user_info_var = contextvars.ContextVar("user_info")
         user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
         user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")

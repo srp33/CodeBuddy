@@ -512,6 +512,7 @@ class Content:
 
     def get_assignments(self, course_id, show_hidden=True):
         assignments = []
+        # Zach was here
 
         sql = '''SELECT c.course_id, c.title as course_title, c.visible as course_visible, a.assignment_id,
                         a.title as assignment_title, a.visible as assignment_visible, a.start_date, a.due_date
@@ -1007,7 +1008,7 @@ class Content:
         assignment_basics["title"] = title
         assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer):
+    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, access_restricted):
         assignment_details["introduction"] = introduction
         assignment_details["date_updated"] = date_updated
         assignment_details["start_date"] = start_date
@@ -1019,6 +1020,7 @@ class Content:
         assignment_details["has_timer"] = has_timer
         assignment_details["hour_timer"] = hour_timer
         assignment_details["minute_timer"] = minute_timer
+        assignment_details["access_restricted"] = access_restricted
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -1169,19 +1171,32 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None}
+            # Zach was here
+            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None,"access_restricted": False}
 
-        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer
+        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, access_restricted, has_timer, hour_timer, minute_timer
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
         row = self.fetchone(sql, (int(course), int(assignment),))
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "access_restricted": row["access_restricted"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
+        if assignment_dict["access_restricted"]:
+            sql = '''SELECT ip_address
+                             FROM valid_ip_addresses
+                             WHERE course_id = ?
+                               AND assignment_id = ?'''
 
+            valid_ip_addresses = []
+
+            for row in self.fetchall(sql, ((int(course)), (int(assignment)),)):
+                valid_ip_addresses.append(row["ip_address"])
+            assignment_dict["valid_ip_addresses"] = valid_ip_addresses
+        else:
+            assignment_dict["valid_ip_addresses"] = []
         return assignment_dict
 
     def get_exercise_details(self, course, assignment, exercise, format_content=False):

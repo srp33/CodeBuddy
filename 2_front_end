@@ -32,6 +32,7 @@ function run_container {
                --build-arg GROUP_ID=$(id -g ${USER}) \
                .
 
+
   #docker run -d \
   docker run -i -t \
     --rm \
