@@ -10,3 +10,5 @@ a_run_front_end
 a_run_middle_layer
 nohup*
 secret*
+front_end/Containerfile
+
