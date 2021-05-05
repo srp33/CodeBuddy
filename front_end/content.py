@@ -1198,7 +1198,7 @@ class Content:
                 valid_ip_addresses.append(row["ip_address"])
             assignment_dict["valid_ip_addresses"] = valid_ip_addresses
         else:
-            assignment_dict["valid_ip_addresses"] = []
+            assignment_dict["valid_ip_addresses"] = ["foo"]
         return assignment_dict
 
     def get_exercise_details(self, course, assignment, exercise, format_content=False):

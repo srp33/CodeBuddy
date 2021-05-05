@@ -586,7 +586,7 @@ class ImportCourseHandler(BaseUserHandler):
                         assignment_id = None
                         assignment_basics = content.get_assignment_basics(course_basics["id"], assignment_id)
                         assignment_details = content.get_assignment_details(course_basics["id"], assignment_id)
-
+                        print(assignment_details)
                         content.specify_assignment_basics(assignment_basics, assignment_list[2], bool(assignment_list[4]))
                         #content.specify_assignment_details(assignment_details, assignment_list[3], convert_string_to_date(assignment_list[5]), convert_string_to_date(assignment_list[6]))
 
