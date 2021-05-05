@@ -708,13 +708,11 @@ class AssignmentHandler(BaseUserHandler):
                 # Zach was here
                 print(client_ip)
                 for address in assignment_details["valid_ip_addresses"]:
-                    print("valid ip:",address)
                 if client_ip not in assignment_details["valid_ip_addresses"]:
-                    print("YIKES")
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
-                                assignment_basics=content.get_assignment_basics(course, assignment), error="ip",
+                                assignment_basics=content.get_assignment_basics(course, assignment), error="invalid_ip",
                                 user_info=user_info)
                 elif assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
