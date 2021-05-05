@@ -46,4 +46,4 @@ function run_container {
 }
 
 #run_container front_end "--network host -e NUM_PROCESSES=4 -e PORT=9001 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs" ""
-run_container front_end "--network host -e NUM_PROCESSES=2 -e PORT=8007 -e MPORT=9797 -v $(pwd)/database:/database -v $(pwd)/logs:/logs" ""
+run_container front_end "--network host -e NUM_PROCESSES=2 -e PORT=8080 -e MPORT=9797 -v $(pwd)/database:/database -v $(pwd)/logs:/logs" ""
