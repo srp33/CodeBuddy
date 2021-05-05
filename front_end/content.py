@@ -608,7 +608,7 @@ class Content:
                         (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress,
                         has_timer,
                         hour_timer,
-                        minute_timer
+                        minute_timer,
                  FROM (
                    SELECT a.assignment_id,
                           a.title,
@@ -638,6 +638,7 @@ class Content:
 
         assignment_statuses = []
         for row in self.fetchall(sql, (user_id, int(course_id),)):
+            print(row)
             assignment_dict = {"id": row["assignment_id"], "title": row["title"], "start_date": row["start_date"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_exercises": row["num_exercises"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
