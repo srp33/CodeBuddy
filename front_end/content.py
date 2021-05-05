@@ -1021,7 +1021,7 @@ class Content:
         assignment_details["hour_timer"] = hour_timer
         assignment_details["minute_timer"] = minute_timer
         assignment_details["access_restricted"] = access_restricted
-        assignment_details["valid_ip_addresses"] = ["foo"]
+        assignment_details["valid_ip_addresses"] = []
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -1198,7 +1198,7 @@ class Content:
                 valid_ip_addresses.append(row["ip_address"])
             assignment_dict["valid_ip_addresses"] = valid_ip_addresses
         else:
-            assignment_dict["valid_ip_addresses"] = ["foo"]
+            assignment_dict["valid_ip_addresses"] = []
         return assignment_dict
 
     def get_exercise_details(self, course, assignment, exercise, format_content=False):
