@@ -108,7 +108,7 @@ class HomeHandler(RequestHandler):
         try:
             user_id = self.get_secure_cookie("user_id")
 
-            client_ip = self.request.headers.get("X-Real-IP") or \
+            self.client_ip = self.request.headers.get("X-Real-IP") or \
                         self.request.headers.get("X-Forwarded-For") or \
                         self.request.remote_ip
 
