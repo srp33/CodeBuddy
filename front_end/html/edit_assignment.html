@@ -242,7 +242,18 @@
     </div>
     <div class="shadow-box">
         <p><strong>Restrict assignment access to valid IP addresses: </strong></br>separate valid addresses by a comma without spaces.</p>
-        <textarea name="title" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1"> assignment_details["valid_ip_addresses"]</textarea>
+            <select id="restrict_access" name="restrict_access" class="edit-select">
+                {% if assignment_details["restrict_access"] %}
+                <option value="Yes" selected>Yes</option>
+                <option value="No">No</option>
+                {% else %}
+                <option value="Yes">Yes</option>
+                <option value="No" selected>No</option>
+                {% end %}
+            </select>
+        {% if assignment_details["restrict_access"] %}
+        <textarea name="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1"> assignment_details["valid_ip_addresses"]</textarea>
+        {% end %}
     </div>
     <p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
 
