@@ -706,6 +706,7 @@ class AssignmentHandler(BaseUserHandler):
                                  self.request.remote_ip
 
                 # Zach was here
+                print(client_ip)
                 if client_ip not in assignment_details["valid_ip_addresses"]:
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
