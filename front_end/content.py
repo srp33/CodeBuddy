@@ -608,7 +608,7 @@ class Content:
                         (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress,
                         has_timer,
                         hour_timer,
-                        minute_timer,
+                        minute_timer
                  FROM (
                    SELECT a.assignment_id,
                           a.title,
