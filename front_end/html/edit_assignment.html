@@ -251,7 +251,7 @@
                 <option value="No" selected>No</option>
                 {% end %}
             </select>
-        <textarea name="valid_ip_addresses"  id="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" {% if assignment_details["access_restricted"] %} style="display:inline" {% else %} style="display:none" {% end %}>{% if assignment_details["valid_ip_addresses"] %} {% for address in assignment_details["valid_ip_addresses"] %}{{address}},{% end %}</textarea>
+        <textarea name="valid_ip_addresses"  id="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" {% if assignment_details["access_restricted"] %} style="display:inline" {% else %} style="display:none" {% end %}>{% if assignment_details["valid_ip_addresses"] %} {% for address in assignment_details["valid_ip_addresses"] %}{{address}},{% end %}{% end %}</textarea>
     </div>
     <p><input type="submit" class="button is-info is-large is-fullwidth is-rounded" value="Save" /></p>
 
