@@ -259,7 +259,7 @@
             </select>
         {% if assignment_details["access_restricted"] %}
         <textarea name="valid_ip_addresses"  id="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">
-            {% if "valid_ip_addresses" in assignment_details.keys() %} {% for i in range(len(assignment_details["valid_ip_addresses"])) %}{{ assignment_details["valid_ip_addresses"][i] }}{{ if i != len(assignment_details["valid_ip_addresses"]) }}, {% end %}{% end %}{% end %}
+            {% if "valid_ip_addresses" in assignment_details.keys() %} {% for i in range(len(assignment_details["valid_ip_addresses"])) %}{{ assignment_details["valid_ip_addresses"][i] }},{% end %}{% end %}
         </textarea>
         {% else %}
         <textarea name="valid_ip_addresses"  id="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:none"></textarea>
