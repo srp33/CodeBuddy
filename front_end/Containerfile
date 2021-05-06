@@ -1,8 +1,8 @@
 FROM continuumio/miniconda3
 
 # See https://jtreminio.com/blog/running-docker-containers-as-current-host-user/#ok-so-what-actually-works
-ARG USER_IDz=1000
-ARG GROUP_IDz=1000
+ARG USER_ID=1000
+ARG GROUP_ID=1000
 ARG USER=codebuddy
 
 ADD VERSION /
@@ -56,11 +56,11 @@ RUN bash /app/build_html.sh
 # We'll map the user inside to the container to the user outside the container.
 # This ensures that the permissions on files shared via volumes will be 
 # translatable in both directions.
-RUN groupadd -g ${GROUP_IDz} ${USER} && \
-    useradd -l -u ${USER_IDz} -g ${USER} ${USER} && \
+RUN groupadd -g ${GROUP_ID} ${USER} && \
+    useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} && \
     chown --silent --no-dereference --recursive \
-          ${USER_IDz}:${GROUP_IDz} \
+          ${USER_ID}:${GROUP_ID} \
           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
 
 USER $USER
