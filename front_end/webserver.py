@@ -1663,20 +1663,25 @@ if __name__ == "__main__":
         # Check to see whether there is a database migration script (should only be one per version).
         # If so, make a backup copy of the database and then do the migration.
         for v in range(database_version, code_version):
-            migration_file_path = f"/migration_scripts/{v}_to_{v + 1}.py"
-
             run_command("bash /etc/cron.hourly/back_up_database.sh")
 
-            print(f"Checking database status for version {v}...")
-            result = run_command(f"python {migration_file_path}")
+            migration = f"{v}_to_{v + 1}"
+            print(f"Checking database status for version {v+1}...")
+
+            if v <= 6:
+                command = f"python /migration_scripts/{migration}.py"
+            else:
+                command = f"python /migration_scripts/migrate.py {migration}"
+
+            result = run_command(command)
 
             if "***NotNeeded***" in result:
                 print("Database migration not needed.")
             elif "***Success***" in result:
-                print(f"Database successfully migrated to version {v} using {migration_file_path}.")
+                print(f"Database successfully migrated to version {v+1}.")
                 content.update_database_version(code_version)
             else:
-                print(f"Database migration failed using {migration_file_path} so rolling back...")
+                print(f"Database migration failed for verson {v+1}, so rolling back...")
                 print(result)
                 run_command("bash /etc/cron.hourly/restore_database.sh")
                 break

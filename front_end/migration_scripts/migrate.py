@@ -1,10 +1,21 @@
 import atexit
 import sqlite3
-import traceback
-#################
 import sys
+import traceback
 sys.path.append('/app')
 from helper import *
+
+# Example value: 8_to_9
+migration_numbers = sys.argv[1]
+
+# There must be two SQL files for each migration. One checks
+# whether the migration has already occurred. The other modifies the
+# database. Using the example value, these files would be called
+# 8_to_9_check.sql and 8_to_9_migrate.sql, respectively.
+# The check query must have a column called "count" in the select
+# statement.
+check_file_path = f"/migration_scripts/{migration_numbers}_check.sql"
+migrate_file_path = f"/migration_scripts/{migration_numbers}_migrate.sql"
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
@@ -16,20 +27,13 @@ cursor.execute("PRAGMA foreign_keys=OFF")
 atexit.register(conn.close)
 atexit.register(cursor.close)
 
-version = read_file("/VERSION").rstrip()
-
-# This tells us whether the migration has already happened.
-check_sql = '''SELECT COUNT(*) AS count
-               FROM metadata'''
-
+check_sql = read_file(check_file_path)
 cursor.execute(check_sql)
-check_result = cursor.fetchone()["count"]
 
-if check_result == 1:
+if cursor.fetchone()["count"] > 0:
     print("***NotNeeded***")
 else:
-    with open("/migration_scripts/8_to_9.sql") as sql_file:
-        sql_statements = sql_file.read().split(";")
+    sql_statements = read_file(migrate_file_path).split(";")
 
     try:
         for sql in sql_statements:
