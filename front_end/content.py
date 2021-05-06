@@ -512,7 +512,6 @@ class Content:
 
     def get_assignments(self, course_id, show_hidden=True):
         assignments = []
-        # Zach was here
 
         sql = '''SELECT c.course_id, c.title as course_title, c.visible as course_visible, a.assignment_id,
                         a.title as assignment_title, a.visible as assignment_visible, a.start_date, a.due_date
@@ -637,9 +636,8 @@ class Content:
                  ORDER BY title'''
 
         assignment_statuses = []
-        print("HERE ZACH")
+
         for row in self.fetchall(sql, (user_id, int(course_id),)):
-            print(row)
             assignment_dict = {"id": row["assignment_id"], "title": row["title"], "start_date": row["start_date"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_exercises": row["num_exercises"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
 
@@ -1175,7 +1173,6 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            # Zach was here
             return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "access_restricted": False}
 
         sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, access_restricted, has_timer, hour_timer, minute_timer
@@ -1195,12 +1192,12 @@ class Content:
                              WHERE assignment_id = ?'''
 
             valid_ip_addresses = []
-
             for row in self.fetchall(sql, ((int(assignment)),)):
                 valid_ip_addresses.append(row["ip_address"])
             assignment_dict["valid_ip_addresses"] = valid_ip_addresses
         else:
             assignment_dict["valid_ip_addresses"] = []
+
         return assignment_dict
 
     def get_exercise_details(self, course, assignment, exercise, format_content=False):
