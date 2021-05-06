@@ -1,0 +1,1 @@
+ALTER TABLE assignments ADD COLUMN enable_pair_programming integer NOT NULL DEFAULT 0;
