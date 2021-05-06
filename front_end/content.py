@@ -1441,6 +1441,7 @@ class Content:
                 for address in assignment_details["valid_ip_addresses"]:
                     if address != '' and address != ',':
                         self.execute(sql, [assignment_basics["id"], address])
+                        address.strip()
                     else:
                         assignment_details["valid_ip_addresses"].remove(address)
             else:
