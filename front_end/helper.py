@@ -128,6 +128,8 @@ def check_exercise_output(exercise_details, actual_text, actual_image):
         if num_differences > 20:
             diff_output = ""
 
+        diff_output = diff_output.replace("\\t", "[tab]")
+
         return diff_output, False
     else:
         expected_image = exercise_details["expected_image_output"]

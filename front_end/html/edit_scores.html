@@ -1,8 +1,8 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
-        <h2>{{ assignment_basics["title"] }}</h2>
+        <h4>{{ assignment_basics["title"] }}</h4>
 
-        <h4>View scores for {{ student_id }}</h4>
+        <h6>View scores for {{ student_id }}</h6>
         <p>Click on an exercise to view the student's past submissions.</p>
 
         {% if result %}
@@ -13,43 +13,37 @@
             {% end %}
         {% end %}
 
-        <div class="columns">
-            <div class="column is-half">
+        <form method="post" action="/edit_scores/{{ course_basics['id']}}/{{ assignment_basics['id'] }}/{{ student_id }}">
 
-                <form method="post" action="/edit_scores/{{ course_basics['id']}}/{{ assignment_basics['id'] }}/{{ student_id }}">
+        <table class="table" id="scores_table">
+            <thead>
+                <tr>
+                <th>Exercise</th>
+                <th># Submissions</th>
+                <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for exercise in exercise_statuses %}
+                <tr>
+                    {% if exercise[1]["num_submissions"] > 0 %}
+                        <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}/{{ student_id }}">{{ exercise[1]["title"] }}</a></td>
+                    {% else %}
+                        <td>{{ exercise[1]["title"] }}</td>
+                    {% end %}
+                    <td class="has-text-centered">{{ exercise[1]["num_submissions"] }}</td>
+                    <td class="has-text-centered"><input class="input is-medium is-primary" style="width: 50px;" id="{{ exercise[1]['id'] }}" name="{{ exercise[1]['id'] }}" type="text" datainput value="{{ round(exercise[1]['score']) }}"></td>
+                </tr>
+            {% end %}    
+            </tbody>
+        </table>
 
-                <table class="table" id="scores_table">
-                    <thead>
-                        <tr>
-                        <th>Exercise</th>
-                        <th># Submissions</th>
-                        <th>Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for exercise in exercise_statuses %}
-                        <tr>
-                            {% if exercise[1]["num_submissions"] > 0 %}
-                                <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}/{{ student_id }}">{{ exercise[1]["title"] }}</a></td>
-                            {% else %}
-                                <td>{{ exercise[1]["title"] }}</td>
-                            {% end %}
-                            <td>{{ exercise[1]["num_submissions"] }}</td>
-                            <td><input class="input is-medium is-link" style="width: 50px;" id="{{ exercise[1]['id'] }}" name="{{ exercise[1]['id'] }}" type="text" datainput value="{{ round(exercise[1]['score']) }}"></td>
-                        </tr>
-                    {% end %}    
-                    </tbody>
-                </table>
+        <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save"/></p>        
+        <br />
+        <a href="/view_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to all scores</a> |
+        <a href="/edit_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit scores</a>
 
-                <p><input type="submit" class="button is-primary is-large is-fullwidth" value="Save"/></p>        
-                <br />
-                <a href="/view_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to all scores</a> |
-                <a href="/edit_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit scores</a>
-
-                </form>
-
-            </div>
-        </div>
+        </form>
 
     {% end %}
 {% end %}

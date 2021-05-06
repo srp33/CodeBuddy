@@ -73,9 +73,9 @@
                 var timeinterval = setInterval(updateClock,1000);
             }
 
-            function showLinkModal() {
+            /*function showLinkModal() {
                 var modal = document.getElementById("share_modal");
-                var span = document.getElementsByClassName("close")[1];
+                var span = document.getElementsByClassName("close")[0];
                 var copyText = document.getElementById("share_link");
                 modal.style.display = "block";
 
@@ -87,7 +87,7 @@
                         modal.style.display = "none";
                     }
                 }
-            }
+            }*/
 
             function copyLink() {
                 var copyText = document.getElementById("share_link");
@@ -109,7 +109,7 @@
 
             function showHelpRequestModal() {
                 var modal = document.getElementById("help_request_modal");
-                var span = document.getElementsByClassName("close")[2];
+                var span = document.getElementsByClassName("close")[1];
                 modal.style.display = "block";
 
                 document.getElementById("student_comment").focus();
@@ -127,6 +127,34 @@
 
                 var cancelButton = document.getElementById("cancel_request_button");
                 cancelButton.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                      modal.style.display = "none";
+                    }
+                }
+            }
+
+            function showMatchingModal() {
+                var modal = document.getElementById("matching_modal");
+                var span = document.getElementsByClassName("close")[2];
+                modal.style.display = "block";
+
+                var deleteButton = document.getElementById("delete_request_button");
+                deleteButton.onclick = function() {
+                    $.post("/delete_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}");
+                    modal.style.display = "none";
+                    location.reload();
+                }
+
+                var keepButton = document.getElementById("keep_request_button");
+                keepButton.onclick = function() {
                     modal.style.display = "none";
                 }
 
@@ -181,20 +209,20 @@
             </div>
         </div>
 
-        <div id="share_modal" class="modal">
+        <!--<div id="share_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <p>Share this link with an instructor or assistant:</p>
                 <input class="input is-medium is-primary" type="text" id="share_link" value="https://{{ domain }}/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}" readonly>
-                <button class="modal-button button is-small is-primary" onclick="copyLink()">Copy Link</button>
+                <button class="modal-button button is-dark" onclick="copyLink()">Copy Link</button>
             </div>
-        </div>
+        </div>-->
 
         <div id="help_request_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 {% if help_request and help_request["more_info_needed"] %}
-                    <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></strog></p>
+                    <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></p>
                     {% if help_request["suggestion"] %}
                         <p>Comment made by your instructor/assistant:<br />
                         <span class="green-text">{{ help_request["suggestion"] }}</span></p>
@@ -204,10 +232,23 @@
                     <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
                     <p>Please write a comment to help us better understand what you need help with:</p>
                 {% end %}
-                <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" id="student_comment" name="student_comment">{% if help_request and help_request["more_info_needed"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
+                <textarea class="textarea is-primary is-fullwidth monospace" id="student_comment" name="student_comment">{% if help_request and help_request["more_info_needed"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
                 <p class="buttons">
-                    <a id="cancel_request_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <a id="submit_request_button" class="modal-button button is-small is-primary">Submit</a>
+                    <a id="cancel_request_button" class="modal-button button is-light">Cancel</a>
+                    <a id="submit_request_button" class="modal-button button is-dark">Submit</a>
+                </p>
+            </div>
+        </div>
+
+        <div id="matching_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p><strong>A student in this class previously submitted a help request with the same output as your request. The instructor/assistant made this suggestion:</strong></p>
+                <span class="green-text">{{ same_suggestion }}</span></p>
+                <p>If this suggestion is helpful, do you want to cancel your own request?</p>
+                <p class="buttons">
+                    <a id="delete_request_button" class="modal-button button is-light">Cancel request</a>
+                    <a id="keep_request_button" class="modal-button button is-dark">Keep request</a>
                 </p>
             </div>
         </div>
@@ -216,7 +257,7 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <p>Your comment from the help request:</p>
-                <textarea class="textarea is-info monospace text-18" rows="3">{% if help_request and help_request["student_comment"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
+                <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["student_comment"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
                 <br><p>Instructor's suggestion:</p>
                 <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
             </div>
@@ -224,26 +265,53 @@
 
         <!--Below is the code for showing the exercise title, instructions, data url and contents, test code, and hint-->
 
-        <div>
-            <h2 style="display: inline-block;">{{ exercise_basics["assignment"]["title"] }}</h2>
-            <br /><h5>{{ exercise_basics["title"] }}</h5>
-            <button class="button is-small is-light is-pulled-right" onclick="showLinkModal()">Share</button>
+        <div class="row-container">
+            <div class="e-title-container">
+                <h4 style="display: inline-block;">{{ exercise_basics["assignment"]["title"] }}: {{ exercise_basics["title"] }}</h4>
+            </div>
+
+            <div class="buttons is-pulled-right">
+            {% if is_administrator or is_instructor or is_assistant %}
+                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+            {% end %}
+            {% if prev_exercise %}
+                <a class="button is-white" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+            {% end %}
+            {% if next_exercise %}
+                <a class="button is-white" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+            {% end %}
+            </div>
+            <!--<button class="button is-light is-pulled-right" onclick="showLinkModal()">Share</button>-->
         </div>
 
-        <p>{{ exercise_details["instructions"] }}</p>
+        <!--Notification messages at the top of the page for when the due date has passed-->
+
+        <p>
+        {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
+            <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
+        {% end %}
+        {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
+            <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
+        {% end %}
+        </p>
+
+        <div class="instructions">
+            <h6>Instructions:</h6>
+            <div class="smaller-font">{{ exercise_details["instructions"] }}</div>
+        </div>
 
         {% if exercise_details["show_test_code"] and len(exercise_details["test_code"]) > 0 %}
-            <h4>Test code (to be executed after your solution):</h4>
-            <pre>{{ exercise_details["test_code"] }}</pre>
+            <h6>Test code (to be executed after your solution):</h6>
+            <pre class="smaller-font">{{ exercise_details["test_code"] }}</pre>
         {% end %}
 
         {% if len(exercise_details["data_files"]) > 0 %}
-            <h4>Data files:</h4>
+            <h6>Data files:</h6>
             <div id="data_file_div" class="top-space">
                 {% for key_index in range(len(exercise_details["data_files"])) %}
                     <p>
                         <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ list(exercise_details['data_files'].keys())[key_index] }}">{{ list(exercise_details["data_files"].keys())[key_index] }}</a>
-                        <a class="button is-small is-light" id="data_button_{{ key_index }}" onclick="showHideData('data_panel_{{ key_index }}', 'data_button_{{ key_index }}')">Show</a>
+                        <a class="button is-white" id="data_button_{{ key_index }}" onclick="showHideData('data_panel_{{ key_index }}', 'data_button_{{ key_index }}')">Show</a>
                     </p>
                     <pre id="data_panel_{{ key_index }}" hidden>
                         {{ exercise_details["data_files"][list(exercise_details["data_files"].keys())[key_index]].strip() }}
@@ -254,22 +322,11 @@
 
         {% if exercise_details["hint"] != "" %}
             <div class="top-space">
-                <button class="button is-small is-link" onclick="showHint()">Hint</button>
+                <button class="button is-primary" onclick="showHint()">Hint</button>
             </div>
         {% end %}
 
-        <div id="hint_div" class="invisible hint-div"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
-
-        <!--Notification messages at the top of the page for when the due date has passed-->
-
-        <p>
-        {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
-            <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div></br>
-        {% end %}
-        {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
-            <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div></br>
-        {% end %}
-        </p>
+        <div id="hint_div" class="invisible hint-div smaller-font"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
 
         <!--Here's the assignment timer.-->
 
@@ -295,60 +352,41 @@
 
         <!--Below is the ace text editor and all of the elements that appear around it-->
 
-        <p>
-            <div>
-                <h2 id="your_code_header" style="display: inline">Your solution:</h2>
-
-                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="{{ back_end_description }}">
-                    <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
-                </label>
-
-                <div class="buttons are-small is-pulled-right">
-                {% if prev_exercise %}
-                    <a class="button is-light" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
-                {% end %}
-                {% if next_exercise %}
-                    <a class="button is-light" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
-                {% end %}
-                </div>
-            </div>
-        </p>
-
-        <p>
-            <textarea class="textarea is-info is-normal is-medium is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code">{% if exercise_details["starter_code"] and num_submissions == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+        <p class="top-space">
+            <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and num_submissions == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
             {% if assignment_details["enable_help_requests"] %}
-                <div class="buttons are-small is-pulled-right">
+                <div class="buttons is-pulled-right">
                     {% if help_request %}
                         {% if help_request["more_info_needed"] %}
                             <a class="button is-danger is-light" onclick="showHelpRequestModal()">More info needed</a>
+                        {% elif same_suggestion %}
+                            <a class="button is-success is-light" onclick="showMatchingModal()">Matching suggestion</a>
                         {% elif help_request["approved"] %}
-                            <a class="button success-message" onclick="showSuggestionModal()">View suggestion</a>
+                            <a class="button is-primary" onclick="showSuggestionModal()">View suggestion</a>
                         {% else %}
                             <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
                         {% end %}
                     {% else %}
-                        <a class="button is-light" onclick="showHelpRequestModal()">Request help</a>
+                        <a class="button is-white" onclick="showHelpRequestModal()">Request help</a>
                     {% end %}
                 </div>
             {% end %}
         </p>
 
-        <div class="field is-grouped">
+        <div class="buttons">
             {% if exercise_details["back_end"] != "any_response" %}
-                <p class="control"><button class="button is-primary is-light is-large is-one-quarter" onclick='run_code()'>Run</button></p>
+                <a class="button is-medium is-primary" onclick='run_code()'>Run</a>
             {% end %}
-            
-            <div id="revert_div"></div>
 
-            <p class="control"><button class="button is-primary is-large is-one-quarter" onclick='submit()' id='submit_button'>Submit</button></p>
+            <a class="button is-medium is-dark" onclick='submit()' id='submit_button'>Submit</a>
 
             {% if exercise_details["back_end"] == "any_response" %}
-                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any text that is currently in the box above.">
+                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'.">
             {% else %}
-                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. You can highlight a section of your solution and then hit 'Run' to test just that section. If you have made at least one submission, you can revert your solution to the most recent submission; please note that this will delete any code that is currently in the box above.">
+                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. You can highlight a section of your solution and then hit 'Run' to test just that section.">
             {% end %}
 
-                <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                <i class="far fa-question-circle"></i>
             </p>
         </div>
 
@@ -370,9 +408,9 @@
         {% if exercise_details["back_end"] != "any_response" %}
             {% if exercise_details["show_expected"] %}
                 <div>
-                    <h2 style="display: inline">Expected output:</h2>
+                    <h6 style="display: inline">Expected output:</h6>
                     <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your solution with the expected output to find and fix errors, as needed.">
-                        <img src="/static/tooltip.png" alt="Tooltip" class="tooltip-img"/>
+                        <i class="far fa-question-circle"></i>
                     </label>
                 </div>
                 {% if exercise_details["output_type"] == "txt" %}
@@ -391,10 +429,13 @@
             {% if exercise_details["show_expected"] %}
                 <p><span id="diff_output"></span></p>
             {% end %}
-        {% end %}
-
-        {% if len(exercise_details["credit"]) > 0 %}
-            <p><em>Credit: {{ exercise_details["credit"] }}</em></p>
-        {% end %}  
+        {% end %} 
 
         <div id="submissions"></div>
+
+        {% if len(exercise_details["credit"]) > 0 %}
+        <div class="front-row-container smaller-font">
+            <p style="padding-right: 5px;"><em>Credit: </em></p>
+            <p><em>{{ exercise_details["credit"] }}</em></p>
+        </div>
+        {% end %} 

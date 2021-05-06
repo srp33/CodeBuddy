@@ -4,11 +4,13 @@ import glob
 import gzip
 from helper import *
 import html
+from imgcompare import *
 import io
 import json
 import math
 import os
 import re
+import spacy
 import sqlite3
 import yaml
 from yaml import load
@@ -557,6 +559,7 @@ class Content:
                     FROM course_registrations
                     WHERE user_id = ?
                  )
+                   AND visible = 1
                  ORDER BY title'''
 
         for course in self.fetchall(sql, (user_id,)):
@@ -572,7 +575,8 @@ class Content:
                  FROM course_registrations r
                  INNER JOIN courses c
                    ON r.course_id = c.course_id
-                 WHERE r.user_id = ?'''
+                 WHERE r.user_id = ?
+                   AND c.visible = 1'''
 
         for course in self.fetchall(sql, (user_id,)):
             course_basics = {"id": course["course_id"], "title": course["title"]}
@@ -925,7 +929,14 @@ class Content:
         return help_requests
 
     def get_exercise_help_requests(self, course_id, assignment_id, exercise_id, user_id):
-        help_requests = []
+        sql = '''SELECT text_output
+                 FROM help_requests
+                 WHERE course_id = ?
+                 AND assignment_id = ?
+                 AND exercise_id = ?
+                 AND user_id = ?'''
+        row = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
+        orig_output = re.sub("#.*", "", row["text_output"])
 
         sql = '''SELECT r.course_id, r.assignment_id, r.exercise_id, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.more_info_needed
                  FROM help_requests r
@@ -937,10 +948,19 @@ class Content:
                    AND NOT r.user_id = ?
                  ORDER BY r.date DESC'''
 
-        for request in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
-            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]})
+        requests = self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,))
 
-        return help_requests
+        nlp = spacy.load('en_core_web_sm')
+        orig = nlp(orig_output)
+        help_requests = []
+
+        for request in requests:
+            curr = nlp(re.sub("#.*", "", request["text_output"]))
+            psim = curr.similarity(orig)
+            request_info = {"psim": psim, "course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]}
+            help_requests.append(request_info)
+                
+        return sorted(help_requests, key=lambda x: x["psim"], reverse=True)
 
     def get_help_request(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''SELECT r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.more_info_needed
@@ -954,7 +974,7 @@ class Content:
 
         request = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
         if request:
-            help_request = {"user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]}
+            help_request = {"course_id": course_id, "assignment_id": assignment_id, "exercise_id": exercise_id, "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]}
             if request["suggestion"]:
                 help_request["suggestion"] = request["suggestion"]
             else:
@@ -962,19 +982,121 @@ class Content:
 
             return help_request
 
+    def compare_help_requests(self, course_id, assignment_id, exercise_id, user_id):
+        #get the original help request, including its output type
+        sql = '''SELECT r.text_output, e.expected_text_output, r.image_output, e.expected_image_output, e.output_type
+                 FROM help_requests r
+                 INNER JOIN exercises e
+                   ON e.course_id = r.course_id
+                   AND e.assignment_id = r.assignment_id
+                   AND e.exercise_id = r.exercise_id
+                 WHERE r.course_id = ?
+                   AND r.assignment_id = ?
+                   AND r.exercise_id = ?
+                   AND r.user_id = ?'''
+        row = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
+
+        #the original output type will be either txt or jpg depending on the output type of the exercise
+        orig_output = None
+
+        if row["output_type"] == "jpg":
+            if row["image_output"] != row["expected_image_output"]:
+                orig_output = row["image_output"]
+
+        else:
+            if row["text_output"] != row["expected_text_output"]:
+                orig_output = row["text_output"]
+
+        #get all other help requests in the course that have the same output type
+        if orig_output:
+                sql = '''SELECT r.course_id, r.assignment_id, r.exercise_id, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion
+                        FROM help_requests r
+                        INNER JOIN users u
+                          ON r.user_id = u.user_id
+                        INNER JOIN exercises e
+                          ON e.course_id = r.course_id
+                          AND e.assignment_id = r.assignment_id
+                          AND e.exercise_id = r.exercise_id
+                        WHERE r.course_id = ?
+                          AND NOT r.user_id = ?
+                          AND e.output_type = ?'''
+                requests = self.fetchall(sql, (course_id, user_id, row["output_type"]))
+                sim_dict = []
+
+                #jpg output uses the diff_jpg function in helper.py, txt output uses .similarity() from the Spacy module
+                if row["output_type"] == "jpg":
+                    for request in requests:
+                        diff_image, diff_percent = diff_jpg(orig_output, request["image_output"])
+                        if diff_percent < .10:
+                            request_info = {"psim": 1 - diff_percent, "course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "student_comment": request["student_comment"],  "code": request["code"], "text_output": request["text_output"], "suggestion": request["suggestion"]}
+                            sim_dict.append(request_info)
+
+                else:
+                    nlp = spacy.load('en_core_web_sm')
+                    orig = nlp(orig_output)
+
+                    for request in requests:
+                        curr = nlp(request["text_output"])
+                        psim = curr.similarity(orig)
+                        sim = False
+
+                        #these thresholds can be changed in the future
+                        if len(orig) < 10 and len(curr) < 10:
+                            if psim > .30:
+                                sim = True
+                        elif len(orig) < 100 and len(curr) < 100:
+                            if psim > .50:
+                                sim = True
+                        elif len(orig) < 200 and len(curr) < 200:
+                            if psim > .70:
+                                sim = True
+                        else:
+                            if psim > .90:
+                                sim = True
+
+                        if sim:
+                            request_info = {"psim": psim, "course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "student_comment": request["student_comment"],  "code": request["code"], "text_output": request["text_output"], "suggestion": request["suggestion"]}
+                            sim_dict.append(request_info)
+                            
+                return sim_dict
+
+    def get_same_suggestion(self, help_request):
+        sql = '''SELECT r.suggestion, e.output_type, r.text_output, r.image_output
+                 FROM help_requests r
+                 INNER JOIN exercises e
+                   ON e.exercise_id = r.exercise_id
+                 WHERE r.course_id = ?
+                   AND r.suggestion NOT NULL
+                   AND e.output_type = (
+                       SELECT output_type
+                       FROM exercises
+                       WHERE exercise_id = ?
+                   )'''
+        
+        matches = self.fetchall(sql, (help_request["course_id"], help_request["exercise_id"]))
+        for match in matches:
+            if match["output_type"] == "jpg":
+                if match["image_output"] == help_request["image_output"]:
+                    return match["suggestion"]
+            else:
+                if match["text_output"] == help_request["text_output"]:
+                    return match["suggestion"]            
+
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = '''SELECT s.code, u.user_id, u.name, sc.score
+        sql = '''SELECT s.code, u.user_id, u.name, sc.score, s.passed
                  FROM submissions s
                  INNER JOIN users u
                    ON s.user_id = u.user_id
                  INNER JOIN scores sc
                    ON s.user_id = sc.user_id
+                   AND s.course_id = sc.course_id
+				   AND s.assignment_id = sc.assignment_id
+				   AND s.exercise_id = sc.exercise_id
                  WHERE s.course_id = ?
                    AND s.assignment_id = ?
                    AND s.exercise_id = ?
-                   AND passed = 1
                    AND s.user_id IN
                    (
                       SELECT user_id
@@ -985,7 +1107,7 @@ class Content:
                  ORDER BY u.family_name, u.given_name'''
 
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
-            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"]}
+            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"]}
             exercise_submissions.append([submission["user_id"], submission_info])
 
         return exercise_submissions

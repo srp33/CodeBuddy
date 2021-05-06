@@ -1,2 +1,2 @@
 DELETE FROM metadata
-WHERE version = 5;
+WHERE version = 5

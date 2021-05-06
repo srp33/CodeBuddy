@@ -13,7 +13,7 @@
             <div class="columns">
             {% if is_administrator %}
                 <div class="column is-one-quarter">
-                    <div class="option-box box has-background-link" onclick="showTab('instructor')">
+                    <div class="option-box box has-background-primary" onclick="showTab('instructor')">
                         <p class="has-text-white option-text">Manage<br />Instructors</p>
                     </div>
                 </div>
@@ -26,7 +26,7 @@
                     </div>
                 </div>
                 <div class="column">
-                    <div class="option-box box has-background-warning" onclick="showTab('student')">
+                    <div class="option-box box has-background-orange" onclick="showTab('student')">
                         <p class="has-text-white option-text">Manage<br />Students</p>
                     </div>
                 </div>
@@ -43,10 +43,10 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <p>Add an instructor:</p>
-                <input class="input is-medium is-link" type="text" id="new_instructor" name="new_instructor" placeholder="Enter ID (email address) of an existing user."/>
+                <input class="input is-medium is-primary" type="text" id="new_instructor" name="new_instructor" placeholder="Enter ID (email address) of an existing user."/>
                 <p class="buttons">
-                    <a id="add_instructor_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <input type="submit" id="add_instructor_button" class="modal-button button is-small is-primary" value="Add"/>
+                    <a id="add_instructor_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <input type="submit" id="add_instructor_button" class="modal-button button is-dark" value="Add"/>
                 </p>
             </div>
         </div>
@@ -55,10 +55,10 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <p>Add an assistant:</p>
-                <input class="input is-medium is-link" type="text" id="new_assistant" name="new_assistant" placeholder="Enter ID (email address) of an existing user."/>
+                <input class="input is-medium is-primary" type="text" id="new_assistant" name="new_assistant" placeholder="Enter ID (email address) of an existing user."/>
                 <p class="buttons">
-                    <a id="add_assistant_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <input type="submit" id="add_assistant_button" class="modal-button button is-small is-primary" value="Add"/>
+                    <a id="add_assistant_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <input type="submit" id="add_assistant_button" class="modal-button button is-dark" value="Add"/>
                 </p>
             </div>
         </div>
@@ -70,8 +70,8 @@
                 <span class="close">&times;</span>
                 <p id="confirm_instructor_removal"></p>
                 <p class="buttons">
-                    <a id="remove_instructor_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <input type="submit" id="remove_instructor_button" class="modal-button button is-small is-primary" value="Remove"/>
+                    <a id="remove_instructor_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <input type="submit" id="remove_instructor_button" class="modal-button button is-dark" value="Remove"/>
                 </p>
             </div>
         </div>
@@ -83,8 +83,8 @@
                 <span class="close">&times;</span>
                 <p id="confirm_assistant_removal"></p>
                 <p class="buttons">
-                    <a id="remove_assistant_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <input type="submit" id="remove_assistant_button" class="modal-button button is-small is-primary" value="Remove"/>
+                    <a id="remove_assistant_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <input type="submit" id="remove_assistant_button" class="modal-button button is-dark" value="Remove"/>
                 </p>
             </div>
         </div>
@@ -96,8 +96,8 @@
                 <span class="close">&times;</span>
                 <p id="confirm_unregistration"></p>
                 <p class="buttons">
-                    <a id="unregister_cancel_button" class="modal-button button is-small is-primary is-light">Cancel</a>
-                    <input type="submit" id="unregister_button" class="modal-button button is-small is-primary" value="Unregister"/>
+                    <a id="unregister_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <input type="submit" id="unregister_button" class="modal-button button is-dark" value="Unregister"/>
                 </p>
             </div>
         </div>
@@ -123,7 +123,7 @@
             {% end %}
             
             <div class="buttons">
-                <a class="button is-primary is-small is-rounded" onclick="showAddInstructorModal()">Add Instructor</a>
+                <a class="button is-dark" onclick="showAddInstructorModal()">Add Instructor</a>
             </div>
         </div>
 
@@ -147,7 +147,7 @@
             {% end %}
             
             <div class="buttons">
-                <a class="button is-primary is-small is-rounded" onclick="showAddAssistantModal()">Add Assistant</a>
+                <a class="button is-dark" onclick="showAddAssistantModal()">Add Assistant</a>
             </div>   
         </div>
 
