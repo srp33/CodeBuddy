@@ -1441,6 +1441,8 @@ class Content:
                 for address in assignment_details["valid_ip_addresses"]:
                     if address != '' and address != ',':
                         self.execute(sql, [assignment_basics["id"], address])
+                    else:
+                        assignment_details["valid_ip_addresses"].remove(address)
             else:
                 sql = '''DELETE FROM valid_ip_addresses
                                         WHERE assignment_id = ?'''
