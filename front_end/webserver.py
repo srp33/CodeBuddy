@@ -705,7 +705,7 @@ class AssignmentHandler(BaseUserHandler):
                                  self.request.headers.get("X-Forwarded-For") or \
                                  self.request.remote_ip
 
-                if client_ip not in assignment_details["valid_ip_addresses"]:
+                if (assignment_details["access_restricted"]) and (client_ip not in assignment_details["valid_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
