@@ -709,12 +709,9 @@ class AssignmentHandler(BaseUserHandler):
                 assignment_details = content.get_assignment_details(course, assignment, True)
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
+                client_ip = content.get_client_ip_address()
 
-                client_ip = self.request.headers.get("X-Real-IP") or \
-                                 self.request.headers.get("X-Forwarded-For") or \
-                                 self.request.remote_ip
-
-                if (assignment_details["access_restricted"]) and (client_ip not in assignment_details["valid_ip_addresses"]):
+                if (len(assignment_details["valid_ip_addresses"]) != 0) and (client_ip not in assignment_details["valid_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
@@ -771,8 +768,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
-            assignment_details["access_restricted"] = self.get_body_argument("access_restricted") == "Yes"
-            if assignment_details["access_restricted"]:
+            if self.get_body_argument("access_restricted") == "Yes":
                 assignment_details["valid_ip_addresses"] = self.get_body_argument("valid_ip_addresses").strip().split(",")
             else:
                 assignment_details["valid_ip_addresses"] = []
@@ -835,7 +831,7 @@ class EditAssignmentHandler(BaseUserHandler):
                             #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                             #else:
                             #content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
-                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["access_restricted"], assignment_details["valid_ip_addresses"])
+                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["valid_ip_addresses"])
                             assignment = content.save_assignment(assignment_basics, assignment_details)
 
             percentage_options = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]

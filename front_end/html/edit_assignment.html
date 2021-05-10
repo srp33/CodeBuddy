@@ -249,7 +249,7 @@
     <div class="shadow-box">
         <p><strong>Restrict assignment access to valid IP addresses: </strong></br>separate valid addresses by a comma without spaces.</p>
             <select id="access_restricted" onchange="showValidIPAddresses(this.value)" name="access_restricted" class="edit-select">
-                {% if assignment_details["access_restricted"] %}
+                {% if len(assignment_details["valid_ip_addresses"]) != 0 %}
                 <option value="Yes" selected>Yes</option>
                 <option value="No">No</option>
                 {% else %}
