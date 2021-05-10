@@ -106,7 +106,7 @@ class HomeHandler(RequestHandler):
                 user_id = user_id.decode()
                 user_info_var.set(user_id)
             else:
-                user_info_var.set(self.get_client_ip_address)
+                user_info_var.set(self.get_client_ip_address())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
