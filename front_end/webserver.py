@@ -775,7 +775,6 @@ class EditAssignmentHandler(BaseUserHandler):
             if self.get_body_argument("access_restricted") == "Yes":
                 assignment_details["valid_ip_addresses"] = self.get_body_argument("valid_ip_addresses").strip().split(",")
                 assignment_details["valid_ip_addresses"][:] = [x for x in assignment_details["valid_ip_addresses"] if x != "" and x != ","]
-                print(assignment_details["valid_ip_addresses"])
             else:
                 assignment_details["valid_ip_addresses"] = []
 
