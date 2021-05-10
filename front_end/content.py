@@ -1414,6 +1414,8 @@ class Content:
         # clean and join valid_ip_addresses
         assignment_details["valid_ip_addresses"][:] = [x for x in assignment_details["valid_ip_addresses"] if x != "" and x != ","]
         valid_ip_addresses_string = ",".join(assignment_details["valid_ip_addresses"])
+        if valid_ip_addresses_string == "":
+            valid_ip_addresses_string = None
         print(valid_ip_addresses_string)
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
