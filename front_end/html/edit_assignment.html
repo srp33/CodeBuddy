@@ -257,7 +257,7 @@
                 <option value="No" selected>No</option>
                 {% end %}
             </select>
-        {% if assignment_details["access_restricted"] %}
+        {% if len(assignment_details["valid_ip_addresses"]) != 0 %}
         <textarea name="valid_ip_addresses"  id="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if "valid_ip_addresses" in assignment_details.keys() %}{% for i in range(len(assignment_details["valid_ip_addresses"])) %}{{ assignment_details["valid_ip_addresses"][i] }},{% end %}{% end %}</textarea>
         {% else %}
         <textarea name="valid_ip_addresses"  id="valid_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:none"></textarea>
