@@ -835,7 +835,7 @@ class Content:
 
         return score
 
-    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, new_score):
+    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, new_score, pair_programming_partner_id=None):
         score = self.get_exercise_score(course_id, assignment_id, exercise_id, user_id)
 
         if score != None:
@@ -853,6 +853,8 @@ class Content:
                      VALUES (?, ?, ?, ?, ?)'''
 
             self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
+        if pair_programming_partner_id is not None:
+            self.save_exercise_score(course_id, assignment_id, exercise_id, pair_programming_partner_id, new_score)
 
     def get_submissions_basic(self, course_id, assignment_id, exercise_id, user_id):
         submissions = []
@@ -1131,7 +1133,7 @@ class Content:
         assignment_basics["title"] = title
         assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses):
+    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses, enable_pair_programming):
         assignment_details["introduction"] = introduction
         assignment_details["date_updated"] = date_updated
         assignment_details["start_date"] = start_date
@@ -1144,6 +1146,7 @@ class Content:
         assignment_details["hour_timer"] = hour_timer
         assignment_details["minute_timer"] = minute_timer
         assignment_details["allowed_ip_addresses"] = allowed_ip_addresses
+        assignment_details["enable_pair_programming"] = enable_pair_programming
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -1265,7 +1268,7 @@ class Content:
             return self.get_submission_info(course, assignment, exercise, user, last_submission_id)
 
     def get_submission_info(self, course, assignment, exercise, user, submission):
-        sql = '''SELECT code, text_output, image_output, passed, date
+        sql = '''SELECT code, text_output, image_output, passed, date, pair_programming_partner_id
                  FROM submissions
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -1275,7 +1278,7 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
 
-        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True}
+        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "pair_programming_partner_id": row["pair_programming_partner_id"]}
 
     def get_course_details(self, course, format_output=False):
         if not course:
@@ -1295,16 +1298,18 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "allowed_ip_addresses": []}
+            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "allowed_ip_addresses": [], "enable_pair_programming": False}
 
-        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, allowed_ip_addresses, has_timer, hour_timer, minute_timer
+        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, allowed_ip_addresses, enable_pair_programming, has_timer, hour_timer, minute_timer
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
         row = self.fetchone(sql, (int(course), int(assignment),))
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_pair_programming": row["enable_pair_programming"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
+        if format_output:
+            assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
 
         if assignment_dict["allowed_ip_addresses"] is None:
             assignment_dict["allowed_ip_addresses"] = []
@@ -1422,19 +1427,20 @@ class Content:
         allowed_ip_addresses_string = ",".join(assignment_details["allowed_ip_addresses"])
         if allowed_ip_addresses_string == "":
             allowed_ip_addresses_string = None
+
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, enable_help_requests = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, allowed_ip_addresses = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, enable_help_requests = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, allowed_ip_addresses = ?, enable_pair_programming = ?
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], allowed_ip_addresses_string, assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], allowed_ip_addresses_string, assignment_details["enable_pair_programming"], assignment_basics["course"]["id"], assignment_basics["id"]])
 
         else:
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses, enable_pair_programming)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], allowed_ip_addresses_string])
+            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], allowed_ip_addresses_string, assignment_details["enable_pair_programming"]])
 
             assignment_basics["exists"] = True
 
@@ -1461,12 +1467,15 @@ class Content:
 
         return exercise_basics["id"]
 
-    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed):
+    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, pair_programming_partner=None):
         submission_id = self.get_next_submission_id(course, assignment, exercise, user)
-        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date, pair_programming_partner_id)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now()])
+        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), pair_programming_partner])
+        if pair_programming_partner is not None:
+            submission_id = self.get_next_submission_id(course, assignment, exercise, pair_programming_partner)
+            self.execute(sql, [int(course), int(assignment), int(exercise), pair_programming_partner, int(submission_id), code, text_output, image_output, passed, datetime.now(), user])
 
         return submission_id
 
@@ -1505,8 +1514,9 @@ class Content:
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
 
     def copy_assignment(self, course_id, assignment_id, new_course_id):
-        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses)
-                 SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses
+
+        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses, enable_pair_programming)
+                 SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses, enable_pair_programming
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -1620,6 +1630,10 @@ class Content:
         self.execute('''DELETE FROM assignments
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
+
+        self.execute('''DELETE FROM valid_ip_addresses
+                                WHERE course_id = ?
+                                  AND assignment_id = ?''', (course_id, assignment_id,))
 
     def delete_course(self, course_basics):
         course_id = course_basics["id"]

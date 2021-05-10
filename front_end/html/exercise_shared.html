@@ -228,7 +228,12 @@
 
                     if (user_code.trim() == "")
                         return false;
+                    let pair_programming = "No"
 
+                    pair_programming = document.getElementById("pair_programming").value
+                    if (pair_programming == "Yes") {
+                        pair_programming_partner = document.getElementById("pair_programming_partner").value
+                    }
                     result_div = document.getElementById("result");
                     result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
                     result_div.scrollIntoView();
@@ -241,7 +246,12 @@
                         {% end %}
                     {% end %}
 
-                    post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
+                    if (pair_programming == "No") {
+                        post_data = { "user_code": user_code, "pair_programming": pair_programming, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
+                    }
+                    else {
+                        post_data = { "pair_programming_partner": pair_programming_partner,"user_code": user_code, "pair_programming": pair_programming, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
+                    }
 
                     $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
                         post_data,
@@ -293,6 +303,11 @@
                             var json_data = JSON.parse(data);
                             editor.setValue(json_data.code, 1);
                             check_code(json_data);
+                            if (json_data.pair_programming_partner_id != null) {
+                                document.getElementById("pair_programming").value = "Yes";
+                                document.getElementById("pair_programming_partner_div").style = "display:inline";
+                                document.getElementById("pair_programming_partner").value = json_data.pair_programming_partner_id;
+                            }
                         });
 
                     if (scroll)

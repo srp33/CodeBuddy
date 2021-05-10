@@ -198,6 +198,16 @@
                     data_button.innerHTML = "Show";
                 }
             }
+            function showUsers(yes) {
+                var pair_programming_partner_div = document.getElementById("pair_programming_partner_div");
+                if (yes == "Yes") {
+                   pair_programming_partner_div.style.display = "inline";
+                }
+                else {
+                    pair_programming_partner_div.style.display = "none";
+                }
+            }
+
         </script>
 
         <!--The next four divs contain all of the modals for this page-->
@@ -390,6 +400,31 @@
             </p>
         </div>
 
+        {% if assignment_details["enable_pair_programming"] %}
+        <div class="shadow-box">
+            <h6 style="display:inline">Using Pair Programming:</h6>
+                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
+                    <i class="far fa-question-circle"></i>
+                </label></br>
+
+                <div class="select is-grey" >
+                    <select onchange="showUsers(this.value)" id="pair_programming" name="pair_programming" class="edit-select">
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    </select>
+                </div>
+
+                <div class="select is-grey" id="pair_programming_partner_div" style="display:none">
+                    <select  name="pair_programming_partner" id="pair_programming_partner" class="edit-select" style="margin-top:15px">
+                        {% for user in users %}
+                            <option value={{user[0]}} selected>{{ user[1]["name"] }}</option>
+                        {% end %}
+                    </select>
+                </div>
+            </p>
+        </div>
+        {% end %}
+
         <div>
             {% if exercise_details["max_submissions"] > 0 %}
                 <label style="padding-left: 10px;">You have made <span id="num_submissions">{{ num_submissions }}</span> of {{ exercise_details["max_submissions"] }} allowed submission(s)</label>
@@ -397,7 +432,7 @@
         </div>
 
         {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
-            <script>document.getElementById("submit_button").disabled = true;</script>  
+            <script>document.getElementById("submit_button").disabled = true;</script>
             <div class='notification is-warning'><p>Click <a style='color:#2166ac' href="/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's answer.</p></div>
         {% end %}
 
@@ -429,7 +464,7 @@
             {% if exercise_details["show_expected"] %}
                 <p><span id="diff_output"></span></p>
             {% end %}
-        {% end %} 
+        {% end %}
 
         <div id="submissions"></div>
 
@@ -438,4 +473,4 @@
             <p style="padding-right: 5px;"><em>Credit: </em></p>
             <p><em>{{ exercise_details["credit"] }}</em></p>
         </div>
-        {% end %} 
+        {% end %}
