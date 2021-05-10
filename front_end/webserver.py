@@ -92,6 +92,11 @@ def make_app():
     return app
 
 class HomeHandler(RequestHandler):
+    def get_client_ip_address(self):
+        return self.request.headers.get("X-Real-IP") or \
+               self.request.headers.get("X-Forwarded-For") or \
+               self.request.remote_ip
+
     def prepare(self):
         try:
             user_id = self.get_secure_cookie("user_id")
@@ -155,11 +160,6 @@ class BaseUserHandler(RequestHandler):
 
     def get_user_id(self):
         return self.get_user_info()["user_id"]
-
-    def get_client_ip_address(self):
-        return self.request.headers.get("X-Real-IP") or \
-               self.request.headers.get("X-Forwarded-For") or \
-               self.request.remote_ip
 
     def is_administrator(self):
         return user_is_administrator_var.get()
