@@ -1413,7 +1413,7 @@ class Content:
     def save_assignment(self, assignment_basics, assignment_details):
         # clean and join valid_ip_addresses
         assignment_details["valid_ip_addresses"][:] = [x for x in assignment_details["valid_ip_addresses"] if x != "" or x != ","]
-        valid_ip_addresses_string = assignment_details["valid_ip_addresses"].join(",")
+        valid_ip_addresses_string = ",".join(assignment_details["valid_ip_addresses"])
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
                      SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, enable_help_requests = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, valid_ip_addresses = ?
