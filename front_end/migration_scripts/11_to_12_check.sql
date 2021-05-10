@@ -1,3 +1,3 @@
 SELECT COUNT(*) AS count
                FROM pragma_table_info("assignments")
-               WHERE name = "valid_ip_addresses"
+               WHERE name = "allowed_ip_addresses"

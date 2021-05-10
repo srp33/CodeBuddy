@@ -101,7 +101,7 @@ class HomeHandler(RequestHandler):
                 user_id = user_id.decode()
                 user_info_var.set(user_id)
             else:
-                user_info_var.set(self.request.remote_ip)
+                user_info_var.set(self.get_client_ip_address)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -715,7 +715,7 @@ class AssignmentHandler(BaseUserHandler):
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
                 client_ip = self.get_client_ip_address()
 
-                if (len(assignment_details["valid_ip_addresses"]) != 0) and (client_ip not in assignment_details["valid_ip_addresses"]):
+                if (len(assignment_details["allowed_ip_addresses"]) != 0) and (client_ip not in assignment_details["allowed_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
@@ -772,10 +772,10 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
-            assignment_details["valid_ip_addresses"] = []
+            assignment_details["allowed_ip_addresses"] = []
             if self.get_body_argument("access_restricted") == "Yes":
-                assignment_details["valid_ip_addresses"] = self.get_body_argument("valid_ip_addresses").strip().split(",")
-                assignment_details["valid_ip_addresses"][:] = [x for x in assignment_details["valid_ip_addresses"] if x != "" and x != ","]
+                assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").strip().split(",")
+                assignment_details["allowed_ip_addresses"][:] = [x for x in assignment_details["allowed_ip_addresses"] if x != "" and x != ","]
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
@@ -835,7 +835,7 @@ class EditAssignmentHandler(BaseUserHandler):
                             #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                             #else:
                             #content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
-                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["valid_ip_addresses"])
+                            content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, datetime.datetime.now(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["allowed_ip_addresses"])
                             assignment = content.save_assignment(assignment_basics, assignment_details)
 
             percentage_options = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
