@@ -1,1 +1,1 @@
-ALTER TABLE assignments ADD COLUMN valid_ip_addresses text DEFAULT NULL;
+ALTER TABLE assignments ADD COLUMN valid_ip_addresses text NOT NULL DEFAULT "";

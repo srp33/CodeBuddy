@@ -772,12 +772,11 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
-            assignment_details["valid_ip_addresses"] = []
             if self.get_body_argument("access_restricted") == "Yes":
-                assignment_details["valid_ip_addresses"] = self.get_body_argument("valid_ip_addresses")
-                if assignment_details["valid_ip_addresses"] is not None:
-                    assignment_details["valid_ip_addresses"] = assignment_details["valid_ip_addresses"].strip().split(",")
-                    assignment_details["valid_ip_addresses"][:] = [x for x in assignment_details["valid_ip_addresses"] if x != "" and x != ","]
+                assignment_details["valid_ip_addresses"] = self.get_body_argument("valid_ip_addresses").strip().split(",")
+                assignment_details["valid_ip_addresses"][:] = [x for x in assignment_details["valid_ip_addresses"] if x != "" and x != ","]
+            else:
+                assignment_details["valid_ip_addresses"] = []
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
