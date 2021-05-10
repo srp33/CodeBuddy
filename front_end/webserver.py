@@ -156,6 +156,11 @@ class BaseUserHandler(RequestHandler):
     def get_user_id(self):
         return self.get_user_info()["user_id"]
 
+    def get_client_ip_address(self):
+        return self.request.headers.get("X-Real-IP") or \
+               self.request.headers.get("X-Forwarded-For") or \
+               self.request.remote_ip
+
     def is_administrator(self):
         return user_is_administrator_var.get()
 
@@ -709,7 +714,7 @@ class AssignmentHandler(BaseUserHandler):
                 assignment_details = content.get_assignment_details(course, assignment, True)
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
-                client_ip = content.get_client_ip_address()
+                client_ip = self.get_client_ip_address()
 
                 if (len(assignment_details["valid_ip_addresses"]) != 0) and (client_ip not in assignment_details["valid_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),

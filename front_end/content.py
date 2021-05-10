@@ -1785,7 +1785,3 @@ class Content:
                        AND submission_id = ?'''
 
             self.execute(sql, [text_output, image_output, passed, int(course), int(assignment), int(exercise), user, int(submission)])
-    def get_client_ip_address(self):
-         return self.request.headers.get("X-Real-IP") or \
-                self.request.headers.get("X-Forwarded-For") or \
-                self.request.remote_ip
