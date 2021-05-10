@@ -597,7 +597,6 @@ class ImportCourseHandler(BaseUserHandler):
                         assignment_id = None
                         assignment_basics = content.get_assignment_basics(course_basics["id"], assignment_id)
                         assignment_details = content.get_assignment_details(course_basics["id"], assignment_id)
-                        print(assignment_details)
                         content.specify_assignment_basics(assignment_basics, assignment_list[2], bool(assignment_list[4]))
                         #content.specify_assignment_details(assignment_details, assignment_list[3], convert_string_to_date(assignment_list[5]), convert_string_to_date(assignment_list[6]))
 
@@ -715,6 +714,7 @@ class AssignmentHandler(BaseUserHandler):
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
                 client_ip = self.get_client_ip_address()
+                print(client_ip)
 
                 if (len(assignment_details["valid_ip_addresses"]) != 0) and (client_ip not in assignment_details["valid_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
