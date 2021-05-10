@@ -714,7 +714,6 @@ class AssignmentHandler(BaseUserHandler):
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
                 client_ip = self.get_client_ip_address()
-                print(client_ip)
 
                 if (len(assignment_details["valid_ip_addresses"]) != 0) and (client_ip not in assignment_details["valid_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
@@ -775,6 +774,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
             if self.get_body_argument("access_restricted") == "Yes":
                 assignment_details["valid_ip_addresses"] = self.get_body_argument("valid_ip_addresses").strip().split(",")
+                assignment_details["valid_ip_addresses"][:] = [x for x in assignment_details["valid_ip_addresses"] if x != "" or x != ","]
             else:
                 assignment_details["valid_ip_addresses"] = []
 
