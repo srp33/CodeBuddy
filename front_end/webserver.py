@@ -713,7 +713,7 @@ class AssignmentHandler(BaseUserHandler):
                 assignment_details = content.get_assignment_details(course, assignment, True)
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
-                client_ip = self.get_client_ip_address()
+                client_ip = HomeHandler.get_client_ip_address()
 
                 if (len(assignment_details["allowed_ip_addresses"]) != 0) and (client_ip not in assignment_details["allowed_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
