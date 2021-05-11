@@ -92,10 +92,6 @@ def make_app():
     return app
 
 class HomeHandler(RequestHandler):
-    def get_client_ip_address(self):
-        return self.request.headers.get("X-Real-IP") or \
-               self.request.headers.get("X-Forwarded-For") or \
-               self.request.remote_ip
 
     def prepare(self):
         try:
@@ -106,7 +102,7 @@ class HomeHandler(RequestHandler):
                 user_id = user_id.decode()
                 user_info_var.set(user_id)
             else:
-                user_info_var.set(self.get_client_ip_address())
+                user_info_var.set(get_client_ip_address(self.request))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -713,7 +709,7 @@ class AssignmentHandler(BaseUserHandler):
                 assignment_details = content.get_assignment_details(course, assignment, True)
                 curr_datetime = datetime.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
-                client_ip = HomeHandler.get_client_ip_address()
+                client_ip = get_client_ip_address(self.request)
 
                 if (len(assignment_details["allowed_ip_addresses"]) != 0) and (client_ip not in assignment_details["allowed_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
