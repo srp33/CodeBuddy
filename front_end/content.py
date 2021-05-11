@@ -1306,10 +1306,10 @@ class Content:
 
         assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
 
-        print("before get:",assignment_dict["allowed_ip_addresses"])
-        if assignment_dict["allowed_ip_addresses"] is not None:
+        if assignment_dict["allowed_ip_addresses"] is None:
+            assignment_dict["allowed_ip_addresses"] = []
+        else:
             assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].strip().split(",")
-        print("get from db:", assignment_dict["allowed_ip_addresses"])
 
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
@@ -1418,12 +1418,10 @@ class Content:
 
     def save_assignment(self, assignment_basics, assignment_details):
         # clean and join allowed_ip_addresses
-        print("before save:",assignment_details["allowed_ip_addresses"])
+        assignment_details["allowed_ip_addresses"][:] = [x for x in assignment_details["allowed_ip_addresses"] if x != "" and x != ","]
         assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
         if assignment_details["allowed_ip_addresses"] == "":
             assignment_details["allowed_ip_addresses"] = None
-        print("save:", assignment_details["allowed_ip_addresses"])
-
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
                      SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, enable_help_requests = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, allowed_ip_addresses = ?
