@@ -1154,13 +1154,24 @@ class SubmitHandler(BaseUserHandler):
 class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, student_id, submission_id):
         try:
-            exercise_details = content.get_exercise_details(course, assignment, exercise)
-            submission_info = content.get_submission_info(course, assignment, exercise, student_id, submission_id)
+            client_ip = get_client_ip_address(self.request)
+            user_info = self.get_user_info()
 
-            diff, passed = check_exercise_output(exercise_details, submission_info["text_output"], submission_info["image_output"])
+            if assignment_details["allowed_ip_addresses"] is not None and client_ip not in assignment_details[
+               "allowed_ip_addresses"] and not self.is_administrator():
+               self.render("unavailable_assignment.html", courses=content.get_courses(),
+                           assignments=content.get_assignments(course),
+                           course_basics=content.get_course_basics(course),
+                           assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
+                           user_info=user_info)
+            else:
+                exercise_details = content.get_exercise_details(course, assignment, exercise)
+                submission_info = content.get_submission_info(course, assignment, exercise, student_id, submission_id)
 
-            submission_info["diff"] = format_output_as_html(diff)
-            submission_info["text_output"] = format_output_as_html(submission_info["text_output"])
+                diff, passed = check_exercise_output(exercise_details, submission_info["text_output"], submission_info["image_output"])
+
+                submission_info["diff"] = format_output_as_html(diff)
+                submission_info["text_output"] = format_output_as_html(submission_info["text_output"])
         except Exception as inst:
             submission_info["diff"] = ""
             submission_info["text_output"] = format_output_as_html(traceback.format_exc())
@@ -1170,7 +1181,18 @@ class GetSubmissionHandler(BaseUserHandler):
 class GetSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, user_id):
         try:
-            submissions = content.get_submissions_basic(course, assignment, exercise, user_id)
+            client_ip = get_client_ip_address(self.request)
+            user_info = self.get_user_info()
+
+            if assignment_details["allowed_ip_addresses"] is not None and client_ip not in assignment_details[
+                "allowed_ip_addresses"] and not self.is_administrator():
+                self.render("unavailable_assignment.html", courses=content.get_courses(),
+                            assignments=content.get_assignments(course),
+                            course_basics=content.get_course_basics(course),
+                            assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
+                            user_info=user_info)
+            else:
+                submissions = content.get_submissions_basic(course, assignment, exercise, user_id)
         except Exception as inst:
             submissions = []
 
@@ -1179,10 +1201,20 @@ class GetSubmissionsHandler(BaseUserHandler):
 class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, exercise):
         try:
-            user = self.get_user_id()
+            client_ip = get_client_ip_address(self.request)
+            user_info = self.get_user_info()
             exercise_details = content.get_exercise_details(course, assignment, exercise, format_content=True)
             back_end = settings_dict["back_ends"][exercise_details["back_end"]]
-            self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=content.get_exercises(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, user), code_completion_path=back_end["code_completion_path"], last_submission=content.get_last_submission(course, assignment, exercise, user), student_submissions=content.get_student_submissions(course, assignment, exercise, user), curr_time=datetime.datetime.now(), format_content=True, user_info=self.get_user_info())
+
+            if assignment_details["allowed_ip_addresses"] is not None and client_ip not in assignment_details[
+                "allowed_ip_addresses"] and not self.is_administrator():
+                self.render("unavailable_assignment.html", courses=content.get_courses(),
+                            assignments=content.get_assignments(course),
+                            course_basics=content.get_course_basics(course),
+                            assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
+                            user_info=user_info)
+            else:
+                self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=content.get_exercises(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, user), code_completion_path=back_end["code_completion_path"], last_submission=content.get_last_submission(course, assignment, exercise, user), student_submissions=content.get_student_submissions(course, assignment, exercise, user), curr_time=datetime.datetime.now(), format_content=True, user_info=self.get_user_info())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
