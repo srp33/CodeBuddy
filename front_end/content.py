@@ -1149,7 +1149,6 @@ class Content:
         else:
             assignment_details["date_created"] = date_updated
 
-
     def specify_exercise_basics(self, exercise_basics, title, visible):
         exercise_basics["title"] = title
         exercise_basics["visible"] = visible

@@ -1205,6 +1205,7 @@ class ViewAnswerHandler(BaseUserHandler):
         try:
             assignment_details = content.get_assignment_details(course, assignment, True)
             client_ip = get_client_ip_address(self.request)
+            user = self.get_user_id()
             user_info = self.get_user_info()
             exercise_details = content.get_exercise_details(course, assignment, exercise, format_content=True)
             back_end = settings_dict["back_ends"][exercise_details["back_end"]]
