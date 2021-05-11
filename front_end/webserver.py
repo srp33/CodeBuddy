@@ -711,7 +711,7 @@ class AssignmentHandler(BaseUserHandler):
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
                 client_ip = get_client_ip_address(self.request)
 
-                if (len(assignment_details["allowed_ip_addresses"]) != 0) and (client_ip not in assignment_details["allowed_ip_addresses"]):
+                if assignment_details["allowed_ip_addresses"] is not None and client_ip not in assignment_details["allowed_ip_addresses"]:
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
@@ -768,7 +768,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
-            assignment_details["allowed_ip_addresses"] = []
+            assignment_details["allowed_ip_addresses"] = None
             if self.get_body_argument("access_restricted") == "Yes":
                 assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").strip().split(",")
                 assignment_details["allowed_ip_addresses"][:] = [x for x in assignment_details["allowed_ip_addresses"] if x != "" and x != ","]

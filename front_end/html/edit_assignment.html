@@ -247,7 +247,7 @@
         </p>
     </div>
     <div class="shadow-box">
-        <p><strong>Restrict assignment access to valid IP addresses: </strong></br>Separate valid addresses by a comma without spaces.</p>
+        <p><strong>Restrict assignment access to the following IP addresses: </strong></br>Separate valid addresses by a comma without spaces.</p>
         <div class="select is-grey">
             <select id="access_restricted" onchange="showValidIPAddresses(this.value)" name="access_restricted" class="edit-select">
                 {% if len(assignment_details["allowed_ip_addresses"]) != 0 %}
