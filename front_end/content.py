@@ -1419,6 +1419,7 @@ class Content:
         assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
         if assignment_details["allowed_ip_addresses"] == "":
             assignment_details["allowed_ip_addresses"] = None
+        print("Third pass:", assignment_details["allowed_ip_addresses"])
 
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments

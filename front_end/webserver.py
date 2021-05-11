@@ -771,7 +771,9 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["allowed_ip_addresses"] = None
             if self.get_body_argument("access_restricted") == "Yes":
                 assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").strip().split(",")
+                print("First pass:",assignment_details["allowed_ip_addresses"])
                 assignment_details["allowed_ip_addresses"][:] = [x for x in assignment_details["allowed_ip_addresses"] if x != "" and x != ","]
+                print("Second pass:",assignment_details["allowed_ip_addresses"])
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
