@@ -1436,6 +1436,7 @@ class Content:
 
             assignment_basics["exists"] = True
 
+        #return allowed_ip_addresses to list
         assignment_details["allowed_ip_addresses"] = assignment_details["allowed_ip_addresses"].strip().split(",")
 
         return assignment_basics["id"]

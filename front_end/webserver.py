@@ -899,13 +899,23 @@ class ExerciseHandler(BaseUserHandler):
             exercise_details = content.get_exercise_details(course, assignment, exercise, format_content=True)
             back_end = settings_dict["back_ends"][exercise_details["back_end"]]
             next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
+            user_info = self.get_user_info()
+            client_ip = get_client_ip_address(self.request)
 
             help_request = content.get_help_request(course, assignment, exercise, self.get_user_id())
             same_suggestion = None
             if help_request and not help_request["approved"]:
                 same_suggestion = content.get_same_suggestion(help_request)
 
-            self.render("exercise.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=help_request, same_suggestion=same_suggestion, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
+            if assignment_details["allowed_ip_addresses"] is not None and client_ip not in assignment_details[
+                "allowed_ip_addresses"]:
+                self.render("unavailable_assignment.html", courses=content.get_courses(),
+                            assignments=content.get_assignments(course),
+                            course_basics=content.get_course_basics(course),
+                            assignment_basics=content.get_assignment_basics(course, assignment), error="invalid_ip",
+                            user_info=user_info)
+            else:
+                self.render("exercise.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=help_request, same_suggestion=same_suggestion, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
 
         except Exception as inst:
             render_error(self, traceback.format_exc())
