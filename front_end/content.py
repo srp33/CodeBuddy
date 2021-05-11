@@ -1308,6 +1308,7 @@ class Content:
 
         if assignment_dict["allowed_ip_addresses"] is not None:
             assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].strip().split(",")
+        print("fourth pass:", assignment_dict["allowed_ip_addresses"])
 
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
