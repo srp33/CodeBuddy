@@ -1154,6 +1154,7 @@ class SubmitHandler(BaseUserHandler):
 class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, student_id, submission_id):
         try:
+            assignment_details = content.get_assignment_details(course, assignment, True)
             client_ip = get_client_ip_address(self.request)
             user_info = self.get_user_info()
 
@@ -1181,6 +1182,7 @@ class GetSubmissionHandler(BaseUserHandler):
 class GetSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, user_id):
         try:
+            assignment_details = content.get_assignment_details(course, assignment, True)
             client_ip = get_client_ip_address(self.request)
             user_info = self.get_user_info()
 
@@ -1201,6 +1203,7 @@ class GetSubmissionsHandler(BaseUserHandler):
 class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, exercise):
         try:
+            assignment_details = content.get_assignment_details(course, assignment, True)
             client_ip = get_client_ip_address(self.request)
             user_info = self.get_user_info()
             exercise_details = content.get_exercise_details(course, assignment, exercise, format_content=True)
