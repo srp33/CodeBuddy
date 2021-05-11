@@ -92,7 +92,6 @@ def make_app():
     return app
 
 class HomeHandler(RequestHandler):
-
     def prepare(self):
         try:
             user_id = self.get_secure_cookie("user_id")
@@ -109,7 +108,6 @@ class HomeHandler(RequestHandler):
     def get(self):
         try:
             user_id = self.get_secure_cookie("user_id")
-
 
             if content.get_user_count() > 0 and not content.administrator_exists():
                 if user_id:
@@ -593,6 +591,7 @@ class ImportCourseHandler(BaseUserHandler):
                         assignment_id = None
                         assignment_basics = content.get_assignment_basics(course_basics["id"], assignment_id)
                         assignment_details = content.get_assignment_details(course_basics["id"], assignment_id)
+
                         content.specify_assignment_basics(assignment_basics, assignment_list[2], bool(assignment_list[4]))
                         #content.specify_assignment_details(assignment_details, assignment_list[3], convert_string_to_date(assignment_list[5]), convert_string_to_date(assignment_list[6]))
 
@@ -715,7 +714,7 @@ class AssignmentHandler(BaseUserHandler):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
-                                assignment_basics=content.get_assignment_basics(course, assignment), error="invalid_ip",
+                                assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
                                 user_info=user_info)
                 elif assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
@@ -911,7 +910,7 @@ class ExerciseHandler(BaseUserHandler):
                 self.render("unavailable_assignment.html", courses=content.get_courses(),
                             assignments=content.get_assignments(course),
                             course_basics=content.get_course_basics(course),
-                            assignment_basics=content.get_assignment_basics(course, assignment), error="invalid_ip",
+                            assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
                             user_info=user_info)
             else:
                 self.render("exercise.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=help_request, same_suggestion=same_suggestion, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
