@@ -88,7 +88,7 @@ def make_app():
         url(r"/test", TestHandler, name="test"),
     ], autoescape=None)
 
-#        url(r"\/initialize", InitializeHandler, name="initialize"),
+    #        url(r"\/initialize", InitializeHandler, name="initialize"),
     return app
 
 class HomeHandler(RequestHandler):
@@ -711,32 +711,32 @@ class AssignmentHandler(BaseUserHandler):
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
                 client_ip = get_client_ip_address(self.request)
 
-                if (len(assignment_details["allowed_ip_addresses"]) != 0) and (client_ip not in assignment_details["allowed_ip_addresses"]):
+                if assignment_details["allowed_ip_addresses"] is not None) and (client_ip not in assignment_details["allowed_ip_addresses"]):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
-                                assignments=content.get_assignments(course),
-                                course_basics=content.get_course_basics(course),
-                                assignment_basics=content.get_assignment_basics(course, assignment), error="invalid_ip",
-                                user_info=user_info)
+                assignments=content.get_assignments(course),
+                course_basics=content.get_course_basics(course),
+                assignment_basics=content.get_assignment_basics(course, assignment), error="invalid_ip",
+                user_info=user_info)
                 elif assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
-                    self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
+                self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
                 elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
-                    self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"), user_info=user_info)
+                self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"), user_info=user_info)
                 else:
-                    self.render("assignment.html", courses=content.get_courses(False), assignments=content.get_assignments(course, False), exercises=content.get_exercises(course, assignment, False), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, start_time=start_time, user_info=user_info)
+                self.render("assignment.html", courses=content.get_courses(False), assignments=content.get_assignments(course, False), exercises=content.get_exercises(course, assignment, False), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, start_time=start_time, user_info=user_info)
 
-            except Exception as inst:
-                render_error(self, traceback.format_exc())
-
-    def post(self, course, assignment):
-        try:
-            show = self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
-            user_info = self.get_user_info()
-            start_time = self.get_body_argument("start_time")
-            content.set_user_assignment_start_time(course, assignment, user_info["user_id"], start_time)
-
-            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=content.get_exercises(course, assignment, show), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_user_assignment_start_time(course, assignment, user_info["user_id"]), user_info=user_info)
         except Exception as inst:
-            render_error(self, traceback.format_exc())
+        render_error(self, traceback.format_exc())
+
+def post(self, course, assignment):
+    try:
+        show = self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
+        user_info = self.get_user_info()
+        start_time = self.get_body_argument("start_time")
+        content.set_user_assignment_start_time(course, assignment, user_info["user_id"], start_time)
+
+        self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=content.get_exercises(course, assignment, show), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_user_assignment_start_time(course, assignment, user_info["user_id"]), user_info=user_info)
+    except Exception as inst:
+        render_error(self, traceback.format_exc())
 
 class EditAssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
@@ -768,7 +768,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
-            assignment_details["allowed_ip_addresses"] = []
+            assignment_details["allowed_ip_addresses"] = None
             if self.get_body_argument("access_restricted") == "Yes":
                 assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").strip().split(",")
                 assignment_details["allowed_ip_addresses"][:] = [x for x in assignment_details["allowed_ip_addresses"] if x != "" and x != ","]
@@ -975,38 +975,38 @@ class EditExerciseHandler(BaseUserHandler):
                         #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', exercise_basics["title"]):
                         #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                         #else:
-                            if new_files:
-                                data_files = {}
-                                total_size = 0
+                        if new_files:
+                            data_files = {}
+                            total_size = 0
 
-                                #create data_files dictionary
-                                for fileInput, fileContents in new_files.items():
-                                    for i in range(len(fileContents)):
-                                        data_files[fileContents[i]["filename"]] = fileContents[i]["body"].decode("utf-8")
-                                        total_size += len(fileContents[i]["body"])
+                            #create data_files dictionary
+                            for fileInput, fileContents in new_files.items():
+                                for i in range(len(fileContents)):
+                                    data_files[fileContents[i]["filename"]] = fileContents[i]["body"].decode("utf-8")
+                                    total_size += len(fileContents[i]["body"])
 
-                                exercise_details["data_files"].update(data_files)
+                            exercise_details["data_files"].update(data_files)
 
-                                # Make sure total file size is not larger than 10 MB across all files.
-                                if total_size > 10 * 1024 * 1024:
-                                    result = f"Error: Your total file size is too large ({total_size} bytes)."
+                            # Make sure total file size is not larger than 10 MB across all files.
+                            if total_size > 10 * 1024 * 1024:
+                                result = f"Error: Your total file size is too large ({total_size} bytes)."
 
-                            if not result.startswith("Error:"):
-                                content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
-                                content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now())
+                        if not result.startswith("Error:"):
+                            content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
+                            content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now())
 
-                                text_output, image_output = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                            text_output, image_output = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
-                                if not any_response_counts and text_output == "" and image_output == "":
-                                    result = f"Error: No output was produced."
-                                else:
-                                    exercise_details["expected_text_output"] = text_output.strip()
-                                    exercise_details["expected_image_output"] = image_output
-                                    exercise = content.save_exercise(exercise_basics, exercise_details)
+                            if not any_response_counts and text_output == "" and image_output == "":
+                                result = f"Error: No output was produced."
+                            else:
+                                exercise_details["expected_text_output"] = text_output.strip()
+                                exercise_details["expected_image_output"] = image_output
+                                exercise = content.save_exercise(exercise_basics, exercise_details)
 
-                                    exercise_basics = content.get_exercise_basics(course, assignment, exercise)
-                                    exercise_details = content.get_exercise_details(course, assignment, exercise)
-                                    exercise_details["expected_text_output"] = format_output_as_html(text_output)
+                                exercise_basics = content.get_exercise_basics(course, assignment, exercise)
+                                exercise_details = content.get_exercise_details(course, assignment, exercise)
+                                exercise_details["expected_text_output"] = format_output_as_html(text_output)
 
             exercises = content.get_exercises(course, assignment)
             next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
