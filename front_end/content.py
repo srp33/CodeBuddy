@@ -1416,8 +1416,7 @@ class Content:
 
     def save_assignment(self, assignment_basics, assignment_details):
         # clean and join allowed_ip_addresses
-        if "," in assignment_details["allowed_ip_addresses"]:
-            assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
+        assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
         if assignment_details["allowed_ip_addresses"] == "":
             assignment_details["allowed_ip_addresses"] = None
         print(assignment_details["allowed_ip_addresses"])

@@ -250,7 +250,7 @@
         <p><strong>Restrict assignment access to the following IP addresses: </strong></br>Separate valid addresses by a comma without spaces.</p>
         <div class="select is-grey">
             <select id="access_restricted" onchange="showValidIPAddresses(this.value)" name="access_restricted" class="edit-select">
-                {% if len(assignment_details["allowed_ip_addresses"]) != 0 %}
+                {% if assignment_details["allowed_ip_addresses"] is not None %}
                 <option value="Yes" selected>Yes</option>
                 <option value="No">No</option>
                 {% else %}
@@ -260,7 +260,7 @@
             </select>
         </div>
         {% if assignment_details["allowed_ip_addresses"] is not None %}
-        <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if "allowed_ip_addresses" in assignment_details.keys() %}{% for i in range(len(assignment_details["allowed_ip_addresses"])) %}{{ assignment_details["allowed_ip_addresses"][i] }},{% end %}{% end %}</textarea>
+        <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if "allowed_ip_addresses" in assignment_details.keys() %}{% for address in assignment_details["allowed_ip_addresses"] %}{{ address }},{% end %}{% end %}</textarea>
         {% end %}
     </div>
     <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
