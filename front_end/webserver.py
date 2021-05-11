@@ -909,7 +909,6 @@ class ExerciseHandler(BaseUserHandler):
 
             if assignment_details["allowed_ip_addresses"] is not None and client_ip not in assignment_details[
                 "allowed_ip_addresses"]:
-                continue
                 """
                 self.render("unavailable_assignment.html", courses=content.get_courses(),
                             assignments=content.get_assignments(course),
