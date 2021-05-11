@@ -1416,9 +1416,12 @@ class Content:
 
     def save_assignment(self, assignment_basics, assignment_details):
         # clean and join allowed_ip_addresses
-        allowed_ip_addresses_string = ",".join(assignment_details["allowed_ip_addresses"])
-        if allowed_ip_addresses_string == "":
-            allowed_ip_addresses_string = None
+        if "," in assignment_details["allowed_ip_addresses"]:
+            assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
+        if assignment_details["allowed_ip_addresses"] == "":
+            assignment_details["allowed_ip_addresses"] = None
+        print(assignment_details["allowed_ip_addresses"])
+
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
                      SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, enable_help_requests = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, allowed_ip_addresses = ?
