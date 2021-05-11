@@ -259,7 +259,7 @@
                 {% end %}
             </select>
         </div>
-        {% if assignment_details["allowed_ip_addresses"] is not None %}
+        {% if len(assignment_details["allowed_ip_addresses"]) != 0 %}
         <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if "allowed_ip_addresses" in assignment_details.keys() %}{% for address in assignment_details["allowed_ip_addresses"] %}{{ address }},{% end %}{% end %}</textarea>
         {% end %}
     </div>
