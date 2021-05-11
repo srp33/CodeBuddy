@@ -1416,10 +1416,9 @@ class Content:
 
     def save_assignment(self, assignment_basics, assignment_details):
         # clean and join allowed_ip_addresses
-        allowed_ip_addresses_string = ",".join(assignment_details["allowed_ip_addresses"])
-        if allowed_ip_addresses_string == "":
-            allowed_ip_addresses_string = None
-        assignment_details["allowed_ip_addresses"] = allowed_ip_addresses_string
+        assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
+        if assignment_details["allowed_ip_addresses"] == "":
+            assignment_details["allowed_ip_addresses"] = None
 
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
@@ -1436,6 +1435,8 @@ class Content:
             assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["allowed_ip_addresses"]])
 
             assignment_basics["exists"] = True
+
+        assignment_details["allowed_ip_addresses"] = assignment_details["allowed_ip_addresses"].strip().split(",")
 
         return assignment_basics["id"]
 
