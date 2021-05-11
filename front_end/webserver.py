@@ -907,8 +907,7 @@ class ExerciseHandler(BaseUserHandler):
             if help_request and not help_request["approved"]:
                 same_suggestion = content.get_same_suggestion(help_request)
 
-            if assignment_details["allowed_ip_addresses"] is not None and client_ip not in assignment_details[
-                "allowed_ip_addresses"] and not self.is_administrator():
+            if assignment_details["allowed_ip_addresses"] is not None and client_ip not in assignment_details["allowed_ip_addresses"] and not self.is_administrator():
                 self.render("unavailable_assignment.html", courses=content.get_courses(),
                             assignments=content.get_assignments(course),
                             course_basics=content.get_course_basics(course),
