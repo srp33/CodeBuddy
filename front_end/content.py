@@ -834,7 +834,7 @@ class Content:
 
         return score
 
-    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, new_score, pair_programming_partner_id=None):
+    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, new_score, partner_id=None):
         score = self.get_exercise_score(course_id, assignment_id, exercise_id, user_id)
 
         if score != None:
@@ -852,8 +852,8 @@ class Content:
                      VALUES (?, ?, ?, ?, ?)'''
 
             self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
-        if pair_programming_partner_id is not None:
-            self.save_exercise_score(course_id, assignment_id, exercise_id, pair_programming_partner_id, new_score)
+        if partner_id:
+            self.save_exercise_score(course_id, assignment_id, exercise_id, partner_id, new_score)
 
     def get_submissions_basic(self, course_id, assignment_id, exercise_id, user_id):
         submissions = []
@@ -1265,7 +1265,7 @@ class Content:
             return self.get_submission_info(course, assignment, exercise, user, last_submission_id)
 
     def get_submission_info(self, course, assignment, exercise, user, submission):
-        sql = '''SELECT code, text_output, image_output, passed, date, pair_programming_partner_id
+        sql = '''SELECT code, text_output, image_output, passed, date, partner_id
                  FROM submissions
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -1275,7 +1275,7 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
 
-        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "pair_programming_partner_id": row["pair_programming_partner_id"]}
+        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"]}
 
     def get_course_details(self, course, format_output=False):
         if not course:
@@ -1464,15 +1464,15 @@ class Content:
 
         return exercise_basics["id"]
 
-    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, pair_programming_partner=None):
+    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, partner_id=None):
         submission_id = self.get_next_submission_id(course, assignment, exercise, user)
-        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date, pair_programming_partner_id)
+        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date, partner_id)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), pair_programming_partner])
-        if pair_programming_partner is not None:
-            submission_id = self.get_next_submission_id(course, assignment, exercise, pair_programming_partner)
-            self.execute(sql, [int(course), int(assignment), int(exercise), pair_programming_partner, int(submission_id), code, text_output, image_output, passed, datetime.now(), user])
+        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), partner_id])
+        if partner_id:
+            submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
+            self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user])
 
         return submission_id
 
