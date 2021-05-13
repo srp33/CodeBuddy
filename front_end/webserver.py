@@ -1122,10 +1122,8 @@ class SubmitHandler(BaseUserHandler):
         try:
             user_id = self.get_user_id()
             pair_programming = self.get_body_argument("pair_programming") == "Yes"
-            if pair_programming:
-                pair_programming_id = self.get_body_argument("pair_programming_partner")
-            else:
-                pair_programming_id = None
+            partner_id = self.get_body_argument("partner_id") if pair_programming else None
+
             code = self.get_body_argument("user_code").replace("\r", "")
             exercise_basics = content.get_exercise_basics(course, assignment, exercise)
             exercise_details = content.get_exercise_details(course, assignment, exercise)
@@ -1139,12 +1137,12 @@ class SubmitHandler(BaseUserHandler):
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
 
-            out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, pair_programming_id)
+            out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, partner_id)
 
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
             new_score = content.calc_exercise_score(assignment_details, passed)
             if (not exercise_score or exercise_score < new_score):
-                content.save_exercise_score(course, assignment, exercise, user_id, new_score, pair_programming_id)
+                content.save_exercise_score(course, assignment, exercise, user_id, new_score, partner_id)
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
             out_dict["passed"] = False
