@@ -1304,8 +1304,8 @@ class Content:
 
         assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
 
-        if assignment_dict["allowed_ip_addresses"] is not None:
-            assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].strip().split(",")
+        if assignment_dict["allowed_ip_addresses"]:
+            assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].split(",")
 
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
@@ -1434,8 +1434,8 @@ class Content:
 
             assignment_basics["exists"] = True
 
-        #return allowed_ip_addresses to list
-        assignment_details["allowed_ip_addresses"] = assignment_details["allowed_ip_addresses"].strip().split(",")
+        # return allowed_ip_addresses to list
+        assignment_details["allowed_ip_addresses"] = assignment_details["allowed_ip_addresses"].split(",")
 
         return assignment_basics["id"]
 
