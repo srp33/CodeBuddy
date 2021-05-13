@@ -959,6 +959,7 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["show_test_code"] = self.get_body_argument("show_test_code") == "Yes"
             exercise_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             exercise_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
+            exercise_details["enable_pair_programming"] = self.got_body_argument("enable_pair_programming") == "Yes"
 
             old_files = self.get_body_argument("file_container")
             new_files = self.request.files

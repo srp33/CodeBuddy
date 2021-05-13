@@ -1,3 +1,3 @@
-ALTER TABLE assignments ADD COLUMN enable_pair_programming integer NOT NULL DEFAULT 0;
+ALTER TABLE exercises ADD COLUMN enable_pair_programming integer NOT NULL DEFAULT 0;
 
-ALTER TABLE submissions ADD COLUMN pair_programming_partner_id text DEFAULT NULL;
+ALTER TABLE submissions ADD COLUMN partner_id text DEFAULT NULL;

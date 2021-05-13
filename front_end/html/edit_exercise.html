@@ -290,7 +290,23 @@
                 </div>
             </div>
 
-            <div class="row-container bottom-space">  
+            <div class="shadow-box">
+                <p><strong>Enable pair programming for exercises in this assignment: </strong>
+                    <div class="select is-grey">
+                        <select id="enable_pair_programming" name="enable_pair_programming" class="edit-select">
+                        {% if assignment_details["enable_pair_programming"] %}
+                            <option value="Yes" selected>Yes</option>
+                            <option value="No">No</option>
+                        {% else %}
+                            <option value="Yes">Yes</option>
+                            <option value="No" selected>No</option>
+                        {% end %}
+                        </select>
+                    </div>
+                </p>
+            </div>
+
+            <div class="row-container bottom-space">
                 <div>
                     <p><strong>Maximum # of submissions:</strong></p>
                     <p>
