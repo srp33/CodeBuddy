@@ -641,7 +641,6 @@ class Content:
                  ORDER BY title'''
 
         assignment_statuses = []
-
         for row in self.fetchall(sql, (user_id, int(course_id),)):
             assignment_dict = {"id": row["assignment_id"], "title": row["title"], "start_date": row["start_date"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_exercises": row["num_exercises"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
             assignment_statuses.append([row["assignment_id"], assignment_dict])
@@ -1153,7 +1152,6 @@ class Content:
         else:
             assignment_details["date_created"] = date_updated
 
-
     def specify_exercise_basics(self, exercise_basics, title, visible):
         exercise_basics["title"] = title
         exercise_basics["visible"] = visible
@@ -1298,7 +1296,7 @@ class Content:
 
     def get_assignment_details(self, course, assignment, format_output=False):
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "allowed_ip_addresses": [], "enable_pair_programming": False}
+            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "allowed_ip_addresses": None, "enable_pair_programming": False}
 
         sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, allowed_ip_addresses, enable_pair_programming, has_timer, hour_timer, minute_timer
                  FROM assignments
@@ -1311,10 +1309,8 @@ class Content:
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
 
-        if assignment_dict["allowed_ip_addresses"] is None:
-            assignment_dict["allowed_ip_addresses"] = []
-        else:
-            assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].strip().split(",")
+        if assignment_dict["allowed_ip_addresses"]:
+            assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].split(",")
 
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
@@ -1423,10 +1419,9 @@ class Content:
 
     def save_assignment(self, assignment_basics, assignment_details):
         # clean and join allowed_ip_addresses
-        assignment_details["allowed_ip_addresses"][:] = [x for x in assignment_details["allowed_ip_addresses"] if x != "" and x != ","]
-        allowed_ip_addresses_string = ",".join(assignment_details["allowed_ip_addresses"])
-        if allowed_ip_addresses_string == "":
-            allowed_ip_addresses_string = None
+        assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
+        if assignment_details["allowed_ip_addresses"] == "":
+            assignment_details["allowed_ip_addresses"] = None
 
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
@@ -1434,15 +1429,18 @@ class Content:
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], allowed_ip_addresses_string, assignment_details["enable_pair_programming"], assignment_basics["course"]["id"], assignment_basics["id"]])
-
+            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["allowed_ip_addresses"], assignment_details["enable_pair_programming"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses, enable_pair_programming)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], allowed_ip_addresses_string, assignment_details["enable_pair_programming"]])
+            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["allowed_ip_addresses"], assignment_details["enable_pair_programming"]])
 
             assignment_basics["exists"] = True
+
+        # return allowed_ip_addresses to list
+        if assignment_details["allowed_ip_addresses"]:
+            assignment_details["allowed_ip_addresses"] = assignment_details["allowed_ip_addresses"].split(",")
 
         return assignment_basics["id"]
 
