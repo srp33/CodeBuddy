@@ -767,8 +767,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
-            assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").split(",")
-            assignment_details["allowed_ip_addresses"] = [x.strip() for x in assignment_details["allowed_ip_addresses"] if x != "" and x != ","]
+            assignment_details["allowed_ip_addresses"] = [x.strip() for x in self.get_body_argument("allowed_ip_addresses").split(",") if x != "" and x != ","]
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
@@ -824,7 +823,6 @@ class EditAssignmentHandler(BaseUserHandler):
                         if assignment_details["start_date"] and assignment_details["due_date"] and assignment_details["start_date"] > assignment_details["due_date"]:
                             result = "Error: The start date must be earlier than the due date."
                         else:
-                            #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', title):
                             #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
                             #else:
                             #content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
