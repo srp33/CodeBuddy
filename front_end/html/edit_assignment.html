@@ -248,12 +248,9 @@
     </div>
 
     <div class="shadow-box">
-        <p><strong>Restrict assignment access to the following IP addresses: </strong>Separate valid addresses by a comma without spaces. If left blank, the assignment will not be restricted by IP address.</p>
-
-        {% if assignment_details["allowed_ip_addresses"] %}
-        <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline"> {% if "allowed_ip_addresses" in assignment_details.keys() %} {{ ",".join(assignment_details["allowed_ip_addresses"]) }} {% end %}</textarea>
+        <p><strong>Restrict assignment access to the following IP addresses: </strong><br />Separate valid addresses by a comma without spaces. If left blank, the assignment will not be restricted by IP address.</p>
+        <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if "allowed_ip_addresses" in assignment_details.keys() %}{{ ",".join(assignment_details["allowed_ip_addresses"]) }}{% end %}</textarea>
         <!-- {% for address in assignment_details["allowed_ip_addresses"] %}{{ address }},{% end %} -->
-        {% end %}
     </div>
 
     <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
