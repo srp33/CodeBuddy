@@ -10,6 +10,6 @@ a_run_front_end
 a_run_middle_layer
 nohup*
 secret*
-1_middle_layer
-2_front_end
+1_*
+2_*
 .idea
