@@ -1120,7 +1120,6 @@ class SubmitHandler(BaseUserHandler):
         try:
             user_id = self.get_user_id()
             partner_id = self.get_body_argument("partner_id")
-
             code = self.get_body_argument("user_code").replace("\r", "")
             exercise_basics = content.get_exercise_basics(course, assignment, exercise)
             exercise_details = content.get_exercise_details(course, assignment, exercise)
@@ -1133,7 +1132,6 @@ class SubmitHandler(BaseUserHandler):
             out_dict["image_output"] = image_output
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
-
             out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, partner_id)
 
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
