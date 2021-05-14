@@ -210,7 +210,7 @@
 
         </script>
 
-        <!--The next four divs contain all of the modals for this page-->
+        <!--The next five divs contain all of the modals for this page-->
           
         <div id="time_modal" class="modal">
             <div class="modal-content">
@@ -250,17 +250,6 @@
             </div>
         </div>
 
-        <div id="submit_exercise_modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <p id="confirm_submit"></p>
-                <p class="buttons">
-                    <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
-                    <a id="modal_submit_button" class="modal-button button is-dark">Delete</a>
-                </p>
-            </div>
-        </div>
-
         <div id="matching_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
@@ -281,6 +270,42 @@
                 <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["student_comment"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
                 <br><p>Instructor's suggestion:</p>
                 <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
+            </div>
+        </div>
+
+        <div id="submit_exercise_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="confirm_submit"></p>
+                {% if exercise_details["enable_pair_programming"] %}
+                    <div class="shadow-box">
+                        <h6 style="display:inline">Using Pair Programming:</h6>
+                            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
+                                <i class="far fa-question-circle"></i>
+                            </label></br>
+
+                            <div class="select is-grey" >
+                                <select onchange="showUsers(this.value)" id="pair_programming" name="pair_programming" class="edit-select">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No" selected>No</option>
+                                </select>
+                            </div>
+
+                            <div class="select is-grey" id="pair_programming_partner_div" style="display:none">
+                                <select  name="partner_id" id="partner_id" class="edit-select" style="margin-top:15px">
+                                    {% for user in users %}
+                                        <option value={{user[0]}} selected>{{ user[1]["name"] }}</option>
+                                    {% end %}
+                                </select>
+                            </div>
+                        </p>
+                    </div>
+                {% end %}
+
+                <p class="buttons">
+                    <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
+                    <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
+                </p>
             </div>
         </div>
 
@@ -411,30 +436,6 @@
             </p>
         </div>
 
-        {% if exercise_details["enable_pair_programming"] %}
-        <div class="shadow-box">
-            <h6 style="display:inline">Using Pair Programming:</h6>
-                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
-                    <i class="far fa-question-circle"></i>
-                </label></br>
-
-                <div class="select is-grey" >
-                    <select onchange="showUsers(this.value)" id="pair_programming" name="pair_programming" class="edit-select">
-                        <option value="Yes">Yes</option>
-                        <option value="No" selected>No</option>
-                    </select>
-                </div>
-
-                <div class="select is-grey" id="pair_programming_partner_div" style="display:none">
-                    <select  name="partner_id" id="partner_id" class="edit-select" style="margin-top:15px">
-                        {% for user in users %}
-                            <option value={{user[0]}} selected>{{ user[1]["name"] }}</option>
-                        {% end %}
-                    </select>
-                </div>
-            </p>
-        </div>
-        {% end %}
 
         <div>
             {% if exercise_details["max_submissions"] > 0 %}
