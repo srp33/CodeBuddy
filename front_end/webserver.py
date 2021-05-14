@@ -1121,8 +1121,7 @@ class SubmitHandler(BaseUserHandler):
 
         try:
             user_id = self.get_user_id()
-            pair_programming = self.get_body_argument("pair_programming") == "Yes"
-            partner_id = self.get_body_argument("partner_id") if pair_programming else None
+            partner_id = self.get_body_argument("partner_id")
 
             code = self.get_body_argument("user_code").replace("\r", "")
             exercise_basics = content.get_exercise_basics(course, assignment, exercise)
