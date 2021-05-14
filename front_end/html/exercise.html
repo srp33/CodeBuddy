@@ -198,13 +198,13 @@
                     data_button.innerHTML = "Show";
                 }
             }
-            function showUsers(yes) {
-                var pair_programming_partner_div = document.getElementById("pair_programming_partner_div");
-                if (yes == "Yes") {
-                   pair_programming_partner_div.style.display = "inline";
+            function showUsers(selection) {
+                var partner_selection = document.getElementById("partner_selection");
+                if (selection == "Yes") {
+                    partner_selection.style.display = "inline";
                 }
                 else {
-                    pair_programming_partner_div.style.display = "none";
+                    partner_selection.style.display = "none";
                 }
             }
 
@@ -289,7 +289,7 @@
                     </select>
                 </div>
 
-                <div class="select is-grey" id="pair_programming_partner_div" style="display:none">
+                <div class="select is-grey" id="partner_selection" style="display:none">
                     {% if users %}
                     <select  name="partner_id" id="partner_id" class="edit-select" style="margin-top:15px">
                         {% for user in users %}
