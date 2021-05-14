@@ -126,6 +126,24 @@
                         </div>
                     </p>
                 </div>
+
+                <div class="row-container bottom-space">
+                    <div>
+                        <p><strong>Enable pair programming for this exercise: </strong>
+                            <div class="select is-grey">
+                                <select id="enable_pair_programming" name="enable_pair_programming" class="edit-select">
+                                {% if exercise_details["enable_pair_programming"] %}
+                                    <option value="Yes" selected>Yes</option>
+                                    <option value="No">No</option>
+                                {% else %}
+                                    <option value="Yes">Yes</option>
+                                    <option value="No" selected>No</option>
+                                {% end %}
+                                </select>
+                            </div>
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div class="top-space">
@@ -290,23 +308,6 @@
                 </div>
             </div>
 
-            <div class="row-container bottom-space">
-                <div>
-                    <p><strong>Enable pair programming for this exercise: </strong>
-                        <div class="select is-grey">
-                            <select id="enable_pair_programming" name="enable_pair_programming" class="edit-select">
-                            {% if exercise_details["enable_pair_programming"] %}
-                                <option value="Yes" selected>Yes</option>
-                                <option value="No">No</option>
-                            {% else %}
-                                <option value="Yes">Yes</option>
-                                <option value="No" selected>No</option>
-                            {% end %}
-                            </select>
-                        </div>
-                    </p>
-                </div>
-            </div>
 
             <div class="row-container bottom-space">
                 <div>
