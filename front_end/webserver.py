@@ -910,6 +910,7 @@ class ExerciseHandler(BaseUserHandler):
                             user_info=user_info)
             else:
                 users = content.get_registered_students(course)
+                print(users)
                 for user in users:
                     if user[0] == self.get_user_id():
                         users.remove(user)
