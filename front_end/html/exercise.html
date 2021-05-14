@@ -290,11 +290,15 @@
                 </div>
 
                 <div class="select is-grey" id="pair_programming_partner_div" style="display:none">
+                    {% if users %}
                     <select  name="partner_id" id="partner_id" class="edit-select" style="margin-top:15px">
                         {% for user in users %}
-                            <option value={{user["id"]}} selected>{{ user["name"] }}</option>
+                            <option value={{ user["id"] }}>{{ user["name"] }}</option>
                         {% end %}
                     </select>
+                    {% else %}
+                    <p>There are no other registered students in this course.</p>
+                    {% end %}
                 </div>
 
                 <p class="buttons">
