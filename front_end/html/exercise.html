@@ -292,7 +292,7 @@
                 <div class="select is-grey" id="pair_programming_partner_div" style="display:none">
                     <select  name="partner_id" id="partner_id" class="edit-select" style="margin-top:15px">
                         {% for user in users %}
-                            <option value={{user[0]}} selected>{{ user[1]["name"] }}</option>
+                            <option value={{user["id"]}} selected>{{ user["name"] }}</option>
                         {% end %}
                     </select>
                 </div>
