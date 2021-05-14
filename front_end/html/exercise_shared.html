@@ -264,8 +264,7 @@
                         }
 
                         $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                            post_data,
-                            function(data, status) {
+                            post_data, function(data, status) {
                                 json_data = JSON.parse(data);
                                 check_code(json_data);
 
@@ -280,25 +279,25 @@
                                         document.getElementById("submit_button").disabled = true;
                                     {% end %}
                                 }
-                            });
-                            editor.focus();
-                            return false;
-                        }
+                        });
+                    editor.focus();
+                    return false;
+                    }
 
-                        modal.style.display = "none";
-                        location.reload();
+                    modal.style.display = "none";
+                    location.reload();
 
                     cancelButton.onclick = function() {
-                        modal.style.display = "none";
+                    modal.style.display = "none";
                     }
 
                     span.onclick = function() {
-                        modal.style.display = "none";
+                    modal.style.display = "none";
                     }
 
                     window.onclick = function(event) {
                         if (event.target == modal) {
-                        modal.style.display = "none";
+                            modal.style.display = "none";
                         }
                     }
                 }
