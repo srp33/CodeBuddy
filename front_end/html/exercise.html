@@ -278,11 +278,11 @@
                 <span class="close">&times;</span>
                 <p id="confirm_submit"></p>
                 {% if exercise_details["enable_pair_programming"] %}
-                    <div class="shadow-box">
+                    <div class="modal-content">
                         <h6 style="display:inline">Using Pair Programming:</h6>
                             <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
                                 <i class="far fa-question-circle"></i>
-                            </label></br>
+                            </label><br />
 
                             <div class="select is-grey" >
                                 <select onchange="showUsers(this.value)" id="pair_programming" name="pair_programming" class="edit-select">
