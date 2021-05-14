@@ -1138,6 +1138,7 @@ class SubmitHandler(BaseUserHandler):
             new_score = content.calc_exercise_score(assignment_details, passed)
             if (not exercise_score or exercise_score < new_score):
                 content.save_exercise_score(course, assignment, exercise, user_id, new_score, partner_id)
+
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
             out_dict["passed"] = False

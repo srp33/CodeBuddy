@@ -1515,7 +1515,6 @@ class Content:
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
 
     def copy_assignment(self, course_id, assignment_id, new_course_id):
-
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses)
                  SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses
                  FROM assignments
@@ -1631,10 +1630,6 @@ class Content:
         self.execute('''DELETE FROM assignments
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
-
-        self.execute('''DELETE FROM valid_ip_addresses
-                                WHERE course_id = ?
-                                  AND assignment_id = ?''', (course_id, assignment_id,))
 
     def delete_course(self, course_basics):
         course_id = course_basics["id"]

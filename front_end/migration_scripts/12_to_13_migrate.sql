@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS presubmissions (
                                         FOREIGN KEY (problem_id) REFERENCES problems2 (problem_id) ON DELETE CASCADE,
                                         FOREIGN KEY (user_id) REFERENCES users2 (user_id) ON DELETE CASCADE,
                                         PRIMARY KEY (course_id, assignment_id, problem_id, user_id)
-                                      );
+                                        );
