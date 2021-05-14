@@ -277,30 +277,27 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <p id="confirm_submit"></p>
-                {% if exercise_details["enable_pair_programming"] %}
-                    <div class="modal-content">
-                        <h6 style="display:inline">Using Pair Programming:</h6>
-                            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
-                                <i class="far fa-question-circle"></i>
-                            </label><br />
+                    <h6 style="display:inline">Using Pair Programming:</h6>
+                        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
+                            <i class="far fa-question-circle"></i>
+                        </label><br />
 
-                            <div class="select is-grey" >
-                                <select onchange="showUsers(this.value)" id="pair_programming" name="pair_programming" class="edit-select">
-                                    <option value="Yes">Yes</option>
-                                    <option value="No" selected>No</option>
-                                </select>
-                            </div>
+                        <div class="select is-grey" >
+                            <select onchange="showUsers(this.value)" id="pair_programming" name="pair_programming" class="edit-select">
+                                <option value="Yes">Yes</option>
+                                <option value="No" selected>No</option>
+                            </select>
+                        </div>
 
-                            <div class="select is-grey" id="pair_programming_partner_div" style="display:none">
-                                <select  name="partner_id" id="partner_id" class="edit-select" style="margin-top:15px">
-                                    {% for user in users %}
-                                        <option value={{user[0]}} selected>{{ user[1]["name"] }}</option>
-                                    {% end %}
-                                </select>
-                            </div>
-                        </p>
+                        <div class="select is-grey" id="pair_programming_partner_div" style="display:none">
+                            <select  name="partner_id" id="partner_id" class="edit-select" style="margin-top:15px">
+                                {% for user in users %}
+                                    <option value={{user[0]}} selected>{{ user[1]["name"] }}</option>
+                                {% end %}
+                            </select>
+                        </div>
                     </div>
-                {% end %}
+                </div>
 
                 <p class="buttons">
                     <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
@@ -424,7 +421,7 @@
                 <a class="button is-medium is-primary" onclick='run_code()'>Run</a>
             {% end %}
 
-            <a class="button is-medium is-dark" onclick='submit()' id='submit_button'>Submit</a>
+            <a class="button is-medium is-dark" id='submit_button'>Submit</a>
 
             {% if exercise_details["back_end"] == "any_response" %}
                 <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'.">
