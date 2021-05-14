@@ -256,7 +256,7 @@
                 <p id="confirm_submit"></p>
                 <p class="buttons">
                     <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
-                    <a id="submit_button" class="modal-button button is-dark">Delete</a>
+                    <a id="modal_submit_button" class="modal-button button is-dark">Delete</a>
                 </p>
             </div>
         </div>
@@ -399,7 +399,7 @@
                 <a class="button is-medium is-primary" onclick='run_code()'>Run</a>
             {% end %}
 
-            <a class="button is-medium is-dark" onclick='submit()'>Submit</a>
+            <a class="button is-medium is-dark" onclick='submit()' id='submit_button'>Submit</a>
 
             {% if exercise_details["back_end"] == "any_response" %}
                 <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'.">
