@@ -224,56 +224,86 @@
                 }
 
                 function submit() {
-                    user_code = editor.getValue();
 
-                    if (user_code.trim() == "")
-                        return false;
-                    let pair_programming = "No"
+                    var modal = document.getElementById("submit_exercise_modal");
+                    var span = document.getElementsByClassName("close")[0];
 
-                    pair_programming = document.getElementById("pair_programming").value
-                    if (pair_programming == "Yes") {
-                        partner_id = document.getElementById("partner_id").value
-                    }
-                    result_div = document.getElementById("result");
-                    result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
-                    result_div.scrollIntoView();
+                    modal.style.display = "block";
 
-                    {% if exercise_details["back_end"] != "any_response" %}
-                        document.getElementById("code_output").innerHTML = "";
+                    var cancelButton = document.getElementById("submit_cancel_button");
+                    var submitButton = document.getElementById("submit_button");
 
-                        {% if exercise_details["show_expected"] %}
-                            document.getElementById("diff_output").innerHTML = "";
+                    submitButton.onclick = function() {
+                        user_code = editor.getValue();
+
+                        if (user_code.trim() == "")
+                            return false;
+                        let pair_programming = "No"
+
+                        pair_programming = document.getElementById("pair_programming").value
+                        if (pair_programming == "Yes") {
+                            partner_id = document.getElementById("partner_id").value
+                        }
+                        result_div = document.getElementById("result");
+                        result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
+                        result_div.scrollIntoView();
+
+                        {% if exercise_details["back_end"] != "any_response" %}
+                            document.getElementById("code_output").innerHTML = "";
+
+                            {% if exercise_details["show_expected"] %}
+                                document.getElementById("diff_output").innerHTML = "";
+                            {% end %}
                         {% end %}
-                    {% end %}
 
-                    if (pair_programming == "No") {
-                        post_data = { "user_code": user_code, "pair_programming": pair_programming, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
+                        if (pair_programming == "No") {
+                            post_data = { "user_code": user_code, "pair_programming": pair_programming, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
+                        }
+                        else {
+                            post_data = { "partner_id": partner_id,"user_code": user_code, "pair_programming": pair_programming, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
+                        }
+
+                        $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                            post_data,
+                            function(data, status) {
+                                json_data = JSON.parse(data);
+                                check_code(json_data);
+
+                                if (json_data.submission_id != "") {
+                                    show_past_submissions();
+                                    last_submission_id = json_data.submission_id;
+
+                                    {% if exercise_details["max_submissions"] > 0 %}
+                                    document.getElementById("num_submissions").innerHTML = last_submission_id;
+
+                                    if (last_submission_id >= {{ exercise_details["max_submissions"] }})
+                                        document.getElementById("submit_button").disabled = true;
+                                    {% end %}
+                                }
+                            });
+                            editor.focus();
+                            return false;
+                        }
+
+                        modal.style.display = "none";
+                        location.reload();
                     }
-                    else {
-                        post_data = { "partner_id": partner_id,"user_code": user_code, "pair_programming": pair_programming, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
                     }
 
-                    $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                        post_data,
-                        function(data, status) {
-                            json_data = JSON.parse(data);
-                            check_code(json_data);
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
 
-                            if (json_data.submission_id != "") {
-                                show_past_submissions();
-                                last_submission_id = json_data.submission_id;
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                        modal.style.display = "none";
+                        }
+                    }
+                }
 
-                                {% if exercise_details["max_submissions"] > 0 %}
-                                document.getElementById("num_submissions").innerHTML = last_submission_id;
-
-                                if (last_submission_id >= {{ exercise_details["max_submissions"] }})
-                                    document.getElementById("submit_button").disabled = true;
-                                {% end %}
-                            }
-                        });
-
-                    editor.focus();
-                    return false;
                 }
 
                 function get_submission(submission_id, scroll) {
