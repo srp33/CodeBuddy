@@ -19,6 +19,7 @@ import string
 import subprocess
 import sys
 import time
+from tornado.web import RequestHandler
 import uuid
 import yaml
 from yaml import load
@@ -233,3 +234,8 @@ def get_list_of_dates():
 
 def convert_string_to_date(s):
     return datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f")
+
+def get_client_ip_address(request):
+    return request.headers.get("X-Real-IP") or \
+           request.headers.get("X-Forwarded-For") or \
+           request.remote_ip
