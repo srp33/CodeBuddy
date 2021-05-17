@@ -132,6 +132,24 @@
                 <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
                 <p><textarea name="instructions" class="textarea is-grey is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ exercise_details["instructions"] }}</textarea></p>
             </div>
+
+            <div class="row-container top-space">
+                <div>
+                    <p><strong>Enable pair programming for this exercise: </strong>
+                        <div class="select is-grey">
+                            <select id="enable_pair_programming" name="enable_pair_programming" class="edit-select">
+                            {% if exercise_details["enable_pair_programming"] %}
+                                <option value="Yes" selected>Yes</option>
+                                <option value="No">No</option>
+                            {% else %}
+                                <option value="Yes">Yes</option>
+                                <option value="No" selected>No</option>
+                            {% end %}
+                            </select>
+                        </div>
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div class="shadow-box">
@@ -140,7 +158,7 @@
                 <br />Please provide a link to the data source(s) if you obtained the dataset from someone else.
             </p>
             <textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ exercise_details["credit"] }}</textarea></p>
-    
+
             <div id="file_upload">
                 <p><strong>Data file(s): </strong>
                     <br />Optionally, you can upload data files that students will use on this exercise. To upload more than one, select multiple files in a single upload or click "Add another file". The maximum total file size is 10 megabytes across all files.
@@ -177,11 +195,11 @@
             <div id="code-output">
             {% if exercise_basics["exists"] %}
                 <p><strong>Output:</strong><br />
-    
+
                 {% if exercise_details["expected_text_output"] != "" %}
                     <p><pre><code>{{ exercise_details["expected_text_output"] }}</code></pre></p>
                 {% end %}
-    
+
                 {% if exercise_details["expected_image_output"] != "" %}
                     <p><figure class='img'><img src='data:image/jpg;base64,{{ exercise_details["expected_image_output"] }}' width='95%' /></figure></p>
                 {% end %}
@@ -245,13 +263,13 @@
 
         <div class="shadow-box">
             <div class="space-div">
-                <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p> 
-                <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>  
+                <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p>
+                <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>
             </div>
 
             <div class="bottom-space">
-                <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p> 
-                <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>  
+                <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p>
+                <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>
             </div>
 
             <div class="row-container bottom-space">
@@ -290,7 +308,7 @@
                 </div>
             </div>
 
-            <div class="row-container bottom-space">  
+            <div class="row-container bottom-space">
                 <div>
                     <p><strong>Maximum # of submissions:</strong></p>
                     <p>
@@ -359,7 +377,7 @@
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
-            } 
+            }
 
             var index = 1;
 
@@ -387,7 +405,7 @@
                 icon.classList.add("fas", "fa-upload");
                 icon_span.appendChild(icon);
                 file_span.appendChild(icon_span);
-                
+
                 var label_span = document.createElement("span");
                 label_span.className = "file-label";
                 label_span.innerHTML = "Choose a file...";
