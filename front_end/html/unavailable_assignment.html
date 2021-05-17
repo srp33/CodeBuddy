@@ -2,19 +2,19 @@
     <h2>{{ assignment_basics["title"] }}</h2>
 
     {% if assignment_basics["exists"] %}
-        
+
         {% if error == "start" %}
             <p>This assignment will open on {{ start_date }}.</p>
         {% elif error == "due" %}
             <p>This assignment closed on {{ due_date }}.</p>
         {% elif error == "restricted_ip" %}
-            <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses; please consult the instructor for additional instructions." </p>
+            <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses; please consult the instructor for additional instructions.</p>
         {% end %}
 
     {% else %}
         <p>This assignment does not exist.</p>
     {% end %}
-    
+
 {% else %}
     <p>This course does not exist.</p>
 {% end %}
