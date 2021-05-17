@@ -58,6 +58,7 @@ def make_app():
         url(r"\/delete_exercise_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteExerciseSubmissionsHandler, name="delete_exercise_submissions"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
+        url(r"\/get_user_name\/([^\/]+)", GetUserNameHandler, name="get_user"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
@@ -1137,7 +1138,14 @@ class SubmitHandler(BaseUserHandler):
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
             new_score = content.calc_exercise_score(assignment_details, passed)
             if (not exercise_score or exercise_score < new_score):
-                content.save_exercise_score(course, assignment, exercise, user_id, new_score, partner_id)
+                content.save_exercise_score(course, assignment, exercise, user_id, new_score)
+
+            # save score for partner
+            if partner_id:
+                partner_exercise_score = content.get_exercise_score(course, assignment, exercise, partner_id)
+                partner_new_score = content.calc_exercise_score(assignment_details, passed)
+                if (not partner_exercise_score or partner_exercise_score < partner_new_score):
+                    content.save_exercise_score(course, assignment, exercise, partner_id, new_score)
 
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
@@ -1178,6 +1186,14 @@ class GetSubmissionHandler(BaseUserHandler):
             submission_info["text_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(submission_info))
+
+class GetUserNameHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            user_name = self.get_user_info()
+        except:
+            user_name = "unknown"
+        self.write(user_name["name"])
 
 class GetSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, user_id):

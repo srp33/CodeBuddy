@@ -834,7 +834,7 @@ class Content:
 
         return score
 
-    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, new_score, partner_id=None):
+    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, new_score):
         score = self.get_exercise_score(course_id, assignment_id, exercise_id, user_id)
 
         if score != None:
@@ -853,13 +853,9 @@ class Content:
 
             self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
 
-        # save exercise score for partner
-        if partner_id:
-            self.save_exercise_score(course_id, assignment_id, exercise_id, partner_id, new_score)
-
     def get_submissions_basic(self, course_id, assignment_id, exercise_id, user_id):
         submissions = []
-        sql = '''SELECT submission_id, date, passed
+        sql = '''SELECT submission_id, date, passed, partner_id
                  FROM submissions
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -868,7 +864,7 @@ class Content:
                  ORDER BY submission_id DESC'''
 
         for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
-            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"]])
+            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], submission["partner_id"]])
         return submissions
 
     def get_student_submissions(self, course_id, assignment_id, exercise_id, user_id):
@@ -1089,7 +1085,7 @@ class Content:
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = '''SELECT s.code, u.user_id, u.name, sc.score, s.passed
+        sql = '''SELECT s.code, u.user_id, u.name, sc.score, s.passed, s.partner_id
                  FROM submissions s
                  INNER JOIN users u
                    ON s.user_id = u.user_id
@@ -1107,11 +1103,16 @@ class Content:
                       FROM course_registrations
                       WHERE course_id = ?
                    )
+                   AND s.date = (SELECT MAX(s2.date)
+                   FROM submissions s2
+                   WHERE s2.user_id = s.user_id)
                  GROUP BY s.user_id
                  ORDER BY u.family_name, u.given_name'''
+                 # above sql changes address the fact that the code was originally returning only the first submission, as opposed to the most recent. I am happy to change this back if that was the intended effect!
 
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
-            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"]}
+            partner_name = self.get_user_info(submission["partner_id"])["name"] if submission["partner_id"] else None
+            submission_info = {"user_id": submission["user_id"],"partner_id": submission["partner_id"] if submission["partner_id"] else None, "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": partner_name}
             exercise_submissions.append([submission["user_id"], submission_info])
 
         return exercise_submissions
