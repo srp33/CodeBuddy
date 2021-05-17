@@ -902,7 +902,7 @@ class ExerciseHandler(BaseUserHandler):
             if help_request and not help_request["approved"]:
                 same_suggestion = content.get_same_suggestion(help_request)
 
-            if assignment_details["allowed_ip_addresses"] and client_ip not in assignment_details["allowed_ip_addresses"] and not self.is_administrator():
+            if assignment_details["allowed_ip_addresses"] and client_ip not in assignment_details["allowed_ip_addresses"] and not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
                 self.render("unavailable_assignment.html", courses=content.get_courses(),
                             assignments=content.get_assignments(course),
                             course_basics=content.get_course_basics(course),
@@ -1155,7 +1155,7 @@ class GetSubmissionHandler(BaseUserHandler):
             user_info = self.get_user_info()
 
             if assignment_details["allowed_ip_addresses"] and client_ip not in assignment_details[
-               "allowed_ip_addresses"] and not self.is_administrator():
+               "allowed_ip_addresses"] and not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
                self.render("unavailable_assignment.html", courses=content.get_courses(),
                            assignments=content.get_assignments(course),
                            course_basics=content.get_course_basics(course),
@@ -1183,7 +1183,7 @@ class GetSubmissionsHandler(BaseUserHandler):
             user_info = self.get_user_info()
 
             if assignment_details["allowed_ip_addresses"] and client_ip not in assignment_details[
-                "allowed_ip_addresses"] and not self.is_administrator():
+                "allowed_ip_addresses"] and not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
                 self.render("unavailable_assignment.html", courses=content.get_courses(),
                             assignments=content.get_assignments(course),
                             course_basics=content.get_course_basics(course),
@@ -1207,7 +1207,7 @@ class ViewAnswerHandler(BaseUserHandler):
             back_end = settings_dict["back_ends"][exercise_details["back_end"]]
 
             if assignment_details["allowed_ip_addresses"] and client_ip not in assignment_details[
-                "allowed_ip_addresses"] and not self.is_administrator():
+                "allowed_ip_addresses"] and not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
                 self.render("unavailable_assignment.html", courses=content.get_courses(),
                             assignments=content.get_assignments(course),
                             course_basics=content.get_course_basics(course),
