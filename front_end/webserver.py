@@ -1188,6 +1188,8 @@ class GetSubmissionHandler(BaseUserHandler):
         self.write(json.dumps(submission_info))
 
 class GetUserNameHandler(BaseUserHandler):
+    # I created this handler because we're storing partner IDs in submissions and I figured we'd want to display pair programming names instead. If for security or any other reasons it's a bad idea to be able to access a student's name from their email I'm happy to brainstorm a new idea!
+
     def get(self, user_id):
         try:
             user_name = self.get_user_info()

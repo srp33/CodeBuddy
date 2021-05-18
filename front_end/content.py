@@ -1112,7 +1112,7 @@ class Content:
 
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
             partner_name = self.get_user_info(submission["partner_id"])["name"] if submission["partner_id"] else None
-            submission_info = {"user_id": submission["user_id"],"partner_id": submission["partner_id"] if submission["partner_id"] else None, "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": partner_name}
+            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": partner_name}
             exercise_submissions.append([submission["user_id"], submission_info])
 
         return exercise_submissions
