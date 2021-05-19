@@ -864,7 +864,8 @@ class Content:
                  ORDER BY submission_id DESC'''
 
         for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
-            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], submission["partner_id"]])
+            partner_name = self.get_user_info(submission["partner_id"])["name"] if submission["partner_id"] else None
+            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], partner_name])
         return submissions
 
     def get_student_submissions(self, course_id, assignment_id, exercise_id, user_id):

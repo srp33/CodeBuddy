@@ -58,7 +58,6 @@ def make_app():
         url(r"\/delete_exercise_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteExerciseSubmissionsHandler, name="delete_exercise_submissions"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
-        url(r"\/get_user_name\/([^\/]+)", GetUserNameHandler, name="get_user"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
@@ -1187,16 +1186,6 @@ class GetSubmissionHandler(BaseUserHandler):
             submission_info["text_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(submission_info))
-
-class GetUserNameHandler(BaseUserHandler):
-    # I created this handler because we're storing partner IDs in submissions and I figured we'd want to display pair programming names instead, so that students aren't viewing each other's emails as options for pair programming. If for security or any other reasons it's a bad idea to be able to access a student's name from their email I'm happy to brainstorm a new idea!
-
-    def get(self, user_id):
-        try:
-            user_name = self.get_user_info()
-        except:
-            user_name = "unknown"
-        self.write(user_name["name"])
 
 class GetSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, user_id):
