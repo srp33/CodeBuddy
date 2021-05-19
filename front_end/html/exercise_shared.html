@@ -255,7 +255,6 @@
                          {% end %}
                      {% end %}
 
-                     post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
                      post_data = { "partner_id": partner_id, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
 
                      $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
@@ -322,6 +321,7 @@
 
                     {% if exercise_details["back_end"] != "any_response" %}
                         document.getElementById("code_output").innerHTML = "";
+
                         {% if exercise_details["show_expected"] %}
                             document.getElementById("diff_output").innerHTML = "";
                         {% end %}
@@ -333,15 +333,16 @@
 
                     $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id,
                         function (data, status) {
-                             var json_data = JSON.parse(data);
-                             editor.setValue(json_data.code, 1);
-                             check_code(json_data);
-                         });
+                            var json_data = JSON.parse(data);
+                            editor.setValue(json_data.code, 1);
+                            check_code(json_data);
+                        });
 
                      if (scroll)
                         document.getElementById("your_code_header").scrollIntoView();
 
                     editor.focus();
+
                     return false;
                 }
 
@@ -372,6 +373,7 @@
                                         button_bg_color = "passing-btn-color";
                                     else
                                         button_bg_color = "failing-btn-color";
+                                        
                                     var submission_date = new Date(the_date).toLocaleString();
                                     if (partner_id) {
                                       var partner_name = await $.get("/get_user_name/" + partner_id,

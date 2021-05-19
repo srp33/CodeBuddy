@@ -1116,13 +1116,13 @@ class Content:
                 user_dict[submission["user_id"]] = [submission_info]
 
         # retrieve most recent submission for each student and determine whether they have passed the exercise previously
-        most_recent_submissions = {}
+        exercise_submissions = {}
         for student in user_dict:
-            most_recent_submissions[student] = user_dict[student][-1]
-            most_recent_submissions[student]["passed"] = 0 if not any(d['passed'] == 1 for d in user_dict[student]) else 1
+            exercise_submissions[student] = user_dict[student][-1]
+            exercise_submissions[student]["passed"] = 0 if not any(d['passed'] == 1 for d in user_dict[student]) else 1
 
         # dict to list
-        exercise_submissions = [[student, most_recent_submissions[student]] for student in most_recent_submissions]
+        exercise_submissions = [[student, exercise_submissions[student]] for student in exercise_submissions]
 
         return exercise_submissions
 

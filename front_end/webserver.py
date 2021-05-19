@@ -910,6 +910,7 @@ class ExerciseHandler(BaseUserHandler):
                             assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
                             user_info=user_info)
             else:
+                # fetch all users enrolled in a course excluding the current user as options to pair program with
                 users = list(map(lambda x: x[1], content.get_registered_students(course)))
                 users = [x for x in users if not (x["id"] == user_info["user_id"])]
                 self.render("exercise.html", users=users, courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=help_request, same_suggestion=same_suggestion, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
@@ -1188,7 +1189,7 @@ class GetSubmissionHandler(BaseUserHandler):
         self.write(json.dumps(submission_info))
 
 class GetUserNameHandler(BaseUserHandler):
-    # I created this handler because we're storing partner IDs in submissions and I figured we'd want to display pair programming names instead. If for security or any other reasons it's a bad idea to be able to access a student's name from their email I'm happy to brainstorm a new idea!
+    # I created this handler because we're storing partner IDs in submissions and I figured we'd want to display pair programming names instead, so that students aren't viewing each other's emails as options for pair programming. If for security or any other reasons it's a bad idea to be able to access a student's name from their email I'm happy to brainstorm a new idea!
 
     def get(self, user_id):
         try:
