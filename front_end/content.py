@@ -1103,17 +1103,26 @@ class Content:
                       FROM course_registrations
                       WHERE course_id = ?
                    )
-                   AND s.date = (SELECT MAX(s2.date)
-                   FROM submissions s2
-                   WHERE s2.user_id = s.user_id)
-                 GROUP BY s.user_id
-                 ORDER BY u.family_name, u.given_name'''
-                 # above sql changes address the fact that the code was originally returning only the first submission, as opposed to the most recent. I am happy to change this back if that was the intended effect!
+                ORDER BY u.family_name, u.given_name'''
 
+        # add submissions to a dict
+        user_dict = {}
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
             partner_name = self.get_user_info(submission["partner_id"])["name"] if submission["partner_id"] else None
             submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": partner_name}
-            exercise_submissions.append([submission["user_id"], submission_info])
+            if submission["user_id"] in user_dict:
+                user_dict[submission["user_id"]].append(submission_info)
+            else:
+                user_dict[submission["user_id"]] = [submission_info]
+
+        # retrieve most recent submission for each student and determine whether they have passed the exercise previously
+        most_recent_submissions = {}
+        for student in user_dict:
+            most_recent_submissions[student] = user_dict[student][-1]
+            most_recent_submissions[student]["passed"] = 0 if not any(d['passed'] == 1 for d in user_dict[student]) else 1
+
+        # dict to list
+        exercise_submissions = [[student, most_recent_submissions[student]] for student in most_recent_submissions]
 
         return exercise_submissions
 

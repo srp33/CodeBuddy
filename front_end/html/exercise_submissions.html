@@ -9,7 +9,7 @@
     </div>
 
     {% for student in exercise_submissions %}
-        {% if student[1]["score"] > 60 %}
+        {% if student[1]["passed"] %}
           {% if student[1]["partner_name"] %}
             <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
           {% else %}
