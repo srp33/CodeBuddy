@@ -1137,14 +1137,14 @@ class SubmitHandler(BaseUserHandler):
 
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
             new_score = content.calc_exercise_score(assignment_details, passed)
-            if (not exercise_score or exercise_score < new_score):
+            if not exercise_score or exercise_score < new_score:
                 content.save_exercise_score(course, assignment, exercise, user_id, new_score)
 
             # save score for partner
             if partner_id:
                 partner_exercise_score = content.get_exercise_score(course, assignment, exercise, partner_id)
                 partner_new_score = content.calc_exercise_score(assignment_details, passed)
-                if (not partner_exercise_score or partner_exercise_score < partner_new_score):
+                if not partner_exercise_score or partner_exercise_score < partner_new_score:
                     content.save_exercise_score(course, assignment, exercise, partner_id, new_score)
 
         except ConnectionError as inst:

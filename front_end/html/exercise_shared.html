@@ -375,7 +375,7 @@
                                         button_bg_color = "failing-btn-color";
 
                                     var submission_date = new Date(the_date).toLocaleString();
-                                    
+
                                     if (partner_name) {
                                       submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
                                     }

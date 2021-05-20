@@ -855,8 +855,12 @@ class Content:
 
     def get_submissions_basic(self, course_id, assignment_id, exercise_id, user_id):
         submissions = []
-        sql = '''SELECT submission_id, date, passed, partner_id
-                 FROM submissions
+        sql = '''SELECT s.submission_id, s.date, s.passed, s.partner_id,
+                 CASE WHEN s.partner_id NOT NULL
+                   THEN (SELECT name FROM users WHERE s.partner_id = users.user_id)
+                   ELSE NULL
+                 END AS partner_name
+                 FROM submissions s
                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?
@@ -864,8 +868,7 @@ class Content:
                  ORDER BY submission_id DESC'''
 
         for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
-            partner_name = self.get_user_info(submission["partner_id"])["name"] if submission["partner_id"] else None
-            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], partner_name])
+            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], submission["partner_name"]])
         return submissions
 
     def get_student_submissions(self, course_id, assignment_id, exercise_id, user_id):
@@ -1086,7 +1089,11 @@ class Content:
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = '''SELECT s.code, u.user_id, u.name, sc.score, s.passed, s.partner_id
+        sql = '''SELECT s.code, u.user_id, u.name, sc.score, s.passed,
+                 CASE WHEN s.partner_id NOT NULL
+                   THEN (SELECT name FROM users WHERE s.partner_id = users.user_id)
+                   ELSE NULL
+                 END AS partner_name
                  FROM submissions s
                  INNER JOIN users u
                    ON s.user_id = u.user_id
@@ -1104,26 +1111,17 @@ class Content:
                       FROM course_registrations
                       WHERE course_id = ?
                    )
+                   AND s.date = (SELECT MAX(s2.date)
+                    FROM submissions s2
+                    WHERE s2.user_id = s.user_id)
+                GROUP BY s.user_id
                 ORDER BY u.family_name, u.given_name'''
 
         # add submissions to a dict
         user_dict = {}
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
-            partner_name = self.get_user_info(submission["partner_id"])["name"] if submission["partner_id"] else None
-            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": partner_name}
-            if submission["user_id"] in user_dict:
-                user_dict[submission["user_id"]].append(submission_info)
-            else:
-                user_dict[submission["user_id"]] = [submission_info]
-
-        # retrieve most recent submission for each student and determine whether they have passed the exercise previously
-        exercise_submissions = {}
-        for student in user_dict:
-            exercise_submissions[student] = user_dict[student][-1]
-            exercise_submissions[student]["passed"] = 0 if not any(d['passed'] == 1 for d in user_dict[student]) else 1
-
-        # dict to list
-        exercise_submissions = [[student, exercise_submissions[student]] for student in exercise_submissions]
+            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": submission["partner_name"]}
+            exercise_submissions.append([submission["user_id"], submission_info])
 
         return exercise_submissions
 
