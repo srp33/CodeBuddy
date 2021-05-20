@@ -1117,8 +1117,6 @@ class Content:
                 GROUP BY s.user_id
                 ORDER BY u.family_name, u.given_name'''
 
-        # add submissions to a dict
-        user_dict = {}
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
             submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": submission["partner_name"]}
             exercise_submissions.append([submission["user_id"], submission_info])
