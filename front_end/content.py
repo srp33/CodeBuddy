@@ -855,20 +855,18 @@ class Content:
 
     def get_submissions_basic(self, course_id, assignment_id, exercise_id, user_id):
         submissions = []
-        sql = '''SELECT s.submission_id, s.date, s.passed, s.partner_id,
-                 CASE WHEN s.partner_id NOT NULL
-                   THEN (SELECT name FROM users WHERE s.partner_id = users.user_id)
-                   ELSE NULL
-                 END AS partner_name
+        sql = '''SELECT s.submission_id, s.date, s.passed, u.name
                  FROM submissions s
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?
-                 ORDER BY submission_id DESC'''
+                 LEFT JOIN users u
+                   ON s.partner_id = u.user_id
+                 WHERE s.course_id = ?
+                   AND s.assignment_id = ?
+                   AND s.exercise_id = ?
+                   AND s.user_id = ?
+                 ORDER BY s.submission_id DESC'''
 
         for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
-            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], submission["partner_name"]])
+            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], submission["name"]])
         return submissions
 
     def get_student_submissions(self, course_id, assignment_id, exercise_id, user_id):
@@ -1089,12 +1087,10 @@ class Content:
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = '''SELECT s.code, u.user_id, u.name, sc.score, s.passed,
-                 CASE WHEN s.partner_id NOT NULL
-                   THEN (SELECT name FROM users WHERE s.partner_id = users.user_id)
-                   ELSE NULL
-                 END AS partner_name
+        sql = '''SELECT MAX(s.date), s.code, u.user_id, u.name, sc.score, s.passed, p.name AS partner_name
                  FROM submissions s
+                 LEFT JOIN users p
+                   ON s.partner_id = p.user_id
                  INNER JOIN users u
                    ON s.user_id = u.user_id
                  INNER JOIN scores sc
@@ -1111,9 +1107,6 @@ class Content:
                       FROM course_registrations
                       WHERE course_id = ?
                    )
-                   AND s.date = (SELECT MAX(s2.date)
-                    FROM submissions s2
-                    WHERE s2.user_id = s.user_id)
                 GROUP BY s.user_id
                 ORDER BY u.family_name, u.given_name'''
 

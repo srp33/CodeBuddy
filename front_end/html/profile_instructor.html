@@ -111,17 +111,17 @@
         {% end %}>
 
             <h2>Current instructors:</h2>
-            
+
             {% if instructors %}
                 <ul>
                 {% for user in instructors %}
-                    <li>{{ user }} <a onclick="showRemoveInstructorModal({{ user }})">remove</a></li>
+                    <li>{{ user }} <a onclick="showRemoveInstructorModal('{{ user }}')">remove</a></li>
                 {% end %}
                 </ul>
             {% else %}
                 <p>There are no existing instructors for this course.</p>
             {% end %}
-            
+
             <div class="buttons">
                 <a class="button is-dark" onclick="showAddInstructorModal()">Add Instructor</a>
             </div>
@@ -135,20 +135,20 @@
         {% end %}>
 
             <h2>Current assistants:</h2>
-            
+
             {% if assistants %}
                 <ul>
                 {% for user in assistants %}
-                    <li>{{ user }} <a onclick="showRemoveAssistantModal({{ user }})">remove</a></li>
+                    <li>{{ user }} <a onclick="showRemoveAssistantModal('{{ user }}')">remove</a></li>
                 {% end %}
                 </ul>
             {% else %}
                 <p>There are no existing assistants for this course.</p>
             {% end %}
-            
+
             <div class="buttons">
                 <a class="button is-dark" onclick="showAddAssistantModal()">Add Assistant</a>
-            </div>   
+            </div>
         </div>
 
         <div id="manage_students"
@@ -159,7 +159,7 @@
         {% end %}>
 
             <h2>Unregister a student from {{ course['title'] }}:</h2>
-            
+
             {% if registered_students %}
                 <ul>
                 {% for student in registered_students %}
@@ -168,7 +168,7 @@
                 </ul>
             {% else %}
                 <p>No students are registered for this course.</p>
-            {% end %}  
+            {% end %}
         </div>
 
         {% if result %}
@@ -178,7 +178,7 @@
                 <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
             {% end %}
         {% end %}
-    
+
         <div id="score_select" class="invisible">
             {% if assignments %}
                 <h2>Select an assignment to view its scores:</h2>
