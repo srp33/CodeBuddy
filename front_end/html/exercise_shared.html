@@ -349,7 +349,7 @@
                 function show_past_submissions() {
                     submissions_div = document.getElementById("submissions");
                     $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
-                        async function (data, status) {
+                        function (data, status) {
                             var json_data = JSON.parse(data);
                             var submission_html = "";
                             var revert_html = "";
