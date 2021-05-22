@@ -36,7 +36,7 @@
 
             <!--Navigation links at the bottom of the page-->
 
-            <p>           
+            <p>
             {% if is_administrator or is_instructor or is_assistant %}
                 <a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a>
             {% end %}
@@ -45,6 +45,7 @@
                 | <a onclick="showMoveexerciseModal()">Move exercise</a><br />
                 <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
             {% end %}
+
             </p>
 
             <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a>
@@ -166,7 +167,6 @@
 
                             if (json_data.diff.length > 0) {
                                 diff_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
-
                                 {% if exercise_details["output_type"] == "txt" %}
                                     diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
                                 {% else %}
@@ -218,33 +218,47 @@
 
                             document.getElementById("result").innerHTML = "";
                         })
-
                     editor.focus();
                     return false;
-                }
+                 }
 
-                function submit() {
-                    user_code = editor.getValue();
+                 submitButton = document.getElementById("submit_button");
 
-                    if (user_code.trim() == "")
-                        return false;
+                 {% if exercise_details["enable_pair_programming"] %}
+                 submitButton.onclick = function() {
+                     submitModal()
+                 }
+                 {% else %}
+                 submitButton.onclick = function() {
+                     submit()
+                 }
+                 {% end %}
 
-                    result_div = document.getElementById("result");
-                    result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
-                    result_div.scrollIntoView();
+                 function submit() {
+                     user_code = editor.getValue();
 
-                    {% if exercise_details["back_end"] != "any_response" %}
-                        document.getElementById("code_output").innerHTML = "";
+                     if (user_code.trim() == "")
+                         return false;
 
-                        {% if exercise_details["show_expected"] %}
-                            document.getElementById("diff_output").innerHTML = "";
-                        {% end %}
-                    {% end %}
+                     // get partner_id
+                     let partner_id = document.getElementById("pair_programming").value == "Yes" ? document.getElementById("partner_id").value : null;
 
-                    post_data = { "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"}) };
+                     result_div = document.getElementById("result");
+                     result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
+                     result_div.scrollIntoView();
 
-                    $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                        post_data,
+                     {% if exercise_details["back_end"] != "any_response" %}
+                         document.getElementById("code_output").innerHTML = "";
+
+                         {% if exercise_details["show_expected"] %}
+                             document.getElementById("diff_output").innerHTML = "";
+                         {% end %}
+                     {% end %}
+
+                     post_data = { "partner_id": partner_id, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
+
+                     $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                         post_data,
                         function(data, status) {
                             json_data = JSON.parse(data);
                             check_code(json_data);
@@ -254,19 +268,48 @@
                                 last_submission_id = json_data.submission_id;
 
                                 {% if exercise_details["max_submissions"] > 0 %}
-                                document.getElementById("num_submissions").innerHTML = last_submission_id;
+                                    document.getElementById("num_submissions").innerHTML = last_submission_id;
 
-                                if (last_submission_id >= {{ exercise_details["max_submissions"] }})
-                                    document.getElementById("submit_button").disabled = true;
+                                    if (last_submission_id >= {{ exercise_details["max_submissions"] }})
+                                        document.getElementById("submit_button").disabled = true;
                                 {% end %}
                             }
                         });
-
                     editor.focus();
                     return false;
-                }
+                 }
 
-                function get_submission(submission_id, scroll) {
+                 function submitModal() {
+                     var modal = document.getElementById("submit_exercise_modal");
+                     var span = document.getElementsByClassName("close")[4];
+
+                     modal.style.display = "block";
+
+                     var cancelButton = document.getElementById("submit_cancel_button");
+                     var modalSubmitButton = document.getElementById("modal_submit_button");
+
+                     modalSubmitButton.onclick = function() {
+                        submit();
+                        modal.style.display = "none";
+                        location.reload();
+                     }
+
+                     cancelButton.onclick = function() {
+                         modal.style.display = "none";
+                     }
+
+                     span.onclick = function() {
+                         modal.style.display = "none";
+                     }
+
+                     window.onclick = function(event) {
+                         if (event.target == modal) {
+                             modal.style.display = "none";
+                         }
+                     }
+                 }
+
+                 function get_submission(submission_id, scroll) {
                     var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
                     var i;
                     for (i = 0; i < submission_buttons.length; i++) {
@@ -288,14 +331,14 @@
                         document.getElementById("diff_output").innerHTML = "";
                     {% end %}
 
-                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id, 
+                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id,
                         function (data, status) {
                             var json_data = JSON.parse(data);
                             editor.setValue(json_data.code, 1);
                             check_code(json_data);
                         });
 
-                    if (scroll)
+                     if (scroll)
                         document.getElementById("your_code_header").scrollIntoView();
 
                     editor.focus();
@@ -305,7 +348,6 @@
 
                 function show_past_submissions() {
                     submissions_div = document.getElementById("submissions");
-
                     $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
                         function (data, status) {
                             var json_data = JSON.parse(data);
@@ -315,29 +357,34 @@
                             if (json_data.length > 0) {
                                 submission_html += "<h6>Past submissions:</h6>\n";
                                 submission_html += "<div class='buttons'>\n";
-
                                 var i;
+
                                 for (i = 0; i < json_data.length; i++) {
                                     submission_id = json_data[i][0];
                                     the_date = json_data[i][1];
                                     passed = json_data[i][2];
+                                    partner_name = json_data[i][3]
 
                                     //show student's most recent submission
                                     if (i == 0)
                                         get_submission(submission_id, false);
-                        
+
                                     if (passed)
                                         button_bg_color = "passing-btn-color";
                                     else
                                         button_bg_color = "failing-btn-color";
 
                                     var submission_date = new Date(the_date).toLocaleString();
-                                    submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
-                                }
 
+                                    if (partner_name) {
+                                      submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                    }
+                                    else {
+                                      submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                    }
+                                                                    }
                                 submission_html += "</div><br />\n";
                             }
-
                             submissions_div.innerHTML = submission_html;
                         });
                 }
@@ -351,6 +398,7 @@
                 minLines: 20,
                 fontSize: "12pt"
             });
+
             {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
                 editor.setOptions({
                     enableBasicAutocompletion: false,
@@ -358,15 +406,16 @@
                     enableLiveAutocompletion: true
                 });
             {% end %}
+
             editor.focus();
             editor.getSession().setMode("{{ code_completion_path }}");
-
             show_past_submissions();
             last_submission_id = {{ num_submissions }};
 
             if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
                 document.getElementById("submit_button").disabled = true;
             </script>
+
         {% else %}
             <p>This exercise does not exist.</p>
         {% end %}

@@ -2,7 +2,7 @@
     font-family: 'Lato', sans-serif;
 }
 
-.ace_editor p, .ace_editor div { 
+.ace_editor * {
     font-family: 'Monaco', 'Menlo', 'Droid Sans Mono', 'Courier New', monospace !important;
 }
 
@@ -429,7 +429,7 @@ td > button {
 }
 
 .grey-text {
-    color: #363636; 
+    color: #363636;
 }
 
 .footer {

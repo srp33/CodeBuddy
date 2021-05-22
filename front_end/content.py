@@ -855,16 +855,18 @@ class Content:
 
     def get_submissions_basic(self, course_id, assignment_id, exercise_id, user_id):
         submissions = []
-        sql = '''SELECT submission_id, date, passed
-                 FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?
-                 ORDER BY submission_id DESC'''
+        sql = '''SELECT s.submission_id, s.date, s.passed, u.name
+                 FROM submissions s
+                 LEFT JOIN users u
+                   ON s.partner_id = u.user_id
+                 WHERE s.course_id = ?
+                   AND s.assignment_id = ?
+                   AND s.exercise_id = ?
+                   AND s.user_id = ?
+                 ORDER BY s.submission_id DESC'''
 
         for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
-            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"]])
+            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], submission["name"]])
         return submissions
 
     def get_student_submissions(self, course_id, assignment_id, exercise_id, user_id):
@@ -959,7 +961,7 @@ class Content:
             psim = curr.similarity(orig)
             request_info = {"psim": psim, "course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "more_info_needed": request["more_info_needed"]}
             help_requests.append(request_info)
-                
+
         return sorted(help_requests, key=lambda x: x["psim"], reverse=True)
 
     def get_help_request(self, course_id, assignment_id, exercise_id, user_id):
@@ -1057,7 +1059,7 @@ class Content:
                         if sim:
                             request_info = {"psim": psim, "course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "user_id": request["user_id"], "name": request["name"], "student_comment": request["student_comment"],  "code": request["code"], "text_output": request["text_output"], "suggestion": request["suggestion"]}
                             sim_dict.append(request_info)
-                            
+
                 return sim_dict
 
     def get_same_suggestion(self, help_request):
@@ -1072,7 +1074,7 @@ class Content:
                        FROM exercises
                        WHERE exercise_id = ?
                    )'''
-        
+
         matches = self.fetchall(sql, (help_request["course_id"], help_request["exercise_id"]))
         for match in matches:
             if match["output_type"] == "jpg":
@@ -1080,13 +1082,15 @@ class Content:
                     return match["suggestion"]
             else:
                 if match["text_output"] == help_request["text_output"]:
-                    return match["suggestion"]            
+                    return match["suggestion"]
 
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = '''SELECT s.code, u.user_id, u.name, sc.score, s.passed
+        sql = '''SELECT MAX(s.date), s.code, u.user_id, u.name, sc.score, s.passed, p.name AS partner_name
                  FROM submissions s
+                 LEFT JOIN users p
+                   ON s.partner_id = p.user_id
                  INNER JOIN users u
                    ON s.user_id = u.user_id
                  INNER JOIN scores sc
@@ -1103,11 +1107,11 @@ class Content:
                       FROM course_registrations
                       WHERE course_id = ?
                    )
-                 GROUP BY s.user_id
-                 ORDER BY u.family_name, u.given_name'''
+                GROUP BY s.user_id
+                ORDER BY u.family_name, u.given_name'''
 
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
-            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"]}
+            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": submission["partner_name"]}
             exercise_submissions.append([submission["user_id"], submission_info])
 
         return exercise_submissions
@@ -1263,7 +1267,7 @@ class Content:
             return self.get_submission_info(course, assignment, exercise, user, last_submission_id)
 
     def get_submission_info(self, course, assignment, exercise, user, submission):
-        sql = '''SELECT code, text_output, image_output, passed, date
+        sql = '''SELECT code, text_output, image_output, passed, date, partner_id
                  FROM submissions
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -1273,7 +1277,7 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
 
-        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True}
+        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"]}
 
     def get_course_details(self, course, format_output=False):
         if not course:
@@ -1303,6 +1307,8 @@ class Content:
         row = self.fetchone(sql, (int(course), int(assignment),))
 
         assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
+        if format_output:
+            assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].split(",")
@@ -1316,9 +1322,9 @@ class Content:
         if not exercise:
             return {"instructions": "", "back_end": "python", "output_type": "txt", "answer_code": "", "answer_description": "", "hint": "",
             "max_submissions": 0, "starter_code": "", "test_code": "", "credit": "", "data_files": "", "show_expected": True, "show_test_code": True, "show_answer": True,
-            "show_student_submissions": False, "expected_text_output": "", "expected_image_output": "", "data_files": "", "date_created": None, "date_updated": None}
+            "show_student_submissions": False, "expected_text_output": "", "expected_image_output": "", "data_files": "", "date_created": None, "date_updated": None, "enable_pair_programming": False}
 
-        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_files, show_expected, show_test_code, show_answer, show_student_submissions, expected_text_output, expected_image_output, data_files, date_created, date_updated
+        sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_files, show_expected, show_test_code, show_answer, show_student_submissions, expected_text_output, expected_image_output, data_files, date_created, date_updated, enable_pair_programming
                  FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -1326,7 +1332,7 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise),))
 
-        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "test_code": row["test_code"], "credit": row["credit"], "data_files": row["data_files"].strip(), "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "show_student_submissions": row["show_student_submissions"], "expected_text_output": row["expected_text_output"].strip(), "expected_image_output": row["expected_image_output"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "test_code": row["test_code"], "credit": row["credit"], "data_files": row["data_files"].strip(), "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "show_student_submissions": row["show_student_submissions"], "expected_text_output": row["expected_text_output"].strip(), "expected_image_output": row["expected_image_output"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"]}
 
         if row["data_files"]:
             exercise_dict["data_files"] = json.loads(row["data_files"])
@@ -1446,27 +1452,32 @@ class Content:
                      SET title = ?, visible = ?, answer_code = ?, answer_description = ?, hint = ?, max_submissions = ?,
                          credit = ?, data_files = ?, back_end = ?, expected_text_output = ?, expected_image_output = ?,
                          instructions = ?, output_type = ?, show_answer = ?, show_student_submissions = ?, show_expected = ?,
-                         show_test_code = ?, starter_code = ?, test_code = ?, date_updated = ?
+                         show_test_code = ?, starter_code = ?, test_code = ?, date_updated = ?, enable_pair_programming = ?
                      WHERE course_id = ?
                        AND assignment_id = ?
                        AND exercise_id = ?'''
 
-            self.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["answer_code"]), exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["show_answer"], exercise_details["show_student_submissions"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["date_updated"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
+            self.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["answer_code"]), exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["show_answer"], exercise_details["show_student_submissions"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
         else:
-            sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            exercise_basics["id"] = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["answer_code"]), exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["show_answer"], exercise_details["show_student_submissions"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["date_created"], exercise_details["date_updated"]])
+            exercise_basics["id"] = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["answer_code"]), exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["show_answer"], exercise_details["show_student_submissions"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["date_created"], exercise_details["date_updated"], exercise_details["enable_pair_programming"]])
             exercise_basics["exists"] = True
 
         return exercise_basics["id"]
 
-    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed):
+    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, partner_id=None):
         submission_id = self.get_next_submission_id(course, assignment, exercise, user)
-        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date, partner_id)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now()])
+        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), partner_id])
+
+        # save submission for partner
+        if partner_id:
+            submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
+            self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user])
 
         return submission_id
 
@@ -1513,8 +1524,8 @@ class Content:
 
         new_assignment_id = self.execute(sql, (new_course_id, course_id, assignment_id,))
 
-        sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated)
-                 SELECT ?, ?, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated
+        sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming)
+                 SELECT ?, ?, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming
                  FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?'''

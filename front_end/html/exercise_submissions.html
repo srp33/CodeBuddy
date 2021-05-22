@@ -10,14 +10,22 @@
 
     {% for student in exercise_submissions %}
         {% if student[1]["passed"] %}
-            <button type="button" class="clickable collapsible">{{ student[1]["name"] }}</button>
+          {% if student[1]["partner_name"] %}
+            <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
+          {% else %}
+            <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
+          {% end %}
             <div class="c-content">
                 <p>Exercise score: <strong>{{ student[1]["score"] }}%</strong></p>
                 <p>Most recent submission:</p>
                 <pre>{{ student[1]["code"] }}</pre>
             </div>
         {% else %}
-            <button type="button" class="clickable collapsible-f">{{ student[1]["name"] }}</button>
+            {% if student[1]["partner_name"] %}
+              <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
+            {% else %}
+              <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
+            {% end %}
             <div class="c-content">
                 <p>No passing score yet.</p>
                 <p>Most recent submission:</p>
@@ -38,7 +46,7 @@
     var coll = document.getElementsByClassName("clickable");
     var content = document.getElementsByClassName("c-content");
     var i;
-  
+
     for (i = 0; i < coll.length; i++) {
         coll[i].addEventListener("click", function() {
             this.classList.toggle("active");
