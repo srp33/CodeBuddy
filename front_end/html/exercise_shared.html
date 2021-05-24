@@ -399,6 +399,40 @@
                 fontSize: "12pt"
             });
 
+            const rtf = new Intl.RelativeTimeFormat('en');
+            let codeChanged = false
+            lastSaved = Date.now()
+
+            editor.session.on('change', function(delta) {
+              codeChanged = true
+            });
+
+            setInterval(function() {
+
+                if (codeChanged) {
+                    user_code = editor.getValue();
+
+                     if (user_code.trim() == "")
+                         return false;
+
+                     saved_div = document.getElementById("saved_div");
+                     saved_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your code is being saved...</div>";
+                     saved_div.scrollIntoView();
+
+                     post_data = { "user_code": user_code }
+
+                     $.post("/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                         post_data,
+                        function(data, status) {
+                            json_data = JSON.parse(data);
+                        });
+
+                    editor.focus();
+                    codeChanged = false;
+                    lastSaved = Date.now()
+                }
+            }, 5 * 1000);
+
             {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
                 editor.setOptions({
                     enableBasicAutocompletion: false,

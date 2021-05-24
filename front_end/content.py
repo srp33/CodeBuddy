@@ -1257,6 +1257,20 @@ class Content:
 
         return self.fetchone(sql, (int(course), int(assignment), int(exercise), user,))[0]
 
+
+    def get_num_presubmissions(self, course, assignment, exercise, user):
+        sql = '''SELECT COUNT(*)
+                 FROM presubmissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+
+        return self.fetchone(sql, (int(course), int(assignment), int(exercise), user,))[0]
+
+    def get_next_presubmission_id(self, course, assignment, exercise, user):
+        return self.get_num_presubmissions(course, assignment, exercise, user) + 1
+
     def get_next_submission_id(self, course, assignment, exercise, user):
         return self.get_num_submissions(course, assignment, exercise, user) + 1
 
@@ -1466,6 +1480,15 @@ class Content:
             exercise_basics["exists"] = True
 
         return exercise_basics["id"]
+
+    def save_presubmission(course, assignment, exercise, user, code):
+        print(2)
+        presubmission_id = self.get_next_presubmission_id(course, assignment, exercise, user)
+        sql = '''INSERT INTO presubmissions (course_id, assignment_id, exercise_id, user_id, presubmission_id, code)
+                 VALUES (?, ?, ?, ?, ?, ?)'''
+
+        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(presubmission_id), code])
+        return presubmission_id
 
     def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, partner_id=None):
         submission_id = self.get_next_submission_id(course, assignment, exercise, user)

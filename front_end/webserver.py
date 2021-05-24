@@ -58,6 +58,7 @@ def make_app():
         url(r"\/delete_exercise_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteExerciseSubmissionsHandler, name="delete_exercise_submissions"),
         url(r"\/run_code\/([^\/]+)\/([^\/]+)/([^\/]+)", RunCodeHandler, name="run_code"),
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
+        url(r"\/save_presubmission\/([^\/]+)\/([^\/]+)/([^\/]+)", PresubmissionHandler, name="presubmission"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
@@ -1112,6 +1113,13 @@ class RunCodeHandler(BaseUserHandler):
             out_dict["text_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
+
+class PresubmissionHandler(BaseUserHandler):
+    async def post(self, course, assignment, exercise):
+        user_id = self.get_user_id()
+        code = self.get_body_argument("user_code").replace("\r", "")
+        content.save_presubmission(course, assignment, exercise, user_id, code)
+        print("iher")
 
 class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, exercise):
