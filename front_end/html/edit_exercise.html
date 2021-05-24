@@ -69,7 +69,7 @@
                 answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 starter_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 test_code_editor.getSession().setMode(json_data["code_completion_path"]);
-                check_code_editor.getSession().setMode(json_data["code_completion_path"]);
+                // check_code_editor.getSession().setMode(json_data["code_completion_path"]);
             });
         }
 
@@ -266,6 +266,14 @@
         <div class="shadow-box">
             <div>
                 <p><strong>checking code : </strong></p>
+                <p>checking code  can be used to run one or more using the student's code. It helps the integrity of their code rather than its ability to produce the expected output.</p>
+                <p>
+                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code ." rows="10" id="check_code" name="check_code">{{ exercise_details["check_code"] }}</textarea>
+                    <textarea name="check_code_text" id="check_code_text" class="invisible"></textarea>
+                </p>
+            </div>
+        </div>
+
         <div class="shadow-box">
             <div class="space-div">
                 <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p>
@@ -376,12 +384,22 @@
                 fontSize: "12pt"
             });
 
+            var check_code_editor = ace.edit("check_code", {
+                theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                autoScrollEditorIntoView: true,
+                minLines: 10,
+                maxLines: 15,
+                fontSize: "12pt"
+            });
+
             updateBackEndOptions('{{ exercise_details["back_end"] }}', '{{ exercise_details["output_type"] }}');
 
             document.getElementById("myForm").onsubmit = function(evt) {
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
+                // document.getElementById("check_code_text").value = check_code_editor.getValue();
+
             }
 
             var index = 1;
