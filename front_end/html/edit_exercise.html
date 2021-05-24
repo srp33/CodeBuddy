@@ -69,7 +69,7 @@
                 answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 starter_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 test_code_editor.getSession().setMode(json_data["code_completion_path"]);
-                // check_code_editor.getSession().setMode(json_data["code_completion_path"]);
+                check_code_editor.getSession().setMode(json_data["code_completion_path"]);
             });
         }
 
@@ -398,7 +398,7 @@
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
-                // document.getElementById("check_code_text").value = check_code_editor.getValue();
+                document.getElementById("check_code_text").value = check_code_editor.getValue();
 
             }
 
