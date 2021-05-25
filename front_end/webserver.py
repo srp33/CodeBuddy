@@ -60,6 +60,7 @@ def make_app():
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
+        url(r"\/check_partners\/([^\/]+)", CheckPartnersHandler, name="check_partners"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/add_instructor\/([^\/]+)", AddInstructorHandler, name="add_instructor"),
         url(r"\/remove_admin\/([^\/]+)", RemoveAdminHandler, name="remove_admin"),
@@ -910,8 +911,9 @@ class ExerciseHandler(BaseUserHandler):
                             user_info=user_info)
             else:
                 # fetch all users enrolled in a course excluding the current user as options to pair program with
-                users = [x[1] for x in content.get_registered_students(course) if not x[0] == user_info["user_id"]]
-                self.render("exercise.html", users=users, courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=help_request, same_suggestion=same_suggestion, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
+                user_list = list(content.get_partners_dict(course, self.get_user_info()["user_id"]).keys())
+
+                self.render("exercise.html", users=user_list, courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=help_request, same_suggestion=same_suggestion, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
 
         except Exception as inst:
             render_error(self, traceback.format_exc())
@@ -1091,6 +1093,16 @@ class DeleteExerciseSubmissionsHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+class CheckPartnersHandler(BaseUserHandler):
+    def post(self, course):
+        partner_key = self.get_body_argument("partner_key")
+        partner_dict = content.get_partners_dict(course, self.get_user_info()["user_id"])
+
+        if partner_key in partner_dict.keys():
+            self.write(json.dumps(True))
+        else:
+            self.write(json.dumps(False))
+
 class RunCodeHandler(BaseUserHandler):
     async def post(self, course, assignment, exercise):
         out_dict = {"text_output": "", "image_output": ""}
@@ -1119,7 +1131,9 @@ class SubmitHandler(BaseUserHandler):
 
         try:
             user_id = self.get_user_id()
-            partner_id = self.get_body_argument("partner_id")
+            partners_dict = content.get_partners_dict(course, user_id)
+
+            partner_id = partners_dict[self.get_body_argument("partner_key")] if self.get_body_argument("partner_key") else None
             code = self.get_body_argument("user_code").replace("\r", "")
             exercise_basics = content.get_exercise_basics(course, assignment, exercise)
             exercise_details = content.get_exercise_details(course, assignment, exercise)
