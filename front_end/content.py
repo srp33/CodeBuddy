@@ -586,8 +586,10 @@ class Content:
         return registered_courses
 
     def get_partners_dict(self, course, user_id):
+        # get list of users
         users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
 
+        # add users to dict to find duplicate names
         user_duplicates_dict = {}
         for user in users:
             if user["name"] in user_duplicates_dict.keys():
@@ -595,6 +597,7 @@ class Content:
             else:
                 user_duplicates_dict[user["name"]] = [user["id"]]
 
+        # add all users to a dict with name (and obscured email if applicable) as key and id as value
         user_dict = {}
         for user in user_duplicates_dict:
             if len(user_duplicates_dict[user]) > 1:
@@ -606,7 +609,10 @@ class Content:
         return user_dict
 
     def obscure_email(self, email):
-        email = email + "@gmail.com" if not "@gmail.com" in email else email
+        # FIXME remove following line before production
+        email = email + "@gmail.com" if not "@" in email else email
+        
+        # obscure all but first and last character of email
         return email[0] + (("*")*(len(email.split("@")[0])-2)) + email.split("@")[0][-1] + "@" + email.split("@")[1]
 
     def get_registered_students(self, course_id):
