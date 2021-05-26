@@ -9,7 +9,7 @@
         <script>
             function showModal(modal_type) {
                 var modal = document.getElementById(`${modal_type}_modal`);
-                var span = document.getElementsById(`close_${modal_type}`)];
+                var span = document.getElementsById(`close_${modal_type}`);
                 var confirm_text = document.getElementById(`confirm_${modal_type}`);
 
                 modal.style.display = "block";
@@ -99,6 +99,7 @@
             }
 
             function showDeleteSubmissionsModal() {
+              console.log("found")
                 var modal = document.getElementById("delete_submissions_modal");
                 var span = document.getElementsByClassName("close")[2];
                 modal.style.display = "block";

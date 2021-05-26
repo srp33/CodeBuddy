@@ -1293,6 +1293,27 @@ class Content:
 
         return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"]}
 
+    def delete_presubmission(self, course, assignment, exercise, user):
+        sql = '''DELETE FROM presubmissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+
+        self.execute(sql, (course, assignment, exercise, user))
+
+    def get_presubmission_info(self, course, assignment, exercise, user):
+        sql = '''SELECT code
+                 FROM presubmissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+
+        row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user))
+
+        return {"code": row["code"]} if row else None
+
     def get_course_details(self, course, format_output=False):
         if not course:
             return {"introduction": "", "passcode": None, "date_created": None, "date_updated": None}
@@ -1481,14 +1502,15 @@ class Content:
 
         return exercise_basics["id"]
 
-    def save_presubmission(course, assignment, exercise, user, code):
-        print(2)
-        presubmission_id = self.get_next_presubmission_id(course, assignment, exercise, user)
-        sql = '''INSERT INTO presubmissions (course_id, assignment_id, exercise_id, user_id, presubmission_id, code)
-                 VALUES (?, ?, ?, ?, ?, ?)'''
+    def save_presubmission(self, course, assignment, exercise, user, code):
+        try:
+            sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, code)
+                     VALUES (?, ?, ?, ?, ?)'''
 
-        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(presubmission_id), code])
-        return presubmission_id
+            self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
+
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
 
     def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, partner_id=None):
         submission_id = self.get_next_submission_id(course, assignment, exercise, user)
@@ -1682,6 +1704,9 @@ class Content:
         self.execute('''DELETE FROM scores
                         WHERE course_id = ?''', (course_id, ))
 
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?''', (course_id, ))
+
     def delete_assignment_submissions(self, assignment_basics):
         course_id = assignment_basics["course"]["id"]
         assignment_id = assignment_basics["id"]
@@ -1694,6 +1719,11 @@ class Content:
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
+
     def delete_exercise_submissions(self, exercise_basics):
         course_id = exercise_basics["assignment"]["course"]["id"]
         assignment_id = exercise_basics["assignment"]["id"]
@@ -1705,6 +1735,11 @@ class Content:
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
         self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
+        self.execute('''DELETE FROM presubmissions
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))

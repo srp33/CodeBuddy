@@ -61,6 +61,7 @@ def make_app():
         url(r"\/save_presubmission\/([^\/]+)\/([^\/]+)/([^\/]+)", PresubmissionHandler, name="presubmission"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
+        url(r"\/get_presubmission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetPresubmissionHandler, name="get_presubmission"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
         url(r"\/add_instructor\/([^\/]+)", AddInstructorHandler, name="add_instructor"),
         url(r"\/remove_admin\/([^\/]+)", RemoveAdminHandler, name="remove_admin"),
@@ -1115,11 +1116,10 @@ class RunCodeHandler(BaseUserHandler):
         self.write(json.dumps(out_dict))
 
 class PresubmissionHandler(BaseUserHandler):
-    async def post(self, course, assignment, exercise):
+    def post(self, course, assignment, exercise):
         user_id = self.get_user_id()
         code = self.get_body_argument("user_code").replace("\r", "")
         content.save_presubmission(course, assignment, exercise, user_id, code)
-        print("iher")
 
 class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, exercise):
@@ -1141,6 +1141,7 @@ class SubmitHandler(BaseUserHandler):
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
             out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, partner_id)
+            content.delete_presubmission(course, assignment, exercise, user_id)
 
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
             new_score = content.calc_exercise_score(assignment_details, passed)
@@ -1165,6 +1166,19 @@ class SubmitHandler(BaseUserHandler):
             out_dict["passed"] = False
 
         self.write(json.dumps(out_dict))
+
+class GetPresubmissionHandler(BaseUserHandler):
+    def get(self, course, assignment, exercise, student_id):
+        user_info = self.get_user_info()
+        try:
+            if user_info["user_id"] != student_id and not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
+                presubmission_info = ["Submissions may only be view by their author."]
+            else:
+                presubmission_info = content.get_presubmission_info(course, assignment, exercise, student_id)
+        except:
+            print(traceback.format_exc())
+
+        self.write(json.dumps(presubmission_info))
 
 class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, student_id, submission_id):
