@@ -207,6 +207,7 @@
                     partner_selection.style.display = "none";
                 }
             }
+
         </script>
 
         <!--The following divs contain all of the modals for this page-->
@@ -281,23 +282,25 @@
                     <i class="far fa-question-circle"></i>
                 </label><br />
 
-                <div class="select is-grey top-space" >
+                <div id="invalid_partner"></div>
+                <div style="margin: 15px 0px;" class="select is-grey space_div" >
                     <select onchange="showUsers(this.value)" id="pair_programming" name="pair_programming" class="edit-select">
                         <option value="Yes">Yes</option>
                         <option value="No" selected>No</option>
                     </select>
                 </div>
 
-                <div class="select is-grey bottom-space" id="partner_selection" style="display:none">
-                    {% if users %}
-                    <select  name="partner_id" id="partner_id" class="edit-select" style="margin-top:15px">
+                <div id="partner_selection" style="display:none">
+                {% if users %}
+                <input class="space_div input is-primary" list="users_list" id="partner_id" placeholder="Enter partner's name here...">
+                <datalist id="users_list">
                         {% for user in users %}
-                            <option value={{ user["id"] }}>{{ user["name"] }}</option>
+                            <option value='{{ user }}'></option>
                         {% end %}
-                    </select>
-                    {% else %}
-                    <p>There are no other registered students in this course.</p>
-                    {% end %}
+                </datalist>
+                {% else %}
+                <p>There are no other registered students in this course.</p>
+                {% end %}
                 </div>
 
                 <p class="buttons">
