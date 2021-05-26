@@ -292,7 +292,7 @@
 
                 <div id="partner_selection" style="display:none">
                 {% if users %}
-                <input class="space_div input is-primary" list="users_list" id="partner_id" placeholder="Enter partner's name here...">
+                <input class="space_div input is-primary" list="users_list" id="partner_key" placeholder="Enter partner's name here...">
                 <datalist id="users_list">
                         {% for user in users %}
                             <option value='{{ user }}'></option>

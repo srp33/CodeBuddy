@@ -79,7 +79,7 @@
 
                 function showDeleteSubmissionsModal() {
                     var modal = document.getElementById("delete_submissions_modal");
-                    var span = document.getElementsByClassName("close")[5];
+                    // var span = document.getElementsByClassName("close")[5];
                     modal.style.display = "block";
 
                     var deleteButton = document.getElementById("delete_submissions_button");
@@ -290,7 +290,7 @@
                      var modalSubmitButton = document.getElementById("modal_submit_button");
 
                      modalSubmitButton.onclick = function() {
-                       let partner_key = {"partner_key": document.getElementById("partner_id").value};
+                       let partner_key = {"partner_key": document.getElementById("partner_key").value};
                        if (document.getElementById("pair_programming").value == "Yes") {
                          $.post("/check_partners/{{ course_basics['id'] }}", partner_key,
                             function(data, status) {
