@@ -225,12 +225,14 @@
                  submitButton = document.getElementById("submit_button");
 
                  {% if exercise_details["enable_pair_programming"] %}
-                 submitButton.onclick = function() {
+                 if (submitButton != null)
+                  submitButton.onclick = function() {
                      submitModal()
                  }
                  {% else %}
-                 submitButton.onclick = function() {
-                     submit()
+                 (submitButton != null)
+                   submitButton.onclick = function() {
+                       submit()
                  }
                  {% end %}
 
@@ -325,7 +327,8 @@
 
                  function get_submission(submission_id, scroll) {
                     var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                    document.getElementById("saved_div").innerHTML = "";
+                    if (document.getElementById("saved_div") != null)
+                        document.getElementById("saved_div").innerHTML = "";
 
                     var i;
                     for (i = 0; i < submission_buttons.length; i++) {
@@ -354,7 +357,7 @@
                             check_code(json_data);
                         });
 
-                     if (scroll)
+                     if (scroll && document.getElementById("your_code_header") != null)
                         document.getElementById("your_code_header").scrollIntoView();
 
                     editor.focus();
