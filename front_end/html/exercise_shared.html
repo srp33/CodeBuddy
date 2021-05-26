@@ -77,34 +77,34 @@
                     }
                 }
 
-                // function showDeleteSubmissionsModal() {
-                //     var modal = document.getElementById("delete_submissions_modal");
-                //     var span = document.getElementsByClassName("close")[5];
-                //     modal.style.display = "block";
-                //
-                //     var deleteButton = document.getElementById("delete_submissions_button");
-                //     var cancelButton = document.getElementById("delete_submissions_cancel_button");
-                //
-                //     deleteButton.onclick = function() {
-                //         $.post("/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}");
-                //         modal.style.display = "none";
-                //         location.reload();
-                //     }
-                //
-                //     cancelButton.onclick = function() {
-                //         modal.style.display = "none";
-                //     }
-                //
-                //     /*span.onclick = function() {
-                //         modal.style.display = "none";
-                //     }*/
-                //
-                //     window.onclick = function(event) {
-                //         if (event.target == modal) {
-                //             modal.style.display = "none";
-                //         }
-                //     }
-                // }
+                function showDeleteSubmissionsModal() {
+                    var modal = document.getElementById("delete_submissions_modal");
+                    var span = document.getElementsByClassName("close")[5];
+                    modal.style.display = "block";
+
+                    var deleteButton = document.getElementById("delete_submissions_button");
+                    var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+                    deleteButton.onclick = function() {
+                        $.post("/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}");
+                        modal.style.display = "none";
+                        location.reload();
+                    }
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    /*span.onclick = function() {
+                        modal.style.display = "none";
+                    }*/
+
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
 
                 function build_text_output(json_output) {
                     var output = "";

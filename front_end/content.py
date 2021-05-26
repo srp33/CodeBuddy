@@ -611,7 +611,7 @@ class Content:
     def obscure_email(self, email):
         # FIXME remove following line before production
         email = email + "@gmail.com" if not "@" in email else email
-        
+
         # obscure all but first and last character of email
         return email[0] + (("*")*(len(email.split("@")[0])-2)) + email.split("@")[0][-1] + "@" + email.split("@")[1]
 
@@ -1287,20 +1287,6 @@ class Content:
 
         return self.fetchone(sql, (int(course), int(assignment), int(exercise), user,))[0]
 
-
-    def get_num_presubmissions(self, course, assignment, exercise, user):
-        sql = '''SELECT COUNT(*)
-                 FROM presubmissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?'''
-
-        return self.fetchone(sql, (int(course), int(assignment), int(exercise), user,))[0]
-
-    def get_next_presubmission_id(self, course, assignment, exercise, user):
-        return self.get_num_presubmissions(course, assignment, exercise, user) + 1
-
     def get_next_submission_id(self, course, assignment, exercise, user):
         return self.get_num_submissions(course, assignment, exercise, user) + 1
 
@@ -1533,14 +1519,10 @@ class Content:
         return exercise_basics["id"]
 
     def save_presubmission(self, course, assignment, exercise, user, code):
-        try:
-            sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, code)
-                     VALUES (?, ?, ?, ?, ?)'''
+        sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, code)
+                 VALUES (?, ?, ?, ?, ?)'''
 
-            self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
-
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
+        self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
 
     def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, partner_id=None):
         submission_id = self.get_next_submission_id(course, assignment, exercise, user)
@@ -1752,7 +1734,6 @@ class Content:
         self.execute('''DELETE FROM presubmissions
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
-
 
     def delete_exercise_submissions(self, exercise_basics):
         course_id = exercise_basics["assignment"]["course"]["id"]

@@ -7,44 +7,6 @@
         <link rel="stylesheet" href="/static/modal.css">
 
         <script>
-            function showModal(modal_type) {
-                var modal = document.getElementById(`${modal_type}_modal`);
-                var span = document.getElementsById(`close_${modal_type}`);
-                var confirm_text = document.getElementById(`confirm_${modal_type}`);
-
-                modal.style.display = "block";
-
-                if(modal_type == "delete") {
-                  confirm_text.innerHTML = 'Are you sure you want to delete this exercise?';
-                }
-
-                var cancelButton = document.getElementById(`${modal_type}_cancel_button`);
-                var modalButton = document.getElementById(`${modal_type}_button`);
-
-                modalButton.onclick = function() {
-                    if (modal_type == "delete") {
-                      $.post("/delete_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_id);
-                    }
-
-                    modal.style.display = "none";
-                    location.reload();
-                }
-
-                cancelButton.onclick = function() {
-                    modal.style.display = "none";
-                }
-
-                span.onclick = function() {
-                    modal.style.display = "none";
-                }
-
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                    modal.style.display = "none";
-                    }
-                }
-            }
-
             function showDeleteModal(exercise_id) {
                 var modal = document.getElementById("delete_exercise_modal");
                 var span = document.getElementsByClassName("close")[0];
@@ -99,7 +61,6 @@
             }
 
             function showDeleteSubmissionsModal() {
-              console.log("found")
                 var modal = document.getElementById("delete_submissions_modal");
                 var span = document.getElementsByClassName("close")[2];
                 modal.style.display = "block";
@@ -178,7 +139,6 @@
                     modal.style.display = "none";
                 }
             }
-
         </script>
 
         {% if len(exercises) > 0 %}
