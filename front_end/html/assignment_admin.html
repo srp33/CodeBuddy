@@ -158,11 +158,7 @@
 
                 {% for exercise in exercises %}
                     <tr>
-                        <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a>
-                          {% if exercise[1]["enable_pair_programming"] %}
-                          <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
-                          {% end %}
-                        </td>
+                        <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a></td>
                         {% if exercise[1]["visible"] == 0 %}
                             <td class="has-text-centered">Hidden</td>
                             <td> </td>
