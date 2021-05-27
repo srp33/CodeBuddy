@@ -535,7 +535,7 @@ class Content:
     def get_exercises(self, course_id, assignment_id, show_hidden=True):
         exercises = []
 
-        sql = '''SELECT exercise_id, title, visible
+        sql = '''SELECT exercise_id, title, visible, enable_pair_programming
                  FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -544,7 +544,7 @@ class Content:
         for exercise in self.fetchall(sql, (course_id, assignment_id,)):
             if exercise["visible"] or show_hidden:
                 assignment_basics = self.get_assignment_basics(course_id, assignment_id)
-                exercise_basics = {"id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
+                exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
                 exercises.append([exercise["exercise_id"], exercise_basics, course_id, assignment_id])
 
         return exercises
