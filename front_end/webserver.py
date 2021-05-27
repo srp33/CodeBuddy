@@ -60,7 +60,7 @@ def make_app():
         url(r"\/submit\/([^\/]+)\/([^\/]+)/([^\/]+)", SubmitHandler, name="submit"),
         url(r"\/get_submission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)/(\d+)", GetSubmissionHandler, name="get_submission"),
         url(r"\/get_submissions\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetSubmissionsHandler, name="get_submissions"),
-        url(r"\/save_presubmission\/([^\/]+)\/([^\/]+)/([^\/]+)", PresubmissionHandler, name="presubmission"),
+        url(r"\/save_presubmission\/([^\/]+)\/([^\/]+)/([^\/]+)", SavePresubmissionHandler, name="save_presubmission"),
         url(r"\/get_presubmission\/([^\/]+)\/([^\/]+)/([^\/]+)/([^\/]+)", GetPresubmissionHandler, name="get_presubmission"),
         url(r"\/check_partners\/([^\/]+)", CheckPartnersHandler, name="check_partners"),
         url(r"\/view_answer\/([^\/]+)\/([^\/]+)/([^\/]+)", ViewAnswerHandler, name="view_answer"),
@@ -91,7 +91,6 @@ def make_app():
         url(r"/test", TestHandler, name="test"),
     ], autoescape=None)
 
-    # url(r"\/initialize", InitializeHandler, name="initialize"),
     return app
 
 class HomeHandler(RequestHandler):
@@ -913,7 +912,7 @@ class ExerciseHandler(BaseUserHandler):
                             user_info=user_info)
             else:
                 # fetch all users enrolled in a course excluding the current user as options to pair program with
-                user_list = list(content.get_partners_dict(course, self.get_user_info()["user_id"]).keys())
+                user_list = list(content.get_partner_info(course, self.get_user_info()["user_id"]).keys())
 
                 self.render("exercise.html", users=user_list, courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=help_request, same_suggestion=same_suggestion, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
 
@@ -1098,7 +1097,7 @@ class DeleteExerciseSubmissionsHandler(BaseUserHandler):
 class CheckPartnersHandler(BaseUserHandler):
     def post(self, course):
         partner_key = self.get_body_argument("partner_key")
-        partner_dict = content.get_partners_dict(course, self.get_user_info()["user_id"])
+        partner_dict = content.get_partner_info(course, self.get_user_info()["user_id"])
 
         # determine whether partner_key is a valid one while hiding student emails from the client side
         if partner_key in partner_dict.keys():
@@ -1128,7 +1127,7 @@ class RunCodeHandler(BaseUserHandler):
 
         self.write(json.dumps(out_dict))
 
-class PresubmissionHandler(BaseUserHandler):
+class SavePresubmissionHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         user_id = self.get_user_id()
         code = self.get_body_argument("user_code").replace("\r", "")
@@ -1140,7 +1139,7 @@ class SubmitHandler(BaseUserHandler):
 
         try:
             user_id = self.get_user_id()
-            partners_dict = content.get_partners_dict(course, user_id)
+            partners_dict = content.get_partner_info(course, user_id)
 
             partner_id = partners_dict[self.get_body_argument("partner_key")] if self.get_body_argument("partner_key") else None
             code = self.get_body_argument("user_code").replace("\r", "")
@@ -1189,7 +1188,7 @@ class GetPresubmissionHandler(BaseUserHandler):
             if user_info["user_id"] != student_id and not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
                 presubmission_info = ["Submissions may only be view by their author."]
             else:
-                presubmission_info = content.get_presubmission_info(course, assignment, exercise, student_id)
+                presubmission_info = content.get_presubmission(course, assignment, exercise, student_id)
         except:
             print(traceback.format_exc())
 

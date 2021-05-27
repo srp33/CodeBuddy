@@ -381,7 +381,8 @@
                               //show student's presubmission, if applicable
                               if (presubmission_data != null){
                                 editor.setValue(presubmission_data.code);
-                                document.getElementById("saved_div").innerHTML = "Code loaded from last session";
+                                if (document.getElementById("saved_div") != null)
+                                  document.getElementById("saved_div").innerHTML = "Code loaded from last session";
                               }
 
                               if (json_data.length > 0) {
@@ -398,7 +399,7 @@
                                       //show student's most recent submission
                                       if (i == 0 && presubmission_data == null)
                                           get_submission(submission_id, false);
-
+                                          
                                       if (passed)
                                           button_bg_color = "passing-btn-color";
                                       else
