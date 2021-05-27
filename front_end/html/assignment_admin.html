@@ -7,44 +7,6 @@
         <link rel="stylesheet" href="/static/modal.css">
 
         <script>
-            function showModal(modal_type) {
-                var modal = document.getElementById(`${modal_type}_modal`);
-                var span = document.getElementsById(`close_${modal_type}`)];
-                var confirm_text = document.getElementById(`confirm_${modal_type}`);
-
-                modal.style.display = "block";
-
-                if(modal_type == "delete") {
-                  confirm_text.innerHTML = 'Are you sure you want to delete this exercise?';
-                }
-
-                var cancelButton = document.getElementById(`${modal_type}_cancel_button`);
-                var modalButton = document.getElementById(`${modal_type}_button`);
-
-                modalButton.onclick = function() {
-                    if (modal_type == "delete") {
-                      $.post("/delete_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_id);
-                    }
-
-                    modal.style.display = "none";
-                    location.reload();
-                }
-
-                cancelButton.onclick = function() {
-                    modal.style.display = "none";
-                }
-
-                span.onclick = function() {
-                    modal.style.display = "none";
-                }
-
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                    modal.style.display = "none";
-                    }
-                }
-            }
-
             function showDeleteModal(exercise_id) {
                 var modal = document.getElementById("delete_exercise_modal");
                 var span = document.getElementsByClassName("close")[0];
@@ -215,10 +177,10 @@
                         <td class="has-text-centered">
                             <a onclick="showDeleteModal({{ exercise[1]['id'] }})">
                                 <i class="fas fa-trash-alt"></i>
-                            </a>
+                            </a> 
                         </td>
                     </tr>
-                {% end %}
+                {% end %}  
                 </tbody>
             </table>
 
@@ -272,7 +234,7 @@
         <div id="video_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <p><strong>Create video exercise</strong></p>
+                <p><strong>Create video exercise</strong></p>               
                 <p>Use this option to create an exercise that displays a YouTube video and asks the user to submit a response based on a prompt in the video.</p>
 
                 <p>Title:
