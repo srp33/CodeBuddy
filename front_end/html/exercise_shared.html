@@ -294,7 +294,6 @@
                        if (document.getElementById("pair_programming").value == "Yes") {
                          $.post("/check_partners/{{ course_basics['id'] }}", partner_key,
                             function(data, status) {
-                              console.log(JSON.parse(data))
                                 if(!(JSON.parse(data))) {
                                   document.getElementById("invalid_partner").innerHTML = "<div style='margin:15px 0px' class='space_div notification is-warning is-light smaller-font'>Invalid partner chosen, please try again.</div>";
                                 } else {
@@ -399,7 +398,7 @@
                                       //show student's most recent submission
                                       if (i == 0 && presubmission_data == null)
                                           get_submission(submission_id, false);
-                                          
+
                                       if (passed)
                                           button_bg_color = "passing-btn-color";
                                       else

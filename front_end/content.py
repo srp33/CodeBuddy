@@ -602,7 +602,7 @@ class Content:
         for user in user_duplicates_dict:
             if len(user_duplicates_dict[user]) > 1:
                 for id in user_duplicates_dict[user]:
-                    user_dict[user + " — " + self.obscure_email(id, user_duplicates_dict[user]) = id
+                    user_dict[user + " — " + self.obscure_email(id, user_duplicates_dict[user])] = id
             else:
                 user_dict[user] = user_duplicates_dict[user][0]
 
