@@ -315,6 +315,10 @@
         <div class="row-container">
             <div class="e-title-container">
                 <h4 style="display: inline-block;">{{ exercise_basics["assignment"]["title"] }}: {{ exercise_basics["title"] }}</h4>
+                {% if exercise_details["enable_pair_programming"] %}
+                <br>
+                <p style="display: inline-block;"><em>Pair programming enabled for this exercise</em></p>
+                {% end %}
             </div>
 
             <div class="buttons is-pulled-right">
