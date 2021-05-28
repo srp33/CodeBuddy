@@ -42,7 +42,7 @@
             {% end %}
 
             {% if is_administrator or is_instructor %}
-                | <a onclick="showMoveexerciseModal()">Move exercise</a><br />
+                | <a onclick="showMoveExerciseModal()">Move exercise</a><br />
                 <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
             {% end %}
 
@@ -55,7 +55,7 @@
             {% end %}
 
             <script>
-                function showMoveexerciseModal() {
+                function showMoveExerciseModal() {
                     var modal = document.getElementById("move_exercise_modal");
                     //var span = document.getElementsByClassName("close")[4];
                     modal.style.display = "block";
@@ -79,7 +79,7 @@
 
                 function showDeleteSubmissionsModal() {
                     var modal = document.getElementById("delete_submissions_modal");
-                    //var span = document.getElementsByClassName("close")[5];
+                    // var span = document.getElementsByClassName("close")[5];
                     modal.style.display = "block";
 
                     var deleteButton = document.getElementById("delete_submissions_button");
@@ -225,12 +225,14 @@
                  submitButton = document.getElementById("submit_button");
 
                  {% if exercise_details["enable_pair_programming"] %}
-                 submitButton.onclick = function() {
+                 if (submitButton != null)
+                  submitButton.onclick = function() {
                      submitModal()
                  }
                  {% else %}
-                 submitButton.onclick = function() {
-                     submit()
+                 (submitButton != null)
+                   submitButton.onclick = function() {
+                       submit()
                  }
                  {% end %}
 
@@ -241,7 +243,7 @@
                          return false;
 
                      // get partner_id
-                     let partner_id = document.getElementById("pair_programming").value == "Yes" ? document.getElementById("partner_id").value : null;
+                     let partner_key = document.getElementById("pair_programming").value == "Yes" ? document.getElementById("partner_key").value : null;
 
                      result_div = document.getElementById("result");
                      result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
@@ -255,7 +257,7 @@
                          {% end %}
                      {% end %}
 
-                     post_data = { "partner_id": partner_id, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
+                     post_data = { "partner_key": partner_key, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
 
                      $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
                          post_data,
@@ -278,7 +280,6 @@
                     editor.focus();
                     return false;
                  }
-
                  function submitModal() {
                      var modal = document.getElementById("submit_exercise_modal");
                      var span = document.getElementsByClassName("close")[4];
@@ -289,9 +290,23 @@
                      var modalSubmitButton = document.getElementById("modal_submit_button");
 
                      modalSubmitButton.onclick = function() {
-                        submit();
-                        modal.style.display = "none";
-                        location.reload();
+                       let partner_key = {"partner_key": document.getElementById("partner_key").value};
+                       if (document.getElementById("pair_programming").value == "Yes") {
+                         $.post("/check_partners/{{ course_basics['id'] }}", partner_key,
+                            function(data, status) {
+                                if(!(JSON.parse(data))) {
+                                  document.getElementById("invalid_partner").innerHTML = "<div style='margin:15px 0px' class='space_div notification is-warning is-light smaller-font'>Invalid partner chosen, please try again.</div>";
+                                } else {
+                                  submit();
+                                  modal.style.display = "none";
+                                  location.reload();
+                                }
+                         });
+                       } else {
+                         submit();
+                         modal.style.display = "none";
+                         location.reload();
+                       }
                      }
 
                      cancelButton.onclick = function() {
@@ -311,6 +326,9 @@
 
                  function get_submission(submission_id, scroll) {
                     var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
+                    if (document.getElementById("saved_div") != null)
+                        document.getElementById("saved_div").innerHTML = "";
+
                     var i;
                     for (i = 0; i < submission_buttons.length; i++) {
                         if (submission_buttons[i].id == submission_id)
@@ -338,7 +356,7 @@
                             check_code(json_data);
                         });
 
-                     if (scroll)
+                     if (scroll && document.getElementById("your_code_header") != null)
                         document.getElementById("your_code_header").scrollIntoView();
 
                     editor.focus();
@@ -353,39 +371,52 @@
                             var json_data = JSON.parse(data);
                             var submission_html = "";
                             var revert_html = "";
+                            var current_code = editor.getValue()
 
-                            if (json_data.length > 0) {
-                                submission_html += "<h6>Past submissions:</h6>\n";
-                                submission_html += "<div class='buttons'>\n";
-                                var i;
+                            $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+                            function(data, status) {
+                              var presubmission_data = JSON.parse(data);
 
-                                for (i = 0; i < json_data.length; i++) {
-                                    submission_id = json_data[i][0];
-                                    the_date = json_data[i][1];
-                                    passed = json_data[i][2];
-                                    partner_name = json_data[i][3]
+                              //show student's presubmission, if applicable
+                              if (presubmission_data != null){
+                                editor.setValue(presubmission_data.code);
+                                if (document.getElementById("saved_div") != null)
+                                  document.getElementById("saved_div").innerHTML = "Code loaded from last session";
+                              }
 
-                                    //show student's most recent submission
-                                    if (i == 0)
-                                        get_submission(submission_id, false);
+                              if (json_data.length > 0) {
+                                  submission_html += "<h6>Past submissions:</h6>\n";
+                                  submission_html += "<div class='buttons'>\n";
+                                  var i;
 
-                                    if (passed)
-                                        button_bg_color = "passing-btn-color";
-                                    else
-                                        button_bg_color = "failing-btn-color";
+                                  for (i = 0; i < json_data.length; i++) {
+                                      submission_id = json_data[i][0];
+                                      the_date = json_data[i][1];
+                                      passed = json_data[i][2];
+                                      partner_name = json_data[i][3]
 
-                                    var submission_date = new Date(the_date).toLocaleString();
+                                      //show student's most recent submission
+                                      if (i == 0 && presubmission_data == null)
+                                          get_submission(submission_id, false);
 
-                                    if (partner_name) {
-                                      submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
-                                    }
-                                    else {
-                                      submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
-                                    }
-                                                                    }
-                                submission_html += "</div><br />\n";
-                            }
-                            submissions_div.innerHTML = submission_html;
+                                      if (passed)
+                                          button_bg_color = "passing-btn-color";
+                                      else
+                                          button_bg_color = "failing-btn-color";
+
+                                      var submission_date = new Date(the_date).toLocaleString();
+
+                                      if (partner_name) {
+                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                      }
+                                      else {
+                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                      }
+                                                                      }
+                                  submission_html += "</div><br />\n";
+                              }
+                              submissions_div.innerHTML = submission_html;
+                            });
                         });
                 }
             </script>
@@ -398,6 +429,34 @@
                 minLines: 20,
                 fontSize: "12pt"
             });
+            let codeChanged = false
+
+            editor.session.on('change', function(delta) {
+              codeChanged = true
+            });
+
+            setInterval(function() {
+              // autosave if code has changed
+              if (codeChanged) {
+                save_presubmission();
+              }
+            }, 60 * 1000);
+
+            async function save_presubmission() {
+              user_code = editor.getValue();
+              if (user_code.trim() == "")
+                return false;
+              saved_div = document.getElementById("saved_div");
+              saved_div.innerHTML = "Please wait while your code is being saved...";
+              await $.post("/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", {"user_code": user_code});
+
+              codeChanged = false;
+              last_saved_at = new Intl.DateTimeFormat('default', {
+                hour: 'numeric',
+                minute: 'numeric',
+              }).format(Date.now())
+              saved_div.innerHTML = `Last saved at ${last_saved_at}`
+            }
 
             {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
                 editor.setOptions({
