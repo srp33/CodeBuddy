@@ -489,21 +489,24 @@
             }
 
           $('div[contenteditable]').bind('paste', function(e) {
-          	var data = e.originalEvent.clipboardData.items[0].getAsFile();
-          	var elem = this;
-          	var fr = new FileReader;
+            if (e.originalEvent.clipboardData.items[0].kind != "string") {
+            	var data = e.originalEvent.clipboardData.items[0].getAsFile()
+            	var elem = this;
+            	var fr = new FileReader;
 
-          	fr.onloadend = function() {
-          	  var img = new Image;
-          	  img.src = fr.result;
-          	  img.onload = function() {
-          		  $(elem).append(img);
-          	  };
-          	};
+            	fr.onloadend = function() {
+            	  var img = new Image;
+            	  img.src = fr.result;
+            	  img.onload = function() {
+            		  $(elem).append(img);
+            	  };
+            	};
 
-          	fr.readAsDataURL(data);
-          	e.preventDefault();
+            	fr.readAsDataURL(data);
+            	e.preventDefault();
+            }
           });
+
         </script>
         </form>
     {% else %}

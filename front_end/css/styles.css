@@ -455,5 +455,5 @@ div[contenteditable] {
 }
 
 div[contenteditable] img {
-  height: 20em;
+  max-height: 20em;
 }
