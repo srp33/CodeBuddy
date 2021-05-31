@@ -78,7 +78,6 @@
                 var span = document.getElementsByClassName("close")[0];
                 var copyText = document.getElementById("share_link");
                 modal.style.display = "block";
-
                 span.onclick = function() {
                     modal.style.display = "none";
                 }
@@ -207,6 +206,7 @@
                     partner_selection.style.display = "none";
                 }
             }
+
         </script>
 
         <!--The following divs contain all of the modals for this page-->
@@ -294,12 +294,12 @@
                 <input class="space_div input is-primary" list="users_list" id="partner_key" placeholder="Enter partner's name here...">
                 <datalist id="users_list">
                         {% for user in users %}
-                            <option value={{ user["id"] }}>{{ user["name"] }}</option>
+                            <option value='{{ user }}'></option>
                         {% end %}
-                    </select>
-                    {% else %}
-                    <p>There are no other registered students in this course.</p>
-                    {% end %}
+                </datalist>
+                {% else %}
+                <p>There are no other registered students in this course.</p>
+                {% end %}
                 </div>
 
                 <p class="buttons">
