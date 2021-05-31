@@ -1,253 +1,341 @@
-<link rel="stylesheet" href="/static/modal.css">
+            <link rel="stylesheet" href="/static/modal.css">
 
-           <!--The next two divs contain the modals for this page-->
+            <!--The next two divs contain the modals for this page-->
 
-           <div id="move_exercise_modal" class="modal">
-               <form method="post" action="/move_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
-               <div class="modal-content">
-                   <!--<span class="close">&times;</span>-->
-                   <p>Move an exercise to a different assignment:</p>
-                   <div class="select is-light">
-                       <select name="new_assignment_id" id="new_assignment_id">
-                       {% for assignment in assignment_options %}
-                           <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
-                       {% end %}
-                       </select>
-                   </div>
-                   <p class="buttons">
-                       <a id="move_cancel_button" class="modal-button button is-light">Cancel</a>
-                       <input type="submit" id="move_button" class="modal-button button is-dark" value="Move"/>
-                   </p>
-               </div>
-               </form>
-           </div>
+            <div id="move_exercise_modal" class="modal">
+                <form method="post" action="/move_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
+                <div class="modal-content">
+                    <!--<span class="close">&times;</span>-->
+                    <p>Move an exercise to a different assignment:</p>
+                    <div class="select is-light">
+                        <select name="new_assignment_id" id="new_assignment_id">
+                        {% for assignment in assignment_options %}
+                            <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
+                        {% end %}
+                        </select>
+                    </div>
+                    <p class="buttons">
+                        <a id="move_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="move_button" class="modal-button button is-dark" value="Move"/>
+                    </p>
+                </div>
+                </form>
+            </div>
 
-           <div id="delete_submissions_modal" class="modal">
-               <div class="modal-content">
-                   <!--<span class="close">&times;</span>-->
-                   <p>Are you sure you want to delete all submissions for this exercise?</p>
-                   <p><font color="red">This will also delete all scores for this exercise.</font></p>
-                   <p class="buttons">
-                       <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
-                       <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
-                   </p>
-               </div>
-           </div>
+            <div id="delete_submissions_modal" class="modal">
+                <div class="modal-content">
+                    <!--<span class="close">&times;</span>-->
+                    <p>Are you sure you want to delete all submissions for this exercise?</p>
+                    <p><font color="red">This will also delete all scores for this exercise.</font></p>
+                    <p class="buttons">
+                        <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
+                    </p>
+                </div>
+            </div>
 
-           <!--Navigation links at the bottom of the page-->
+            <!--Navigation links at the bottom of the page-->
 
-           <p>
-           {% if is_administrator or is_instructor or is_assistant %}
-               <a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a>
-           {% end %}
+            <p>
+            {% if is_administrator or is_instructor or is_assistant %}
+                <a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a>
+            {% end %}
 
-           {% if is_administrator or is_instructor %}
-               | <a onclick="showMoveExerciseModal()">Move exercise</a><br />
-               <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
-           {% end %}
+            {% if is_administrator or is_instructor %}
+                | <a onclick="showMoveExerciseModal()">Move exercise</a><br />
+                <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
+            {% end %}
 
-           </p>
+            </p>
 
-           <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a>
+            <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a>
 
-           {% if student_id == user_id %}
-               <br /><br />
-           {% end %}
+            {% if student_id == user_id %}
+                <br /><br />
+            {% end %}
 
-           <script>
-               function showMoveExerciseModal() {
-                   var modal = document.getElementById("move_exercise_modal");
-                   //var span = document.getElementsByClassName("close")[4];
-                   modal.style.display = "block";
+            <script>
+                function showMoveExerciseModal() {
+                    var modal = document.getElementById("move_exercise_modal");
+                    //var span = document.getElementsByClassName("close")[4];
+                    modal.style.display = "block";
 
-                   var cancelButton = document.getElementById("move_cancel_button");
+                    var cancelButton = document.getElementById("move_cancel_button");
 
-                   cancelButton.onclick = function() {
-                       modal.style.display = "none";
-                   }
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
 
-                   /*span.onclick = function() {
-                       modal.style.display = "none";
-                   }*/
+                    /*span.onclick = function() {
+                        modal.style.display = "none";
+                    }*/
 
-                   window.onclick = function(event) {
-                       if (event.target == modal) {
-                           modal.style.display = "none";
-                       }
-                   }
-               }
-
-               function showDeleteSubmissionsModal() {
-                   var modal = document.getElementById("delete_submissions_modal");
-                   // var span = document.getElementsByClassName("close")[5];
-                   modal.style.display = "block";
-
-                   var deleteButton = document.getElementById("delete_submissions_button");
-                   var cancelButton = document.getElementById("delete_submissions_cancel_button");
-
-                   deleteButton.onclick = function() {
-                       $.post("/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}");
-                       modal.style.display = "none";
-                       location.reload();
-                   }
-
-                   cancelButton.onclick = function() {
-                       modal.style.display = "none";
-                   }
-
-                   /*span.onclick = function() {
-                       modal.style.display = "none";
-                   }*/
-
-                   window.onclick = function(event) {
-                       if (event.target == modal) {
-                           modal.style.display = "none";
-                       }
-                   }
-               }
-
-               function build_text_output(json_output) {
-                   var output = "";
-
-                   if (json_output == "")
-                       {% if exercise_details["output_type"] == "txt" %}
-                           output = "<p><pre>[Your solution produced no output.]</pre></p>";
-                       {% else %}
-                           output = "";
-                       {% end %}
-                   else
-                       output = "<p><pre>" + json_output + "</pre></p>";
-
-                   return output;
-               }
-
-               function build_image_output(json_output) {
-                   var output = "";
-
-                   if (json_output == "")
-                       {% if exercise_details["output_type"] == "jpg" %}
-                           output = "<p><pre>[Your solution did not produce an image.]</pre></p>";
-                       {% else %}
-                           output = "";
-                       {% end %}
-                   else
-                       output = "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
-
-                   return output;
-               }
-
-               function check_code(json_data) {
-                   var result = "";
-
-                   if (json_data.passed) {
-                       {% if exercise_details["back_end"] == "any_response" %}
-                           result = "<div class='notification success-message' style='color:white'><p><strong>Thank you for your submission.</strong></p>\n\n";
-                       {% else %}
-                           result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
-                       {% end %}
-
-                       {% if exercise_details["show_student_submissions"] %}
-                           result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a></p>";
-                       {% elif exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
-                           result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
-                       {% end %}
-
-                       {% if next_exercise %}
-                           result += "<p><a class='grey-text' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
-                       {% end %}
-
-                       result += "</div>\n\n"
-                   }
-                   else {
-                       // This should never be reached when exercise_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
-                       result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
-
-                       {% if exercise_details["show_expected"] %}
-                           var diff_output = "";
-
-                           if (json_data.diff.length > 0) {
-                               diff_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
-                               {% if exercise_details["output_type"] == "txt" %}
-                                   diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                               {% else %}
-                                   diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
-                               {% end %}
-                           }
-
-                           document.getElementById("diff_output").innerHTML = diff_output;
-                       {% end %}
-                   }
-
-                   document.getElementById("result").innerHTML = result;
-
-                   {% if exercise_details["back_end"] != "any_response" %}
-                       var code_output = "<h6>Your output:</h6>\n\n";
-                       code_output += build_text_output(json_data.text_output);
-                       code_output += build_image_output(json_data.image_output);
-                       document.getElementById("code_output").innerHTML = code_output;
-                   {% end %}
-               }
-
-               function run_code() {
-                   user_code = editor.getSelectedText();
-                   if (user_code.trim() == "")
-                       user_code = editor.getValue();
-                   if (user_code.trim() == "")
-                       return false;
-
-                   result_div = document.getElementById("result");
-                   result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
-                   result_div.scrollIntoView();
-                   document.getElementById("code_output").innerHTML = "";
-
-                   {% if exercise_details["show_expected"] %}
-                       document.getElementById("diff_output").innerHTML = "";
-                   {% end %}
-
-                   post_data = { "user_code": user_code };
-
-                   $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                       post_data,
-                       function(data, status) {
-                           var json_data = JSON.parse(data);
-
-                           var code_output = "<h6>Your output:</h6>\n\n";
-                           code_output += build_text_output(json_data.text_output);
-                           code_output += build_image_output(json_data.image_output);
-                           document.getElementById("code_output").innerHTML = code_output;
-
-                           document.getElementById("result").innerHTML = "";
-                       })
-                   editor.focus();
-                   return false;
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
                 }
 
-                submitButton = document.getElementById("submit_button");
+                function showDeleteSubmissionsModal() {
+                    var modal = document.getElementById("delete_submissions_modal");
+                    // var span = document.getElementsByClassName("close")[5];
+                    modal.style.display = "block";
 
-                {% if exercise_details["enable_pair_programming"] %}
-                if (submitButton != null)
-                 submitButton.onclick = function() {
-                    submitModal()
+                    var deleteButton = document.getElementById("delete_submissions_button");
+                    var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+                    deleteButton.onclick = function() {
+                        $.post("/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}");
+                        modal.style.display = "none";
+                        location.reload();
+                    }
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    /*span.onclick = function() {
+                        modal.style.display = "none";
+                    }*/
+
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
                 }
-                {% else %}
-                (submitButton != null)
-                  submitButton.onclick = function() {
-                      submit()
+
+                function build_text_output(json_output) {
+                    var output = "";
+
+                    if (json_output == "")
+                        {% if exercise_details["output_type"] == "txt" %}
+                            output = "<p><pre>[Your solution produced no output.]</pre></p>";
+                        {% else %}
+                            output = "";
+                        {% end %}
+                    else
+                        output = "<p><pre>" + json_output + "</pre></p>";
+
+                    return output;
                 }
-                {% end %}
 
-                function submit() {
-                    user_code = editor.getValue();
+                function build_image_output(json_output) {
+                    var output = "";
 
+                    if (json_output == "")
+                        {% if exercise_details["output_type"] == "jpg" %}
+                            output = "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                        {% else %}
+                            output = "";
+                        {% end %}
+                    else
+                        output = "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
+
+                    return output;
+                }
+
+                function check_code(json_data) {
+                    var result = "";
+
+                    if (json_data.passed) {
+                        {% if exercise_details["back_end"] == "any_response" %}
+                            result = "<div class='notification success-message' style='color:white'><p><strong>Thank you for your submission.</strong></p>\n\n";
+                        {% else %}
+                            result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
+                        {% end %}
+
+                        {% if exercise_details["show_student_submissions"] %}
+                            result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a></p>";
+                        {% elif exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
+                            result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
+                        {% end %}
+
+                        {% if next_exercise %}
+                            result += "<p><a class='grey-text' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
+                        {% end %}
+
+                        result += "</div>\n\n"
+                    }
+                    else {
+                        // This should never be reached when exercise_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
+                        result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+
+                        {% if exercise_details["show_expected"] %}
+                            var diff_output = "";
+
+                            if (json_data.diff.length > 0) {
+                                diff_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
+                                {% if exercise_details["output_type"] == "txt" %}
+                                    diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                {% else %}
+                                    diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
+                                {% end %}
+                            }
+
+                            document.getElementById("diff_output").innerHTML = diff_output;
+                        {% end %}
+                    }
+
+                    document.getElementById("result").innerHTML = result;
+
+                    {% if exercise_details["back_end"] != "any_response" %}
+                        var code_output = "<h6>Your output:</h6>\n\n";
+                        code_output += build_text_output(json_data.text_output);
+                        code_output += build_image_output(json_data.image_output);
+                        document.getElementById("code_output").innerHTML = code_output;
+                    {% end %}
+                }
+
+                function run_code() {
+                    user_code = editor.getSelectedText();
+                    if (user_code.trim() == "")
+                        user_code = editor.getValue();
                     if (user_code.trim() == "")
                         return false;
-
-                    // get partner_id
-                    let partner_key = document.getElementById("pair_programming").value == "Yes" ? document.getElementById("partner_key").value : null;
 
                     result_div = document.getElementById("result");
                     result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
                     result_div.scrollIntoView();
+                    document.getElementById("code_output").innerHTML = "";
+
+                    {% if exercise_details["show_expected"] %}
+                        document.getElementById("diff_output").innerHTML = "";
+                    {% end %}
+
+                    post_data = { "user_code": user_code };
+
+                    $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                        post_data,
+                        function(data, status) {
+                            var json_data = JSON.parse(data);
+
+                            var code_output = "<h6>Your output:</h6>\n\n";
+                            code_output += build_text_output(json_data.text_output);
+                            code_output += build_image_output(json_data.image_output);
+                            document.getElementById("code_output").innerHTML = code_output;
+
+                            document.getElementById("result").innerHTML = "";
+                        })
+                    editor.focus();
+                    return false;
+                 }
+
+                 submitButton = document.getElementById("submit_button");
+
+                 {% if exercise_details["enable_pair_programming"] %}
+                 if (submitButton != null)
+                  submitButton.onclick = function() {
+                     submitModal()
+                 }
+                 {% else %}
+                 (submitButton != null)
+                   submitButton.onclick = function() {
+                       submit()
+                 }
+                 {% end %}
+
+                 function submit() {
+                     user_code = editor.getValue();
+
+                     if (user_code.trim() == "")
+                         return false;
+
+                     // get partner_id
+                     let partner_key = document.getElementById("pair_programming").value == "Yes" ? document.getElementById("partner_key").value : null;
+
+                     result_div = document.getElementById("result");
+                     result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
+                     result_div.scrollIntoView();
+
+                     {% if exercise_details["back_end"] != "any_response" %}
+                         document.getElementById("code_output").innerHTML = "";
+
+                         {% if exercise_details["show_expected"] %}
+                             document.getElementById("diff_output").innerHTML = "";
+                         {% end %}
+                     {% end %}
+
+                     post_data = { "partner_key": partner_key, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
+
+                     $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                         post_data,
+                        function(data, status) {
+                            json_data = JSON.parse(data);
+                            check_code(json_data);
+
+                            if (json_data.submission_id != "") {
+                                show_past_submissions();
+                                last_submission_id = json_data.submission_id;
+
+                                {% if exercise_details["max_submissions"] > 0 %}
+                                    document.getElementById("num_submissions").innerHTML = last_submission_id;
+
+                                    if (last_submission_id >= {{ exercise_details["max_submissions"] }})
+                                        document.getElementById("submit_button").disabled = true;
+                                {% end %}
+                            }
+                        });
+                    editor.focus();
+                    return false;
+                 }
+                 function submitModal() {
+                     var modal = document.getElementById("submit_exercise_modal");
+                     var span = document.getElementsByClassName("close")[4];
+
+                     modal.style.display = "block";
+
+                     var cancelButton = document.getElementById("submit_cancel_button");
+                     var modalSubmitButton = document.getElementById("modal_submit_button");
+
+                     modalSubmitButton.onclick = function() {
+                       let partner_key = {"partner_key": document.getElementById("partner_key").value};
+                       if (document.getElementById("pair_programming").value == "Yes") {
+                         $.post("/check_partners/{{ course_basics['id'] }}", partner_key,
+                            function(data, status) {
+                                if(!(JSON.parse(data))) {
+                                  document.getElementById("invalid_partner").innerHTML = "<div style='margin:15px 0px' class='space_div notification is-warning is-light smaller-font'>Invalid partner chosen, please try again.</div>";
+                                } else {
+                                  submit();
+                                  modal.style.display = "none";
+                                  location.reload();
+                                }
+                         });
+                       } else {
+                         submit();
+                         modal.style.display = "none";
+                         location.reload();
+                       }
+                     }
+
+                     cancelButton.onclick = function() {
+                         modal.style.display = "none";
+                     }
+
+                     span.onclick = function() {
+                         modal.style.display = "none";
+                     }
+
+                     window.onclick = function(event) {
+                         if (event.target == modal) {
+                             modal.style.display = "none";
+                         }
+                     }
+                 }
+
+                 function get_submission(submission_id, scroll) {
+                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
+                    if (document.getElementById("saved_div") != null)
+                        document.getElementById("saved_div").innerHTML = "";
+
+                    var i;
+                    for (i = 0; i < submission_buttons.length; i++) {
+                        if (submission_buttons[i].id == submission_id)
+                            submission_buttons[i].style.border = "solid #34495e";
+                        else
+                            submission_buttons[i].style.border = "none";
+                    }
 
                     {% if exercise_details["back_end"] != "any_response" %}
                         document.getElementById("code_output").innerHTML = "";
@@ -257,230 +345,142 @@
                         {% end %}
                     {% end %}
 
-                    post_data = { "partner_key": partner_key, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
+                    {% if exercise_details["show_expected"] and exercise_details["back_end"] != "any_response" %}
+                        document.getElementById("diff_output").innerHTML = "";
+                    {% end %}
 
-                    $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                        post_data,
-                       function(data, status) {
-                           json_data = JSON.parse(data);
-                           check_code(json_data);
-
-                           if (json_data.submission_id != "") {
-                               show_past_submissions();
-                               last_submission_id = json_data.submission_id;
-
-                               {% if exercise_details["max_submissions"] > 0 %}
-                                   document.getElementById("num_submissions").innerHTML = last_submission_id;
-
-                                   if (last_submission_id >= {{ exercise_details["max_submissions"] }})
-                                       document.getElementById("submit_button").disabled = true;
-                               {% end %}
-                           }
-                       });
-                   editor.focus();
-                   return false;
-                }
-                function submitModal() {
-                    var modal = document.getElementById("submit_exercise_modal");
-                    var span = document.getElementsByClassName("close")[4];
-
-                    modal.style.display = "block";
-
-                    var cancelButton = document.getElementById("submit_cancel_button");
-                    var modalSubmitButton = document.getElementById("modal_submit_button");
-
-                    modalSubmitButton.onclick = function() {
-                      let partner_key = {"partner_key": document.getElementById("partner_key").value};
-                      if (document.getElementById("pair_programming").value == "Yes") {
-                        $.post("/check_partners/{{ course_basics['id'] }}", partner_key,
-                           function(data, status) {
-                               if(!(JSON.parse(data))) {
-                                 document.getElementById("invalid_partner").innerHTML = "<div style='margin:15px 0px' class='space_div notification is-warning is-light smaller-font'>Invalid partner chosen, please try again.</div>";
-                               } else {
-                                 submit();
-                                 modal.style.display = "none";
-                                 location.reload();
-                               }
+                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id,
+                        function (data, status) {
+                            var json_data = JSON.parse(data);
+                            editor.setValue(json_data.code, 1);
+                            check_code(json_data);
                         });
-                      } else {
-                        submit();
-                        modal.style.display = "none";
-                        location.reload();
-                      }
-                    }
 
-                    cancelButton.onclick = function() {
-                        modal.style.display = "none";
-                    }
+                     if (scroll && document.getElementById("your_code_header") != null)
+                        document.getElementById("your_code_header").scrollIntoView();
 
-                    span.onclick = function() {
-                        modal.style.display = "none";
-                    }
+                    editor.focus();
 
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                            modal.style.display = "none";
-                        }
-                    }
+                    return false;
                 }
 
-                function get_submission(submission_id, scroll) {
-                   var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                   if (document.getElementById("saved_div") != null)
-                       document.getElementById("saved_div").innerHTML = "";
+                function show_past_submissions() {
+                    submissions_div = document.getElementById("submissions");
+                    $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+                        function (data, status) {
+                            var json_data = JSON.parse(data);
+                            var submission_html = "";
+                            var revert_html = "";
+                            var current_code = editor.getValue()
 
-                   var i;
-                   for (i = 0; i < submission_buttons.length; i++) {
-                       if (submission_buttons[i].id == submission_id)
-                           submission_buttons[i].style.border = "solid #34495e";
-                       else
-                           submission_buttons[i].style.border = "none";
-                   }
+                            $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+                            function(data, status) {
+                              var presubmission_data = JSON.parse(data);
 
-                   {% if exercise_details["back_end"] != "any_response" %}
-                       document.getElementById("code_output").innerHTML = "";
+                              //show student's presubmission, if applicable
+                              if (presubmission_data != null){
+                                editor.setValue(presubmission_data.code);
+                                if (document.getElementById("saved_div") != null)
+                                  document.getElementById("saved_div").innerHTML = "Code loaded from last session";
+                              }
 
-                       {% if exercise_details["show_expected"] %}
-                           document.getElementById("diff_output").innerHTML = "";
-                       {% end %}
-                   {% end %}
+                              if (json_data.length > 0) {
+                                  submission_html += "<h6>Past submissions:</h6>\n";
+                                  submission_html += "<div class='buttons'>\n";
+                                  var i;
 
-                   {% if exercise_details["show_expected"] and exercise_details["back_end"] != "any_response" %}
-                       document.getElementById("diff_output").innerHTML = "";
-                   {% end %}
+                                  for (i = 0; i < json_data.length; i++) {
+                                      submission_id = json_data[i][0];
+                                      the_date = json_data[i][1];
+                                      passed = json_data[i][2];
+                                      partner_name = json_data[i][3]
 
-                   $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id,
-                       function (data, status) {
-                           var json_data = JSON.parse(data);
-                           editor.setValue(json_data.code, 1);
-                           check_code(json_data);
-                       });
+                                      //show student's most recent submission
+                                      if (i == 0 && presubmission_data == null)
+                                          get_submission(submission_id, false);
 
-                    if (scroll && document.getElementById("your_code_header") != null)
-                       document.getElementById("your_code_header").scrollIntoView();
+                                      if (passed)
+                                          button_bg_color = "passing-btn-color";
+                                      else
+                                          button_bg_color = "failing-btn-color";
 
-                   editor.focus();
+                                      var submission_date = new Date(the_date).toLocaleString();
 
-                   return false;
-               }
+                                      if (partner_name) {
+                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                      }
+                                      else {
+                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                      }
+                                                                      }
+                                  submission_html += "</div><br />\n";
+                              }
+                              submissions_div.innerHTML = submission_html;
+                            });
+                        });
+                }
+            </script>
 
-               function show_past_submissions() {
-                   submissions_div = document.getElementById("submissions");
-                   $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
-                       function (data, status) {
-                           var json_data = JSON.parse(data);
-                           var submission_html = "";
-                           var revert_html = "";
-                           var current_code = editor.getValue()
+            <script>
+            ace.require("ace/ext/language_tools");
+            var editor = ace.edit("user_code", {
+                theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                autoScrollEditorIntoView: false,
+                minLines: 20,
+                fontSize: "12pt"
+            });
+            let codeChanged = false
 
-                           $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
-                           function(data, status) {
-                             var presubmission_data = JSON.parse(data);
+            editor.session.on('change', function(delta) {
+              codeChanged = true
+            });
 
-                             //show student's presubmission, if applicable
-                             if (presubmission_data != null){
-                               editor.setValue(presubmission_data.code);
-                               if (document.getElementById("saved_div") != null)
-                                 document.getElementById("saved_div").innerHTML = "Code loaded from last session";
-                             }
+            setInterval(function() {
+              // autosave if code has changed
+              if (codeChanged) {
+                save_presubmission();
+              }
+            }, 60 * 1000);
 
-                             if (json_data.length > 0) {
-                                 submission_html += "<h6>Past submissions:</h6>\n";
-                                 submission_html += "<div class='buttons'>\n";
-                                 var i;
+            async function save_presubmission() {
+              user_code = editor.getValue();
+              if (user_code.trim() == "")
+                return false;
+              saved_div = document.getElementById("saved_div");
+              saved_div.innerHTML = "Please wait while your code is being saved...";
+              await $.post("/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", {"user_code": user_code});
 
-                                 for (i = 0; i < json_data.length; i++) {
-                                     submission_id = json_data[i][0];
-                                     the_date = json_data[i][1];
-                                     passed = json_data[i][2];
-                                     partner_name = json_data[i][3]
+              codeChanged = false;
+              last_saved_at = new Intl.DateTimeFormat('default', {
+                hour: 'numeric',
+                minute: 'numeric',
+              }).format(Date.now())
+              saved_div.innerHTML = `Last saved at ${last_saved_at}`
+            }
 
-                                     //show student's most recent submission
-                                     if (i == 0 && presubmission_data == null)
-                                         get_submission(submission_id, false);
+            {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
+                editor.setOptions({
+                    enableBasicAutocompletion: false,
+                    enableSnippets: true,
+                    enableLiveAutocompletion: true
+                });
+            {% end %}
 
-                                     if (passed)
-                                         button_bg_color = "passing-btn-color";
-                                     else
-                                         button_bg_color = "failing-btn-color";
+            editor.focus();
+            editor.getSession().setMode("{{ code_completion_path }}");
+            show_past_submissions();
+            last_submission_id = {{ num_submissions }};
 
-                                     var submission_date = new Date(the_date).toLocaleString();
+            if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
+                document.getElementById("submit_button").disabled = true;
+            </script>
 
-                                     if (partner_name) {
-                                       submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
-                                     }
-                                     else {
-                                       submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
-                                     }
-                                                                     }
-                                 submission_html += "</div><br />\n";
-                             }
-                             submissions_div.innerHTML = submission_html;
-                           });
-                       });
-               }
-           </script>
-
-           <script>
-           ace.require("ace/ext/language_tools");
-           var editor = ace.edit("user_code", {
-               theme: "ace/theme/{{ user_info['ace_theme'] }}",
-               autoScrollEditorIntoView: false,
-               minLines: 20,
-               fontSize: "12pt"
-           });
-           let codeChanged = false
-
-           editor.session.on('change', function(delta) {
-             codeChanged = true
-           });
-
-           setInterval(function() {
-             // autosave if code has changed
-             if (codeChanged) {
-               save_presubmission();
-             }
-           }, 60 * 1000);
-
-           async function save_presubmission() {
-             user_code = editor.getValue();
-             if (user_code.trim() == "")
-               return false;
-             saved_div = document.getElementById("saved_div");
-             saved_div.innerHTML = "Please wait while your code is being saved...";
-             await $.post("/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", {"user_code": user_code});
-
-             codeChanged = false;
-             last_saved_at = new Intl.DateTimeFormat('default', {
-               hour: 'numeric',
-               minute: 'numeric',
-             }).format(Date.now())
-             saved_div.innerHTML = `Last saved at ${last_saved_at}`
-           }
-
-           {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
-               editor.setOptions({
-                   enableBasicAutocompletion: false,
-                   enableSnippets: true,
-                   enableLiveAutocompletion: true
-               });
-           {% end %}
-
-           editor.focus();
-           editor.getSession().setMode("{{ code_completion_path }}");
-           show_past_submissions();
-           last_submission_id = {{ num_submissions }};
-
-           if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
-               document.getElementById("submit_button").disabled = true;
-           </script>
-
-       {% else %}
-           <p>This exercise does not exist.</p>
-       {% end %}
-   {% else %}
-       <p>This assignment does not exist.</p>
-   {% end %}
+        {% else %}
+            <p>This exercise does not exist.</p>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
 {% else %}
-   <p>This course does not exist.</p>
+    <p>This course does not exist.</p>
 {% end %}
