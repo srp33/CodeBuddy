@@ -134,8 +134,12 @@ def prepare_code(info):
 
     # Save the check code to a file that will be accessible inside the container.
     if len(info.check_code) > 0:
-        with open(f"{tmp_dir_path}/check_code", "w") as test_file:
-            test_file.write(info.check_code)
+        with open(f"{tmp_dir_path}/check_code", "w") as check_file:
+            check_file.write(info.check_code)
+            
+    if len(info.test_code) > 0:
+        with open(f"{tmp_dir_path}/test_code", "w") as test_file:
+            test_file.write(info.test_code)
 
     # Save any data files so they will be accessible inside the container.
     for key, value in info.data_files.items():
