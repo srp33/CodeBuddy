@@ -29,37 +29,8 @@ def hello():
 
 @app.post("/check_code/")
 def check_code(info: ExecInfo):
-    base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
-    cpus = 1
-    tmp_dir_path = None
-
+    base_tmp_dir_path, cpus, tmp_dir_path = prepare_code(info)
     try:
-        # This is meant to identify any old temp directories that inadvertently were not deleted.
-        # This is not the best design, but it is simple.
-        # It means we don't need to configure a separate process to run in the background.
-        remove_old_temp_dirs(base_tmp_dir_path)
-
-        os.makedirs(base_tmp_dir_path, exist_ok=True)
-        tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
-
-        # Save the user's code to a file that will be accessible inside the container.
-        with open(f"{tmp_dir_path}/code", "w") as code_file:
-            code_file.write(info.code)
-
-        replaceQuotes = info.code.replace("\"","\\\"")
-        replaceQuotes = replaceQuotes.replace("\n","\\")
-        checkCode = "student_code = \"" + replaceQuotes + "\"\n" + info.check_code
-
-        # Save the check code to a file that will be accessible inside the container.
-        if len(info.check_code) > 0:
-            with open(f"{tmp_dir_path}/check_code", "w") as test_file:
-                test_file.write(checkCode)
-
-        # Save any data files so they will be accessible inside the container.
-        for key, value in info.data_files.items():
-            with open(f"{tmp_dir_path}/{key}", "w") as data_file:
-                data_file.write(value)
-
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
         docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/check_code True ''"
 
@@ -81,8 +52,9 @@ def check_code(info: ExecInfo):
                 continue
             text_output_lines.append(text_output_line)
 
-        instructor_output = "\n".join(text_output_lines).lower()
-        code_passed = False if "error" in instructor_output or "exception" in instructor_output or "traceback" in instructor_output else True
+        instructor_output = "\n".join(text_output_lines)
+        code_passed = False if len(instructor_output) > 0 else True
+
         if not code_passed:
             instructor_output = "\n".join(text_output_lines[-2:])
         return {"instructor_output": instructor_output, "code_passed": code_passed}
@@ -94,33 +66,8 @@ def check_code(info: ExecInfo):
 
 @app.post("/exec/")
 def exec(info: ExecInfo):
-    base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
-    cpus = 1
-    tmp_dir_path = None
-
+    base_tmp_dir_path, cpus, tmp_dir_path = prepare_code(info)
     try:
-        # This is meant to identify any old temp directories that inadvertently were not deleted.
-        # This is not the best design, but it is simple.
-        # It means we don't need to configure a separate process to run in the background.
-        remove_old_temp_dirs(base_tmp_dir_path)
-
-        os.makedirs(base_tmp_dir_path, exist_ok=True)
-        tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
-
-        # Save the user's code to a file that will be accessible inside the container.
-        with open(f"{tmp_dir_path}/code", "w") as code_file:
-            code_file.write(info.code)
-
-        # Save the test code to a file that will be accessible inside the container.
-        if len(info.test_code) > 0:
-            with open(f"{tmp_dir_path}/test_code", "w") as test_file:
-                test_file.write(info.test_code)
-
-        # Save any data files so they will be accessible inside the container.
-        for key, value in info.data_files.items():
-            with open(f"{tmp_dir_path}/{key}", "w") as data_file:
-                data_file.write(value)
-
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
         docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/test_code False {info.output_type}"
 
@@ -128,7 +75,6 @@ def exec(info: ExecInfo):
 
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
         stdout = result.stdout.decode().replace(docker_warning, "").strip()
-
         # Check whether the command timed out.
         if result.returncode == 137 or stdout == "Killed":
             return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": ""}
@@ -167,3 +113,33 @@ def remove_old_temp_dirs(dir_path):
         itemTime = arrow.get(item.stat().st_mtime)
         if itemTime < criticalTime:
             shutil.rmtree(item, ignore_errors=True)
+
+
+def prepare_code(info):
+    base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
+    cpus = 1
+    tmp_dir_path = None
+
+    # This is meant to identify any old temp directories that inadvertently were not deleted.
+    # This is not the best design, but it is simple.
+    # It means we don't need to configure a separate process to run in the background.
+    remove_old_temp_dirs(base_tmp_dir_path)
+
+    os.makedirs(base_tmp_dir_path, exist_ok=True)
+    tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
+
+    # Save the user's code to a file that will be accessible inside the container.
+    with open(f"{tmp_dir_path}/code", "w") as code_file:
+        code_file.write(info.code)
+
+    # Save the check code to a file that will be accessible inside the container.
+    if len(info.check_code) > 0:
+        with open(f"{tmp_dir_path}/check_code", "w") as test_file:
+            test_file.write(info.check_code)
+
+    # Save any data files so they will be accessible inside the container.
+    for key, value in info.data_files.items():
+        with open(f"{tmp_dir_path}/{key}", "w") as data_file:
+            data_file.write(value)
+
+    return base_tmp_dir_path, cpus, tmp_dir_path
