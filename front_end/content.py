@@ -535,7 +535,7 @@ class Content:
     def get_exercises(self, course_id, assignment_id, show_hidden=True):
         exercises = []
 
-        sql = '''SELECT exercise_id, title, visible, enable_pair_programming
+        sql = '''SELECT exercise_id, title, visible
                  FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -544,7 +544,7 @@ class Content:
         for exercise in self.fetchall(sql, (course_id, assignment_id,)):
             if exercise["visible"] or show_hidden:
                 assignment_basics = self.get_assignment_basics(course_id, assignment_id)
-                exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
+                exercise_basics = {"id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
                 exercises.append([exercise["exercise_id"], exercise_basics, course_id, assignment_id])
 
         return exercises
@@ -698,7 +698,6 @@ class Content:
 
         sql = '''SELECT e.exercise_id,
                         e.title,
-                        e.enable_pair_programming,
                         IFNULL(MAX(s.passed), 0) AS passed,
                         COUNT(s.submission_id) AS num_submissions,
                         COUNT(s.submission_id) > 0 AND IFNULL(MAX(s.passed), 0) = 0 AS in_progress,
@@ -722,7 +721,7 @@ class Content:
 
         exercise_statuses = []
         for row in self.fetchall(sql, (user_id, user_id, int(course_id), int(assignment_id),)):
-            exercise_dict = {"id": row["exercise_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"], "score": row["score"], "enable_pair_programming": row["enable_pair_programming"]}
+            exercise_dict = {"id": row["exercise_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"], "score": row["score"]}
             exercise_statuses.append([row["exercise_id"], exercise_dict])
 
         return exercise_statuses
