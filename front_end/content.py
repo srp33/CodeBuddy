@@ -585,6 +585,48 @@ class Content:
 
         return registered_courses
 
+    def get_partner_info(self, course, user_id):
+        # get list of users
+        users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
+
+        # add users to dict to find duplicate names
+        user_duplicates_dict = {}
+        for user in users:
+            if user["name"] in user_duplicates_dict.keys():
+                user_duplicates_dict[user["name"]].append(user["id"])
+            else:
+                user_duplicates_dict[user["name"]] = [user["id"]]
+
+        # add all users to a dict with name (and obscured email if applicable) as key and id as value
+        user_dict = {}
+        for user in user_duplicates_dict:
+            if len(user_duplicates_dict[user]) > 1:
+                for id in user_duplicates_dict[user]:
+                    user_dict[user + " — " + self.obscure_email(id, user_duplicates_dict[user])] = id
+            else:
+                user_dict[user] = user_duplicates_dict[user][0]
+
+        return user_dict
+
+    def obscure_email(self, full_email, all_emails):
+        email = full_email.split("@")[0] if "@" in full_email else full_email
+        email_end = full_email.split("@")[1] if "@" in full_email else full_email
+
+        temp_email = email[0]
+        for other_email in all_emails:
+            other_email = other_email.split("@")[0] if "@" in other_email else other_email
+            if other_email == email:
+                pass
+            else:
+                for i in range(len(temp_email), len(min(email, other_email))):
+                    if  temp_email == other_email[:i]:
+                        temp_email = temp_email + email[i]
+                    else:
+                        break
+
+        # obscure all but essential characters of email
+        return temp_email + (("*")*(len(email)-len(temp_email))) + "@" + email_end
+
     def get_registered_students(self, course_id):
         registered_students = []
 
@@ -1281,6 +1323,27 @@ class Content:
 
         return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"]}
 
+    def delete_presubmission(self, course, assignment, exercise, user):
+        sql = '''DELETE FROM presubmissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+
+        self.execute(sql, (course, assignment, exercise, user))
+
+    def get_presubmission(self, course, assignment, exercise, user):
+        sql = '''SELECT code
+                 FROM presubmissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+
+        row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user))
+
+        return {"code": row["code"]} if row else None
+
     def get_course_details(self, course, format_output=False):
         if not course:
             return {"introduction": "", "passcode": None, "date_created": None, "date_updated": None}
@@ -1468,6 +1531,12 @@ class Content:
             exercise_basics["exists"] = True
 
         return exercise_basics["id"]
+
+    def save_presubmission(self, course, assignment, exercise, user, code):
+        sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, code)
+                 VALUES (?, ?, ?, ?, ?)'''
+
+        self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
 
     def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, partner_id=None):
         submission_id = self.get_next_submission_id(course, assignment, exercise, user)
@@ -1661,6 +1730,9 @@ class Content:
         self.execute('''DELETE FROM scores
                         WHERE course_id = ?''', (course_id, ))
 
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?''', (course_id, ))
+
     def delete_assignment_submissions(self, assignment_basics):
         course_id = assignment_basics["course"]["id"]
         assignment_id = assignment_basics["id"]
@@ -1670,6 +1742,10 @@ class Content:
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
         self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
+        self.execute('''DELETE FROM presubmissions
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
@@ -1684,6 +1760,11 @@ class Content:
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
         self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
+        self.execute('''DELETE FROM presubmissions
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
