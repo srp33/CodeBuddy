@@ -16,6 +16,9 @@
                                     <img src="/static/unchecked.png" alt="Not completed" class="navbar-img"/>
                                 {% end %}
                                 {{ exercise[1]["title"] }}
+                                {% if exercise[1]["enable_pair_programming"] %}
+                                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
+                                {% end %}
                             </a>
                         {% end %}
                     </div>
