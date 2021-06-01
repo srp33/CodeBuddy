@@ -29,38 +29,37 @@ def hello():
 
 @app.post("/exec/")
 def exec(info: ExecInfo):
-
     base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
     cpus = 1
     tmp_dir_path = None
 
-    # This is meant to identify any old temp directories that inadvertently were not deleted.
-    # This is not the best design, but it is simple.
-    # It means we don't need to configure a separate process to run in the background.
-    remove_old_temp_dirs(base_tmp_dir_path)
-
-    os.makedirs(base_tmp_dir_path, exist_ok=True)
-    tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
-
-    # Save the user's code to a file that will be accessible inside the container.
-    with open(f"{tmp_dir_path}/code", "w") as code_file:
-        code_file.write(info.code)
-
-    # Save the check code to a file that will be accessible inside the container.
-    if len(info.check_code) > 0:
-        with open(f"{tmp_dir_path}/check_code", "w") as check_file:
-            check_file.write(info.check_code)
-
-    if len(info.test_code) > 0:
-        with open(f"{tmp_dir_path}/test_code", "w") as test_file:
-            test_file.write(info.test_code)
-
-    # Save any data files so they will be accessible inside the container.
-    for key, value in info.data_files.items():
-        with open(f"{tmp_dir_path}/{key}", "w") as data_file:
-            data_file.write(value)
-
     try:
+        # This is meant to identify any old temp directories that inadvertently were not deleted.
+        # This is not the best design, but it is simple.
+        # It means we don't need to configure a separate process to run in the background.
+        remove_old_temp_dirs(base_tmp_dir_path)
+
+        os.makedirs(base_tmp_dir_path, exist_ok=True)
+        tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
+
+        # Save the user's code to a file that will be accessible inside the container.
+        with open(f"{tmp_dir_path}/code", "w") as code_file:
+            code_file.write(info.code)
+
+        # Save the check code to a file that will be accessible inside the container.
+        if len(info.check_code) > 0:
+            with open(f"{tmp_dir_path}/check_code", "w") as check_file:
+                check_file.write(info.check_code)
+
+        if len(info.test_code) > 0:
+            with open(f"{tmp_dir_path}/test_code", "w") as test_file:
+                test_file.write(info.test_code)
+
+        # Save any data files so they will be accessible inside the container.
+        for key, value in info.data_files.items():
+            with open(f"{tmp_dir_path}/{key}", "w") as data_file:
+                data_file.write(value)
+
         if len(info.check_code) > 0:
             # Check code
             # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
@@ -119,7 +118,7 @@ def exec(info: ExecInfo):
 
         return {"text_output": "\n".join(text_output_lines), "image_output": image_output}
     except Exception as inst:
-        return {"instructor_output": traceback.format_exc(), "image_output": ""}
+        return {"text_output": traceback.format_exc(), "image_output": ""}
     finally:
         if tmp_dir_path:
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
