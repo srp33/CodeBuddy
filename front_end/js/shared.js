@@ -11,7 +11,7 @@ function convertDate(d) {
   return start_date;
 }
 
-// allow pasting images into markdown fields
+// allow pasting images into contenteditable fields
 $('div[contenteditable]').bind('paste', function(e) {
   if (e.originalEvent.clipboardData.items[0].kind != "string") {
   	var data = e.originalEvent.clipboardData.items[0].getAsFile()
