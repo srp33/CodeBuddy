@@ -97,8 +97,8 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
     timeout = this_settings_dict["timeout_seconds"]
     data_dict = {"image_name": this_settings_dict["image_name"],
                  "code": code.strip(),
-                 "test_code": exercise_details["test_code"].strip(),
-                 "check_code": exercise_details["check_code"].strip(),
+                 "test_code": exercise_details["test_code"],
+                 "check_code": exercise_details["check_code"],
                  "data_files": exercise_details["data_files"],
                  "output_type": exercise_details["output_type"],
                  "memory_allowed_mb": this_settings_dict["memory_allowed_mb"],
@@ -107,16 +107,7 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
 
     middle_layer_port = os.environ['MPORT']
 
-    if exercise_details["check_code"] != "" and exercise_details["check_code"]:
-        response = requests.post(f"http://127.0.0.1:{middle_layer_port}/check_code/", json.dumps(data_dict), timeout=timeout)
-        check_code_dict = json.loads(response.content)
-        if not check_code_dict["code_passed"]:
-            return check_code_dict["instructor_output"], ""
-        else:
-            pass
-
     response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
-
     response_dict = json.loads(response.content)
 
     return response_dict["text_output"], response_dict["image_output"]

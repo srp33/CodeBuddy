@@ -5,8 +5,9 @@ output_type="$4"
 
 if [[ "$is_checking_code" == "True" ]]
 then
+  sed -i -e '$a\' "$code_file_path"
   bash "$test_code_file_path"
-else  
+else
   if [[ "$output_type" == "jpg" ]]
   then
     python /mod_code_for_jpg.py /sandbox/code

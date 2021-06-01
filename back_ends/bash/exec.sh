@@ -6,6 +6,7 @@ is_checking_code="$3"
 
 if [[ "$is_checking_code" == "True" ]]
 then
+  sed -i -e '$a\' "$code_file_path"
   bash "$test_code_file_path"
 else
   if [ -f "$test_code_file_path" ]

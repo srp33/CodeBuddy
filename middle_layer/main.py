@@ -27,47 +27,69 @@ app = FastAPI()
 def hello():
     return "world"
 
-@app.post("/check_code/")
-def check_code(info: ExecInfo):
-    base_tmp_dir_path, cpus, tmp_dir_path = prepare_code(info)
-    try:
-        # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/check_code True ''"
-
-        result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-        docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
-        stdout = result.stdout.decode().replace(docker_warning, "").strip()
-
-        # Check whether the command timed out.
-        if result.returncode == 137 or stdout == "Killed":
-            return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": ""}
-
-        text_output_lines = []
-        image_output = ""
-
-        for text_output_line in stdout.split("\n"):
-            text_output_line = text_output_line.strip()
-            if text_output_line == "" or text_output_line == docker_warning:
-                continue
-            text_output_lines.append(text_output_line)
-
-        instructor_output = "\n".join(text_output_lines)
-        code_passed = False if len(instructor_output) > 0 else True
-
-        if not code_passed:
-            instructor_output = "\n".join(text_output_lines[-2:])
-        return {"instructor_output": instructor_output, "code_passed": code_passed}
-    except Exception as inst:
-        return {"instructor_output": traceback.format_exc(), "code_passed": False}
-    finally:
-        if tmp_dir_path:
-            shutil.rmtree(tmp_dir_path, ignore_errors=True)
-
 @app.post("/exec/")
 def exec(info: ExecInfo):
-    base_tmp_dir_path, cpus, tmp_dir_path = prepare_code(info)
+
+    base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
+    cpus = 1
+    tmp_dir_path = None
+
+    # This is meant to identify any old temp directories that inadvertently were not deleted.
+    # This is not the best design, but it is simple.
+    # It means we don't need to configure a separate process to run in the background.
+    remove_old_temp_dirs(base_tmp_dir_path)
+
+    os.makedirs(base_tmp_dir_path, exist_ok=True)
+    tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
+
+    # Save the user's code to a file that will be accessible inside the container.
+    with open(f"{tmp_dir_path}/code", "w") as code_file:
+        code_file.write(info.code)
+
+    # Save the check code to a file that will be accessible inside the container.
+    if len(info.check_code) > 0:
+        with open(f"{tmp_dir_path}/check_code", "w") as check_file:
+            check_file.write(info.check_code)
+
+    if len(info.test_code) > 0:
+        with open(f"{tmp_dir_path}/test_code", "w") as test_file:
+            test_file.write(info.test_code)
+
+    # Save any data files so they will be accessible inside the container.
+    for key, value in info.data_files.items():
+        with open(f"{tmp_dir_path}/{key}", "w") as data_file:
+            data_file.write(value)
+
     try:
+        if len(info.check_code) > 0:
+            # Check code
+            # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
+            docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/check_code True ''"
+
+            result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+            docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
+            stdout = result.stdout.decode().replace(docker_warning, "").strip()
+
+            # Check whether the command timed out.
+            if result.returncode == 137 or stdout == "Killed":
+                return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": ""}
+
+            text_output_lines = []
+            image_output = ""
+
+            for text_output_line in stdout.split("\n"):
+                text_output_line = text_output_line.strip()
+                if text_output_line == "" or text_output_line == docker_warning:
+                    continue
+                text_output_lines.append(text_output_line)
+
+            text_output = "\n".join(text_output_lines)
+
+            if len(text_output) > 0:
+                return {"text_output": text_output, "image_output": ""}
+
+        # Execute code
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
         docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/test_code False {info.output_type}"
 
@@ -97,7 +119,7 @@ def exec(info: ExecInfo):
 
         return {"text_output": "\n".join(text_output_lines), "image_output": image_output}
     except Exception as inst:
-        return {"text_output": traceback.format_exc(), "image_output": ""}
+        return {"instructor_output": traceback.format_exc(), "image_output": ""}
     finally:
         if tmp_dir_path:
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
@@ -113,37 +135,3 @@ def remove_old_temp_dirs(dir_path):
         itemTime = arrow.get(item.stat().st_mtime)
         if itemTime < criticalTime:
             shutil.rmtree(item, ignore_errors=True)
-
-
-def prepare_code(info):
-    base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
-    cpus = 1
-    tmp_dir_path = None
-
-    # This is meant to identify any old temp directories that inadvertently were not deleted.
-    # This is not the best design, but it is simple.
-    # It means we don't need to configure a separate process to run in the background.
-    remove_old_temp_dirs(base_tmp_dir_path)
-
-    os.makedirs(base_tmp_dir_path, exist_ok=True)
-    tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
-
-    # Save the user's code to a file that will be accessible inside the container.
-    with open(f"{tmp_dir_path}/code", "w") as code_file:
-        code_file.write(info.code)
-
-    # Save the check code to a file that will be accessible inside the container.
-    if len(info.check_code) > 0:
-        with open(f"{tmp_dir_path}/check_code", "w") as check_file:
-            check_file.write(info.check_code)
-            
-    if len(info.test_code) > 0:
-        with open(f"{tmp_dir_path}/test_code", "w") as test_file:
-            test_file.write(info.test_code)
-
-    # Save any data files so they will be accessible inside the container.
-    for key, value in info.data_files.items():
-        with open(f"{tmp_dir_path}/{key}", "w") as data_file:
-            data_file.write(value)
-
-    return base_tmp_dir_path, cpus, tmp_dir_path
