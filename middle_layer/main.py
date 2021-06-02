@@ -60,37 +60,8 @@ def exec(info: ExecInfo):
             with open(f"{tmp_dir_path}/{key}", "w") as data_file:
                 data_file.write(value)
 
-        if len(info.check_code) > 0:
-            # Check code
-            # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-            docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/check_code True ''"
-
-            result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-            docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
-            stdout = result.stdout.decode().replace(docker_warning, "").strip()
-
-            # Check whether the command timed out.
-            if result.returncode == 137 or stdout == "Killed":
-                return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": ""}
-
-            text_output_lines = []
-            image_output = ""
-
-            for text_output_line in stdout.split("\n"):
-                text_output_line = text_output_line.strip()
-                if text_output_line == "" or text_output_line == docker_warning:
-                    continue
-                text_output_lines.append(text_output_line)
-
-            text_output = "\n".join(text_output_lines)
-
-            if len(text_output) > 0:
-                return {"text_output": text_output, "image_output": ""}
-
-        # Execute code
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/test_code False {info.output_type}"
+        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/test_code /sandbox/check_code {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
