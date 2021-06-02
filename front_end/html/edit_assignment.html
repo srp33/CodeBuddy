@@ -372,26 +372,8 @@
         }
     }
 
-    $('div[contenteditable]').bind('paste', function(e) {
-      if (e.originalEvent.clipboardData.items[0].kind != "string") {
-      	var data = e.originalEvent.clipboardData.items[0].getAsFile()
-      	var elem = this;
-      	var fr = new FileReader;
-
-      	fr.onloadend = function() {
-      	  var img = new Image;
-      	  img.src = fr.result;
-      	  img.onload = function() {
-      		  $(elem).append(img);
-      	  };
-      	};
-
-      	fr.readAsDataURL(data);
-      	e.preventDefault();
-      }
-    });
-
     document.getElementById("assignmentForm").onsubmit = function(evt) {
         document.getElementById("introduction_text").value = document.getElementById("introduction").innerHTML
     }
 </script>
+<script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
