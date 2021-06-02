@@ -36,6 +36,11 @@ pre {
     color: #00d1b2;
 }
 
+.navbar-dropdown .navbar-item {
+  display: flex;
+  align-items: center;
+}
+
 .landing-main-row {
     display: flex;
     justify-content: center;
