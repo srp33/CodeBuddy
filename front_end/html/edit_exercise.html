@@ -131,7 +131,8 @@
 
             <div class="top-space">
                 <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
-                <p><textarea name="instructions" class="textarea is-grey is-fullwidth monospace" placeholder="Please provide instructions for this exercise." rows="8">{{ exercise_details["instructions"] }}</textarea></p>
+                <p><div class="textarea is-grey is-fullwidth monospace" id="instructions" placeholder="Please provide instructions for this exercise." style="min-height: 400px" contenteditable="true">{{ exercise_details["instructions"] }}</div></p>
+                <textarea name="instructions" id="instructions_text" class="invisible"></textarea>
             </div>
 
             <div class="row-container top-space">
@@ -399,7 +400,7 @@
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
                 document.getElementById("check_code_text").value = check_code_editor.getValue();
-
+                document.getElementById("instructions_text").value = document.getElementById("instructions").innerHTML
             }
 
             var index = 1;
@@ -508,8 +509,8 @@
                     }
                 });
             }
-
         </script>
+        <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
         </form>
     {% else %}
         This assignment has not been created yet.
