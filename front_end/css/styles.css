@@ -449,3 +449,11 @@ td > button {
     justify-content: center;
     align-items: center;
 }
+
+div[contenteditable] {
+  overflow-y: scroll;
+}
+
+div[contenteditable] img {
+  max-height: 20em;
+}
