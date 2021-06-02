@@ -343,6 +343,10 @@
         <div class="instructions">
             <h6>Instructions:</h6>
             <div class="smaller-font">{{ exercise_details["instructions"] }}</div>
+            {% if exercise_basics["enable_pair_programming"] %}
+            <hr>
+            <p><em>Pair programming is enabled for this exercise.</em></p>
+            {% end %}
         </div>
 
         {% if exercise_details["show_test_code"] and len(exercise_details["test_code"]) > 0 %}
