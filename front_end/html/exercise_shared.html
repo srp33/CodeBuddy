@@ -431,7 +431,9 @@
              }).format(Date.now())
              saved_div.innerHTML = `Last saved at ${last_saved_at}`
            }
-
+           {% if user_info["enable_vim"] %}
+              editor.setKeyboardHandler("ace/keyboard/vim");
+           {% end %}
            {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
                editor.setOptions({
                    enableBasicAutocompletion: false,
