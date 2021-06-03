@@ -22,10 +22,11 @@ then
   python /mod_code_for_jpg.py /sandbox/code
 fi
 
+mv "$code_file_path" "$code_file_path".py
+
 if [ -f "$test_code_file_path" ]
 then
-  mv "$code_file_path" "$code_file_path".py
   bash "$test_code_file_path"
 else
-  bash "$code_file_path"
+  python "$code_file_path".py
 fi
