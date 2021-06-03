@@ -192,18 +192,6 @@
                 <textarea name="answer_code" id="answer_code" placeholder="Please provide a solution." rows="10">{{ exercise_details["answer_code"] }}</textarea>
                 <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
                 <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
-
-                <!--stub for showing code examples-->
-                <div>
-                <p><strong>Show example: </strong>
-                    <div class="select is-grey">
-                        <select name="show_example_solution" id="show_example_solution" class="edit-select" onchange="showExampleSolution()">
-                            <option value="Yes">Yes</option>
-                            <option value="No" selected>No</option>
-                        </select>
-                    </div>
-                </p>
-                </div>
             </div>
 
             <div id="code-output">
@@ -301,7 +289,6 @@
             <div class="row-container bottom-space">
                 <div>
                     <p><strong>Allow students to view the instructor's solution after they pass the exercise: </strong>
-
                         <div class="select is-grey">
                             <select name="show_answer" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
                             {% if exercise_details["show_answer"] %}
@@ -371,21 +358,9 @@
         {% end %}
             <a href="#top">Back to top</a>
         </p>
-        <div class="invisible" id="save_code">
-        </div>
+
         <!-- Code to modify page behavior at the end of loading -->
         <script>
-            // stub for showing exapmle code
-            function showExampleSolution() {
-              var val = `FIND='#'\nwhile read -r line;\ndo\nif grep -q "$FIND" <<< "$line"; then\necho "Error: $FIND operator not allowed in this exercise"\nfi\ndone < code`
-              if (document.getElementById("show_example_solution").value == "Yes") {
-                document.getElementById("save_code").innerHTML = answer_code_editor.getValue();
-                answer_code_editor.setValue(val);
-              } else {
-                answer_code_editor.setValue(document.getElementById("save_code").innerHTML)
-              }
-            }
-
             var answer_code_editor = ace.edit("answer_code", {
                 theme: "ace/theme/{{ user_info['ace_theme'] }}",
                 autoScrollEditorIntoView: true,
