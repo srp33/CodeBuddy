@@ -35,6 +35,61 @@
 
     <!-- Global JavaScript -->
     <script>
+        // object for matching example code with back_end
+        let exampleDict = {
+          python_solution_instructions: `HI:)`,
+          bash_solution_instructions: `HI:)`,
+          python_script_solution_instructions: `HI:)`,
+          r_solution_instructions: `HI:)`,
+          python_test_code_instructions: ``,
+          bash_test_code_instructions: ``,
+          python_script_test_code_instructions: ``,
+          r_test_code_instructions: ``,
+          python_example: ``,
+          bash_example: ``,
+          python_script_example: ``,
+          r_example: ``,
+          python_test_code_example: ``,
+          bash_test_code_example: ``,
+          python_script_test_code_example: ``,
+          r_test_code_example: ``,
+          bash_check_example:
+           `FIND='#'
+            while read -r line;
+              do
+              if grep -q "$FIND" <<< "$line"; then
+                echo "Error: $FIND operator not allowed in this exercise"
+              fi
+            done < code`,
+          python_check_example:
+           `with open("code") as student_code:
+            \tfor line in student_code:
+            \t\tif "len(" in line:
+            \t\t\tprint("Error: len() function not permitted in this exercise")`,
+          python_script_check_example:
+           `FIND='#'
+            while read -r line;
+              do
+              if grep -q "$FIND" <<< "$line"; then
+                echo "Error: $FIND operator not allowed in this exercise"
+              fi
+            done < code`,
+          r_check_example:
+           `connection <- file("code")
+            open(connection)
+            line <- readLines(connection, n=1)
+            search <- "len"
+            \n
+            while(length(line) > 0) {
+            \t(grepl(search, line)) {
+            \t\tprint("Error: len() function not allowed in this exercise")
+            \t}
+            \n
+            \tline <- readLines(connection, n=1)
+            }
+            \n
+            close(connection)`,
+        }
         function updateBackEndOptions(back_end, output_type_to_select) {
             // Clear out existing options from the dropdown
             $("#output_types").empty();
@@ -69,7 +124,23 @@
                 answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 starter_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 test_code_editor.getSession().setMode(json_data["code_completion_path"]);
+                check_code_editor.getSession().setMode(json_data["code_completion_path"]);
             });
+
+            // load back_end specific instructions for solution and test_code
+            let back_end_type = document.getElementById("back_end").value;
+            if (exampleDict[back_end_type + "_solution_instructions"] != "")
+              document.getElementById("solution_additional_instructions").innerHTML = `<hr><p><strong>
+                ${(back_end_type.includes("_")) ? back_end_type.split("_").join(" ").replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))) : back_end_type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())))}
+                Specific Instructions:</strong></p>` + exampleDict[back_end_type + "_solution_instructions"]
+            else
+              document.getElementById("solution_additional_instructions").innerHTML = ""
+            if (exampleDict[back_end_type + "_test_code_instructions"] != "")
+              document.getElementById("test_code_additional_instructions").innerHTML = `<hr><p><strong>
+                ${(back_end_type.includes("_")) ? back_end_type.split("_").join(" ").replace(/^\w/, (c) => c.toUpperCase()) : back_end_type.replace(/^\w/, (c) => c.toUpperCase())}
+                Specific Instructions:</strong></p>` + exampleDict[back_end_type + "_test_code_instructions"]
+            else
+              document.getElementById("test_code_additional_instructions").innerHTML = ""
         }
 
         ace.require("ace/ext/language_tools");
@@ -188,9 +259,22 @@
             <div>
                 <p><strong>Solution*: </strong></p>
                 <p>Please specify a solution for this exercise. If it requires programming, the solution will be executed, and the output of your solution will be used as the expected output. If the back end is "free_response," your solution itself will be used as the expected output. If the back end is "any_response," you need not enter a solution. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new exercise instead.</p>
+                <p id="solution_additional_instructions"></p>
                 <textarea name="answer_code" id="answer_code" placeholder="Please provide a solution." rows="10">{{ exercise_details["answer_code"] }}</textarea>
                 <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
                 <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
+
+                <!--stub for showing code examples-->
+                <div>
+                <p><strong>Show example: </strong>
+                    <div class="select is-grey">
+                        <select id="show_example_solution" class="edit-select" onchange="showExampleSolution()">
+                            <option value="Yes">Yes</option>
+                            <option value="No" selected>No</option>
+                        </select>
+                    </div>
+                </p>
+                </div>
             </div>
 
             <div id="code-output">
@@ -239,12 +323,24 @@
             <div>
                 <p><strong>Test code: </strong></p>
                 <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
+                <p id="test_code_additional_instructions"></p>
                 <p>
                     <textarea class="textarea is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ exercise_details["test_code"] }}</textarea>
                     <textarea name="test_code_text" id="test_code_text" class="invisible"></textarea>
                 </p>
             </div>
 
+            <!--stub for showing code examples-->
+            <div>
+            <p><strong>Show example: </strong>
+                <div class="select is-grey">
+                    <select id="show_example_test_code" class="edit-select" onchange="showExampleTestCode()">
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    </select>
+                </div>
+            </p>
+            </div>
             <div>
                 <p><strong>Show test code: </strong>
                     <div class="select is-grey">
@@ -262,6 +358,30 @@
             </div>
         </div>
 
+
+        <div class="shadow-box">
+            <div>
+                <p><strong>Pre-execution logic:</strong></p>
+                <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
+                <p>
+                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{{ exercise_details["check_code"] }}</textarea>
+                    <textarea name="check_code_text" id="check_code_text" class="invisible"></textarea>
+                </p>
+            </div>
+
+            <div>
+            <p><strong>Show example: </strong>
+                <div class="select is-grey">
+                    <select id="show_example_preexecution" class="edit-select" onchange="showExamplePreExecution()">
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    </select>
+                </div>
+            </p>
+            </div>
+        </div>
+
+        <!--stub for showing code examples-->
         <div class="shadow-box">
             <div class="space-div">
                 <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p>
@@ -276,6 +396,7 @@
             <div class="row-container bottom-space">
                 <div>
                     <p><strong>Allow students to view the instructor's solution after they pass the exercise: </strong>
+
                         <div class="select is-grey">
                             <select name="show_answer" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
                             {% if exercise_details["show_answer"] %}
@@ -345,9 +466,40 @@
         {% end %}
             <a href="#top">Back to top</a>
         </p>
-
+        <div class="invisible" id="save_code">
+        </div>
         <!-- Code to modify page behavior at the end of loading -->
         <script>
+            // stub for showing example code
+            function showExampleSolution() {
+                if (document.getElementById("show_example_solution").value == "Yes") {
+                document.getElementById("save_code").innerHTML = answer_code_editor.getValue();
+                answer_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_example']);
+              } else {
+                answer_code_editor.setValue(document.getElementById("save_code").innerHTML)
+              }
+            }
+
+            // stub for showing example code
+            function showExampleTestCode() {
+                if (document.getElementById("show_example_test_code").value == "Yes") {
+                document.getElementById("save_code").innerHTML = test_code_editor.getValue();
+                test_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_test_code_example']);
+              } else {
+                test_code_editor.setValue(document.getElementById("save_code").innerHTML)
+              }
+            }
+
+            // stub for showing example code
+            function showExamplePreExecution() {
+                if (document.getElementById("show_example_preexecution").value == "Yes") {
+                document.getElementById("save_code").innerHTML = check_code_editor.getValue();
+                check_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_check_example']);
+              } else {
+                check_code_editor.setValue(document.getElementById("save_code").innerHTML)
+              }
+            }
+
             var answer_code_editor = ace.edit("answer_code", {
                 theme: "ace/theme/{{ user_info['ace_theme'] }}",
                 autoScrollEditorIntoView: true,
@@ -372,12 +524,21 @@
                 fontSize: "12pt"
             });
 
+            var check_code_editor = ace.edit("check_code", {
+                theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                autoScrollEditorIntoView: true,
+                minLines: 10,
+                maxLines: 15,
+                fontSize: "12pt"
+            });
+
             updateBackEndOptions('{{ exercise_details["back_end"] }}', '{{ exercise_details["output_type"] }}');
 
             document.getElementById("myForm").onsubmit = function(evt) {
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
+                document.getElementById("check_code_text").value = check_code_editor.getValue();
                 document.getElementById("instructions_text").value = document.getElementById("instructions").innerHTML
             }
 
