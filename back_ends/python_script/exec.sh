@@ -3,14 +3,13 @@ test_code_file_path="$2"
 check_code_file_path="$3"
 output_type="$4"
 
-
 if [ -f "$check_code_file_path" ]
 then
   # adds a newline to student's code if not already present, ensures that bash
   # checking code doesn't skip the final line
   sed -i -e '$a\' "$code_file_path"
-  value=`bash $check_code_file_path`
-  if [[ $value ]]
+  value=$(bash $check_code_file_path)
+  if [[ "$value" ]]
   then
     echo "$value"
     exit
