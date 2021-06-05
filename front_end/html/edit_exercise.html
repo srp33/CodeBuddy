@@ -37,34 +37,82 @@
     <script>
         // object for matching example code with back_end
         let exampleDict = {
+          // Solution additional instructions
           free_response_solution_instructions:
             `For this type of exercise, your solution itself will be used as the expected output.`,
           any_response_solution_instructions:
             `For this type of exercise, you don't need to enter a solution.`,
-          python_solution_instructions: ``,
-          bash_solution_instructions: ``,
+          python_solution_instructions:
+            ``,
+          bash_solution_instructions:
+            ``,
           python_script_solution_instructions:
-            `For this type of exercise, write the solution using python. You will write the bash code that executes your python script in Test code.`,
-          r_solution_instructions: ``,
-          python_test_code_instructions: ``,
-          bash_test_code_instructions: ``,
+            `For this type of exercise, write your solution in python. You will write the bash code that executes your python_script in Test code.`,
+          r_solution_instructions:
+            ``,
+
+          // Test Code additional instructions
+          python_test_code_instructions:
+            ``,
+          bash_test_code_instructions:
+            ``,
           python_script_test_code_instructions:
-            `Write a bash script to run your solution code (saved as 'code.py') using python and arguments. For further clarification, view the example code.`,
-          r_test_code_instructions: ``,
-          python_solution_example: ``,
-          bash_solution_example: ``,
+            `Write a bash script to run your solution code (saved as 'code.py') using python and arguments.`,
+          r_test_code_instructions:
+            ``,
+
+          // Pre-Execution Code additional instructions
+          python_check_code_instructions:
+            `Write your pre-execution code in python.`,
+          bash_check_code_instructions:
+            `Write your pre-execution code in bash.`,
+          python_script_check_code_instructions:
+            `Write your pre-execution code in bash.`,
+          r_check_code_instructions:
+            `Write your pre-execution code in R.`,
+
+          // Back end specific Solution examples
+          python_solution_example:
+            `# Example code
+            def welcome(statement):
+            \tprint("Hello,", statement)
+            \nwelcome("world!")`,
+          bash_solution_example:
+            `# Example code
+            function welcome {
+            \techo "Hello, $1"
+            }
+            \nwelcome "world!"`,
           python_script_solution_example:
-            `import sys
-            print(sys.argv[1])
+            `# Example code
+            import sys
+            \nprint(sys.argv[1])
             `,
-          r_solution_example: ``,
-          python_test_code_example: ``,
-          bash_test_code_example: ``,
+          r_solution_example:
+            `# Example code
+            welcome <- function(statement) {
+            \tprint(paste("Hello", statement, sep=", "))
+            }
+            \nwelcome("world!")`,
+
+          // Back end specific Test Code examples
+          python_test_code_example:
+            `# Example code
+            welcome("user!")`,
+          bash_test_code_example:
+            `# Example code
+            welcome "user!"`,
           python_script_test_code_example:
-            `python code.py "Hello World!"`,
-          r_test_code_example: ``,
+            `# Example code
+            python code.py "Hello world!"`,
+          r_test_code_example:
+            `# Example code
+            welcome("user!")`,
+
+          // Back end specific Pre-Execution Code examples
           bash_check_example:
-           `FIND='#'
+            `# Example code
+            FIND='#'
             while read -r line;
             \tdo
             \tif grep -q "$FIND" <<< "$line"; then
@@ -72,12 +120,14 @@
             \tfi
             done < code`,
           python_check_example:
-           `with open("code") as student_code:
+            `# Example code
+            with open("code") as student_code:
             \tfor line in student_code:
             \t\tif "len(" in line:
             \t\t\tprint("Error: len() function not permitted in this exercise")`,
           python_script_check_example:
-           `FIND='#'
+            `# Example code
+            FIND='#'
             while read -r line;
             \tdo
             \tif grep -q "$FIND" <<< "$line"; then
@@ -85,21 +135,20 @@
             \tfi
             done < code`,
           r_check_example:
-           `connection <- file("code")
+            `# Example code
+            connection <- file("code")
             open(connection)
             line <- readLines(connection, n=1)
             search <- "len"
-            \n
-            while(length(line) > 0) {
-            \t(grepl(search, line)) {
+            \nwhile(length(line) > 0) {
+            \tif (grepl(search, line)) {
             \t\tprint("Error: len() function not allowed in this exercise")
             \t}
-            \n
-            \tline <- readLines(connection, n=1)
+            \n\tline <- readLines(connection, n=1)
             }
-            \n
-            close(connection)`,
+            \nclose(connection)`,
         }
+
         function updateBackEndOptions(back_end, output_type_to_select) {
             // Clear out existing options from the dropdown
             $("#output_types").empty();
@@ -127,7 +176,6 @@
                         if (key == output_type_to_select)
                             opt.selected = true;
                     }
-
                     ot_select.appendChild(opt);
                 }
 
@@ -137,22 +185,20 @@
                 check_code_editor.getSession().setMode(json_data["code_completion_path"]);
             });
 
-            // load back_end specific instructions for solution and test_code
+            // load back_end specific instructions for solution, test_code, and pre-execution code
             let back_end_type = document.getElementById("back_end").value;
             if (exampleDict[back_end_type + "_solution_instructions"] != "")
-              // split and capitalize back end, if applicable
-              document.getElementById("solution_additional_instructions").innerHTML = `<hr><p><strong>
-                ${(back_end_type.includes("_")) ? back_end_type.split("_").join(" ").replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))) : back_end_type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())))}
-                Specific Instructions:</strong></p>` + exampleDict[back_end_type + "_solution_instructions"]
+              document.getElementById("solution_additional_instructions").innerHTML = "<hr><p><em>" + exampleDict[back_end_type + "_solution_instructions"] + "</em></p>"
             else
               document.getElementById("solution_additional_instructions").innerHTML = ""
             if (exampleDict[back_end_type + "_test_code_instructions"] != "")
-              // split and capitalize back end, if applicable
-              document.getElementById("test_code_additional_instructions").innerHTML = `<hr><p><strong>
-                ${(back_end_type.includes("_")) ? back_end_type.split("_").join(" ").replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))) : back_end_type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())))}
-                Specific Instructions:</strong></p>` + exampleDict[back_end_type + "_test_code_instructions"]
+              document.getElementById("test_code_additional_instructions").innerHTML = "<hr><p><em>" + exampleDict[back_end_type + "_test_code_instructions"] + "</em></p>"
             else
               document.getElementById("test_code_additional_instructions").innerHTML = ""
+            if (exampleDict[back_end_type + "_check_code_instructions"] != "")
+              document.getElementById("check_code_additional_instructions").innerHTML = "<hr><p><em>" + exampleDict[back_end_type + "_check_code_instructions"] + "</em></p>"
+            else
+              document.getElementById("check_code_additional_instructions").innerHTML = ""
         }
 
         ace.require("ace/ext/language_tools");
@@ -275,18 +321,11 @@
                 <textarea name="answer_code" id="answer_code" placeholder="Please provide a solution." rows="10">{{ exercise_details["answer_code"] }}</textarea>
                 <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
                 <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
+            </div>
 
-                <!--block for showing code examples-->
-                <div>
-                <p><strong>Show example: </strong>
-                    <div class="select is-grey">
-                        <select id="show_example_solution" class="edit-select" onchange="showExampleSolution()">
-                            <option value="Yes">Yes</option>
-                            <option value="No" selected>No</option>
-                        </select>
-                    </div>
-                </p>
-                </div>
+            <div class="button is-light bottom-space" id="example_solution_button" onclick="showExampleSolution()">
+              Toggle Example Code
+              <input type="checkbox" class="invisible" id="example_solution_checkbox">
             </div>
 
             <div id="code-output">
@@ -342,17 +381,11 @@
                 </p>
             </div>
 
-            <!--block for showing code examples-->
-            <div>
-            <p><strong>Show example: </strong>
-                <div class="select is-grey">
-                    <select id="show_example_test_code" class="edit-select" onchange="showExampleTestCode()">
-                        <option value="Yes">Yes</option>
-                        <option value="No" selected>No</option>
-                    </select>
-                </div>
-            </p>
+            <div class="button is-light bottom-space" id="example_test_code_button" onclick="showExampleTestCode()">
+              Toggle Example Code
+              <input type="checkbox" class="invisible" id="example_test_code_checkbox">
             </div>
+
             <div>
                 <p><strong>Show test code: </strong>
                     <div class="select is-grey">
@@ -370,26 +403,20 @@
             </div>
         </div>
 
-
         <div class="shadow-box">
             <div>
                 <p><strong>Pre-execution logic:</strong></p>
-                <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
+                <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
+                <p id="check_code_additional_instructions"></p>
                 <p>
                     <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{{ exercise_details["check_code"] }}</textarea>
                     <textarea name="check_code_text" id="check_code_text" class="invisible"></textarea>
                 </p>
             </div>
 
-            <div>
-            <p><strong>Show example: </strong>
-                <div class="select is-grey">
-                    <select id="show_example_preexecution" class="edit-select" onchange="showExamplePreExecution()">
-                        <option value="Yes">Yes</option>
-                        <option value="No" selected>No</option>
-                    </select>
-                </div>
-            </p>
+            <div class="button is-light bottom-space" id="example_check_code_button" onclick="showExamplePreExecution()">
+              Toggle Example Code
+              <input type="checkbox" class="invisible" id="example_check_code_checkbox">
             </div>
         </div>
 
@@ -479,38 +506,53 @@
             <a href="#top">Back to top</a>
         </p>
         <div class="invisible" id="save_code"></div>
+
         <!-- Code to modify page behavior at the end of loading -->
         <script>
+            function saveCode() {
+              var save_code = document.getElementById("save_code").innerHTML
+              return save_code.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&")
+            }
+
             function showExampleSolution() {
-                if (document.getElementById("show_example_solution").value == "Yes") {
+                document.getElementById("example_solution_checkbox").checked = !(document.getElementById("example_solution_checkbox").checked);
+                if (document.getElementById("example_solution_checkbox").checked == true) {
+                  document.getElementById("example_solution_button").classList = "button is-primary bottom-space"
                   // save current code
                   document.getElementById("save_code").innerHTML = answer_code_editor.getValue();
                   // display example code
                   answer_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_solution_example']);
               } else {
-                  answer_code_editor.setValue(document.getElementById("save_code").innerHTML)
+                  document.getElementById("example_solution_button").classList = "button is-light bottom-space"
+                  answer_code_editor.setValue(saveCode())
               }
             }
 
             function showExampleTestCode() {
-                if (document.getElementById("show_example_test_code").value == "Yes") {
+                document.getElementById("example_test_code_checkbox").checked = !(document.getElementById("example_test_code_checkbox").checked);
+                if (document.getElementById("example_test_code_checkbox").checked == true) {
+                  document.getElementById("example_test_code_button").classList = "button is-primary bottom-space"
                   // save current code
                   document.getElementById("save_code").innerHTML = test_code_editor.getValue();
                   // display example code
                   test_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_test_code_example']);
               } else {
-                  test_code_editor.setValue(document.getElementById("save_code").innerHTML)
+                  document.getElementById("example_test_code_button").classList = "button is-light bottom-space"
+                  test_code_editor.setValue(saveCode())
               }
             }
 
             function showExamplePreExecution() {
-                if (document.getElementById("show_example_preexecution").value == "Yes") {
+                document.getElementById("example_check_code_checkbox").checked = !(document.getElementById("example_check_code_checkbox").checked);
+                if (document.getElementById("example_check_code_checkbox").checked == true) {
+                  document.getElementById("example_check_code_button").classList = "button is-primary bottom-space"
                   // save current code
                   document.getElementById("save_code").innerHTML = check_code_editor.getValue();
                   // display example code
                   check_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_check_example']);
               } else {
-                  check_code_editor.setValue(document.getElementById("save_code").innerHTML)
+                  document.getElementById("example_check_code_button").classList = "button is-light bottom-space"
+                  check_code_editor.setValue(saveCode())
               }
             }
 
