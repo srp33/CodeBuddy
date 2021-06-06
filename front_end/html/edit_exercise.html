@@ -517,13 +517,15 @@
             function showExampleSolution() {
                 document.getElementById("example_solution_checkbox").checked = !(document.getElementById("example_solution_checkbox").checked);
                 if (document.getElementById("example_solution_checkbox").checked == true) {
-                  document.getElementById("example_solution_button").classList = "button is-primary bottom-space"
+                  document.getElementById("example_solution_button").classList.remove("is-light");
+                  document.getElementById("example_solution_button").classList.add("is-primary");
                   // save current code
                   document.getElementById("save_code").innerHTML = answer_code_editor.getValue();
                   // display example code
                   answer_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_solution_example']);
               } else {
-                  document.getElementById("example_solution_button").classList = "button is-light bottom-space"
+                  document.getElementById("example_solution_button").classList.remove("is-primary");
+                  document.getElementById("example_solution_button").classList.add("is-light");
                   answer_code_editor.setValue(saveCode())
               }
             }
@@ -531,13 +533,15 @@
             function showExampleTestCode() {
                 document.getElementById("example_test_code_checkbox").checked = !(document.getElementById("example_test_code_checkbox").checked);
                 if (document.getElementById("example_test_code_checkbox").checked == true) {
-                  document.getElementById("example_test_code_button").classList = "button is-primary bottom-space"
+                  document.getElementById("example_solution_button").classList.remove("is-light");
+                  document.getElementById("example_solution_button").classList.add("is-primary");
                   // save current code
                   document.getElementById("save_code").innerHTML = test_code_editor.getValue();
                   // display example code
                   test_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_test_code_example']);
               } else {
-                  document.getElementById("example_test_code_button").classList = "button is-light bottom-space"
+                  document.getElementById("example_solution_button").classList.remove("is-primary");
+                  document.getElementById("example_solution_button").classList.add("is-light");
                   test_code_editor.setValue(saveCode())
               }
             }
@@ -545,13 +549,15 @@
             function showExamplePreExecution() {
                 document.getElementById("example_check_code_checkbox").checked = !(document.getElementById("example_check_code_checkbox").checked);
                 if (document.getElementById("example_check_code_checkbox").checked == true) {
-                  document.getElementById("example_check_code_button").classList = "button is-primary bottom-space"
+                  document.getElementById("example_solution_button").classList.remove("is-light");
+                  document.getElementById("example_solution_button").classList.add("is-primary");
                   // save current code
                   document.getElementById("save_code").innerHTML = check_code_editor.getValue();
                   // display example code
                   check_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_check_example']);
               } else {
-                  document.getElementById("example_check_code_button").classList = "button is-light bottom-space"
+                  document.getElementById("example_solution_button").classList.remove("is-primary");
+                  document.getElementById("example_solution_button").classList.add("is-light");
                   check_code_editor.setValue(saveCode())
               }
             }
