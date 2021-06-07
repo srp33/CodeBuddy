@@ -364,6 +364,8 @@ class ProfileManageUsersHandler(BaseUserHandler):
                         result = f"Error: The user '{remove_user}' doesn't have any submissions to remove."
                 else:
                     result = f"Error: The user '{remove_user}' does not exist."
+            else:
+                result = f"Error: Please enter a user."
 
             if delete_user:
                 course_id = content.get_course_id_from_role(delete_user)
@@ -392,6 +394,9 @@ class ProfileManageUsersHandler(BaseUserHandler):
                         result = f"Success: The user '{delete_user}' has been deleted."
                 else:
                     result = f"Error: The user '{delete_user}' does not exist."
+            else:
+                if not remove_user:
+                    result = f"Error: Please enter a user."
 
             self.render("profile_manage_users.html", page="manage_users", result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
