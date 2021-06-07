@@ -47,7 +47,7 @@
           bash_solution_instructions:
             ``,
           python_script_solution_instructions:
-            `For this type of exercise, write your solution in python. You will write the bash code that executes your python_script in Test code.`,
+            `For this type of exercise, write your solution in Python. You will write the bash code that executes your Python script in Test code.`,
           r_solution_instructions:
             ``,
 
@@ -57,13 +57,13 @@
           bash_test_code_instructions:
             ``,
           python_script_test_code_instructions:
-            `Write a bash script to run your solution code (saved as 'code.py') using python and arguments.`,
+            `Write a bash script to run your solution code (saved as 'code.py') using Python and arguments.`,
           r_test_code_instructions:
             ``,
 
           // Pre-Execution Code additional instructions
           python_check_code_instructions:
-            `Write your pre-execution code in python.`,
+            `Write your pre-execution code in Python.`,
           bash_check_code_instructions:
             `Write your pre-execution code in bash.`,
           python_script_check_code_instructions:
@@ -188,15 +188,15 @@
             // load back_end specific instructions for solution, test_code, and pre-execution code
             let back_end_type = document.getElementById("back_end").value;
             if (exampleDict[back_end_type + "_solution_instructions"] != "")
-              document.getElementById("solution_additional_instructions").innerHTML = "<hr><p><em>" + exampleDict[back_end_type + "_solution_instructions"] + "</em></p>"
+              document.getElementById("solution_additional_instructions").innerHTML = "<p><em>" + exampleDict[back_end_type + "_solution_instructions"] + "</em></p>"
             else
               document.getElementById("solution_additional_instructions").innerHTML = ""
             if (exampleDict[back_end_type + "_test_code_instructions"] != "")
-              document.getElementById("test_code_additional_instructions").innerHTML = "<hr><p><em>" + exampleDict[back_end_type + "_test_code_instructions"] + "</em></p>"
+              document.getElementById("test_code_additional_instructions").innerHTML = "<p><em>" + exampleDict[back_end_type + "_test_code_instructions"] + "</em></p>"
             else
               document.getElementById("test_code_additional_instructions").innerHTML = ""
             if (exampleDict[back_end_type + "_check_code_instructions"] != "")
-              document.getElementById("check_code_additional_instructions").innerHTML = "<hr><p><em>" + exampleDict[back_end_type + "_check_code_instructions"] + "</em></p>"
+              document.getElementById("check_code_additional_instructions").innerHTML = "<p><em>" + exampleDict[back_end_type + "_check_code_instructions"] + "</em></p>"
             else
               document.getElementById("check_code_additional_instructions").innerHTML = ""
         }
@@ -208,7 +208,7 @@
             <div class="row-container bottom-space">
                 <div class="a-title-container">
                     <p><strong>Title*: </strong></p>
-                    <p><textarea name="title" class="textarea is-grey is-fullwidth monospace" placeholder="Please specify a descriptive title." rows="1" autofocus>{{ exercise_basics["title"] }}</textarea></p>
+                    <p><input name="title" id="title" class="input is-grey is-fullwidth" placeholder="Please specify a descriptive title." autofocus></p>
                 </div>
                 <div class="a-visible">
                     <p><strong>Visible: </strong>
@@ -533,15 +533,15 @@
             function showExampleTestCode() {
                 document.getElementById("example_test_code_checkbox").checked = !(document.getElementById("example_test_code_checkbox").checked);
                 if (document.getElementById("example_test_code_checkbox").checked == true) {
-                  document.getElementById("example_solution_button").classList.remove("is-light");
-                  document.getElementById("example_solution_button").classList.add("is-primary");
+                  document.getElementById("example_test_code_button").classList.remove("is-light");
+                  document.getElementById("example_test_code_button").classList.add("is-primary");
                   // save current code
                   document.getElementById("save_code").innerHTML = test_code_editor.getValue();
                   // display example code
                   test_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_test_code_example']);
               } else {
-                  document.getElementById("example_solution_button").classList.remove("is-primary");
-                  document.getElementById("example_solution_button").classList.add("is-light");
+                  document.getElementById("example_test_code_button").classList.remove("is-primary");
+                  document.getElementById("example_test_code_button").classList.add("is-light");
                   test_code_editor.setValue(saveCode())
               }
             }
@@ -549,15 +549,15 @@
             function showExamplePreExecution() {
                 document.getElementById("example_check_code_checkbox").checked = !(document.getElementById("example_check_code_checkbox").checked);
                 if (document.getElementById("example_check_code_checkbox").checked == true) {
-                  document.getElementById("example_solution_button").classList.remove("is-light");
-                  document.getElementById("example_solution_button").classList.add("is-primary");
+                  document.getElementById("example_check_code_button").classList.remove("is-light");
+                  document.getElementById("example_check_code_button").classList.add("is-primary");
                   // save current code
                   document.getElementById("save_code").innerHTML = check_code_editor.getValue();
                   // display example code
                   check_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_check_example']);
               } else {
-                  document.getElementById("example_solution_button").classList.remove("is-primary");
-                  document.getElementById("example_solution_button").classList.add("is-light");
+                  document.getElementById("example_check_code_button").classList.remove("is-primary");
+                  document.getElementById("example_check_code_button").classList.add("is-light");
                   check_code_editor.setValue(saveCode())
               }
             }
@@ -595,6 +595,10 @@
             });
 
             updateBackEndOptions('{{ exercise_details["back_end"] }}', '{{ exercise_details["output_type"] }}');
+
+            {% if exercise_basics["title"] != "" %}
+            document.getElementById("title").value = "{{ exercise_basics["title"] }}";
+            {% end %}
 
             document.getElementById("myForm").onsubmit = function(evt) {
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
