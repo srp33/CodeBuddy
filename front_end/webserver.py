@@ -961,6 +961,7 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             exercise_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
             exercise_details["enable_pair_programming"] = self.get_body_argument("enable_pair_programming") == "Yes"
+            exercise_details["check_code"] = self.get_body_argument("check_code_text").strip().replace("\r", "")
 
             old_files = self.get_body_argument("file_container")
             new_files = self.request.files
@@ -1004,7 +1005,7 @@ class EditExerciseHandler(BaseUserHandler):
 
                             if not result.startswith("Error:"):
                                 content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
-                                content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now())
+                                content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"])
 
                                 text_output, image_output = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
@@ -1660,7 +1661,7 @@ class DevelopmentLoginHandler(RequestHandler):
             else:
                 if not content.user_exists(user_id):
                     # Add static information for test user.
-                    user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
+                    user_dict = {"enable_vim": True, 'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
                     content.add_user(user_id, user_dict)
 
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
