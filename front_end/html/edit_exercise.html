@@ -73,6 +73,7 @@
             });
         }
 
+
         ace.require("ace/ext/language_tools");
     </script>
 
@@ -361,6 +362,14 @@
 
         <!-- Code to modify page behavior at the end of loading -->
         <script>
+
+            {% if user_info["enable_vim"] %}
+            answer_code_editor.setKeyboardHandler("ace/keyboard/vim");
+            start_code_editor.setKeyboardHandler("ace/keyboard/vim");
+            test_code_editor.setKeyboardHandler("ace/keyboard/vim");
+            check_code_editor.setKeyboardHandler("ace/keyboard/vim");
+            {% end %}
+
             var answer_code_editor = ace.edit("answer_code", {
                 theme: "ace/theme/{{ user_info['ace_theme'] }}",
                 autoScrollEditorIntoView: true,
