@@ -1,6 +1,7 @@
 code_file_path = commandArgs()[9]
 test_code_file_path = commandArgs()[10]
-output_type = commandArgs()[11]
+check_code_file_path = commandArgs()[11]
+output_type = commandArgs()[12]
 
 # Code that didn't work right for both base R graphics and ggplot2
 #exec_jpg <- function(code) {
@@ -18,6 +19,14 @@ output_type = commandArgs()[11]
 #
 #  return(image_write(fig, path="/sandbox/image_output", format="jpg", flatten=FALSE))
 #}
+
+if (file.exists(check_code_file_path)) {
+  check_code <- readChar(check_code_file_path, file.info(check_code_file_path)$size)
+  check_output <- capture.output(suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=check_code))))),split=TRUE)
+  if (length(check_output) > 0) {
+    quit()
+  }
+}
 
 exec_jpg <- function(code) {
   library(ggplot2)

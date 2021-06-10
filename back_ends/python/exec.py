@@ -6,7 +6,14 @@ import traceback
 
 code_file_path = sys.argv[1]
 test_code_file_path = sys.argv[2]
-output_type = sys.argv[3]
+check_code_file_path = sys.argv[3]
+output_type = sys.argv[4]
+
+if os.path.exists(check_code_file_path):
+    result = subprocess.run(f"python {check_code_file_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
+    if len(result) > 0:
+        print(result)
+        sys.exit()
 
 if os.path.exists(test_code_file_path):
     with open(test_code_file_path) as test_code_file:

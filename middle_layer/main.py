@@ -15,6 +15,7 @@ class ExecInfo(BaseModel):
     image_name: str
     code: str
     test_code: str
+    check_code: str
     data_files: dict
     output_type: str
     memory_allowed_mb: int
@@ -45,7 +46,11 @@ def exec(info: ExecInfo):
         with open(f"{tmp_dir_path}/code", "w") as code_file:
             code_file.write(info.code)
 
-        # Save the test code to a file that will be accessible inside the container.
+        # Save the check code to a file that will be accessible inside the container.
+        if len(info.check_code) > 0:
+            with open(f"{tmp_dir_path}/check_code", "w") as check_file:
+                check_file.write(info.check_code)
+
         if len(info.test_code) > 0:
             with open(f"{tmp_dir_path}/test_code", "w") as test_file:
                 test_file.write(info.test_code)
@@ -56,13 +61,12 @@ def exec(info: ExecInfo):
                 data_file.write(value)
 
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/test_code {info.output_type}"
+        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/test_code /sandbox/check_code {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
         stdout = result.stdout.decode().replace(docker_warning, "").strip()
-
         # Check whether the command timed out.
         if result.returncode == 137 or stdout == "Killed":
             return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": ""}
