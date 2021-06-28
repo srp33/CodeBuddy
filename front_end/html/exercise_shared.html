@@ -201,7 +201,7 @@
                         {% if exercise_details["tests"] != [] %}
 
                         code_output = "<h6>Tests:</h6>\n\n";
-                        var tests = json_data.tests_dict;
+                        var tests = json_data.tests;
                         var outcomes = json_data.outcomes_dict
                         console.log(outcomes)
                         var j = 0
@@ -215,7 +215,7 @@
                                     code_output += `<div id="test_${j}" style="display:none"><h6>Your output:</h6>\n\n`;
                                     code_output += `<pre>${tests[j].output}</pre>`;
                                     code_output += `<h6>Expected output:</h6>\n\n`;
-                                    code_output += `<pre>{{exercise_details["tests_dict"][i + 1]["output"]}}</pre><br /></div>`;
+                                    code_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre><br /></div>`;
                               }
                             {% else %}
                                 code_output += `<pre class='${button_bg_color}'>Test ${i} hidden.</pre>`;

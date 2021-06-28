@@ -112,34 +112,35 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
     response_dict = json.loads(response.content)
     return json.loads(response_dict["text_output"]), response_dict["image_output"]
 
+def compare_outcome(type, text, actual_text, image=None, actual_image=None):
+    print(type,text, actual_text)
+    if text == actual_text:
+        return {"type": type, "diff_output": "", "passed": True}
+    if actual_text == "":
+        return {"type": type, "diff_output": "", "passed": False}
+
+    diff_output, num_differences = diff_strings(text, actual_text)
+
+    # Only return diff output if the differences are relatively small.
+    if num_differences > 20:
+        diff_output = ""
+
+    diff_output = diff_output.replace("\\t", "[tab]")
+    return {"type": type, "diff_output": diff_output, "passed": False}
+
 def check_exercise_output(exercise_details, submission_list, actual_image):
+    print(submission_list)
     if exercise_details["back_end"] == "any_response" and (len(actual_text) > 0 or len(actual_image) > 0):
         return "", True
 
     if exercise_details["output_type"] == "txt":
         outcomes = []
-        expected_outputs = exercise_details["tests_dict"]
+        code = list(filter(lambda x: x["type"] == "solution", submission_list))[0]
+        outcomes.append(compare_outcome("solution", code["text_output"], exercise_details["expected_text_output"]))
+        expected_outputs = exercise_details["tests"]
         for i in range(len(expected_outputs)):
-            # expected_text = exercise_details["expected_text_output"]
-            expected_text = expected_outputs[i]["output"]
-            actual_text = submission_list[i]["output"]
-
-            if expected_text == actual_text:
-                outcomes.append({"type": expected_outputs[i]["type"], "diff_output": "", "passed": True})
-                continue
-                # return "", True
-            if actual_text == "":
-                outcomes.append({"type": expected_outputs[i]["type"], "diff_output": "", "passed": False})
-                continue
-
-            diff_output, num_differences = diff_strings(expected_text, actual_text)
-
-            # Only return diff output if the differences are relatively small.
-            if num_differences > 20:
-                diff_output = ""
-            diff_output = diff_output.replace("\\t", "[tab]")
-            outcomes.append({"type": expected_outputs[i]["type"], "diff_output": diff_output, "passed": False})
-            # return diff_output, False
+            outcomes.append(compare_outcome(i, expected_outputs[i]["text_output"], exercise_details["tests"][i]["text_output"]))
+        print("D", outcomes)
         return outcomes
     else:
         expected_image = exercise_details["expected_image_output"]

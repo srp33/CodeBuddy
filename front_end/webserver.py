@@ -1017,9 +1017,11 @@ class EditExerciseHandler(BaseUserHandler):
                                 if not any_response_counts and tests_dict == [] and image_output == "":
                                     result = f"Error: No output was produced."
                                 else:
-                                    exercise_details["expected_text_output"] = "\n".join(list(map(lambda x: x["output"].strip(), tests_dict)))
+                                    exercise_details["expected_text_output"] =  "\n".join(list(map(lambda x: x["text_output"], list(filter(lambda x: x["type"] == "solution", tests_dict)))))
                                     # why format as html???
-                                    exercise_details["tests_dict"] = json.dumps(tests_dict)
+                                    exercise_details["tests_dict"] = sorted(list(filter(lambda x: x["type"] != "solution", tests_dict)))
+                                    print("A", exercise_details["tests_dict"])
+                                    print("B", exercise_details["expected_text_output"])
                                     exercise_details["expected_image_output"] = image_output
                                     exercise = content.save_exercise(exercise_basics, exercise_details)
 
@@ -1159,16 +1161,15 @@ class SubmitHandler(BaseUserHandler):
             tests_dict, image_output = exec_code(settings_dict, code, exercise_basics, exercise_details, self.request)
             outcomes_dict = check_exercise_output(exercise_details, tests_dict, image_output)
 
-            text_output = "\n".join(list(map(lambda x: x["output"].strip(), tests_dict)))
+            text_output = "\n".join(list(map(lambda x: x["text_output"].strip(), tests_dict)))
 
             diff = "\n".join(list(map(lambda x: x["diff_output"], outcomes_dict))) if "" not in list(map(lambda x: x["diff_output"], outcomes_dict)) else ""
             # diff = "\n".join(list(map(lambda x: x["diff_output"], list(filter(lambda x: x["diff_output"] != "", outcomes_dict)))))
             passed = True if all(list(map(lambda x: x["passed"], outcomes_dict))) else False
-            tests_dict = json.dumps(tests_dict)
 
             out_dict["text_output"] = format_output_as_html(text_output)
             out_dict["image_output"] = image_output
-            out_dict["tests_dic"] = json.loads(tests_dict)
+            out_dict["tests_dict"] = tests_dict
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
             out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, tests_dict, partner_id)
@@ -1565,7 +1566,7 @@ class SubmitHelpRequestHandler(BaseUserHandler):
                 exercise_details = content.get_exercise_details(course, assignment, exercise)
 
                 tests_dict, image_output = exec_code(settings_dict, code, exercise_basics, exercise_details, request=None)
-                text_output = "\n".join(list(map(lambda x: format_output_as_html(x["output"]), tests_dict)))
+                text_output = "\n".join(list(map(lambda x: format_output_as_html(x["text_output"]), tests_dict)))
 
                 content.save_help_request(course, assignment, exercise, user_id, code, text_output, image_output, student_comment, datetime.datetime.now())
 

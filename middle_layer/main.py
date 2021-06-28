@@ -56,6 +56,8 @@ def exec(info: ExecInfo):
                 filename = f"{tmp_dir_path}/tests/test_{int(i + 1)}"
                 os.makedirs(os.path.dirname(filename), exist_ok=True)
                 with open(filename, "w") as test_file:
+                    test_file.write(info.code)
+                    test_file.write("\n\n")
                     test_file.write(info.tests[i]["code"])
 
         # Save any data files so they will be accessible inside the container.
@@ -87,7 +89,7 @@ def exec(info: ExecInfo):
             for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
                 i = test_output.split('_')[-1]
                 with open(f"{tmp_dir_path}/tests/outputs/{test_output}") as read_test:
-                    submission_outputs.append({"type": f"test_{i}", "output": read_test.read()})
+                    submission_outputs.append({"type": i, "text_output": read_test.read()})
 
         if info.output_type == "jpg":
             image_file_path = f"{tmp_dir_path}/image_output"
@@ -96,7 +98,7 @@ def exec(info: ExecInfo):
                 with open(image_file_path, "rb") as output_file:
                     image_output = encode_image_bytes(output_file.read())
 
-        submission_outputs.insert(0, {"type": "solution", "output": "\n".join(text_output_lines)})
+        submission_outputs.insert(0, {"type": "solution", "text_output": "\n".join(text_output_lines)})
         submission_outputs = json.dumps(submission_outputs)
         return {"text_output": submission_outputs, "image_output": image_output}
     except Exception as inst:
