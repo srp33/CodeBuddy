@@ -35,6 +35,8 @@
 
     <!-- Global JavaScript -->
     <script>
+        var current_tests = [];
+
         function updateBackEndOptions(back_end, output_type_to_select) {
             // Clear out existing options from the dropdown
             $("#output_types").empty();
@@ -68,8 +70,11 @@
 
                 answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 starter_code_editor.getSession().setMode(json_data["code_completion_path"]);
-                test_code_editor.getSession().setMode(json_data["code_completion_path"]);
                 check_code_editor.getSession().setMode(json_data["code_completion_path"]);
+
+                for (i of current_tests) {
+                  eval(`test_code_editor_${i}.getSession().setMode(json_data["code_completion_path"])`);
+                }
             });
         }
 
@@ -106,7 +111,7 @@
                             <i class="far fa-question-circle"></i>
                         </label>
                         <div class="select is-grey">
-                            <select name="back_end" onchange="updateBackEndOptions(this.value, '')" class="edit-select">
+                            <select name="back_end" id="back_end_type" onchange="updateBackEndOptions(this.value, '')" class="edit-select">
                             {% for back_end in back_ends %}
                                 <option
                                 {% if back_end == exercise_details["back_end"] %}
@@ -226,6 +231,21 @@
         </div>
 
         <div class="shadow-box">
+            <div id="test_upload">
+                <p><strong>Tests:</strong></p>
+                <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
+
+                <input id="tests_container" name="tests_container" style="display: none;"></input>
+                <div id="tests_div">
+                </div>
+
+            <div>
+                <a onclick="showAddTest()">Add test</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="shadow-box">
             <div>
                 <p><strong>Starter code: </strong></p>
                 <p>Starter code will be given to a student when they haven't made any submissions yet. They'll be able to add to this code in order to solve the exercise.</p>
@@ -235,34 +255,6 @@
                 </p>
             </div>
         </div>
-
-        <div class="shadow-box">
-            <div>
-                <p><strong>Test code: </strong></p>
-                <p>Test code can be used to run one or more tests using the student's code. It helps test the integrity of their code rather than its ability to produce the expected output.</p>
-                <p>
-                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide test code." rows="10" id="test_code" name="test_code">{{ exercise_details["test_code"] }}</textarea>
-                    <textarea name="test_code_text" id="test_code_text" class="invisible"></textarea>
-                </p>
-            </div>
-
-            <div>
-                <p><strong>Show test code: </strong>
-                    <div class="select is-grey">
-                        <select name="show_test_code" class="edit-select">
-                        {% if exercise_details["show_test_code"] %}
-                            <option value="Yes" selected>Yes</option>
-                            <option value="No">No</option>
-                        {% else %}
-                            <option value="Yes">Yes</option>
-                            <option value="No" selected>No</option>
-                        {% end %}
-                        </select>
-                    </div>
-                </p>
-            </div>
-        </div>
-
 
         <div class="shadow-box">
             <div>
@@ -349,6 +341,7 @@
                 </div>
             </div>
         </div>
+        <textarea name="tests_json" id="tests_json" class="invisible"></textarea>
 
         <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
 
@@ -377,14 +370,6 @@
                 fontSize: "12pt"
             });
 
-            var test_code_editor = ace.edit("test_code", {
-                theme: "ace/theme/{{ user_info['ace_theme'] }}",
-                autoScrollEditorIntoView: true,
-                minLines: 10,
-                maxLines: 15,
-                fontSize: "12pt"
-            });
-
             var check_code_editor = ace.edit("check_code", {
                 theme: "ace/theme/{{ user_info['ace_theme'] }}",
                 autoScrollEditorIntoView: true,
@@ -398,12 +383,21 @@
             document.getElementById("myForm").onsubmit = function(evt) {
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
-                document.getElementById("test_code_text").value = test_code_editor.getValue();
                 document.getElementById("check_code_text").value = check_code_editor.getValue();
                 document.getElementById("instructions_text").value = document.getElementById("instructions").innerHTML
+
+                tests_array = []
+                for (i of current_tests) {
+                    var code = eval(`test_code_editor_${i}.getValue()`);
+                    var vis = (document.getElementById(`show_test_code_${i}`).value == "Yes") ? true : false;
+                    tests_array.push({code: code, show_test_output: vis})
+                }
+                tests_array = JSON.stringify(tests_array)
+                document.getElementById("tests_json").value = tests_array;
             }
 
             var index = 1;
+            var test_index = -1;
 
             function showAddFile() {
                 var file_div = document.createElement("div");
@@ -448,7 +442,98 @@
                 updateFiles();
             }
 
+            async function showAddTest() {
+                test_index += 1;
+                var test_div = document.createElement("div");
+                test_div.style.margin = "0 0 80px 0";
+                test_div.id = `test_div_${test_index}`
+                var p_wrapper = document.createElement("p");
+                p_wrapper.classList.add("top-space");
+
+                var line_break = document.createElement("hr");
+                var d_button = document.createElement("button");
+                d_button.classList.add("button", "is-orange", "space-div");
+                d_button.innerHTML = "Remove Test Code";
+                d_button.id = `delete_button_${test_index}`;
+                d_button.setAttribute("onclick", `remove_test_code(${test_index})`);
+
+                var test_editor = document.createElement("textarea");
+                test_editor.setAttribute("placeholder", "Please provide test code.");
+                test_editor.setAttribute("rows", "10");
+                test_editor.setAttribute("name", `test_code_${test_index}`)
+                test_editor.setAttribute("id", `test_code_${test_index}`)
+                test_editor.classList.add("textarea", "is-fullwidth", "monospace");
+
+                var toggle_vis_div = document.createElement("div")
+                toggle_vis_div.classList.add("space-div");
+
+                var vis_span = document.createElement("strong");
+                vis_span.innerHTML = "Show Test Code output:"
+
+                var select_div = document.createElement("div");
+                select_div.classList.add("select", "is-grey");
+
+                var select_vis = document.createElement("select")
+                select_vis.setAttribute("id", `show_test_code_${test_index}`)
+                select_vis.classList.add("edit-select", "bottom-space");
+
+                var yes_opt = document.createElement("option")
+                yes_opt.value = "Yes";
+                yes_opt.innerHTML = "Yes";
+                select_vis.appendChild(yes_opt)
+
+                var no_opt = document.createElement("option")
+                no_opt.value = "No";
+                no_opt.innerHTML = "No";
+                select_vis.appendChild(no_opt)
+
+                p_wrapper.appendChild(line_break);
+                p_wrapper.appendChild(d_button);
+                p_wrapper.appendChild(test_editor)
+
+                select_div.appendChild(vis_span);
+                select_div.appendChild(select_vis);
+                toggle_vis_div.appendChild(select_div)
+
+                test_div.appendChild(p_wrapper)
+                test_div.appendChild(toggle_vis_div)
+
+                var tests_div = document.getElementById("tests_div");
+                tests_div.appendChild(test_div)
+
+                eval(`test_code_editor_${test_index} = ace.edit('test_code_${test_index}', {
+                    theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                    autoScrollEditorIntoView: true,
+                    minLines: 10,
+                    maxLines: 15,
+                    fontSize: "12pt"
+                    });`);
+
+                current_tests.push(test_index)
+
+                var output_type = await document.getElementById("output_types").value
+                if (output_type != "")
+                    updateBackEndOptions(document.getElementById("back_end_type").value, output_type);
+            }
+
+            function remove_test_code(i) {
+              var test_code_to_remove = document.getElementById(`test_div_${i}`)
+              test_code_to_remove.remove();
+              var index_to_remove = current_tests.indexOf(i)
+              current_tests.splice(index_to_remove, 1)
+            }
+
             const container = document.querySelector("#file_upload");
+
+            $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
+                 var json_data = JSON.parse(data);
+                 for (i in json_data) {
+                   showAddTest();
+                   eval(`test_code_editor_${i}.setValue(json_data[i].code)`);
+                   if (!json_data[i].show_code)
+                      eval(`show_test_code_${i}.value = "No";`);
+                 }
+               });
 
             {% if exercise_details["data_files"] != "" %}
                 // add previously uploaded files to the page

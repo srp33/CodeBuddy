@@ -354,6 +354,17 @@
             <pre class="smaller-font">{{ exercise_details["test_code"] }}</pre>
         {% end %}
 
+        {% if exercise_details["tests"] != [] %}
+            <h6>Test code (to be executed after your solution):</h6>
+            {% for test in exercise_details["tests"] %}
+              {% if test["show_code"] %}
+                <pre class="smaller-font">{{ test["code"] }}</pre>
+              {% else %}
+                <pre class="smaller-font">Test Code Hidden</pre>
+              {% end %}
+            {% end %}
+        {% end %}
+
         {% if len(exercise_details["data_files"]) > 0 %}
             <h6>Data files:</h6>
             <div id="data_file_div" class="top-space">

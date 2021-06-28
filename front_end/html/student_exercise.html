@@ -1,6 +1,13 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
+            {% if exercise_details["tests"] != tests %}
+                {% for test in exercise_details["tests"] %}
+                    <pre class="smaller-font">{{ test["code"] }}</pre>
+                {% else %}
+                    <pre class="smaller-font">Test Code Hidden. </pre>
+                {% end %}
+            {% end %}
             <div class="student-exercise-notification">{{ student_info["name"] }}'s submissions</div>
 
             <div class="row-container bottom-space">
@@ -32,7 +39,7 @@
             </div>
 
             <div id="result"></div>
-            
+
             <div class="top-space">
                 <h6 style="display: inline">Expected output:</h6>
 
