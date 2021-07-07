@@ -110,41 +110,24 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
     response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
 
     response_dict = json.loads(response.content)
-    return json.loads(response_dict["text_output"]), response_dict["image_output"]
+    return response_dict["text_output"], response_dict["image_output"], json.loads(response_dict["tests"])
 
-def compare_outcome(type, text, actual_text, image=None, actual_image=None):
-    print(type,text, actual_text)
-    if text == actual_text:
-        return {"type": type, "diff_output": "", "passed": True}
-    if actual_text == "":
-        return {"type": type, "diff_output": "", "passed": False}
+def compare_outcome(expected_text, actual_text, output_type, expected_image, actual_image):
+    if output_type == "txt":
+        if expected_text == actual_text:
+            return "", True
+        if actual_text == "":
+            return "", False
 
-    diff_output, num_differences = diff_strings(text, actual_text)
+        diff_output, num_differences = diff_strings(expected_text, actual_text)
 
-    # Only return diff output if the differences are relatively small.
-    if num_differences > 20:
-        diff_output = ""
+        # Only return diff output if the differences are relatively small.
+        if num_differences > 20:
+            diff_output = ""
 
-    diff_output = diff_output.replace("\\t", "[tab]")
-    return {"type": type, "diff_output": diff_output, "passed": False}
-
-def check_exercise_output(exercise_details, submission_list, actual_image):
-    print(submission_list)
-    if exercise_details["back_end"] == "any_response" and (len(actual_text) > 0 or len(actual_image) > 0):
-        return "", True
-
-    if exercise_details["output_type"] == "txt":
-        outcomes = []
-        code = list(filter(lambda x: x["type"] == "solution", submission_list))[0]
-        outcomes.append(compare_outcome("solution", code["text_output"], exercise_details["expected_text_output"]))
-        expected_outputs = exercise_details["tests"]
-        for i in range(len(expected_outputs)):
-            outcomes.append(compare_outcome(i, expected_outputs[i]["text_output"], exercise_details["tests"][i]["text_output"]))
-        print("D", outcomes)
-        return outcomes
+        diff_output = diff_output.replace("\\t", "[tab]")
+        return diff_output, False
     else:
-        expected_image = exercise_details["expected_image_output"]
-
         if expected_image == actual_image:
             return "", True
         if actual_image == "":
@@ -153,12 +136,25 @@ def check_exercise_output(exercise_details, submission_list, actual_image):
         diff_image, diff_percent = diff_jpg(expected_image, actual_image)
 
         diff_output = ""
+
         if diff_percent < 10.0:
             # Only return diff output if the differences are relatively small.
             diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
 
         return diff_output, diff_percent < 0.01 # Pass if they are similar.
-        #return diff_output, diff_percent == 0 # Pass if they are identical.
+
+def check_exercise_output(exercise_details, actual_text, actual_image, tests):
+    if exercise_details["back_end"] == "any_response" and (len(actual_text) > 0 or len(actual_image) > 0):
+        return "", True, []
+
+    test_outcomes = []
+    diff_output, passed = compare_outcome(exercise_details["expected_text_output"], actual_text, exercise_details["output_type"], exercise_details["expected_image_output"], actual_image)
+    expected_test_outputs = exercise_details["tests"]
+    for i in range(len(expected_test_outputs)):
+        test_diff_output, test_passed = compare_outcome(expected_test_outputs[i]["text_output"], tests[i]["text_output"], exercise_details["output_type"], expected_test_outputs[i]["image_output"], tests[i]["image_output"])
+        test_outcomes.append({"test": expected_test_outputs[i]["test"], "diff_output": test_diff_output, "passed": test_passed})
+    passed = True if passed and all(list(map(lambda x: x["passed"], test_outcomes))) else False
+    return diff_output, passed, test_outcomes
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")

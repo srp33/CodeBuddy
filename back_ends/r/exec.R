@@ -1,5 +1,5 @@
 code_file_path = commandArgs()[9]
-test_code_file_path = commandArgs()[10]
+tests_dir_path = commandArgs()[10]
 check_code_file_path = commandArgs()[11]
 output_type = commandArgs()[12]
 
@@ -28,24 +28,51 @@ if (file.exists(check_code_file_path)) {
   }
 }
 
-exec_jpg <- function(code) {
+exec_jpg <- function(code, i=0) {
   library(ggplot2)
 
   pdf(NULL) # Prevents Rplots.pdf from being created.
 
   eval(parse(text=code))
-  ggsave("/sandbox/image_output", dpi = 150, device = "jpeg")
+  if (i == 0) {
+    ggsave("/sandbox/image_output", dpi = 150, device = "jpeg")
+  }
+  else {
+    ggsave(paste("/sandbox/test_image_output_", i, sep=""), dpi = 150, device = "jpeg")
+  }
 }
 
 code <- readChar(code_file_path, file.info(code_file_path)$size)
-
-if (file.exists(test_code_file_path)) {
-  test_code <- readChar(test_code_file_path, file.info(test_code_file_path)$size)
-  code <- paste(code, test_code, sep="\n\n")
-}
 
 if (output_type == "txt") {
   suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=code)))))
 } else {
   suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(code))))
+}
+
+# if (file.exists(test_code_file_path)) {
+#  test_code <- readChar(test_code_file_path, file.info(test_code_file_path)$size)
+#  code <- paste(code, test_code, sep="\n\n")
+# }
+
+dir.create(file.path(getwd(), "outputs"), recursive = TRUE)
+setwd(file.path(getwd(), "outputs"))
+outputs_dir <- getwd()
+
+tests <- list.files(path=tests_dir_path, pattern="test*", full.names=TRUE, recursive=FALSE)
+for (i in seq_along(tests)) {
+    dir.create(file.path(outputs_dir, paste("test_", i, sep="")), recursive=TRUE)
+    setwd(file.path(outputs_dir, paste("test_", i, sep="")))
+
+    test_code <- readChar(tests[i], file.info(tests[i])$size)
+
+    if (output_type == "txt") {
+      out <- invisible(suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=test_code))))))
+      filename <- "text_output"
+      writeLines(out, filename)
+    } else {
+      out <- suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(test_code, i))))
+      filename <- "image_output"
+      writeLines("", filename)
+    }
 }

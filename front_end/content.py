@@ -553,12 +553,12 @@ class Content:
         if not exercise_id:
             return []
 
-        sql = '''SELECT code, show_code
+        sql = '''SELECT code, test_instructions
                  FROM tests
                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?'''
-        return [{"code": test["code"], "show_code": test["show_code"]} for test in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id)))]
+        return [{"code": test["code"], "test_instructions": test["test_instructions"]} for test in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id)))]
 
     def get_available_courses(self, user_id):
         available_courses = []
@@ -928,14 +928,14 @@ class Content:
             return []
 
         tests = []
-        sql = '''SELECT code, show_code
+        sql = '''SELECT code, test_instructions
                  FROM tests
                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?'''
 
         for test in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id))):
-            tests.append({"code": test["code"], "show_code": test["show_code"]})
+            tests.append({"code": test["code"], "test_instructions": test["test_instructions"]})
         return tests
 
     def get_student_submissions(self, course_id, assignment_id, exercise_id, user_id):
@@ -1318,7 +1318,7 @@ class Content:
             return self.get_submission_info(course, assignment, exercise, user, last_submission_id)
 
     def get_submission_info(self, course, assignment, exercise, user, submission):
-        sql = '''SELECT code, text_output, image_output, passed, date, partner_id, tests_dict
+        sql = '''SELECT code, text_output, image_output, passed, date, partner_id
                  FROM submissions
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -1328,7 +1328,21 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
 
-        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests_dict": json.loads(row["tests_dict"])}
+        test_sql = '''SELECT test_id, text_output, image_output
+                      FROM submission_outputs
+                      WHERE course_id = ?
+                        AND assignment_id = ?
+                        AND exercise_id = ?
+                        AND user_id = ?
+                        AND submission_id = ?'''
+
+        test_row = self.fetchall(test_sql, (int(course), int(assignment), int(exercise), user, int(submission),))
+
+        tests = []
+        for test in test_row:
+            tests.append({"test": test["test_id"], "text_output": test["text_output"], "image_output": test["image_output"]})
+
+        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests": tests}
 
     def delete_presubmission(self, course, assignment, exercise, user):
         sql = '''DELETE FROM presubmissions
@@ -1393,7 +1407,7 @@ class Content:
     def get_exercise_details(self, course, assignment, exercise, format_content=False):
         if not exercise:
             return {"instructions": "", "back_end": "python", "output_type": "txt", "answer_code": "", "answer_description": "", "hint": "",
-            "max_submissions": 0, "starter_code": "", "test_code": "", "credit": "", "data_files": "", "show_expected": True, "show_test_code": True, "show_answer": True,
+            "max_submissions": 0, "starter_code": "", "test_code": "", "credit": "", "data_files": "", "show_expected": True, "show_test_code": "", "show_answer": True,
             "show_student_submissions": False, "expected_text_output": "", "expected_image_output": "", "data_files": "", "date_created": None, "date_updated": None, "enable_pair_programming": False, "check_code": "", "tests": []}
 
         sql = '''SELECT instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_files, show_expected, show_test_code, show_answer, show_student_submissions, expected_text_output, expected_image_output, data_files, date_created, date_updated, enable_pair_programming, check_code
@@ -1406,7 +1420,7 @@ class Content:
 
         exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "test_code": row["test_code"], "credit": row["credit"], "data_files": row["data_files"].strip(), "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "show_student_submissions": row["show_student_submissions"], "expected_text_output": row["expected_text_output"].strip(), "expected_image_output": row["expected_image_output"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"], "check_code": row["check_code"], "tests": []}
 
-        sql = '''SELECT code, show_code, text_output, image_output
+        sql = '''SELECT test_id, code, test_instructions, text_output, image_output
                  FROM tests
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -1415,12 +1429,11 @@ class Content:
         tests = self.fetchall(sql, (int(course), int(assignment), int(exercise),))
 
         for test in tests:
-            exercise_dict["tests"].append({"code": test["code"], "show_code": test["show_code"], "text_output": test["text_output"], "image_output": test["image_output"]})
+            exercise_dict["tests"].append({"test": test["test_id"], "code": test["code"], "test_instructions": test["test_instructions"], "text_output": test["text_output"], "image_output": test["image_output"]})
 
         if row["data_files"]:
             exercise_dict["data_files"] = json.loads(row["data_files"])
 
-        exercise_dict["expected_text_output"] = json.loads(exercise_dict["expected_text_output"])
         if format_content:
             # exercise_dict["expected_text_output"] = format_output_as_html(exercise_dict["expected_text_output"])
             exercise_dict["instructions"] = convert_markdown_to_html(exercise_dict["instructions"])
@@ -1541,7 +1554,7 @@ class Content:
                        AND assignment_id = ?
                        AND exercise_id = ?'''
 
-            self.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["answer_code"]), exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], json.dumps(exercise_details["expected_text_output"]), exercise_details["expected_image_output"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["show_answer"], exercise_details["show_student_submissions"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["check_code"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
+            self.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["answer_code"]), exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["show_answer"], exercise_details["show_student_submissions"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["check_code"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 
             sql = '''DELETE FROM tests
                      WHERE course_id = ?
@@ -1552,10 +1565,11 @@ class Content:
 
             if exercise_details["tests"] != []:
                 for i in range(len(exercise_details["tests"])):
-                    sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, code, show_code, text_output)
-                             VALUES (?, ?, ?, ?, ?, ?)'''
+                    sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, code, test_instructions, text_output, image_output)
+                             VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
-                    test_id = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], exercise_details["tests"][i]["code"], exercise_details["tests"][i]["show_test_output"], exercise_details["tests_dict"][i]["text_output"]])
+                    test_id = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], exercise_details["tests"][i]["code"], exercise_details["tests"][i]["test_instructions"], exercise_details["tests"][i]["text_output"], exercise_details["tests"][i]["image_output"]])
+
         else:
             sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming, check_code)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -1571,13 +1585,12 @@ class Content:
 
             self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 
-
             if exercise_details["tests"] != []:
                 for i in range(len(exercise_details["tests"])):
-                    sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, code, show_code, text_output)
-                             VALUES (?, ?, ?, ?, ?, ?)'''
+                    sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, code, test_instructions, text_output, image_output)
+                             VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
-                    test_id = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], exercise_details["tests"][i]["code"], exercise_details["tests"][i]["show_test_output"], exercise_details["tests_dict"][i]["text_output"]])
+                    test_id = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], exercise_details["tests"][i]["code"], exercise_details["tests"][i]["test_instructions"], exercise_details["tests"][i]["text_output"], exercise_details["tests"][i]["image_output"]])
 
         return exercise_basics["id"]
 
@@ -1587,31 +1600,31 @@ class Content:
 
         self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
 
-    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, tests_dict, partner_id=None):
+    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, tests, partner_id=None):
         submission_id = self.get_next_submission_id(course, assignment, exercise, user)
         sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date, partner_id)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
         self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), partner_id])
 
-        if len(tests_dict) > 0:
-            print("C", tests_dict)
-            test_sql = '''INSERT INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, text_output, image_output)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)'''
-            for test in tests_dict:
-                if "image_output" not in test.keys():
-                    test["image_output"] = None
-                print("E", test)
-                self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
+        if len(tests) > 0:
+            test_sql = '''INSERT OR REPLACE INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, test_id, text_output, image_output)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+
+            for test in tests:
+                try:
+                    self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["test"], test["text_output"], test["image_output"]])
+                except:
+                    print(traceback.format_exc())
 
         # save submission for partner
         if partner_id:
             submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
-            self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user, tests_dict])
+            self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user, tests])
 
-            if len(tests_dict) > 0:
-                print("C", tests_dict)
-                for test in tests_dict:
+            if len(tests) > 0:
+                print("C", tests)
+                for test in tests:
                     self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
 
         return submission_id
@@ -1747,9 +1760,27 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
+        self.execute('''DELETE FROM tests
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
+        self.execute('''DELETE FROM submission_outputs
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
     def delete_assignment(self, assignment_basics):
         course_id = assignment_basics["course"]["id"]
         assignment_id = assignment_basics["id"]
+
+        self.execute('''DELETE FROM tests
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
+        self.execute('''DELETE FROM submission_outputs
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?
@@ -1907,10 +1938,11 @@ class Content:
             exercise_basics = self.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.get_exercise_details(course, assignment, exercise)
 
-            text_output, image_output = exec_code(self.__settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+            text_output, image_output, tests = exec_code(self.__settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
             exercise_details["expected_text_output"] = text_output
             exercise_details["expected_image_output"] = image_output
+            exercise_details["tests"] = tests
             self.save_exercise(exercise_basics, exercise_details)
 
     def rerun_submissions(self, assignment_title):
@@ -1937,12 +1969,8 @@ class Content:
             exercise_basics = self.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.get_exercise_details(course, assignment, exercise)
 
-            tests_dict, image_output = exec_code(self.__settings_dict, code, exercise_basics, exercise_details, None)
-            outcomes_dict = check_exercise_output(exercise_details["expected_text_output"], text_output, exercise_details["expected_image_output"], image_output, exercise_details["output_type"])
-
-            passed = False
-            if all(list(map(lambda x: x["passed"], outcomes_dict))):
-                passed = True
+            text_output, image_output, tests = exec_code(self.__settings_dict, code, exercise_basics, exercise_details, None)
+            diff, passed, tests = check_exercise_output(exercise_details, text_output, image_output, tests)
 
             sql = '''UPDATE submissions
                      SET text_output = ?,

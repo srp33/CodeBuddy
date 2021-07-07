@@ -42,7 +42,6 @@
             $("#output_types").empty();
 
             ot_select = document.getElementById("output_types");
-
             $.get('/back_end/' + back_end, function( data ) {
                 var json_data = JSON.parse(data);
 
@@ -240,7 +239,7 @@
                 </div>
 
             <div>
-                <a onclick="showAddTest()">Add test</a>
+                <a class="button is-grey" onclick="showAddTest()">Add test</a>
             </div>
           </div>
         </div>
@@ -389,9 +388,12 @@
                 tests_array = []
                 for (i of current_tests) {
                     var code = eval(`test_code_editor_${i}.getValue()`);
-                    var vis = (document.getElementById(`show_test_code_${i}`).value == "Yes") ? true : false;
-                    tests_array.push({code: code, show_test_output: vis})
+                    var instructions = (document.getElementById(`show_test_code_${i}`).value == "Yes") ? "" : document.getElementById(`test_instructions_${i}`).value;
+                    instructions = ((document.getElementById(`show_test_code_${i}`).value == "No") && (instructions == "")) ? "Test Code Hidden." : instructions
+                    if (code != "")
+                      tests_array.push({code: code, test_instructions: instructions})
                 }
+
                 tests_array = JSON.stringify(tests_array)
                 document.getElementById("tests_json").value = tests_array;
             }
@@ -452,7 +454,7 @@
 
                 var line_break = document.createElement("hr");
                 var d_button = document.createElement("button");
-                d_button.classList.add("button", "is-orange", "space-div");
+                d_button.classList.add("button", "is-orange", "space-div", "is-pulled-right");
                 d_button.innerHTML = "Remove Test Code";
                 d_button.id = `delete_button_${test_index}`;
                 d_button.setAttribute("onclick", `remove_test_code(${test_index})`);
@@ -468,7 +470,21 @@
                 toggle_vis_div.classList.add("space-div");
 
                 var vis_span = document.createElement("strong");
-                vis_span.innerHTML = "Show Test Code output:"
+                vis_span.innerHTML = "Show test code output:"
+
+
+                var test_instructions_div = document.createElement("div");
+                test_instructions_div.setAttribute("id", `test_instructions_div_${test_index}`)
+                test_instructions_div.style.marginTop = "50px";
+                test_instructions_div.style.display = "none"
+
+                var test_instructions_span = document.createElement("strong");
+                test_instructions_span.innerHTML = "Provide instructions for hidden test case:"
+
+                var test_instructions = document.createElement("textarea")
+                test_instructions.setAttribute("name", `test_instructions_${test_index}`)
+                test_instructions.setAttribute("id", `test_instructions_${test_index}`)
+                test_instructions.classList.add("textarea", "is-grey", "is-fullwidth", "monospace")
 
                 var select_div = document.createElement("div");
                 select_div.classList.add("select", "is-grey");
@@ -476,6 +492,7 @@
                 var select_vis = document.createElement("select")
                 select_vis.setAttribute("id", `show_test_code_${test_index}`)
                 select_vis.classList.add("edit-select", "bottom-space");
+                select_vis.setAttribute("onchange", `show_test_instructions(${test_index})`);
 
                 var yes_opt = document.createElement("option")
                 yes_opt.value = "Yes";
@@ -488,12 +505,15 @@
                 select_vis.appendChild(no_opt)
 
                 p_wrapper.appendChild(line_break);
-                p_wrapper.appendChild(d_button);
                 p_wrapper.appendChild(test_editor)
+                p_wrapper.appendChild(d_button);
 
+                test_instructions_div.appendChild(test_instructions_span);
+                test_instructions_div.appendChild(test_instructions);
                 select_div.appendChild(vis_span);
                 select_div.appendChild(select_vis);
                 toggle_vis_div.appendChild(select_div)
+                toggle_vis_div.appendChild(test_instructions_div)
 
                 test_div.appendChild(p_wrapper)
                 test_div.appendChild(toggle_vis_div)
@@ -516,6 +536,10 @@
                     updateBackEndOptions(document.getElementById("back_end_type").value, output_type);
             }
 
+            function show_test_instructions(i) {
+              document.getElementById(`test_instructions_div_${i}`).style.display = (document.getElementById(`test_instructions_div_${i}`).style.display == "none") ? "block" : "none";
+            }
+
             function remove_test_code(i) {
               var test_code_to_remove = document.getElementById(`test_div_${i}`)
               test_code_to_remove.remove();
@@ -530,8 +554,11 @@
                  for (i in json_data) {
                    showAddTest();
                    eval(`test_code_editor_${i}.setValue(json_data[i].code)`);
-                   if (!json_data[i].show_code)
-                      eval(`show_test_code_${i}.value = "No";`);
+                   if (json_data[i].test_instructions != "") {
+                      eval(`show_test_code_${i}.value = "No"`);
+                      eval(`test_instructions_${i}.value = '${json_data[i].test_instructions}'`);
+                      eval(`test_instructions_div_${i}.style.display = 'block'`);
+                   }
                  }
                });
 

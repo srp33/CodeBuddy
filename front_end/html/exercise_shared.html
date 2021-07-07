@@ -195,34 +195,55 @@
 
                     {% if exercise_details["back_end"] != "any_response" %}
                         var code_output = "<h6>Your output:</h6>\n\n";
+
                         code_output += build_text_output(json_data.text_output);
                         code_output += build_image_output(json_data.image_output);
 
                         {% if exercise_details["tests"] != [] %}
 
-                        code_output = "<h6>Tests:</h6>\n\n";
+                        var test_output = "<h6>Tests:</h6>\n\n";
                         var tests = json_data.tests;
-                        var outcomes = json_data.outcomes_dict
-                        console.log(outcomes)
-                        var j = 0
+                        console.log("all json data")
+                        console.log(json_data)
                         {% for i in range(len(exercise_details["tests"]))%}
-                                j = {{i}} + 1
-                                if (tests[j].type != "solution") {
-                                    button_bg_color = (json_data.outcomes_dict[j].passed ? "passing-btn-color" : "failing-btn-color");
-                                    test_message = (json_data.outcomes_dict[j].passed ? "passed" : "did not pass");
-                            {% if exercise_details["tests"][i]["show_code"] %}
-                                    code_output += `<pre class='${button_bg_color}' style="cursor:pointer;" onclick='show_test(${j})'>Test ${j} ${test_message}.</pre>`;
-                                    code_output += `<div id="test_${j}" style="display:none"><h6>Your output:</h6>\n\n`;
-                                    code_output += `<pre>${tests[j].output}</pre>`;
-                                    code_output += `<h6>Expected output:</h6>\n\n`;
-                                    code_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre><br /></div>`;
-                              }
+                                    button_bg_color = (tests[{{i}}].passed ? "passing-btn-color" : "failing-btn-color");
+                                    test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
+                            {% if exercise_details["tests"][i]["test_instructions"] == "" %}
+
+                                    test_output += `<pre class='${button_bg_color}' style='cursor:pointer;' onclick='show_test(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.</pre>`;
+                                    test_output += `<div id="test_${tests[{{i}}].test}" style="display:none"><h6>Your output:</h6>\n\n`;
+
+                                    {% if exercise_details["output_type"] == "txt" %}
+                                    test_output += `<pre>${tests[{{i}}].text_output}</pre>`;
+                                    test_output += `<h6>Expected output:</h6>\n\n`;
+                                    test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
+                                    {% else %}
+                                    if (tests[{{i}}]["image_output"] == "")
+                                        test_output += "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                                    else
+                                        test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].image_output + "' width='100%' /></figure></p>";
+
+                                    test_output += `<h6>Expected output:</h6>\n\n`;
+                                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + '{{exercise_details["tests"][i]["image_output"]}}' + "' width='100%' /></figure></p>";
+                                    {% end %}
+
+                                    if (tests[{{i}}].diff_output.length > 0) {
+                                        test_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
+                                        {% if exercise_details["output_type"] == "txt" %}
+                                            test_output += "<p><pre>" + tests[{{i}}].diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                        {% else %}
+                                            test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
+                                        {% end %}
+                                    }
+                                    test_output += `</div>`
                             {% else %}
-                                code_output += `<pre class='${button_bg_color}'>Test ${i} hidden.</pre>`;
+                                test_output += `<pre class='${button_bg_color}'>Test {{i + 1}} output hidden.</pre>`;
                             {% end %}
+                            test_output += `<br />`
                       {% end %}
                       {% end %}
                         document.getElementById("code_output").innerHTML = code_output;
+                        document.getElementById("test_output").innerHTML = test_output;
                     {% end %}
                 }
 
@@ -256,8 +277,6 @@
                             var code_output = "<h6>Your output:</h6>\n\n";
                             code_output += build_text_output(json_data.text_output);
                             code_output += build_image_output(json_data.image_output);
-
-                            console.log(json_data)
 
                             document.getElementById("code_output").innerHTML = code_output;
 

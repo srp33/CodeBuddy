@@ -1,5 +1,5 @@
 code_file_path="$1"
-test_code_file_path="$2"
+tests_dir_path="$2"
 check_code_file_path="$3"
 # We won't use this because this back end only supports text-based back ends.
 #output_type="$4"
@@ -17,10 +17,17 @@ then
   fi
 fi
 
-if [ -f "$test_code_file_path" ]
-then
-  echo >> "$code_file_path"
-  cat "$test_code_file_path" >> "$code_file_path"
-fi
-
 bash "$code_file_path"
+
+if [ -d "$tests_dir_path" ]
+then
+  cd $tests_dir_path
+  mkdir outputs
+  for test_path in test*
+  do
+    mkdir outputs/test_${test_path:5}
+    test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/text_output"
+    touch $test_outputs_path
+    bash "$test_path" > $test_outputs_path
+  done
+fi

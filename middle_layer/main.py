@@ -1,4 +1,5 @@
 import arrow
+from pprint import pprint
 import base64
 from fastapi import FastAPI, HTTPException
 import getpass
@@ -56,8 +57,9 @@ def exec(info: ExecInfo):
                 filename = f"{tmp_dir_path}/tests/test_{int(i + 1)}"
                 os.makedirs(os.path.dirname(filename), exist_ok=True)
                 with open(filename, "w") as test_file:
-                    test_file.write(info.code)
-                    test_file.write("\n\n")
+                    if "python_script" not in info.image_name:
+                        test_file.write(info.code)
+                        test_file.write("\n\n")
                     test_file.write(info.tests[i]["code"])
 
         # Save any data files so they will be accessible inside the container.
@@ -76,7 +78,7 @@ def exec(info: ExecInfo):
             return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": ""}
 
         text_output_lines = []
-        submission_outputs = []
+        tests = []
         image_output = ""
 
         for text_output_line in stdout.split("\n"):
@@ -85,11 +87,37 @@ def exec(info: ExecInfo):
                 continue
             text_output_lines.append(text_output_line)
 
+        print("testsdir:",os.listdir(f"{tmp_dir_path}/tests"))
         if os.path.isdir(f"{tmp_dir_path}/tests/"):
-            for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
-                i = test_output.split('_')[-1]
-                with open(f"{tmp_dir_path}/tests/outputs/{test_output}") as read_test:
-                    submission_outputs.append({"type": i, "text_output": read_test.read()})
+            if not os.path.isdir(f"{tmp_dir_path}/tests/outputs/"):
+                for test in os.listdir(f"{tmp_dir_path}/tests/"):
+                    tests.append({"test": None, "text_output": "", "image_output": ""})
+            else:
+                for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
+                    i = test_output.split('_')[-1]
+                    print("outputs:",os.listdir(f"{tmp_dir_path}/tests/outputs/"))
+                    for output_path in os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}"):
+                        print(f"test_{i}:",os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}"))
+                        test_text_output = test_image_output = ""
+                        if "image" not in output_path:
+                            with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
+                                test_text_output = output_file.read()
+                        else:
+                            with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
+                                test_text_output = output_file.read()
+
+                            try:
+                                with open(f"{tmp_dir_path}/test_image_output_{i}", "rb") as output_file:
+                                    test_image_output = encode_image_bytes(output_file.read())
+                            except:
+                                try:
+                                    # python script saves here for some reason
+                                    with open(f"{tmp_dir_path}/tests/test_image_output_{i}", "rb") as output_file:
+                                        test_image_output = encode_image_bytes(output_file.read())
+                                except:
+                                    # image failed to save
+                                    test_image_output = ""
+                    tests.append({"test": i, "text_output": test_text_output, "image_output": test_image_output})
 
         if info.output_type == "jpg":
             image_file_path = f"{tmp_dir_path}/image_output"
@@ -98,9 +126,13 @@ def exec(info: ExecInfo):
                 with open(image_file_path, "rb") as output_file:
                     image_output = encode_image_bytes(output_file.read())
 
-        submission_outputs.insert(0, {"type": "solution", "text_output": "\n".join(text_output_lines)})
-        submission_outputs = json.dumps(submission_outputs)
-        return {"text_output": submission_outputs, "image_output": image_output}
+        if len(text_output_lines) == 0 and "python_script" in info.image_name:
+            text_output_lines = list(map(lambda x: x["text_output"], tests))
+            image_output = tests[0]["image_output"]
+
+        tests = json.dumps(tests)
+        # plt.axvline(x=945, c="tomato", zorder=7, label="stopped calibrating May 3, 2021")
+        return {"text_output": "\n".join(text_output_lines), "image_output": image_output, "tests": tests}
     except Exception as inst:
         return {"text_output": traceback.format_exc(), "image_output": ""}
     finally:

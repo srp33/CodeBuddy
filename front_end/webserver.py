@@ -1,4 +1,5 @@
 from content import *
+from pprint import pprint
 import contextvars
 from datetime import datetime
 import glob
@@ -895,6 +896,7 @@ class ExerciseHandler(BaseUserHandler):
             show = self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
             exercises = content.get_exercises(course, assignment, show)
             exercise_details = content.get_exercise_details(course, assignment, exercise, format_content=True)
+            exercise_details["expected_text_output"] = format_output_as_html(exercise_details["expected_text_output"])
             back_end = settings_dict["back_ends"][exercise_details["back_end"]]
             next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
             user_info = self.get_user_info()
@@ -926,7 +928,7 @@ class EditExerciseHandler(BaseUserHandler):
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 exercises = content.get_exercises(course, assignment)
                 exercise_details = content.get_exercise_details(course, assignment, exercise)
-                # print("DDD", json.loads(exercise_details["expected_text_output"]))
+                exercise_details["expected_text_output"] = format_output_as_html(exercise_details["expected_text_output"])
                 next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
                 self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, tests=content.get_tests(course, assignment, exercise), exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info())
@@ -1012,17 +1014,17 @@ class EditExerciseHandler(BaseUserHandler):
                                 content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
                                 content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"], exercise_details["tests"])
 
-                                tests_dict, image_output = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                                text_output, image_output, tests = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
-                                if not any_response_counts and tests_dict == [] and image_output == "":
+                                if not any_response_counts and text_output == "" and image_output == "":
                                     result = f"Error: No output was produced."
                                 else:
-                                    exercise_details["expected_text_output"] =  "\n".join(list(map(lambda x: x["text_output"], list(filter(lambda x: x["type"] == "solution", tests_dict)))))
-                                    # why format as html???
-                                    exercise_details["tests_dict"] = sorted(list(filter(lambda x: x["type"] != "solution", tests_dict)))
-                                    print("A", exercise_details["tests_dict"])
-                                    print("B", exercise_details["expected_text_output"])
+                                    tests_dict = []
+                                    for i in range(len(tests)):
+                                        tests_dict.append({**tests[i], **exercise_details["tests"][i]})
+                                    exercise_details["tests"] = tests_dict
                                     exercise_details["expected_image_output"] = image_output
+                                    exercise_details["expected_text_output"] = text_output
                                     exercise = content.save_exercise(exercise_basics, exercise_details)
 
                                     exercise_basics = content.get_exercise_basics(course, assignment, exercise)
@@ -1124,17 +1126,17 @@ class RunCodeHandler(BaseUserHandler):
             exercise_basics = content.get_exercise_basics(course, assignment, exercise)
             exercise_details = content.get_exercise_details(course, assignment, exercise)
 
-            tests_dict, image_output = exec_code(settings_dict, code, exercise_basics, exercise_details, request=None)
+            text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, request=None)
 
-            out_dict["text_output"] = "\n".join(list(map(lambda x: format_output_as_html(x["output"].strip()), tests_dict)))
-            out_dict["tests_dict"] = json.dumps(tests_dict)
+            out_dict["text_output"] = text_output
+            out_dict["tests"] = tests
             out_dict["image_output"] = image_output
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
         except ReadTimeout as inst:
             out_dict["text_output"] = f"Your solution timed out after {settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
         except Exception as inst:
-            out_dict["text_output"] = format_output_as_html(traceback.format_exc())
+            out_dict["text_output"] = traceback.format_exc()
 
         self.write(json.dumps(out_dict))
 
@@ -1158,21 +1160,18 @@ class SubmitHandler(BaseUserHandler):
             exercise_details = content.get_exercise_details(course, assignment, exercise)
             assignment_details = content.get_assignment_details(course, assignment)
 
-            tests_dict, image_output = exec_code(settings_dict, code, exercise_basics, exercise_details, self.request)
-            outcomes_dict = check_exercise_output(exercise_details, tests_dict, image_output)
+            text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, self.request)
+            diff, passed, test_outcomes = check_exercise_output(exercise_details, text_output, image_output, tests)
 
-            text_output = "\n".join(list(map(lambda x: x["text_output"].strip(), tests_dict)))
-
-            diff = "\n".join(list(map(lambda x: x["diff_output"], outcomes_dict))) if "" not in list(map(lambda x: x["diff_output"], outcomes_dict)) else ""
-            # diff = "\n".join(list(map(lambda x: x["diff_output"], list(filter(lambda x: x["diff_output"] != "", outcomes_dict)))))
-            passed = True if all(list(map(lambda x: x["passed"], outcomes_dict))) else False
-
-            out_dict["text_output"] = format_output_as_html(text_output)
+            out_dict["text_output"] = text_output
             out_dict["image_output"] = image_output
-            out_dict["tests_dict"] = tests_dict
+            tests_dict = []
+            for i in range(len(test_outcomes)):
+                tests_dict.append({**tests[i], **test_outcomes[i]})
+            out_dict["tests"] = tests_dict
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
-            out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, tests_dict, partner_id)
+            out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, tests, partner_id)
             content.delete_presubmission(course, assignment, exercise, user_id)
 
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
@@ -1196,7 +1195,6 @@ class SubmitHandler(BaseUserHandler):
         except Exception as inst:
             out_dict["text_output"] = format_output_as_html(traceback.format_exc())
             out_dict["passed"] = False
-
         self.write(json.dumps(out_dict))
 
 class GetPresubmissionHandler(BaseUserHandler):
@@ -1232,13 +1230,15 @@ class GetSubmissionHandler(BaseUserHandler):
                 exercise_details = content.get_exercise_details(course, assignment, exercise)
                 submission_info = content.get_submission_info(course, assignment, exercise, student_id, submission_id)
 
-                outcomes_dict = check_exercise_output(exercise_details, submission_info["tests_dict"], submission_info["image_output"])
+                diff, passed, tests = check_exercise_output(exercise_details, submission_info["text_output"], submission_info["image_output"], submission_info["tests"])
 
-                diff = "\n".join(list(map(lambda x: x["diff_output"], outcomes_dict))) if "" not in list(map(lambda x: x["diff_output"], outcomes_dict)) else ""
                 submission_info["diff"] = format_output_as_html(diff)
                 submission_info["text_output"] = submission_info["text_output"]
-                submission_info["tests_dict"] = submission_info["tests_dict"]
-                submission_info["outcomes_dict"] = outcomes_dict
+
+                tests_dict = []
+                for i in range(len(tests)):
+                    tests_dict.append({**tests[i], **submission_info["tests"][i]})
+                submission_info["tests"] = tests_dict
         except Exception as inst:
             submission_info["diff"] = ""
             submission_info["text_output"] = format_output_as_html(traceback.format_exc())
@@ -1565,8 +1565,8 @@ class SubmitHelpRequestHandler(BaseUserHandler):
                 exercise_basics = content.get_exercise_basics(course, assignment, exercise)
                 exercise_details = content.get_exercise_details(course, assignment, exercise)
 
-                tests_dict, image_output = exec_code(settings_dict, code, exercise_basics, exercise_details, request=None)
-                text_output = "\n".join(list(map(lambda x: format_output_as_html(x["text_output"]), tests_dict)))
+                text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, request=None)
+                text_output = format_output_as_html(text_output)
 
                 content.save_help_request(course, assignment, exercise, user_id, code, text_output, image_output, student_comment, datetime.datetime.now())
 
