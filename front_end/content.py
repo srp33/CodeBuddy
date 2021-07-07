@@ -549,17 +549,6 @@ class Content:
 
         return exercises
 
-    def get_tests(self, course_id, assignment_id, exercise_id):
-        if not exercise_id:
-            return []
-
-        sql = '''SELECT code, test_instructions
-                 FROM tests
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?'''
-        return [{"code": test["code"], "test_instructions": test["test_instructions"]} for test in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id)))]
-
     def get_available_courses(self, user_id):
         available_courses = []
 
@@ -953,8 +942,28 @@ class Content:
                  ORDER BY date'''
 
         for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
-            student_submissions.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "course_title": request["course_title"], "assignment_title": request["assignment_title"], "exercise_title": request["exercise_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "date": request["date"], "more_info_needed": request["more_info_needed"]})
+            student_submissions.append([index, submission["code"]])
+            index += 1
+        return student_submissions
 
+    def get_help_requests(self, course_id):
+        help_requests = []
+
+        sql = '''SELECT r.course_id, a.assignment_id, e.exercise_id, c.title as course_title, a.title as assignment_title, e.title as exercise_title, r.user_id, u.name, r.code, r.text_output, r.image_output, r.student_comment, r.suggestion, r.approved, r.suggester_id, r.approver_id, r.date, r.more_info_needed
+                 FROM help_requests r
+                 INNER JOIN users u
+                   ON r.user_id = u.user_id
+                 INNER JOIN courses c
+                   ON r.course_id = c.course_id
+                 INNER JOIN assignments a
+                   ON r.assignment_id = a.assignment_id
+                 INNER JOIN exercises e
+                   ON r.exercise_id = e.exercise_id
+                 WHERE r.course_id = ?
+                 ORDER BY r.date DESC'''
+
+        for request in self.fetchall(sql, (course_id,)):
+            help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "course_title": request["course_title"], "assignment_title": request["assignment_title"], "exercise_title": request["exercise_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "date": request["date"], "more_info_needed": request["more_info_needed"]})
         return help_requests
 
     def get_student_help_requests(self, user_id):
