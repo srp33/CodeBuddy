@@ -50,27 +50,22 @@ if (output_type == "txt") {
   suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(code))))
 }
 
-# if (file.exists(test_code_file_path)) {
-#  test_code <- readChar(test_code_file_path, file.info(test_code_file_path)$size)
-#  code <- paste(code, test_code, sep="\n\n")
-# }
-
 setwd(file.path(tests_dir_path, "outputs"))
 outputs_dir <- getwd()
 
 tests <- list.files(path=tests_dir_path, pattern="test*", full.names=TRUE, recursive=FALSE)
 for (i in seq_along(tests)) {
     setwd(file.path(outputs_dir, paste("test_", i, sep="")))
-
     test_code <- readChar(tests[i], file.info(tests[i])$size)
 
+    # need to find a way to suppress printing to stdout while saving test code output so test outputs don't show up in submission output
     if (output_type == "txt") {
       out <- invisible(suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=test_code))))))
       filename <- "text_output"
-      write.table(out, filename, sep="\n")
+      invisible(write.table(out, filename, sep="\n"))
     } else {
       out <- invisible(suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(test_code, i)))))
       filename <- "image_output"
-      write.table("", filename, sep="\n")
+      invisible(write.table("", filename, sep="\n"))
     }
 }

@@ -26,6 +26,7 @@ if os.path.isdir(tests_dir_path):
                 i = test_code_path.split("_")[1]
                 filename = f"{tests_dir_path}outputs/test_{i}/text_output"
 
+                # save test output in outputs
                 with open(filename, "w") as test_output:
                     test_output.write(result)
     else:
@@ -35,15 +36,17 @@ if os.path.isdir(tests_dir_path):
                 i = test_code_path.split("_")[1]
                 filename = f"{tests_dir_path}outputs/test_{i}/image_output"
 
+                # add code to test code for saving image
                 with open(test_code_path, "a") as test_file:
                     test_file.write(f"""
-    from matplotlib import pyplot as my_plt_saver
-    my_plt_saver.savefig('test_image_output_{i}', format='jpg', dpi=150)
-    my_plt_saver.close()""")
+from matplotlib import pyplot as my_plt_saver
+my_plt_saver.savefig('test_image_output_{i}', format='jpg', dpi=150)
+my_plt_saver.close()""")
 
                 result = subprocess.run(f"python {test_code_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
                 result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
 
+                # save test text output under outputs in case of image traceback
                 with open(filename, "w") as test_output:
                     test_output.write(result)
 

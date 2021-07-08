@@ -9,6 +9,8 @@
             <p>This assignment closed on {{ due_date }}.</p>
         {% elif error == "restricted_ip" %}
             <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses; please consult the instructor for additional instructions.</p>
+        {% elif error == "insufficient_access" %}
+            <p>insufficient access to view this page. Try logging in from an administrator account.</p>
         {% end %}
 
     {% else %}

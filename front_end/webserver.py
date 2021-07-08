@@ -1,5 +1,4 @@
 from content import *
-from pprint import pprint
 import contextvars
 from datetime import datetime
 import glob
@@ -972,7 +971,7 @@ class EditExerciseHandler(BaseUserHandler):
                 exercise_details["data_files"] = {}
 
             tests = self.get_body_argument("tests_json")
-            if tests and tests != "{}":
+            if tests and tests != "[]":
                 tests = json.loads(tests)
                 exercise_details["tests"] = tests
             else:
@@ -1023,8 +1022,8 @@ class EditExerciseHandler(BaseUserHandler):
                                     for i in range(len(tests)):
                                         tests_dict.append({**tests[i], **exercise_details["tests"][i]})
                                     exercise_details["tests"] = tests_dict
+                                    exercise_details["expected_text_output"] = text_output.strip()
                                     exercise_details["expected_image_output"] = image_output
-                                    exercise_details["expected_text_output"] = text_output
                                     exercise = content.save_exercise(exercise_basics, exercise_details)
 
                                     exercise_basics = content.get_exercise_basics(course, assignment, exercise)
@@ -1136,7 +1135,7 @@ class RunCodeHandler(BaseUserHandler):
         except ReadTimeout as inst:
             out_dict["text_output"] = f"Your solution timed out after {settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
         except Exception as inst:
-            out_dict["text_output"] = traceback.format_exc()
+            out_dict["text_output"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
 
@@ -1163,7 +1162,7 @@ class SubmitHandler(BaseUserHandler):
             text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, self.request)
             diff, passed, test_outcomes = check_exercise_output(exercise_details, text_output, image_output, tests)
 
-            out_dict["text_output"] = text_output
+            out_dict["text_output"] = text_output.strip()
             out_dict["image_output"] = image_output
             tests_dict = []
             for i in range(len(test_outcomes)):
@@ -1277,7 +1276,7 @@ class GetTestsHandler(BaseUserHandler):
                 self.render("unavailable_assignment.html", courses=content.get_courses(),
                             assignments=content.get_assignments(course),
                             course_basics=content.get_course_basics(course),
-                            assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
+                            assignment_basics=content.get_assignment_basics(course, assignment), error="insufficient_access",
                             user_info=user_info)
             else:
                 tests = content.get_tests(course, assignment, exercise)

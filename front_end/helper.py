@@ -112,7 +112,7 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
     response_dict = json.loads(response.content)
     return response_dict["text_output"], response_dict["image_output"], json.loads(response_dict["tests"])
 
-def compare_outcome(expected_text, actual_text, output_type, expected_image, actual_image):
+def compare_outcome(expected_text, actual_text, expected_image, actual_image, output_type):
     if output_type == "txt":
         if expected_text == actual_text:
             return "", True
@@ -148,10 +148,10 @@ def check_exercise_output(exercise_details, actual_text, actual_image, tests):
         return "", True, []
 
     test_outcomes = []
-    diff_output, passed = compare_outcome(exercise_details["expected_text_output"], actual_text, exercise_details["output_type"], exercise_details["expected_image_output"], actual_image)
+    diff_output, passed = compare_outcome(exercise_details["expected_text_output"], actual_text, exercise_details["expected_image_output"], actual_image, exercise_details["output_type"])
     expected_test_outputs = exercise_details["tests"]
     for i in range(len(expected_test_outputs)):
-        test_diff_output, test_passed = compare_outcome(expected_test_outputs[i]["text_output"], tests[i]["text_output"], exercise_details["output_type"], expected_test_outputs[i]["image_output"], tests[i]["image_output"])
+        test_diff_output, test_passed = compare_outcome(expected_test_outputs[i]["text_output"], tests[i]["text_output"], expected_test_outputs[i]["image_output"], tests[i]["image_output"], exercise_details["output_type"])
         test_outcomes.append({"test": expected_test_outputs[i]["test"], "diff_output": test_diff_output, "passed": test_passed})
     passed = True if passed and all(list(map(lambda x: x["passed"], test_outcomes))) else False
     return diff_output, passed, test_outcomes

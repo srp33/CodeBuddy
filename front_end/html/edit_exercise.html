@@ -185,7 +185,8 @@
                 </div>
             </div>
             <div id="add_file">
-                <a onclick="showAddFile()">Add another file</a>
+
+                <a class="button is-grey" onclick="showAddFile()">Add another file</a>
             </div>
         </div>
 
@@ -388,7 +389,9 @@
                 tests_array = []
                 for (i of current_tests) {
                     var code = eval(`test_code_editor_${i}.getValue()`);
+                    // clear instructions before submitting if visibility is set to "Yes"
                     var instructions = (document.getElementById(`show_test_code_${i}`).value == "Yes") ? "" : document.getElementById(`test_instructions_${i}`).value;
+                    // set instructions to "Test Code Hidden" if visibility is set to "No" and no other instructions given
                     instructions = ((document.getElementById(`show_test_code_${i}`).value == "No") && (instructions == "")) ? "Test Code Hidden." : instructions
                     if (code != "")
                       tests_array.push({code: code, test_instructions: instructions})
@@ -472,7 +475,6 @@
                 var vis_span = document.createElement("strong");
                 vis_span.innerHTML = "Show test code output:"
 
-
                 var test_instructions_div = document.createElement("div");
                 test_instructions_div.setAttribute("id", `test_instructions_div_${test_index}`)
                 test_instructions_div.style.marginTop = "50px";
@@ -549,6 +551,7 @@
 
             const container = document.querySelector("#file_upload");
 
+            // population with existing tests
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
                  for (i in json_data) {

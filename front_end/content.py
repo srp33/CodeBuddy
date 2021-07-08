@@ -1632,7 +1632,6 @@ class Content:
             self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user, tests])
 
             if len(tests) > 0:
-                print("C", tests)
                 for test in tests:
                     self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
 
@@ -1948,6 +1947,7 @@ class Content:
             exercise_details = self.get_exercise_details(course, assignment, exercise)
 
             text_output, image_output, tests = exec_code(self.__settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+
 
             exercise_details["expected_text_output"] = text_output
             exercise_details["expected_image_output"] = image_output
