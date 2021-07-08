@@ -24,10 +24,8 @@ then
   cd $tests_dir_path
   touch temp.py
   cat code.py > temp.py
-  mkdir outputs
   for test_path in test*
   do
-    mkdir outputs/test_${test_path:5}
     if [[ "$output_type" == "jpg" ]]
     then
       cat temp.py > code.py
@@ -37,7 +35,7 @@ then
       test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/text_output"
     fi
     touch $test_outputs_path
-    bash "$test_path" >> $test_outputs_path
+    bash "$test_path" > $test_outputs_path
   done
 else
   if [[ "$output_type" == "jpg" ]]

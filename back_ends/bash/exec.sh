@@ -22,10 +22,8 @@ bash "$code_file_path"
 if [ -d "$tests_dir_path" ]
 then
   cd $tests_dir_path
-  mkdir outputs
   for test_path in test*
   do
-    mkdir outputs/test_${test_path:5}
     test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/text_output"
     touch $test_outputs_path
     bash "$test_path" > $test_outputs_path

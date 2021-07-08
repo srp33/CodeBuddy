@@ -55,7 +55,9 @@ def exec(info: ExecInfo):
         if len(info.tests) > 0:
             for i in range(len(info.tests)):
                 filename = f"{tmp_dir_path}/tests/test_{int(i + 1)}"
+                outputname = f"{tmp_dir_path}/tests/outputs/test_{int(i + 1)}/image_output" if info.output_type == "jpg" else f"{tmp_dir_path}/tests/outputs/test_{int(i + 1)}/text_output"
                 os.makedirs(os.path.dirname(filename), exist_ok=True)
+                os.makedirs(os.path.dirname(outputname), exist_ok=True)
                 with open(filename, "w") as test_file:
                     if "python_script" not in info.image_name:
                         test_file.write(info.code)
@@ -87,17 +89,15 @@ def exec(info: ExecInfo):
                 continue
             text_output_lines.append(text_output_line)
 
-        print("testsdir:",os.listdir(f"{tmp_dir_path}/tests"))
         if os.path.isdir(f"{tmp_dir_path}/tests/"):
             if not os.path.isdir(f"{tmp_dir_path}/tests/outputs/"):
                 for test in os.listdir(f"{tmp_dir_path}/tests/"):
                     tests.append({"test": None, "text_output": "", "image_output": ""})
             else:
+                test_text_output = test_image_output = ""
                 for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
                     i = test_output.split('_')[-1]
-                    print("outputs:",os.listdir(f"{tmp_dir_path}/tests/outputs/"))
                     for output_path in os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}"):
-                        print(f"test_{i}:",os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}"))
                         test_text_output = test_image_output = ""
                         if "image" not in output_path:
                             with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:

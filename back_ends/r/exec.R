@@ -55,13 +55,11 @@ if (output_type == "txt") {
 #  code <- paste(code, test_code, sep="\n\n")
 # }
 
-dir.create(file.path(getwd(), "outputs"), recursive = TRUE)
-setwd(file.path(getwd(), "outputs"))
+setwd(file.path(tests_dir_path, "outputs"))
 outputs_dir <- getwd()
 
 tests <- list.files(path=tests_dir_path, pattern="test*", full.names=TRUE, recursive=FALSE)
 for (i in seq_along(tests)) {
-    dir.create(file.path(outputs_dir, paste("test_", i, sep="")), recursive=TRUE)
     setwd(file.path(outputs_dir, paste("test_", i, sep="")))
 
     test_code <- readChar(tests[i], file.info(tests[i])$size)
@@ -69,10 +67,10 @@ for (i in seq_along(tests)) {
     if (output_type == "txt") {
       out <- invisible(suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=test_code))))))
       filename <- "text_output"
-      writeLines(out, filename)
+      write.table(out, filename, sep="\n")
     } else {
-      out <- suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(test_code, i))))
+      out <- invisible(suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(test_code, i)))))
       filename <- "image_output"
-      writeLines("", filename)
+      write.table("", filename, sep="\n")
     }
 }
