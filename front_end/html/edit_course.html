@@ -72,7 +72,7 @@
             </div>
 
             <div id="consent_form_div" class="top-space" {% if course_details['consent_text'] is None or course_details['consent_text'] == '' %} style="display:none" {% end %}>
-                <p><strong>Research consent form*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write consent forms for this exercise.</p>
+                <p><strong>Research consent form*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a consent form for this exercise.</p>
                 <p><div class="textarea is-grey is-fullwidth monospace" data-placeholder="Please provide a consent form." style="min-height: 400px" id="consent_form" contenteditable="true">{% if course_details["consent_text"] %}{{ course_details["consent_text"] }}{% end %}</div></p>
                 <textarea name="consent_form_text" id="consent_form_text" class="invisible"></textarea>
                 <p class="top-space"><strong>Research consent alternative form*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to specify text that indicates what students should do if they do not consent to participate in the study.</p>

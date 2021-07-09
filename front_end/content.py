@@ -1354,6 +1354,7 @@ class Content:
     def get_course_details(self, course, format_output=False):
         if not course:
             return {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "consent_text": "", "consent_alternative_text": ""}
+            
         sql = '''SELECT introduction, passcode, date_created, date_updated, consent_text, consent_alternative_text
                  FROM courses
                  WHERE course_id = ?'''
