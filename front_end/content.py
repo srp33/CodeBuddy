@@ -1665,25 +1665,16 @@ class Content:
                           AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
 
     def copy_exercise(self, course_id, assignment_id, exercise_id, new_title):
-        self.execute('''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming, check_code)
+        try:
+            self.execute('''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming, check_code)
                         SELECT course_id, assignment_id, ?, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming, check_code
                         FROM exercises
-                        WHERE course = ?
+                        WHERE course_id = ?
                             AND assignment_id = ?
                             AND exercise_id = ?''', (new_title, course_id, assignment_id, exercise_id, ))
+        except:
+            print(traceback.format_exc())
 
-        # self.execute('''UPDATE scores
-        #                 SET assignment_id = ?
-        #                 WHERE course_id = ?
-        #                   AND assignment_id = ?
-        #                   AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
-        #
-        # self.execute('''UPDATE submissions
-        #                 SET assignment_id = ?
-        #                 WHERE course_id = ?
-        #                   AND assignment_id = ?
-        #                   AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
-        #
     def delete_exercise(self, exercise_basics):
         course_id = exercise_basics["assignment"]["course"]["id"]
         assignment_id = exercise_basics["assignment"]["id"]

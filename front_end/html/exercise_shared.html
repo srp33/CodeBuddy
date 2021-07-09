@@ -35,19 +35,17 @@
             </div>
 
             <div id="copy_exercise_modal" class="modal">
-                <form method="post" action="/copy_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
                 <div class="modal-content">
                     <!--<span class="close">&times;</span>-->
-                    <p>Copy exercise within the same assignment:</p>
-                    <p>New title:
+                    <h6>Copy exercise within the same assignment:</h6>
+                    <div class="notification is-warning is-light" id="copy_exercise_message" style="display:none"></div>
+                    <p>New title:</p>
                         <input class="input is-medium is-primary" type="text" id="new_title" name="new_title"/>
-                    </p>
                     <p class="buttons">
                         <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
-                        <input type="submit" id="copy_button" class="modal-button button is-dark" value="Copy"/>
+                        <button onclick="copyExercise({{ course_basics['id'] }}, {{assignment_basics['id']}}, {{ exercise_basics['id'] }})" id="copy_button" class="modal-button button is-dark">Copy</button>
                     </p>
                 </div>
-                </form>
             </div>
 
             <!--Navigation links at the bottom of the page-->
@@ -71,6 +69,25 @@
             {% end %}
 
             <script>
+                function copyExercise(course, assignment, exercise) {
+                    var new_title = document.getElementById("new_title").value;
+                    var message = document.getElementById("copy_exercise_message")
+                    var modal = document.getElementById("copy_exercise_modal");
+
+                    $.post(`/copy_exercise/${course}/${assignment}/${exercise}`, {"new_title": new_title},
+                        function(data) {
+                            var json_data = JSON.parse(data);
+                            if (json_data.result != "") {
+                              message.innerHTML = json_data.result;
+                              message.style.display = "block";
+                            }
+                            else {
+                                modal.style.display = "none";
+                                location.reload();
+                            }
+                    });
+                }
+
                 function showMoveExerciseModal() {
                     var modal = document.getElementById("move_exercise_modal");
                     //var span = document.getElementsByClassName("close")[4];
@@ -198,19 +215,14 @@
                    editor.focus();
                    return false;
                 }
-                function submitModal() {
-                    var modal = document.getElementById("submit_exercise_modal");
-                    var span = document.getElementsByClassName("close")[4];
 
-                    modal.style.display = "block";
-
-                 {% if exercise_details["enable_pair_programming"] %}
+               {% if exercise_details["enable_pair_programming"] %}
                  if (submitButton != null)
                   submitButton.onclick = function() {
                      submitModal()
                  }
                  {% else %}
-                 (submitButton != null)
+                 if (submitButton != null)
                    submitButton.onclick = function() {
                        submit()
                  }
@@ -260,6 +272,7 @@
                     editor.focus();
                     return false;
                  }
+
                  function submitModal() {
                      var modal = document.getElementById("submit_exercise_modal");
                      var span = document.getElementsByClassName("close")[4];
@@ -303,34 +316,6 @@
                          }
                      }
                  }
-
-                 function get_submission(submission_id, scroll) {
-                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                    if (document.getElementById("saved_div") != null)
-                        document.getElementById("saved_div").innerHTML = "";
-
-                    var i;
-                    for (i = 0; i < submission_buttons.length; i++) {
-                        if (submission_buttons[i].id == submission_id)
-                            submission_buttons[i].style.border = "solid #34495e";
-                        else
-                            submission_buttons[i].style.border = "none";
-                    }
-
-                    cancelButton.onclick = function() {
-                        modal.style.display = "none";
-                    }
-
-                    span.onclick = function() {
-                        modal.style.display = "none";
-                    }
-
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                            modal.style.display = "none";
-                        }
-                    }
-                }
 
                 function get_submission(submission_id, scroll) {
                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
@@ -426,7 +411,7 @@
                              submissions_div.innerHTML = submission_html;
                            });
                        });
-               }
+            }
            </script>
 
            <script>
