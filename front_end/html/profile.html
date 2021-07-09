@@ -8,6 +8,13 @@
                     class="is-active"
                 {% end %}
                 >Courses</a></li>
+                {% if any(list(filter(lambda x: x[1]["consent_text"] != "", registered_courses))) %}
+                <li><a href="/profile/consent_forms/{{ user_info['user_id'] }}"
+                {% if page == "consent_forms" %}
+                    class="is-active"
+                {% end %}
+                >Consent forms</a></li>
+                {% end %}
                 <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
                 {% if page == "personal_info" %}
                     class="is-active"

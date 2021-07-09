@@ -9,10 +9,16 @@
             <p>This assignment closed on {{ due_date }}.</p>
         {% elif error == "restricted_ip" %}
             <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses; please consult the instructor for additional instructions.</p>
+        {% elif error == "not_registered_for_course" %}
+            <p>This assignment can only be viewed by students enrolled in the class.</p>
         {% end %}
 
     {% else %}
+        {% if error == "not_registered_for_course" %}
+        <p>This course can only be viewed by students enrolled in the class.</p>
+        {% else %}
         <p>This assignment does not exist.</p>
+        {% end %}
     {% end %}
 
 {% else %}

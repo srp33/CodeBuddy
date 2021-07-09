@@ -29,6 +29,7 @@ def make_app():
     app = Application([
         url(r"/", HomeHandler),
         url(r"\/profile\/courses\/([^\/]+)", ProfileCoursesHandler, name="profile_courses"),
+        url(r"\/profile\/consent_forms\/([^\/]+)", ConsentFormsHandler, name="consent_forms"),
         url(r"\/profile\/personal_info\/([^\/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
         url(r"\/profile\/admin\/([^\/]+)", ProfileAdminHandler, name="profile_admin"),
         url(r"\/profile\/instructor\/course\/([^\/]+)", ProfileSelectCourseHandler, name="profile_select_course"),
@@ -182,6 +183,20 @@ class TestHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
+class ConsentFormsHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            if self.is_administrator():
+                registered_courses = content.get_courses()
+            elif self.is_instructor() or self.is_assistant():
+                registered_courses = content.get_courses_connected_to_user(user_id)
+            else:
+                registered_courses = content.get_registered_courses(user_id)
+
+            self.render("consent_forms.html", page="consent_forms", result=None, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
 class ProfileCoursesHandler(BaseUserHandler):
     def get(self, user_id):
         try:
@@ -203,6 +218,7 @@ class ProfileCoursesHandler(BaseUserHandler):
         try:
             course_id = self.get_body_argument("course_id")
             passcode = self.get_body_argument("passcode")
+            consent_given = self.get_body_argument("consent_given") == "Yes"
 
             course_basics = content.get_course_basics(course_id)
             course_details = content.get_course_details(course_id)
@@ -210,7 +226,9 @@ class ProfileCoursesHandler(BaseUserHandler):
             course_passcode = course_details["passcode"]
             result = ""
 
-            if (course_passcode == None or course_passcode == passcode):
+            if not consent_given:
+                result = "Error: Cannot register for this course without consent."
+            elif (course_passcode == None or course_passcode == passcode):
                 if (content.course_exists(course_id)):
                     if (content.check_user_registered(course_id, user_id)):
                         result = f"Error: You are already registered for {course_title}."
@@ -241,7 +259,7 @@ class ProfileCoursesHandler(BaseUserHandler):
 class ProfilePersonalInfoHandler(BaseUserHandler):
     def get(self, user_id):
         try:
-            self.render("profile_personal_info.html", page="personal_info", user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
+            self.render("profile_personal_info.html", page="personal_info", registered_courses=content.get_registered_courses(user_id), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -459,6 +477,8 @@ class UnregisterHandler(BaseUserHandler):
 
 class CourseHandler(BaseUserHandler):
     def get(self, course):
+
+        user_info = self.get_user_info()
         if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
             try:
                 assignments = content.get_assignments(course, True)
@@ -466,6 +486,12 @@ class CourseHandler(BaseUserHandler):
                 self.render("course_admin.html", courses=content.get_courses(True), assignments=assignments, course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), course_scores=content.get_course_scores(course, assignments), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course))
             except Exception as inst:
                 render_error(self, traceback.format_exc())
+        elif not self.is_administrator() and user_info["user_id"] not in content.get_registered_students(course):
+            self.render("unavailable_assignment.html", courses=content.get_courses(),
+                        assignments=content.get_assignments(course),
+                        course_basics=content.get_course_basics(course),
+                        error="not_registered_for_course", assignment_basics=content.get_assignment_basics(course, None),
+                        user_info=user_info)
         else:
             try:
                 self.render("course.html", courses=content.get_courses(False), assignments=content.get_assignments(course, False), assignment_statuses=content.get_assignment_statuses(course, self.get_user_id()), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), curr_datetime=datetime.datetime.now(), user_info=self.get_user_info())
@@ -495,6 +521,9 @@ class EditCourseHandler(BaseUserHandler):
             course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             course_details["introduction"] = self.get_body_argument("introduction").strip()
             course_details["passcode"] = self.get_body_argument("passcode").strip()
+            course_details["consent_text"] = self.get_body_argument("consent_form_text").strip()
+            course_details["consent_alternative_text"] = self.get_body_argument("consent_alternative_text").strip()
+            course_details["enable_research"] = self.get_body_argument("enable_research") == "Yes"
 
             if course_details["passcode"] == "":
                 course_details["passcode"] = None
@@ -503,6 +532,8 @@ class EditCourseHandler(BaseUserHandler):
 
             if course_basics["title"] == "" or course_details["introduction"] == "":
                 result = "Error: Missing title or introduction."
+            elif course_details["enable_research"] and (course_details["consent_text"] == "" or course_details["consent_alternative_text"] == ""):
+                result = "Error: Missing consent form or consent alternative form."
             else:
                 if content.has_duplicate_title(content.get_courses(), course_basics["id"], course_basics["title"]):
                     result = "Error: A course with that title already exists."
@@ -514,7 +545,7 @@ class EditCourseHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 80 characters."
                     else:
                         #content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
-                        content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], None, datetime.datetime.now())
+                        content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["consent_text"], course_details["consent_alternative_text"], None, datetime.datetime.now())
                         course = content.save_course(course_basics, course_details)
 
             self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_info=self.get_user_info())
@@ -722,6 +753,12 @@ class AssignmentHandler(BaseUserHandler):
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
                 elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"), user_info=user_info)
+                elif not self.is_administrator() and user_info["user_id"] not in content.get_registered_students(course):
+                    self.render("unavailable_assignment.html", courses=content.get_courses(),
+                                assignments=content.get_assignments(course),
+                                course_basics=content.get_course_basics(course),
+                                error="not_registered_for_course", assignment_basics=content.get_assignment_basics(course, assignment),
+                                user_info=user_info)
                 else:
                     self.render("assignment.html", courses=content.get_courses(False), assignments=content.get_assignments(course, False), exercises=content.get_exercises(course, assignment, False), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=assignment_details, curr_datetime=curr_datetime, start_time=start_time, user_info=user_info)
 
@@ -909,6 +946,12 @@ class ExerciseHandler(BaseUserHandler):
                             assignments=content.get_assignments(course),
                             course_basics=content.get_course_basics(course),
                             assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
+                            user_info=user_info)
+            elif not self.is_administrator() and user_info["user_id"] not in content.get_registered_students(course):
+                self.render("unavailable_assignment.html", courses=content.get_courses(),
+                            assignments=content.get_assignments(course),
+                            course_basics=content.get_course_basics(course),
+                            error="not_registered_for_course", assignment_basics=content.get_assignment_basics(course, assignment),
                             user_info=user_info)
             else:
                 # fetch all users enrolled in a course excluding the current user as options to pair program with
