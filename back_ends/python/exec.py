@@ -3,6 +3,7 @@ import re
 import subprocess
 import sys
 import traceback
+import glob
 
 code_file_path = sys.argv[1]
 tests_dir_path = sys.argv[2]
@@ -18,37 +19,35 @@ if os.path.exists(check_code_file_path):
 
 if os.path.isdir(tests_dir_path):
     if output_type == "txt":
-        for test in os.listdir(tests_dir_path):
-            if test != "outputs":
-                test_code_path = tests_dir_path + test
-                result = subprocess.run(f"python {test_code_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
-                result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
-                i = test_code_path.split("_")[1]
-                filename = f"{tests_dir_path}outputs/test_{i}/text_output"
+        for test_path in glob.glob("test*"):
+            test_code_path = tests_dir_path + test_path
+            result = subprocess.run(f"python {test_code_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
+            result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
+            i = test_code_path.split("_")[1]
+            filename = f"{tests_dir_path}outputs/test_{i}/text_output"
 
-                # save test output in outputs
-                with open(filename, "w") as test_output:
-                    test_output.write(result)
+            # save test output in outputs
+            with open(filename, "w") as test_output:
+                test_output.write(result)
     else:
-        for test in os.listdir(tests_dir_path):
-            if test != "outputs":
-                test_code_path = tests_dir_path + test
-                i = test_code_path.split("_")[1]
-                filename = f"{tests_dir_path}outputs/test_{i}/image_output"
+        for test_path in glob.glob("test*"):
+            test_code_path = tests_dir_path + test_path
+            i = test_code_path.split("_")[1]
+            filename = f"{tests_dir_path}outputs/test_{i}/image_output"
 
-                # add code to test code for saving image
-                with open(test_code_path, "a") as test_file:
-                    test_file.write(f"""
+            # add code to test code for saving image
+            with open(test_code_path, "a") as test_file:
+                test_file.write(f"""
 from matplotlib import pyplot as my_plt_saver
 my_plt_saver.savefig('test_image_output_{i}', format='jpg', dpi=150)
 my_plt_saver.close()""")
 
-                result = subprocess.run(f"python {test_code_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
-                result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
+            result = subprocess.run(f"python {test_code_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
+            result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
 
-                # save test text output under outputs in case of image traceback
-                with open(filename, "w") as test_output:
-                    test_output.write(result)
+            # save test text output under outputs in case of image traceback
+            with open(filename, "w") as test_output:
+                test_output.write(result)
 
 if output_type == "jpg":
     with open(code_file_path, "a") as code_file:
