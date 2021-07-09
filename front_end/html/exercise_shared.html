@@ -34,6 +34,22 @@
                 </div>
             </div>
 
+            <div id="copy_exercise_modal" class="modal">
+                <form method="post" action="/copy_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
+                <div class="modal-content">
+                    <!--<span class="close">&times;</span>-->
+                    <p>Copy exercise within the same assignment:</p>
+                    <p>New title:
+                        <input class="input is-medium is-primary" type="text" id="new_title" name="new_title"/>
+                    </p>
+                    <p class="buttons">
+                        <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="copy_button" class="modal-button button is-dark" value="Copy"/>
+                    </p>
+                </div>
+                </form>
+            </div>
+
             <!--Navigation links at the bottom of the page-->
 
             <p>
@@ -42,7 +58,7 @@
             {% end %}
 
             {% if is_administrator or is_instructor %}
-                | <a onclick="showMoveExerciseModal()">Move exercise</a><br />
+                | <a onclick="showMoveExerciseModal()">Move exercise</a> | <a onclick="showCopyExerciseModal()">Copy exercise</a><br />
                 <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
             {% end %}
 
@@ -69,6 +85,24 @@
                     /*span.onclick = function() {
                         modal.style.display = "none";
                     }*/
+
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
+
+                function showCopyExerciseModal() {
+                    var modal = document.getElementById("copy_exercise_modal");
+                    //var span = document.getElementsByClassName("close")[4];
+                    modal.style.display = "block";
+
+                    var cancelButton = document.getElementById("copy_cancel_button");
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
 
                     window.onclick = function(event) {
                         if (event.target == modal) {
