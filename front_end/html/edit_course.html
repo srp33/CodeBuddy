@@ -58,7 +58,7 @@
 
 <div class="shadow-box">
     <div>
-        <p><strong>Enable research: </strong></p>
+        <p><strong>Enable research consent process:</strong></p>
             <div class="select is-grey">
                 <select name="enable_research" id="enable_research" class="edit-select" onchange="showConsentForm()">
                 {% if course_details["consent_text"] and course_details["consent_text"] != "" %}
@@ -72,12 +72,10 @@
             </div>
 
             <div id="consent_form_div" class="top-space" {% if course_details['consent_text'] is None or course_details['consent_text'] == '' %} style="display:none" {% end %}>
-                <p><strong>Research consent form*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a consent form for this exercise.</p>
-                <p><div class="textarea is-grey is-fullwidth monospace" data-placeholder="Please provide a consent form." style="min-height: 400px" id="consent_form" contenteditable="true">{% if course_details["consent_text"] %}{{ course_details["consent_text"] }}{% end %}</div></p>
-                <textarea name="consent_form_text" id="consent_form_text" class="invisible"></textarea>
-                <p class="top-space"><strong>Research consent alternative form*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to specify text that indicates what students should do if they do not consent to participate in the study.</p>
-                <p><div class="textarea is-grey is-fullwidth monospace" data-placeholder="Please provide an explanation for students who do not consent to the above form." style="min-height: 400px" id="consent_alternative" contenteditable="true">{% if course_details["consent_alternative_text"] %}{{ course_details["consent_alternative_text"] }}{% end %}</div></p>
-                <textarea name="consent_alternative_text" id="consent_alternative_text" class="invisible"></textarea>
+                <p><strong>Research consent form*: </strong><br />Students will review this form and indicate whether they consent to participate in the research. Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a consent form for this exercise.</p>
+                <textarea name="consent_form" class="textarea is-grey is-fullwidth monospace" id="consent_form" placeholder="Please provide a consent form." style="min-height: 400px">{% if course_details["consent_text"] %}{{ course_details["consent_text"] }}{% end %}</textarea>
+                <p class="top-space"><strong>Instructions for students who decline to participate in the study (must be specified if a consent form has been specified)*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to specify text that indicates what students should do if they do not consent to participate in the study.</p>
+                <textarea name="consent_alternative" class="textarea is-grey is-fullwidth monospace" id="consent_alternative" placeholder="Please provide an explanation for students who do not consent to the above form." style="min-height: 400px">{% if course_details["consent_alternative_text"] %}{{ course_details["consent_alternative_text"] }}{% end %}</textarea>
             </div>
     </div>
 </div>
@@ -100,8 +98,6 @@
 
   document.getElementById("courseForm").onsubmit = function(evt) {
       document.getElementById("introduction_text").value = document.getElementById("introduction").innerHTML;
-      document.getElementById("consent_form_text").value = document.getElementById("consent_form").innerHTML;
-      document.getElementById("consent_alternative_text").value = document.getElementById("consent_alternative").innerHTML;
       if (document.getElementById("enable_research").value == "No")
           document.getElementById("consent_form_text").value = document.getElementById("consent_alternative_text").value = "";
   }

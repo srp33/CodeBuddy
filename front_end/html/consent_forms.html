@@ -1,14 +1,15 @@
         <link rel="stylesheet" href="/static/modal.css">
         <div>
             <div class="bottom-spacing">
-            <h2 style="display: inline">My consent forms</h2>
+            <h2 style="display: inline">My Consent Forms</h2>
             <br>
             {% if registered_courses %}
                 {% for course in registered_courses %}
                     {% if course[1]["consent_text"] != '' and course[1]["consent_text"] %}
-                        <p><strong>Consent form for: {{ course[1]["title"] }}</strong></p>
+                    <p class="space-div">Consent form for <strong>{{ course[1]["title"] }}:</strong></p>
+                    <div class="suggestion-div space-div" style="background-color: white">
                         <p>{{ course[1]["consent_text"] }}</p>
-                        <hr>
+                    </div>
                     {% end %}
                 {% end %}
             {% else %}
