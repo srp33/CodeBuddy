@@ -404,6 +404,7 @@
             updateBackEndOptions('{{ exercise_details["back_end"] }}', '{{ exercise_details["output_type"] }}');
 
             document.getElementById("myForm").onsubmit = function(evt) {
+                localStorage.setItem("hold_output_constant_checkbox", document.getElementById("hold_output_constant_checkbox").value);
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
@@ -411,7 +412,12 @@
                 document.getElementById("instructions_text").value = document.getElementById("instructions").innerHTML
             }
 
+            window.onunload = function(e) {
+              localStorage.setItem("hold_output_constant_checkbox", document.getElementById("hold_output_constant_checkbox").value);
+            };
+
             document.getElementById("hold_output_constant_checkbox").value = localStorage.getItem("hold_output_constant_checkbox");
+            localStorage.setItem("hold_output_constant_checkbox", "No");
             if (document.getElementById("hold_output_constant_checkbox").value == "Yes") {
                 var buttons = Array.from(document.getElementsByClassName('hold_output_constant_button'));
                 buttons.forEach(x => {x.classList.remove("is-white")});
@@ -428,7 +434,6 @@
                   buttons.forEach(x => {x.classList.remove("is-primary")});
                   buttons.forEach(x => {x.classList.add("is-white")});
               }
-              localStorage.setItem("hold_output_constant_checkbox", document.getElementById("hold_output_constant_checkbox").value);
             }
 
             var index = 1;
