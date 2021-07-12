@@ -1,4 +1,6 @@
 <form enctype='multipart/form-data' method="post" action="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}" id="myForm" />
+
+<input type="select" name="hold_output_constant" class="invisible" id="hold_output_constant_checkbox" value="No">
 {% if exercise_basics["exists"] %}
     <div class="row-container">
         <h2>Edit exercise</h2>
@@ -6,7 +8,9 @@
             {% if result %}
                 <a href="#code-output" class="right-space">View code output</a>
             {% end %}
+
             <input type="submit" class="button is-dark" value="Save" />
+            <button type="button" class="button is-white hold_output_constant_button" onclick="holdOutputConstant()">Hold output constant</button>
             <button class="button is-white" onclick="location.href='/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ exercise_basics["id"] }}'; return false;">Done</button>
             {% if prev_exercise %}
                 <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
@@ -351,12 +355,16 @@
         </div>
 
         <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
-
-        <p>
+        <p style="display:flex;align-items:center;justify-content:space-between;">
+        <span>
         {% if exercise_basics["exists"] %}
             <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Done</a> |
         {% end %}
             <a href="#top">Back to top</a>
+        </span>
+        {% if exercise_basics["exists"] %}
+            <button type="button" class="is-pulled-right button is-white hold_output_constant_button" onclick="holdOutputConstant()">Hold output constant</button>
+        {% end %}
         </p>
 
         <!-- Code to modify page behavior at the end of loading -->
@@ -401,6 +409,26 @@
                 document.getElementById("test_code_text").value = test_code_editor.getValue();
                 document.getElementById("check_code_text").value = check_code_editor.getValue();
                 document.getElementById("instructions_text").value = document.getElementById("instructions").innerHTML
+            }
+
+            document.getElementById("hold_output_constant_checkbox").value = localStorage.getItem("hold_output_constant_checkbox");
+            if (document.getElementById("hold_output_constant_checkbox").value == "Yes") {
+                var buttons = Array.from(document.getElementsByClassName('hold_output_constant_button'));
+                buttons.forEach(x => {x.classList.remove("is-white")});
+                buttons.forEach(x => {x.classList.add("is-primary")});
+            }
+
+            function holdOutputConstant() {
+                var buttons = Array.from(document.getElementsByClassName('hold_output_constant_button'));
+                document.getElementById("hold_output_constant_checkbox").value = (document.getElementById("hold_output_constant_checkbox").value == "Yes") ? "No" : "Yes";
+                if (document.getElementById("hold_output_constant_checkbox").value == "Yes") {
+                  buttons.forEach(x => {x.classList.remove("is-white")});
+                  buttons.forEach(x => {x.classList.add("is-primary")});
+              } else {
+                  buttons.forEach(x => {x.classList.remove("is-primary")});
+                  buttons.forEach(x => {x.classList.add("is-white")});
+              }
+              localStorage.setItem("hold_output_constant_checkbox", document.getElementById("hold_output_constant_checkbox").value);
             }
 
             var index = 1;

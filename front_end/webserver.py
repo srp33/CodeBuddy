@@ -942,6 +942,8 @@ class EditExerciseHandler(BaseUserHandler):
 
             exercise_basics = content.get_exercise_basics(course, assignment, exercise)
             exercise_details = content.get_exercise_details(course, assignment, exercise)
+            old_text_output = exercise_details["expected_text_output"]
+            old_image_output = exercise_details["expected_image_output"]
 
             exercise_basics["title"] = self.get_body_argument("title").strip() #required
             exercise_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
@@ -961,6 +963,7 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
             exercise_details["enable_pair_programming"] = self.get_body_argument("enable_pair_programming") == "Yes"
             exercise_details["check_code"] = self.get_body_argument("check_code_text").strip().replace("\r", "")
+            exercise_details["hold_output_constant"] = self.get_body_argument("hold_output_constant") == "Yes"
 
             old_files = self.get_body_argument("file_container")
             new_files = self.request.files
@@ -982,6 +985,11 @@ class EditExerciseHandler(BaseUserHandler):
                 else:
                     if len(exercise_basics["title"]) > 80:
                         result = "Error: The title cannot exceed 80 characters."
+                    elif exercise_details["hold_output_constant"]:
+                        exercise_details["expected_text_output"], exercise_details["expected_image_output"] = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                        diff, passed = check_exercise_output(exercise_details, old_text_output, old_image_output)
+                        if not passed:
+                            result = "Error: new output does not match pre-existing output."
                     else:
                         #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', exercise_basics["title"]):
                         #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
@@ -1002,22 +1010,22 @@ class EditExerciseHandler(BaseUserHandler):
                                 if total_size > 10 * 1024 * 1024:
                                     result = f"Error: Your total file size is too large ({total_size} bytes)."
 
-                            if not result.startswith("Error:"):
-                                content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
-                                content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"])
+            if not result.startswith("Error:"):
+                content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
+                content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"])
 
-                                text_output, image_output = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                text_output, image_output = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
-                                if not any_response_counts and text_output == "" and image_output == "":
-                                    result = f"Error: No output was produced."
-                                else:
-                                    exercise_details["expected_text_output"] = text_output.strip()
-                                    exercise_details["expected_image_output"] = image_output
-                                    exercise = content.save_exercise(exercise_basics, exercise_details)
+                if not any_response_counts and text_output == "" and image_output == "":
+                    result = f"Error: No output was produced."
+                else:
+                    exercise_details["expected_text_output"] = text_output.strip()
+                    exercise_details["expected_image_output"] = image_output
+                    exercise = content.save_exercise(exercise_basics, exercise_details)
 
-                                    exercise_basics = content.get_exercise_basics(course, assignment, exercise)
-                                    exercise_details = content.get_exercise_details(course, assignment, exercise)
-                                    exercise_details["expected_text_output"] = format_output_as_html(text_output)
+                    exercise_basics = content.get_exercise_basics(course, assignment, exercise)
+                    exercise_details = content.get_exercise_details(course, assignment, exercise)
+                    exercise_details["expected_text_output"] = format_output_as_html(text_output)
 
             exercises = content.get_exercises(course, assignment)
             next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
