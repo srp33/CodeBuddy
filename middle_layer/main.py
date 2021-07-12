@@ -100,7 +100,6 @@ def exec(info: ExecInfo):
                     else:
                         with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
                             test_text_output = output_file.read()
-
                         try:
                             with open(f"{tmp_dir_path}/test_image_output_{i}", "rb") as output_file:
                                 test_image_output = encode_image_bytes(output_file.read())
@@ -127,6 +126,7 @@ def exec(info: ExecInfo):
             image_output = tests[0]["image_output"]
 
         tests = json.dumps(tests)
+        print(tests)
         return {"text_output": "\n".join(text_output_lines), "image_output": image_output, "tests": tests}
     except Exception as inst:
         return {"text_output": traceback.format_exc(), "image_output": ""}

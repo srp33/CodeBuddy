@@ -1444,7 +1444,7 @@ class Content:
             exercise_dict["data_files"] = json.loads(row["data_files"])
 
         if format_content:
-            exercise_dict["expected_text_output"] = format_output_as_html(exercise_dict["expected_text_output"])
+            # exercise_dict["expected_text_output"] = format_output_as_html(exercise_dict["expected_text_output"])
             exercise_dict["instructions"] = convert_markdown_to_html(exercise_dict["instructions"])
             exercise_dict["credit"] = convert_markdown_to_html(exercise_dict["credit"])
             exercise_dict["answer_description"] = convert_markdown_to_html(exercise_dict["answer_description"])
