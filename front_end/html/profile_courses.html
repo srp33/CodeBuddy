@@ -111,7 +111,7 @@
                     <span class="close">&times;</span>
 
                     <div id="modal_consent" style="display:none">
-                        <h6 class="top-space">Consent for participating in research:</h6>
+                        <h6 class="top-space">The instructor(s) are conducting a research study in this course. The information below describes the study and asks whether you agree to participate in the study.</h6>
                         <p id="consent_text" class="suggestion-div"></p>
                         <hr>
                         <p><strong>I consent to participate in this study under the terms described above.</strong>
@@ -124,10 +124,9 @@
                         </p>
                         <a onclick="showConsentAlternative('register')">What to do if you choose not to participate in this study</a>
                         <p id="consent_alternative_text" class="suggestion-div" style="display:none"></p>
-                        <hr>
                     </div>
 
-                    <div id="passcode_block" style="display:none">
+                    <div class='top-space' id="passcode_block" style="display:none">
                         <p>Please enter the passcode for this course:</p>
                         <input class="input is-medium is-primary" type="text" id="passcode" name="passcode"/>
 
@@ -138,7 +137,6 @@
                     </div>
 
                     <div id="register_block" style="display:none">
-                        <p>Are you sure you want to register for this course?</p>
                         <p class="buttons">
                             <button type="button" id="register_cancel_button" class="modal-button button is-light">Cancel</button>
                             <input type="submit" id="register_button" class="modal-button button is-dark" value="Register"/>
