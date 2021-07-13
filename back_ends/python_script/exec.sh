@@ -36,7 +36,6 @@ then
     else
       test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/text_output"
     fi
-    touch $test_outputs_path
     bash "$test_path" > $test_outputs_path
   done
 else

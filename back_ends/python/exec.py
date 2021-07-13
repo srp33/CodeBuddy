@@ -43,7 +43,7 @@ my_plt_saver.close()""")
             result = subprocess.run(f"python {test_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
             result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
 
-            # save test text output under outputs in case of image traceback
+            # save text output under outputs in case of image traceback
             with open(filename, "w") as test_output:
                 test_output.write(result)
 

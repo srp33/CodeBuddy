@@ -110,6 +110,7 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
     response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
 
     response_dict = json.loads(response.content)
+    # 'text_output' and 'image_output' refer to the output produced by the code written by the student, while 'tests' contains image and text outputs specific to each test case written by the instructor
     return response_dict["text_output"], response_dict["image_output"], json.loads(response_dict["tests"])
 
 def compare_outcome(expected_text, actual_text, expected_image, actual_image, output_type):

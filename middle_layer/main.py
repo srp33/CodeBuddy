@@ -111,7 +111,7 @@ def exec(info: ExecInfo):
                             except:
                                 # image failed to save
                                 test_image_output = ""
-                # for each test output, load its text/image (where applicable) output to a dictionary of test outputs
+                # for each test output, load its text and image output to a dictionary of test outputs
                 tests.append({"test": i, "text_output": test_text_output.strip(), "image_output": test_image_output})
 
         if info.output_type == "jpg":
