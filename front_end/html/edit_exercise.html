@@ -25,6 +25,8 @@
         <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
     {% elif result.startswith("Code") %}
         <p><pre class="error-message">{{ result }}</pre></p>
+    {% elif result.startswith("Warning") %}
+        <p><div class="notification is-warning"><strong>{{ result }}</strong></div></p>
     {% else %}
         <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
     {% end %}
@@ -205,11 +207,35 @@
 
                 {% if exercise_details["expected_text_output"] != "" %}
                     <p><pre><code>{{ exercise_details["expected_text_output"] }}</code></pre></p>
+                {% elif exercise_details["expected_image_output"] == "" %}
+                    <p><pre>[This solution produced no output.]</pre></p>
                 {% end %}
 
                 {% if exercise_details["expected_image_output"] != "" %}
                     <p><figure class='img'><img src='data:image/jpg;base64,{{ exercise_details["expected_image_output"] }}' width='95%' /></figure></p>
                 {% end %}
+
+                <!-- {% if len(tests) != 0 %}
+                    {% for i in range(len(tests))%}
+                        {% if tests[i]["text_output"] != "" or tests[i]["image_output"] != "" %}
+                        <pre class='passing-btn-color' style='cursor:pointer;' onclick='showTest({{i}})'>Test {{i + 1}} Output</pre>
+                        <div id="test_{{i}}" style="display:none">
+                          <h6>Test output:</h6>
+                              {% if tests[i]["text_output"] == "" %}
+                                  {% if tests[i]["image_output"] == "" %}
+                                      <p><pre>[This test produced no output.]</pre></p>
+                                  {% else %}
+                                  <p><figure class='img'><img src='data:image/jpg;base64,{{tests[i]["image_output"]}}' width='100%' /></figure></p>
+                                  {% end %}
+                              {% else %}
+                              <p><pre>{{tests[i]["text_output"]}}</pre><p>
+                              {% end %}
+                        </div>
+                        {% else %}
+                        <pre class='bottom-space failing-btn-color'>Test {{i + 1}} produced no output.</pre>
+                        {% end %}
+                    {% end %}
+                {% end %} -->
             {% end %}
             </div>
 
@@ -380,6 +406,10 @@
 
             updateBackEndOptions('{{ exercise_details["back_end"] }}', '{{ exercise_details["output_type"] }}');
 
+            function showTest(i) {
+              document.getElementById(`test_${i}`).style.display = (document.getElementById(`test_${i}`).style.display == "none") ? "block" : "none";
+            }
+
             document.getElementById("myForm").onsubmit = function(evt) {
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
@@ -517,8 +547,28 @@
                 toggle_vis_div.appendChild(select_div)
                 toggle_vis_div.appendChild(test_instructions_div)
 
+                var output_div = document.createElement("div");
+                output_div.id = `output_div_${test_index}`;
+                output_div.style.marginTop = '60px'
+                output_div.style.display = 'none'
+                var output_button = document.createElement("pre")
+                output_button.classList.add("passing-btn-color");
+                output_button.id = `output_button_${test_index}`
+                output_button.style = 'cursor:pointer'
+                output_button.setAttribute('onclick', `showTest(${test_index})`)
+                output_button.innerHTML = `Test ${test_index + 1} Output`
+                var output_content = document.createElement("div")
+                output_content.id = `test_${test_index}`
+                output_content.style = 'display:none'
+                var test_p_wrapper = document.createElement('p')
+                test_p_wrapper.id = `p_wrapper_${test_index}`
+
+                output_content.appendChild(test_p_wrapper)
+                output_div.appendChild(output_button)
+                output_div.appendChild(output_content)
                 test_div.appendChild(p_wrapper)
                 test_div.appendChild(toggle_vis_div)
+                test_div.appendChild(output_div)
 
                 var tests_div = document.getElementById("tests_div");
                 tests_div.appendChild(test_div)
@@ -554,14 +604,36 @@
             // population with existing tests
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
+                 console.log(json_data)
                  for (i in json_data) {
                    showAddTest();
+
                    eval(`test_code_editor_${i}.setValue(json_data[i].code)`);
                    if (json_data[i].test_instructions != "") {
                       eval(`show_test_code_${i}.value = "No"`);
                       eval(`test_instructions_${i}.value = '${json_data[i].test_instructions}'`);
                       eval(`test_instructions_div_${i}.style.display = 'block'`);
                    }
+
+                   document.getElementById(`output_div_${i}`).style.display = 'block';
+                   document.getElementById(`test_div_${i}`).style.margin = '0 0 25px 0';
+
+                   var content = "";
+
+                   if (json_data[i].text_output != "") {
+                      content = `<pre>${json_data[i].text_output}</pre>`;
+                   }
+                   if (json_data[i].image_output != "") {
+                      content = `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
+                   }
+                   if ((json_data[i].image_output) == "" && (json_data[i].text_output == "")) {
+                      content = '<pre>[This test produced no output.]</pre>';
+                      var output_btn = document.getElementById(`output_button_${i}`)
+                      output_btn.classList.remove('passing-btn-color');
+                      output_btn.classList.add('failing-btn-color');
+                      output_btn.innerHTML = `Test ${parseInt(i) + 1} produced no output.`;
+                   }
+                   document.getElementById(`p_wrapper_${i}`).innerHTML = content;
                  }
                });
 

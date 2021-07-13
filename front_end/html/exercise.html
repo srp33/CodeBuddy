@@ -474,8 +474,27 @@
                 </div>
                 {% if exercise_details["output_type"] == "txt" %}
                     <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
-                {% else %}
+                {% elif exercise_details["expected_image_output"] != "" %}
                     <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
+                {% else %}
+                    <p><pre>[Expected solution does not produce an image.]</pre></p>
+                {% end %}
+
+                {% if len(exercise_details["tests"]) > 0 %}
+                <div id="expected_tests">
+                {% for i in range(len(exercise_details["tests"])) %}
+                    <h6 style="display: inline">Test {{i + 1}} expected output:</h6>
+                    {% if exercise_details["tests"][i]["test_instructions"] == "" %}
+                        {% if exercise_details["output_type"] == "txt" %}
+                            <p><pre class="smaller-font">{{ exercise_details["tests"][i]["text_output"] }}</pre></p>
+                        {% else %}
+                            <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['tests'][i]['image_output'] }}" width="100%"/></figure></p>
+                        {% end %}
+                    {% else %}
+                        <p><pre class="smaller-font">Test output hidden.</pre></p>
+                    {% end %}
+                {% end %}
+                </div>
                 {% end %}
             {% else %}
                 <p><em>This exercise is configured so that the expected output is not shown.</em></p>

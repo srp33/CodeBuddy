@@ -112,7 +112,7 @@ def exec(info: ExecInfo):
                                 # image failed to save
                                 test_image_output = ""
                 # for each test output, load its text/image (where applicable) output to a dictionary of test outputs
-                tests.append({"test": i, "text_output": test_text_output, "image_output": test_image_output})
+                tests.append({"test": i, "text_output": test_text_output.strip(), "image_output": test_image_output})
 
         if info.output_type == "jpg":
             image_file_path = f"{tmp_dir_path}/image_output"
@@ -121,12 +121,7 @@ def exec(info: ExecInfo):
                 with open(image_file_path, "rb") as output_file:
                     image_output = encode_image_bytes(output_file.read())
 
-        if len(text_output_lines) == 0 and "python_script" in info.image_name:
-            text_output_lines = list(map(lambda x: x["text_output"], tests))
-            image_output = tests[0]["image_output"]
-
         tests = json.dumps(tests)
-        print(tests)
         return {"text_output": "\n".join(text_output_lines), "image_output": image_output, "tests": tests}
     except Exception as inst:
         return {"text_output": traceback.format_exc(), "image_output": ""}

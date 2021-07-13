@@ -207,7 +207,7 @@
                                     button_bg_color = (tests[{{i}}].passed ? "passing-btn-color" : "failing-btn-color");
                                     test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
                             {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                                    test_output += `<pre class='${button_bg_color}' style='cursor:pointer;' onclick='show_test(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.</pre>`;
+                                    test_output += `<pre class='${button_bg_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.</pre>`;
                                     test_output += `<div id="test_${tests[{{i}}].test}" style="display:none"><h6>Your output:</h6>\n\n`;
 
                                     {% if exercise_details["output_type"] == "txt" %}
@@ -218,9 +218,12 @@
                                     test_output += `<h6>Expected output:</h6>\n\n`;
                                     test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
                                     {% else %}
-                                    if (tests[{{i}}]["image_output"] == "")
-                                        test_output += "<p><pre>[Your solution did not produce an image.]</pre></p>";
-                                    else
+                                    if (tests[{{i}}]["image_output"] == "") {
+                                        if (tests[{{i}}]["text_output"] == "")
+                                            test_output += "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                                        else
+                                            test_output += `<p><pre>${tests[{{i}}].text_output}</pre><p>`;
+                                    } else
                                         test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].image_output + "' width='100%' /></figure></p>";
 
                                     test_output += `<h6>Expected output:</h6>\n\n`;
@@ -241,13 +244,13 @@
                             {% end %}
                             test_output += `<br />`
                       {% end %}
+                      document.getElementById("test_output").innerHTML = test_output;
                       {% end %}
                         document.getElementById("code_output").innerHTML = code_output;
-                        document.getElementById("test_output").innerHTML = test_output;
                     {% end %}
                 }
 
-                function show_test(i) {
+                function showTest(i) {
                   document.getElementById(`test_${i}`).style.display = (document.getElementById(`test_${i}`).style.display == "none") ? "block" : "none";
                 }
 
@@ -301,6 +304,8 @@
                 {% end %}
 
                 function submit() {
+
+                    document.getElementById("expected_tests").style.display = "none"
                     user_code = editor.getValue();
 
                     if (user_code.trim() == "")
@@ -344,6 +349,7 @@
                    editor.focus();
                    return false;
                 }
+
                function submitModal() {
                      var modal = document.getElementById("submit_exercise_modal");
                      var span = document.getElementsByClassName("close")[4];

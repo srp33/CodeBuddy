@@ -917,14 +917,14 @@ class Content:
             return []
 
         tests = []
-        sql = '''SELECT code, test_instructions
+        sql = '''SELECT code, test_instructions, text_output, image_output
                  FROM tests
                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?'''
 
         for test in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id))):
-            tests.append({"code": test["code"], "test_instructions": test["test_instructions"]})
+            tests.append({"code": test["code"], "test_instructions": test["test_instructions"], "text_output": test["text_output"], "image_output": test["image_output"]})
         return tests
 
     def get_student_submissions(self, course_id, assignment_id, exercise_id, user_id):
@@ -1427,7 +1427,7 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise),))
 
-        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "test_code": row["test_code"], "credit": row["credit"], "data_files": row["data_files"].strip(), "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "show_student_submissions": row["show_student_submissions"], "expected_text_output": row["expected_text_output"].strip(), "expected_image_output": row["expected_image_output"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"], "check_code": row["check_code"], "tests": []}
+        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "answer_code": row["answer_code"], "answer_description": row["answer_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "test_code": row["test_code"], "credit": row["credit"], "data_files": row["data_files"].strip(), "show_expected": row["show_expected"], "show_test_code": row["show_test_code"], "show_answer": row["show_answer"], "show_student_submissions": row["show_student_submissions"], "expected_text_output": row["expected_text_output"], "expected_image_output": row["expected_image_output"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"], "check_code": row["check_code"], "tests": []}
 
         sql = '''SELECT test_id, code, test_instructions, text_output, image_output
                  FROM tests

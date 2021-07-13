@@ -1014,8 +1014,21 @@ class EditExerciseHandler(BaseUserHandler):
                                 content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"], exercise_details["tests"])
 
                                 text_output, image_output, tests = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                                empty_tests = list(filter(lambda x: x["text_output"] == "" and x["image_output"] == "", tests))
 
-                                if not any_response_counts and text_output == "" and image_output == "":
+                                if len(empty_tests) > 0:
+                                    result = f"Warning: {len(empty_tests)} of your tests produced no output."
+                                    tests_dict = []
+                                    for i in range(len(tests)):
+                                        tests_dict.append({**tests[i], **exercise_details["tests"][i]})
+                                    exercise_details["tests"] = tests_dict
+                                    exercise_details["expected_text_output"] = text_output.strip()
+                                    exercise_details["expected_image_output"] = image_output
+                                    exercise = content.save_exercise(exercise_basics, exercise_details)
+
+                                    exercise_basics = content.get_exercise_basics(course, assignment, exercise)
+                                    exercise_details = content.get_exercise_details(course, assignment, exercise)
+                                if not any_response_counts and text_output == "" and image_output == "" and len(empty_tests) != 0:
                                     result = f"Error: No output was produced."
                                 else:
                                     tests_dict = []
