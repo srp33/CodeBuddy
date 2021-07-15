@@ -1016,21 +1016,11 @@ class EditExerciseHandler(BaseUserHandler):
                                 text_output, image_output, tests = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
                                 empty_tests = list(filter(lambda x: x["text_output"] == "" and x["image_output"] == "", tests))
 
-                                if len(empty_tests) > 0:
-                                    result = f"Warning: {len(empty_tests)} of your tests produced no output."
-                                    tests_dict = []
-                                    for i in range(len(tests)):
-                                        tests_dict.append({**tests[i], **exercise_details["tests"][i]})
-                                    exercise_details["tests"] = tests_dict
-                                    exercise_details["expected_text_output"] = text_output.strip()
-                                    exercise_details["expected_image_output"] = image_output
-                                    exercise = content.save_exercise(exercise_basics, exercise_details)
-
-                                    exercise_basics = content.get_exercise_basics(course, assignment, exercise)
-                                    exercise_details = content.get_exercise_details(course, assignment, exercise)
-                                if not any_response_counts and text_output == "" and image_output == "" and len(empty_tests) != 0:
+                                if not any_response_counts and text_output == "" and image_output == "" and len(empty_tests) == len(tests):
                                     result = f"Error: No output was produced."
                                 else:
+                                    if len(empty_tests) > 0:
+                                        result = f"Warning: {len(empty_tests)} of your tests produced no output."
                                     tests_dict = []
                                     for i in range(len(tests)):
                                         tests_dict.append({**tests[i], **exercise_details["tests"][i]})

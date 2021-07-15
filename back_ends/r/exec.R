@@ -3,6 +3,8 @@ tests_dir_path = commandArgs()[10]
 check_code_file_path = commandArgs()[11]
 output_type = commandArgs()[12]
 
+options(warn=-1)
+
 # Code that didn't work right for both base R graphics and ggplot2
 #exec_jpg <- function(code) {
 #  library(magick)
@@ -42,11 +44,10 @@ exec_jpg <- function(code, i=0) {
   }
 }
 
-code <- readChar(code_file_path, file.info(code_file_path)$size)
-
 if (output_type == "txt") {
-  suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=code)))))
+  system(paste("Rscript", code_file_path))
 } else {
+  code <- readChar(code_file_path, file.info(code_file_path)$size)
   suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(code))))
 }
 
@@ -56,16 +57,16 @@ if (dir.exists(tests_dir_path)) {
     tests <- list.files(path=tests_dir_path, pattern="test*", full.names=TRUE, recursive=FALSE)
     for (i in seq_along(tests)) {
         setwd(file.path(outputs_dir, paste("test_", i, sep="")))
-        test_code <- readChar(tests[i], file.info(tests[i])$size)
 
-        # need to find a way to suppress printing to stdout while saving test code output so test outputs don't show up in submission output
-        # Need to allow for multiline output!!!! FIXME
         if (output_type == "txt") {
           filename <- "text_output"
-          out <- invisible(suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=test_code))))))
+
+          out <- system(paste("Rscript", tests[i]), intern = TRUE)
           cat(out, file=filename, sep="\n", append=TRUE)
         } else {
           filename <- "image_output"
+          
+          test_code <- readChar(tests[i], file.info(tests[i])$size)
           out <- invisible(suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(test_code, i)))))
           cat(out, file=filename, sep="\n", append=FALSE)
         }
