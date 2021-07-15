@@ -110,7 +110,7 @@
                 <div class="modal-content">
                     <span class="close">&times;</span>
 
-                    <div id="modal_consent" style="display:none">
+                    <div id="modal_consent" class="bottom-space" style="display:none">
                         <h6 class="top-space">The instructor(s) are conducting a research study in this course. The information below describes the study and asks whether you agree to participate in the study.</h6>
                         <p id="consent_text" class="suggestion-div"></p>
                         <hr>
@@ -122,7 +122,7 @@
                                 </select>
                             </div>
                         </p>
-                        <a onclick="showConsentAlternative('register')">What to do if you choose not to participate in this study</a>
+                        <a onclick="showConsentAlternative()">What to do if you choose not to participate in this study</a>
                         <p id="consent_alternative_text" class="suggestion-div" style="display:none"></p>
                     </div>
 
@@ -137,6 +137,7 @@
                     </div>
 
                     <div id="register_block" style="display:none">
+                        <p id="modal_consent_na">Are you sure you want to register for this course?</p>
                         <p class="buttons">
                             <button type="button" id="register_cancel_button" class="modal-button button is-light">Cancel</button>
                             <input type="submit" id="register_button" class="modal-button button is-dark" value="Register"/>
@@ -196,7 +197,6 @@
     }
 
     function showRegisterModal(course_id, has_passcode=false) {
-        console.log(has_passcode)
         var modal = document.getElementById("register_modal");
         var span = document.getElementsByClassName("close")[1];
         modal.style.display = "block";
@@ -215,10 +215,15 @@
             var cancelButton = document.getElementById("register_cancel_button");
         }
 
-        if (consent_text != "") {
+        if (course_consent_dict[course_id]['consent_text'] != "") {
+            console.log(course_consent_dict[course_id]['consent_text'])
             document.getElementById("consent_text").innerHTML = course_consent_dict[course_id]["consent_text"];
             document.getElementById("consent_alternative_text").innerHTML = course_consent_dict[course_id]["consent_alternative_text"];
             document.getElementById("modal_consent").style.display = "block";
+            document.getElementById("modal_consent_na").style.display = "none";
+        } else {
+            document.getElementById("modal_consent_na").style.display = "block";
+            document.getElementById("modal_consent").style.display = "none";
         }
 
         cancelButton.onclick = function() {
