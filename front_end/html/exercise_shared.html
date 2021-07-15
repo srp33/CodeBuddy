@@ -40,7 +40,7 @@
                     <h6>Copy exercise within the same assignment:</h6>
                     <div class="notification is-warning is-light" id="copy_exercise_message" style="display:none"></div>
                     <p>New title:</p>
-                        <input class="input is-medium is-primary" type="text" id="new_title" name="new_title"/>
+                        <input class="input is-medium is-primary" type="text" id="new_title" name="new_title" placeholder="{{exercise_basics['title']}}" value="{{exercise_basics['title']}}"/>
                     <p class="buttons">
                         <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
                         <button onclick="copyExercise({{ course_basics['id'] }}, {{assignment_basics['id']}}, {{ exercise_basics['id'] }})" id="copy_button" class="modal-button button is-dark">Copy</button>
