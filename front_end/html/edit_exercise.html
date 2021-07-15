@@ -200,12 +200,23 @@
 
             <div id="code-output">
             {% if exercise_basics["exists"] %}
-                <p><strong>Output:</strong><br />
+                {% if old_text_output != '' or old_image_output != '' %}
+                        <p><strong>Old output:</strong><br />
 
+                    {% if old_text_output != '' %}
+                        <p><pre><code>{{ old_text_output }}</code></pre></p>
+                    {% end %}
+                    {% if old_image_output != '' %}
+                        <p><figure class='img'><img src='data:image/jpg;base64,{{ old_image_output }}' width='95%' /></figure></p>
+                    {% end %}
+
+                    <p><strong>New output:</strong><br />
+                {% else %}
+                    <p><strong>Output:</strong><br />
+                {% end %}
                 {% if exercise_details["expected_text_output"] != "" %}
                     <p><pre><code>{{ exercise_details["expected_text_output"] }}</code></pre></p>
                 {% end %}
-
                 {% if exercise_details["expected_image_output"] != "" %}
                     <p><figure class='img'><img src='data:image/jpg;base64,{{ exercise_details["expected_image_output"] }}' width='95%' /></figure></p>
                 {% end %}

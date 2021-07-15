@@ -928,7 +928,7 @@ class EditExerciseHandler(BaseUserHandler):
                 exercise_details["expected_text_output"] = format_output_as_html(exercise_details["expected_text_output"])
                 next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
-                self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info())
+                self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info(), old_text_output='', old_image_output='')
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -985,11 +985,7 @@ class EditExerciseHandler(BaseUserHandler):
                 else:
                     if len(exercise_basics["title"]) > 80:
                         result = "Error: The title cannot exceed 80 characters."
-                    elif exercise_details["hold_output_constant"]:
-                        exercise_details["expected_text_output"], exercise_details["expected_image_output"] = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
-                        diff, passed = check_exercise_output(exercise_details, old_text_output, old_image_output)
-                        if not passed:
-                            result = "Error: new output does not match pre-existing output."
+
                     else:
                         #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', exercise_basics["title"]):
                         #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
@@ -1009,8 +1005,14 @@ class EditExerciseHandler(BaseUserHandler):
                                 # Make sure total file size is not larger than 10 MB across all files.
                                 if total_size > 10 * 1024 * 1024:
                                     result = f"Error: Your total file size is too large ({total_size} bytes)."
+                            if exercise_details["hold_output_constant"]:
+                                exercise_details["expected_text_output"], exercise_details["expected_image_output"] = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                                diff, passed = check_exercise_output(exercise_details, old_text_output, old_image_output)
+                                if not passed:
+                                    result = "Error: new output does not match pre-existing output."
 
             if not result.startswith("Error:"):
+                old_text_output = old_image_output = ''
                 content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
                 content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"])
 
@@ -1030,7 +1032,7 @@ class EditExerciseHandler(BaseUserHandler):
             exercises = content.get_exercises(course, assignment)
             next_prev_exercises = content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
-            self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info())
+            self.render("edit_exercise.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=exercises, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info(), old_text_output=old_text_output, old_image_output=old_image_output)
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server.")
         except ReadTimeout as inst:
