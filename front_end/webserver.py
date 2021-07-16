@@ -961,6 +961,8 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
             exercise_details["enable_pair_programming"] = self.get_body_argument("enable_pair_programming") == "Yes"
             exercise_details["check_code"] = self.get_body_argument("check_code_text").strip().replace("\r", "")
+            tests = self.get_body_argument("tests_json")
+            exercise_details["tests"] = json.loads(tests) if tests and tests != "[]" else []
 
             old_files = self.get_body_argument("file_container")
             new_files = self.request.files
@@ -970,12 +972,6 @@ class EditExerciseHandler(BaseUserHandler):
             else:
                 exercise_details["data_files"] = {}
 
-            tests = self.get_body_argument("tests_json")
-            if tests and tests != "[]":
-                tests = json.loads(tests)
-                exercise_details["tests"] = tests
-            else:
-                exercise_details["tests"] = []
 
             result = "Success: The exercise was saved!"
 
@@ -1173,7 +1169,7 @@ class SubmitHandler(BaseUserHandler):
 
             out_dict["text_output"] = text_output.strip()
             out_dict["image_output"] = image_output
-            out_dict["tests"] = tests_outcomes
+            out_dict["tests"] = test_outcomes
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
             out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, tests, partner_id)

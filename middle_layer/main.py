@@ -127,7 +127,7 @@ def exec(info: ExecInfo):
                 with open(image_file_path, "rb") as output_file:
                     image_output = encode_image_bytes(output_file.read())
 
-        # convert tests to json for transfer to front end 
+        # convert tests to json for transfer to front end
         tests = json.dumps(tests)
         return {"text_output": "\n".join(text_output_lines), "image_output": image_output, "tests": tests}
     except Exception as inst:
