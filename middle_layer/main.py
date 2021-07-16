@@ -91,6 +91,9 @@ def exec(info: ExecInfo):
             text_output_lines.append(text_output_line)
 
         if os.path.isdir(f"{tmp_dir_path}/tests/"):
+
+            print(os.listdir(f"{tmp_dir_path}/tests/"))
+            print(os.listdir(f"{tmp_dir_path}/tests/outputs"))
             for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
                 # get test number from filename
                 i = test_output.split('_')[-1]

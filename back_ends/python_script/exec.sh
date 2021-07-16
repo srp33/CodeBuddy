@@ -33,7 +33,7 @@ then
       # refresh code from temp copy
       cat temp.py > code.py
       # add code specifying where to save image
-      python /test_mod_code_for_jpg.py ${test_path:5}
+      python /mod_code_for_jpg.py "$tests_dir_path"code.py ${test_path:5}
       test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/image_output"
     else
       test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/text_output"
@@ -44,7 +44,7 @@ then
 else
   if [[ "$output_type" == "jpg" ]]
   then
-    python /mod_code_for_jpg.py /sandbox/code
+    python /mod_code_for_jpg.py "$code_file_path".py
   fi
   python "$code_file_path".py
 fi
