@@ -22,18 +22,20 @@ if os.path.isdir(tests_dir_path):
         for test_path in glob.glob(f"{tests_dir_path}test*"):
             result = subprocess.run(f"python {test_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
             result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
+            # get test number from filename, match it to output filename
             i = test_path.split("_")[1]
             filename = f"{tests_dir_path}outputs/test_{i}/text_output"
 
-            # save test output in outputs
+            # save test output in unique folder under outputs directory
             with open(filename, "w") as test_output:
                 test_output.write(result)
     else:
         for test_path in glob.glob(f"{tests_dir_path}test*"):
+            # get test number from filename, match it to output filename
             i = test_path.split("_")[1]
             filename = f"{tests_dir_path}outputs/test_{i}/image_output"
 
-            # add code to test code for saving image
+            # add code for saving image to test code
             with open(test_path, "a") as test_file:
                 test_file.write(f"""
 from matplotlib import pyplot as my_plt_saver
@@ -43,7 +45,7 @@ my_plt_saver.close()""")
             result = subprocess.run(f"python {test_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
             result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
 
-            # save text output under outputs in case of image traceback
+            # save test's text output in a unique folder under the outputs directory in case of image traceback
             with open(filename, "w") as test_output:
                 test_output.write(result)
 

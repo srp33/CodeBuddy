@@ -1014,13 +1014,17 @@ class EditExerciseHandler(BaseUserHandler):
                                 content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"], exercise_details["tests"])
 
                                 text_output, image_output, tests = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                                # calculate number of empty test outputs to aid instructor in debugging
                                 empty_tests = list(filter(lambda x: x["text_output"] == "" and x["image_output"] == "", tests))
 
                                 if not any_response_counts and text_output == "" and image_output == "" and len(empty_tests) == len(tests):
                                     result = f"Error: No output was produced."
                                 else:
+                                    # if some but not all of tests have empty outputs, save exercise anyways but flag instructor with the tests that didn't produce any output
                                     if len(empty_tests) > 0:
                                         result = f"Warning: {len(empty_tests)} of your tests produced no output."
+
+                                    # load test outcomes into dictionary with test code
                                     tests_dict = []
                                     for i in range(len(tests)):
                                         tests_dict.append({**tests[i], **exercise_details["tests"][i]})
@@ -1162,15 +1166,14 @@ class SubmitHandler(BaseUserHandler):
             exercise_details = content.get_exercise_details(course, assignment, exercise)
             assignment_details = content.get_assignment_details(course, assignment)
 
+            # execute code and save text, image, and test outputs in respective variables
             text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, self.request)
+            # 'diff' and 'passed' refer to the solution code, while 'test_outcomes' contains diff and passed values for each test
             diff, passed, test_outcomes = check_exercise_output(exercise_details, text_output, image_output, tests)
 
             out_dict["text_output"] = text_output.strip()
             out_dict["image_output"] = image_output
-            tests_dict = []
-            for i in range(len(test_outcomes)):
-                tests_dict.append({**tests[i], **test_outcomes[i]})
-            out_dict["tests"] = tests_dict
+            out_dict["tests"] = tests_outcomes
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
             out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, tests, partner_id)
@@ -1236,11 +1239,7 @@ class GetSubmissionHandler(BaseUserHandler):
 
                 submission_info["diff"] = format_output_as_html(diff)
                 submission_info["text_output"] = submission_info["text_output"]
-
-                tests_dict = []
-                for i in range(len(tests)):
-                    tests_dict.append({**tests[i], **submission_info["tests"][i]})
-                submission_info["tests"] = tests_dict
+                submission_info["tests"] = tests
         except Exception as inst:
             submission_info["diff"] = ""
             submission_info["text_output"] = format_output_as_html(traceback.format_exc())

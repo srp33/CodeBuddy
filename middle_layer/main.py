@@ -51,9 +51,11 @@ def exec(info: ExecInfo):
             with open(f"{tmp_dir_path}/check_code", "w") as check_file:
                 check_file.write(info.check_code)
 
+        # save each test case in its own file under the directory 'tests'
         if len(info.tests) > 0:
             for i in range(len(info.tests)):
                 filename = f"{tmp_dir_path}/tests/test_{int(i + 1)}"
+                # preemptively create directory for test outputs
                 outputname = f"{tmp_dir_path}/tests/outputs/test_{int(i + 1)}/image_output" if info.output_type == "jpg" else f"{tmp_dir_path}/tests/outputs/test_{int(i + 1)}/text_output"
                 os.makedirs(os.path.dirname(filename), exist_ok=True)
                 os.makedirs(os.path.dirname(outputname), exist_ok=True)
@@ -89,29 +91,33 @@ def exec(info: ExecInfo):
             text_output_lines.append(text_output_line)
 
         if os.path.isdir(f"{tmp_dir_path}/tests/"):
-            test_text_output = test_image_output = ""
             for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
+                # get test number from filename
                 i = test_output.split('_')[-1]
                 for output_path in os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}"):
+                    # preload text and image output with empty values
                     test_text_output = test_image_output = ""
                     if "image" not in output_path:
+                        # read text output
                         with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
                             test_text_output = output_file.read()
                     else:
+                        # read text output in case it contains traceback from an error writing the image
                         with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
                             test_text_output = output_file.read()
                         try:
+                            # look for image file under tmp_dir_path
                             with open(f"{tmp_dir_path}/test_image_output_{i}", "rb") as output_file:
                                 test_image_output = encode_image_bytes(output_file.read())
                         except:
                             try:
-                                # python script saves here for some reason
+                                # python script backend saves here
                                 with open(f"{tmp_dir_path}/tests/test_image_output_{i}", "rb") as output_file:
                                     test_image_output = encode_image_bytes(output_file.read())
                             except:
                                 # image failed to save
                                 test_image_output = ""
-                # for each test output, load its text and image output to a dictionary of test outputs
+                # for each test output, load its text and/or image outputs to a dictionary of test outputs
                 tests.append({"test": i, "text_output": test_text_output.strip(), "image_output": test_image_output})
 
         if info.output_type == "jpg":
@@ -121,6 +127,7 @@ def exec(info: ExecInfo):
                 with open(image_file_path, "rb") as output_file:
                     image_output = encode_image_bytes(output_file.read())
 
+        # convert tests to json for transfer to front end 
         tests = json.dumps(tests)
         return {"text_output": "\n".join(text_output_lines), "image_output": image_output, "tests": tests}
     except Exception as inst:
