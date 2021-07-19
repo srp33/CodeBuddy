@@ -96,40 +96,44 @@ def exec(info: ExecInfo):
                 continue
             text_output_lines.append(text_output_line)
 
-        if os.path.isdir(f"{tmp_dir_path}/tests/"):
-            for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
-                # Gets the test number from filename.
-                i = test_output.split('_')[-1]
+        try:
+            if os.path.isdir(f"{tmp_dir_path}/tests/"):
+                for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
+                    # Gets the test number from filename.
+                    i = test_output.split('_')[-1]
 
-                # Preloads text and image output with empty values.
-                test_text_output = test_image_output = ""
+                    # Preloads text and image output with empty values.
+                    test_text_output = test_image_output = ""
 
-                if len(os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}")) > 0:
+                    outputs = os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}")
+                    if len(outputs) > 0:
 
-                    for output_path in outputs:
-                        if "image" not in output_path:
+                        for output_path in outputs:
+                            if "image" not in output_path:
 
-                            # Reads text output.
-                            with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
-                                test_text_output = output_file.read()
-                        else:
-                            # Reads text output in case it contains traceback from an error writing the image.
-                            with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
-                                test_text_output = output_file.read()
-                            try:
-                                # Looks for image file under tmp_dir_path.
-                                with open(f"{tmp_dir_path}/test_image_output_{i}", "rb") as output_file:
-                                    test_image_output = encode_image_bytes(output_file.read())
-                            except:
+                                # Reads text output.
+                                with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
+                                    test_text_output = output_file.read()
+                            else:
+                                # Reads text output in case it contains traceback from an error writing the image.
+                                with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
+                                    test_text_output = output_file.read()
                                 try:
-                                    # Python script backend saves images here.
-                                    with open(f"{tmp_dir_path}/tests/test_image_output_{i}", "rb") as output_file:
+                                    # Looks for image file under tmp_dir_path.
+                                    with open(f"{tmp_dir_path}/test_image_output_{i}", "rb") as output_file:
                                         test_image_output = encode_image_bytes(output_file.read())
                                 except:
-                                    # Image failed to save.
-                                    pass
-                # Loads text and/or image outputs for each test to a dictionary.
-                tests.append({"test": i, "text_output": test_text_output.strip(), "image_output": test_image_output})
+                                    try:
+                                        # Python script backend saves images here.
+                                        with open(f"{tmp_dir_path}/tests/test_image_output_{i}", "rb") as output_file:
+                                            test_image_output = encode_image_bytes(output_file.read())
+                                    except:
+                                        # Image failed to save.
+                                        pass
+                    # Loads text and/or image outputs for each test to a dictionary.
+                    tests.append({"test": i, "text_output": test_text_output.strip(), "image_output": test_image_output})
+        except:
+            print(traceback.format_exc())
 
         if info.output_type == "jpg":
             image_file_path = f"{tmp_dir_path}/image_output"
