@@ -356,7 +356,7 @@
             {% for test in exercise_details["tests"] %}
               {% if test["test_instructions"] == "" %}
                 <pre class="smaller-font">{{ test["code"] }}</pre>
-                
+
               {% else %}
                 <div class="instructions smaller-font" style="font-family:monospace;-moz-osx-font-smoothing: auto;-webkit-font-smoothing: auto;">{{test["test_instructions"]}}</div>
               {% end %}
@@ -490,13 +490,13 @@
 
                         {% if exercise_details["tests"][i]["test_instructions"] == "" %}
                             {% if exercise_details["output_type"] == "txt" %}
-                                <p><pre class="smaller-font">{{ exercise_details["tests"][i]["text_output"] }}</pre></p>
+                                <p><pre>{{ exercise_details["tests"][i]["text_output"] }}</pre></p>
 
                             {% else %}
                                 <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['tests'][i]['image_output'] }}" width="100%"/></figure></p>
                             {% end %}
                         {% else %}
-                            <p><pre class="smaller-font">Test output hidden.</pre></p>
+                            <p><pre>Test output hidden.</pre></p>
                         {% end %}
                     {% end %}
                 {% end %}
