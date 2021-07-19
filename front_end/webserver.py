@@ -30,7 +30,6 @@ def make_app():
         url(r"/", HomeHandler),
         url(r"\/profile\/courses\/([^\/]+)", ProfileCoursesHandler, name="profile_courses"),
         url(r"\/profile\/consent_forms\/([^\/]+)", ConsentFormsHandler, name="consent_forms"),
-        url(r"\/profile\/consent_forms_admin\/([^\/]+)", ConsentFormsAdminHandler, name="consent_forms_admin"),
         url(r"\/profile\/personal_info\/([^\/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
         url(r"\/profile\/admin\/([^\/]+)", ProfileAdminHandler, name="profile_admin"),
         url(r"\/profile\/instructor\/course\/([^\/]+)", ProfileSelectCourseHandler, name="profile_select_course"),
@@ -189,30 +188,20 @@ class ConsentFormsHandler(BaseUserHandler):
         try:
             if self.is_administrator():
                 registered_courses = content.get_courses()
-            elif self.is_instructor() or self.is_assistant():
+
+                # add list of students to each course
+                for course in registered_courses:
+                    course[1].update({"student_names": content.get_registered_students(course[0])})
+            elif self.is_instructor():
                 registered_courses = content.get_courses_connected_to_user(user_id)
+
+                # add list of students to each course
+                for course in registered_courses:
+                    course[1].update({"student_names": content.get_registered_students(course[0])})
             else:
                 registered_courses = content.get_registered_courses(user_id)
 
             self.render("consent_forms.html", page="consent_forms", result=None, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
-        except Exception as inst:
-            render_error(self, traceback.format_exc())
-
-class ConsentFormsAdminHandler(BaseUserHandler):
-    def get(self, user_id):
-        try:
-            if self.is_administrator():
-                registered_courses = content.get_courses()
-            elif self.is_instructor():
-                registered_courses = content.get_courses_connected_to_user(user_id)
-            else:
-                self.render("permissions.html")
-
-            # add list of students to each course
-            for course in registered_courses:
-                course[1].update({"student_names": content.get_registered_students(course[0])})
-
-            self.render("consent_forms_admin.html", page="consent_forms", result=None, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

@@ -17,7 +17,6 @@ cat test.html >/app/test.html
 cat header.html navbar_top.html navbar_bottom.html home.html footer.html > /app/home.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_courses.html profile_bottom.html footer.html > /app/profile_courses.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html consent_forms.html profile_bottom.html footer.html > /app/consent_forms.html
-cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html consent_forms_admin.html profile_bottom.html footer.html > /app/consent_forms_admin.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_personal_info.html profile_bottom.html footer.html > /app/profile_personal_info.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_admin.html profile_bottom.html footer.html > /app/profile_admin.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_select_course.html profile_bottom.html footer.html > /app/profile_select_course.html
