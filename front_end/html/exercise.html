@@ -466,21 +466,18 @@
 
         {% if exercise_details["back_end"] != "any_response" %}
             {% if exercise_details["show_expected"] %}
-                <!-- only display output if expected isn't blank -->
-                {% if exercise_details['expected_text_output'] != "" and exercise_details['expected_image_output'] != "" %}
-                    <div>
-                        <h6 style="display: inline">Expected output:</h6>
-                        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your solution with the expected output to find and fix errors, as needed.">
-                            <i class="far fa-question-circle"></i>
-                        </label>
-                    </div>
-                    {% if exercise_details["output_type"] == "txt" %}
-                        <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
-                    {% elif exercise_details["expected_image_output"] != "" %}
-                        <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
-                    {% else %}
-                        <p><pre>[Expected solution does not produce an image.]</pre></p>
-                    {% end %}
+                <div>
+                    <h6 style="display: inline">Expected output:</h6>
+                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your solution with the expected output to find and fix errors, as needed.">
+                        <i class="far fa-question-circle"></i>
+                    </label>
+                </div>
+                {% if exercise_details["output_type"] == "txt" %}
+                    <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
+                {% elif exercise_details["expected_image_output"] != "" %}
+                    <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
+                {% else %}
+                    <p><pre>[Expected solution does not produce an image.]</pre></p>
                 {% end %}
 
                 <div id="expected_tests">

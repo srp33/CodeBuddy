@@ -55,19 +55,18 @@
             {% end %}
 
             <script>
+                ace.require("ace/ext/language_tools");
+                 var editor = ace.edit("user_code", {
+                     theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                     autoScrollEditorIntoView: false,
+                     minLines: 20,
+                     fontSize: "12pt"
+                 });
+                 let codeChanged = false
 
-              ace.require("ace/ext/language_tools");
-               var editor = ace.edit("user_code", {
-                   theme: "ace/theme/{{ user_info['ace_theme'] }}",
-                   autoScrollEditorIntoView: false,
-                   minLines: 20,
-                   fontSize: "12pt"
-               });
-               let codeChanged = false
-
-               editor.session.on('change', function(delta) {
-                 codeChanged = true
-               });
+                 editor.session.on('change', function(delta) {
+                   codeChanged = true
+                 });
 
                 function showMoveExerciseModal() {
                     var modal = document.getElementById("move_exercise_modal");
@@ -119,6 +118,7 @@
                         }
                     }
                 }
+
                 function build_text_output(json_output) {
                     var output = "";
 
@@ -137,7 +137,6 @@
                 function build_tests_output(json_data) {
                     var test_output = "<h6>Tests outputs:</h6>\n\n";
                         var tests = json_data.tests;
-                        console.log(tests)
                         {% for i in range(len(exercise_details["tests"]))%}
                             button_bg_color = (tests[{{i}}].passed ? "passing-btn-color" : "failing-btn-color");
                             test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
@@ -242,14 +241,10 @@
                     document.getElementById("result").innerHTML = result;
 
                     {% if exercise_details["back_end"] != "any_response" %}
-                        // only display outputs if expected isn't blank
-                        {% if exercise_details["expected_text_output"] != "" and exercise_details["expected_image_output"] != "" %}
-                            var code_output = "<h6>Your output:</h6>\n\n";
-                            code_output += build_text_output(json_data.text_output);
-                            code_output += build_image_output(json_data.image_output);
-                            document.getElementById("code_output").innerHTML = code_output;
-                        {% end %}
-
+                        var code_output = "<h6>Your output:</h6>\n\n";
+                        code_output += build_text_output(json_data.text_output);
+                        code_output += build_image_output(json_data.image_output);
+                        document.getElementById("code_output").innerHTML = code_output;
 
                         // build test buttons
                         {% if exercise_details["tests"] != [] %}
@@ -285,13 +280,10 @@
                         post_data,
                         function(data, status) {
                             var json_data = JSON.parse(data);
-                            // only display outputs if expected isn't blank
-                            {% if exercise_details["expected_text_output"] != "" and exercise_details["expected_image_output"] != "" %}
-                                var code_output = "<h6>Your output:</h6>\n\n";
-                                code_output += build_text_output(json_data.text_output);
-                                code_output += build_image_output(json_data.image_output);
-                                document.getElementById("code_output").innerHTML = code_output;
-                            {% end %}
+                            var code_output = "<h6>Your output:</h6>\n\n";
+                            code_output += build_text_output(json_data.text_output);
+                            code_output += build_image_output(json_data.image_output);
+                            document.getElementById("code_output").innerHTML = code_output;
 
                             // build test buttons
                             {% if exercise_details["tests"] != [] %}
@@ -305,22 +297,22 @@
                     return false;
                 }
 
-                submitButton = document.getElementById("submit_button");
+                 submitButton = document.getElementById("submit_button");
 
-                {% if exercise_details["enable_pair_programming"] %}
-                if (submitButton != null)
-                 submitButton.onclick = function() {
-                    submitModal()
-                }
-                {% else %}
-                if (submitButton != null)
+                 {% if exercise_details["enable_pair_programming"] %}
+                 if (submitButton != null)
                   submitButton.onclick = function() {
-                      submit()
-                }
-                {% end %}
+                     submitModal()
+                 }
+                 {% else %}
+                 if (submitButton != null) {
+                   submitButton.onclick = function() {
+                       submit()
+                   }
+                 }
+                 {% end %}
 
                 function submit() {
-
                     document.getElementById("expected_tests").style.display = "none"
                     user_code = editor.getValue();
 
@@ -364,9 +356,9 @@
                        });
                    editor.focus();
                    return false;
-                }
+                 }
 
-               function submitModal() {
+                 function submitModal() {
                      var modal = document.getElementById("submit_exercise_modal");
                      var span = document.getElementsByClassName("close")[4];
 
@@ -410,34 +402,6 @@
                      }
                  }
 
-                 function get_submission(submission_id, scroll) {
-                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                    if (document.getElementById("saved_div") != null)
-                        document.getElementById("saved_div").innerHTML = "";
-
-                    var i;
-                    for (i = 0; i < submission_buttons.length; i++) {
-                        if (submission_buttons[i].id == submission_id)
-                            submission_buttons[i].style.border = "solid #34495e";
-                        else
-                            submission_buttons[i].style.border = "none";
-                    }
-
-                    cancelButton.onclick = function() {
-                        modal.style.display = "none";
-                    }
-
-                    span.onclick = function() {
-                        modal.style.display = "none";
-                    }
-
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                            modal.style.display = "none";
-                        }
-                    }
-                }
-
                 function get_submission(submission_id, scroll) {
                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
                    if (document.getElementById("saved_div") != null)
@@ -474,111 +438,111 @@
                        document.getElementById("your_code_header").scrollIntoView();
 
                    editor.focus();
-
                    return false;
-               }
+                }
 
-               function show_past_submissions() {
-                   submissions_div = document.getElementById("submissions");
-                   $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}", function (data, status) {
-                       var json_data = JSON.parse(data);
-                       var submission_html = "";
-                       var revert_html = "";
-                       var current_code = editor.getValue()
+                function show_past_submissions() {
+                    submissions_div = document.getElementById("submissions");
+                    $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+                        function (data, status) {
+                            var json_data = JSON.parse(data);
+                            var submission_html = "";
+                            var revert_html = "";
+                            var current_code = editor.getValue()
 
-                       $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
-                       function(data, status) {
-                           var presubmission_data = JSON.parse(data);
+                            $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+                            function(data, status) {
+                              var presubmission_data = JSON.parse(data);
 
-                           //show student's presubmission, if applicable
-                           if (presubmission_data != null){
-                             editor.setValue(presubmission_data.code);
-                             if (document.getElementById("saved_div") != null)
-                               document.getElementById("saved_div").innerHTML = "Code loaded from last session";
-                           }
+                              //show student's presubmission, if applicable
+                              if (presubmission_data != null){
+                                editor.setValue(presubmission_data.code);
+                                if (document.getElementById("saved_div") != null)
+                                  document.getElementById("saved_div").innerHTML = "Code loaded from last session";
+                              }
 
-                           if (json_data.length > 0) {
-                               submission_html += "<h6>Past submissions:</h6>\n";
-                               submission_html += "<div class='buttons'>\n";
-                               var i;
+                              if (json_data.length > 0) {
+                                  submission_html += "<h6>Past submissions:</h6>\n";
+                                  submission_html += "<div class='buttons'>\n";
+                                  var i;
 
-                               for (i = 0; i < json_data.length; i++) {
-                                   submission_id = json_data[i][0];
-                                   the_date = json_data[i][1];
-                                   passed = json_data[i][2];
-                                   partner_name = json_data[i][3]
+                                  for (i = 0; i < json_data.length; i++) {
+                                      submission_id = json_data[i][0];
+                                      the_date = json_data[i][1];
+                                      passed = json_data[i][2];
+                                      partner_name = json_data[i][3]
 
-                                   //show student's most recent submission
-                                   if (i == 0 && presubmission_data == null)
-                                       get_submission(submission_id, false);
+                                      //show student's most recent submission
+                                      if (i == 0 && presubmission_data == null)
+                                          get_submission(submission_id, false);
 
-                                   if (passed)
-                                       button_bg_color = "passing-btn-color";
-                                   else
-                                       button_bg_color = "failing-btn-color";
+                                      if (passed)
+                                          button_bg_color = "passing-btn-color";
+                                      else
+                                          button_bg_color = "failing-btn-color";
 
-                                   var submission_date = new Date(the_date).toLocaleString();
+                                      var submission_date = new Date(the_date).toLocaleString();
 
-                                   if (partner_name) {
-                                     submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
-                                   }
-                                   else {
-                                     submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
-                                   }
-                               }
-                               submission_html += "</div><br />\n";
-                           }
-                           submissions_div.innerHTML = submission_html;
-                       });
-                   });
-               }
+                                      if (partner_name) {
+                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                      }
+                                      else {
+                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                      }
+                                                                      }
+                                  submission_html += "</div><br />\n";
+                              }
+                              submissions_div.innerHTML = submission_html;
+                            });
+                        });
+            }
 
-               setInterval(function() {
-                 // autosave if code has changed
-                 if (codeChanged) {
-                   save_presubmission();
-                 }
-               }, 60 * 1000);
+            setInterval(function() {
+              // autosave if code has changed
+              if (codeChanged) {
+                save_presubmission();
+              }
+            }, 60 * 1000);
 
-               async function save_presubmission() {
-                 user_code = editor.getValue();
-                 if (user_code.trim() == "")
-                   return false;
-                 saved_div = document.getElementById("saved_div");
-                 saved_div.innerHTML = "Please wait while your code is being saved...";
-                 await $.post("/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", {"user_code": user_code});
+            async function save_presubmission() {
+              user_code = editor.getValue();
+              if (user_code.trim() == "")
+                return false;
+              saved_div = document.getElementById("saved_div");
+              saved_div.innerHTML = "Please wait while your code is being saved...";
+              await $.post("/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", {"user_code": user_code});
 
-                 codeChanged = false;
-                 last_saved_at = new Intl.DateTimeFormat('default', {
-                   hour: 'numeric',
-                   minute: 'numeric',
-                 }).format(Date.now())
-                 saved_div.innerHTML = `Last saved at ${last_saved_at}`
-               }
+              codeChanged = false;
+              last_saved_at = new Intl.DateTimeFormat('default', {
+                hour: 'numeric',
+                minute: 'numeric',
+              }).format(Date.now())
+              saved_div.innerHTML = `Last saved at ${last_saved_at}`
+            }
 
-               {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
-                   editor.setOptions({
-                       enableBasicAutocompletion: false,
-                       enableSnippets: true,
-                       enableLiveAutocompletion: true
-                   });
-               {% end %}
+            {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
+                editor.setOptions({
+                    enableBasicAutocompletion: false,
+                    enableSnippets: true,
+                    enableLiveAutocompletion: true
+                });
+            {% end %}
 
-               editor.focus();
-               editor.getSession().setMode("{{ code_completion_path }}");
-               show_past_submissions();
-               last_submission_id = {{ num_submissions }};
+            editor.focus();
+            editor.getSession().setMode("{{ code_completion_path }}");
+            show_past_submissions();
+            last_submission_id = {{ num_submissions }};
 
-               if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
-                   document.getElementById("submit_button").disabled = true;
-           </script>
+            if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
+                document.getElementById("submit_button").disabled = true;
+            </script>
 
-       {% else %}
-           <p>This exercise does not exist.</p>
-       {% end %}
-   {% else %}
-       <p>This assignment does not exist.</p>
-   {% end %}
+        {% else %}
+            <p>This exercise does not exist.</p>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
 {% else %}
-   <p>This course does not exist.</p>
+    <p>This course does not exist.</p>
 {% end %}
