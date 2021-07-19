@@ -913,7 +913,7 @@ class ExerciseHandler(BaseUserHandler):
                             assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
                             user_info=user_info)
             else:
-                # fetch all users enrolled in a course excluding the current user as options to pair program with
+                # Fetches all users enrolled in a course excluding the current user as options to pair program with.
                 user_list = list(content.get_partner_info(course, self.get_user_info()["user_id"]).keys())
 
                 self.render("exercise.html", users=user_list, courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=exercises, course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, self.get_user_id()), assignment_options=[x[1] for x in content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=datetime.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=content.get_num_submissions(course, assignment, exercise, self.get_user_id()), domain=settings_dict['domain'], start_time=content.get_user_assignment_start_time(course, assignment, self.get_user_id()), help_request=help_request, same_suggestion=same_suggestion, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
@@ -1010,17 +1010,17 @@ class EditExerciseHandler(BaseUserHandler):
                                 content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"], exercise_details["tests"])
 
                                 text_output, image_output, tests = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
-                                # calculate number of empty test outputs to aid instructor in debugging
+                                # Calculates number of empty test outputs to aid instructor in debugging.
                                 empty_tests = list(filter(lambda x: x["text_output"] == "" and x["image_output"] == "", tests))
 
                                 if not any_response_counts and text_output == "" and image_output == "" and len(empty_tests) == len(tests):
                                     result = f"Error: No output was produced."
                                 else:
-                                    # if some but not all of tests have empty outputs, save exercise anyways but flag instructor with the tests that didn't produce any output
+                                    # If some but not all of tests have empty outputs, the exercise will still be saved but the instructor will be flagged with all tests that didn't produce any output.
                                     if len(empty_tests) > 0:
                                         result = f"Warning: {len(empty_tests)} of your tests produced no output."
 
-                                    # load test outcomes into dictionary with test code
+                                    # Loads test outcomes into dictionary with test code.
                                     tests_dict = []
                                     for i in range(len(tests)):
                                         tests_dict.append({**tests[i], **exercise_details["tests"][i]})
@@ -1113,7 +1113,7 @@ class CheckPartnersHandler(BaseUserHandler):
         partner_key = self.get_body_argument("partner_key")
         partner_dict = content.get_partner_info(course, self.get_user_info()["user_id"])
 
-        # determine whether partner_key is a valid one while hiding student emails from the client side
+        # Determines whether the partner_key is a valid one while hiding student emails from the client side.
         if partner_key in partner_dict.keys():
             self.write(json.dumps(True))
         else:
@@ -1163,9 +1163,9 @@ class SubmitHandler(BaseUserHandler):
             exercise_details = content.get_exercise_details(course, assignment, exercise)
             assignment_details = content.get_assignment_details(course, assignment)
 
-            # execute code and save text, image, and test outputs in respective variables
+            # Executes code and saves text, image, and test outputs in respective variables.
             text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, self.request)
-            # 'diff' and 'passed' refer to the solution code, while 'test_outcomes' contains diff and passed values for each test
+            # The variables 'diff' and 'passed' refer to the solution code, while 'test_outcomes' contains diff and passed values for each test.
             diff, passed, test_outcomes = check_exercise_output(exercise_details, text_output, image_output, tests)
 
             out_dict["text_output"] = text_output.strip()
@@ -1182,7 +1182,7 @@ class SubmitHandler(BaseUserHandler):
             if not exercise_score or exercise_score < new_score:
                 content.save_exercise_score(course, assignment, exercise, user_id, new_score)
 
-            # save score for partner
+            # Saves score for partner.
             if partner_id:
                 partner_exercise_score = content.get_exercise_score(course, assignment, exercise, partner_id)
                 partner_new_score = content.calc_exercise_score(assignment_details, passed)
@@ -1273,11 +1273,7 @@ class GetTestsHandler(BaseUserHandler):
             user_info = self.get_user_info()
 
             if not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
-                self.render("unavailable_assignment.html", courses=content.get_courses(),
-                            assignments=content.get_assignments(course),
-                            course_basics=content.get_course_basics(course),
-                            assignment_basics=content.get_assignment_basics(course, assignment), error="insufficient_access",
-                            user_info=user_info)
+                self.render("permissions.html")
             else:
                 tests = content.get_tests(course, assignment, exercise)
         except Exception as inst:

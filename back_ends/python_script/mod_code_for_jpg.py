@@ -1,7 +1,7 @@
 import sys
 
 code_file_path = sys.argv[1]
-# only assign test number if script is called by test code. Otherwise save as 'image_output'
+# Only assigns test number if the script is called by test code. Otherwise, save as 'image_output'.
 i = sys.argv[2] if len(sys.argv) > 2 else None
 
 with open(code_file_path, "a") as code_file:

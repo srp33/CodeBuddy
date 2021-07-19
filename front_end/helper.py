@@ -110,11 +110,11 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
     response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
 
     response_dict = json.loads(response.content)
-    # 'text_output' and 'image_output' refer to the output produced by the code written by the student, while 'tests' is a dict containing image and text outputs specific to each test case written by the instructor
-    # tests must be converted from json to a list of dicts
+    # The keys 'text_output' and 'image_output' refer to output produced by the student's code, while 'tests' is a dictionary containing the image and text outputs specific to each test case written by the instructor.
+    # Tests must be converted from JSON form to a list of dictionaries.
     return response_dict["text_output"], response_dict["image_output"], json.loads(response_dict["tests"])
 
-def compare_outcome(expected_text, actual_text, expected_image, actual_image, output_type):
+def compare_outputs(expected_text, actual_text, expected_image, actual_image, output_type):
     if output_type == "txt":
         if expected_text == actual_text:
             return "", True
@@ -151,13 +151,17 @@ def check_exercise_output(exercise_details, actual_text, actual_image, tests):
     if exercise_details["back_end"] == "any_response" and (len(actual_text) > 0 or len(actual_image) > 0):
         return "", True, []
 
-    test_outcomes = []
-    diff_output, passed = compare_outcome(exercise_details["expected_text_output"], actual_text, exercise_details["expected_image_output"], actual_image, exercise_details["output_type"])
+    diff_output, passed = compare_outputs(exercise_details["expected_text_output"], actual_text, exercise_details["expected_image_output"], actual_image, exercise_details["output_type"])
     expected_test_outputs = exercise_details["tests"]
+
+    test_outcomes = []
+    
     for i in range(len(expected_test_outputs)):
-        test_diff_output, test_passed = compare_outcome(expected_test_outputs[i]["text_output"], tests[i]["text_output"], expected_test_outputs[i]["image_output"], tests[i]["image_output"], exercise_details["output_type"])
+        test_diff_output, test_passed = compare_outputs(expected_test_outputs[i]["text_output"], tests[i]["text_output"], expected_test_outputs[i]["image_output"], tests[i]["image_output"], exercise_details["output_type"])
         test_outcomes.append({"test": expected_test_outputs[i]["test"], "diff_output": test_diff_output, "passed": test_passed, "text_output": tests[i]["text_output"], "image_output": tests[i]["image_output"]})
+
     passed = True if passed and all(list(map(lambda x: x["passed"], test_outcomes))) else False
+
     return diff_output, passed, test_outcomes
 
 def encode_image_bytes(b):
