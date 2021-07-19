@@ -94,29 +94,33 @@ def exec(info: ExecInfo):
             for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
                 # get test number from filename
                 i = test_output.split('_')[-1]
-                for output_path in os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}"):
-                    # preload text and image output with empty values
-                    test_text_output = test_image_output = ""
-                    if "image" not in output_path:
-                        # read text output
-                        with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
-                            test_text_output = output_file.read()
-                    else:
-                        # read text output in case it contains traceback from an error writing the image
-                        with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
-                            test_text_output = output_file.read()
-                        try:
-                            # look for image file under tmp_dir_path
-                            with open(f"{tmp_dir_path}/test_image_output_{i}", "rb") as output_file:
-                                test_image_output = encode_image_bytes(output_file.read())
-                        except:
+
+                # preload text and image output with empty values
+                test_text_output = test_image_output = ""
+
+                outputs = os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}")
+                if len(outputs) != 0:
+                    for output_path in outputs:
+                        if "image" not in output_path:
+                            # read text output
+                            with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
+                                test_text_output = output_file.read()
+                        else:
+                            # read text output in case it contains traceback from an error writing the image
+                            with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
+                                test_text_output = output_file.read()
                             try:
-                                # python script backend saves here
-                                with open(f"{tmp_dir_path}/tests/test_image_output_{i}", "rb") as output_file:
+                                # look for image file under tmp_dir_path
+                                with open(f"{tmp_dir_path}/test_image_output_{i}", "rb") as output_file:
                                     test_image_output = encode_image_bytes(output_file.read())
                             except:
-                                # image failed to save
-                                test_image_output = ""
+                                try:
+                                    # python script backend saves here
+                                    with open(f"{tmp_dir_path}/tests/test_image_output_{i}", "rb") as output_file:
+                                        test_image_output = encode_image_bytes(output_file.read())
+                                except:
+                                    # image failed to save
+                                    pass
                 # for each test output, load its text and/or image outputs to a dictionary of test outputs
                 tests.append({"test": i, "text_output": test_text_output.strip(), "image_output": test_image_output})
 
