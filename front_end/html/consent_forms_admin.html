@@ -1,7 +1,8 @@
         <link rel="stylesheet" href="/static/modal.css">
         <div>
             <div class="bottom-spacing">
-            <h2 style="display: inline">Student Consent Forms</h2>
+                <h2 style="display: inline">Student Consent Forms</h2>
+            </div>
             <br>
             {% if registered_courses %}
                 {% for course in registered_courses %}
@@ -13,13 +14,14 @@
                                 <p><strong>I, {{ student[1]['name'] }}, consent to participate in this study under the terms described above.</strong></p>
                             </div>
                         {% end %}
+                    {% else %}
+                        <p class="space-div">There is no consent form for <strong>{{ course[1]["title"] }}.</strong></p>
                     {% end %}
                 {% end %}
             {% else %}
 
             <p>No current courses</p>
             {% end %}
-            </div>
         </div>
     </div>
 </div>

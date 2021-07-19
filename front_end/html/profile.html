@@ -13,7 +13,7 @@
                 {% if page == "consent_forms_admin" %}
                     class="is-active"
                 {% end %}
-                >All student consent forms</a></li>
+                >Student consent forms</a></li>
                 {% elif any(list(filter(lambda x: x[1]["consent_text"] != "", registered_courses))) %}
                 <li><a href="/profile/consent_forms/{{ user_info['user_id'] }}"
                 {% if page == "consent_forms" %}
@@ -31,14 +31,14 @@
                     {% if page == "admin" %}
                         class="is-active"
                     {% end %}
-                    >Admin menu</a></li>
+                >Admin menu</a></li>
                 {% end %}
                 {% if is_instructor or is_administrator %}
                     <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
                     {% if page == "instructor" %}
                         class="is-active"
                     {% end %}
-                    >Instructor menu</a></li>
+                >Instructor menu</a></li>
                 {% end %}
             </ul>
             <p class="menu-label">Tools</p>
