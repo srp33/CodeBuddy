@@ -134,6 +134,8 @@ def compare_outcome(expected_text, actual_text, expected_image, actual_image, ou
             return "", True
         if actual_image == "":
             return "", False
+        elif expected_image == "":
+            return "", True
 
         diff_image, diff_percent = diff_jpg(expected_image, actual_image)
 

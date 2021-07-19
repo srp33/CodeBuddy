@@ -214,28 +214,6 @@
                 {% if exercise_details["expected_image_output"] != "" %}
                     <p><figure class='img'><img src='data:image/jpg;base64,{{ exercise_details["expected_image_output"] }}' width='95%' /></figure></p>
                 {% end %}
-
-                <!-- {% if len(tests) != 0 %}
-                    {% for i in range(len(tests))%}
-                        {% if tests[i]["text_output"] != "" or tests[i]["image_output"] != "" %}
-                        <pre class='passing-btn-color' style='cursor:pointer;' onclick='showTest({{i}})'>Test {{i + 1}} Output</pre>
-                        <div id="test_{{i}}" style="display:none">
-                          <h6>Test output:</h6>
-                              {% if tests[i]["text_output"] == "" %}
-                                  {% if tests[i]["image_output"] == "" %}
-                                      <p><pre>[This test produced no output.]</pre></p>
-                                  {% else %}
-                                  <p><figure class='img'><img src='data:image/jpg;base64,{{tests[i]["image_output"]}}' width='100%' /></figure></p>
-                                  {% end %}
-                              {% else %}
-                              <p><pre>{{tests[i]["text_output"]}}</pre><p>
-                              {% end %}
-                        </div>
-                        {% else %}
-                        <pre class='bottom-space failing-btn-color'>Test {{i + 1}} produced no output.</pre>
-                        {% end %}
-                    {% end %}
-                {% end %} -->
             {% end %}
             </div>
 
@@ -604,7 +582,6 @@
             // population with existing tests
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
-                 console.log(json_data)
                  for (i in json_data) {
                    showAddTest();
 

@@ -1553,6 +1553,11 @@ class Content:
         return assignment_basics["id"]
 
     def save_exercise(self, exercise_basics, exercise_details):
+        # only save 'image_output' if it isn't blank
+        if exercise_details["expected_image_output"] != "":
+            with open("blank_image.txt") as blank_image:
+                exercise_details["expected_image_output"] = "" if exercise_details["expected_image_output"].strip() == blank_image.read().strip() else exercise_details["expected_image_output"]
+
         if exercise_basics["exists"]:
             sql = '''UPDATE exercises
                      SET title = ?, visible = ?, answer_code = ?, answer_description = ?, hint = ?, max_submissions = ?,
@@ -1610,31 +1615,40 @@ class Content:
         self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
 
     def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, tests, partner_id=None):
-        submission_id = self.get_next_submission_id(course, assignment, exercise, user)
-        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date, partner_id)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        # only save 'image_output' if it isn't blank
+        try:
+            if image_output != "":
+                with open("blank_image.txt") as blank_image:
+                    image_output = "" if image_output.strip() == blank_image.read().strip() else image_output
 
-        self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), partner_id])
+            submission_id = self.get_next_submission_id(course, assignment, exercise, user)
+            sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date, partner_id)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        if len(tests) > 0:
-            test_sql = '''INSERT OR REPLACE INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, test_id, text_output, image_output)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
-
-            for test in tests:
-                try:
-                    self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["test"], test["text_output"], test["image_output"]])
-                except:
-                    print(traceback.format_exc())
-
-        # save submission for partner
-        if partner_id:
-            submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
-            self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user, tests])
+            self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), partner_id])
 
             if len(tests) > 0:
-                for test in tests:
-                    self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
+                test_sql = '''INSERT OR REPLACE INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, test_id, text_output, image_output)
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
+                for test in tests:
+                    try:
+                        self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["test"], test["text_output"], test["image_output"]])
+                    except:
+                        print(traceback.format_exc())
+
+            # save submission for partner
+            if partner_id:
+                submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
+                self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user, tests])
+
+                if len(tests) > 0:
+                    for test in tests:
+                        self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
+
+        except:
+            print("HERE")
+            print(traceback.format_exc())
         return submission_id
 
     def save_help_request(self, course, assignment, exercise, user_id, code, text_output, image_output, student_comment, date):

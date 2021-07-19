@@ -7,6 +7,7 @@ ARG USER=codebuddy
 
 ADD VERSION /
 ADD Settings.yaml /
+ADD blank_image.txt /
 
 RUN apt-get update \
  && apt-get install -y bzip2 zip nodejs npm vim \
@@ -34,8 +35,8 @@ RUN cd /static \
  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json \
  && npm install node-sass --save-dev \
  && npm install bulma --save-dev \
- && mkdir sass \ 
- && echo "@charset \"utf-8\";" > sass/mystyles.scss \ 
+ && mkdir sass \
+ && echo "@charset \"utf-8\";" > sass/mystyles.scss \
  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss \
  && python /tmp/modify_package.py
 
@@ -70,7 +71,7 @@ ADD front_end/secrets.yaml /app/
 RUN bash /app/build_html.sh
 
 # We'll map the user inside to the container to the user outside the container.
-# This ensures that the permissions on files shared via volumes will be 
+# This ensures that the permissions on files shared via volumes will be
 # translatable in both directions.
 RUN groupadd -g ${GROUP_ID} ${USER} && \
     useradd -l -u ${USER_ID} -g ${USER} ${USER} && \

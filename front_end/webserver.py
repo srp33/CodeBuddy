@@ -1129,6 +1129,7 @@ class RunCodeHandler(BaseUserHandler):
             exercise_details = content.get_exercise_details(course, assignment, exercise)
 
             text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, request=None)
+            diff, passed, tests = check_exercise_output(exercise_details, text_output, image_output, tests)
 
             out_dict["text_output"] = text_output
             out_dict["tests"] = tests
@@ -1173,6 +1174,7 @@ class SubmitHandler(BaseUserHandler):
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
             out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, tests, partner_id)
+
             content.delete_presubmission(course, assignment, exercise, user_id)
 
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
