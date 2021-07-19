@@ -30,6 +30,7 @@ def make_app():
         url(r"/", HomeHandler),
         url(r"\/profile\/courses\/([^\/]+)", ProfileCoursesHandler, name="profile_courses"),
         url(r"\/profile\/consent_forms\/([^\/]+)", ConsentFormsHandler, name="consent_forms"),
+        url(r"\/profile\/consent_forms_admin\/([^\/]+)", ConsentFormsAdminHandler, name="consent_forms_admin"),
         url(r"\/profile\/personal_info\/([^\/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
         url(r"\/profile\/admin\/([^\/]+)", ProfileAdminHandler, name="profile_admin"),
         url(r"\/profile\/instructor\/course\/([^\/]+)", ProfileSelectCourseHandler, name="profile_select_course"),
@@ -194,6 +195,24 @@ class ConsentFormsHandler(BaseUserHandler):
                 registered_courses = content.get_registered_courses(user_id)
 
             self.render("consent_forms.html", page="consent_forms", result=None, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
+        except Exception as inst:
+            render_error(self, traceback.format_exc())
+
+class ConsentFormsAdminHandler(BaseUserHandler):
+    def get(self, user_id):
+        try:
+            if self.is_administrator():
+                registered_courses = content.get_courses()
+            elif self.is_instructor():
+                registered_courses = content.get_courses_connected_to_user(user_id)
+            else:
+                self.render("permissions.html")
+
+            # add list of students to each course
+            for course in registered_courses:
+                course[1].update({"student_names": content.get_registered_students(course[0])})
+
+            self.render("consent_forms_admin.html", page="consent_forms", result=None, registered_courses=registered_courses, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -486,7 +505,7 @@ class CourseHandler(BaseUserHandler):
                 self.render("course_admin.html", courses=content.get_courses(True), assignments=assignments, course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), course_scores=content.get_course_scores(course, assignments), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course))
             except Exception as inst:
                 render_error(self, traceback.format_exc())
-        elif not self.is_administrator() and user_info["user_id"] not in content.get_registered_students(course):
+        elif not self.is_administrator() and user_info["user_id"] not in list(map(lambda x: x[0], content.get_registered_students(course))):
             self.render("unavailable_assignment.html", courses=content.get_courses(),
                         assignments=content.get_assignments(course),
                         course_basics=content.get_course_basics(course),
@@ -753,7 +772,7 @@ class AssignmentHandler(BaseUserHandler):
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="start", start_date=assignment_details["start_date"].strftime("%c"), user_info=user_info)
                 elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
                     self.render("unavailable_assignment.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), error="due", due_date=assignment_details["due_date"].strftime("%c"), user_info=user_info)
-                elif not self.is_administrator() and user_info["user_id"] not in content.get_registered_students(course):
+                elif not self.is_administrator() and user_info["user_id"] not in list(map(lambda x: x[0], content.get_registered_students(course))):
                     self.render("unavailable_assignment.html", courses=content.get_courses(),
                                 assignments=content.get_assignments(course),
                                 course_basics=content.get_course_basics(course),
@@ -947,7 +966,7 @@ class ExerciseHandler(BaseUserHandler):
                             course_basics=content.get_course_basics(course),
                             assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
                             user_info=user_info)
-            elif not self.is_administrator() and user_info["user_id"] not in content.get_registered_students(course):
+            elif not self.is_administrator() and user_info["user_id"] not in list(map(lambda x: x[0], content.get_registered_students(course))):
                 self.render("unavailable_assignment.html", courses=content.get_courses(),
                             assignments=content.get_assignments(course),
                             course_basics=content.get_course_basics(course),

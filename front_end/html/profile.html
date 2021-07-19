@@ -8,12 +8,18 @@
                     class="is-active"
                 {% end %}
                 >Courses</a></li>
-                {% if any(list(filter(lambda x: x[1]["consent_text"] != "", registered_courses))) %}
+                {% if is_administrator or is_instructor %}
+                <li><a href="/profile/consent_forms_admin/{{ user_info['user_id'] }}"
+                {% if page == "consent_forms_admin" %}
+                    class="is-active"
+                {% end %}
+                >All student consent forms</a></li>
+                {% elif any(list(filter(lambda x: x[1]["consent_text"] != "", registered_courses))) %}
                 <li><a href="/profile/consent_forms/{{ user_info['user_id'] }}"
                 {% if page == "consent_forms" %}
                     class="is-active"
                 {% end %}
-                >Consent forms</a></li>
+                >My consent forms</a></li>
                 {% end %}
                 <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
                 {% if page == "personal_info" %}
