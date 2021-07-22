@@ -69,7 +69,7 @@ def exec(info: ExecInfo):
                         test_file.write(info.code)
                         test_file.write("\n\n")
 
-                    test_file.write(info.tests[i]["code"])
+                        test_file.write(info.tests[i]["code"])
 
         # Save any data files so they will be accessible inside the container.
         for key, value in info.data_files.items():

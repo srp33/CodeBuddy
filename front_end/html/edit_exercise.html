@@ -848,6 +848,14 @@
 
             const container = document.querySelector("#file_upload");
 
+            {% if len(old_tests) > 0 %}
+                var new_tests = {}
+
+                {% for test in exercise_details["tests"] %}
+                    new_tests[`{{int(test['test']) - 1}}`] = {'image_output': `{{test['image_output']}}`, 'text_output': `{{test['text_output']}}` }
+                {% end %}
+            {% end %}
+
             // population with existing tests
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
@@ -867,11 +875,29 @@
                    var content = "";
 
                    if (json_data[i].text_output != "") {
-                      content = `<pre>${json_data[i].text_output}</pre>`;
+                      {% if len(old_tests) > 0 %}
+                          content +=  `<p><strong>Old output:</strong><br />`
+                          content += `<pre>${json_data[i].text_output}</pre>`;
+
+                          content +=  `<p><strong>New output:</strong><br />`
+                          content += `<pre>${new_tests[i].text_output}</pre>`;
+                      {% else %}
+                          content += `<pre>${json_data[i].text_output}</pre>`;
+                      {% end %}
                    }
+
                    if (json_data[i].image_output != "") {
-                      content = `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
+                       {% if len(old_tests) > 0 %}
+                          content += `<p><strong>Old output:</strong><br />`
+                          content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
+
+                          content += `<p><strong>New output:</strong><br />`
+                          content += `<figure class='img'><img src='data:image/jpg;base64,${new_tests[i].image_output}' width='100%' /></figure>`;
+                       {% else %}
+                          content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
+                       {% end %}
                    }
+
                    if ((json_data[i].image_output) == "" && (json_data[i].text_output == "")) {
                       content = '<pre>[This test produced no output.]</pre>';
                       var output_btn = document.getElementById(`output_button_${i}`)
