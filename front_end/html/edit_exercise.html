@@ -897,8 +897,13 @@
                           content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
                        {% end %}
                    }
-
-                   if ((json_data[i].image_output) == "" && (json_data[i].text_output == "")) {
+                   if ((json_data[i].image_output != new_tests[i].image_output) || (json_data[i].text_output != new_tests[i].text_output)) {
+                      var output_btn = document.getElementById(`output_button_${i}`)
+                      output_btn.classList.remove('passing-btn-color');
+                      output_btn.classList.add('failing-btn-color');
+                      output_btn.innerHTML = `Test ${parseInt(i) + 1} output did not match previous output.`;
+                   }
+                   else if ((json_data[i].image_output) == "" && (json_data[i].text_output == "")) {
                       content = '<pre>[This test produced no output.]</pre>';
                       var output_btn = document.getElementById(`output_button_${i}`)
                       output_btn.classList.remove('passing-btn-color');
