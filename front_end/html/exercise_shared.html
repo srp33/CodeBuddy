@@ -34,6 +34,20 @@
                 </div>
             </div>
 
+            <div id="copy_exercise_modal" class="modal">
+                <div class="modal-content">
+                    <!--<span class="close">&times;</span>-->
+                    <h6>Copy exercise within the same assignment:</h6>
+                    <div class="notification is-warning is-light" id="copy_exercise_message" style="display:none"></div>
+                    <p>New title:</p>
+                        <input class="input is-medium is-primary" type="text" id="new_title" name="new_title" placeholder="{{exercise_basics['title']}}" value="{{exercise_basics['title']}}"/>
+                    <p class="buttons">
+                        <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <button onclick="copyExercise({{ course_basics['id'] }}, {{assignment_basics['id']}}, {{ exercise_basics['id'] }})" id="copy_button" class="modal-button button is-dark">Copy</button>
+                    </p>
+                </div>
+            </div>
+
             <!--Navigation links at the bottom of the page-->
 
             <p>
@@ -42,7 +56,7 @@
             {% end %}
 
             {% if is_administrator or is_instructor %}
-                | <a onclick="showMoveExerciseModal()">Move exercise</a><br />
+                | <a onclick="showMoveExerciseModal()">Move exercise</a> | <a onclick="showCopyExerciseModal()">Copy exercise</a><br />
                 <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
             {% end %}
 
@@ -67,6 +81,43 @@
                  editor.session.on('change', function(delta) {
                    codeChanged = true
                  });
+
+                function copyExercise(course, assignment, exercise) {
+                    var new_title = document.getElementById("new_title").value;
+                    var message = document.getElementById("copy_exercise_message")
+                    var modal = document.getElementById("copy_exercise_modal");
+
+                    $.post(`/copy_exercise/${course}/${assignment}/${exercise}`, {"new_title": new_title},
+                        function(data) {
+                            var json_data = JSON.parse(data);
+                            if (json_data.result != "") {
+                              message.innerHTML = json_data.result;
+                              message.style.display = "block";
+                            }
+                            else {
+                                modal.style.display = "none";
+                                location.reload();
+                            }
+                    });
+                }
+
+                function showCopyExerciseModal() {
+                    var modal = document.getElementById("copy_exercise_modal");
+                    //var span = document.getElementsByClassName("close")[4];
+                    modal.style.display = "block";
+
+                    var cancelButton = document.getElementById("copy_cancel_button");
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
 
                 function showMoveExerciseModal() {
                     var modal = document.getElementById("move_exercise_modal");
