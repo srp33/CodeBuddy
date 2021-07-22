@@ -1,4 +1,4 @@
-{% if len(course_basics.keys()) != 1 %}
+{% if "no_courses_created" not in course_basics.keys() %}
     {% if course_basics["exists"] %}
         <h2>{{ assignment_basics["title"] }}</h2>
 
