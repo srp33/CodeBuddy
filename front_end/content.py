@@ -1785,12 +1785,23 @@ class Content:
 
     def copy_exercise(self, course_id, assignment_id, exercise_id, new_title):
         try:
-            self.execute('''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming, check_code)
-                        SELECT course_id, assignment_id, ?, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming, check_code
-                        FROM exercises
-                        WHERE course_id = ?
-                            AND assignment_id = ?
-                            AND exercise_id = ?''', (new_title, course_id, assignment_id, exercise_id, ))
+            sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming, check_code)
+                     SELECT course_id, assignment_id, ?, visible, answer_code, answer_description, hint, max_submissions, credit, data_files, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions, show_expected, show_test_code, starter_code, test_code, date_created, date_updated, enable_pair_programming, check_code
+                     FROM exercises
+                     WHERE course_id = ?
+                         AND assignment_id = ?
+                         AND exercise_id = ?'''
+
+            new_exercise_id = self.execute(sql, (new_title, course_id, assignment_id, exercise_id, ))
+
+            sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, code, test_instructions, text_output, image_output)
+                     SELECT course_id, assignment_id, ?, code, test_instructions, text_output, image_output
+                     FROM tests
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND exercise_id = ?'''
+
+            self.execute(sql, (new_exercise_id, course_id, assignment_id, exercise_id, ))
         except:
             print(traceback.format_exc())
 
