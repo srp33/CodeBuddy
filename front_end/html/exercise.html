@@ -306,7 +306,7 @@
                     <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
                     <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
                 </p>
-             </div>
+            </div>
         </div>
 
         <!--Below is the code for showing the exercise title, instructions, data url and contents, test code, and hint-->
@@ -350,9 +350,17 @@
             {% end %}
         </div>
 
-        {% if exercise_details["show_test_code"] and len(exercise_details["test_code"]) > 0 %}
+        {% if len(exercise_details["tests"]) > 0 %}
             <h6>Test code (to be executed after your solution):</h6>
-            <pre class="smaller-font">{{ exercise_details["test_code"] }}</pre>
+
+            {% for test in exercise_details["tests"] %}
+              {% if test["test_instructions"] == "" %}
+                <pre class="smaller-font">{{ test["code"] }}</pre>
+
+              {% else %}
+                <div class="instructions smaller-font" style="font-family:monospace;-moz-osx-font-smoothing: auto;-webkit-font-smoothing: auto;">{{test["test_instructions"]}}</div>
+              {% end %}
+            {% end %}
         {% end %}
 
         {% if len(exercise_details["data_files"]) > 0 %}
@@ -468,9 +476,31 @@
                 </div>
                 {% if exercise_details["output_type"] == "txt" %}
                     <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
-                {% else %}
+                {% elif exercise_details["expected_image_output"] != "" %}
                     <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
+                {% else %}
+                    <p><pre>[Expected solution does not produce an image.]</pre></p>
                 {% end %}
+
+                <div id="expected_tests">
+
+                {% if len(exercise_details["tests"]) > 0 %}
+                    {% for i in range(len(exercise_details["tests"])) %}
+                        <h6 style="display: inline">Test {{i + 1}} expected output:</h6>
+
+                        {% if exercise_details["tests"][i]["test_instructions"] == "" %}
+                            {% if exercise_details["output_type"] == "txt" %}
+                                <p><pre>{{ exercise_details["tests"][i]["text_output"] }}</pre></p>
+
+                            {% else %}
+                                <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['tests'][i]['image_output'] }}" width="100%"/></figure></p>
+                            {% end %}
+                        {% else %}
+                            <p><pre>Test output hidden.</pre></p>
+                        {% end %}
+                    {% end %}
+                {% end %}
+                </div>
             {% else %}
                 <p><em>This exercise is configured so that the expected output is not shown.</em></p>
             {% end %}
@@ -482,6 +512,7 @@
             {% if exercise_details["show_expected"] %}
                 <p><span id="diff_output"></span></p>
             {% end %}
+            <p><span id="test_output"></span></p>
         {% end %}
 
         <div id="submissions"></div>

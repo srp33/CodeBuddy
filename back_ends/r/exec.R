@@ -1,7 +1,9 @@
 code_file_path = commandArgs()[9]
-test_code_file_path = commandArgs()[10]
+tests_dir_path = commandArgs()[10]
 check_code_file_path = commandArgs()[11]
 output_type = commandArgs()[12]
+
+options(warn=-1) # Silences printing to console globally.
 
 # Code that didn't work right for both base R graphics and ggplot2
 #exec_jpg <- function(code) {
@@ -28,24 +30,47 @@ if (file.exists(check_code_file_path)) {
   }
 }
 
-exec_jpg <- function(code) {
+exec_jpg <- function(code, i=0) {
   library(ggplot2)
 
   pdf(NULL) # Prevents Rplots.pdf from being created.
 
   eval(parse(text=code))
-  ggsave("/sandbox/image_output", dpi = 150, device = "jpeg")
-}
 
-code <- readChar(code_file_path, file.info(code_file_path)$size)
-
-if (file.exists(test_code_file_path)) {
-  test_code <- readChar(test_code_file_path, file.info(test_code_file_path)$size)
-  code <- paste(code, test_code, sep="\n\n")
+  if (i == 0) {
+    ggsave("/sandbox/image_output", dpi = 150, device = "jpeg")
+  }
+  else {
+    ggsave(paste("/sandbox/test_image_output_", i, sep=""), dpi = 150, device = "jpeg")
+  }
 }
 
 if (output_type == "txt") {
-  suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=code)))))
+  system(paste("Rscript", code_file_path)) # Runs code using Rscript.
 } else {
+  code <- readChar(code_file_path, file.info(code_file_path)$size)
   suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(code))))
+}
+
+if (dir.exists(tests_dir_path)) {
+    setwd(file.path(tests_dir_path, "outputs"))
+    outputs_dir <- getwd()
+    tests <- list.files(path=tests_dir_path, pattern="test*", full.names=TRUE, recursive=FALSE)
+
+    for (i in seq_along(tests)) {
+        setwd(file.path(outputs_dir, paste("test_", i, sep="")))
+
+        if (output_type == "txt") {
+          filename <- "text_output"
+
+          out <- system(paste("Rscript", tests[i]), intern = TRUE) # Runs test code using Rscript and saves it to variable.
+          cat(out, file=filename, sep="\n", append=TRUE) # Writes variable to output file.
+        } else {
+          filename <- "image_output"
+
+          test_code <- readChar(tests[i], file.info(tests[i])$size)
+          out <- suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(test_code, i)))) # Executes code to save image as jpg.
+          cat(out, file=filename, sep="\n", append=FALSE) # Saves text output to file in case of traceback.
+        }
+    }
 }
