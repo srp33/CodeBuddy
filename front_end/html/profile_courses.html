@@ -137,7 +137,7 @@
                     </div>
 
                     <div id="register_block" style="display:none">
-                        <p id="modal_consent_na">Are you sure you want to register for this course?</p>
+                        <p id="no_modal_consent">Are you sure you want to register for this course?</p>
                         <p class="buttons">
                             <button type="button" id="register_cancel_button" class="modal-button button is-light">Cancel</button>
                             <input type="submit" id="register_button" class="modal-button button is-dark" value="Register"/>
@@ -178,13 +178,14 @@
 
 <script>
     var course_consent_dict = {}
+
     {% if available_courses %}
-    {% for course in available_courses %}
-    course_consent_dict[{{ course[1]["id"] }}] = {
-      "consent_text": `{{ course[1]["consent_text"] }}`,
-      "consent_alternative_text": `{{ course[1]["consent_alternative_text"] }}`
-    }
-    {% end %}
+        {% for course in available_courses %}
+        course_consent_dict[{{ course[1]["id"] }}] = {
+          "consent_text": `{{ course[1]["consent_text"] }}`,
+          "consent_alternative_text": `{{ course[1]["consent_alternative_text"] }}`
+        }
+        {% end %}
     {% end %}
 
     function showConsentAlternative() {
@@ -216,13 +217,12 @@
         }
 
         if (course_consent_dict[course_id]['consent_text'] != "") {
-            console.log(course_consent_dict[course_id]['consent_text'])
             document.getElementById("consent_text").innerHTML = course_consent_dict[course_id]["consent_text"];
             document.getElementById("consent_alternative_text").innerHTML = course_consent_dict[course_id]["consent_alternative_text"];
             document.getElementById("modal_consent").style.display = "block";
-            document.getElementById("modal_consent_na").style.display = "none";
+            document.getElementById("no_modal_consent").style.display = "none";
         } else {
-            document.getElementById("modal_consent_na").style.display = "block";
+            document.getElementById("no_modal_consent").style.display = "block";
             document.getElementById("modal_consent").style.display = "none";
         }
 

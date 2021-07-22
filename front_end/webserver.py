@@ -190,13 +190,14 @@ class ConsentFormsHandler(BaseUserHandler):
             if self.is_administrator():
                 registered_courses = content.get_courses()
 
-                # add list of students to each course
+                # Adds a list of students to each course.
                 for course in registered_courses:
                     course[1].update({"student_names": content.get_registered_students(course[0])})
             elif self.is_instructor():
                 registered_courses = content.get_courses_connected_to_user(user_id)
 
-                # add list of students to each course
+
+                # Adds a list of students to each course.
                 for course in registered_courses:
                     course[1].update({"student_names": content.get_registered_students(course[0])})
             else:
