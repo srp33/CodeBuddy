@@ -1079,7 +1079,7 @@ class EditExerciseHandler(BaseUserHandler):
                                 exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["tests"] = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
                                 diff, passed, test_outcomes = check_exercise_output(exercise_details, old_text_output, old_image_output, old_tests)
 
-                                if not passed and not all(list(map(lambda x: x["passed"], test_outcomes))):
+                                if not passed or not all(list(map(lambda x: x["passed"], test_outcomes))):
                                     result = "Error: new output does not match pre-existing output."
                                 else:
                                     # Returns exercise_details['tests'] to its new tests.
