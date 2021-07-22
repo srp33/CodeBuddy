@@ -28,7 +28,7 @@
                 </p>
             </div>
         </div>
-        
+
         <div>
             <div class="bottom-spacing">
                 <h2 style="display: inline">My Courses</h2>
@@ -95,6 +95,8 @@
         {% if result %}
             {% if result.startswith("Error:") %}
                 <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+            {% elif result.startswith("You may not") %}
+                <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
             {% else %}
                 <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
             {% end %}
@@ -104,28 +106,43 @@
 
             <form method="post" action="/profile/courses/{{ user_info['user_id'] }}">
 
-            <div id="passcode_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-
-                    <p>Please enter the passcode for this course:</p>
-                    <input class="input is-medium is-primary" type="text" id="passcode" name="passcode"/>
-
-                    <p class="buttons">
-                        <button type="button" id="passcode_cancel_button" class="modal-button button is-light">Cancel</button>
-                        <input type="submit" id="passcode_register_button" class="modal-button button is-dark" value="Register"/>
-                    </p>
-                </div>
-            </div>
-
             <div id="register_modal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
-                    <p>Are you sure you want to register for this course?</p>
-                    <p class="buttons">
-                        <button type="button" id="register_cancel_button" class="modal-button button is-light">Cancel</button>
-                        <input type="submit" id="register_button" class="modal-button button is-dark" value="Register"/>
-                    </p>
+
+                    <div id="modal_consent" class="bottom-space" style="display:none">
+                        <h6 class="top-space">The instructor(s) are conducting a research study in this course. The information below describes the study and asks whether you agree to participate in the study.</h6>
+                        <p id="consent_text" class="suggestion-div"></p>
+                        <hr>
+                        <p><strong>I consent to participate in this study under the terms described above.</strong>
+                            <div class="select is-grey">
+                                <select name="consent_given" class="edit-select">
+                                    <option value="Yes" selected>Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </p>
+                        <a onclick="showConsentAlternative()">What to do if you choose not to participate in this study</a>
+                        <p id="consent_alternative_text" class="suggestion-div" style="display:none"></p>
+                    </div>
+
+                    <div class='top-space' id="passcode_block" style="display:none">
+                        <p>Please enter the passcode for this course:</p>
+                        <input class="input is-medium is-primary" type="text" id="passcode" name="passcode"/>
+
+                        <p class="buttons">
+                            <button type="button" id="passcode_cancel_button" class="modal-button button is-light">Cancel</button>
+                            <input type="submit" id="passcode_register_button" class="modal-button button is-dark" value="Register"/>
+                        </p>
+                    </div>
+
+                    <div id="register_block" style="display:none">
+                        <p id="no_modal_consent">Are you sure you want to register for this course?</p>
+                        <p class="buttons">
+                            <button type="button" id="register_cancel_button" class="modal-button button is-light">Cancel</button>
+                            <input type="submit" id="register_button" class="modal-button button is-dark" value="Register"/>
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -140,9 +157,9 @@
                 {% for course in available_courses %}
                     <div>
                         <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
-                            <a class="register-button button is-white" 
+                            <a class="register-button button is-white"
                             {% if course[1]['passcode'] %}
-                                onclick="showPasscodeModal({{ course[1]['id'] }})"
+                                onclick="showRegisterModal({{ course[1]['id'] }}, true)"
                             {% else %}
                                 onclick="showRegisterModal({{ course[1]['id'] }})"
                             {% end %}
@@ -160,45 +177,54 @@
 </div>
 
 <script>
+    var course_consent_dict = {}
+
+    {% if available_courses %}
+        {% for course in available_courses %}
+        course_consent_dict[{{ course[1]["id"] }}] = {
+          "consent_text": `{{ course[1]["consent_text"] }}`,
+          "consent_alternative_text": `{{ course[1]["consent_alternative_text"] }}`
+        }
+        {% end %}
+    {% end %}
+
+    function showConsentAlternative() {
+        document.getElementById('consent_alternative_text').style.display = (document.getElementById('consent_alternative_text').style.display == "none") ? "block" : "none";
+    }
+
     function showRegistration() {
         var div = document.getElementById("register_div");
         div.style.display = "inline";
     }
 
-    function showPasscodeModal(course_id) {
-        var modal = document.getElementById("passcode_modal");
+    function showRegisterModal(course_id, has_passcode=false) {
+        var modal = document.getElementById("register_modal");
         var span = document.getElementsByClassName("close")[1];
         modal.style.display = "block";
 
-        document.getElementById("passcode").focus();
-
         var course_id_input = document.getElementById("course_id");
         course_id_input.value = course_id;
 
-        var cancelButton = document.getElementById("passcode_cancel_button");
-
-        cancelButton.onclick = function() {
-            modal.style.display = "none";
+        if (has_passcode) {
+            document.getElementById("passcode").focus();
+            document.getElementById("register_block").style.display = "none";
+            document.getElementById("passcode_block").style.display = "block";
+            var cancelButton = document.getElementById("passcode_cancel_button");
+        } else {
+            document.getElementById("register_block").style.display = "block";
+            document.getElementById("passcode_block").style.display = "none";
+            var cancelButton = document.getElementById("register_cancel_button");
         }
-        span.onclick = function() {
-            modal.style.display = "none";
+
+        if (course_consent_dict[course_id]['consent_text'] != "") {
+            document.getElementById("consent_text").innerHTML = course_consent_dict[course_id]["consent_text"];
+            document.getElementById("consent_alternative_text").innerHTML = course_consent_dict[course_id]["consent_alternative_text"];
+            document.getElementById("modal_consent").style.display = "block";
+            document.getElementById("no_modal_consent").style.display = "none";
+        } else {
+            document.getElementById("no_modal_consent").style.display = "block";
+            document.getElementById("modal_consent").style.display = "none";
         }
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    }
-
-    function showRegisterModal(course_id, title) {
-        var modal = document.getElementById("register_modal");
-        var span = document.getElementsByClassName("close")[2];
-        modal.style.display = "block";
-
-        var course_id_input = document.getElementById("course_id");
-        course_id_input.value = course_id;
-
-        var cancelButton = document.getElementById("register_cancel_button");
 
         cancelButton.onclick = function() {
             modal.style.display = "none";

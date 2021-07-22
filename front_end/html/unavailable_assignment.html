@@ -1,20 +1,30 @@
-{% if course_basics["exists"] %}
-    <h2>{{ assignment_basics["title"] }}</h2>
+{% if "no_courses_created" not in course_basics.keys() %}
+    {% if course_basics["exists"] %}
+        <h2>{{ assignment_basics["title"] }}</h2>
 
-    {% if assignment_basics["exists"] %}
+        {% if assignment_basics["exists"] %}
 
-        {% if error == "start" %}
-            <p>This assignment will open on {{ start_date }}.</p>
-        {% elif error == "due" %}
-            <p>This assignment closed on {{ due_date }}.</p>
-        {% elif error == "restricted_ip" %}
-            <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses; please consult the instructor for additional instructions.</p>
+            {% if error == "start" %}
+                <p>This assignment will open on {{ start_date }}.</p>
+            {% elif error == "due" %}
+                <p>This assignment closed on {{ due_date }}.</p>
+            {% elif error == "restricted_ip" %}
+                <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses; please consult the instructor for additional instructions.</p>
+            {% elif error == "not_registered_for_course" %}
+                <p>This assignment can only be viewed by students enrolled in the class.</p>
+            {% end %}
+
+        {% else %}
+            {% if error == "not_registered_for_course" %}
+            <p>This course can only be viewed by students enrolled in the class.</p>
+            {% else %}
+            <p>This assignment does not exist.</p>
+            {% end %}
         {% end %}
 
     {% else %}
-        <p>This assignment does not exist.</p>
+        <p>This course does not exist.</p>
     {% end %}
-
 {% else %}
-    <p>This course does not exist.</p>
+    <p>No courses have been created yet.</p>
 {% end %}
