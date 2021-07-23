@@ -1,4 +1,6 @@
 <form enctype='multipart/form-data' method="post" action="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}" id="myForm" />
+
+<input type="select" name="hold_output_constant" class="invisible" id="hold_output_constant_checkbox" value="No">
 {% if exercise_basics["exists"] %}
     <div class="row-container">
         <h2>Edit exercise</h2>
@@ -6,7 +8,9 @@
             {% if result %}
                 <a href="#code-output" class="right-space">View code output</a>
             {% end %}
+
             <input type="submit" class="button is-dark" value="Save" />
+            <button type="button" class="button is-white hold_output_constant_button" onclick="holdOutputConstant()">Hold output constant</button>
             <button class="button is-white" onclick="location.href='/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ exercise_basics["id"] }}'; return false;">Done</button>
             {% if prev_exercise %}
                 <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
@@ -339,14 +343,25 @@
 
             <div id="code-output">
             {% if exercise_basics["exists"] %}
-                <p><strong>Output:</strong><br />
+                {% if old_text_output != '' or old_image_output != '' %}
+                        <p><strong>Old output:</strong><br />
 
+                    {% if old_text_output != '' %}
+                        <p><pre><code>{{ old_text_output }}</code></pre></p>
+                    {% end %}
+                    {% if old_image_output != '' %}
+                        <p><figure class='img'><img src='data:image/jpg;base64,{{ old_image_output }}' width='95%' /></figure></p>
+                    {% end %}
+
+                    <p><strong>New output:</strong><br />
+                {% else %}
+                    <p><strong>Output:</strong><br />
+                {% end %}
                 {% if exercise_details["expected_text_output"] != "" %}
                     <p><pre><code>{{ exercise_details["expected_text_output"] }}</code></pre></p>
                 {% elif exercise_details["expected_image_output"] == "" %}
                     <p><pre>[This solution produced no output.]</pre></p>
                 {% end %}
-
                 {% if exercise_details["expected_image_output"] != "" %}
                     <p><figure class='img'><img src='data:image/jpg;base64,{{ exercise_details["expected_image_output"] }}' width='95%' /></figure></p>
                 {% end %}
@@ -499,14 +514,18 @@
 
         <textarea name="tests_json" id="tests_json" class="invisible"></textarea>
         <div class="invisible" id="save_code"></div>
-        
-        <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
 
-        <p>
+        <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
+        <p style="display:flex;align-items:center;justify-content:space-between;">
+        <span>
         {% if exercise_basics["exists"] %}
             <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Done</a> |
         {% end %}
             <a href="#top">Back to top</a>
+        </span>
+        {% if exercise_basics["exists"] %}
+            <button type="button" class="is-pulled-right button is-white hold_output_constant_button" onclick="holdOutputConstant()">Hold output constant</button>
+        {% end %}
         </p>
 
         <!-- Code to modify page behavior at the end of loading -->
@@ -599,6 +618,7 @@
             {% end %}
 
             document.getElementById("myForm").onsubmit = function(evt) {
+                localStorage.setItem("hold_output_constant_checkbox", document.getElementById("hold_output_constant_checkbox").value);
                 document.getElementById("answer_code_text").value = answer_code_editor.getValue();
                 document.getElementById("starter_code_text").value = starter_code_editor.getValue();
                 document.getElementById("check_code_text").value = check_code_editor.getValue();
@@ -617,6 +637,30 @@
 
                 tests_array = JSON.stringify(tests_array)
                 document.getElementById("tests_json").value = tests_array;
+            }
+
+            window.onunload = function(e) {
+              localStorage.setItem("hold_output_constant_checkbox", document.getElementById("hold_output_constant_checkbox").value);
+            };
+
+            document.getElementById("hold_output_constant_checkbox").value = localStorage.getItem("hold_output_constant_checkbox");
+            localStorage.setItem("hold_output_constant_checkbox", "No");
+            if (document.getElementById("hold_output_constant_checkbox").value == "Yes") {
+                var buttons = Array.from(document.getElementsByClassName('hold_output_constant_button'));
+                buttons.forEach(x => {x.classList.remove("is-white")});
+                buttons.forEach(x => {x.classList.add("is-primary")});
+            }
+
+            function holdOutputConstant() {
+                var buttons = Array.from(document.getElementsByClassName('hold_output_constant_button'));
+                document.getElementById("hold_output_constant_checkbox").value = (document.getElementById("hold_output_constant_checkbox").value == "Yes") ? "No" : "Yes";
+                if (document.getElementById("hold_output_constant_checkbox").value == "Yes") {
+                  buttons.forEach(x => {x.classList.remove("is-white")});
+                  buttons.forEach(x => {x.classList.add("is-primary")});
+              } else {
+                  buttons.forEach(x => {x.classList.remove("is-primary")});
+                  buttons.forEach(x => {x.classList.add("is-white")});
+              }
             }
 
             var index = 1;
@@ -804,6 +848,14 @@
 
             const container = document.querySelector("#file_upload");
 
+            {% if len(old_tests) > 0 %}
+                var new_tests = {}
+
+                {% for test in exercise_details["tests"] %}
+                    new_tests[`{{int(test['test']) - 1}}`] = {'image_output': `{{test['image_output']}}`, 'text_output': `{{test['text_output']}}` }
+                {% end %}
+            {% end %}
+
             // population with existing tests
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
@@ -823,12 +875,35 @@
                    var content = "";
 
                    if (json_data[i].text_output != "") {
-                      content = `<pre>${json_data[i].text_output}</pre>`;
+                      {% if len(old_tests) > 0 %}
+                          content +=  `<p><strong>Old output:</strong><br />`
+                          content += `<pre>${json_data[i].text_output}</pre>`;
+
+                          content +=  `<p><strong>New output:</strong><br />`
+                          content += `<pre>${new_tests[i].text_output}</pre>`;
+                      {% else %}
+                          content += `<pre>${json_data[i].text_output}</pre>`;
+                      {% end %}
                    }
+
                    if (json_data[i].image_output != "") {
-                      content = `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
+                       {% if len(old_tests) > 0 %}
+                          content += `<p><strong>Old output:</strong><br />`
+                          content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
+
+                          content += `<p><strong>New output:</strong><br />`
+                          content += `<figure class='img'><img src='data:image/jpg;base64,${new_tests[i].image_output}' width='100%' /></figure>`;
+                       {% else %}
+                          content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
+                       {% end %}
                    }
-                   if ((json_data[i].image_output) == "" && (json_data[i].text_output == "")) {
+                   if ((json_data[i].image_output != new_tests[i].image_output) || (json_data[i].text_output != new_tests[i].text_output)) {
+                      var output_btn = document.getElementById(`output_button_${i}`)
+                      output_btn.classList.remove('passing-btn-color');
+                      output_btn.classList.add('failing-btn-color');
+                      output_btn.innerHTML = `Test ${parseInt(i) + 1} output did not match previous output.`;
+                   }
+                   else if ((json_data[i].image_output) == "" && (json_data[i].text_output == "")) {
                       content = '<pre>[This test produced no output.]</pre>';
                       var output_btn = document.getElementById(`output_button_${i}`)
                       output_btn.classList.remove('passing-btn-color');
