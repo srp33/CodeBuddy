@@ -355,10 +355,9 @@ class Content:
         self.set_user_dict_defaults(user_dict)
 
         sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)'''
+                 VALUES (?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"],
-        user_dict["locale"], "tomorrow"))
+        self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow"))
 
     def register_user_for_course(self, course_id, user_id):
         sql = '''INSERT INTO course_registrations (course_id, user_id)

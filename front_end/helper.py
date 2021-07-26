@@ -56,7 +56,13 @@ def convert_markdown_to_html(text):
         return ""
 
     markdown = Markdown()
-    html = re.sub(r"youtube:([-_a-zA-Z0-9]+)", r"<iframe width='800' height='550' src='https://www.youtube.com/embed/\1?controls=1'></iframe>", text)
+
+    html = re.sub(r"<(/*)span(.*?)>", "", text) # Removes opening and closing <span> tags.
+    html = re.sub(r"<(div|br)(.*?)>", "\n", html) # Replaces <br> and <div> tags with a newline.
+    html = re.sub(r"<(/*)div(.*?)>", "", html) # Removes closing </div> tags.
+    html = re.sub(r"youtube:([-_a-zA-Z0-9]+)", r"<iframe width='800' height='550' src='https://www.youtube.com/embed/\1?controls=1'></iframe>", html)
+    html = re.sub(r'<img src="([^">]+?)">', r"![](\1)", html)
+
     html = markdown.convert(html)
     html = re.sub(r"<a href=\"([^\"]+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html)
     return html
