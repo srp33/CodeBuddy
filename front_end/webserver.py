@@ -818,7 +818,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details = content.get_assignment_details(course, assignment)
 
             assignment_basics["title"] = self.get_body_argument("title").strip()
-            assignment_details["introduction"] = self.get_body_argument("introduction").strip()
+            assignment_details["introduction"] = self.get_body_argument("introduction").strip().replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
             assignment_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             assignment_details["has_start_date"] = self.get_body_argument("has_start_date") == "Select"
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
@@ -1012,7 +1012,7 @@ class EditExerciseHandler(BaseUserHandler):
 
             exercise_basics["title"] = self.get_body_argument("title").strip() #required
             exercise_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
-            exercise_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
+            exercise_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&") #required
             exercise_details["back_end"] = self.get_body_argument("back_end")
             exercise_details["output_type"] = self.get_body_argument("output_type")
             exercise_details["answer_code"] = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required (usually)
