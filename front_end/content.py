@@ -1392,7 +1392,7 @@ class Content:
 
         course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "consent_text": row["consent_text"], "consent_alternative_text": row["consent_alternative_text"]}
         if format_output:
-            course_dict["introduction"] = convert_markdown_to_html(course_dict["introduction"])
+            course_dict["introduction"] = convert_markdown_to_html(convert_html_to_markdown(course_dict["introduction"])) # Removes html markup from instructions before converting markdown to html
             course_dict["consent_text"] = convert_markdown_to_html(course_dict["consent_text"])
             course_dict["consent_alternative_text"] = convert_markdown_to_html(course_dict["consent_alternative_text"])
 
@@ -1410,14 +1410,12 @@ class Content:
         row = self.fetchone(sql, (int(course), int(assignment),))
 
         assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
+
         if format_output:
-            assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
+            assignment_dict["introduction"] = convert_markdown_to_html(convert_html_to_markdown(assignment_dict["introduction"])) # Removes html markup from instructions before converting markdown to html
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].split(",")
-
-        if format_output:
-            assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"])
 
         return assignment_dict
 
@@ -1452,7 +1450,7 @@ class Content:
             exercise_dict["data_files"] = json.loads(row["data_files"])
 
         if format_content:
-            exercise_dict["instructions"] = convert_markdown_to_html(exercise_dict["instructions"])
+            exercise_dict["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_dict["instructions"])) # Removes html markup from instructions before converting markdown to html
             exercise_dict["credit"] = convert_markdown_to_html(exercise_dict["credit"])
             exercise_dict["answer_description"] = convert_markdown_to_html(exercise_dict["answer_description"])
             exercise_dict["hint"] =  convert_markdown_to_html(exercise_dict["hint"])
