@@ -56,7 +56,13 @@
             {% end %}
 
             {% if is_administrator or is_instructor %}
-                | <a onclick="showMoveExerciseModal()">Move exercise</a> | <a onclick="showCopyExerciseModal()">Copy exercise</a><br />
+
+                {% if len(assignments) > 1 %}
+                    | <a onclick="showMoveExerciseModal()">Move exercise</a>
+                {% end %}
+
+                | <a onclick="showCopyExerciseModal()">Copy exercise</a><br />
+
                 <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
             {% end %}
 
@@ -364,7 +370,6 @@
                  {% end %}
 
                 function submit() {
-                    document.getElementById("expected_tests").style.display = "none"
                     user_code = editor.getValue();
 
                     if (user_code.trim() == "")
@@ -392,6 +397,8 @@
                        function(data, status) {
                            json_data = JSON.parse(data);
                            check_code(json_data);
+
+                           document.getElementById("expected_tests").style.display = "none"
 
                            if (json_data.submission_id != "") {
                                show_past_submissions();

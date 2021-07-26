@@ -76,9 +76,9 @@ class Content:
                           name text,
                           given_name text,
                           family_name text,
-                          picture text,
                           locale text,
-                          ace_theme text NOT NULL DEFAULT "tomorrow"
+                          ace_theme text NOT NULL DEFAULT "tomorrow",
+                          use_auto_complete integer NOT NULL DEFAULT 1
                      );''')
 
         self.execute('''CREATE TABLE IF NOT EXISTS permissions (
@@ -348,19 +348,17 @@ class Content:
             user_dict["given_name"] = "[Unknown given name]"
         if "family_name" not in user_dict:
             user_dict["family_name"] = "[Unknown family name]"
-        if "picture" not in user_dict:
-            user_dict["picture"] = ""
         if "locale" not in user_dict:
             user_dict["locale"] = ""
 
     def add_user(self, user_id, user_dict):
         self.set_user_dict_defaults(user_dict)
 
-        sql = '''INSERT INTO users (user_id, name, given_name, family_name, picture, locale, ace_theme)
+        sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme)
                  VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
         self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"],
-        user_dict["picture"], user_dict["locale"], "tomorrow"))
+        user_dict["locale"], "tomorrow"))
 
     def register_user_for_course(self, course_id, user_id):
         sql = '''INSERT INTO course_registrations (course_id, user_id)
@@ -403,7 +401,7 @@ class Content:
 
         user = self.fetchone(sql, (user_id,))
         user_info = {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
-                     "picture": user["picture"], "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"]}
+                     "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"]}
 
         return user_info
 
@@ -1721,10 +1719,10 @@ class Content:
         self.set_user_dict_defaults(user_dict)
 
         sql = '''UPDATE users
-                 SET name = ?, given_name = ?, family_name = ?, picture = ?, locale = ?
+                 SET name = ?, given_name = ?, family_name = ?, locale = ?
                  WHERE user_id = ?'''
 
-        self.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["picture"], user_dict["locale"], user_id,))
+        self.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], user_id,))
 
     def update_user_settings(self, user_id, theme, use_auto_complete):
         sql = '''UPDATE users
@@ -1772,6 +1770,12 @@ class Content:
                           AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
 
         self.execute('''UPDATE submissions
+                        SET assignment_id = ?
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
+
+        self.execute('''UPDATE submission_outputs
                         SET assignment_id = ?
                         WHERE course_id = ?
                           AND assignment_id = ?

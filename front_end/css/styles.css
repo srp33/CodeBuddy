@@ -462,3 +462,7 @@ div[contenteditable] {
 div[contenteditable] img {
   max-height: 20em;
 }
+
+module {
+  font-family: monospace;
+}
