@@ -52,7 +52,7 @@ def is_old_file(file_path, days=30):
     return age_in_days > days
 
 def convert_html_to_markdown(text):
-    text = text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+    text = text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace('&nbsp;', '')
     text = re.sub(r"<(/*)span(.*?)>", "", text) # Removes opening and closing <span> tags.
     text = re.sub(r"<(div|br|p)(.*?)>", "\n", text) # Replaces <br> and <div> and <p> tags with a newline.
     text = re.sub(r"<(/*)(div|p)(.*?)>", "", text) # Removes closing <br> and <div> and <p> tags.

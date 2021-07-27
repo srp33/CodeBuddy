@@ -457,6 +457,7 @@ td > button {
 
 div[contenteditable] {
   overflow-y: scroll;
+  font-size: 1.25rem;
 }
 
 div[contenteditable] img {
@@ -465,4 +466,8 @@ div[contenteditable] img {
 
 module {
   font-family: monospace;
+}
+
+.textarea, .input {
+  font-size: 1.25rem;
 }
