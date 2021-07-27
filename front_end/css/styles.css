@@ -16,7 +16,7 @@
 
 .container-color {
     background-color: #f5f5f5;
-    padding: 3.5rem;
+    padding: 3.5rem 10em;
 }
 
 .invisible {
@@ -461,4 +461,8 @@ div[contenteditable] {
 
 div[contenteditable] img {
   max-height: 20em;
+}
+
+module {
+  font-family: monospace;
 }

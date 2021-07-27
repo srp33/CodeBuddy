@@ -51,11 +51,21 @@ def is_old_file(file_path, days=30):
     age_in_days = age_in_seconds / 60 / 60 / 24
     return age_in_days > days
 
+def convert_html_to_markdown(text):
+    text = text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+    text = re.sub(r"<(/*)span(.*?)>", "", text) # Removes opening and closing <span> tags.
+    text = re.sub(r"<(div|br|p)(.*?)>", "\n", text) # Replaces <br> and <div> and <p> tags with a newline.
+    text = re.sub(r"<(/*)(div|p)(.*?)>", "", text) # Removes closing <br> and <div> and <p> tags.
+    text = re.sub(r'<img src="([^">]+?)">', r"![](\1)", text) # Formats images for markdown.
+
+    return text
+
 def convert_markdown_to_html(text):
     if not text or len(text) == 0:
         return ""
 
     markdown = Markdown()
+
     html = re.sub(r"youtube:([-_a-zA-Z0-9]+)", r"<iframe width='800' height='550' src='https://www.youtube.com/embed/\1?controls=1'></iframe>", text)
     html = markdown.convert(html)
     html = re.sub(r"<a href=\"([^\"]+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html)

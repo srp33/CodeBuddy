@@ -75,9 +75,11 @@
             {% end %}
             </tbody>
         </table>
+    {% else %}
+        <p><strong>No assignments have been created for this course.</strong></p>
     {% end %}
 
-    <div id="delete_assignment_modal" class="modal">
+    <div id="delete_assignment_modal" class="modal" style="display:none;">
         <div class="modal-content">
             <span class="close">&times;</span>
             <p id="confirm_delete"></p>
@@ -88,7 +90,7 @@
         </div>
     </div>
 
-    <div id="delete_submissions_modal" class="modal">
+    <div id="delete_submissions_modal" class="modal" style="display:none;">
         <div class="modal-content">
             <span class="close">&times;</span>
             <p>Are you sure you want to delete all submissions for this course?</p>
