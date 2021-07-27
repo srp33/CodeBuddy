@@ -425,7 +425,7 @@
                 <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
                 <p>
                 <p id="check_code_additional_instructions"></p>
-                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{{ exercise_details["check_code"] }}</textarea>
+                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{% if exercise_details["check_code"] %}{{ exercise_details["check_code"] }}{% end %}</textarea>
                     <textarea name="check_code_text" id="check_code_text" class="invisible"></textarea>
                 </p>
             </div>
