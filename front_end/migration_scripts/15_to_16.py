@@ -39,6 +39,6 @@ else:
         print("***Success***")
     except:
         print(traceback.format_exc())
-    
+
     content.rebuild_exercises()
-    # content.rerun_submissions()
+    content.rerun_submissions()
