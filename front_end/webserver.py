@@ -1907,7 +1907,7 @@ if __name__ == "__main__":
             migration = f"{v}_to_{v + 1}"
             print(f"Checking database status for version {v+1}...")
 
-            if v <= 6:
+            if os.path.isfile(f"/migration_scripts/{migration}.py"):
                 command = f"python /migration_scripts/{migration}.py"
             else:
                 command = f"python /migration_scripts/migrate.py {migration}"
@@ -1923,15 +1923,11 @@ if __name__ == "__main__":
                 print(f"Database migration failed for verson {v+1}, so rolling back...")
                 print(result)
                 run_command("bash /etc/cron.hourly/restore_database.sh")
-                break
+                sys.exit(1)
 
         ##for assignment_title in ["18 - Biostatistics - Analyzing proportions"]:
         ##    content.rebuild_exercises(assignment_title)
         ##    content.rerun_submissions(assignment_title)
-
-        ### FIXME - This line needs to be run once to update database, then can be deleted.
-        content.rebuild_exercises('')
-        # content.rerun_submissions('')
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))

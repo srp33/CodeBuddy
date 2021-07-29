@@ -76,10 +76,9 @@ class Content:
                           name text,
                           given_name text,
                           family_name text,
+                          picture text,
                           locale text,
-                          ace_theme text NOT NULL DEFAULT "tomorrow",
-                          use_auto_complete integer NOT NULL DEFAULT 1
-                     );''')
+                          ace_theme text NOT NULL DEFAULT "tomorrow");''')
 
         self.execute('''CREATE TABLE IF NOT EXISTS permissions (
                           user_id text NOT NULL,
@@ -119,7 +118,6 @@ class Content:
                           has_timer int NOT NULL,
                           hour_timer int,
                           minute_timer int,
-                          allowed_ip_addresses text,
                           date_created timestamp NOT NULL,
                           date_updated timestamp NOT NULL,
                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -1988,17 +1986,21 @@ class Content:
         if os.path.exists(tmp_dir_path):
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
-    def rebuild_exercises(self, assignment_title):
-        # FIXME - The bottom three lines of the following sql query are commented out for the purpose of rerunning all exercises. Uncomment out these lines and delete this one after everything has been rerun.
-        sql = '''SELECT e.*
-                 FROM exercises e'''
-                 # INNER JOIN assignments a
-                 #   ON e.course_id = a.course_id AND e.assignment_id = a.assignment_id
-                 # WHERE a.title = ?'''
+    def rebuild_exercises(self, assignment_title=None):
+        if assignment_title:
+            sql = '''SELECT e.*
+                     FROM exercises e
+                     INNER JOIN assignments a
+                       ON e.course_id = a.course_id AND e.assignment_id = a.assignment_id
+                     WHERE a.title = ?'''
+            exercises = self.fetchall(sql, (assignment_title, ))
 
-        # FIXME - The following line has been commented out for the purpose of rerunning all exercises. Uncomment out that line and then delete this line and the following 'for row in self.fetchall(sql, ()):' line after everything has been rerun.
-        # for row in self.fetchall(sql, (assignment_title, )):
-        for row in self.fetchall(sql, ()):
+        else:
+            sql = '''SELECT e.*
+                     FROM exercises e'''
+            exercises = self.fetchall(sql)
+
+        for row in exercises:
             course = row["course_id"]
             assignment = row["assignment_id"]
             exercise = row["exercise_id"]
@@ -2019,23 +2021,32 @@ class Content:
 
             self.save_exercise(exercise_basics, exercise_details)
 
-    def rerun_submissions(self, assignment_title):
-        sql = '''SELECT course_id, assignment_id
-                 FROM assignments
-                 WHERE title = ?'''
+    def rerun_submissions(self, assignment_title=None):
+        if assignment_title:
 
-        row = self.fetchone(sql, (assignment_title, ))
-        course = int(row["course_id"])
-        assignment = int(row["assignment_id"])
+            sql = '''SELECT course_id, assignment_id
+                     FROM assignments
+                     WHERE title = ?'''
 
-        # FIXME - The bottom two lines of the following sql query are commented out for the purpose of rerunning all submissions. Uncomment out those lines and delete this line as well as the third line of the sql query after everything has been rerun.
-        sql = '''SELECT *
-                 FROM submissions
-                 ORDER BY exercise_id, user_id, submission_id'''
-                 # WHERE course_id = ? AND assignment_id = ? AND passed = 0
-                 # ORDER BY exercise_id, user_id, submission_id'''
+            row = self.fetchone(sql, (assignment_title, ))
+            course = int(row["course_id"])
+            assignment = int(row["assignment_id"])
 
-        for row in self.fetchall(sql, (course, assignment, )):
+            sql = '''SELECT *
+                     FROM submissions
+                     WHERE course_id = ? AND assignment_id = ? AND passed = 0
+                     ORDER BY exercise_id, user_id, submission_id'''
+
+            submissions = self.fetchall(sql, (course, assignment, ))
+
+        else:
+            sql = '''SELECT *
+                     FROM submissions
+                     ORDER BY exercise_id, user_id, submission_id'''
+
+            submissions = self.fetchall(sql)
+
+        for row in submissions:
             exercise = row["exercise_id"]
             user = row["user_id"]
             submission = row["submission_id"]
