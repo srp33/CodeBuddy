@@ -102,7 +102,7 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
 
     if exercise_details["back_end"] in ['free_response', 'any_response']:
         # In this case, the code is the answer that the student provided.
-        return code.strip(), ""
+        return code.strip(), "", []
 
     timeout = this_settings_dict["timeout_seconds"]
     data_dict = {"image_name": this_settings_dict["image_name"],

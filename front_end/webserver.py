@@ -1106,9 +1106,11 @@ class EditExerciseHandler(BaseUserHandler):
                                     tests_dict = []
                                     for i in range(len(tests)):
                                         tests_dict.append({**tests[i], **exercise_details["tests"][i]})
+
                                     exercise_details["tests"] = tests_dict
                                     exercise_details["expected_text_output"] = text_output.strip()
                                     exercise_details["expected_image_output"] = image_output
+
                                     exercise = content.save_exercise(exercise_basics, exercise_details)
 
                                     exercise_basics = content.get_exercise_basics(course, assignment, exercise)
@@ -1278,6 +1280,7 @@ class SubmitHandler(BaseUserHandler):
 
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
             new_score = content.calc_exercise_score(assignment_details, passed)
+
             if not exercise_score or exercise_score < new_score:
                 content.save_exercise_score(course, assignment, exercise, user_id, new_score)
 
@@ -1925,6 +1928,10 @@ if __name__ == "__main__":
         ##for assignment_title in ["18 - Biostatistics - Analyzing proportions"]:
         ##    content.rebuild_exercises(assignment_title)
         ##    content.rerun_submissions(assignment_title)
+
+        ### FIXME - This line needs to be run once to update database, then can be deleted.
+        content.rebuild_exercises('')
+        # content.rerun_submissions('')
 
         server = tornado.httpserver.HTTPServer(application)
         server.bind(int(os.environ['PORT']))

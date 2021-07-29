@@ -1989,13 +1989,16 @@ class Content:
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
     def rebuild_exercises(self, assignment_title):
+        # FIXME - The bottom three lines of the following sql query are commented out for the purpose of rerunning all exercises. Uncomment out these lines and delete this one after everything has been rerun.
         sql = '''SELECT e.*
-                 FROM exercises e
-                 INNER JOIN assignments a
-                   ON e.course_id = a.course_id AND e.assignment_id = a.assignment_id
-                 WHERE a.title = ?'''
+                 FROM exercises e'''
+                 # INNER JOIN assignments a
+                 #   ON e.course_id = a.course_id AND e.assignment_id = a.assignment_id
+                 # WHERE a.title = ?'''
 
-        for row in self.fetchall(sql, (assignment_title, )):
+        # FIXME - The following line has been commented out for the purpose of rerunning all exercises. Uncomment out that line and then delete this line and the following 'for row in self.fetchall(sql, ()):' line after everything has been rerun.
+        # for row in self.fetchall(sql, (assignment_title, )):
+        for row in self.fetchall(sql, ()):
             course = row["course_id"]
             assignment = row["assignment_id"]
             exercise = row["exercise_id"]
@@ -2006,10 +2009,14 @@ class Content:
 
             text_output, image_output, tests = exec_code(self.__settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
+            tests_dict = []
+            for i in range(len(tests)):
+                tests_dict.append({**tests[i], **exercise_details["tests"][i]})
 
-            exercise_details["expected_text_output"] = text_output
+            exercise_details["tests"] = tests_dict
+            exercise_details["expected_text_output"] = text_output.strip()
             exercise_details["expected_image_output"] = image_output
-            exercise_details["tests"] = tests
+
             self.save_exercise(exercise_basics, exercise_details)
 
     def rerun_submissions(self, assignment_title):
@@ -2021,10 +2028,12 @@ class Content:
         course = int(row["course_id"])
         assignment = int(row["assignment_id"])
 
+        # FIXME - The bottom two lines of the following sql query are commented out for the purpose of rerunning all submissions. Uncomment out those lines and delete this line as well as the third line of the sql query after everything has been rerun.
         sql = '''SELECT *
                  FROM submissions
-                 WHERE course_id = ? AND assignment_id = ? AND passed = 0
                  ORDER BY exercise_id, user_id, submission_id'''
+                 # WHERE course_id = ? AND assignment_id = ? AND passed = 0
+                 # ORDER BY exercise_id, user_id, submission_id'''
 
         for row in self.fetchall(sql, (course, assignment, )):
             exercise = row["exercise_id"]
@@ -2050,3 +2059,9 @@ class Content:
                        AND submission_id = ?'''
 
             self.execute(sql, [text_output, image_output, passed, int(course), int(assignment), int(exercise), user, int(submission)])
+
+            for test in tests:
+                sql = '''INSERT INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, test_id, text_output, image_output)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+
+            self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission), test["test"], test["text_output"], test["image_output"], ])
