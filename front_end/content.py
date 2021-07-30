@@ -1797,10 +1797,9 @@ class Content:
                        AND assignment_id = ?
                        AND exercise_id = ?'''
 
-           self.execute(sql, (new_exercise_id, course_id, assignment_id, exercise_id, ))
+            self.execute(sql, (new_exercise_id, course_id, assignment_id, exercise_id, ))
         except:
             print(traceback.format_exc())
-
 
     def delete_exercise(self, exercise_basics):
         course_id = exercise_basics["assignment"]["course"]["id"]
