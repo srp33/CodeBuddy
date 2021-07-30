@@ -46,7 +46,7 @@
 
             <div class="top-space">
 
-                {% if exercise_details["expected_text_output"] != "" and exercise_details["expected_image_output"] != "" %}
+                {% if exercise_details["expected_text_output"] != "" or exercise_details["expected_image_output"] != "" %}
                     <h6 style="display: inline">Expected output:</h6>
 
                     {% if exercise_details["output_type"] == "txt" %}
