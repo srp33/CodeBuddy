@@ -848,15 +848,13 @@
 
             const container = document.querySelector("#file_upload");
 
-            {% if len(old_tests) > 0 %}
-                var new_tests = {}
+            var new_tests = {}
 
-                {% for test in exercise_details["tests"] %}
-                    new_tests[`{{int(test['test']) - 1}}`] = {'image_output': `{{test['image_output']}}`, 'text_output': `{{test['text_output']}}` }
-                {% end %}
+            {% for i in range(len(exercise_details["tests"])) %}
+                new_tests[`{{i}}`] = {'image_output': `{{exercise_details["tests"][i]['image_output']}}`, 'text_output': `{{exercise_details["tests"][i]['text_output']}}` }
             {% end %}
 
-            // population with existing tests
+            // Populate with existing tests.
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
                  for (i in json_data) {
@@ -897,7 +895,8 @@
                           content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
                        {% end %}
                    }
-                   if ((json_data[i].image_output != new_tests[i].image_output) || (json_data[i].text_output != new_tests[i].text_output)) {
+
+                   if ((Object.keys(new_tests).length > 0) && ((json_data[i].image_output != new_tests[i].image_output) || (json_data[i].text_output != new_tests[i].text_output))) {
                       var output_btn = document.getElementById(`output_button_${i}`)
                       output_btn.classList.remove('passing-btn-color');
                       output_btn.classList.add('failing-btn-color');

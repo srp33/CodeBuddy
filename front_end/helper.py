@@ -120,6 +120,7 @@ def exec_code(settings_dict, code, exercise_basics, exercise_details, request=No
     response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
 
     response_dict = json.loads(response.content)
+
     # The keys 'text_output' and 'image_output' refer to output produced by the student's code, while 'tests' is a dictionary containing the image and text outputs specific to each test case written by the instructor.
     # Tests must be converted from JSON form to a list of dictionaries.
     return response_dict["text_output"], response_dict["image_output"], json.loads(response_dict["tests"])
@@ -165,7 +166,7 @@ def check_exercise_output(exercise_details, actual_text, actual_image, tests):
     expected_test_outputs = exercise_details["tests"]
 
     test_outcomes = []
-    
+
     for i in range(len(expected_test_outputs)):
         test_diff_output, test_passed = compare_outputs(expected_test_outputs[i]["text_output"], tests[i]["text_output"], expected_test_outputs[i]["image_output"], tests[i]["image_output"], exercise_details["output_type"])
         test_outcomes.append({"test": expected_test_outputs[i]["test"], "diff_output": test_diff_output, "passed": test_passed, "text_output": tests[i]["text_output"], "image_output": tests[i]["image_output"]})

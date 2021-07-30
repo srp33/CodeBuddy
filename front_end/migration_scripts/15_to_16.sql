@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS tests (
                         code text,
                         text_output text,
                         image_output text,
-                        test_instructions text DEFAULt "",
+                        test_instructions text DEFAULT "",
                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
                         FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE
                         FOREIGN KEY (exercise_id) REFERENCES exercises (exercise_id) ON DELETE CASCADE ON UPDATE CASCADE);
@@ -17,13 +17,14 @@ CREATE TABLE IF NOT EXISTS submission_outputs (
                         exercise_id integer NOT NULL,
                         user_id integer NOT NULL,
                         submission_id integer NOT NULL,
-                        test_id integer NOT NULL PRIMARY KEY,
+                        submission_output_id integer NOT NULL PRIMARY KEY,
                         text_output text,
                         image_output text,
                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE,
                         FOREIGN KEY (assignment_id) REFERENCES assignments (assignment_id) ON DELETE CASCADE ON UPDATE CASCADE,
                         FOREIGN KEY (exercise_id) REFERENCES exercises (exercise_id) ON DELETE CASCADE ON UPDATE CASCADE,
                         FOREIGN KEY (submission_id) REFERENCES submissions (submission_id) ON DELETE CASCADE ON UPDATE CASCADE);
+
 
 INSERT INTO tests (course_id, assignment_id, exercise_id, code)
             SELECT course_id, assignment_id, exercise_id, test_code
