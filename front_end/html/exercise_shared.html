@@ -304,7 +304,10 @@
                     document.getElementById("result").innerHTML = result;
 
                     {% if exercise_details["back_end"] != "any_response" %}
-                        if ((json_data.text_output != "") || (json_data.image_output != "")) {
+                        var expected_text = `{{exercise_details["expected_text_output"]}}`;
+                        var expected_image = `{{exercise_details["expected_image_output"]}}`;
+
+                        if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
                             var code_output = "<h6>Your output:</h6>\n\n";
                             code_output += build_text_output(json_data.text_output);
                             code_output += build_image_output(json_data.image_output);
@@ -345,8 +348,10 @@
                         post_data,
                         function(data, status) {
                             var json_data = JSON.parse(data);
+                            var expected_text = `{{exercise_details["expected_text_output"]}}`;
+                            var expected_image = `{{exercise_details["expected_image_output"]}}`;
 
-                            if ((json_data.text_output != "") || (json_data.image_output != "")) {
+                            if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
                                 var code_output = "<h6>Your output:</h6>\n\n";
                                 code_output += build_text_output(json_data.text_output);
                                 code_output += build_image_output(json_data.image_output);

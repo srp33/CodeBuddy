@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS submission_outputs (
                         FOREIGN KEY (exercise_id) REFERENCES exercises (exercise_id) ON DELETE CASCADE ON UPDATE CASCADE,
                         FOREIGN KEY (submission_id) REFERENCES submissions (submission_id) ON DELETE CASCADE ON UPDATE CASCADE);
 
-
 INSERT INTO tests (course_id, assignment_id, exercise_id, code)
             SELECT course_id, assignment_id, exercise_id, test_code
             FROM exercises

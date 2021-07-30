@@ -2036,18 +2036,15 @@ class Content:
                      FROM submissions
                      WHERE course_id = ? AND assignment_id = ? AND passed = 0
                      ORDER BY exercise_id, user_id, submission_id'''
-
             submissions = self.fetchall(sql, (course, assignment, ))
 
         else:
             sql = '''SELECT *
                      FROM submissions
                      ORDER BY exercise_id, user_id, submission_id'''
-
             submissions = self.fetchall(sql)
 
         for row in submissions:
-
             course = row["course_id"]
             assignment = row["assignment_id"]
             exercise = row["exercise_id"]
