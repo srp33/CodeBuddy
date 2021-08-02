@@ -1,4 +1,4 @@
-from ..content import *
+from .content import *
 from BaseUserHandler import *
 class GetSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, user_id):

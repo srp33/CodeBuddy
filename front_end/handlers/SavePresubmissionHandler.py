@@ -1,4 +1,4 @@
-from ..content import *
+from .content import *
 from BaseUserHandler import *
 class SavePresubmissionHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):

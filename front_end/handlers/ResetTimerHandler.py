@@ -1,4 +1,4 @@
-from ..content import *
+from .content import *
 import traceback
 from BaseUserHandler import *
 class ResetTimerHandler(BaseUserHandler):

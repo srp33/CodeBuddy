@@ -1,5 +1,5 @@
-from ..helper import *
-from ..content import *
+from .helper import *
+from .content import *
 import traceback
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     async def get(self):

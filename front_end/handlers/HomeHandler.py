@@ -1,5 +1,5 @@
-from ..helper import *
-from ..content import *
+from .helper import *
+from .content import *
 from tornado.web import *
 import traceback
 class HomeHandler(RequestHandler):

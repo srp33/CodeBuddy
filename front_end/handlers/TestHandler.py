@@ -1,4 +1,4 @@
-from ..helper import *
+from .helper import *
 from tornado.web import *
 import traceback
 class TestHandler(RequestHandler):
