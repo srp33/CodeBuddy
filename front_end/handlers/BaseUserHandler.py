@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 from app.helper import *
 from app.content import *
 from tornado.web import *

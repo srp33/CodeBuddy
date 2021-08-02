@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 from app.helper import *
 from tornado.web import *
 import traceback

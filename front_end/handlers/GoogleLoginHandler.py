@@ -1,8 +1,7 @@
-import sys
-sys.path.append("..")
 from app.helper import *
 from app.content import *
 import traceback
+from tornado.auth import GoogleOAuth2Mixin
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     async def get(self):
         try:

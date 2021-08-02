@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 from app.content import *
 from app.handlers.BaseUserHandler import *
 class SavePresubmissionHandler(BaseUserHandler):
