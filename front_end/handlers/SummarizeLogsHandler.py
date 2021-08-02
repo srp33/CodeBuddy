@@ -1,5 +1,5 @@
-from .helper import *
-from .content import *
+from ..helper import *
+from ..content import *
 import traceback
 from BaseUserHandler import *
 class SummarizeLogsHandler(BaseUserHandler):

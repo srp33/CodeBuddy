@@ -1,4 +1,4 @@
-from .content import *
+from ..content import *
 from BaseUserHandler import *
 class CheckPartnersHandler(BaseUserHandler):
     def post(self, course):

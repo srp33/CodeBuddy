@@ -1,15 +1,15 @@
 import os
 
 importDict = {
-    'render_error': 'from .helper import *',
-    'content': 'from .content import *',
+    'render_error': 'from ..helper import *',
+    'content': 'from ..content import *',
     '(RequestHandler)': 'from tornado.web import *',
     'traceback': 'import traceback',
     '(BaseUserHandler)': 'from BaseUserHandler import *',
     'datetime': 'import datetime'
 }
 
-with open('webserver.py') as ws:
+with open('old_webserver.py') as ws:
     file = ws.read()
     file = file.split("class ")
     new_webserver = file[0]
@@ -29,7 +29,7 @@ with open('webserver.py') as ws:
             curr.write('\n'.join(import_list))
             curr.write('\n')
             curr.write(f)
-    with open(f'new_webserver.py', 'w') as nws:
+    with open(f'webserver.py', 'w') as nws:
         for f in file:
             nws.write(f'from handlers.{f.split(" ")[1].split("(")[0]} import *\n')
         nws.write('\n')
