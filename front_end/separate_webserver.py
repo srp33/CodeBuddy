@@ -34,4 +34,3 @@ with open('webserver.py') as ws:
             nws.write(f'from handlers.{f.split(" ")[1].split("(")[0]} import *\n')
         nws.write('\n')
         nws.write(new_webserver)
-
