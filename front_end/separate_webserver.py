@@ -19,6 +19,8 @@ with open('old_webserver.py') as ws:
     new_webserver = f'{new_webserver}\n\n{end}'
     if not os.path.isdir('handlers'):
         os.mkdir('handlers')
+        with open("handlers/__init__.py", "w") as init:
+            init.write("")
     for f in file:
         import_list = []
         for k,v in importDict.items():
