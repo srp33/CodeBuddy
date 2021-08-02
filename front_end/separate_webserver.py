@@ -1,8 +1,8 @@
 import os
 
 importDict = {
-    'render_error': 'from ..helper import *',
-    'content': 'from ..content import *',
+    'render_error': 'from app.helper import *',
+    'content': 'from app.content import *',
     '(RequestHandler)': 'from tornado.web import *',
     'traceback': 'import traceback',
     '(BaseUserHandler)': 'from BaseUserHandler import *',

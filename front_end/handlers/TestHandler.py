@@ -1,6 +1,6 @@
 import sys
 sys.path.append("..")
-from ..helper import *
+from app.helper import *
 from tornado.web import *
 import traceback
 class TestHandler(RequestHandler):

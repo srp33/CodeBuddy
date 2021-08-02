@@ -1,6 +1,6 @@
 import sys
 sys.path.append("..")
-from ..content import *
+from app.content import *
 import traceback
 from BaseUserHandler import *
 class SubmitHandler(BaseUserHandler):

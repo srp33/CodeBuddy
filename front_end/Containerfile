@@ -81,5 +81,3 @@ RUN groupadd -g ${GROUP_ID} ${USER} && \
           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
 
 USER $USER
-
-ENTRYPOINT ["bash", "/app/startup.sh"]

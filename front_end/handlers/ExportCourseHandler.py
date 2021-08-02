@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
-from ..helper import *
-from ..content import *
+from app.helper import *
+from app.content import *
 import traceback
 from BaseUserHandler import *
 class ExportCourseHandler(BaseUserHandler):

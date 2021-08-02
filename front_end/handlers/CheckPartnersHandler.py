@@ -1,6 +1,6 @@
 import sys
 sys.path.append("..")
-from ..content import *
+from app.content import *
 from BaseUserHandler import *
 class CheckPartnersHandler(BaseUserHandler):
     def post(self, course):
