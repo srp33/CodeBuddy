@@ -76,10 +76,9 @@ class Content:
                           name text,
                           given_name text,
                           family_name text,
+                          picture text,
                           locale text,
-                          ace_theme text NOT NULL DEFAULT "tomorrow",
-                          use_auto_complete integer NOT NULL DEFAULT 1
-                     );''')
+                          ace_theme text NOT NULL DEFAULT "tomorrow");''')
 
         self.execute('''CREATE TABLE IF NOT EXISTS permissions (
                           user_id text NOT NULL,
@@ -119,7 +118,6 @@ class Content:
                           has_timer int NOT NULL,
                           hour_timer int,
                           minute_timer int,
-                          allowed_ip_addresses text,
                           date_created timestamp NOT NULL,
                           date_updated timestamp NOT NULL,
                         FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -1343,7 +1341,7 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
 
-        test_sql = '''SELECT test_id, text_output, image_output
+        test_sql = '''SELECT submission_output_id, text_output, image_output
                       FROM submission_outputs
                       WHERE course_id = ?
                         AND assignment_id = ?
@@ -1355,7 +1353,7 @@ class Content:
 
         tests = []
         for test in test_row:
-            tests.append({"test": test["test_id"], "text_output": test["text_output"], "image_output": test["image_output"]})
+            tests.append({"test": test["submission_output_id"], "text_output": test["text_output"], "image_output": test["image_output"]})
 
         return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests": tests}
 
@@ -1581,7 +1579,7 @@ class Content:
 
             self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 
-            if exercise_details["tests"] != []:
+            if len(exercise_details["tests"]) > 0:
                 for i in range(len(exercise_details["tests"])):
                     sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, code, test_instructions, text_output, image_output)
                              VALUES (?, ?, ?, ?, ?, ?, ?)'''
@@ -1619,7 +1617,7 @@ class Content:
         self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
 
     def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, tests, partner_id=None):
-        # Onlys saves 'image_output' if it isn't blank.
+        # Only saves 'image_output' if it isn't blank.
         try:
             if image_output != "":
                 image_output = "" if image_output.strip() == BLANK_IMAGE.strip() else image_output
@@ -1631,14 +1629,11 @@ class Content:
             self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), partner_id])
 
             if len(tests) > 0:
-                test_sql = '''INSERT OR REPLACE INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, test_id, text_output, image_output)
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+                test_sql = '''INSERT OR REPLACE INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, text_output, image_output)
+                             VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
                 for test in tests:
-                    try:
-                        self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["test"], test["text_output"], test["image_output"]])
-                    except:
-                        print(traceback.format_exc())
+                    self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
 
             # Saves submission for partner.
             if partner_id:
@@ -1648,9 +1643,9 @@ class Content:
                 if len(tests) > 0:
                     for test in tests:
                         self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
-
         except:
             print(traceback.format_exc())
+
         return submission_id
 
     def save_help_request(self, course, assignment, exercise, user_id, code, text_output, image_output, student_comment, date):
@@ -1988,49 +1983,75 @@ class Content:
         if os.path.exists(tmp_dir_path):
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
-    def rebuild_exercises(self, assignment_title):
-        sql = '''SELECT e.*
-                 FROM exercises e
-                 INNER JOIN assignments a
-                   ON e.course_id = a.course_id AND e.assignment_id = a.assignment_id
-                 WHERE a.title = ?'''
+    def rebuild_exercises(self, assignment_title=None):
+        if assignment_title:
+            sql = '''SELECT e.*
+                     FROM exercises e
+                     INNER JOIN assignments a
+                       ON e.course_id = a.course_id AND e.assignment_id = a.assignment_id
+                     WHERE a.title = ?'''
+            exercises = self.fetchall(sql, (assignment_title, ))
 
-        for row in self.fetchall(sql, (assignment_title, )):
+        else:
+            sql = '''SELECT e.*
+                     FROM exercises e'''
+            exercises = self.fetchall(sql)
+
+        for row in exercises:
             course = row["course_id"]
             assignment = row["assignment_id"]
             exercise = row["exercise_id"]
-            print(f"Rebuilding course {course}, assignment {assignment}, exercise {exercise}")
 
             exercise_basics = self.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.get_exercise_details(course, assignment, exercise)
 
             text_output, image_output, tests = exec_code(self.__settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
+            exercise_details["tests"] = [{k: v for k, v in d.items() if k != 'text_output' and k != "image_output"} for d in exercise_details["tests"]]
 
-            exercise_details["expected_text_output"] = text_output
+            tests_dict = []
+            for i in range(len(tests)):
+                tests_dict.append({**tests[i], **exercise_details["tests"][i]})
+
+            exercise_details["tests"] = tests_dict
+            exercise_details["expected_text_output"] = text_output.strip()
             exercise_details["expected_image_output"] = image_output
-            exercise_details["tests"] = tests
+
             self.save_exercise(exercise_basics, exercise_details)
 
-    def rerun_submissions(self, assignment_title):
-        sql = '''SELECT course_id, assignment_id
-                 FROM assignments
-                 WHERE title = ?'''
+            print(f"Rebuilding course {course}, assignment {assignment}, exercise {exercise} ")
 
-        row = self.fetchone(sql, (assignment_title, ))
-        course = int(row["course_id"])
-        assignment = int(row["assignment_id"])
+    def rerun_submissions(self, assignment_title=None):
+        if assignment_title:
 
-        sql = '''SELECT *
-                 FROM submissions
-                 WHERE course_id = ? AND assignment_id = ? AND passed = 0
-                 ORDER BY exercise_id, user_id, submission_id'''
+            sql = '''SELECT course_id, assignment_id
+                     FROM assignments
+                     WHERE title = ?'''
 
-        for row in self.fetchall(sql, (course, assignment, )):
+            row = self.fetchone(sql, (assignment_title, ))
+            course = int(row["course_id"])
+            assignment = int(row["assignment_id"])
+
+            sql = '''SELECT *
+                     FROM submissions
+                     WHERE course_id = ? AND assignment_id = ? AND passed = 0
+                     ORDER BY exercise_id, user_id, submission_id'''
+            submissions = self.fetchall(sql, (course, assignment, ))
+
+        else:
+            sql = '''SELECT *
+                     FROM submissions
+                     ORDER BY exercise_id, user_id, submission_id'''
+            submissions = self.fetchall(sql)
+
+        for row in submissions:
+            course = row["course_id"]
+            assignment = row["assignment_id"]
             exercise = row["exercise_id"]
             user = row["user_id"]
             submission = row["submission_id"]
             code = row["code"].replace("\r", "")
+
             print(f"Rerunning submission {submission} for course {course}, assignment {assignment}, exercise {exercise}, user {user}.")
 
             exercise_basics = self.get_exercise_basics(course, assignment, exercise)
@@ -2050,3 +2071,9 @@ class Content:
                        AND submission_id = ?'''
 
             self.execute(sql, [text_output, image_output, passed, int(course), int(assignment), int(exercise), user, int(submission)])
+
+            for test in tests:
+                sql = '''INSERT INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, text_output, image_output)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)'''
+
+                self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission), test["text_output"], test["image_output"], ])

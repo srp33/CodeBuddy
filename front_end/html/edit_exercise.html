@@ -222,7 +222,7 @@
                     <p><strong>Title*: </strong></p>
                     <p><input name="title" id="title" class="input is-grey is-fullwidth" placeholder="Please specify a descriptive title." autofocus></p>
                 </div>
-                <div class="a-visible">
+                <div class="a-visible top-space">
                     <p><strong>Visible: </strong>
                         <div class="select is-grey">
                             <select name="is_visible" class="edit-select">
@@ -425,7 +425,7 @@
                 <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
                 <p>
                 <p id="check_code_additional_instructions"></p>
-                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{{ exercise_details["check_code"] }}</textarea>
+                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{% if exercise_details["check_code"] %}{{ exercise_details["check_code"] }}{% end %}</textarea>
                     <textarea name="check_code_text" id="check_code_text" class="invisible"></textarea>
                 </p>
             </div>
@@ -848,15 +848,13 @@
 
             const container = document.querySelector("#file_upload");
 
-            {% if len(old_tests) > 0 %}
-                var new_tests = {}
+            var new_tests = {}
 
-                {% for test in exercise_details["tests"] %}
-                    new_tests[`{{int(test['test']) - 1}}`] = {'image_output': `{{test['image_output']}}`, 'text_output': `{{test['text_output']}}` }
-                {% end %}
+            {% for i in range(len(exercise_details["tests"])) %}
+                new_tests[`{{i}}`] = {'image_output': `{{exercise_details["tests"][i]['image_output']}}`, 'text_output': `{{exercise_details["tests"][i]['text_output']}}` }
             {% end %}
 
-            // population with existing tests
+            // Populate with existing tests.
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
                  for (i in json_data) {
@@ -897,7 +895,8 @@
                           content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
                        {% end %}
                    }
-                   if ((json_data[i].image_output != new_tests[i].image_output) || (json_data[i].text_output != new_tests[i].text_output)) {
+
+                   if ((Object.keys(new_tests).length > 0) && ((json_data[i].image_output != new_tests[i].image_output) || (json_data[i].text_output != new_tests[i].text_output))) {
                       var output_btn = document.getElementById(`output_button_${i}`)
                       output_btn.classList.remove('passing-btn-color');
                       output_btn.classList.add('failing-btn-color');

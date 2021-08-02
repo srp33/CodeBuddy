@@ -1088,12 +1088,23 @@ class EditExerciseHandler(BaseUserHandler):
                             if not result.startswith("Error:"):
                                 old_tests = []
                                 old_text_output = old_image_output = ''
+
                                 content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
+
                                 content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, datetime.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"], exercise_details["tests"])
                                 text_output, image_output, tests = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
                                 # Calculates number of empty test outputs to aid instructor in debugging.
                                 empty_tests = list(filter(lambda x: x["text_output"] == "" and x["image_output"] == "", tests))
+
+                                # Loads test outcomes into dictionary with test code.
+                                tests_dict = []
+                                for i in range(len(tests)):
+                                    tests_dict.append({**tests[i], **exercise_details["tests"][i]})
+
+                                exercise_details["tests"] = tests_dict
+                                exercise_details["expected_text_output"] = text_output.strip()
+                                exercise_details["expected_image_output"] = image_output
 
                                 if not any_response_counts and text_output == "" and image_output == "" and len(empty_tests) == len(tests):
                                     result = f"Error: No output was produced."
@@ -1102,13 +1113,6 @@ class EditExerciseHandler(BaseUserHandler):
                                     if len(empty_tests) > 0:
                                         result = f"Warning: {len(empty_tests)} of your tests produced no output."
 
-                                    # Loads test outcomes into dictionary with test code.
-                                    tests_dict = []
-                                    for i in range(len(tests)):
-                                        tests_dict.append({**tests[i], **exercise_details["tests"][i]})
-                                    exercise_details["tests"] = tests_dict
-                                    exercise_details["expected_text_output"] = text_output.strip()
-                                    exercise_details["expected_image_output"] = image_output
                                     exercise = content.save_exercise(exercise_basics, exercise_details)
 
                                     exercise_basics = content.get_exercise_basics(course, assignment, exercise)
@@ -1278,6 +1282,7 @@ class SubmitHandler(BaseUserHandler):
 
             exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
             new_score = content.calc_exercise_score(assignment_details, passed)
+
             if not exercise_score or exercise_score < new_score:
                 content.save_exercise_score(course, assignment, exercise, user_id, new_score)
 
@@ -1904,7 +1909,7 @@ if __name__ == "__main__":
             migration = f"{v}_to_{v + 1}"
             print(f"Checking database status for version {v+1}...")
 
-            if v <= 6:
+            if os.path.isfile(f"/migration_scripts/{migration}.py"):
                 command = f"python /migration_scripts/{migration}.py"
             else:
                 command = f"python /migration_scripts/migrate.py {migration}"
@@ -1920,7 +1925,7 @@ if __name__ == "__main__":
                 print(f"Database migration failed for verson {v+1}, so rolling back...")
                 print(result)
                 run_command("bash /etc/cron.hourly/restore_database.sh")
-                break
+                sys.exit(1)
 
         ##for assignment_title in ["18 - Biostatistics - Analyzing proportions"]:
         ##    content.rebuild_exercises(assignment_title)

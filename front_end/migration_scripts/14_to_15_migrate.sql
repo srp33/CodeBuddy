@@ -1,1 +1,1 @@
-ALTER TABLE exercises ADD COLUMN check_code text DEFAULT NULL;
+ALTER TABLE exercises ADD COLUMN check_code text DEFAULT "";
