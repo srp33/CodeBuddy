@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from app.content import *
 import traceback
-from BaseUserHandler import *
+from app.handlers.BaseUserHandler import *
 class ResetTimerHandler(BaseUserHandler):
     async def post(self, course, assignment, user):
         try:

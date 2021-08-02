@@ -3,7 +3,7 @@ sys.path.append("..")
 from app.helper import *
 from app.content import *
 import traceback
-from BaseUserHandler import *
+from app.handlers.BaseUserHandler import *
 class DeleteCourseSubmissionsHandler(BaseUserHandler):
     def post(self, course):
         try:

@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from app.content import *
 import traceback
-from BaseUserHandler import *
+from app.handlers.BaseUserHandler import *
 class CopyExerciseHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         out_dict = {"result": ""}

@@ -5,7 +5,7 @@ importDict = {
     'content': 'from app.content import *',
     '(RequestHandler)': 'from tornado.web import *',
     'traceback': 'import traceback',
-    '(BaseUserHandler)': 'from BaseUserHandler import *',
+    '(BaseUserHandler)': 'from app.handlers.BaseUserHandler import *',
     'datetime': 'import datetime'
 }
 

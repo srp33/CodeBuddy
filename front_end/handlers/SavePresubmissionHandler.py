@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
 from app.content import *
-from BaseUserHandler import *
+from app.handlers.BaseUserHandler import *
 class SavePresubmissionHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         user_id = self.get_user_id()

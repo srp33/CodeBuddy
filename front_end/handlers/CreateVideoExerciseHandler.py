@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from app.content import *
 import traceback
-from BaseUserHandler import *
+from app.handlers.BaseUserHandler import *
 import datetime
 class CreateVideoExerciseHandler(BaseUserHandler):
     def post(self, course, assignment):

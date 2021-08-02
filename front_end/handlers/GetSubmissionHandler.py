@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from app.content import *
 import traceback
-from BaseUserHandler import *
+from app.handlers.BaseUserHandler import *
 class GetSubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, student_id, submission_id):
         try:
