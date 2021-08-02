@@ -1,4 +1,6 @@
-from .content import *
+import sys
+sys.path.append("..")
+from ..content import *
 import traceback
 from BaseUserHandler import *
 class DownloadFileHandler(BaseUserHandler):

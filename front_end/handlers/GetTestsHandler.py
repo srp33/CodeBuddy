@@ -1,4 +1,6 @@
-from .content import *
+import sys
+sys.path.append("..")
+from ..content import *
 from BaseUserHandler import *
 class GetTestsHandler(BaseUserHandler):
     def get(self, course, assignment, exercise):

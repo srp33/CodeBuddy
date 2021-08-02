@@ -1,5 +1,7 @@
-from .helper import *
-from .content import *
+import sys
+sys.path.append("..")
+from ..helper import *
+from ..content import *
 import traceback
 from BaseUserHandler import *
 class RemoveAdminHandler(BaseUserHandler):
