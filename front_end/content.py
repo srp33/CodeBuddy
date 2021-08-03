@@ -1984,96 +1984,108 @@ class Content:
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
     def rebuild_exercises(self, assignment_title=None):
-        if assignment_title:
-            sql = '''SELECT e.*
-                     FROM exercises e
-                     INNER JOIN assignments a
-                       ON e.course_id = a.course_id AND e.assignment_id = a.assignment_id
-                     WHERE a.title = ?'''
-            exercises = self.fetchall(sql, (assignment_title, ))
+        with open("/logs/progress.log", "w") as progress_file:
+            progress_file.write("Retrieving exercises that need to be rebuilt...\n")
+            progress_file.flush()
 
-        else:
-            sql = '''SELECT e.*
-                     FROM exercises e'''
-            exercises = self.fetchall(sql)
+            if assignment_title:
+                sql = '''SELECT e.*
+                         FROM exercises e
+                         INNER JOIN assignments a
+                           ON e.course_id = a.course_id AND e.assignment_id = a.assignment_id
+                         WHERE a.title = ?'''
+                exercises = self.fetchall(sql, (assignment_title, ))
+            else:
+                sql = '''SELECT e.*
+                         FROM exercises e'''
+                exercises = self.fetchall(sql)
 
-        for row in exercises:
-            course = row["course_id"]
-            assignment = row["assignment_id"]
-            exercise = row["exercise_id"]
+            for row in exercises:
+                course = row["course_id"]
+                assignment = row["assignment_id"]
+                exercise = row["exercise_id"]
 
-            exercise_basics = self.get_exercise_basics(course, assignment, exercise)
-            exercise_details = self.get_exercise_details(course, assignment, exercise)
+                progress_file.write(f"Rebuilding course {course}, assignment {assignment}, exercise {exercise}.\n")
+                progress_file.flush()
 
-            text_output, image_output, tests = exec_code(self.__settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                exercise_basics = self.get_exercise_basics(course, assignment, exercise)
+                exercise_details = self.get_exercise_details(course, assignment, exercise)
 
-            exercise_details["tests"] = [{k: v for k, v in d.items() if k != 'text_output' and k != "image_output"} for d in exercise_details["tests"]]
+                text_output, image_output, tests = exec_code(self.__settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
-            tests_dict = []
-            for i in range(len(tests)):
-                tests_dict.append({**tests[i], **exercise_details["tests"][i]})
+                exercise_details["tests"] = [{k: v for k, v in d.items() if k != 'text_output' and k != "image_output"} for d in exercise_details["tests"]]
 
-            exercise_details["tests"] = tests_dict
-            exercise_details["expected_text_output"] = text_output.strip()
-            exercise_details["expected_image_output"] = image_output
+                tests_dict = []
+                for i in range(len(tests)):
+                    tests_dict.append({**tests[i], **exercise_details["tests"][i]})
 
-            self.save_exercise(exercise_basics, exercise_details)
+                exercise_details["tests"] = tests_dict
+                exercise_details["expected_text_output"] = text_output.strip()
+                exercise_details["expected_image_output"] = image_output
 
-            print(f"Rebuilding course {course}, assignment {assignment}, exercise {exercise} ")
+                self.save_exercise(exercise_basics, exercise_details)
+
+            progress_file.write(f"Done rebuilding exercises.\n")
+            progress_file.flush()
 
     def rerun_submissions(self, assignment_title=None):
-        if assignment_title:
+        with open("/logs/progress.log", "w") as progress_file:
+            progress_file.write("Retrieving submissions that need to be rerun...\n")
 
-            sql = '''SELECT course_id, assignment_id
-                     FROM assignments
-                     WHERE title = ?'''
+            if assignment_title:
+                sql = '''SELECT course_id, assignment_id
+                         FROM assignments
+                         WHERE title = ?'''
 
-            row = self.fetchone(sql, (assignment_title, ))
-            course = int(row["course_id"])
-            assignment = int(row["assignment_id"])
+                row = self.fetchone(sql, (assignment_title, ))
+                course = int(row["course_id"])
+                assignment = int(row["assignment_id"])
 
-            sql = '''SELECT *
-                     FROM submissions
-                     WHERE course_id = ? AND assignment_id = ? AND passed = 0
-                     ORDER BY exercise_id, user_id, submission_id'''
-            submissions = self.fetchall(sql, (course, assignment, ))
+                sql = '''SELECT *
+                         FROM submissions
+                         WHERE course_id = ? AND assignment_id = ? AND passed = 0
+                         ORDER BY exercise_id, user_id, submission_id'''
+                submissions = self.fetchall(sql, (course, assignment, ))
+            else:
+                sql = '''SELECT *
+                         FROM submissions
+                         ORDER BY exercise_id, user_id, submission_id'''
+                submissions = self.fetchall(sql)
 
-        else:
-            sql = '''SELECT *
-                     FROM submissions
-                     ORDER BY exercise_id, user_id, submission_id'''
-            submissions = self.fetchall(sql)
+            for row in submissions:
+                course = row["course_id"]
+                assignment = row["assignment_id"]
+                exercise = row["exercise_id"]
+                user = row["user_id"]
+                submission = row["submission_id"]
+                code = row["code"].replace("\r", "")
 
-        for row in submissions:
-            course = row["course_id"]
-            assignment = row["assignment_id"]
-            exercise = row["exercise_id"]
-            user = row["user_id"]
-            submission = row["submission_id"]
-            code = row["code"].replace("\r", "")
+                progress_file.write(f"Rerunning submission {submission} for course {course}, assignment {assignment}, exercise {exercise}, user {user}.\n")
+                progress_file.flush()
 
-            print(f"Rerunning submission {submission} for course {course}, assignment {assignment}, exercise {exercise}, user {user}.")
+                exercise_basics = self.get_exercise_basics(course, assignment, exercise)
+                exercise_details = self.get_exercise_details(course, assignment, exercise)
 
-            exercise_basics = self.get_exercise_basics(course, assignment, exercise)
-            exercise_details = self.get_exercise_details(course, assignment, exercise)
+                text_output, image_output, tests = exec_code(self.__settings_dict, code, exercise_basics, exercise_details, None)
+                diff, passed, tests = check_exercise_output(exercise_details, text_output, image_output, tests)
 
-            text_output, image_output, tests = exec_code(self.__settings_dict, code, exercise_basics, exercise_details, None)
-            diff, passed, tests = check_exercise_output(exercise_details, text_output, image_output, tests)
+                sql = '''UPDATE submissions
+                         SET text_output = ?,
+                             image_output = ?,
+                             passed = ?
+                         WHERE course_id = ?
+                           AND assignment_id = ?
+                           AND exercise_id = ?
+                           AND user_id = ?
+                           AND submission_id = ?'''
 
-            sql = '''UPDATE submissions
-                     SET text_output = ?,
-                         image_output = ?,
-                         passed = ?
-                     WHERE course_id = ?
-                       AND assignment_id = ?
-                       AND exercise_id = ?
-                       AND user_id = ?
-                       AND submission_id = ?'''
+                self.execute(sql, [text_output, image_output, passed, int(course), int(assignment), int(exercise), user, int(submission)])
 
-            self.execute(sql, [text_output, image_output, passed, int(course), int(assignment), int(exercise), user, int(submission)])
+                for test in tests:
+                    sql = '''INSERT INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, text_output, image_output)
+                             VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
-            for test in tests:
-                sql = '''INSERT INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, text_output, image_output)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)'''
+                    self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission), test["text_output"], test["image_output"], ])
 
-                self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission), test["text_output"], test["image_output"], ])
+            progress_file.write(f"Done rerunning submissions.\n")
+            progress_file.flush()
