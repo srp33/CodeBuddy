@@ -31,7 +31,7 @@ class Content:
         self.conn = sqlite3.connect(f"/database/{settings_dict['db_name']}",
                 isolation_level = None,
                 detect_types = sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES,
-                timeout = 10)
+                timeout = 30)
         self.conn.row_factory = sqlite3.Row
         #self.execute("PRAGMA foreign_keys=ON")
         self.execute("PRAGMA foreign_keys=OFF")
