@@ -1,7 +1,5 @@
-import sys
-sys.path.append("..")
-from ..helper import *
-from ..content import *
+from app.helper.helper import *
+from app.content.content import *
 from tornado.web import *
 import traceback
 class BaseUserHandler(RequestHandler):

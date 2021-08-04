@@ -1,85 +1,1791 @@
-FROM continuumio/miniconda3
+Last login: Wed Aug  4 16:35:59 on ttys000
+You have new mail.
+;sde%                                                                                     (base) zacheliason@ZachsMacbook ~ % ssh zeliason@lscodebuddy.byu.edu
+Linux lscodebuddy 4.19.0-17-amd64 #1 SMP Debian 4.19.194-3 (2021-07-18) x86_64
 
-# See https://jtreminio.com/blog/running-docker-containers-as-current-host-user/#ok-so-what-actually-works
-ARG USER_ID=1000
-ARG GROUP_ID=1000
-ARG USER=codebuddy
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
 
-ADD VERSION /
-ADD Settings.yaml /
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Wed Aug  4 16:44:17 2021 from 10.0.86.241
+zeliason@lscodebuddy:~$ cd codebuddy/
+zeliason@lscodebuddy:~/codebuddy$ vim 2_run_front_end
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  135.4MB
+Step 1/25 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/25 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/25 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/25 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/25 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/25 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/25 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/25 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/25 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/25 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/25 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/25 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/25 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/25 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/25 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/25 : ADD front_end/startup.sh /app/
+ ---> ac719ddceea0
+Step 17/25 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> e64a10133f4b
+Step 18/25 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> 67e1e4c54939
+Step 19/25 : ADD front_end/html/* /tmp/
+ ---> 675564338e8e
+Step 20/25 : ADD front_end/*.py /app/
+ ---> 8b7f645e635a
+Step 21/25 : ADD front_end/secrets.yaml /app/
+ ---> cc310c558444
+Step 22/25 : RUN bash /app/build_html.sh
+ ---> Running in d3dd280cfe84
+/
+Removing intermediate container d3dd280cfe84
+ ---> df74bd54933b
+Step 23/25 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in dce8b3434c41
+Removing intermediate container dce8b3434c41
+ ---> d3cd26d90833
+Step 24/25 : USER $USER
+ ---> Running in 823a1246cdbd
+Removing intermediate container 823a1246cdbd
+ ---> 014a6edc9b7f
+Step 25/25 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in 0d6c96212be9
+Removing intermediate container 0d6c96212be9
+ ---> 3bc8b9903727
+Successfully built 3bc8b9903727
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 22:46:50 UTC 2021]...
+Done vacuuming database [Wed Aug  4 22:46:50 UTC 2021]...
+Starting server...
+^CTraceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1953, in <module>
+  File "/app/webserver.py", line 1953, in <module>
+  File "/app/webserver.py", line 1932, in <module>
+    tornado.ioloop.IOLoop.instance().start()
+  File "/opt/conda/lib/python3.7/site-packages/tornado/platform/asyncio.py", line 149, in start
+    tornado.ioloop.IOLoop.instance().start()
+  File "/opt/conda/lib/python3.7/site-packages/tornado/platform/asyncio.py", line 149, in start
+    server.start(int(os.environ['NUM_PROCESSES']))
+  File "/opt/conda/lib/python3.7/site-packages/tornado/tcpserver.py", line 241, in start
+    self.asyncio_loop.run_forever()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 538, in run_forever
+    process.fork_processes(num_processes, max_restarts)
+  File "/opt/conda/lib/python3.7/site-packages/tornado/process.py", line 148, in fork_processes
+    self.asyncio_loop.run_forever()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 538, in run_forever
+    self._run_once()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 1746, in _run_once
+    pid, status = os.wait()
+KeyboardInterrupt
+    self._run_once()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 1746, in _run_once
+    event_list = self._selector.select(timeout)
+  File "/opt/conda/lib/python3.7/selectors.py", line 468, in select
+    fd_event_list = self._selector.poll(timeout, max_ev)
+KeyboardInterrupt
+    event_list = self._selector.select(timeout)
+  File "/opt/conda/lib/python3.7/selectors.py", line 468, in select
+    fd_event_list = self._selector.poll(timeout, max_ev)
+KeyboardInterrupt
+zeliason@lscodebuddy:~/codebuddy$ ls
+1_run_middle_layer  CodeBuddy-8.db  logs	   run_middle_layer
+2_run_front_end     database	    middle_layer   Settings.yaml
+back_ends	    front_end	    README.md	   VERSION
+build_back_ends     LICENSE	    run_front_end  webserver.py
+zeliason@lscodebuddy:~/codebuddy$ mv CodeBuddy-8.db ../CodeBuddy-3.db
+zeliason@lscodebuddy:~/codebuddy$ cp ../CodeBuddy-3.db database/CodeBuddy.db
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.28MB
+Step 1/25 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/25 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/25 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/25 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/25 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/25 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/25 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/25 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/25 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/25 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/25 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/25 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/25 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/25 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/25 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/25 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/25 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/25 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/25 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 675564338e8e
+Step 20/25 : ADD front_end/*.py /app/
+ ---> Using cache
+ ---> 8b7f645e635a
+Step 21/25 : ADD front_end/secrets.yaml /app/
+ ---> Using cache
+ ---> cc310c558444
+Step 22/25 : RUN bash /app/build_html.sh
+ ---> Using cache
+ ---> df74bd54933b
+Step 23/25 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Using cache
+ ---> d3cd26d90833
+Step 24/25 : USER $USER
+ ---> Using cache
+ ---> 014a6edc9b7f
+Step 25/25 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Using cache
+ ---> 3bc8b9903727
+Successfully built 3bc8b9903727
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 22:50:32 UTC 2021]...
+Done vacuuming database [Wed Aug  4 22:50:34 UTC 2021]...
+Starting server...
+^CTraceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1953, in <module>
+  File "/app/webserver.py", line 1953, in <module>
+  File "/app/webserver.py", line 1932, in <module>
+    tornado.ioloop.IOLoop.instance().start()
+  File "/opt/conda/lib/python3.7/site-packages/tornado/platform/asyncio.py", line 149, in start
+    server.start(int(os.environ['NUM_PROCESSES']))
+    tornado.ioloop.IOLoop.instance().start()
+  File "/opt/conda/lib/python3.7/site-packages/tornado/tcpserver.py", line 241, in start
+  File "/opt/conda/lib/python3.7/site-packages/tornado/platform/asyncio.py", line 149, in start
+    self.asyncio_loop.run_forever()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 538, in run_forever
+    self.asyncio_loop.run_forever()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 538, in run_forever
+    process.fork_processes(num_processes, max_restarts)
+  File "/opt/conda/lib/python3.7/site-packages/tornado/process.py", line 148, in fork_processes
+    pid, status = os.wait()
+    self._run_once()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 1746, in _run_once
+KeyboardInterrupt
+    self._run_once()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 1746, in _run_once
+    event_list = self._selector.select(timeout)
+  File "/opt/conda/lib/python3.7/selectors.py", line 468, in select
+    event_list = self._selector.select(timeout)
+  File "/opt/conda/lib/python3.7/selectors.py", line 468, in select
+    fd_event_list = self._selector.poll(timeout, max_ev)
+KeyboardInterrupt
+    fd_event_list = self._selector.poll(timeout, max_ev)
+KeyboardInterrupt
+^[[Azeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.29MB
+Step 1/25 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/25 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/25 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/25 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/25 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/25 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/25 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/25 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/25 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/25 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/25 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/25 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/25 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/25 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/25 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/25 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/25 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/25 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/25 : ADD front_end/html/* /tmp/
+ ---> 27a4cb85db24
+Step 20/25 : ADD front_end/*.py /app/
+ ---> 1d17b58d1cf2
+Step 21/25 : ADD front_end/secrets.yaml /app/
+ ---> a1a2185af751
+Step 22/25 : RUN bash /app/build_html.sh
+ ---> Running in 64bb28d2c140
+/
+Removing intermediate container 64bb28d2c140
+ ---> 89e2c8d2f1ad
+Step 23/25 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 4bb92133cd68
+Removing intermediate container 4bb92133cd68
+ ---> b44e49ef84a6
+Step 24/25 : USER $USER
+ ---> Running in f6c3717404bb
+Removing intermediate container f6c3717404bb
+ ---> 0a33fba9db42
+Step 25/25 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in c2eda6c60680
+Removing intermediate container c2eda6c60680
+ ---> 297c85be0f2b
+Successfully built 297c85be0f2b
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 22:56:41 UTC 2021]...
+Done vacuuming database [Wed Aug  4 22:56:43 UTC 2021]...
+Starting server...
+^CTraceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1953, in <module>
+  File "/app/webserver.py", line 1953, in <module>
+  File "/app/webserver.py", line 1932, in <module>
+    tornado.ioloop.IOLoop.instance().start()
+  File "/opt/conda/lib/python3.7/site-packages/tornado/platform/asyncio.py", line 149, in start
+    tornado.ioloop.IOLoop.instance().start()
+    server.start(int(os.environ['NUM_PROCESSES']))
+  File "/opt/conda/lib/python3.7/site-packages/tornado/platform/asyncio.py", line 149, in start
+  File "/opt/conda/lib/python3.7/site-packages/tornado/tcpserver.py", line 241, in start
+    self.asyncio_loop.run_forever()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 538, in run_forever
+    self.asyncio_loop.run_forever()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 538, in run_forever
+    process.fork_processes(num_processes, max_restarts)
+  File "/opt/conda/lib/python3.7/site-packages/tornado/process.py", line 148, in fork_processes
+    self._run_once()
+    pid, status = os.wait()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 1746, in _run_once
+    self._run_once()
+KeyboardInterrupt
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 1746, in _run_once
+    event_list = self._selector.select(timeout)
+  File "/opt/conda/lib/python3.7/selectors.py", line 468, in select
+    event_list = self._selector.select(timeout)
+  File "/opt/conda/lib/python3.7/selectors.py", line 468, in select
+    fd_event_list = self._selector.poll(timeout, max_ev)
+    fd_event_list = self._selector.poll(timeout, max_ev)
+KeyboardInterrupt
+KeyboardInterrupt
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.29MB
+Step 1/25 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/25 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/25 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/25 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/25 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/25 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/25 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/25 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/25 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/25 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/25 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/25 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/25 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/25 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/25 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/25 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/25 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/25 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/25 : ADD front_end/html/* /tmp/
+ ---> 7ef236ac4379
+Step 20/25 : ADD front_end/*.py /app/
+ ---> db8a6a5ec60a
+Step 21/25 : ADD front_end/secrets.yaml /app/
+ ---> bc08db805840
+Step 22/25 : RUN bash /app/build_html.sh
+ ---> Running in 918ea09ae5dc
+/
+Removing intermediate container 918ea09ae5dc
+ ---> a9f888ec13e7
+Step 23/25 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in d4672e5ea091
+Removing intermediate container d4672e5ea091
+ ---> 2406f00a0f1a
+Step 24/25 : USER $USER
+ ---> Running in aa9be6ecbb62
+Removing intermediate container aa9be6ecbb62
+ ---> d55cb49720a6
+Step 25/25 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in 9b2e634ae291
+Removing intermediate container 9b2e634ae291
+ ---> 807a1499be37
+Successfully built 807a1499be37
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:00:58 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:01:00 UTC 2021]...
+Starting server...
+^CTraceback (most recent call last):
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1953, in <module>
+  File "/app/webserver.py", line 1953, in <module>
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1932, in <module>
+    tornado.ioloop.IOLoop.instance().start()
+  File "/opt/conda/lib/python3.7/site-packages/tornado/platform/asyncio.py", line 149, in start
+    tornado.ioloop.IOLoop.instance().start()
+  File "/opt/conda/lib/python3.7/site-packages/tornado/platform/asyncio.py", line 149, in start
+    server.start(int(os.environ['NUM_PROCESSES']))
+  File "/opt/conda/lib/python3.7/site-packages/tornado/tcpserver.py", line 241, in start
+    self.asyncio_loop.run_forever()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 538, in run_forever
+    self.asyncio_loop.run_forever()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 538, in run_forever
+    process.fork_processes(num_processes, max_restarts)
+  File "/opt/conda/lib/python3.7/site-packages/tornado/process.py", line 148, in fork_processes
+    self._run_once()
+    self._run_once()
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 1746, in _run_once
+  File "/opt/conda/lib/python3.7/asyncio/base_events.py", line 1746, in _run_once
+    pid, status = os.wait()
+KeyboardInterrupt
+    event_list = self._selector.select(timeout)
+    event_list = self._selector.select(timeout)
+  File "/opt/conda/lib/python3.7/selectors.py", line 468, in select
+  File "/opt/conda/lib/python3.7/selectors.py", line 468, in select
+    fd_event_list = self._selector.poll(timeout, max_ev)
+    fd_event_list = self._selector.poll(timeout, max_ev)
+KeyboardInterrupt
+KeyboardInterrupt
+zeliason@lscodebuddy:~/codebuddy$ git checkout .
+zeliason@lscodebuddy:~/codebuddy$ git checkout separate_webserver_branch
+Switched to branch 'separate_webserver_branch'
+Your branch is up to date with 'origin/separate_webserver_branch'.
+zeliason@lscodebuddy:~/codebuddy$ git pull
+remote: Enumerating objects: 19, done.
+remote: Counting objects: 100% (17/17), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 9 (delta 7), reused 9 (delta 7), pack-reused 0
+Unpacking objects: 100% (9/9), done.
+From https://github.com/zacheliason/CodeBuddy
+   947fc42..2acaf67  separate_webserver_branch -> origin/separate_webserver_branch
+   8618935..2727d32  master                    -> origin/master
+Updating 947fc42..2acaf67
+Fast-forward
+ front_end/content.py                     | 172 ++++++++++++++++++++++-------------------
+ front_end/html/edit_exercise.html        |  10 +++
+ front_end/migration_scripts/15_to_16.py  |  21 +----
+ front_end/migration_scripts/15_to_16.sql |   3 +
+ front_end/migration_scripts/migrate.py   |  16 ++--
+ front_end/startup.sh                     |   1 +
+ front_end/webserver.py                   |   4 -
+ 7 files changed, 115 insertions(+), 112 deletions(-)
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.55MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> 3e497da225d6
+Step 21/26 : ADD front_end/*.py /app/
+ ---> d628a0fddaba
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> ccd2c5aaa1c2
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Running in 67dc914bd37f
+/
+Removing intermediate container 67dc914bd37f
+ ---> c6d6f136f258
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 5afeec399fd6
+Removing intermediate container 5afeec399fd6
+ ---> 38ace77439bf
+Step 25/26 : USER $USER
+ ---> Running in 58f5c6ada017
+Removing intermediate container 58f5c6ada017
+ ---> e7d17095be1f
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in 0d4e2bfec6f9
+Removing intermediate container 0d4e2bfec6f9
+ ---> 86023ec41eb8
+Successfully built 86023ec41eb8
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:21:52 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:21:54 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 1, in <module>
+    from app.helper import *
+ModuleNotFoundError: No module named 'app'
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/Containerfile
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.55MB
+Step 1/25 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/25 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/25 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/25 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/25 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/25 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/25 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/25 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/25 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/25 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/25 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/25 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/25 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/25 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/25 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/25 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/25 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/25 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/25 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/25 : ADD front_end/handlers/*.py /app/handlers/
+ ---> Using cache
+ ---> 3e497da225d6
+Step 21/25 : ADD front_end/*.py /app/
+ ---> Using cache
+ ---> d628a0fddaba
+Step 22/25 : ADD front_end/secrets.yaml /app/
+ ---> Using cache
+ ---> ccd2c5aaa1c2
+Step 23/25 : RUN bash /app/build_html.sh
+ ---> Using cache
+ ---> c6d6f136f258
+Step 24/25 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Using cache
+ ---> 38ace77439bf
+Step 25/25 : USER $USER
+ ---> Using cache
+ ---> e7d17095be1f
+Successfully built e7d17095be1f
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+codebuddy@lscodebuddy:/$ ls
+Settings.yaml  boot	 dev   lib64		  mnt	run		   static  var
+VERSION        conda	 etc   logs		  opt	sbin		   sys
+app	       course	 home  media		  proc	scheduled_scripts  tmp
+bin	       database  lib   migration_scripts  root	srv		   usr
+codebuddy@lscodebuddy:/$ cd app/
+codebuddy@lscodebuddy:/app$ ls
+__init__.py	       exercise.html		   profile_preferences.html
+about.html	       exercise_scores.html	   profile_select_course.html
+assignment.html        exercise_submissions.html   profile_student_help_requests.html
+assignment_admin.html  handlers			   secrets.yaml
+build_html.sh	       help_requests.html	   separate_webserver.py
+consent_forms.html     helper.py		   startup.sh
+contact_us.html        home.html		   student_exercise.html
+content.py	       imgcompare.py		   student_scores.html
+course.html	       new_webserver.py		   summarize_logs.html
+course_admin.html      old_webserver.py		   test.html
+delete_course.html     permissions.html		   timer_error.html
+devlogin.html	       profile_admin.html	   unavailable_assignment.html
+edit_assignment.html   profile_courses.html	   view_answer.html
+edit_course.html       profile_help_requests.html  view_request.html
+edit_exercise.html     profile_instructor.html	   view_scores.html
+edit_scores.html       profile_manage_users.html   webserver.py
+error.html	       profile_personal_info.html
+codebuddy@lscodebuddy:/app$ exit
+exit
+zeliason@lscodebuddy:~/codebuddy$ git pull
+Already up to date.
+zeliason@lscodebuddy:~/codebuddy$ git checkout .
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.55MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> Using cache
+ ---> 3e497da225d6
+Step 21/26 : ADD front_end/*.py /app/
+ ---> Using cache
+ ---> d628a0fddaba
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> Using cache
+ ---> ccd2c5aaa1c2
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Using cache
+ ---> c6d6f136f258
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Using cache
+ ---> 38ace77439bf
+Step 25/26 : USER $USER
+ ---> Using cache
+ ---> e7d17095be1f
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Using cache
+ ---> 86023ec41eb8
+Successfully built 86023ec41eb8
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:22:54 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:22:55 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 1, in <module>
+    from app.helper import *
+ModuleNotFoundError: No module named 'app'
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/handlers/HomeHandler.py
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.55MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> 83a625fdc4ea
+Step 21/26 : ADD front_end/*.py /app/
+ ---> 3c258a816839
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> eb89e2a280f0
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Running in d9fd5031fbf6
+/
+Removing intermediate container d9fd5031fbf6
+ ---> 79d5a9ce3751
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 61e9edbfea2e
+Removing intermediate container 61e9edbfea2e
+ ---> fca72dab0a24
+Step 25/26 : USER $USER
+ ---> Running in 67637fc39220
+Removing intermediate container 67637fc39220
+ ---> e3d0381ffcc9
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in f6c9350befc5
+Removing intermediate container f6c9350befc5
+ ---> adf6c0f4c042
+Successfully built adf6c0f4c042
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:23:37 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:23:38 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 1, in <module>
+    from .helper import *
+ModuleNotFoundError: No module named 'handlers.helper'
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/handlers/HomeHandler.py
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.55MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> b7d086c3f1ba
+Step 21/26 : ADD front_end/*.py /app/
+ ---> 85faac233b75
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> 0954be7c0de5
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Running in 2bfd1e336cc4
+/
+Removing intermediate container 2bfd1e336cc4
+ ---> 34870e754af5
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 199e7cbb1421
+Removing intermediate container 199e7cbb1421
+ ---> 5380dd96adc4
+Step 25/26 : USER $USER
+ ---> Running in e04c2df5dd46
+Removing intermediate container e04c2df5dd46
+ ---> d3ef7cce709e
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in 599cce9e671a
+Removing intermediate container 599cce9e671a
+ ---> cac9dba1e9bb
+Successfully built cac9dba1e9bb
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:24:19 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:24:20 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 1, in <module>
+    from ..helper import *
+ValueError: attempted relative import beyond top-level package
+zeliason@lscodebuddy:~/codebuddy$ git pull
+remote: Enumerating objects: 67, done.
+remote: Counting objects: 100% (67/67), done.
+remote: Compressing objects: 100% (20/20), done.
+remote: Total 67 (delta 47), reused 67 (delta 47), pack-reused 0
+Unpacking objects: 100% (67/67), done.
+From https://github.com/zacheliason/CodeBuddy
+   2acaf67..a43597c  separate_webserver_branch -> origin/separate_webserver_branch
+Updating 2acaf67..a43597c
+error: Your local changes to the following files would be overwritten by merge:
+	front_end/handlers/HomeHandler.py
+Please commit your changes or stash them before you merge.
+Aborting
+zeliason@lscodebuddy:~/codebuddy$ git checkout .
+zeliason@lscodebuddy:~/codebuddy$ git pull
+Updating 2acaf67..a43597c
+Fast-forward
+ front_end/handlers/AddInstructorHandler.py               | 6 ++++--
+ front_end/handlers/AssignmentHandler.py                  | 6 ++++--
+ front_end/handlers/BackEndHandler.py                     | 2 ++
+ front_end/handlers/BaseUserHandler.py                    | 6 ++++--
+ front_end/handlers/CheckPartnersHandler.py               | 4 +++-
+ front_end/handlers/ConsentFormsHandler.py                | 6 ++++--
+ front_end/handlers/CopyAssignmentHandler.py              | 6 ++++--
+ front_end/handlers/CopyExerciseHandler.py                | 4 +++-
+ front_end/handlers/CourseHandler.py                      | 6 ++++--
+ front_end/handlers/CreateVideoExerciseHandler.py         | 4 +++-
+ front_end/handlers/DeleteAssignmentHandler.py            | 6 ++++--
+ front_end/handlers/DeleteAssignmentSubmissionsHandler.py | 6 ++++--
+ front_end/handlers/DeleteCourseHandler.py                | 6 ++++--
+ front_end/handlers/DeleteCourseSubmissionsHandler.py     | 6 ++++--
+ front_end/handlers/DeleteExerciseHandler.py              | 6 ++++--
+ front_end/handlers/DeleteExerciseSubmissionsHandler.py   | 6 ++++--
+ front_end/handlers/DeleteHelpRequestHandler.py           | 6 ++++--
+ front_end/handlers/DevelopmentLoginHandler.py            | 6 ++++--
+ front_end/handlers/DownloadAllScoresHandler.py           | 6 ++++--
+ front_end/handlers/DownloadFileHandler.py                | 4 +++-
+ front_end/handlers/DownloadScoresHandler.py              | 6 ++++--
+ front_end/handlers/EditAssignmentHandler.py              | 6 ++++--
+ front_end/handlers/EditCourseHandler.py                  | 6 ++++--
+ front_end/handlers/EditExerciseHandler.py                | 6 ++++--
+ front_end/handlers/EditScoresHandler.py                  | 6 ++++--
+ front_end/handlers/ExerciseHandler.py                    | 6 ++++--
+ front_end/handlers/ExerciseScoresHandler.py              | 6 ++++--
+ front_end/handlers/ExerciseSubmissionsHandler.py         | 6 ++++--
+ front_end/handlers/ExportCourseHandler.py                | 6 ++++--
+ front_end/handlers/ExportSubmissionsHandler.py           | 6 ++++--
+ front_end/handlers/GetPresubmissionHandler.py            | 4 +++-
+ front_end/handlers/GetSubmissionHandler.py               | 4 +++-
+ front_end/handlers/GetSubmissionsHandler.py              | 4 +++-
+ front_end/handlers/GetTestsHandler.py                    | 4 +++-
+ front_end/handlers/GoogleLoginHandler.py                 | 6 ++++--
+ front_end/handlers/HelpRequestsHandler.py                | 6 ++++--
+ front_end/handlers/HomeHandler.py                        | 6 ++++--
+ front_end/handlers/ImportCourseHandler.py                | 6 ++++--
+ front_end/handlers/LoggingFilter.py                      | 2 ++
+ front_end/handlers/LogoutHandler.py                      | 4 +++-
+ front_end/handlers/MoveExerciseHandler.py                | 6 ++++--
+ front_end/handlers/ProfileAdminHandler.py                | 6 ++++--
+ front_end/handlers/ProfileCoursesHandler.py              | 6 ++++--
+ front_end/handlers/ProfileHelpRequestsHandler.py         | 6 ++++--
+ front_end/handlers/ProfileInstructorHandler.py           | 6 ++++--
+ front_end/handlers/ProfileManageUsersHandler.py          | 6 ++++--
+ front_end/handlers/ProfilePersonalInfoHandler.py         | 6 ++++--
+ front_end/handlers/ProfilePreferencesHandler.py          | 6 ++++--
+ front_end/handlers/ProfileSelectCourseHandler.py         | 6 ++++--
+ front_end/handlers/ProfileStudentHelpRequestsHandler.py  | 6 ++++--
+ front_end/handlers/RemoveAdminHandler.py                 | 6 ++++--
+ front_end/handlers/RemoveAssistantHandler.py             | 6 ++++--
+ front_end/handlers/RemoveInstructorHandler.py            | 6 ++++--
+ front_end/handlers/ResetTimerHandler.py                  | 4 +++-
+ front_end/handlers/RunCodeHandler.py                     | 4 +++-
+ front_end/handlers/SavePresubmissionHandler.py           | 4 +++-
+ front_end/handlers/StaticFileHandler.py                  | 6 ++++--
+ front_end/handlers/StudentExerciseHandler.py             | 6 ++++--
+ front_end/handlers/StudentScoresHandler.py               | 6 ++++--
+ front_end/handlers/SubmitHandler.py                      | 4 +++-
+ front_end/handlers/SubmitHelpRequestHandler.py           | 6 ++++--
+ front_end/handlers/SummarizeLogsHandler.py               | 6 ++++--
+ front_end/handlers/TestHandler.py                        | 4 +++-
+ front_end/handlers/UnregisterHandler.py                  | 6 ++++--
+ front_end/handlers/ViewAnswerHandler.py                  | 6 ++++--
+ front_end/handlers/ViewHelpRequestsHandler.py            | 6 ++++--
+ front_end/handlers/ViewScoresHandler.py                  | 6 ++++--
+ front_end/separate_webserver.py                          | 6 +++---
+ front_end/webserver.py                                   | 4 ++++
+ 69 files changed, 257 insertions(+), 119 deletions(-)
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.65MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> a17ef5aa9a94
+Step 21/26 : ADD front_end/*.py /app/
+ ---> b0c65f888668
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> 295fc43c07a4
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Running in 4e1dd57f3fe7
+/
+Removing intermediate container 4e1dd57f3fe7
+ ---> e617ee1cc423
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 7138184da415
+Removing intermediate container 7138184da415
+ ---> 62e567b70925
+Step 25/26 : USER $USER
+ ---> Running in 472ca2278cc9
+Removing intermediate container 472ca2278cc9
+ ---> 314ad4fedb72
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in a8bd230c7ccb
+Removing intermediate container a8bd230c7ccb
+ ---> 63d931b7690e
+Successfully built 63d931b7690e
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:25:21 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:25:22 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 3, in <module>
+    from ..helper import *
+ValueError: attempted relative import beyond top-level package
+zeliason@lscodebuddy:~/codebuddy$ ls
+1_run_middle_layer  build_back_ends  LICENSE	   README.md	     Settings.yaml
+2_run_front_end     database	     logs	   run_front_end     VERSION
+back_ends	    front_end	     middle_layer  run_middle_layer  webserver.py
+zeliason@lscodebuddy:~/codebuddy$ mkdir front_end/helper
+zeliason@lscodebuddy:~/codebuddy$ mv front_end/helper.py front_end/helper
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/__init__.py
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/handlers/HomeHandler.py
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.65MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> a1d2daf0546c
+Step 21/26 : ADD front_end/*.py /app/
+ ---> d208ec317b91
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> b786c39612a7
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Running in 20439c328977
+/
+Removing intermediate container 20439c328977
+ ---> adfeaef7af50
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 103f2d881ca8
+Removing intermediate container 103f2d881ca8
+ ---> e224649bf34f
+Step 25/26 : USER $USER
+ ---> Running in 025039bfef82
+Removing intermediate container 025039bfef82
+ ---> 1a904b3fb000
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in f35e976d2c5a
+Removing intermediate container f35e976d2c5a
+ ---> e4b12209e947
+Successfully built e4b12209e947
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:31:10 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:31:11 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 3, in <module>
+    from ..helper.helper import *
+ValueError: attempted relative import beyond top-level package
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/handlers/HomeHandler.py
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.65MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> 8b0d442929a3
+Step 21/26 : ADD front_end/*.py /app/
+ ---> 0952c6c9a2c4
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> 13d69082c609
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Running in ba3dc5188a06
+/
+Removing intermediate container ba3dc5188a06
+ ---> b26fdf140232
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 1d7bc37f5e83
+Removing intermediate container 1d7bc37f5e83
+ ---> 32292179919e
+Step 25/26 : USER $USER
+ ---> Running in 4ca618764fc9
+Removing intermediate container 4ca618764fc9
+ ---> 1c1ac01ed8ff
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in 3b35aadd341c
+Removing intermediate container 3b35aadd341c
+ ---> edb735c3d55f
+Successfully built edb735c3d55f
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:32:02 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:32:03 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 3, in <module>
+    from helper.helper import *
+ModuleNotFoundError: No module named 'helper'
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/handlers/HomeHandler.py
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.65MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> a5e43678be46
+Step 21/26 : ADD front_end/*.py /app/
+ ---> 1904b199e67c
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> 76eec7d1f226
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Running in e59dd98990b3
+/
+Removing intermediate container e59dd98990b3
+ ---> c3d729ba7889
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in b8fb5841047f
+Removing intermediate container b8fb5841047f
+ ---> 403dc841798a
+Step 25/26 : USER $USER
+ ---> Running in 84bf6ff51ed0
+Removing intermediate container 84bf6ff51ed0
+ ---> fdf3786f7db9
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in 1f8fac049a44
+Removing intermediate container 1f8fac049a44
+ ---> ccab05687657
+Successfully built ccab05687657
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:32:41 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:32:43 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 3, in <module>
+    from .helper.helper import *
+ModuleNotFoundError: No module named 'handlers.helper'
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/handlers/HomeHandler.py
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.65MB
+Step 1/26 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/26 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/26 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/26 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/26 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/26 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/26 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/26 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/26 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/26 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/26 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/26 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/26 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/26 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/26 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/26 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/26 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/26 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/26 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/26 : ADD front_end/handlers/*.py /app/handlers/
+ ---> 2cd6bee871df
+Step 21/26 : ADD front_end/*.py /app/
+ ---> 1ff08dfef1a2
+Step 22/26 : ADD front_end/secrets.yaml /app/
+ ---> ee3fcdbb0877
+Step 23/26 : RUN bash /app/build_html.sh
+ ---> Running in f7bb17c5cffb
+/
+Removing intermediate container f7bb17c5cffb
+ ---> 58f366f4f311
+Step 24/26 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 028d1b7ac410
+Removing intermediate container 028d1b7ac410
+ ---> ce09eb8cdd3e
+Step 25/26 : USER $USER
+ ---> Running in 56c61bfd38bf
+Removing intermediate container 56c61bfd38bf
+ ---> d3ed2099d94d
+Step 26/26 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in c0cd19dc4bd2
+Removing intermediate container c0cd19dc4bd2
+ ---> 146bc4c0688d
+Successfully built 146bc4c0688d
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:33:18 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:33:19 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 3, in <module>
+    from app.helper.helper import *
+ModuleNotFoundError: No module named 'app.helper'
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/Containerfile
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.65MB
+Step 1/25 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/25 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/25 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/25 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/25 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/25 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/25 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/25 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/25 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/25 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/25 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/25 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/25 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/25 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/25 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/25 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/25 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/25 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/25 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/25 : ADD front_end/handlers/*.py /app/handlers/
+ ---> Using cache
+ ---> 2cd6bee871df
+Step 21/25 : ADD front_end/*.py /app/
+ ---> Using cache
+ ---> 1ff08dfef1a2
+Step 22/25 : ADD front_end/secrets.yaml /app/
+ ---> Using cache
+ ---> ee3fcdbb0877
+Step 23/25 : RUN bash /app/build_html.sh
+ ---> Using cache
+ ---> 58f366f4f311
+Step 24/25 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Using cache
+ ---> ce09eb8cdd3e
+Step 25/25 : USER $USER
+ ---> Using cache
+ ---> d3ed2099d94d
+Successfully built d3ed2099d94d
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+codebuddy@lscodebuddy:/$ ls
+Settings.yaml  boot	 dev   lib64		  mnt	run		   static  var
+VERSION        conda	 etc   logs		  opt	sbin		   sys
+app	       course	 home  media		  proc	scheduled_scripts  tmp
+bin	       database  lib   migration_scripts  root	srv		   usr
+codebuddy@lscodebuddy:/$ cd app/
+codebuddy@lscodebuddy:/app$ ls
+__init__.py	       exercise.html		   profile_select_course.html
+about.html	       exercise_scores.html	   profile_student_help_requests.html
+assignment.html        exercise_submissions.html   secrets.yaml
+assignment_admin.html  handlers			   separate_webserver.py
+build_html.sh	       help_requests.html	   startup.sh
+consent_forms.html     home.html		   student_exercise.html
+contact_us.html        imgcompare.py		   student_scores.html
+content.py	       new_webserver.py		   summarize_logs.html
+course.html	       old_webserver.py		   test.html
+course_admin.html      permissions.html		   timer_error.html
+delete_course.html     profile_admin.html	   unavailable_assignment.html
+devlogin.html	       profile_courses.html	   view_answer.html
+edit_assignment.html   profile_help_requests.html  view_request.html
+edit_course.html       profile_instructor.html	   view_scores.html
+edit_exercise.html     profile_manage_users.html   webserver.py
+edit_scores.html       profile_personal_info.html
+error.html	       profile_preferences.html
+codebuddy@lscodebuddy:/app$ cd exit
+bash: cd: exit: No such file or directory
+codebuddy@lscodebuddy:/app$ exit
+exit
+zeliason@lscodebuddy:~/codebuddy$ git checkout .
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/Containerfile
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/handlers/HomeHandler.py
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/Containerfile
+zeliason@lscodebuddy:~/codebuddy$ ./2_run_front_end
+Sending build context to Docker daemon  27.66MB
+Step 1/28 : FROM continuumio/miniconda3
+ ---> b4adc22212f1
+Step 2/28 : ARG USER_ID=1000
+ ---> Using cache
+ ---> 09cd557a28e5
+Step 3/28 : ARG GROUP_ID=1000
+ ---> Using cache
+ ---> cf29a3199753
+Step 4/28 : ARG USER=codebuddy
+ ---> Using cache
+ ---> 25442a5e0264
+Step 5/28 : ADD VERSION /
+ ---> Using cache
+ ---> 408b4e035d35
+Step 6/28 : ADD Settings.yaml /
+ ---> Using cache
+ ---> 4557c6383584
+Step 7/28 : RUN apt-get update  && apt-get install -y bzip2 zip nodejs npm vim  && apt-get -y autoremove  && apt-get clean  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0  && conda install -c conda-forge spacy  && python -m spacy download en_core_web_sm  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ ---> Using cache
+ ---> 457b476022c9
+Step 8/28 : ADD front_end/aux/*.py /tmp/
+ ---> Using cache
+ ---> 2e79d40f60e8
+Step 9/28 : RUN cd /static  && mkdir bulma  && npm init -y  && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json  && npm install node-sass --save-dev  && npm install bulma --save-dev  && mkdir sass  && echo "@charset \"utf-8\";" > sass/mystyles.scss  && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss  && python /tmp/modify_package.py
+ ---> Using cache
+ ---> 21adf5f7af71
+Step 10/28 : ADD front_end/css/*.scss /static/sass/
+ ---> Using cache
+ ---> 57c6eabe9b56
+Step 11/28 : RUN cd /static  && npm run css-build  && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js  && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css  && git clone https://github.com/ajaxorg/ace-builds.git  && cp -r ace-builds/src-min-noconflict/* .  && rm -rf ace-builds
+ ---> Using cache
+ ---> a40864144c76
+Step 12/28 : ADD front_end/css/*.css /static/
+ ---> Using cache
+ ---> f46faefda84e
+Step 13/28 : ADD front_end/images/* /static/
+ ---> Using cache
+ ---> c7a9a2f38d89
+Step 14/28 : ADD front_end/js/* /static/
+ ---> Using cache
+ ---> 1a361877e0d0
+Step 15/28 : ADD front_end/build_html.sh /app/
+ ---> Using cache
+ ---> ccdb31cdb08b
+Step 16/28 : ADD front_end/startup.sh /app/
+ ---> Using cache
+ ---> ac719ddceea0
+Step 17/28 : ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ ---> Using cache
+ ---> e64a10133f4b
+Step 18/28 : ADD front_end/migration_scripts/* /migration_scripts/
+ ---> Using cache
+ ---> 67e1e4c54939
+Step 19/28 : ADD front_end/html/* /tmp/
+ ---> Using cache
+ ---> 233c22a91a53
+Step 20/28 : ADD front_end/handlers/*.py /app/handlers/
+ ---> Using cache
+ ---> 2cd6bee871df
+Step 21/28 : ADD front_end/helper.py /app/helper/
+ ---> 3505894b1523
+Step 22/28 : ADD front_end/__init__.py /app/helper/
+ ---> f637697933d5
+Step 23/28 : ADD front_end/*.py /app/
+ ---> bb8933a7a0fa
+Step 24/28 : ADD front_end/secrets.yaml /app/
+ ---> 6c2241a7ae89
+Step 25/28 : RUN bash /app/build_html.sh
+ ---> Running in 5d5b77bf2a17
+/
+Removing intermediate container 5d5b77bf2a17
+ ---> 90f7b3f25f12
+Step 26/28 : RUN groupadd -g ${GROUP_ID} ${USER} &&     useradd -l -u ${USER_ID} -g ${USER} ${USER} &&     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} &&     chown --silent --no-dereference --recursive           ${USER_ID}:${GROUP_ID}           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+ ---> Running in 835b56da81ba
+Removing intermediate container 835b56da81ba
+ ---> b9f72d6f8559
+Step 27/28 : USER $USER
+ ---> Running in e333db5ec348
+Removing intermediate container e333db5ec348
+ ---> 1418b0aca304
+Step 28/28 : ENTRYPOINT ["bash", "/app/startup.sh"]
+ ---> Running in 7dc73f2741b3
+Removing intermediate container 7dc73f2741b3
+ ---> 775cb7f6b5d0
+Successfully built 775cb7f6b5d0
+Successfully tagged srp33/codebuddy_front_end:latest
+WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.
+Vacuuming database [Wed Aug  4 23:37:54 UTC 2021]...
+Done vacuuming database [Wed Aug  4 23:37:56 UTC 2021]...
+Starting server...
+Traceback (most recent call last):
+  File "/app/webserver.py", line 1, in <module>
+    from handlers.HomeHandler import *
+  File "/app/handlers/HomeHandler.py", line 4, in <module>
+    from ..content import *
+ValueError: attempted relative import beyond top-level package
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/Containerfile
+zeliason@lscodebuddy:~/codebuddy$ vim front_end/Containerfile
 
-RUN apt-get update \
- && apt-get install -y bzip2 zip nodejs npm vim \
- && apt-get -y autoremove \
- && apt-get clean \
- && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
- && conda install -c conda-forge spacy \
- && python -m spacy download en_core_web_sm \
- && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
-
-#RUN TIMEZONE=$(grep "time_zone: " Settings.yaml | sed -En "s/time_zone: (.*)/\1/p") \
-# && apt-get update \
-# && apt-get install -y bzip2 tzdata zip \
-# && ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime \
-# && echo "$TIMEZONE" | tee /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata \
-# && apt-get -y autoremove \
-# && apt-get clean \
-# && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
-# && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
-ADD front_end/aux/*.py /tmp/
-
-RUN cd /static \
- && mkdir bulma \
- && npm init -y \
- && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json \
- && npm install node-sass --save-dev \
- && npm install bulma --save-dev \
- && mkdir sass \
- && echo "@charset \"utf-8\";" > sass/mystyles.scss \
- && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss \
- && python /tmp/modify_package.py
-
-ADD front_end/css/*.scss /static/sass/
-
-RUN cd /static \
- && npm run css-build \
- && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
- && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css \
- && git clone https://github.com/ajaxorg/ace-builds.git \
- && cp -r ace-builds/src-min-noconflict/* . \
- && rm -rf ace-builds
-
-## To learn about bulmaswatch, see https://jenil.github.io/bulmaswatch/flatly.
-## This is a basic way to install bulmaswatch.
-## For more advanced used, may need to use this strategy: https://bulma.io/documentation/customize/with-node-sass/
-
-## This can be used for font awesome icons.
-##wget -O /static/fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
-
-ADD front_end/css/*.css /static/
-ADD front_end/images/* /static/
-ADD front_end/js/* /static/
-ADD front_end/build_html.sh /app/
-ADD front_end/startup.sh /app/
-ADD front_end/scheduled_scripts/* /scheduled_scripts/
-ADD front_end/migration_scripts/* /migration_scripts/
-ADD front_end/html/* /tmp/
-ADD front_end/handlers/*.py /app/handlers/
-ADD front_end/*.py /app/
-ADD front_end/secrets.yaml /app/
-
-RUN bash /app/build_html.sh
-
-# We'll map the user inside to the container to the user outside the container.
-# This ensures that the permissions on files shared via volumes will be
-# translatable in both directions.
-RUN groupadd -g ${GROUP_ID} ${USER} && \
-    useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
-    install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} && \
-    chown --silent --no-dereference --recursive \
-          ${USER_ID}:${GROUP_ID} \
-          /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
-
-USER $USER
-
-ENTRYPOINT ["bash", "/app/startup.sh"]
+ 54 ## For more advanced used, may need to use this strategy: https://bulma.io/documentati    on/customize/with-node-sass/
+ 55
+ 56 ## This can be used for font awesome icons.
+ 57 ##wget -O /static/fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
+ 58
+ 59 ADD front_end/css/*.css /static/
+ 60 ADD front_end/images/* /static/
+ 61 ADD front_end/js/* /static/
+ 62 ADD front_end/build_html.sh /app/
+ 63 ADD front_end/startup.sh /app/
+ 64 ADD front_end/scheduled_scripts/* /scheduled_scripts/
+ 65 ADD front_end/migration_scripts/* /migration_scripts/
+ 66 ADD front_end/html/* /tmp/
+ 67 ADD front_end/handlers/*.py /app/handlers/
+ 68
+ 69 ADD front_end/helper.py /app/helper/
+ 70 ADD front_end/__init__.py /app/helper/
+ 71 ADD front_end/content.py /app/content/
+ 72 ADD front_end/__init__.py /app/content/
+ 73
+ 74 ADD front_end/*.py /app/
+ 75 ADD front_end/secrets.yaml /app/
+ 76
+ 77 RUN bash /app/build_html.sh
+ 78
+ 79 # We'll map the user inside to the container to the user outside the container.
+ 80 # This ensures that the permissions on files shared via volumes will be
+ 81 # translatable in both directions.
+ 82 RUN groupadd -g ${GROUP_ID} ${USER} && \
+ 83     useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
+ 84     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} && \
+"front_end/Containerfile" 91L, 3541C                                    68,0-1        88%

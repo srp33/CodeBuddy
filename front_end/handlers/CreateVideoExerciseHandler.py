@@ -1,6 +1,4 @@
-import sys
-sys.path.append("..")
-from ..content import *
+from app.content.content import *
 import traceback
 from app.handlers.BaseUserHandler import *
 import datetime
