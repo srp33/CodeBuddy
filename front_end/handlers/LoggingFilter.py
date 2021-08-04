@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 
 class LoggingFilter(logging.Filter):
     def filter(self, record):

@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 from tornado.web import *
 import traceback
 class BackEndHandler(RequestHandler):

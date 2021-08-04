@@ -29,7 +29,7 @@ with open('old_webserver.py') as ws:
                 import_list.append(v)
 
         with open(f'handlers/{f.split(" ")[1].split("(")[0]}.py', 'w') as curr:
-            # curr.write('import sys\nsys.path.append("..")\n')
+            curr.write('import sys\nsys.path.append("..")\n')
             curr.write('\n'.join(import_list))
             curr.write('\n')
             curr.write(f)
