@@ -38,3 +38,6 @@ INSERT INTO tests (course_id, assignment_id, exercise_id, code, test_instruction
             WHERE test_code IS NOT NULL
               AND test_code != ""
               AND show_test_code = 0;
+
+DELETE FROM submissions;
+

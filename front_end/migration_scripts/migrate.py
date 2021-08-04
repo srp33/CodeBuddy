@@ -2,7 +2,9 @@ import atexit
 import sqlite3
 import sys
 import traceback
+
 sys.path.append('/app')
+from content import *
 from helper import *
 
 # Example value: 8_to_9
@@ -18,19 +20,11 @@ check_file_path = f"/migration_scripts/{migration_numbers}_check.sql"
 migrate_file_path = f"/migration_scripts/{migration_numbers}_migrate.sql"
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-
-conn = sqlite3.connect(f"/database/{settings_dict['db_name']}", isolation_level=None, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
-conn.row_factory = sqlite3.Row
-cursor = conn.cursor()
-cursor.execute("PRAGMA foreign_keys=OFF")
-
-atexit.register(conn.close)
-atexit.register(cursor.close)
+content = Content(settings_dict)
 
 check_sql = read_file(check_file_path)
-cursor.execute(check_sql)
 
-if cursor.fetchone()["count"] > 0:
+if content.fetchone(check_sql)["count"] > 0:
     print("***NotNeeded***")
 else:
     sql_statements = read_file(migrate_file_path).split(";")
@@ -38,7 +32,7 @@ else:
     try:
         for sql in sql_statements:
             print(sql)
-            cursor.executescript(sql)
+            content.execute(sql)
         print("***Success***")
     except:
         print(traceback.format_exc())
