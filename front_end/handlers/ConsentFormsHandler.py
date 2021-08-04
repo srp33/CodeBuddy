@@ -1,5 +1,7 @@
-from app.helper import *
-from app.content import *
+import sys
+sys.path.append("..")
+from ..helper import *
+from ..content import *
 import traceback
 from app.handlers.BaseUserHandler import *
 class ConsentFormsHandler(BaseUserHandler):

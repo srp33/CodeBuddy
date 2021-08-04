@@ -1,4 +1,6 @@
-from app.content import *
+import sys
+sys.path.append("..")
+from ..content import *
 from app.handlers.BaseUserHandler import *
 class SavePresubmissionHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):

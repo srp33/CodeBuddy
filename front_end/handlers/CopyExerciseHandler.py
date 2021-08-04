@@ -1,4 +1,6 @@
-from app.content import *
+import sys
+sys.path.append("..")
+from ..content import *
 import traceback
 from app.handlers.BaseUserHandler import *
 class CopyExerciseHandler(BaseUserHandler):

@@ -1,4 +1,6 @@
-from app.helper import *
+import sys
+sys.path.append("..")
+from ..helper import *
 from tornado.web import *
 import traceback
 class LogoutHandler(RequestHandler):
