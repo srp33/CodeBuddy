@@ -2041,15 +2041,15 @@ class Content:
                 course = int(row["course_id"])
                 assignment = int(row["assignment_id"])
 
-                sql = '''SELECT *
+                sql = '''SELECT course_id, assignment_id, exercise_id, user_id, submission_id, code
                          FROM submissions
                          WHERE course_id = ? AND assignment_id = ? AND passed = 0
                          ORDER BY exercise_id, user_id, submission_id'''
                 submissions = self.fetchall(sql, (course, assignment, ))
             else:
-                sql = '''SELECT *
+                sql = '''SELECT course_id, assignment_id, exercise_id, user_id, submission_id, code
                          FROM submissions
-                         ORDER BY exercise_id, user_id, submission_id'''
+                         ORDER BY exercise_id, user_id, submission_id LIMIT 1000'''
                 submissions = self.fetchall(sql)
 
             for row in submissions:
