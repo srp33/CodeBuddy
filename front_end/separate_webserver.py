@@ -8,6 +8,7 @@ importDict = {
     '(BaseUserHandler)': 'from app.handlers.BaseUserHandler import *',
     'datetime': 'import datetime',
     'GoogleOAuth2Mixin': 'from tornado.auth import GoogleOAuth2Mixin',
+    'logging': 'import logging',
 }
 
 with open('old_webserver.py') as ws:

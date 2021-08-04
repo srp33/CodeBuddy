@@ -2,6 +2,7 @@ import sys
 sys.path.append("..")
 from tornado.web import *
 import traceback
+import logging
 class BackEndHandler(RequestHandler):
     def get(self, back_end):
         try:
