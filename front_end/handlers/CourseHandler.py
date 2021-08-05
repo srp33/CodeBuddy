@@ -4,7 +4,7 @@ from StaticFileHandler import *
 from helper import *
 import traceback
 from BaseUserHandler import *
-import datetime
+from datetime import datetime as dt
 from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
@@ -28,7 +28,7 @@ class CourseHandler(BaseUserHandler):
                         user_info=user_info)
         else:
             try:
-                self.render("course.html", courses=content.get_courses(False), assignments=content.get_assignments(course, False), assignment_statuses=content.get_assignment_statuses(course, self.get_user_id()), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), curr_datetime=datetime.datetime.now(), user_info=self.get_user_info())
+                self.render("course.html", courses=content.get_courses(False), assignments=content.get_assignments(course, False), assignment_statuses=content.get_assignment_statuses(course, self.get_user_id()), course_basics=content.get_course_basics(course), course_details=content.get_course_details(course, True), curr_datetime=dt.datetime.now(), user_info=self.get_user_info())
             except Exception as inst:
                 render_error(self, traceback.format_exc())
 

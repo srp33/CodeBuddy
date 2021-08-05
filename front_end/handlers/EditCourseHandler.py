@@ -4,7 +4,7 @@ from StaticFileHandler import *
 from helper import *
 import traceback
 from BaseUserHandler import *
-import datetime
+from datetime import datetime as dt
 from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
@@ -57,7 +57,7 @@ class EditCourseHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 80 characters."
                     else:
                         #content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
-                        content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["consent_text"], course_details["consent_alternative_text"], None, datetime.datetime.now())
+                        content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["consent_text"], course_details["consent_alternative_text"], None, dt.datetime.now())
                         course = content.save_course(course_basics, course_details)
 
             self.render("edit_course.html", courses=content.get_courses(), assignments=content.get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_info=self.get_user_info())

@@ -4,7 +4,7 @@ from StaticFileHandler import *
 from helper import *
 import traceback
 from BaseUserHandler import *
-import datetime
+from datetime import datetime as dt
 from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
@@ -28,7 +28,7 @@ class SubmitHelpRequestHandler(BaseUserHandler):
                 text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, request=None)
                 text_output = format_output_as_html(text_output)
 
-                content.save_help_request(course, assignment, exercise, user_id, code, text_output, image_output, student_comment, datetime.datetime.now())
+                content.save_help_request(course, assignment, exercise, user_id, code, text_output, image_output, student_comment, dt.datetime.now())
 
         except Exception as inst:
             render_error(self, traceback.format_exc())

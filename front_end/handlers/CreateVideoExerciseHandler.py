@@ -3,7 +3,7 @@ sys.path.append("..")
 from StaticFileHandler import *
 import traceback
 from BaseUserHandler import *
-import datetime
+from datetime import datetime as dt
 from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
@@ -24,7 +24,7 @@ class CreateVideoExerciseHandler(BaseUserHandler):
             exercise_basics["title"] = self.get_body_argument("title")
             exercise_details["instructions"] = self.get_body_argument("instructions")
             exercise_details["back_end"] = "any_response"
-            created_date = datetime.datetime.now()
+            created_date = dt.datetime.now()
             exercise_details["date_updated"] = created_date
             exercise_details["date_created"] = created_date
 

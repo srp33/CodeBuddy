@@ -4,7 +4,7 @@ from StaticFileHandler import *
 from helper import *
 import traceback
 from BaseUserHandler import *
-import datetime
+from datetime import datetime as dt
 from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
@@ -23,7 +23,7 @@ class AssignmentHandler(BaseUserHandler):
             try:
                 user_info = self.get_user_info()
                 assignment_details = content.get_assignment_details(course, assignment, True)
-                curr_datetime = datetime.datetime.now()
+                curr_datetime = dt.datetime.now()
                 start_time = content.get_user_assignment_start_time(course, assignment, user_info["user_id"])
                 client_ip = get_client_ip_address(self.request)
 
@@ -56,7 +56,7 @@ class AssignmentHandler(BaseUserHandler):
             start_time = self.get_body_argument("start_time")
             content.set_user_assignment_start_time(course, assignment, user_info["user_id"], start_time)
 
-            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=content.get_exercises(course, assignment, show), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=datetime.datetime.now(), start_time=content.get_user_assignment_start_time(course, assignment, user_info["user_id"]), user_info=user_info)
+            self.render("assignment.html", courses=content.get_courses(show), assignments=content.get_assignments(course, show), exercises=content.get_exercises(course, assignment, show), exercise_statuses=content.get_exercise_statuses(course, assignment, user_info["user_id"]), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment, True), curr_datetime=dt.datetime.now(), start_time=content.get_user_assignment_start_time(course, assignment, user_info["user_id"]), user_info=user_info)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

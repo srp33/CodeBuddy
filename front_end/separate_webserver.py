@@ -5,7 +5,7 @@ importDict = {
     '(RequestHandler)': ['from tornado.web import *'],
     'traceback': ['import traceback'],
     '(BaseUserHandler)': ['from BaseUserHandler import *'],
-    'datetime': ['import datetime'],
+    'datetime': ['from datetime import datetime as dt'],
     'GoogleOAuth2Mixin': ['from tornado.auth import GoogleOAuth2Mixin'],
     'logging': ['import logging'],
     'content': ['from content import *', 'settings_dict = load_yaml_dict(read_file("/Settings.yaml"))\ncontent = Content(settings_dict)'],
@@ -19,7 +19,7 @@ with open('old_webserver.py') as ws:
     file = ws.read()
     file = file.split("class ")
     new_webserver = file[0]
-    file = [f'class {file[i]}' for i in range(len(file)) if i != 0]
+    file = [f'class {file[i].replace("datetime.datetime", "dt.datetime")}' for i in range(len(file)) if i != 0]
     end = file[-1].split('return True\n')[1]
     file[-1] = file[-1].split('if __name__ == "__main__":')[0]
     new_webserver = f'{new_webserver}\n\n{end}'

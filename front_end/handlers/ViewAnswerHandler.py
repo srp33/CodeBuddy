@@ -4,7 +4,7 @@ from StaticFileHandler import *
 from helper import *
 import traceback
 from BaseUserHandler import *
-import datetime
+from datetime import datetime as dt
 from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
@@ -28,7 +28,7 @@ class ViewAnswerHandler(BaseUserHandler):
                             assignment_basics=content.get_assignment_basics(course, assignment), error="restricted_ip",
                             user_info=user_info)
             else:
-                self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=content.get_exercises(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, user), code_completion_path=back_end["code_completion_path"], last_submission=content.get_last_submission(course, assignment, exercise, user), student_submissions=content.get_student_submissions(course, assignment, exercise, user), curr_time=datetime.datetime.now(), format_content=True, user_info=self.get_user_info())
+                self.render("view_answer.html", courses=content.get_courses(), assignments=content.get_assignments(course), exercises=content.get_exercises(course, assignment), course_basics=content.get_course_basics(course), assignment_basics=content.get_assignment_basics(course, assignment), assignment_details=content.get_assignment_details(course, assignment), exercise_basics=content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, exercise_statuses=content.get_exercise_statuses(course, assignment, user), code_completion_path=back_end["code_completion_path"], last_submission=content.get_last_submission(course, assignment, exercise, user), student_submissions=content.get_student_submissions(course, assignment, exercise, user), curr_time=dt.datetime.now(), format_content=True, user_info=self.get_user_info())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
