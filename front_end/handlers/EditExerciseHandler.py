@@ -3,7 +3,7 @@ sys.path.append("..")
 from helper import *
 import traceback
 from BaseUserHandler import *
-from datetime import datetime
+import datetime
 from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
