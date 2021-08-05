@@ -29,7 +29,7 @@ with open('old_webserver.py') as ws:
         with open("handlers/__init__.py", "w") as init:
             init.write("")
     for f in file:
-        import_list_1 = ['from StaticFileHandler import *']
+        import_list_1 = []
         import_list_2 = []
         for k,v in importDict.items():
             if k in f:

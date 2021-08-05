@@ -1,4 +1,3 @@
-from StaticFileHandler import *
 import traceback
 from BaseUserHandler import *
 from content import *

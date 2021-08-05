@@ -1,4 +1,3 @@
-from StaticFileHandler import *
 import logging
 import contextvars
 

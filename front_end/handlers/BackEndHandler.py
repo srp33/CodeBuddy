@@ -1,4 +1,3 @@
-from StaticFileHandler import *
 from tornado.web import *
 import traceback
 import logging

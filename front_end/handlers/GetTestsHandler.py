@@ -1,4 +1,3 @@
-from StaticFileHandler import *
 from BaseUserHandler import *
 from content import *
 

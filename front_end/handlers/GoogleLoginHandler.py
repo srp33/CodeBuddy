@@ -1,4 +1,3 @@
-from StaticFileHandler import *
 from helper import *
 import traceback
 from tornado.auth import GoogleOAuth2Mixin
