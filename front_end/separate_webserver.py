@@ -36,6 +36,6 @@ with open('old_webserver.py') as ws:
             curr.write(f)
     with open(f'webserver.py', 'w') as nws:
         for f in file:
-            nws.write(f'from handlers.{f.split(" ")[1].split("(")[0]} import *\n')
+            nws.write(f'from {f.split(" ")[1].split("(")[0]} import *\n')
         nws.write('\n')
         nws.write(new_webserver)
