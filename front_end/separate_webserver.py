@@ -10,9 +10,9 @@ importDict = {
     'logging': ['import logging'],
     'content': ['from content import *', 'settings_dict = load_yaml_dict(read_file("/Settings.yaml"))\ncontent = Content(settings_dict)'],
     'user_info_var': ['import contextvars', 'user_info_var = contextvars.ContextVar("user_info")'],
-    'user_is_administrator_var': ['', 'contextvars.ContextVar("user_is_administrator")'],
-    'user_instructor_courses_var': ['', 'contextvars.ContextVar("user_instructor_courses")'],
-    'user_assistant_courses_var': ['', 'contextvars.ContextVar("user_assistant_courses")'],
+    'user_is_administrator_var': ['', 'user_is_administrator_var = contextvars.ContextVar("user_is_administrator")'],
+    'user_instructor_courses_var': ['', 'user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")'],
+    'user_assistant_courses_var': ['', 'user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")'],
 }
 
 with open('old_webserver.py') as ws:

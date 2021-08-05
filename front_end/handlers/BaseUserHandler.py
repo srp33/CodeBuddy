@@ -12,9 +12,9 @@ import contextvars
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
 user_info_var = contextvars.ContextVar("user_info")
-contextvars.ContextVar("user_is_administrator")
-contextvars.ContextVar("user_instructor_courses")
-contextvars.ContextVar("user_assistant_courses")
+user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
+user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
+user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
 
 class BaseUserHandler(RequestHandler):
     def prepare(self):
