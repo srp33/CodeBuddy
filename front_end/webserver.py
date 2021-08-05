@@ -165,6 +165,79 @@ def make_app():
     return app
 
 
+
+
+if __name__ == "__main__":
+    if "PORT" in os.environ and "MPORT" in os.environ:
+        application = make_app()
+
+        secrets_dict = load_yaml_dict(read_file("/app/secrets.yaml"))
+        application.settings["cookie_secret"] = secrets_dict["cookie"]
+        application.settings["google_oauth"] = {
+            "key": secrets_dict["google_oauth_key"],
+            "secret": secrets_dict["google_oauth_secret"]}
+        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+
+        content = Content(settings_dict)
+        content.create_database_tables()
+
+        database_version = content.get_database_version()
+        code_version = int(read_file("VERSION").rstrip())
+
+        # Check to see whether there is a database migration script (should only be one per version).
+        # If so, make a backup copy of the database and then do the migration.
+        for v in range(database_version, code_version):
+            run_command("bash /etc/cron.hourly/back_up_database.sh")
+
+            migration = f"{v}_to_{v + 1}"
+            print(f"Checking database status for version {v+1}...")
+
+            if os.path.isfile(f"/migration_scripts/{migration}.py"):
+                command = f"python /migration_scripts/{migration}.py"
+            else:
+                command = f"python /migration_scripts/migrate.py {migration}"
+
+            result = run_command(command)
+
+            if "***NotNeeded***" in result:
+                print("Database migration not needed.")
+            elif "***Success***" in result:
+                print(f"Database successfully migrated to version {v+1}.")
+                content.update_database_version(code_version)
+            else:
+                print(f"Database migration failed for verson {v+1}, so rolling back...")
+                print(result)
+                run_command("bash /etc/cron.hourly/restore_database.sh")
+                sys.exit(1)
+
+        server = tornado.httpserver.HTTPServer(application)
+        server.bind(int(os.environ['PORT']))
+        server.start(int(os.environ['NUM_PROCESSES']))
+
+        user_info_var = contextvars.ContextVar("user_info")
+        user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
+        user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
+        user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
+
+        # Set up logging
+        options.log_file_prefix = "/logs/codebuddy.log"
+        options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
+        options.log_file_num_backups = 10
+        parse_command_line()
+        my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s %(user_id)s')
+        logging_filter = LoggingFilter()
+        for handler in logging.getLogger().handlers:
+            handler.addFilter(logging_filter)
+        root_logger = logging.getLogger()
+        root_streamhandler = root_logger.handlers[0]
+        root_streamhandler.setFormatter(my_log_formatter)
+
+        logging.info("Starting on port {}...".format(os.environ['PORT']))
+        tornado.ioloop.IOLoop.instance().start()
+    else:
+        logging.error("Values must be specified for the PORT and MPORT environment variables.")
+        sys.exit(1)
+
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         if file_name.endswith(".html"):

@@ -4,6 +4,8 @@ import contextvars
 
 class LoggingFilter(logging.Filter):
     def filter(self, record):
+        user_info_var = contextvars.ContextVar("user_info")
+
         try:
             user_info = user_info_var.get()
 
