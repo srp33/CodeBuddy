@@ -8,8 +8,6 @@ from content import *
 import contextvars
 
 
-
-
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
 user_info_var = contextvars.ContextVar("user_info")

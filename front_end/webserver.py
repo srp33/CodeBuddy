@@ -164,7 +164,6 @@ def make_app():
 
     return app
 
-
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         if file_name.endswith(".html"):
@@ -191,8 +190,6 @@ class StaticFileHandler(RequestHandler):
 
             self.set_header('Content-type', content_type)
             self.write(file_contents)
-
-
 
 if __name__ == "__main__":
     if "PORT" in os.environ and "MPORT" in os.environ:

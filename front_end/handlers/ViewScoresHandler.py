@@ -7,6 +7,7 @@ from BaseUserHandler import *
 import datetime as dt
 from content import *
 
+
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
 

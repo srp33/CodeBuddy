@@ -6,7 +6,6 @@ from tornado.web import *
 import traceback
 
 
-
 class TestHandler(RequestHandler):
     def get(self):
         try:

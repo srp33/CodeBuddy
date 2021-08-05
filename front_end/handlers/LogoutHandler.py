@@ -7,7 +7,6 @@ import traceback
 import logging
 
 
-
 class LogoutHandler(RequestHandler):
     def get(self):
         try:
