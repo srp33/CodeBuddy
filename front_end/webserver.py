@@ -164,6 +164,7 @@ def make_app():
 
     return app
 
+# StaticFileHandler needs to stay inside of webserver.py for css and js files to be loaded properly. This might have something to do with the order the async functions are executed in, but we aren't sure.
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         if file_name.endswith(".html"):
