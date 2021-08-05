@@ -4,8 +4,6 @@ import traceback
 import logging
 
 
-settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-
 class LogoutHandler(RequestHandler):
     def get(self):
         try:

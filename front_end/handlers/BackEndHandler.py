@@ -1,10 +1,7 @@
 from tornado.web import *
-from helper import *
 import traceback
 import logging
 
-
-settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
 class BackEndHandler(RequestHandler):
     def get(self, back_end):
@@ -13,3 +10,4 @@ class BackEndHandler(RequestHandler):
         except Exception as inst:
             logging.error(self, traceback.format_exc())
             self.write(json.dumps({"Error": "An error occurred."}))
+

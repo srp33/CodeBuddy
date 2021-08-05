@@ -3,9 +3,6 @@ from BaseUserHandler import *
 from content import *
 
 
-settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-content = Content(settings_dict)
-
 class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, exercise):
         out_dict = {"text_output": "", "image_output": "", "diff": "", "passed": False, "submission_id": ""}

@@ -5,9 +5,6 @@ import datetime as dt
 from content import *
 
 
-settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-content = Content(settings_dict)
-
 class AssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
