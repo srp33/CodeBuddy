@@ -3,7 +3,7 @@ sys.path.append("..")
 from helper import *
 from content import *
 import traceback
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class DownloadAllScoresHandler(BaseUserHandler):
     def get(self, course):
         course_basics = content.get_course_basics(course)

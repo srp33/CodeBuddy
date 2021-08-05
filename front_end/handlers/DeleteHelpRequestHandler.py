@@ -3,7 +3,7 @@ sys.path.append("..")
 from helper import *
 from content import *
 import traceback
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class DeleteHelpRequestHandler(BaseUserHandler):
     def post(self, course, assignment, exercise, user_id):
         try:

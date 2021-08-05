@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
 from content import *
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class CheckPartnersHandler(BaseUserHandler):
     def post(self, course):
         partner_key = self.get_body_argument("partner_key")

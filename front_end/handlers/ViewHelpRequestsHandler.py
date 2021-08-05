@@ -3,7 +3,7 @@ sys.path.append("..")
 from helper import *
 from content import *
 import traceback
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class ViewHelpRequestsHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, student_id):
         try:

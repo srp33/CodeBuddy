@@ -3,7 +3,7 @@ sys.path.append("..")
 from helper import *
 from content import *
 import traceback
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class MoveExerciseHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         try:

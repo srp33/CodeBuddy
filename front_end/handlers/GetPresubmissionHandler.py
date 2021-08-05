@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from content import *
 import traceback
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class GetPresubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, student_id):
         user_info = self.get_user_info()

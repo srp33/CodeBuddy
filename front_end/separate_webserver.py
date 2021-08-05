@@ -5,7 +5,7 @@ importDict = {
     'content': 'from content import *',
     '(RequestHandler)': 'from tornado.web import *',
     'traceback': 'import traceback',
-    '(BaseUserHandler)': 'from app.handlers.BaseUserHandler import *',
+    '(BaseUserHandler)': 'from BaseUserHandler import *',
     'datetime': 'import datetime',
     'GoogleOAuth2Mixin': 'from tornado.auth import GoogleOAuth2Mixin',
     'logging': 'import logging',

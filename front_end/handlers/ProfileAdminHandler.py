@@ -3,7 +3,7 @@ sys.path.append("..")
 from helper import *
 from content import *
 import traceback
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class ProfileAdminHandler(BaseUserHandler):
     def get (self, user_id):
         try:

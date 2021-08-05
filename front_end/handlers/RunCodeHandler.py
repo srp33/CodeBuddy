@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from content import *
 import traceback
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class RunCodeHandler(BaseUserHandler):
     async def post(self, course, assignment, exercise):
         out_dict = {"text_output": "", "image_output": ""}

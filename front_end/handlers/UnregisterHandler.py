@@ -3,7 +3,7 @@ sys.path.append("..")
 from helper import *
 from content import *
 import traceback
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class UnregisterHandler(BaseUserHandler):
     def post(self, course, user_id):
         try:
@@ -22,4 +22,3 @@ class UnregisterHandler(BaseUserHandler):
 
         except Exception as inst:
             render_error(self, traceback.format_exc())
-

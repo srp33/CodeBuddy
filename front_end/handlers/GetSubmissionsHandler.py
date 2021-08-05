@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
 from content import *
-from app.handlers.BaseUserHandler import *
+from BaseUserHandler import *
 class GetSubmissionsHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, user_id):
         try:
