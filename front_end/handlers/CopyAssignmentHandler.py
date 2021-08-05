@@ -1,7 +1,5 @@
-from helper import *
 import traceback
 from BaseUserHandler import *
-from content import *
 
 
 class CopyAssignmentHandler(BaseUserHandler):

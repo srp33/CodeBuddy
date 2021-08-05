@@ -1,7 +1,5 @@
-from helper import *
 import traceback
 from tornado.auth import GoogleOAuth2Mixin
-from content import *
 
 
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):

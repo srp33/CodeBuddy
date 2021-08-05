@@ -1,6 +1,5 @@
 import traceback
 from BaseUserHandler import *
-from content import *
 
 
 class GetPresubmissionHandler(BaseUserHandler):

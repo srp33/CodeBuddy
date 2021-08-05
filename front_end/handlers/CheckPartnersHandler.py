@@ -1,5 +1,4 @@
 from BaseUserHandler import *
-from content import *
 
 
 class CheckPartnersHandler(BaseUserHandler):

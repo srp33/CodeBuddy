@@ -1,7 +1,6 @@
 import traceback
 from BaseUserHandler import *
 import datetime as dt
-from content import *
 
 
 class CreateVideoExerciseHandler(BaseUserHandler):
