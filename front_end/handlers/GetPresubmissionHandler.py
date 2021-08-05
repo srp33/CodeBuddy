@@ -1,6 +1,6 @@
 import sys
 sys.path.append("..")
-from app.content.content import *
+from content import *
 import traceback
 from app.handlers.BaseUserHandler import *
 class GetPresubmissionHandler(BaseUserHandler):

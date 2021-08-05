@@ -1,6 +1,6 @@
 import sys
 sys.path.append("..")
-from app.helper.helper import *
+from helper import *
 from tornado.web import *
 import traceback
 import logging

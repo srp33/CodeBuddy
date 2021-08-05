@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
-from app.helper.helper import *
-from app.content.content import *
+from helper import *
+from content import *
 from tornado.web import *
 import traceback
 class BaseUserHandler(RequestHandler):
@@ -47,4 +47,3 @@ class BaseUserHandler(RequestHandler):
 
     def is_student_for_course(self, course_id):
         return not self.is_administrator() and not self.is_instructor_for_course(course_id) and not self.is_assistant_for_course(course_id)
-
