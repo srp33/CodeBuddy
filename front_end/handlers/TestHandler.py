@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 from StaticFileHandler import *
 from helper import *
 from tornado.web import *

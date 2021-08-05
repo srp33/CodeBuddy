@@ -39,7 +39,6 @@ with open('old_webserver.py') as ws:
                     import_list_2.append(v[1])
 
         with open(f'handlers/{f.split(" ")[1].split("(")[0]}.py', 'w') as curr:
-            curr.write('import sys\nsys.path.append("..")\n')
             curr.write('\n'.join(import_list_1))
             curr.write('\n\n\n')
             if len(import_list_2) > 0:

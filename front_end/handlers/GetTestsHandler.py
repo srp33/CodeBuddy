@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 from StaticFileHandler import *
 from BaseUserHandler import *
 from content import *

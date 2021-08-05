@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 from StaticFileHandler import *
 from tornado.web import *
 import traceback
