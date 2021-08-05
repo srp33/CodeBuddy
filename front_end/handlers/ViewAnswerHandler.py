@@ -4,7 +4,7 @@ from StaticFileHandler import *
 from helper import *
 import traceback
 from BaseUserHandler import *
-from datetime import datetime as dt
+import datetime as dt
 from content import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))

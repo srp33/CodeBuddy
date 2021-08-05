@@ -5,7 +5,7 @@ importDict = {
     '(RequestHandler)': ['from tornado.web import *'],
     'traceback': ['import traceback'],
     '(BaseUserHandler)': ['from BaseUserHandler import *'],
-    'datetime': ['from datetime import datetime as dt'],
+    'datetime': ['import datetime as dt'],
     'GoogleOAuth2Mixin': ['from tornado.auth import GoogleOAuth2Mixin'],
     'logging': ['import logging'],
     'content': ['from content import *', 'settings_dict = load_yaml_dict(read_file("/Settings.yaml"))\ncontent = Content(settings_dict)'],
