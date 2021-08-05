@@ -1,9 +1,13 @@
 import sys
 sys.path.append("..")
-from content import *
 import traceback
 from BaseUserHandler import *
 import datetime
+from content import *
+settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+content = Content(settings_dict)
+
+
 class CreateVideoExerciseHandler(BaseUserHandler):
     def post(self, course, assignment):
         response_dict = {"message": ""}

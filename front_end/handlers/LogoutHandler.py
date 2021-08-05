@@ -4,6 +4,8 @@ from helper import *
 from tornado.web import *
 import traceback
 import logging
+
+
 class LogoutHandler(RequestHandler):
     def get(self):
         try:

@@ -1,9 +1,13 @@
 import sys
 sys.path.append("..")
 from helper import *
-from content import *
 import traceback
 from BaseUserHandler import *
+from content import *
+settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+content = Content(settings_dict)
+
+
 class ProfileInstructorHandler(BaseUserHandler):
     def get (self, course_id, user_id):
         try:

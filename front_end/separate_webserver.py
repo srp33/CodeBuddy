@@ -2,13 +2,14 @@ import os
 
 importDict = {
     'render_error': 'from helper import *',
-    'content': 'from content import *',
     '(RequestHandler)': 'from tornado.web import *',
     'traceback': 'import traceback',
     '(BaseUserHandler)': 'from BaseUserHandler import *',
     'datetime': 'import datetime',
     'GoogleOAuth2Mixin': 'from tornado.auth import GoogleOAuth2Mixin',
     'logging': 'import logging',
+    'content': 'from content import *\nsettings_dict = load_yaml_dict(read_file("/Settings.yaml"))\ncontent = Content(settings_dict)',
+    'user_info_var': 'import contextvars\n\nuser_info_var = contextvars.ContextVar("user_info")',
 }
 
 with open('old_webserver.py') as ws:
@@ -19,6 +20,7 @@ with open('old_webserver.py') as ws:
     end = file[-1].split('return True\n')[1]
     file[-1] = file[-1].split('if __name__ == "__main__":')[0]
     new_webserver = f'{new_webserver}\n\n{end}'
+
     if not os.path.isdir('handlers'):
         os.mkdir('handlers')
         with open("handlers/__init__.py", "w") as init:
@@ -30,9 +32,9 @@ with open('old_webserver.py') as ws:
                 import_list.append(v)
 
         with open(f'handlers/{f.split(" ")[1].split("(")[0]}.py', 'w') as curr:
-            curr.write('import sys\nsys.path.append("..")\n\n\n')
+            curr.write('import sys\nsys.path.append("..")\n')
             curr.write('\n'.join(import_list))
-            curr.write('\n')
+            curr.write('\n\n\n')
             curr.write(f)
     with open(f'webserver.py', 'w') as nws:
         for f in file:

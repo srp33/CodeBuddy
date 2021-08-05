@@ -1,9 +1,16 @@
 import sys
 sys.path.append("..")
 from helper import *
-from content import *
 from tornado.web import *
 import traceback
+from content import *
+settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+content = Content(settings_dict)
+import contextvars
+
+user_info_var = contextvars.ContextVar("user_info")
+
+
 class BaseUserHandler(RequestHandler):
     def prepare(self):
         try:
@@ -47,3 +54,4 @@ class BaseUserHandler(RequestHandler):
 
     def is_student_for_course(self, course_id):
         return not self.is_administrator() and not self.is_instructor_for_course(course_id) and not self.is_assistant_for_course(course_id)
+

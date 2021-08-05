@@ -1,9 +1,13 @@
 import sys
 sys.path.append("..")
 from helper import *
-from content import *
 from tornado.web import *
 import traceback
+from content import *
+settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+content = Content(settings_dict)
+
+
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         if file_name.endswith(".html"):
