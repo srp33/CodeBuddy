@@ -206,9 +206,10 @@ pre {
     background-color: white;
 }
 
+/* Styles help request comments. */
 .comment {
     font-size: 14px;
-    border: 2px solid  #1AB28C;
+    border: 2px solid  #1AB28C; /* dark teal */
     width: 100%;
     border-radius: 5px;
     padding: 14px;
@@ -220,16 +221,16 @@ pre {
 }
 
 .help_request_div {
-    background-color: #f5f5f5;
-    border: 2px solid  #f5f5f5;
+    background-color: #f5f5f5; /* light grey */
+    border: 2px solid  #f5f5f5; /* light grey */
     border-radius: 15px;
     margin-top: 25px;
     padding: 20px;
 }
 
 .suggestion-div {
-    background-color: #f5f5f5;
-    border: 2px solid  #f5f5f5;
+    background-color: #f5f5f5; /* light grey */
+    border: 2px solid  #f5f5f5; /* light grey */
     border-radius: 15px;
     margin-top: 10px;
     padding: 20px;
@@ -260,6 +261,7 @@ td > button {
     width: 50%;
 }
 
+/* Creates a drop shadow. */
 .shadow-box {
     box-shadow: 3px 3px 6px lightgray;
     border-radius: 10px;
@@ -268,12 +270,14 @@ td > button {
     margin-bottom: 30px;
 }
 
+/* Creates segment with one item per row. */
 .row-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
 }
 
+/* Creates left justified segment with one item per row. */
 .front-row-container {
     display: flex;
     flex-wrap: wrap;
@@ -284,6 +288,7 @@ td > button {
     width: 80%;
 }
 
+/* This width is set at 63% so as to not cause the Previous Exercise and Next Exercise buttons to wrap onto a second line. */
 .e-title-container {
     width: 63%;
 }
@@ -304,6 +309,7 @@ td > button {
     padding: 0 10px 0 10px;
 }
 
+/* Styles data files added to an exercise. */
 .file-cta {
     display: flex;
     align-items: center;
@@ -334,25 +340,27 @@ td > button {
     margin-left: 10px;
 }
 
+/* Styles help requests on view_request.html */
 .spread-div {
     display: flex;
     justify-content: space-between;
 }
 
+/* Styles submissions on exercise_student.html */
 .collapsible {
     background-color: white;
     font-size: 20px;
     text-align: left;
     cursor: pointer;
-    border: 2px solid  #363636;
+    border: 2px solid  #363636; /* dark grey */
     width: 100%;
-    border-left: 12px solid  #363636;
+    border-left: 12px solid  #363636; /* dark grey */
     border-radius: 5px;
     padding: 14px;
     margin-top: 10px;
 }
 
-.collapsible-f {
+/* .collapsible-f {
     background-color: white;
     font-size: 20px;
     text-align: left;
@@ -364,15 +372,16 @@ td > button {
     padding: 14px;
     margin-top: 10px;
 }
-
+ */
 .active, .collapsible:hover {
-    background-color: #f8f8f8;
+    background-color: #f8f8f8; /* light grey */
 }
 
 .active, .collapsible-f:hover {
-    background-color: #f8f8f8;
+    background-color: #f8f8f8; /* light grey */
 }
 
+/* Styles hidden content of collapsible submission bubbles on exercise_student.html */
 .c-content {
     padding: 0 18px;
     display: none;
@@ -382,16 +391,18 @@ td > button {
     margin-bottom: 0;
 }
 
+/* Styles right button on view_request.html */
 .tall-button {
     height: 100%;
     width: 30px;
-    background-color: #1AB28C;
+    background-color: #1AB28C; /* dark teal */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
+/* Styles help requests div on view_requests. */
 .padded-div {
     padding: 20px;
     padding-bottom: 60px;
@@ -400,6 +411,7 @@ td > button {
     overflow-y: scroll;
 }
 
+/* Styles instructions div. */
 .instructions {
     background-color: white;
     padding: 20px;
@@ -407,21 +419,24 @@ td > button {
     margin-bottom: 15px;
 }
 
+/* Sets margins on column div in profile_admin, among other places. */
 .columns {
     margin-bottom: 0 !important;
 }
 
+/* Sets smaller font size. */
 .smaller-font {
     font-size: 16px;
 }
 
+/* Sets hover on fas icons. */
 .fas:hover {
     cursor: pointer;
 }
 
 .student-exercise-notification {
     color: white;
-    background-color: #1AB28C;
+    background-color: #1AB28C; /* dark teal */
     border-radius: 5px;
     padding: 20px;
     font-size: 20px;
@@ -429,7 +444,7 @@ td > button {
 }
 
 .has-background-orange {
-    background-color: #FF9138;
+    background-color: #FF9138; /* orange */
     color: white;
 }
 
@@ -438,19 +453,19 @@ td > button {
 }
 
 .passing-btn-color {
-    background-color: #00d1b2;
-    border-color: #00d1b2;
-    color: #363636;
+    background-color: #00d1b2; /* teal */
+    border-color: #00d1b2; /* teal */
+    color: #363636; /* dark grey */
 }
 
 .failing-btn-color {
-    background-color: #FF9138;
-    border-color: #FF9138;
-    color: #363636;
+    background-color: #FF9138; /* orange */
+    border-color: #FF9138; /* orange */
+    color: #363636; /* dark grey */
 }
 
 .grey-text {
-    color: #363636;
+    color: #363636; /* dark grey */
 }
 
 .footer {
@@ -471,15 +486,18 @@ td > button {
     align-items: center;
 }
 
+/* Styles textareas that allow images to be pasted directly into them. */
 div[contenteditable] {
   overflow-y: scroll;
   font-size: 1.25rem;
 }
 
+/* Styles said images inside textareas. */
 div[contenteditable] img {
   max-height: 20em;
 }
 
+/* Sets error messages to monospace. */
 module {
   font-family: monospace;
 }
