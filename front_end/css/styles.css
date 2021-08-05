@@ -2,38 +2,42 @@
     font-family: 'Lato', sans-serif;
 }
 
+/* Enforces monospace typefaces to be used for the code editor all situations. */
 .ace_editor * {
     font-family: 'Monaco', 'Menlo', 'Droid Sans Mono', 'Courier New', monospace !important;
 }
 
 .has-background-light {
-    background-color: #f5f5f5 !important;
+    background-color: #f5f5f5 !important; /* light grey */
 }
 
 .container {
     padding-top: 3.5rem;
 }
 
-.container-color {
-    background-color: #f5f5f5;
+/* Sets padding width around the entire site's content. */
+.container-padding {
     padding: 3.5rem 10em;
 }
 
+/* Hides div. */
 .invisible {
     display: none;
 }
 
+/* Shows div. */
 .visible {
     display: inline;
 }
 
+/* Styles code blocks. */
 pre {
     background-color: white;
     border-radius: 5px;
 }
 
 .navbar-link:hover {
-    color: #00d1b2;
+    color: #00d1b2; /* light teal */
 }
 
 .navbar-dropdown .navbar-item {
@@ -47,6 +51,7 @@ pre {
     align-items: center;
     height: 400px;
     width: 100%;
+    /* Sets background gradient. */
     background-image: linear-gradient(to bottom right,#fafafa, #DFE7ED);
 }
 
@@ -54,6 +59,7 @@ pre {
     margin: 0 100px 0 100px;
 }
 
+/* Styles available courses on landing page (before login). */
 .landing-courses {
     display: flex;
     flex-direction: column;
@@ -69,6 +75,7 @@ pre {
     flex-wrap: wrap;
 }
 
+/* Styles available courses header on landing page (before login). */
 .landing-courses-heading {
     width: 100%;
     display: flex;
@@ -78,6 +85,7 @@ pre {
     padding: 30px 0 30px 0;
 }
 
+/* Styles each available course header on landing page (before login). */
 .landing-course {
     padding: 20px;
     background-color: #f5f5f5;
@@ -86,90 +94,97 @@ pre {
     margin: 20px;
 }
 
-.has-background-light {
-    background-color: #f5f5f5;
-}
-
+/* Adds space above div. */
 .top-space {
     margin-top: 15px;
 }
 
+/* Adds space below div. */
 .bottom-space {
     margin-bottom: 25px;
 }
 
+/* Adds space above and below div. */
 .space-div {
     margin-top: 15px;
     margin-bottom: 15px;
 }
 
+/* Adds space above modal buttons. */
 .modal-button {
     margin-top: 10px;
 }
 
+/* Sets typeface to monospace. */
 .monospace {
     font-family: monospace;
 }
 
+/* Sets font size. */
 .text-18 {
     font-size: 18px;
 }
 
 .success-message {
-    background-color: #1AB28C;
+    background-color: #1AB28C; /* dark teal */
     color: white;
 }
 
 .error-message {
-    background-color: #FF9138;
-    border-color: #FF9138;
+    background-color: #FF9138; /* orange */
+    border-color: #FF9138; /* orange */
     color: white;
 }
 
 .is-orange {
-    background-color: #FF9138;
-    border-color: #FF9138;
+    background-color: #FF9138; /* orange */
+    border-color: #FF9138; /* orange */
     color: white;
 }
 
 .is-orange:hover {
-    background-color: #f5872e;
-    border-color: #f5872e;
+    background-color: #f5872e; /* dark orange */
+    border-color: #f5872e; /* dark orange */
     color: white;
 }
 
 .green-text {
-    color: #00b386;
+    color: #00b386; /* dark muted teal */
 }
 
+/* Adds right padding to icons in navbar (ie checkmarks, circles, etc) */
 .navbar-img {
     padding-right: 8px;
 }
 
+/* Adds padding to select inputs. */
 .edit-select {
     padding: 2px;
 }
 
 .table {
-    background-color: #f5f5f5 !important;
+    background-color: #f5f5f5 !important; /* light grey */
 }
 
+/* Sets sizing for icons in tables (ie checkmarks, circles, etc) */
 .table-icon {
     height: 30px;
     width: 30px;
     vertical-align: middle;
 }
 
+/* Styles block of student's code on view_answer.html */
 .student-content {
     font-size: 14px;
-    border: 2px solid  #1AB28C;
+    border: 2px solid  #1AB28C; /* dark teal */
     width: 100%;
-    border-left: 12px solid  #1AB28C;
+    border-left: 12px solid  #1AB28C; /* dark teal */
     border-radius: 5px;
     padding: 14px;
     background-color: white;
 }
 
+/* Styles block of instructor's code on view_answer.html */
 .instructor-content {
     font-size: 14px;
     border: 2px solid  #363636;
@@ -180,11 +195,12 @@ pre {
     background-color: white;
 }
 
+/* Styles block of other students' anonymized code on view_answer.html */
 .extra-content {
     font-size: 14px;
-    border: 2px solid  #0095e3;
+    border: 2px solid  #0095e3; /* blue */
     width: 100%;
-    border-left: 12px solid  #0095e3;
+    border-left: 12px solid  #0095e3; /* blue */
     border-radius: 5px;
     padding: 14px;
     background-color: white;
