@@ -3,9 +3,9 @@ sys.path.append("..")
 import traceback
 from BaseUserHandler import *
 from content import *
+
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
-
 
 class ResetTimerHandler(BaseUserHandler):
     async def post(self, course, assignment, user):

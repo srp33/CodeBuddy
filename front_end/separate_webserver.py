@@ -1,15 +1,18 @@
 import os
 
 importDict = {
-    'render_error': 'from helper import *',
-    '(RequestHandler)': 'from tornado.web import *',
-    'traceback': 'import traceback',
-    '(BaseUserHandler)': 'from BaseUserHandler import *',
-    'datetime': 'import datetime',
-    'GoogleOAuth2Mixin': 'from tornado.auth import GoogleOAuth2Mixin',
-    'logging': 'import logging',
-    'content': 'from content import *\nsettings_dict = load_yaml_dict(read_file("/Settings.yaml"))\ncontent = Content(settings_dict)',
-    'user_info_var': 'import contextvars\n\nuser_info_var = contextvars.ContextVar("user_info")',
+    'render_error': ['from helper import *'],
+    '(RequestHandler)': ['from tornado.web import *'],
+    'traceback': ['import traceback'],
+    '(BaseUserHandler)': ['from BaseUserHandler import *'],
+    'datetime': ['import datetime'],
+    'GoogleOAuth2Mixin': ['from tornado.auth import GoogleOAuth2Mixin'],
+    'logging': ['import logging'],
+    'content': ['from content import *', 'settings_dict = load_yaml_dict(read_file("/Settings.yaml"))\ncontent = Content(settings_dict)'],
+    'user_info_var': ['import contextvars', 'user_info_var = contextvars.ContextVar("user_info")'],
+    'user_is_administrator_var': ['', 'contextvars.ContextVar("user_is_administrator")'],
+    'user_instructor_courses_var': ['', 'contextvars.ContextVar("user_instructor_courses")'],
+    'user_assistant_courses_var': ['', 'contextvars.ContextVar("user_assistant_courses")'],
 }
 
 with open('old_webserver.py') as ws:
@@ -26,15 +29,20 @@ with open('old_webserver.py') as ws:
         with open("handlers/__init__.py", "w") as init:
             init.write("")
     for f in file:
-        import_list = []
+        import_list_1 = []
+        import_list_2 = []
         for k,v in importDict.items():
             if k in f:
-                import_list.append(v)
+                import_list_1.append(v[0])
+                if len(v) > 1:
+                    import_list_2.append(v[1])
 
         with open(f'handlers/{f.split(" ")[1].split("(")[0]}.py', 'w') as curr:
             curr.write('import sys\nsys.path.append("..")\n')
-            curr.write('\n'.join(import_list))
-            curr.write('\n\n\n')
+            curr.write('\n'.join(import_list_1))
+            curr.write('\n\n')
+            curr.write('\n'.join(import_list_2))
+            curr.write('\n\n')
             curr.write(f)
     with open(f'webserver.py', 'w') as nws:
         for f in file:
