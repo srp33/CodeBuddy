@@ -1,5 +1,6 @@
 import sys
 sys.path.append("..")
+from StaticFileHandler import *
 import logging
 import contextvars
 

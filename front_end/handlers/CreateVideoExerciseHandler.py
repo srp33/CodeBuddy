@@ -1,5 +1,6 @@
 import sys
 sys.path.append("..")
+from StaticFileHandler import *
 import traceback
 from BaseUserHandler import *
 import datetime
