@@ -24,11 +24,19 @@ else:
         sql_statements = sql_file.read().split(";")
 
     try:
-        for sql in sql_statements:
-            print(sql)
-            content.execute(sql)
+        with open("/logs/progress.log", "a") as progress_file:
+            for sql in sql_statements:
+                progress_file.write(sql + "\n")
+                content.execute(sql)
 
         content.rebuild_exercises()
+        content.rerun_submissions()
         print("***Success***")
     except:
         print(traceback.format_exc())
+
+        try:
+            with open("/logs/progress.log", "a") as progress_file:
+                progress_file.write(traceback.format_exc())
+        except:
+            pass

@@ -2029,7 +2029,7 @@ class Content:
             progress_file.flush()
 
     def rerun_submissions(self, assignment_title=None):
-        with open("/logs/progress.log", "w") as progress_file:
+        with open("/logs/progress.log", "a") as progress_file:
             progress_file.write("Retrieving submissions that need to be rerun...\n")
 
             if assignment_title:
