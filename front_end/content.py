@@ -1044,7 +1044,7 @@ class Content:
             return help_request
 
     def compare_help_requests(self, course_id, assignment_id, exercise_id, user_id):
-        #get the original help request, including its output type
+        # Get the original help request, including its output type
         sql = '''SELECT r.text_output, e.expected_text_output, r.image_output, e.expected_image_output, e.output_type
                  FROM help_requests r
                  INNER JOIN exercises e
