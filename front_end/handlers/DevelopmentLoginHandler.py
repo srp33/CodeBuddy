@@ -1,9 +1,13 @@
 from tornado.web import *
 import traceback
+from content import *
 
 
 class DevelopmentLoginHandler(RequestHandler):
     def get(self, target_path):
+        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+        content = Content(settings_dict)
+
         if not target_path:
             target_path = ""
 
