@@ -11,7 +11,7 @@ class ImportCourseHandler(BaseUserHandler):
 
             result = ""
 
-            if "zip_file" in self.request.files and self.request.files["zip_file"][0]["self.content_type"] == 'application/zip':
+            if "zip_file" in self.request.files and self.request.files["zip_file"][0]["content_type"] == 'application/zip':
                 zip_file_name = self.request.files["zip_file"][0]["filename"]
                 zip_file_contents = self.request.files["zip_file"][0]["body"]
                 descriptor = zip_file_name.replace(".zip", "")

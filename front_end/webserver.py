@@ -173,23 +173,23 @@ class StaticFileHandler(RequestHandler):
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
-            self.content_type = "text/css"
+            content_type = "text/css"
             read_mode = "r"
 
             if file_name.endswith(".js"):
-                self.content_type = "text/javascript"
+                content_type = "text/javascript"
             elif file_name.endswith(".png"):
-                self.content_type = "image/png"
+                content_type = "image/png"
                 read_mode = "rb"
             elif file_name.endswith(".ico"):
-                self.content_type = "image/x-icon"
+                content_type = "image/x-icon"
                 read_mode = "rb"
             elif file_name.endswith(".webmanifest"):
-                self.content_type = "application/json"
+                content_type = "application/json"
 
             file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
 
-            self.set_header('Content-type', self.content_type)
+            self.set_header('Content-type', content_type)
             self.write(file_contents)
 
 
@@ -203,12 +203,12 @@ if __name__ == "__main__":
         application.settings["google_oauth"] = {
             "key": secrets_dict["google_oauth_key"],
             "secret": secrets_dict["google_oauth_secret"]}
-        self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
-        self.content = Content(self.settings_dict)
-        self.content.create_database_tables()
+        content = Content(settings_dict)
+        content.create_database_tables()
 
-        database_version = self.content.get_database_version()
+        database_version = content.get_database_version()
         code_version = int(read_file("VERSION").rstrip())
 
         # Check to see whether there is a database migration script (should only be one per version).
@@ -230,7 +230,7 @@ if __name__ == "__main__":
                 print("Database migration not needed.")
             elif "***Success***" in result:
                 print(f"Database successfully migrated to version {v+1}.")
-                self.content.update_database_version(code_version)
+                content.update_database_version(code_version)
             else:
                 print(f"Database migration failed for verson {v+1}, so rolling back...")
                 print(result)
@@ -241,10 +241,10 @@ if __name__ == "__main__":
         server.bind(int(os.environ['PORT']))
         server.start(int(os.environ['NUM_PROCESSES']))
 
-        self.user_info_var = contextvars.ContextVar("user_info")
-        self.user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
-        self.user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
-        self.user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
+        user_info_var = contextvars.ContextVar("user_info")
+        user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
+        user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
+        user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
 
         # Set up logging
         options.log_file_prefix = "/logs/codebuddy.log"
