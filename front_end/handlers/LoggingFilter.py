@@ -4,11 +4,11 @@ import contextvars
 
 class LoggingFilter(logging.Filter):
     def prepare(self):
-        user_info_var = contextvars.ContextVar("user_info")
+        self.user_info_var = contextvars.ContextVar("user_info")
 
     def filter(self, record):
         try:
-            user_info = user_info_var.get()
+            user_info = self.user_info_var.get()
 
             if isinstance(user_info, str):
                 user_id = user_info

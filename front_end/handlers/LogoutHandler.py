@@ -6,13 +6,13 @@ from helper import *
 
 class LogoutHandler(RequestHandler):
     def prepare(self):
-        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+        self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
     def get(self):
         try:
             self.clear_all_cookies()
 
-            if settings_dict["mode"] == "production":
+            if self.settings_dict["mode"] == "production":
                 self.redirect("https://accounts.google.com/Logout")
             else:
                 self.redirect("/")
