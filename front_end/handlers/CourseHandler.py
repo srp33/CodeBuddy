@@ -1,4 +1,3 @@
-import traceback
 from BaseUserHandler import *
 import datetime as dt
 

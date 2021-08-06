@@ -1,5 +1,4 @@
 from tornado.web import *
-import traceback
 from content import *
 
 

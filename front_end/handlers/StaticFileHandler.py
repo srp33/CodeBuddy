@@ -1,5 +1,4 @@
 from tornado.web import *
-import traceback
 
 
 class StaticFileHandler(RequestHandler):

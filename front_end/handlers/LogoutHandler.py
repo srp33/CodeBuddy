@@ -1,5 +1,4 @@
 from tornado.web import *
-import traceback
 import logging
 from helper import *
 

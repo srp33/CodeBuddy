@@ -13,6 +13,7 @@ class BaseUserHandler(RequestHandler):
         self.user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
         self.user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
 
+    def prepare(self):
         try:
             user_id = self.get_secure_cookie("user_id")
 
