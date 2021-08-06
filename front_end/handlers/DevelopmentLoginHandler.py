@@ -5,13 +5,14 @@ from content import *
 
 class DevelopmentLoginHandler(RequestHandler):
     def get(self, target_path):
+    def __init__(self):
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-        content = Content(settings_dict)
+        self.content = Content(settings_dict)
 
         if not target_path:
             target_path = ""
 
-        self.render("devlogin.html", courses=content.get_courses(False), target_path=target_path)
+        self.render("devlogin.html", courses=self.content.get_courses(False), target_path=target_path)
 
     def post(self, target_path):
         try:
@@ -20,10 +21,10 @@ class DevelopmentLoginHandler(RequestHandler):
             if user_id == "":
                 self.write("Invalid user ID.")
             else:
-                if not content.user_exists(user_id):
+                if not self.content.user_exists(user_id):
                     # Add static information for test user.
                     user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'locale': 'en'}
-                    content.add_user(user_id, user_dict)
+                    self.content.add_user(user_id, user_dict)
 
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
 

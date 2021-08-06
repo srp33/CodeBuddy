@@ -19,12 +19,12 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
                         user_dict = json.loads(response.decode('utf-8'))
                         user_id = user_dict["email"]
 
-                        if content.user_exists(user_id):
+                        if self.content.user_exists(user_id):
                             # Update user with current information when they already exist.
-                            content.update_user(user_id, user_dict)
+                            self.content.update_user(user_id, user_dict)
                         else:
                             # Store current user information when they do not already exist.
-                            content.add_user(user_id, user_dict)
+                            self.content.add_user(user_id, user_dict)
 
                         self.set_secure_cookie("user_id", user_id, expires_days=30)
 

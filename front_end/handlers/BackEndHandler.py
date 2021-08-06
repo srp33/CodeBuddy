@@ -5,7 +5,8 @@ import logging
 
 class BackEndHandler(RequestHandler):
     def get(self, back_end):
-        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+    def __init__(self):
+        self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
         try:
             self.write(json.dumps(settings_dict["back_ends"][back_end]))

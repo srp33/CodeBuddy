@@ -8,13 +8,13 @@ class SubmitHandler(BaseUserHandler):
 
         try:
             user_id = self.get_user_id()
-            partners_dict = content.get_partner_info(course, user_id)
+            partners_dict = self.content.get_partner_info(course, user_id)
 
             partner_id = partners_dict[self.get_body_argument("partner_key")] if self.get_body_argument("partner_key") else None
             code = self.get_body_argument("user_code").replace("\r", "")
-            exercise_basics = content.get_exercise_basics(course, assignment, exercise)
-            exercise_details = content.get_exercise_details(course, assignment, exercise)
-            assignment_details = content.get_assignment_details(course, assignment)
+            exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
+            exercise_details = self.content.get_exercise_details(course, assignment, exercise)
+            assignment_details = self.content.get_assignment_details(course, assignment)
 
             # Executes code and saves text, image, and test outputs in respective variables.
             text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, self.request)
@@ -26,22 +26,22 @@ class SubmitHandler(BaseUserHandler):
             out_dict["tests"] = test_outcomes
             out_dict["diff"] = format_output_as_html(diff)
             out_dict["passed"] = passed
-            out_dict["submission_id"] = content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, tests, partner_id)
+            out_dict["submission_id"] = self.content.save_submission(course, assignment, exercise, user_id, code, text_output, image_output, passed, tests, partner_id)
 
-            content.delete_presubmission(course, assignment, exercise, user_id)
+            self.content.delete_presubmission(course, assignment, exercise, user_id)
 
-            exercise_score = content.get_exercise_score(course, assignment, exercise, user_id)
-            new_score = content.calc_exercise_score(assignment_details, passed)
+            exercise_score = self.content.get_exercise_score(course, assignment, exercise, user_id)
+            new_score = self.content.calc_exercise_score(assignment_details, passed)
 
             if not exercise_score or exercise_score < new_score:
-                content.save_exercise_score(course, assignment, exercise, user_id, new_score)
+                self.content.save_exercise_score(course, assignment, exercise, user_id, new_score)
 
             # Saves score for partner.
             if partner_id:
-                partner_exercise_score = content.get_exercise_score(course, assignment, exercise, partner_id)
-                partner_new_score = content.calc_exercise_score(assignment_details, passed)
+                partner_exercise_score = self.content.get_exercise_score(course, assignment, exercise, partner_id)
+                partner_new_score = self.content.calc_exercise_score(assignment_details, passed)
                 if not partner_exercise_score or partner_exercise_score < partner_new_score:
-                    content.save_exercise_score(course, assignment, exercise, partner_id, new_score)
+                    self.content.save_exercise_score(course, assignment, exercise, partner_id, new_score)
 
         except ConnectionError as inst:
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server."

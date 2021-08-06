@@ -9,7 +9,7 @@ class GetPresubmissionHandler(BaseUserHandler):
             if user_info["user_id"] != student_id and not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
                 presubmission_info = ["Submissions may only be view by their author."]
             else:
-                presubmission_info = content.get_presubmission(course, assignment, exercise, student_id)
+                presubmission_info = self.content.get_presubmission(course, assignment, exercise, student_id)
         except:
             print(traceback.format_exc())
 

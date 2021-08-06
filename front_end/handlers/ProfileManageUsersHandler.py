@@ -18,8 +18,8 @@ class ProfileManageUsersHandler(BaseUserHandler):
             delete_user = self.get_body_argument("delete_user")
 
             if remove_user:
-                if content.user_exists(remove_user):
-                    submissions_removed = content.remove_user_submissions(remove_user)
+                if self.content.user_exists(remove_user):
+                    submissions_removed = self.content.remove_user_submissions(remove_user)
                     if submissions_removed:
                         result = f"Success: All scores and submissions for the user '{remove_user}' have been deleted."
                     else:
@@ -30,29 +30,29 @@ class ProfileManageUsersHandler(BaseUserHandler):
                 result = f"Error: Please enter a user."
 
             if delete_user:
-                course_id = content.get_course_id_from_role(delete_user)
+                course_id = self.content.get_course_id_from_role(delete_user)
 
-                if content.user_exists(delete_user):
-                    if content.is_administrator(delete_user):
-                        if len(content.get_users_from_role(0, "administrator")) > 1:
+                if self.content.user_exists(delete_user):
+                    if self.content.is_administrator(delete_user):
+                        if len(self.content.get_users_from_role(0, "administrator")) > 1:
                             if delete_user == self.get_user_id():
                                 #Figure out what to do when admins remove themselves
-                                content.delete_user(delete_user)
+                                self.content.delete_user(delete_user)
                             else:
                                 result = f"{delete_user} is an administrator and can only be deleted by that user."
                         else:
                             result = f"Error: At least one administrator must remain in the system."
-                    elif content.user_has_role(delete_user, course_id, "instructor"):
-                        if len(content.get_users_from_role(course_id, "instructor")) > 1:
-                            if content.is_administrator(user_id):
-                                content.delete_user(delete_user)
+                    elif self.content.user_has_role(delete_user, course_id, "instructor"):
+                        if len(self.content.get_users_from_role(course_id, "instructor")) > 1:
+                            if self.content.is_administrator(user_id):
+                                self.content.delete_user(delete_user)
                                 result = f"Success: The user '{delete_user}' has been deleted."
                             else:
                                 result = "Instructors can only be removed by administrators."
                         else:
                             result = f"Error: The user '{delete_user}' is the only instructor for their course. They cannot be deleted until another instructor is assigned to the course."
                     else:
-                        content.delete_user(delete_user)
+                        self.content.delete_user(delete_user)
                         result = f"Success: The user '{delete_user}' has been deleted."
                 else:
                     result = f"Error: The user '{delete_user}' does not exist."

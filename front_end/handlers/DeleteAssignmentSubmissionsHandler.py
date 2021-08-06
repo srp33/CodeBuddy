@@ -9,7 +9,7 @@ class DeleteAssignmentSubmissionsHandler(BaseUserHandler):
                 self.render("permissions.html")
                 return
 
-            content.delete_assignment_submissions(content.get_assignment_basics(course, assignment))
+            self.content.delete_assignment_submissions(self.content.get_assignment_basics(course, assignment))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
