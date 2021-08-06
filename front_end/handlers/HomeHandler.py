@@ -6,8 +6,8 @@ from helper import *
 
 class HomeHandler(RequestHandler):
     def prepare(self):
-        self.user_info_var = contextvars.ContextVar("user_info")
-        self.user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
+        user_info_var = contextvars.ContextVar("user_info")
+        user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
 
     def prepare(self):
         try:

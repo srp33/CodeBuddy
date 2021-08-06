@@ -6,14 +6,12 @@ import contextvars
 
 class BaseUserHandler(RequestHandler):
     def prepare(self):
-        self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-        self.content = Content(self.settings_dict)
-        self.user_info_var = contextvars.ContextVar("user_info")
-        self.user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
-        self.user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
-        self.user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
-
-    def prepare(self):
+        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+        content = Content(settings_dict)
+        user_info_var = contextvars.ContextVar("user_info")
+        user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
+        user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
+        user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
         try:
             user_id = self.get_secure_cookie("user_id")
 

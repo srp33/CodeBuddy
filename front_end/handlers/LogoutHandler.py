@@ -6,7 +6,7 @@ from helper import *
 
 class LogoutHandler(RequestHandler):
     def prepare(self):
-        self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
     def get(self):
         try:

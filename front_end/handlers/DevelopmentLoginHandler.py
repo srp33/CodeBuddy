@@ -5,8 +5,8 @@ from content import *
 
 class DevelopmentLoginHandler(RequestHandler):
     def prepare(self):
-        self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-        self.content = Content(self.settings_dict)
+        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+        content = Content(settings_dict)
 
     def get(self, target_path):
         if not target_path:
