@@ -1,12 +1,15 @@
 from tornado.web import *
 import traceback
 import contextvars
+from content import *
 
 
 class HomeHandler(RequestHandler):
     def prepare(self):
         user_info_var = contextvars.ContextVar("user_info")
         user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
+        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+        content = Content(settings_dict)
 
         try:
             user_id = self.get_secure_cookie("user_id")
