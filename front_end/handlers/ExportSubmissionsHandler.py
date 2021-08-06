@@ -4,17 +4,17 @@ from BaseUserHandler import *
 
 class ExportSubmissionsHandler(BaseUserHandler):
     def get(self, course):
-        course_basics = self.content.get_course_basics(course)
+        course_basics = content.get_course_basics(course)
 
         descriptor = f"Submissions_{course_basics['title'].replace(' ', '_')}"
-        temp_dir_path, zip_file_name, zip_file_path = self.content.create_zip_file_path(descriptor)
+        temp_dir_path, zip_file_name, zip_file_path = content.create_zip_file_path(descriptor)
 
         try:
-            self.content.create_export_paths(temp_dir_path, descriptor)
+            content.create_export_paths(temp_dir_path, descriptor)
 
-            self.content.export_data(course_basics, "submissions", f"{temp_dir_path}/{descriptor}/submissions.json")
+            content.export_data(course_basics, "submissions", f"{temp_dir_path}/{descriptor}/submissions.json")
 
-            self.content.zip_export_files(temp_dir_path, zip_file_name, zip_file_path, descriptor)
+            content.zip_export_files(temp_dir_path, zip_file_name, zip_file_path, descriptor)
             zip_bytes = read_file(zip_file_path, "rb")
 
             self.set_header("Content-type", "application/zip")
@@ -25,5 +25,5 @@ class ExportSubmissionsHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
         finally:
-            self.content.remove_export_paths(zip_file_path, tmp_dir_path)
+            content.remove_export_paths(zip_file_path, tmp_dir_path)
 

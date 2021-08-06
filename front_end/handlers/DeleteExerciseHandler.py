@@ -9,7 +9,7 @@ class DeleteExerciseHandler(BaseUserHandler):
                 self.render("permissions.html")
                 return
 
-            self.content.delete_exercise(self.content.get_exercise_basics(course, assignment, exercise))
+            content.delete_exercise(content.get_exercise_basics(course, assignment, exercise))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

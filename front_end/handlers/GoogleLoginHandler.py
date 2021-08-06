@@ -6,7 +6,7 @@ from tornado.auth import GoogleOAuth2Mixin
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     async def get(self):
         try:
-            redirect_uri = f"https://{self.settings_dict['domain']}/login"
+            redirect_uri = f"https://{settings_dict['domain']}/login"
 
             # Examples: https://www.programcreek.com/python/example/95028/tornado.auth
             if self.get_argument('code', False):
@@ -19,12 +19,12 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
                         user_dict = json.loads(response.decode('utf-8'))
                         user_id = user_dict["email"]
 
-                        if self.content.user_exists(user_id):
+                        if content.user_exists(user_id):
                             # Update user with current information when they already exist.
-                            self.content.update_user(user_id, user_dict)
+                            content.update_user(user_id, user_dict)
                         else:
                             # Store current user information when they do not already exist.
-                            self.content.add_user(user_id, user_dict)
+                            content.add_user(user_id, user_dict)
 
                         self.set_secure_cookie("user_id", user_id, expires_days=30)
 

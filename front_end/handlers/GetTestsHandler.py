@@ -9,7 +9,7 @@ class GetTestsHandler(BaseUserHandler):
             if not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
                 self.render("permissions.html")
             else:
-                tests = self.content.get_tests(course, assignment, exercise)
+                tests = content.get_tests(course, assignment, exercise)
         except Exception as inst:
             tests = []
 

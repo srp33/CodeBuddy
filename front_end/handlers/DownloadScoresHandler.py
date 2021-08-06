@@ -6,7 +6,7 @@ class DownloadScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
-                csv_text = self.content.create_scores_text(course, assignment)
+                csv_text = content.create_scores_text(course, assignment)
                 self.set_header('Content-type', "text/csv")
                 self.write(csv_text)
             else:
