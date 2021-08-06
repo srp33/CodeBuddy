@@ -13,11 +13,11 @@ class ImportCourseHandler(BaseUserHandler):
 
             if "zip_file" in self.request.files and self.request.files["zip_file"][0]["self.content_type"] == 'application/zip':
                 zip_file_name = self.request.files["zip_file"][0]["filename"]
-                zip_file_self.contents = self.request.files["zip_file"][0]["body"]
+                zip_file_contents = self.request.files["zip_file"][0]["body"]
                 descriptor = zip_file_name.replace(".zip", "")
 
                 zip_data = BytesIO()
-                zip_data.write(zip_file_self.contents)
+                zip_data.write(zip_file_contents)
                 zip_file = zipfile.ZipFile(zip_data)
                 version = int(zip_file.read(f"{descriptor}/VERSION"))
 

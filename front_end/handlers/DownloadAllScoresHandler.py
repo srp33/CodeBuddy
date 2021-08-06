@@ -15,9 +15,9 @@ class DownloadAllScoresHandler(BaseUserHandler):
 
                 assignments = self.content.get_assignments(course)
                 for assignment in assignments:
-                    file_self.contents = self.content.create_scores_text(course, assignment[0])
+                    file_contents = self.content.create_scores_text(course, assignment[0])
                     with open(f"{temp_dir_path}/{assignment[0]}.csv", "w") as score_file:
-                        score_file.write(file_self.contents)
+                        score_file.write(file_contents)
 
                 self.content.zip_export_files(temp_dir_path, zip_file_name, zip_file_path, descriptor)
                 zip_bytes = read_file(zip_file_path, "rb")

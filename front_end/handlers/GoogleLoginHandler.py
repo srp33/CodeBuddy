@@ -6,7 +6,7 @@ from tornado.auth import GoogleOAuth2Mixin
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     async def get(self):
         try:
-            redirect_uri = f"https://{settings_dict['domain']}/login"
+            redirect_uri = f"https://{self.settings_dict['domain']}/login"
 
             # Examples: https://www.programcreek.com/python/example/95028/tornado.auth
             if self.get_argument('code', False):

@@ -12,7 +12,7 @@ class EditExerciseHandler(BaseUserHandler):
                 exercise_details["expected_text_output"] = format_output_as_html(exercise_details["expected_text_output"])
                 next_prev_exercises = self.content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
-                self.render("edit_exercise.html", courses=self.content.get_courses(), assignments=self.content.get_assignments(course), exercises=exercises, tests=self.content.get_tests(course, assignment, exercise), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), exercise_basics=self.content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info(), old_text_output='', old_image_output='', old_tests=[])
+                self.render("edit_exercise.html", courses=self.content.get_courses(), assignments=self.content.get_assignments(course), exercises=exercises, tests=self.content.get_tests(course, assignment, exercise), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), exercise_basics=self.content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=self.settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(self.settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info(), old_text_output='', old_image_output='', old_tests=[])
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -98,7 +98,7 @@ class EditExerciseHandler(BaseUserHandler):
 
                             if exercise_basics['exists'] and exercise_details["hold_output_constant"]:
                                 # Sets exercise_details["tests"] temporarily in order to check exercise output
-                                exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["tests"] = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                                exercise_details["expected_text_output"], exercise_details["expected_image_output"], exercise_details["tests"] = exec_code(self.settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
                                 diff, passed, test_outcomes = check_exercise_output(exercise_details, old_text_output, old_image_output, old_tests)
 
                                 if not passed or not all(list(map(lambda x: x["passed"], test_outcomes))):
@@ -114,7 +114,7 @@ class EditExerciseHandler(BaseUserHandler):
                                 self.content.specify_exercise_basics(exercise_basics, exercise_basics["title"], exercise_basics["visible"])
 
                                 self.content.specify_exercise_details(exercise_details, exercise_details["instructions"], exercise_details["back_end"], exercise_details["output_type"], exercise_details["answer_code"], exercise_details["answer_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["starter_code"], exercise_details["test_code"], exercise_details["credit"], exercise_details["data_files"], exercise_details["show_expected"], exercise_details["show_test_code"], exercise_details["show_answer"], exercise_details["show_student_submissions"], "", "", None, dt.datetime.now(), exercise_details["enable_pair_programming"], exercise_details["check_code"], exercise_details["tests"])
-                                text_output, image_output, tests = exec_code(settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
+                                text_output, image_output, tests = exec_code(self.settings_dict, exercise_details["answer_code"], exercise_basics, exercise_details)
 
                                 # Calculates number of empty test outputs to aid instructor in debugging.
                                 empty_tests = list(filter(lambda x: x["text_output"] == "" and x["image_output"] == "", tests))
@@ -143,11 +143,11 @@ class EditExerciseHandler(BaseUserHandler):
             exercises = self.content.get_exercises(course, assignment)
             next_prev_exercises = self.content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
-            self.render("edit_exercise.html", courses=self.content.get_courses(), assignments=self.content.get_assignments(course), exercises=exercises, tests=self.content.get_tests(course, assignment, exercise), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info(), old_text_output=old_text_output, old_image_output=old_image_output, old_tests=old_tests)
+            self.render("edit_exercise.html", courses=self.content.get_courses(), assignments=self.content.get_assignments(course), exercises=exercises, tests=self.content.get_tests(course, assignment, exercise), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=self.settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(self.settings_dict["back_ends"].keys()), result=result, user_info=self.get_user_info(), old_text_output=old_text_output, old_image_output=old_image_output, old_tests=old_tests)
         except ConnectionError as inst:
             render_error(self, "The front-end server was unable to contact the back-end server.")
         except ReadTimeout as inst:
-            render_error(self, f"Your solution timed out after {settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds.")
+            render_error(self, f"Your solution timed out after {self.settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds.")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

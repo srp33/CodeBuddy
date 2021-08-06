@@ -24,8 +24,8 @@ class StaticFileHandler(RequestHandler):
             elif file_name.endswith(".webmanifest"):
                 self.content_type = "application/json"
 
-            file_self.contents = read_file("/static/{}".format(file_name), mode=read_mode)
+            file_contents = read_file("/static/{}".format(file_name), mode=read_mode)
 
             self.set_header('Content-type', self.content_type)
-            self.write(file_self.contents)
+            self.write(file_contents)
 

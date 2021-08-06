@@ -17,7 +17,7 @@ class SubmitHandler(BaseUserHandler):
             assignment_details = self.content.get_assignment_details(course, assignment)
 
             # Executes code and saves text, image, and test outputs in respective variables.
-            text_output, image_output, tests = exec_code(settings_dict, code, exercise_basics, exercise_details, self.request)
+            text_output, image_output, tests = exec_code(self.settings_dict, code, exercise_basics, exercise_details, self.request)
             # The variables 'diff' and 'passed' refer to the solution code, while 'test_outcomes' contains diff and passed values for each test.
             diff, passed, test_outcomes = check_exercise_output(exercise_details, text_output, image_output, tests)
 
@@ -47,7 +47,7 @@ class SubmitHandler(BaseUserHandler):
             out_dict["text_output"] = "The front-end server was unable to contact the back-end server."
             out_dict["passed"] = False
         except ReadTimeout as inst:
-            out_dict["text_output"] = f"Your solution timed out after {settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
+            out_dict["text_output"] = f"Your solution timed out after {self.settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
             out_dict["passed"] = False
         except Exception as inst:
             out_dict["text_output"] = format_output_as_html(traceback.format_exc())

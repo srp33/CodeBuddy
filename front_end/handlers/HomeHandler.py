@@ -1,15 +1,13 @@
 from tornado.web import *
 import traceback
 import contextvars
-from content import *
+from helper import *
 
 
 class HomeHandler(RequestHandler):
     def __init__(self):
         self.user_info_var = contextvars.ContextVar("user_info")
         self.user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
-        settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-        self.content = Content(settings_dict)
 
     def prepare(self):
         try:
