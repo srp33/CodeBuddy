@@ -5,13 +5,13 @@ from content import *
 
 
 class HomeHandler(RequestHandler):
-    def prepare(self):
     def __init__(self):
         self.user_info_var = contextvars.ContextVar("user_info")
         self.user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
         self.content = Content(settings_dict)
 
+    def prepare(self):
         try:
             user_id = self.get_secure_cookie("user_id")
 
@@ -34,7 +34,7 @@ class HomeHandler(RequestHandler):
                     self.user_is_administrator_var.set(True)
                     self.redirect(f"/profile/courses/{user_id.decode()}")
                 else:
-                    if settings_dict["mode"] == "production":
+                    if self.settings_dict["mode"] == "production":
                         self.set_secure_cookie("redirect_path", "/")
                         self.redirect("/login")
                     else:
@@ -43,7 +43,7 @@ class HomeHandler(RequestHandler):
                 if user_id:
                     self.redirect(f"/profile/courses/{user_id.decode()}")
                 else:
-                    self.render("home.html", mode=settings_dict["mode"], courses=self.content.get_available_courses(None))
+                    self.render("home.html", mode=self.settings_dict["mode"], courses=self.content.get_available_courses(None))
         except Exception as inst:
             print(traceback.format_exc())
             render_error(self, traceback.format_exc())

@@ -4,11 +4,11 @@ from content import *
 
 
 class DevelopmentLoginHandler(RequestHandler):
-    def get(self, target_path):
     def __init__(self):
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
         self.content = Content(settings_dict)
 
+    def get(self, target_path):
         if not target_path:
             target_path = ""
 

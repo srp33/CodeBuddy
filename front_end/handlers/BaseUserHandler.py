@@ -5,7 +5,6 @@ import contextvars
 
 
 class BaseUserHandler(RequestHandler):
-    def prepare(self):
     def __init__(self):
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
         self.content = Content(settings_dict)
@@ -14,6 +13,7 @@ class BaseUserHandler(RequestHandler):
         self.user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
         self.user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
 
+    def prepare(self):
         try:
             user_id = self.get_secure_cookie("user_id")
 
@@ -24,7 +24,7 @@ class BaseUserHandler(RequestHandler):
                 self.user_instructor_courses_var.set([str(x) for x in self.content.get_courses_with_role(user_id.decode(), "instructor")])
                 self.user_assistant_courses_var.set([str(x) for x in self.content.get_courses_with_role(user_id.decode(), "assistant")])
             else:
-                if settings_dict["mode"] == "production":
+                if self.settings_dict["mode"] == "production":
                     self.set_secure_cookie("redirect_path", self.request.path)
                     self.redirect("/login")
                 else:

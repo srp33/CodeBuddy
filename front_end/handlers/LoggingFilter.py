@@ -3,10 +3,10 @@ import contextvars
 
 
 class LoggingFilter(logging.Filter):
-    def filter(self, record):
     def __init__(self):
         self.user_info_var = contextvars.ContextVar("user_info")
 
+    def filter(self, record):
         try:
             user_info = self.user_info_var.get()
 
