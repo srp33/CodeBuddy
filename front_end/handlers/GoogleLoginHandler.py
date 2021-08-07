@@ -1,8 +1,13 @@
 from tornado.web import *
 from tornado.auth import GoogleOAuth2Mixin
+from content import *
 
 
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
+    def prepare(self):
+        self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+        self.content = Content(self.settings_dict)
+
     async def get(self):
         try:
             redirect_uri = f"https://{self.settings_dict['domain']}/login"
@@ -47,4 +52,3 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
                     extra_params = {'approval_prompt': 'auto'})
         except Exception as inst:
             render_error(self, traceback.format_exc())
-
