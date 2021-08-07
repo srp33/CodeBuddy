@@ -397,13 +397,8 @@ class Content:
                  WHERE user_id = ?'''
 
         user = self.fetchone(sql, (user_id,))
-<<<<<<< HEAD
         user_info = {"enable_vim": user["enable_vim"], "user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
-                     "picture": user["picture"], "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"]}
-=======
-        user_info = {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
                      "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"]}
->>>>>>> upstream/master
 
         return user_info
 

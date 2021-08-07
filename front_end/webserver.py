@@ -1798,11 +1798,7 @@ class DevelopmentLoginHandler(RequestHandler):
             else:
                 if not content.user_exists(user_id):
                     # Add static information for test user.
-<<<<<<< HEAD
-                    user_dict = {"enable_vim": True, 'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'picture': 'https://vignette.wikia.nocookie.net/simpsons/images/1/15/Capital_City_Goofball.png/revision/latest?cb=20170903212224', 'locale': 'en'}
-=======
-                    user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'locale': 'en'}
->>>>>>> upstream/master
+                    user_dict = {"enable_vim": True, 'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'locale': 'en'}
                     content.add_user(user_id, user_dict)
 
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
