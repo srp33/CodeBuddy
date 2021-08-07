@@ -1,70 +1,6 @@
-from HomeHandler import *
-from BaseUserHandler import *
-from TestHandler import *
-from ConsentFormsHandler import *
-from ProfileCoursesHandler import *
-from ProfilePersonalInfoHandler import *
-from ProfileAdminHandler import *
-from ProfileSelectCourseHandler import *
-from ProfileInstructorHandler import *
-from ProfileManageUsersHandler import *
-from ProfileHelpRequestsHandler import *
-from ProfileStudentHelpRequestsHandler import *
-from ProfilePreferencesHandler import *
-from UnregisterHandler import *
-from CourseHandler import *
-from EditCourseHandler import *
-from DeleteCourseHandler import *
-from DeleteCourseSubmissionsHandler import *
-from ImportCourseHandler import *
-from ExportCourseHandler import *
-from ExportSubmissionsHandler import *
-from AssignmentHandler import *
-from EditAssignmentHandler import *
-from CopyAssignmentHandler import *
-from DeleteAssignmentHandler import *
-from DeleteAssignmentSubmissionsHandler import *
-from ExerciseHandler import *
-from EditExerciseHandler import *
-from CreateVideoExerciseHandler import *
-from MoveExerciseHandler import *
-from CopyExerciseHandler import *
-from DeleteExerciseHandler import *
-from DeleteExerciseSubmissionsHandler import *
-from CheckPartnersHandler import *
-from RunCodeHandler import *
-from SavePresubmissionHandler import *
-from SubmitHandler import *
-from GetPresubmissionHandler import *
-from GetSubmissionHandler import *
-from GetSubmissionsHandler import *
-from GetTestsHandler import *
-from ViewAnswerHandler import *
-from AddInstructorHandler import *
-from RemoveAdminHandler import *
-from RemoveInstructorHandler import *
-from RemoveAssistantHandler import *
-from ResetTimerHandler import *
-from ViewScoresHandler import *
-from DownloadFileHandler import *
-from DownloadScoresHandler import *
-from DownloadAllScoresHandler import *
-from EditScoresHandler import *
-from StudentScoresHandler import *
-from StudentExerciseHandler import *
-from ExerciseScoresHandler import *
-from ExerciseSubmissionsHandler import *
-from HelpRequestsHandler import *
-from SubmitHelpRequestHandler import *
-from ViewHelpRequestsHandler import *
-from DeleteHelpRequestHandler import *
-from BackEndHandler import *
-from SummarizeLogsHandler import *
-from StaticFileHandler import *
-from DevelopmentLoginHandler import *
-from GoogleLoginHandler import *
-from LogoutHandler import *
-from LoggingFilter import *
+import sys
+sys.path.append('/')
+from app import *
 
 from content import *
 import contextvars
@@ -77,7 +13,6 @@ import json
 import logging
 import os
 import re
-import sys
 from tornado.auth import GoogleOAuth2Mixin
 import tornado.ioloop
 from tornado.log import enable_pretty_logging
@@ -191,7 +126,6 @@ class StaticFileHandler(RequestHandler):
 
             self.set_header('Content-type', content_type)
             self.write(file_contents)
-
 
 
 if __name__ == "__main__":

@@ -13,7 +13,6 @@ class BaseUserHandler(RequestHandler):
         self.user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
         self.user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
 
-    def prepare(self):
         try:
             user_id = self.get_secure_cookie("user_id")
 
@@ -55,4 +54,3 @@ class BaseUserHandler(RequestHandler):
 
     def is_student_for_course(self, course_id):
         return not self.is_administrator() and not self.is_instructor_for_course(course_id) and not self.is_assistant_for_course(course_id)
-
