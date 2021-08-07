@@ -18,7 +18,7 @@ back_ends:
         description: Please write R code based on the instructions provided.
         image_name: srp33/codebuddy_r
         memory_allowed_mb: 100
-        timeout_seconds: 30
+        timeout_seconds: 120
         code_completion_path: ace/mode/r
         output_types:
             jpg: |-
@@ -29,7 +29,7 @@ back_ends:
         description: Please write Python code based on the instructions provided.
         image_name: srp33/codebuddy_python
         memory_allowed_mb: 100
-        timeout_seconds: 30
+        timeout_seconds: 60
         code_completion_path: ace/mode/python
         output_types:
             jpg: |-
@@ -40,7 +40,7 @@ back_ends:
         description: Please write Python code based on the instructions provided. Your code will be stored in a script called code.py.
         image_name: srp33/codebuddy_python_script
         memory_allowed_mb: 100
-        timeout_seconds: 30
+        timeout_seconds: 60
         code_completion_path: ace/mode/python
         output_types:
             jpg: |-
@@ -51,7 +51,7 @@ back_ends:
         description: bash commands
         image_name: srp33/codebuddy_bash
         memory_allowed_mb: 100
-        timeout_seconds: 30
+        timeout_seconds: 60
         code_completion_path: ace/mode/plain_text
         output_types:
             txt: |-

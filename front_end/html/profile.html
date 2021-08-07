@@ -8,6 +8,19 @@
                     class="is-active"
                 {% end %}
                 >Courses</a></li>
+                {% if is_administrator or is_instructor %}
+                <li><a href="/profile/consent_forms/{{ user_info['user_id'] }}"
+                {% if page == "consent_forms" %}
+                    class="is-active"
+                {% end %}
+                >Student consent forms</a></li>
+                {% elif any(list(filter(lambda x: x[1]["consent_text"] != "", registered_courses))) %}
+                <li><a href="/profile/consent_forms/{{ user_info['user_id'] }}"
+                {% if page == "consent_forms" %}
+                    class="is-active"
+                {% end %}
+                >My consent forms</a></li>
+                {% end %}
                 <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
                 {% if page == "personal_info" %}
                     class="is-active"
@@ -18,14 +31,14 @@
                     {% if page == "admin" %}
                         class="is-active"
                     {% end %}
-                    >Admin menu</a></li>
+                >Admin menu</a></li>
                 {% end %}
                 {% if is_instructor or is_administrator %}
                     <li><a href="/profile/instructor/course/{{ user_info['user_id'] }}"
                     {% if page == "instructor" %}
                         class="is-active"
                     {% end %}
-                    >Instructor menu</a></li>
+                >Instructor menu</a></li>
                 {% end %}
             </ul>
             <p class="menu-label">Tools</p>
@@ -63,7 +76,3 @@
     </div>
     <div class="column is-three-quarters profile-main">
         <div class="content">
-            <div class="photo-div">
-                <img src="{{ user_info['picture'] }}" alt="Profile Photo" class="profile-photo"/>
-                <span style="font-size: larger;"><b>{{ user_info["name"] }}</b></span>
-            </div>

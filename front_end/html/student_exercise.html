@@ -22,24 +22,38 @@
 
             <pre>{{ exercise_details["answer_code"]}}</pre>
 
+            {% if exercise_details["tests"] != [] %}
+            <h6 style="display: inline">Test code (to be executed after student solution):</h6>
+                {% for test in exercise_details["tests"] %}
+                    {% if test["test_instructions"] == "" %}
+                        <pre class="smaller-font">{{ test["code"] }}</pre>
+                    {% else %}
+                        <pre class="smaller-font">Test Code Hidden.</pre>
+                    {% end %}
+                {% end %}
+            {% end %}
+
             <h6 id="your_code_header" style="display: inline">Student's solution:</h6>
             <textarea class="textarea is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
 
-            <div class="buttons">
+            <div class="buttons top-space">
                 {% if exercise_details["back_end"] != "any_response" %}
                     <a class="button is-medium is-primary" onclick='run_code()'>Run</a>
                 {% end %}
             </div>
 
             <div id="result"></div>
-            
-            <div class="top-space">
-                <h6 style="display: inline">Expected output:</h6>
 
-                {% if exercise_details["output_type"] == "txt" %}
-                    <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
-                {% else %}
-                    <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
+            <div class="top-space">
+
+                {% if exercise_details["expected_text_output"] != "" or exercise_details["expected_image_output"] != "" %}
+                    <h6 style="display: inline">Expected output:</h6>
+
+                    {% if exercise_details["output_type"] == "txt" %}
+                        <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
+                    {% else %}
+                        <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
+                    {% end %}
                 {% end %}
 
                 {% if exercise_details["back_end"] != "any_response" %}
@@ -48,6 +62,7 @@
                     {% if exercise_details["show_expected"] %}
                         <p><span id="diff_output"></span></p>
                     {% end %}
+                    <p><span id="test_output"></span></p>
                 {% end %}
             </div>
 
