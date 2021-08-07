@@ -87,43 +87,37 @@
           free_response_solution_example: '',
           any_response_solution_example: '',
           python_solution_example:
-            `# Python example code
-            def welcome(statement):
-            \tprint("Hello,", statement)
-            \nwelcome("world!")`,
+            `def add_numbers(x, y):
+            \treturn(x + y)`,
           bash_solution_example:
-            `# Bash example code
-            function welcome {
-            \techo "Hello, $1"
-            }
-            \nwelcome "world!"`,
+            `mkdir Assignment1
+             cd Assignment1
+             touch newfile
+             ls`,
           python_script_solution_example:
-            `# Python script example code
-            import sys
+            `import sys
             \nprint(sys.argv[1])
             `,
           r_solution_example:
             `# R example code
-            welcome <- function(statement) {
-            \tprint(paste("Hello", statement, sep=", "))
-            }
-            \nwelcome("world!")`,
+            add_numbers <- function(x, y) {
+            \treturn(x + y)
+            }`,
 
           // Back end specific Test Code examples
           free_response_test_code_example: '',
           any_response_test_code_example: '',
           python_test_code_example:
             `# Python example code
-            welcome("user!")`,
+            print(add_numbers(2, 3))`,
           bash_test_code_example:
-            `# Bash example code
-            welcome "user!"`,
+            ``,
           python_script_test_code_example:
             `# Python script example code
             python code.py "Hello world!"`,
           r_test_code_example:
             `# R example code
-            welcome("user!")`,
+            print(add_numbers(2, 3))`,
 
           // Back end specific Pre-Execution Code examples
           free_response_check_example: '',
@@ -396,9 +390,26 @@
         </div>
 
         <div class="shadow-box">
+            <div>
+                <p><strong>Pre-execution logic:</strong></p>
+                <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
+                <p>
+                <p id="check_code_additional_instructions"></p>
+                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{% if exercise_details["check_code"] %}{{ exercise_details["check_code"] }}{% end %}</textarea>
+                    <textarea name="check_code_text" id="check_code_text" class="invisible"></textarea>
+                </p>
+            </div>
+
+            <div class="button is-light space-div" id="example_check_code_button" onclick="showExamplePreExecution()">
+              Toggle Example Code
+              <input type="checkbox" class="invisible" id="example_check_code_checkbox">
+            </div>
+        </div>
+
+        <div class="shadow-box">
             <div id="test_upload">
                 <p><strong>Tests:</strong></p>
-                <p>You can write one or more tests that evaluate the integrity of the student's code. Oftentimes, tests are used when the instructor has asked students to write a function, and each test invokes the function using certain parameters. Either way, the test code will be invoked after the student's code. For each test, you may indicate whether the test code should be visible to students. Hidden tests help to ensure that the student cannot guess the expected output. Generally, we recommend including at least one visible test and one hidden test. We recommend that hidden tests use similar approaches as visible tests.</p>
+                <p>You can write one or more tests that evaluate the integrity of the student's code. Oftentimes, tests are used when the instructor has asked students to write a function, and each test invokes the function using certain parameters. Either way, the test code will be invoked after the student's code. For each test, you may indicate whether the test code should be visible to students. Hidden tests help to ensure that the student cannot guess the expected output. Generally, when tests are used, we recommend including at least one visible test and one hidden test.</p>
                 <p class="test_code_additional_instructions"></p>
 
                 <div id="test_example_div" style="display:none">
@@ -426,23 +437,6 @@
                     <textarea class="textarea is-fullwidth monospace" placeholder="Please provide starter code." rows="10" id="starter_code" name="starter_code">{% if exercise_details["starter_code"] %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
                     <textarea name="starter_code_text" id="starter_code_text" class="invisible"></textarea>
                 </p>
-            </div>
-        </div>
-
-        <div class="shadow-box">
-            <div>
-                <p><strong>Pre-execution logic:</strong></p>
-                <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
-                <p>
-                <p id="check_code_additional_instructions"></p>
-                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{% if exercise_details["check_code"] %}{{ exercise_details["check_code"] }}{% end %}</textarea>
-                    <textarea name="check_code_text" id="check_code_text" class="invisible"></textarea>
-                </p>
-            </div>
-
-            <div class="button is-light space-div" id="example_check_code_button" onclick="showExamplePreExecution()">
-              Toggle Example Code
-              <input type="checkbox" class="invisible" id="example_check_code_checkbox">
             </div>
         </div>
 
@@ -478,7 +472,7 @@
 
             <div class="row-container bottom-space">
                 <div>
-                    <p><strong>Allow students to see submissions from other students: </strong>
+                    <p><strong>Allow students to see anonymized submissions from other students: </strong>
                         <div class="select is-grey">
                             <select name="show_student_submissions" id="show_student_submissions" class="edit-select">
                             {% if exercise_details["show_student_submissions"] %}
@@ -801,7 +795,6 @@
                 output_button.innerHTML = `Test ${test_index + 1} Output`
                 var output_content = document.createElement("div")
                 output_content.id = `test_${test_index}`
-                output_content.style = 'display:none'
                 var test_p_wrapper = document.createElement('p')
                 test_p_wrapper.id = `p_wrapper_${test_index}`
 

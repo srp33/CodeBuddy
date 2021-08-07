@@ -2,38 +2,42 @@
     font-family: 'Lato', sans-serif;
 }
 
+/* Enforces monospace typefaces to be used for the code editor all situations. */
 .ace_editor * {
     font-family: 'Monaco', 'Menlo', 'Droid Sans Mono', 'Courier New', monospace !important;
 }
 
 .has-background-light {
-    background-color: #f5f5f5 !important;
+    background-color: #f5f5f5 !important; /* light grey */
 }
 
 .container {
     padding-top: 3.5rem;
 }
 
-.container-color {
-    background-color: #f5f5f5;
+/* Sets padding width around the entire site's content. */
+.container-padding {
     padding: 3.5rem 10em;
 }
 
+/* Hides div. */
 .invisible {
     display: none;
 }
 
+/* Shows div. */
 .visible {
     display: inline;
 }
 
+/* Styles code blocks. */
 pre {
     background-color: white;
     border-radius: 5px;
 }
 
 .navbar-link:hover {
-    color: #1AB28C;
+    color: #1AB28C; /* light teal */
 }
 
 .navbar-dropdown .navbar-item {
@@ -47,6 +51,7 @@ pre {
     align-items: center;
     height: 400px;
     width: 100%;
+    /* Sets background gradient. */
     background-image: linear-gradient(to bottom right,#fafafa, #DFE7ED);
 }
 
@@ -54,6 +59,7 @@ pre {
     margin: 0 100px 0 100px;
 }
 
+/* Styles available courses on landing page (before login). */
 .landing-courses {
     display: flex;
     flex-direction: column;
@@ -69,6 +75,7 @@ pre {
     flex-wrap: wrap;
 }
 
+/* Styles available courses header on landing page (before login). */
 .landing-courses-heading {
     width: 100%;
     display: flex;
@@ -78,6 +85,7 @@ pre {
     padding: 30px 0 30px 0;
 }
 
+/* Styles each available course header on landing page (before login). */
 .landing-course {
     padding: 20px;
     background-color: #f5f5f5;
@@ -86,90 +94,97 @@ pre {
     margin: 20px;
 }
 
-.has-background-light {
-    background-color: #f5f5f5;
-}
-
+/* Adds space above div. */
 .top-space {
     margin-top: 15px;
 }
 
+/* Adds space below div. */
 .bottom-space {
     margin-bottom: 25px;
 }
 
+/* Adds space above and below div. */
 .space-div {
     margin-top: 15px;
     margin-bottom: 15px;
 }
 
+/* Adds space above modal buttons. */
 .modal-button {
     margin-top: 10px;
 }
 
+/* Sets typeface to monospace. */
 .monospace {
     font-family: monospace;
 }
 
+/* Sets font size. */
 .text-18 {
     font-size: 18px;
 }
 
 .success-message {
-    background-color: #1AB28C;
+    background-color: #1AB28C; /* dark teal */
     color: white;
 }
 
 .error-message {
-    background-color: #FF9138;
-    border-color: #FF9138;
+    background-color: #FF9138; /* orange */
+    border-color: #FF9138; /* orange */
     color: white;
 }
 
 .is-orange {
-    background-color: #FF9138;
-    border-color: #FF9138;
+    background-color: #FF9138; /* orange */
+    border-color: #FF9138; /* orange */
     color: white;
 }
 
 .is-orange:hover {
-    background-color: #f5872e;
-    border-color: #f5872e;
+    background-color: #f5872e; /* dark orange */
+    border-color: #f5872e; /* dark orange */
     color: white;
 }
 
 .green-text {
-    color: #00b386;
+    color: #00b386; /* dark muted teal */
 }
 
+/* Adds right padding to icons in navbar (ie checkmarks, circles, etc) */
 .navbar-img {
     padding-right: 8px;
 }
 
+/* Adds padding to select inputs. */
 .edit-select {
     padding: 2px;
 }
 
 .table {
-    background-color: #f5f5f5 !important;
+    background-color: #f5f5f5 !important; /* light grey */
 }
 
+/* Sets sizing for icons in tables (ie checkmarks, circles, etc) */
 .table-icon {
     height: 30px;
     width: 30px;
     vertical-align: middle;
 }
 
+/* Styles block of student's code on view_answer.html */
 .student-content {
     font-size: 14px;
-    border: 2px solid  #1AB28C;
+    border: 2px solid  #1AB28C; /* dark teal */
     width: 100%;
-    border-left: 12px solid  #1AB28C;
+    border-left: 12px solid  #1AB28C; /* dark teal */
     border-radius: 5px;
     padding: 14px;
     background-color: white;
 }
 
+/* Styles block of instructor's code on view_answer.html */
 .instructor-content {
     font-size: 14px;
     border: 2px solid  #363636;
@@ -180,19 +195,21 @@ pre {
     background-color: white;
 }
 
+/* Styles block of other students' anonymized code on view_answer.html */
 .extra-content {
     font-size: 14px;
-    border: 2px solid  #0095e3;
+    border: 2px solid  #0095e3; /* blue */
     width: 100%;
-    border-left: 12px solid  #0095e3;
+    border-left: 12px solid  #0095e3; /* blue */
     border-radius: 5px;
     padding: 14px;
     background-color: white;
 }
 
+/* Styles help request comments. */
 .comment {
     font-size: 14px;
-    border: 2px solid  #1AB28C;
+    border: 2px solid  #1AB28C; /* dark teal */
     width: 100%;
     border-radius: 5px;
     padding: 14px;
@@ -204,16 +221,16 @@ pre {
 }
 
 .help_request_div {
-    background-color: #f5f5f5;
-    border: 2px solid  #f5f5f5;
+    background-color: #f5f5f5; /* light grey */
+    border: 2px solid  #f5f5f5; /* light grey */
     border-radius: 15px;
     margin-top: 25px;
     padding: 20px;
 }
 
 .suggestion-div {
-    background-color: #f5f5f5;
-    border: 2px solid  #f5f5f5;
+    background-color: #f5f5f5; /* light grey */
+    border: 2px solid  #f5f5f5; /* light grey */
     border-radius: 15px;
     margin-top: 10px;
     padding: 20px;
@@ -244,6 +261,7 @@ td > button {
     width: 50%;
 }
 
+/* Creates a drop shadow. */
 .shadow-box {
     box-shadow: 3px 3px 6px lightgray;
     border-radius: 10px;
@@ -252,12 +270,14 @@ td > button {
     margin-bottom: 30px;
 }
 
+/* Creates segment with one item per row. */
 .row-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
 }
 
+/* Creates left justified segment with one item per row. */
 .front-row-container {
     display: flex;
     flex-wrap: wrap;
@@ -268,6 +288,7 @@ td > button {
     width: 80%;
 }
 
+/* This width is set at 63% so as to not cause the Previous Exercise and Next Exercise buttons to wrap onto a second line. */
 .e-title-container {
     width: 63%;
 }
@@ -288,6 +309,7 @@ td > button {
     padding: 0 10px 0 10px;
 }
 
+/* Styles data files added to an exercise. */
 .file-cta {
     display: flex;
     align-items: center;
@@ -318,25 +340,27 @@ td > button {
     margin-left: 10px;
 }
 
+/* Styles help requests on view_request.html */
 .spread-div {
     display: flex;
     justify-content: space-between;
 }
 
+/* Styles submissions on exercise_student.html */
 .collapsible {
     background-color: white;
     font-size: 20px;
     text-align: left;
     cursor: pointer;
-    border: 2px solid  #363636;
+    border: 2px solid  #363636; /* dark grey */
     width: 100%;
-    border-left: 12px solid  #363636;
+    border-left: 12px solid  #363636; /* dark grey */
     border-radius: 5px;
     padding: 14px;
     margin-top: 10px;
 }
 
-.collapsible-f {
+/* .collapsible-f {
     background-color: white;
     font-size: 20px;
     text-align: left;
@@ -348,15 +372,16 @@ td > button {
     padding: 14px;
     margin-top: 10px;
 }
-
+ */
 .active, .collapsible:hover {
-    background-color: #f8f8f8;
+    background-color: #f8f8f8; /* light grey */
 }
 
 .active, .collapsible-f:hover {
-    background-color: #f8f8f8;
+    background-color: #f8f8f8; /* light grey */
 }
 
+/* Styles hidden content of collapsible submission bubbles on exercise_student.html */
 .c-content {
     padding: 0 18px;
     display: none;
@@ -366,16 +391,18 @@ td > button {
     margin-bottom: 0;
 }
 
+/* Styles right button on view_request.html */
 .tall-button {
     height: 100%;
     width: 30px;
-    background-color: #1AB28C;
+    background-color: #1AB28C; /* dark teal */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
+/* Styles help requests div on view_requests. */
 .padded-div {
     padding: 20px;
     padding-bottom: 60px;
@@ -384,6 +411,7 @@ td > button {
     overflow-y: scroll;
 }
 
+/* Styles instructions div. */
 .instructions {
     background-color: white;
     padding: 20px;
@@ -391,21 +419,24 @@ td > button {
     margin-bottom: 15px;
 }
 
+/* Sets margins on column div in profile_admin, among other places. */
 .columns {
     margin-bottom: 0 !important;
 }
 
+/* Sets smaller font size. */
 .smaller-font {
     font-size: 16px;
 }
 
+/* Sets hover on fas icons. */
 .fas:hover {
     cursor: pointer;
 }
 
 .student-exercise-notification {
     color: white;
-    background-color: #1AB28C;
+    background-color: #1AB28C; /* dark teal */
     border-radius: 5px;
     padding: 20px;
     font-size: 20px;
@@ -413,7 +444,7 @@ td > button {
 }
 
 .has-background-orange {
-    background-color: #FF9138;
+    background-color: #FF9138; /* orange */
     color: white;
 }
 
@@ -422,19 +453,19 @@ td > button {
 }
 
 .passing-btn-color {
-    background-color: #1AB28C;
-    border-color: #1AB28C;
-    color: #363636;
+    background-color: #1AB28C; /* teal */
+    border-color: #1AB28C; /* teal */
+    color: #363636; /* dark grey */
 }
 
 .failing-btn-color {
-    background-color: #FF9138;
-    border-color: #FF9138;
-    color: #363636;
+    background-color: #FF9138; /* orange */
+    border-color: #FF9138; /* orange */
+    color: #363636; /* dark grey */
 }
 
 .grey-text {
-    color: #363636;
+    color: #363636; /* dark grey */
 }
 
 .footer {
@@ -455,15 +486,18 @@ td > button {
     align-items: center;
 }
 
+/* Styles textareas that allow images to be pasted directly into them. */
 div[contenteditable] {
   overflow-y: scroll;
   font-size: 1.25rem;
 }
 
+/* Styles said images inside textareas. */
 div[contenteditable] img {
   max-height: 20em;
 }
 
+/* Sets error messages to monospace. */
 module {
   font-family: monospace;
 }
