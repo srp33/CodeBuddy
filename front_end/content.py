@@ -1768,6 +1768,12 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
 
+        self.execute('''UPDATE presubmissions
+                        SET assignment_id = ?
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
+
         self.execute('''UPDATE submission_outputs
                         SET assignment_id = ?
                         WHERE course_id = ?
@@ -1812,6 +1818,11 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
         self.execute('''DELETE FROM scores
                         WHERE course_id = ?
                           AND assignment_id = ?
@@ -1844,6 +1855,10 @@ class Content:
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
@@ -1862,6 +1877,15 @@ class Content:
 
     def delete_course(self, course_basics):
         course_id = course_basics["id"]
+
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?''', (course_id, ))
+
+        self.execute('''DELETE FROM tests
+                        WHERE course_id = ?''', (course_id, ))
+
+        self.execute('''DELETE FROM submission_outputs
+                        WHERE course_id = ?''', (course_id, ))
 
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?''', (course_id, ))
@@ -1890,6 +1914,9 @@ class Content:
         self.execute('''DELETE FROM presubmissions
                         WHERE course_id = ?''', (course_id, ))
 
+        self.execute('''DELETE FROM submission_outputs
+                        WHERE course_id = ?''', (course_id, ))
+
     def delete_assignment_submissions(self, assignment_basics):
         course_id = assignment_basics["course"]["id"]
         assignment_id = assignment_basics["id"]
@@ -1903,6 +1930,10 @@ class Content:
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
         self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
+        self.execute('''DELETE FROM submission_outputs
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
