@@ -203,10 +203,9 @@
                         {% for i in range(len(exercise_details["tests"]))%}
                             button_bg_color = (tests[{{i}}].passed ? "passing-btn-color" : "failing-btn-color");
                             test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
-                            test_display = (tests[{{i}}].passed ? "block" : "none");
                             {% if exercise_details["tests"][i]["test_instructions"] == "" %}
                                 test_output += `<pre class='${button_bg_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.</pre>`;
-                                test_output += `<div id="test_${tests[{{i}}].test}" style="display:${test_display}"><h6>Your output:</h6>\n\n`;
+                                test_output += `<div id="test_${tests[{{i}}].test}" style="display:block"><h6>Your output:</h6>\n\n`;
 
                                 {% if exercise_details["output_type"] == "txt" %}
                                     if (tests[{{i}}].text_output == "")
