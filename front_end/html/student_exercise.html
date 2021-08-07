@@ -23,7 +23,7 @@
             <pre>{{ exercise_details["answer_code"]}}</pre>
 
             {% if exercise_details["tests"] != [] %}
-            <h6 style="display: inline">Test code (to be executed after student solution):</h6>
+            <h6>Test code (to be executed after student solution):</h6>
                 {% for test in exercise_details["tests"] %}
                     {% if test["test_instructions"] == "" %}
                         <pre class="smaller-font">{{ test["code"] }}</pre>

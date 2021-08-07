@@ -285,7 +285,7 @@ td > button {
 }
 
 .a-title-container {
-    width: 80%;
+    width: 75%;
 }
 
 /* This width is set at 63% so as to not cause the Previous Exercise and Next Exercise buttons to wrap onto a second line. */

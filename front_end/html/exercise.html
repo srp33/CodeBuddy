@@ -380,7 +380,7 @@
             </div>
         {% end %}
 
-        <div id="hint_div" class="invisible hint-div smaller-font"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
+        <div id="hint_div" class="invisible hint-div"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
 
         <!--Here's the assignment timer.-->
 
@@ -516,7 +516,7 @@
         <div id="submissions"></div>
 
         {% if len(exercise_details["credit"]) > 0 %}
-        <div class="front-row-container smaller-font">
+        <div class="front-row-container">
             <p style="padding-right: 5px;"><em>Credit: </em></p>
             <p><em>{{ exercise_details["credit"] }}</em></p>
         </div>
