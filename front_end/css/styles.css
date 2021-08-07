@@ -33,7 +33,7 @@ pre {
 }
 
 .navbar-link:hover {
-    color: #00d1b2;
+    color: #1AB28C;
 }
 
 .navbar-dropdown .navbar-item {
@@ -422,8 +422,8 @@ td > button {
 }
 
 .passing-btn-color {
-    background-color: #00d1b2;
-    border-color: #00d1b2;
+    background-color: #1AB28C;
+    border-color: #1AB28C;
     color: #363636;
 }
 

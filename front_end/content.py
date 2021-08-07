@@ -1638,11 +1638,12 @@ class Content:
             # Saves submission for partner.
             if partner_id:
                 submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
-                self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user, tests])
+                self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user])
 
                 if len(tests) > 0:
                     for test in tests:
-                        self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
+                        self.execute(test_sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), test["text_output"], test["image_output"]])
+
         except:
             print(traceback.format_exc())
 
@@ -1921,6 +1922,11 @@ class Content:
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
         self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
+        self.execute('''DELETE FROM submission_outputs
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
