@@ -88,6 +88,10 @@
                    codeChanged = true
                  });
 
+                 {% if user_info['enable_vim'] %}
+                    editor.setKeyboardHandler("ace/keyboard/vim");
+                 {% end %}
+
                 function copyExercise(course, assignment, exercise) {
                     var new_title = document.getElementById("new_title").value;
                     var message = document.getElementById("copy_exercise_message")
