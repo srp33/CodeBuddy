@@ -535,13 +535,6 @@
 
         <!-- Code to modify page behavior at the end of loading -->
         <script>
-            {% if user_info["enable_vim"] %}
-            answer_code_editor.setKeyboardHandler("ace/keyboard/vim");
-            start_code_editor.setKeyboardHandler("ace/keyboard/vim");
-            test_code_editor.setKeyboardHandler("ace/keyboard/vim");
-            check_code_editor.setKeyboardHandler("ace/keyboard/vim");
-            {% end %}
-
             function saveCode() {
               var save_code = document.getElementById("save_code").innerHTML
               return save_code.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&")
