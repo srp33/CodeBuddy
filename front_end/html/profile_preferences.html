@@ -23,22 +23,22 @@
                 </div>
 
                 <div class="bottom-space">
-                    <p><strong>Use auto-complete: </strong></p>
+                    <p><strong>use auto-complete: </strong></p>
                     <div class="select is-light">
-                        <select name="use_auto_complete" class="edit-select" onchange="updateAutoComplete(this.value)">
+                        <select name="use_auto_complete" class="edit-select" onchange="updateautocomplete(this.value)">
                         {% if user_info["use_auto_complete"] %}
-                            <option value="Yes" selected>Yes</option>
-                            <option value="No">No</option>
+                            <option value="yes" selected>yes</option>
+                            <option value="no">no</option>
                         {% else %}
-                            <option value="Yes">Yes</option>
-                            <option value="No" selected>No</option>
+                            <option value="yes">yes</option>
+                            <option value="no" selected>no</option>
                         {% end %}
                         </select>
                     </div>
                 </div>
 
                 <div class="bottom-space">
-                    <p><strong>Use Vim: </strong></p>
+                    <p><strong>Enable vim text editor: </strong></p>
                     <div class="select is-light">
                         <select name="enable_vim" class="edit-select">
                         {% if user_info["enable_vim"] %}
