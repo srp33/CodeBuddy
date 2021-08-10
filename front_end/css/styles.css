@@ -2,6 +2,15 @@
     font-family: 'Lato', sans-serif;
 }
 
+/* The following two blocks of code create a smoother hover effect when the cursor is over a link. */
+a:hover {
+  transition: .2s;
+}
+
+a {
+  transition: .3s;
+}
+
 /* Enforces monospace typefaces to be used for the code editor all situations. */
 .ace_editor * {
     font-family: 'Monaco', 'Menlo', 'Droid Sans Mono', 'Courier New', monospace !important;
@@ -504,4 +513,12 @@ module {
 
 .textarea, .input {
   font-size: 1.25rem;
+}
+
+#navbar-start {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  padding: 0.5rem 2rem;
 }
