@@ -473,6 +473,31 @@ td > button {
     color: #363636; /* dark grey */
 }
 
+.passing-bd-color {
+    background-color: white;
+    color: #363636; /* dark grey */
+    background-color: white;
+    border: 2px solid  #1AB28C;
+    border-left: 12px solid  #1AB28C;
+    border-radius: 5px;
+    transition: .2s;
+}
+
+.failing-bd-color {
+    background-color: white;
+    color: #363636; /* dark grey */
+    background-color: white;
+    border: 2px solid  #FF9138;
+    border-left: 12px solid  #FF9138;
+    border-radius: 5px;
+    transition: .2s;
+}
+
+.passing-bd-color:hover, .failing-bd-color:hover {
+    transition: .3s;
+    background-color: #fafafa;
+}
+
 .grey-text {
     color: #363636; /* dark grey */
 }

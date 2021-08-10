@@ -789,7 +789,7 @@
                 output_div.style.marginTop = '60px'
                 output_div.style.display = 'none'
                 var output_button = document.createElement("pre")
-                output_button.classList.add("passing-btn-color");
+                output_button.classList.add("passing-bd-color");
                 output_button.id = `output_button_${test_index}`
                 output_button.style = 'cursor:pointer'
                 output_button.setAttribute('onclick', `showTest(${test_index})`)
@@ -799,9 +799,10 @@
                 var test_p_wrapper = document.createElement('p')
                 test_p_wrapper.id = `p_wrapper_${test_index}`
 
+                output_content.appendChild(document.createElement('hr'))
                 output_content.appendChild(test_p_wrapper)
+                output_button.appendChild(output_content)
                 output_div.appendChild(output_button)
-                output_div.appendChild(output_content)
                 test_div.appendChild(p_wrapper)
                 test_div.appendChild(toggle_vis_div)
                 test_div.appendChild(output_div)
@@ -902,15 +903,15 @@
 
                    if ((Object.keys(new_tests).length > 0) && ((json_data[i].image_output != new_tests[i].image_output) || (json_data[i].text_output != new_tests[i].text_output))) {
                       var output_btn = document.getElementById(`output_button_${i}`)
-                      output_btn.classList.remove('passing-btn-color');
-                      output_btn.classList.add('failing-btn-color');
+                      output_btn.classList.remove('passing-bd-color');
+                      output_btn.classList.add('failing-bd-color');
                       output_btn.innerHTML = `Test ${parseInt(i) + 1} output did not match previous output.`;
                    }
                    else if ((json_data[i].image_output) == "" && (json_data[i].text_output == "")) {
                       content = '<pre>[This test produced no output.]</pre>';
                       var output_btn = document.getElementById(`output_button_${i}`)
-                      output_btn.classList.remove('passing-btn-color');
-                      output_btn.classList.add('failing-btn-color');
+                      output_btn.classList.remove('passing-bd-color');
+                      output_btn.classList.add('failing-bd-color');
                       output_btn.innerHTML = `Test ${parseInt(i) + 1} produced no output.`;
                    }
                    document.getElementById(`p_wrapper_${i}`).innerHTML = content;

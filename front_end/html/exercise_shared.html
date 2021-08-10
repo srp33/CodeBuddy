@@ -205,18 +205,18 @@
                     var test_output = "<h6>Test outputs:</h6>\n\n";
                         var tests = json_data.tests;
                         {% for i in range(len(exercise_details["tests"]))%}
-                            button_bg_color = (tests[{{i}}].passed ? "passing-btn-color" : "failing-btn-color");
+                            button_bd_color = (tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color");
                             test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
                             {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                                test_output += `<pre class='${button_bg_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.</pre>`;
-                                test_output += `<div id="test_${tests[{{i}}].test}" style="display:block"><h6>Your output:</h6>\n\n`;
+                                test_output += `<pre class='${button_bd_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.`;
+                                test_output += `<div id="test_${tests[{{i}}].test}" style="display:block"><hr><h6 style="margin-bottom: -3em;">Your output:</h6>\n\n`;
 
                                 {% if exercise_details["output_type"] == "txt" %}
                                     if (tests[{{i}}].text_output == "")
                                         test_output += "<p><pre>[Your solution produced no output.]</pre></p>";
                                     else
                                         test_output += `<p><pre>${tests[{{i}}].text_output}</pre><p>`;
-                                    test_output += `<h6>Expected output:</h6>\n\n`;
+                                    test_output += `<h6 style='margin-bottom: -3em;'>Expected output:</h6>\n\n`;
                                     test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
                                 {% else %}
                                     if (tests[{{i}}]["image_output"] == "") {
@@ -227,7 +227,7 @@
                                     } else
                                         test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].image_output + "' width='100%' /></figure></p>";
 
-                                    test_output += `<h6>Expected output:</h6>\n\n`;
+                                    test_output += `<h6 style="margin-bottom: -3em;">Expected output:</h6>\n\n`;
                                     test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + '{{exercise_details["tests"][i]["image_output"]}}' + "' width='100%' /></figure></p>";
                                 {% end %}
 
@@ -239,9 +239,9 @@
                                         test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
                                     {% end %}
                                 }
-                                test_output += `</div>`
+                                test_output += `</div></pre>`
                             {% else %}
-                                test_output += `<pre class='${button_bg_color}'>Test {{i + 1}} output hidden.</pre>`;
+                                test_output += `<pre class='${button_bd_color}'>Test {{i + 1}} output hidden.</pre>`;
                             {% end %}
                         test_output += `<br />`
                         {% end %}
@@ -312,7 +312,7 @@
                         var expected_image = `{{exercise_details["expected_image_output"]}}`;
 
                         if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
-                            var code_output = "<h6>Your output:</h6>\n\n";
+                            var code_output = "<h6 >Your output:</h6>\n\n";
                             code_output += build_text_output(json_data.text_output);
                             code_output += build_image_output(json_data.image_output);
                             document.getElementById("code_output").innerHTML = code_output;
@@ -555,17 +555,17 @@
                                           get_submission(submission_id, false);
 
                                       if (passed)
-                                          button_bg_color = "passing-btn-color";
+                                          button_bd_color = "passing-btn-color";
                                       else
-                                          button_bg_color = "failing-btn-color";
+                                          button_bd_color = "failing-btn-color";
 
                                       var submission_date = new Date(the_date).toLocaleString();
 
                                       if (partner_name) {
-                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
                                       }
                                       else {
-                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
                                       }
                                                                       }
                                   submission_html += "</div><br />\n";
