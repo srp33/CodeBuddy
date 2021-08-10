@@ -209,7 +209,7 @@
                             test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
                             {% if exercise_details["tests"][i]["test_instructions"] == "" %}
                                 test_output += `<pre class='${button_bg_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.</pre>`;
-                                test_output += `<div id="test_${tests[{{i}}].test}" style="display:none"><h6>Your output:</h6>\n\n`;
+                                test_output += `<div id="test_${tests[{{i}}].test}" style="display:block"><h6>Your output:</h6>\n\n`;
 
                                 {% if exercise_details["output_type"] == "txt" %}
                                     if (tests[{{i}}].text_output == "")
@@ -396,7 +396,7 @@
                         return false;
 
                     // get partner_id
-                    let partner_key = document.getElementById("pair_programming").value == "Yes" ? document.getElementById("partner_key").value : null;
+                    let partner_key = document.getElementById("partner_key").value != "" ? document.getElementById("partner_key").value : null;
 
                     result_div = document.getElementById("result");
                     result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
@@ -446,8 +446,8 @@
                      var modalSubmitButton = document.getElementById("modal_submit_button");
 
                      modalSubmitButton.onclick = function() {
-                       let partner_key = {"partner_key": document.getElementById("partner_key").value};
-                       if (document.getElementById("pair_programming").value == "Yes") {
+                       let partner_object = {"partner_key": document.getElementById("partner_key").value};
+                       if (partner_object.partner_key != "") {
                          $.post("/check_partners/{{ course_basics['id'] }}", partner_key,
                             function(data, status) {
                                 if(!(JSON.parse(data))) {

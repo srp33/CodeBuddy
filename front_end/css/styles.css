@@ -2,6 +2,15 @@
     font-family: 'Lato', sans-serif;
 }
 
+/* The following two blocks of code create a smoother hover effect when the cursor is over a link. */
+a:hover {
+  transition: .2s;
+}
+
+a {
+  transition: .3s;
+}
+
 /* Enforces monospace typefaces to be used for the code editor all situations. */
 .ace_editor * {
     font-family: 'Monaco', 'Menlo', 'Droid Sans Mono', 'Courier New', monospace !important;
@@ -37,7 +46,7 @@ pre {
 }
 
 .navbar-link:hover {
-    color: #00d1b2; /* light teal */
+    color: #1AB28C; /* light teal */
 }
 
 .navbar-dropdown .navbar-item {
@@ -285,7 +294,7 @@ td > button {
 }
 
 .a-title-container {
-    width: 80%;
+    width: 75%;
 }
 
 /* This width is set at 63% so as to not cause the Previous Exercise and Next Exercise buttons to wrap onto a second line. */
@@ -453,8 +462,8 @@ td > button {
 }
 
 .passing-btn-color {
-    background-color: #00d1b2; /* teal */
-    border-color: #00d1b2; /* teal */
+    background-color: #1AB28C; /* teal */
+    border-color: #1AB28C; /* teal */
     color: #363636; /* dark grey */
 }
 
@@ -504,4 +513,12 @@ module {
 
 .textarea, .input {
   font-size: 1.25rem;
+}
+
+#navbar-start {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  padding: 0.5rem 2rem;
 }
