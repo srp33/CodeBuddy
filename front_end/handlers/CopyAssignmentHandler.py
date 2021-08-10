@@ -16,4 +16,3 @@ class CopyAssignmentHandler(BaseUserHandler):
 
         except Exception as inst:
             render_error(self, traceback.format_exc())
-
