@@ -64,6 +64,7 @@ ADD front_end/startup.sh /app/
 ADD front_end/scheduled_scripts/* /scheduled_scripts/
 ADD front_end/migration_scripts/* /migration_scripts/
 ADD front_end/html/* /tmp/
+ADD front_end/handlers/*.py /app/
 ADD front_end/*.py /app/
 ADD front_end/secrets.yaml /app/
 
