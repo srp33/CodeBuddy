@@ -2,6 +2,7 @@
     font-family: 'Lato', sans-serif;
 }
 
+/* The following two blocks of code create a smoother hover effect when the cursor is over a link. */
 a:hover {
   transition: .2s;
 }
