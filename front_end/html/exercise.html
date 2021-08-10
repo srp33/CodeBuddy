@@ -282,15 +282,11 @@
                 </label><br />
 
                 <div id="invalid_partner"></div>
-                <div style="margin: 15px 0;" class="select is-grey space_div" >
-                    <select onchange="showUsers(this.value)" id="pair_programming" name="pair_programming" class="edit-select">
-                        <option value="Yes">Yes</option>
-                        <option value="No" selected>No</option>
-                    </select>
-                </div>
 
-                <div id="partner_selection" style="display:none">
+                <div id="partner_selection">
                 {% if users %}
+                <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
+
                 <input class="space_div input is-primary" list="users_list" id="partner_key" placeholder="Enter partner's name here...">
                 <datalist id="users_list">
                         {% for user in users %}
@@ -384,7 +380,7 @@
             </div>
         {% end %}
 
-        <div id="hint_div" class="invisible hint-div smaller-font"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
+        <div id="hint_div" class="invisible hint-div"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
 
         <!--Here's the assignment timer.-->
 
@@ -520,7 +516,7 @@
         <div id="submissions"></div>
 
         {% if len(exercise_details["credit"]) > 0 %}
-        <div class="front-row-container smaller-font">
+        <div class="front-row-container">
             <p style="padding-right: 5px;"><em>Credit: </em></p>
             <p><em>{{ exercise_details["credit"] }}</em></p>
         </div>

@@ -19,29 +19,31 @@
         </span>
     </div>
     <div class="padded-div">
-    {% for request in similar_requests %}
-        <div class="bottom-space">
-            <button type="button" class="spread-div clickable collapsible">
-                <p id="first-p">Help request for {{ request["name"] }}</p>
-                <p><strong>Percent similarity: {{ round(request["psim"] * 100, 2) }}%</strong></p>
-            </button>
-            <div class="c-content">
-                <p><strong>Comment:</strong></p>
-                <pre class="comment">{{ request["student_comment"] }}</pre>
-                <p><strong>Code:</strong></p>
-                <pre class="student-content">{{ request["code"] }}</pre>
-                <p><strong>Text output:</strong></p>
-                <pre class="instructor-content">{{ request["text_output"] }}</pre>
-                {% if request["suggestion"] %}
-                    <p><strong>Suggestion:</strong></p>
-                    <pre>{{ request["suggestion"] }}</pre>
-                    <button class="button is-primary is-inverted" onclick="useSuggestion(`{{ request['suggestion'] }}`)">Use this suggestion for the request I'm viewing</button>
-                {% end %}
-                <div class="buttons space-buttons">
-                    <a class="button is-dark" href="/view_request/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
+    {% if similar_requests %}
+        {% for request in similar_requests %}
+            <div class="bottom-space">
+                <button type="button" class="spread-div clickable collapsible">
+                    <p id="first-p">Help request for {{ request["name"] }}</p>
+                    <p><strong>Percent similarity: {{ round(request["psim"] * 100, 2) }}%</strong></p>
+                </button>
+                <div class="c-content">
+                    <p><strong>Comment:</strong></p>
+                    <pre class="comment">{{ request["student_comment"] }}</pre>
+                    <p><strong>Code:</strong></p>
+                    <pre class="student-content">{{ request["code"] }}</pre>
+                    <p><strong>Text output:</strong></p>
+                    <pre class="instructor-content">{{ request["text_output"] }}</pre>
+                    {% if request["suggestion"] %}
+                        <p><strong>Suggestion:</strong></p>
+                        <pre>{{ request["suggestion"] }}</pre>
+                        <button class="button is-primary is-inverted" onclick="useSuggestion(`{{ request['suggestion'] }}`)">Use this suggestion for the request I'm viewing</button>
+                    {% end %}
+                    <div class="buttons space-buttons">
+                        <a class="button is-dark" href="/view_request/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% end %}
     {% end %}
     </div>
 </div>
@@ -263,7 +265,7 @@
     var coll = document.getElementsByClassName("clickable");
     var content = document.getElementsByClassName("c-content");
     var i;
-  
+
     for (i = 0; i < coll.length; i++) {
         coll[i].addEventListener("click", function() {
             this.classList.toggle("active");

@@ -1044,7 +1044,7 @@ class Content:
             return help_request
 
     def compare_help_requests(self, course_id, assignment_id, exercise_id, user_id):
-        #get the original help request, including its output type
+        # Get the original help request, including its output type
         sql = '''SELECT r.text_output, e.expected_text_output, r.image_output, e.expected_image_output, e.output_type
                  FROM help_requests r
                  INNER JOIN exercises e
@@ -1638,11 +1638,12 @@ class Content:
             # Saves submission for partner.
             if partner_id:
                 submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
-                self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user, tests])
+                self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user])
 
                 if len(tests) > 0:
                     for test in tests:
-                        self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
+                        self.execute(test_sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), test["text_output"], test["image_output"]])
+
         except:
             print(traceback.format_exc())
 
@@ -1767,6 +1768,12 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
 
+        self.execute('''UPDATE presubmissions
+                        SET assignment_id = ?
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
+
         self.execute('''UPDATE submission_outputs
                         SET assignment_id = ?
                         WHERE course_id = ?
@@ -1811,6 +1818,11 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
         self.execute('''DELETE FROM scores
                         WHERE course_id = ?
                           AND assignment_id = ?
@@ -1843,6 +1855,10 @@ class Content:
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
@@ -1861,6 +1877,15 @@ class Content:
 
     def delete_course(self, course_basics):
         course_id = course_basics["id"]
+
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?''', (course_id, ))
+
+        self.execute('''DELETE FROM tests
+                        WHERE course_id = ?''', (course_id, ))
+
+        self.execute('''DELETE FROM submission_outputs
+                        WHERE course_id = ?''', (course_id, ))
 
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?''', (course_id, ))
@@ -1889,6 +1914,9 @@ class Content:
         self.execute('''DELETE FROM presubmissions
                         WHERE course_id = ?''', (course_id, ))
 
+        self.execute('''DELETE FROM submission_outputs
+                        WHERE course_id = ?''', (course_id, ))
+
     def delete_assignment_submissions(self, assignment_basics):
         course_id = assignment_basics["course"]["id"]
         assignment_id = assignment_basics["id"]
@@ -1902,6 +1930,10 @@ class Content:
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
         self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
+        self.execute('''DELETE FROM submission_outputs
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
@@ -1921,6 +1953,11 @@ class Content:
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
         self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
+        self.execute('''DELETE FROM submission_outputs
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
@@ -2029,7 +2066,7 @@ class Content:
             progress_file.flush()
 
     def rerun_submissions(self, assignment_title=None):
-        with open("/logs/progress.log", "w") as progress_file:
+        with open("/logs/progress.log", "a") as progress_file:
             progress_file.write("Retrieving submissions that need to be rerun...\n")
 
             if assignment_title:
