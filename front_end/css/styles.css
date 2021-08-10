@@ -37,7 +37,7 @@ pre {
 }
 
 .navbar-link:hover {
-    color: #00d1b2; /* light teal */
+    color: #1AB28C; /* light teal */
 }
 
 .navbar-dropdown .navbar-item {
@@ -285,7 +285,7 @@ td > button {
 }
 
 .a-title-container {
-    width: 80%;
+    width: 75%;
 }
 
 /* This width is set at 63% so as to not cause the Previous Exercise and Next Exercise buttons to wrap onto a second line. */
@@ -453,8 +453,8 @@ td > button {
 }
 
 .passing-btn-color {
-    background-color: #00d1b2; /* teal */
-    border-color: #00d1b2; /* teal */
+    background-color: #1AB28C; /* teal */
+    border-color: #1AB28C; /* teal */
     color: #363636; /* dark grey */
 }
 
