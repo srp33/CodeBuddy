@@ -473,6 +473,7 @@ td > button {
     color: #363636; /* dark grey */
 }
 
+/* Makes a green bordered div for passing tests. */
 .passing-bd-color {
     color: #363636; /* dark grey */
     background-color: white;
@@ -482,6 +483,7 @@ td > button {
     transition: .2s;
 }
 
+/* Makes a grey bordered div for tests. */
 .neutral-bd-color {
     color: #363636; /* dark grey */
     background-color: white;
@@ -491,6 +493,7 @@ td > button {
     transition: .2s;
 }
 
+/* Makes an orange bordered div for failing tests. */
 .failing-bd-color {
     color: #363636; /* dark grey */
     background-color: white;
