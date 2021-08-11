@@ -208,15 +208,17 @@
                             button_bd_color = (tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color");
                             test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
                             {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                                test_output += `<pre class='${button_bd_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.`;
-                                test_output += `<div id="test_${tests[{{i}}].test}" style="display:block"><hr><h6 style="margin-bottom: -3em;">Your output:</h6>\n\n`;
-
+                                test_output += `<div class='${button_bd_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><div class="monospace" style="padding: 1.25em 1.5em;">Test {{i + 1}} ${test_message}.</div>`;
+                                test_output += `<div id="test_${tests[{{i}}].test}" style="padding: 0 1.25em 1.5em 1.25em;"><hr style="margin: 0 0 1.5rem 0;">
+                                  <h6>Test code:</h6>
+                                  <pre>{{exercise_details["tests"][i]["code"]}}</pre>
+                                  <h6>Your output:</h6>\n\n`;
                                 {% if exercise_details["output_type"] == "txt" %}
                                     if (tests[{{i}}].text_output == "")
                                         test_output += "<p><pre>[Your solution produced no output.]</pre></p>";
                                     else
                                         test_output += `<p><pre>${tests[{{i}}].text_output}</pre><p>`;
-                                    test_output += `<h6 style='margin-bottom: -3em;'>Expected output:</h6>\n\n`;
+                                    test_output += `<h6>Expected output:</h6>\n\n`;
                                     test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
                                 {% else %}
                                     if (tests[{{i}}]["image_output"] == "") {
@@ -227,7 +229,7 @@
                                     } else
                                         test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].image_output + "' width='100%' /></figure></p>";
 
-                                    test_output += `<h6 style="margin-bottom: -3em;">Expected output:</h6>\n\n`;
+                                    test_output += `<h6>Expected output:</h6>\n\n`;
                                     test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + '{{exercise_details["tests"][i]["image_output"]}}' + "' width='100%' /></figure></p>";
                                 {% end %}
 
@@ -239,7 +241,7 @@
                                         test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
                                     {% end %}
                                 }
-                                test_output += `</div></pre>`
+                                test_output += `</div></div>`
                             {% else %}
                                 test_output += `<pre class='${button_bd_color}'>Test {{i + 1}} output hidden.</pre>`;
                             {% end %}
