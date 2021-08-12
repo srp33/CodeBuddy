@@ -3,10 +3,6 @@ import sqlite3
 import sys
 import traceback
 
-sys.path.append('/app')
-from helper import *
-from content import *
-
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
 
