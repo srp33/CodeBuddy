@@ -30,6 +30,8 @@ class EditExerciseHandler(BaseUserHandler):
             old_text_output = exercise_details["expected_text_output"]
             old_image_output = exercise_details["expected_image_output"]
             old_tests = exercise_details["tests"]
+            # Saves number of old tests. If there are fewer old than new tests, CodeBuddy will later raise a warning.
+            num_old_tests = len(old_tests)
 
             exercise_basics["title"] = self.get_body_argument("title").strip() #required
             exercise_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
@@ -134,6 +136,12 @@ class EditExerciseHandler(BaseUserHandler):
                                     if len(empty_tests) > 0:
                                         result = f"Warning: {len(empty_tests)} of your tests produced no output."
 
+                                    num_submissions = sum(list(map(lambda x: int(x[1]["num_submissions"]), self.content.get_exercise_scores(course, assignment, exercise))))
+
+                                    # If number of tests is greater than before last save and number of submissions on this exercise is greater than zero, raise warning.
+                                    if num_old_tests < len(tests) and num_submissions > 0:
+                                        result = f"You have increased the number of tests, and this exercise already has {num_submissions} submissions. This will render the output of those submissions unviewable for students. However, their submission scores will not change."
+
                                     exercise = self.content.save_exercise(exercise_basics, exercise_details)
 
                                     exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
@@ -149,4 +157,3 @@ class EditExerciseHandler(BaseUserHandler):
             render_error(self, f"Your solution timed out after {self.settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds.")
         except Exception as inst:
             render_error(self, traceback.format_exc())
-

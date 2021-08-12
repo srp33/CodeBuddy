@@ -184,7 +184,6 @@ pre {
 
 /* Styles block of student's code on view_answer.html */
 .student-content {
-    font-size: 14px;
     border: 2px solid  #1AB28C; /* dark teal */
     width: 100%;
     border-left: 12px solid  #1AB28C; /* dark teal */
@@ -195,7 +194,6 @@ pre {
 
 /* Styles block of instructor's code on view_answer.html */
 .instructor-content {
-    font-size: 14px;
     border: 2px solid  #363636;
     width: 100%;
     border-left: 12px solid  #363636;

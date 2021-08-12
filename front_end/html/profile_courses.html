@@ -87,7 +87,7 @@
                     </div>
                 </div>
             {% else %}
-                <p>No current courses</p>
+                <p>You have not yet registered for a course.</p>
             {% end %}
             </div>
         </div>
@@ -150,13 +150,13 @@
 
             </form>
 
-            <p style="font-size: x-large;">Available courses:</p>
+            <h2 style='margin-bottom:1em;'>Available courses:</h2>
 
             {% if available_courses %}
                 <div class="scroll_div">
                 {% for course in available_courses %}
                     <div>
-                        <p style="font-size: larger;"><strong>{{ course[1]["title"] }}</strong>
+                        <h4><strong>{{ course[1]["title"] }}</strong>
                             <a class="register-button button is-white"
                             {% if course[1]['passcode'] %}
                                 onclick="showRegisterModal({{ course[1]['id'] }}, true)"
@@ -164,8 +164,8 @@
                                 onclick="showRegisterModal({{ course[1]['id'] }})"
                             {% end %}
                             >Register</a>
-                        </p>
-                        <p style="font-size: small;">{{ course[1]["introduction"] }}</p>
+                        </h4>
+                        <p>{{ course[1]["introduction"] }}</p>
                     </div><br />
                 {% end %}
                 </div>
