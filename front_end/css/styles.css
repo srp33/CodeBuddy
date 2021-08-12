@@ -464,13 +464,13 @@ td > button {
 .passing-btn-color {
     background-color: #1AB28C; /* teal */
     border-color: #1AB28C; /* teal */
-    color: #363636; /* dark grey */
+    color: #FFFFFF; /* white */
 }
 
 .failing-btn-color {
     background-color: #FF9138; /* orange */
     border-color: #FF9138; /* orange */
-    color: #363636; /* dark grey */
+    color: #FFFFFF; /* white */
 }
 
 /* Makes a green bordered div for passing tests. */

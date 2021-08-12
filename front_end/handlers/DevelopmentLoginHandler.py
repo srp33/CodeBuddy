@@ -20,12 +20,14 @@ class DevelopmentLoginHandler(RequestHandler):
             if user_id == "":
                 self.write("Invalid user ID.")
             else:
-                if not self.content.user_exists(user_id):
-                    # Add static information for test user.
-                    user_dict = {'id': user_id, 'email': f'{user_id}@test.com', 'verified_email': True, 'name': user_id, 'given_name': 'user_id', 'family_name': 'TestUser', 'locale': 'en'}
-                    self.content.add_user(user_id, user_dict)
+                full_user_id = f'{user_id}@test.com'
 
-                self.set_secure_cookie("user_id", user_id, expires_days=30)
+                if not self.content.user_exists(full_user_id):
+                    # Add static information for test user.
+                    user_dict = {'name': f'{user_id} TestUser', 'given_name': user_id, 'family_name': 'TestUser', 'locale': 'en'}
+                    self.content.add_user(full_user_id, user_dict)
+
+                self.set_secure_cookie("user_id", full_user_id, expires_days=30)
 
                 if not target_path:
                     target_path = "/"
