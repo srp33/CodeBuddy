@@ -88,6 +88,10 @@
                    codeChanged = true
                  });
 
+                 {% if user_info['enable_vim'] %}
+                    editor.setKeyboardHandler("ace/keyboard/vim");
+                 {% end %}
+
                 function copyExercise(course, assignment, exercise) {
                     var new_title = document.getElementById("new_title").value;
                     var message = document.getElementById("copy_exercise_message")
@@ -201,12 +205,14 @@
                     var test_output = "<h6>Test outputs:</h6>\n\n";
                         var tests = json_data.tests;
                         {% for i in range(len(exercise_details["tests"]))%}
-                            button_bg_color = (tests[{{i}}].passed ? "passing-btn-color" : "failing-btn-color");
+                            button_bd_color = (tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color");
                             test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
                             {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                                test_output += `<pre class='${button_bg_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'>Test {{i + 1}} ${test_message}.</pre>`;
-                                test_output += `<div id="test_${tests[{{i}}].test}" style="display:block"><h6>Your output:</h6>\n\n`;
-
+                                test_output += `<div class='${button_bd_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><div class="monospace" style="padding: 1.25em 1.5em;">Test {{i + 1}} ${test_message}.</div>`;
+                                test_output += `<div id="test_${tests[{{i}}].test}" style="padding: 0 1.25em 1.5em 1.25em;"><hr style="margin: 0 0 1.5rem 0;">
+                                  <h6>Test code:</h6>
+                                  <pre>{{exercise_details["tests"][i]["code"]}}</pre>
+                                  <h6>Your output:</h6>\n\n`;
                                 {% if exercise_details["output_type"] == "txt" %}
                                     if (tests[{{i}}].text_output == "")
                                         test_output += "<p><pre>[Your solution produced no output.]</pre></p>";
@@ -235,9 +241,9 @@
                                         test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
                                     {% end %}
                                 }
-                                test_output += `</div>`
+                                test_output += `</div></div>`
                             {% else %}
-                                test_output += `<pre class='${button_bg_color}'>Test {{i + 1}} output hidden.</pre>`;
+                                test_output += `<pre class='${button_bd_color}'>Test {{i + 1}} output hidden.</pre>`;
                             {% end %}
                         test_output += `<br />`
                         {% end %}
@@ -551,17 +557,17 @@
                                           get_submission(submission_id, false);
 
                                       if (passed)
-                                          button_bg_color = "passing-btn-color";
+                                          button_bd_color = "passing-btn-color";
                                       else
-                                          button_bg_color = "failing-btn-color";
+                                          button_bd_color = "failing-btn-color";
 
                                       var submission_date = new Date(the_date).toLocaleString();
 
                                       if (partner_name) {
-                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
                                       }
                                       else {
-                                        submission_html += `<button class='button ${button_bg_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
                                       }
                                                                       }
                                   submission_html += "</div><br />\n";

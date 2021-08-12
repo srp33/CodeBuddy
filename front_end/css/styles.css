@@ -2,6 +2,15 @@
     font-family: 'Lato', sans-serif;
 }
 
+/* The following two blocks of code create a smoother hover effect when the cursor is over a link. */
+a:hover {
+  transition: .2s;
+}
+
+a {
+  transition: .3s;
+}
+
 /* Enforces monospace typefaces to be used for the code editor all situations. */
 .ace_editor * {
     font-family: 'Monaco', 'Menlo', 'Droid Sans Mono', 'Courier New', monospace !important;
@@ -464,6 +473,41 @@ td > button {
     color: #363636; /* dark grey */
 }
 
+/* Makes a green bordered div for passing tests. */
+.passing-bd-color {
+    color: #363636; /* dark grey */
+    background-color: white;
+    border: 2px solid  #1AB28C;
+    border-left: 12px solid  #1AB28C;
+    border-radius: 5px;
+    transition: .2s;
+}
+
+/* Makes a grey bordered div for tests. */
+.neutral-bd-color {
+    color: #363636; /* dark grey */
+    background-color: white;
+    border: 2px solid #363636; /* dark grey */
+    border-left: 12px solid  #363636; /* dark grey */
+    border-radius: 5px;
+    transition: .2s;
+}
+
+/* Makes an orange bordered div for failing tests. */
+.failing-bd-color {
+    color: #363636; /* dark grey */
+    background-color: white;
+    border: 2px solid  #FF9138;
+    border-left: 12px solid  #FF9138;
+    border-radius: 5px;
+    transition: .2s;
+}
+
+.passing-bd-color:hover, .failing-bd-color:hover {
+    transition: .3s;
+    background-color: #fafafa;
+}
+
 .grey-text {
     color: #363636; /* dark grey */
 }
@@ -504,4 +548,12 @@ module {
 
 .textarea, .input {
   font-size: 1.25rem;
+}
+
+#navbar-start {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  padding: 0.5rem 2rem;
 }

@@ -1,7 +1,7 @@
-       
+
         <div class="tab-title">
             <h3>Preferences</h3>
-        </div> 
+        </div>
 
         <form method="post" action="/profile/preferences/{{ user_info['user_id'] }}">
 
@@ -27,6 +27,21 @@
                     <div class="select is-light">
                         <select name="use_auto_complete" class="edit-select" onchange="updateAutoComplete(this.value)">
                         {% if user_info["use_auto_complete"] %}
+                            <option value="yes" selected>yes</option>
+                            <option value="no">no</option>
+                        {% else %}
+                            <option value="yes">yes</option>
+                            <option value="no" selected>no</option>
+                        {% end %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bottom-space">
+                    <p><strong>Enable <a href="https://www.vim.org"> Vim</a> text editor: </strong></p>
+                    <div class="select is-light">
+                        <select name="enable_vim" class="edit-select">
+                        {% if user_info["enable_vim"] %}
                             <option value="Yes" selected>Yes</option>
                             <option value="No">No</option>
                         {% else %}
@@ -48,12 +63,12 @@
                         newvec = rep(vec, each = x+1)
                         return(sort(newvec))
                     }
-                    
+
                     birds = c("parrot", "flamingo", "ostrich", "owl", "peacock")
                     print(cloneAnimals(birds, 2))</textarea>
                 </div>
-            </div> 
-        </div> 
+            </div>
+        </div>
 
         </form>
 
@@ -70,7 +85,7 @@
         fontSize: "12pt",
         mode: "ace/mode/r"
     });
-    
+
     updateAutoComplete({{ user_info["use_auto_complete"] }});
     preview_editor.focus();
 

@@ -285,7 +285,7 @@
 
                 <div id="partner_selection">
                 {% if users %}
-                <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave field blank.</p>
+                <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
 
                 <input class="space_div input is-primary" list="users_list" id="partner_key" placeholder="Enter partner's name here...">
                 <datalist id="users_list">
@@ -346,19 +346,6 @@
             <p><em>Pair programming is enabled for this exercise.</em></p>
             {% end %}
         </div>
-
-        {% if len(exercise_details["tests"]) > 0 %}
-            <h6>Test code (to be executed after your solution):</h6>
-
-            {% for test in exercise_details["tests"] %}
-              {% if test["test_instructions"] == "" %}
-                <pre class="smaller-font">{{ test["code"] }}</pre>
-
-              {% else %}
-                <div class="instructions smaller-font" style="font-family:monospace;-moz-osx-font-smoothing: auto;-webkit-font-smoothing: auto;">{{test["test_instructions"]}}</div>
-              {% end %}
-            {% end %}
-        {% end %}
 
         {% if len(exercise_details["data_files"]) > 0 %}
             <h6>Data files:</h6>
@@ -484,19 +471,35 @@
                 <div id="expected_tests">
 
                 {% if len(exercise_details["tests"]) > 0 %}
+
+                <h6>Test code (to be executed after your solution):</h6>
+
                     {% for i in range(len(exercise_details["tests"])) %}
-                        <h6 style="display: inline">Test {{i + 1}} expected output:</h6>
 
-                        {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                            {% if exercise_details["output_type"] == "txt" %}
-                                <p><pre>{{ exercise_details["tests"][i]["text_output"] }}</pre></p>
+                    <div class="neutral-bd-color bottom-space">
+                        <div style="padding: 1.25em 1.5em;">
+                            {% if exercise_details["tests"][i]["test_instructions"] == "" %}
+                                <h6 style="display: inline;">Test {{i + 1}} code:</h6>
+                                <p><pre>{{ exercise_details["tests"][i]["code"] }}</pre></p>
 
-                            {% else %}
-                                <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['tests'][i]['image_output'] }}" width="100%"/></figure></p>
-                            {% end %}
+                                <h6 style="display: inline;">Test {{i + 1}} expected output:</h6>
+
+                                {% if exercise_details["output_type"] == "txt" %}
+                                    <p><pre style="margin:0">{{ exercise_details["tests"][i]["text_output"] }}</pre></p>
+                                {% else %}
+                                    <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['tests'][i]['image_output'] }}" width="100%"/></figure></p>
+                                {% end %}
                         {% else %}
-                            <p><pre>Test output hidden.</pre></p>
+                            <h6>Test {{i + 1}}:</h6>
+                            <div style="-moz-osx-font-smoothing: auto;-webkit-font-smoothing: auto;margin:0">
+                                <p>Details for this test are hidden from students. However, the instructor provided the following instructions.</p>
+                                <hr>
+                                <p>{{exercise_details["tests"][i]["test_instructions"]}}</p>
+                            </div>
                         {% end %}
+                        </div>
+                    </div>
+
                     {% end %}
                 {% end %}
                 </div>
