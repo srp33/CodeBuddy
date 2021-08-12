@@ -22,7 +22,7 @@ class DevelopmentLoginHandler(RequestHandler):
             else:
                 if not self.content.user_exists(user_id):
                     # Add static information for test user.
-                    user_dict = {'id': user_id, 'email': 'test_user@gmail.com', 'verified_email': True, 'name': 'Test User', 'given_name': 'Test', 'family_name': 'User', 'locale': 'en'}
+                    user_dict = {'id': user_id, 'email': f'{user_id}@test.com', 'verified_email': True, 'name': user_id, 'given_name': 'user_id', 'family_name': 'TestUser', 'locale': 'en'}
                     self.content.add_user(user_id, user_dict)
 
                 self.set_secure_cookie("user_id", user_id, expires_days=30)
