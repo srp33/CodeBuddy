@@ -490,10 +490,11 @@
                                     <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['tests'][i]['image_output'] }}" width="100%"/></figure></p>
                                 {% end %}
                         {% else %}
-                            <h6>Test {{i + 1}} Hidden.</h6>
-                            <hr>
-                            <div style="font-family:monospace;-moz-osx-font-smoothing: auto;-webkit-font-smoothing: auto;margin:0">
-                              {{exercise_details["tests"][i]["test_instructions"]}}
+                            <h6>Test {{i + 1}}:</h6>
+                            <div style="-moz-osx-font-smoothing: auto;-webkit-font-smoothing: auto;margin:0">
+                                <p>Details for this test are hidden from students. However, the instructor provided the following instructions.</p>
+                                <hr>
+                                <p>{{exercise_details["tests"][i]["test_instructions"]}}</p>
                             </div>
                         {% end %}
                         </div>
