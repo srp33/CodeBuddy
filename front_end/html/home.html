@@ -55,14 +55,18 @@
                         <div class="media-content">
                             <div class="content">
                                 <div class="row-container">
-                                    <p><strong>{{ course[1]["title"] }}</strong></p>
+                                    <p><strong>{{ course[1]["title"] }}</strong>&nbsp;
                                     {% if course[1]["passcode"] %}
                                         <i class="fas fa-lock fa-lg"></i>
                                     {% else %}
                                         <i class="fas fa-lock-open fa-lg"></i>
                                     {% end %}
+                                    </p>
                                 </div>
-                                <a class="button is-primary" onclick="showCourseModal('{{ course[1]['title'] }}', `{{ course[1]['introduction'] }}`)">View details</a>
+                                <br />
+                                <p>
+                                    <a class="button is-primary" onclick="showCourseModal('{{ course[1]['title'] }}', `{{ course[1]['introduction'] }}`)">View details</a>
+                                </p>
                             </div>
                         </div>
                     </article>
