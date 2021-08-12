@@ -432,9 +432,9 @@
                            check_code(json_data);
 
                            document.getElementById("expected_tests").style.display = "none"
-
+                           
+                           show_past_submissions();
                            if (json_data.submission_id != "") {
-                               show_past_submissions();
                                last_submission_id = json_data.submission_id;
 
                                {% if exercise_details["max_submissions"] > 0 %}
