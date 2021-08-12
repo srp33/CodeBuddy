@@ -790,6 +790,7 @@
                 output_div.style.display = 'none'
                 var output_button = document.createElement("pre")
                 output_button.classList.add("passing-bd-color");
+                output_button.classList.add("test-content");
                 output_button.id = `output_button_${test_index}`
                 output_button.style = 'cursor:pointer'
                 output_button.setAttribute('onclick', `showTest(${test_index})`)

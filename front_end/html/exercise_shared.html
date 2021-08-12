@@ -205,48 +205,53 @@
                     var test_output = "<h6>Test outputs:</h6>\n\n";
                         var tests = json_data.tests;
                         {% for i in range(len(exercise_details["tests"]))%}
-                            button_bd_color = (tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color");
-                            test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
-                            {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                                test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><h6 style="padding: 1.25em 1.5em;margin:0;">Test {{i + 1}} ${test_message}.</h6>`;
-                                test_output += `<div id="test_${tests[{{i}}].test}" style="padding: 0 1.25em 1.5em 1.25em;"><hr style="margin: 0 0 1.5rem 0;">
-                                  <h6>Test code:</h6>
-                                  <pre>{{exercise_details["tests"][i]["code"]}}</pre>
-                                  <h6>Your output:</h6>\n\n`;
-                                {% if exercise_details["output_type"] == "txt" %}
-                                    if (tests[{{i}}].text_output == "")
-                                        test_output += "<p><pre>[Your solution produced no output.]</pre></p>";
-                                    else
-                                        test_output += `<p><pre>${tests[{{i}}].text_output}</pre><p>`;
-                                    test_output += `<h6>Expected output:</h6>\n\n`;
-                                    test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
-                                {% else %}
-                                    if (tests[{{i}}]["image_output"] == "") {
-                                        if (tests[{{i}}]["text_output"] == "")
-                                            test_output += "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                            try {
+                                document.getElementById('test_output').style.display = "block"
+                                button_bd_color = (tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color");
+                                test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
+                                {% if exercise_details["tests"][i]["test_instructions"] == "" %}
+                                    test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><h6 style="padding: 1.25em 1.5em;margin:0;">Test {{i + 1}} ${test_message}.</h6>`;
+                                    test_output += `<div id="test_${tests[{{i}}].test}" style="padding: 0 1.25em 1.5em 1.25em;"><hr style="margin: 0 0 1.5rem 0;">
+                                      <h6>Test code:</h6>
+                                      <pre>{{exercise_details["tests"][i]["code"]}}</pre>
+                                      <h6>Your output:</h6>\n\n`;
+                                    {% if exercise_details["output_type"] == "txt" %}
+                                        if (tests[{{i}}].text_output == "")
+                                            test_output += "<p><pre>[Your solution produced no output.]</pre></p>";
                                         else
                                             test_output += `<p><pre>${tests[{{i}}].text_output}</pre><p>`;
-                                    } else
-                                        test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].image_output + "' width='100%' /></figure></p>";
-
-                                    test_output += `<h6>Expected output:</h6>\n\n`;
-                                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + '{{exercise_details["tests"][i]["image_output"]}}' + "' width='100%' /></figure></p>";
-                                {% end %}
-
-                                if (tests[{{i}}].diff_output != "") {
-                                    test_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
-                                    {% if exercise_details["output_type"] == "txt" %}
-                                        test_output += "<p><pre>" + tests[{{i}}].diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                        test_output += `<h6>Expected output:</h6>\n\n`;
+                                        test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
                                     {% else %}
-                                        test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
+                                        if (tests[{{i}}]["image_output"] == "") {
+                                            if (tests[{{i}}]["text_output"] == "")
+                                                test_output += "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                                            else
+                                                test_output += `<p><pre>${tests[{{i}}].text_output}</pre><p>`;
+                                        } else
+                                            test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].image_output + "' width='100%' /></figure></p>";
+
+                                        test_output += `<h6>Expected output:</h6>\n\n`;
+                                        test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + '{{exercise_details["tests"][i]["image_output"]}}' + "' width='100%' /></figure></p>";
                                     {% end %}
-                                }
-                                test_output += `</div></div>`
-                            {% else %}
-                                test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><div style="padding:1.25em 1.5em;"><h6 style="margin:0">Test {{i + 1}} ${test_message}.</h6><div id="test_${tests[{{i}}].test}"><hr>Details for this test are hidden from students. However, the instructor provided the following instructions.<hr>
-                                {{exercise_details["tests"][i]["test_instructions"]}}</div></div></div>`;
-                            {% end %}
-                        test_output += `<br />`
+
+                                    if (tests[{{i}}].diff_output != "") {
+                                        test_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
+                                        {% if exercise_details["output_type"] == "txt" %}
+                                            test_output += "<p><pre>" + tests[{{i}}].diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                        {% else %}
+                                            test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
+                                        {% end %}
+                                    }
+                                    test_output += `</div></div>`
+                                {% else %}
+                                    test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><div style="padding:1.25em 1.5em;"><h6 style="margin:0">Test {{i + 1}} ${test_message}.</h6><div id="test_${tests[{{i}}].test}"><hr>Details for this test are hidden from students. However, the instructor provided the following instructions.<hr>
+                                    {{exercise_details["tests"][i]["test_instructions"]}}</div></div></div>`;
+                                {% end %}
+                            test_output += `<br />`
+                        } catch(e) {
+                          document.getElementById('test_output').style.display = "none"
+                        }
                         {% end %}
                     return test_output
                 }
@@ -314,7 +319,12 @@
                         var expected_text = `{{exercise_details["expected_text_output"]}}`;
                         var expected_image = `{{exercise_details["expected_image_output"]}}`;
 
-                        if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
+                        if (json_data.text_output.includes("IndexError:&nbsp;list&nbsp;index&nbsp;out&nbsp;of&nbsp;range")) {
+                            var code_output = "<h6>Your output:</h6>\n\n";
+                            code_output += "Output is not available for this submission. This may be due to the instructor editing the exercise since you last submitted."
+                            document.getElementById("code_output").innerHTML = code_output;
+                        }
+                        else if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
                             var code_output = "<h6>Your output:</h6>\n\n";
                             code_output += build_text_output(json_data.text_output);
                             code_output += build_image_output(json_data.image_output);
