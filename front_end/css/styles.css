@@ -557,3 +557,7 @@ module {
   font-size: 1.25rem;
   padding: 0.5rem 2rem;
 }
+
+.test-content pre {
+  font-size: 1em;
+}
