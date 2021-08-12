@@ -319,6 +319,7 @@
                         var expected_text = `{{exercise_details["expected_text_output"]}}`;
                         var expected_image = `{{exercise_details["expected_image_output"]}}`;
 
+                        // If output includes an index error, provide student with a more helpful error messages instead.
                         if (json_data.text_output.includes("IndexError:&nbsp;list&nbsp;index&nbsp;out&nbsp;of&nbsp;range")) {
                             var code_output = "<h6>Your output:</h6>\n\n";
                             code_output += "Output is not available for this submission. This may be due to the instructor editing the exercise since you last submitted."
@@ -432,7 +433,7 @@
                            check_code(json_data);
 
                            document.getElementById("expected_tests").style.display = "none"
-                           
+
                            show_past_submissions();
                            if (json_data.submission_id != "") {
                                last_submission_id = json_data.submission_id;
