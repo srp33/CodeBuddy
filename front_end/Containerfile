@@ -66,7 +66,7 @@ ADD front_end/html/* /tmp/
 ADD front_end/handlers/*.py /app/
 ADD front_end/*.py /app/
 ADD front_end/secrets.yaml /app/
-ADD dump_for_mysql.py /app/
+ADD front_end/dump_for_mysql.py /app/
 
 RUN bash /app/build_html.sh
 

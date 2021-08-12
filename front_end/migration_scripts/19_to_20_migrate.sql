@@ -1,1 +1,0 @@
-ALTER TABLE users ADD COLUMN dumb integer NOT NULL DEFAULT 0;
