@@ -868,7 +868,7 @@
                    eval(`test_code_editor_${i}.setValue(json_data[i].code)`);
                    if (json_data[i].test_instructions != "") {
                       eval(`show_test_code_${i}.value = "No"`);
-                      eval(`test_instructions_${i}.value = '${json_data[i].test_instructions}'`);
+                      eval(`test_instructions_${i}.value = ${JSON.stringify(json_data[i].test_instructions)}`);
                       eval(`test_instructions_div_${i}.style.display = 'block'`);
                    }
 
