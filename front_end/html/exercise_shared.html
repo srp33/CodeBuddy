@@ -448,9 +448,9 @@
                      var modalSubmitButton = document.getElementById("modal_submit_button");
 
                      modalSubmitButton.onclick = function() {
-                       let partner_object = {"partner_key": document.getElementById("partner_key").value};
-                       if (partner_object.partner_key != "") {
-                         $.post("/check_partners/{{ course_basics['id'] }}", partner_key,
+                       let partner_key = document.getElementById("partner_key").value;
+                       if (partner_key != "") {
+                         $.post("/check_partners/{{ course_basics['id'] }}", {"partner_key": partner_key},
                             function(data, status) {
                                 if(!(JSON.parse(data))) {
                                   document.getElementById("invalid_partner").innerHTML = "<div style='margin:15px 0px' class='space_div notification is-warning is-light smaller-font'>Invalid partner chosen, please try again.</div>";
