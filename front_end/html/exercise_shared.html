@@ -208,7 +208,7 @@
                             button_bd_color = (tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color");
                             test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
                             {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                                test_output += `<div class='${button_bd_color}' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><div class="monospace" style="padding: 1.25em 1.5em;">Test {{i + 1}} ${test_message}.</div>`;
+                                test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><h6 style="padding: 1.25em 1.5em;margin:0;">Test {{i + 1}} ${test_message}.</h6>`;
                                 test_output += `<div id="test_${tests[{{i}}].test}" style="padding: 0 1.25em 1.5em 1.25em;"><hr style="margin: 0 0 1.5rem 0;">
                                   <h6>Test code:</h6>
                                   <pre>{{exercise_details["tests"][i]["code"]}}</pre>
@@ -243,7 +243,8 @@
                                 }
                                 test_output += `</div></div>`
                             {% else %}
-                                test_output += `<pre class='${button_bd_color}'>Test {{i + 1}} output hidden.</pre>`;
+                                test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><div style="padding:1.25em 1.5em;"><h6 style="margin:0">Test {{i + 1}} ${test_message}.</h6><div id="test_${tests[{{i}}].test}"><hr>Details for this test are hidden from students. However, the instructor provided the following instructions.<hr>
+                                {{exercise_details["tests"][i]["test_instructions"]}}</div></div></div>`;
                             {% end %}
                         test_output += `<br />`
                         {% end %}
