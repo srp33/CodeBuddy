@@ -30,6 +30,7 @@ class EditExerciseHandler(BaseUserHandler):
             old_text_output = exercise_details["expected_text_output"]
             old_image_output = exercise_details["expected_image_output"]
             old_tests = exercise_details["tests"]
+            # Saves number of old tests. If there are fewer old than new tests, CodeBuddy will later raise a warning.
             num_old_tests = len(old_tests)
 
             exercise_basics["title"] = self.get_body_argument("title").strip() #required
@@ -139,7 +140,7 @@ class EditExerciseHandler(BaseUserHandler):
 
                                     # If number of tests is greater than before last save and number of submissions on this exercise is greater than zero, raise warning.
                                     if num_old_tests < len(tests) and num_submissions > 0:
-                                        result = f"Warning: You have increased the number of tests of an exercise that already has {num_submissions} submissions. This will render the output of those submissions unviewable for students. Their submission scores will not change."
+                                        result = f"You have increased the number of tests, and this exercise already has {num_submissions} submissions. This will render the output of those submissions unviewable for students. However, their submission scores will not change."
 
                                     exercise = self.content.save_exercise(exercise_basics, exercise_details)
 

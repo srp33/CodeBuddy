@@ -205,6 +205,7 @@
                     var test_output = "<h6>Test outputs:</h6>\n\n";
                         var tests = json_data.tests;
                         {% for i in range(len(exercise_details["tests"]))%}
+                            // This try/catch statement ensures that test output will only be displayed if a submission for each required test is able to be found.
                             try {
                                 document.getElementById('test_output').style.display = "block"
                                 button_bd_color = (tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color");
