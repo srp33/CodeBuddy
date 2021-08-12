@@ -137,8 +137,9 @@ class EditExerciseHandler(BaseUserHandler):
 
                                     num_submissions = sum(list(map(lambda x: int(x[1]["num_submissions"]), self.content.get_exercise_scores(course, assignment, exercise))))
 
+                                    # If number of tests is greater than before last save and number of submissions on this exercise is greater than zero, raise warning.
                                     if num_old_tests < len(tests) and num_submissions > 0:
-                                        result = f"Warning: You have changed the number of tests of an exercise with {num_submissions} submissions. This will render the output of those submissions unviewable for students."
+                                        result = f"Warning: You have increased the number of tests of an exercise that already has {num_submissions} submissions. This will render the output of those submissions unviewable for students. Their submission scores will not change."
 
                                     exercise = self.content.save_exercise(exercise_basics, exercise_details)
 

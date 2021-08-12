@@ -626,6 +626,7 @@
 
             if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
                 document.getElementById("submit_button").disabled = true;
+            show_past_submissions()
             </script>
 
         {% else %}
