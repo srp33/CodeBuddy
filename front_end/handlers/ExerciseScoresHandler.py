@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class ExerciseScoresHandler(BaseUserHandler):
     def get(self, course, assignment, exercise):
         try:

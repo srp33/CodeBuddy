@@ -2,7 +2,6 @@ from helper import *
 from tornado.web import *
 import logging
 
-
 class BackEndHandler(RequestHandler):
     def prepare(self):
         self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))

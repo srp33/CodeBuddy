@@ -1,7 +1,6 @@
 from BaseUserHandler import *
 import datetime as dt
 
-
 class SubmitHelpRequestHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         try:

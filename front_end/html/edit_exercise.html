@@ -129,6 +129,7 @@
             \tdo
             \tif grep -q "$FIND" <<< "$line"; then
             \t\techo "Error: $FIND operator not allowed in this exercise"
+            \t\tbreak"
             \tfi
             done < code`,
           python_check_example:
@@ -136,7 +137,8 @@
             with open("code") as student_code:
             \tfor line in student_code:
             \t\tif "len(" in line:
-            \t\t\tprint("Error: len() function not permitted in this exercise")`,
+            \t\t\tprint("Error: len() function not permitted in this exercise")
+            \t\t\tbreak`,
           python_script_check_example:
             `# Python script example code
             FIND='#'
@@ -144,6 +146,7 @@
             \tdo
             \tif grep -q "$FIND" <<< "$line"; then
             \t\techo "Error: $FIND operator not allowed in this exercise"
+            \t\tbreak"
             \tfi
             done < code`,
           r_check_example:
@@ -155,6 +158,7 @@
             \nwhile(length(line) > 0) {
             \tif (grepl(search, line)) {
             \t\tprint("Error: len() function not allowed in this exercise")
+            \t\tbreak
             \t}
             \n\tline <- readLines(connection, n=1)
             }

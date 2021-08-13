@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class SavePresubmissionHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         user_id = self.get_user_id()

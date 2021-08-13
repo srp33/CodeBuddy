@@ -1,7 +1,6 @@
 from BaseUserHandler import *
 import datetime as dt
 
-
 class ViewAnswerHandler(BaseUserHandler):
     def get(self, course, assignment, exercise):
         try:

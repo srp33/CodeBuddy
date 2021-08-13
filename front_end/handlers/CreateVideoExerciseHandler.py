@@ -1,7 +1,6 @@
 from BaseUserHandler import *
 import datetime as dt
 
-
 class CreateVideoExerciseHandler(BaseUserHandler):
     def post(self, course, assignment):
         response_dict = {"message": ""}

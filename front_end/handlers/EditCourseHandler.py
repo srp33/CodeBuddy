@@ -1,7 +1,6 @@
 from BaseUserHandler import *
 import datetime as dt
 
-
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
         try:

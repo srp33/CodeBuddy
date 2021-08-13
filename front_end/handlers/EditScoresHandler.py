@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class EditScoresHandler(BaseUserHandler):
     def get(self, course, assignment, student_id):
         try:

@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class HelpRequestsHandler(BaseUserHandler):
     def get(self, course):
         try:

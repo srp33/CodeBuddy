@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class DeleteExerciseHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         try:

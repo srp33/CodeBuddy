@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class DeleteHelpRequestHandler(BaseUserHandler):
     def post(self, course, assignment, exercise, user_id):
         try:

@@ -1,6 +1,5 @@
 from tornado.web import *
 
-
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         if file_name.endswith(".html"):
