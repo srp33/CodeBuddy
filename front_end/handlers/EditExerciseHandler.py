@@ -47,8 +47,11 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             exercise_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
             exercise_details["enable_pair_programming"] = self.get_body_argument("enable_pair_programming") == "Yes"
-            exercise_details["check_code"] = self.get_body_argument("check_code_text").strip().replace("\r", "")
             exercise_details["hold_output_constant"] = self.get_body_argument("hold_output_constant") == "Yes"
+
+            # Saves check_code into a temporary variable to reload into exercise_details after code has finished executing.
+            exercise_details["check_code"] = ""
+            check_code = self.get_body_argument("check_code_text").strip().replace("\r", "")
 
             tests = self.get_body_argument("tests_json")
             tests = json.loads(tests) if tests and len(tests) != 0 else []
@@ -142,8 +145,9 @@ class EditExerciseHandler(BaseUserHandler):
 
                                     # If number of tests is greater than before last save and number of submissions on this exercise is greater than zero, raise warning.
                                     if num_old_tests < len(tests) and num_submissions > 0:
-                                        result = f"You have increased the number of tests, and this exercise already has {num_submissions} submissions. This will render the output of those submissions unviewable for students. However, their submission scores will not change."
+                                        result = f"Warning: You have increased the number of tests, and this exercise already has {num_submissions} submissions. This will render the output of those submissions unviewable for students. However, their submission scores will not change."
 
+                                    exercise_details["check_code"] = check_code
                                     exercise = self.content.save_exercise(exercise_basics, exercise_details)
 
                                     exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
