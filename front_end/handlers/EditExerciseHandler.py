@@ -1,7 +1,6 @@
 from BaseUserHandler import *
 import datetime as dt
 
-
 class EditExerciseHandler(BaseUserHandler):
     def get(self, course, assignment, exercise):
         try:
@@ -136,7 +135,10 @@ class EditExerciseHandler(BaseUserHandler):
                                     if len(empty_tests) > 0:
                                         result = f"Warning: {len(empty_tests)} of your tests produced no output."
 
-                                    num_submissions = sum(list(map(lambda x: int(x[1]["num_submissions"]), self.content.get_exercise_scores(course, assignment, exercise))))
+                                    if exercise:
+                                        num_submissions = sum(list(map(lambda x: int(x[1]["num_submissions"]), self.content.get_exercise_scores(course, assignment, exercise))))
+                                    else:
+                                        num_submissions = 0
 
                                     # If number of tests is greater than before last save and number of submissions on this exercise is greater than zero, raise warning.
                                     if num_old_tests < len(tests) and num_submissions > 0:
