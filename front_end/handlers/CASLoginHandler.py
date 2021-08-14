@@ -1,7 +1,9 @@
 from tornado.web import *
 from tornado.auth import GoogleOAuth2Mixin
+from cas import CASClient
 from content import *
 
+# See https://djangocas.dev/blog/python-cas-flask-example/
 class CASLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     def prepare(self):
         self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
@@ -9,45 +11,44 @@ class CASLoginHandler(RequestHandler, GoogleOAuth2Mixin):
 
     async def get(self):
         try:
-            redirect_uri = f"https://{self.settings_dict['domain']}/login"
+            #TODO: Change webserver.py to point to /login
+            #TODO: Update logout logic?
+            #TODO: NetID is showing up as email address.
+            #TODO: Remove locale from Personal Info page.
+            #TODO: Put server_url in settings? Not sure because not sure if attributes coming back from CAS are standardized.
+            #TODO: Figure out how to migrate users from old accounts to CAS? Or just give them multiple login options?
+            #TODO: Change the service_url (see below).
+            service_url="http://lscodebuddy.byu.edu:8008/login?next=%2Flogin"
+            #service_url = f"https://{self.settings_dict['domain']}/login?next=%2Flogin"
+            server_url="https://cas.byu.edu/cas/"
 
-            # Examples: https://www.programcreek.com/python/example/95028/tornado.auth
-            if self.get_argument('code', False):
-                user_dict = await self.get_authenticated_user(redirect_uri = redirect_uri, code = self.get_argument('code'))
+            cas_client = CASClient(version=3, service_url=service_url, server_url=server_url)
 
-                if user_dict:
-                    response = urllib.request.urlopen(f"https://www.googleapis.com/oauth2/v1/userinfo?access_token={user_dict['access_token']}").read()
+            ticket = self.get_argument('ticket', False)
+            if not ticket:
+                cas_login_url = cas_client.get_login_url()
+                self.redirect(cas_login_url)
 
-                    if response:
-                        user_dict = json.loads(response.decode('utf-8'))
-                        user_id = user_dict["email"]
+            user_id, attributes, pgtiou = cas_client.verify_ticket(ticket)
+            user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en"}
 
-                        if self.content.user_exists(user_id):
-                            # Update user with current information when they already exist.
-                            self.content.update_user(user_id, user_dict)
-                        else:
-                            # Store current user information when they do not already exist.
-                            self.content.add_user(user_id, user_dict)
+            #nxt = self.get_argument('next', False)
 
-                        self.set_secure_cookie("user_id", user_id, expires_days=30)
-
-                        redirect_path = self.get_secure_cookie("redirect_path")
-                        self.clear_cookie("redirect_path")
-                        if not redirect_path:
-                            redirect_path = "/"
-                        self.redirect(redirect_path)
-                    else:
-                        self.clear_all_cookies()
-                        render_error(self, "Google account information could not be retrieved.")
-                else:
-                    self.clear_all_cookies()
-                    render_error(self, "Google authentication failed. Your account could not be authenticated.")
+            if self.content.user_exists(user_id):
+                # Update user with current information when they already exist.
+                self.content.update_user(user_id, user_dict)
             else:
-                await self.authorize_redirect(
-                    redirect_uri = redirect_uri,
-                    client_id = self.settings['google_oauth']['key'],
-                    scope = ['profile', 'email'],
-                    response_type = 'code',
-                    extra_params = {'approval_prompt': 'auto'})
+                # Store current user information when they do not already exist.
+                self.content.add_user(user_id, user_dict)
+
+            self.set_secure_cookie("user_id", user_id, expires_days=30)
+
+            # TODO: Make sure this works.
+            redirect_path = self.get_secure_cookie("redirect_path")
+            self.clear_cookie("redirect_path")
+            if not redirect_path:
+                redirect_path = "/"
+            self.redirect(redirect_path)
         except Exception as inst:
+            self.clear_all_cookies()
             render_error(self, traceback.format_exc())
