@@ -18,7 +18,7 @@ def this_line_is_useless(line):
 def has_primary_key(line):
     return bool(re.search(r'PRIMARY KEY', line))
 
-with open('test.sql') as sql_file:
+for line in fileinput.input():
     searching_for_end = False
     for line in sql_file:
         if this_line_is_useless(line):

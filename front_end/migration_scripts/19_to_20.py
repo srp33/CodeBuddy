@@ -6,6 +6,7 @@ import traceback
 sys.path.append('/app')
 from helper import *
 from content import *
+from content_maria import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 content = Content(settings_dict)
@@ -24,12 +25,40 @@ else:
         sql_statements = sql_file.read().split(";")
 
     try:
-        with open("/logs/progress.log", "a") as progress_file:
+        with open("/logs/progress.log", "w") as progress_file:
             for sql in sql_statements:
                 progress_file.write(sql + "\n")
                 content.execute(sql)
 
+            run_command(f"touch {settings_dict['db_name'][:-3]}_dump.sql")
+            progress_file.write(run_command("ls *dump.sql"))
+            run_command("sqlite3 " + settings_dict['db_name'] + " .dump | python dump_for_mysql.py > " + settings_dict['db_name'][:-3] + "_dump.sql")
+            progress_file.write("sqlite3 " + settings_dict['db_name'] + " .dump | python dump_for_mysql.py > " + settings_dict['db_name'][:-3] + "_dump.sql\n")
+            progress_file.write(run_command("ls *dump.sql")  + "\n")
+            progress_file.write(run_command("pwd"))
+
+            # with open('file.sql', 'w') as make_db:
+            #     make_db.write("CREATE DATABASE IF NOT EXISTS CodeBuddy")
+
+            with open('CodeBuddy_dump.sql') as x:
+                progress_file.write(x.read())
+
+            progress_file.write('\n\n\n\n\n\incoming migration\n\n\n\n\n\n')
+
+            run_command(f"mysql> CREATE DATABASE {settings_dict[db_name][:-3]}_mariadb")
+            # run_command(f"mysql {settings_dict['db_name']_mariadb} > file.sql")
+            run_command(f"mysql {settings_dict['db_name'][:-3]}_mariadb > {settings_dict['db_name']}_dump.sql")
+            # progress_file.write(f"mysql {settings_dict['db_name']}_mariadb > {settings_dict['db_name']}_dump.sql" + '\n')
+            #
+            # progress_file.write('post migration\n')
+            try:
+                content = Content_maria(settings_dict)
+                progress_file.write("\n\n\n\n\n\n\n" + content.get_database_version())
+            except:
+                print(traceback.format_exc())
+
         print("***Success***")
+
     except:
         print(traceback.format_exc())
 
