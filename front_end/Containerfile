@@ -14,7 +14,7 @@ RUN apt-get update \
  && apt-get clean \
  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
  && conda install -c conda-forge spacy \
- && python -m spacy download en_core_web_sm python-cas \
+ && python -m spacy download en_core_web_sm \
  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
 
 #RUN TIMEZONE=$(grep "time_zone: " Settings.yaml | sed -En "s/time_zone: (.*)/\1/p") \
