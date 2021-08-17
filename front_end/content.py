@@ -352,10 +352,10 @@ class Content:
     def add_user(self, user_id, user_dict):
         self.set_user_dict_defaults(user_dict)
 
-        sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme)
-                 VALUES (?, ?, ?, ?, ?, ?)'''
+        sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme, email_address)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow"))
+        self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow", user_dict["email_address"]))
 
     def register_user_for_course(self, course_id, user_id):
         sql = '''INSERT INTO course_registrations (course_id, user_id)
@@ -397,8 +397,7 @@ class Content:
                  WHERE user_id = ?'''
 
         user = self.fetchone(sql, (user_id,))
-        user_info = {"enable_vim": user["enable_vim"], "user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
-                     "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"]}
+        user_info = {"enable_vim": user["enable_vim"], "user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "email_address": user["email_address"]}
 
         return user_info
 
@@ -1712,10 +1711,10 @@ class Content:
         self.set_user_dict_defaults(user_dict)
 
         sql = '''UPDATE users
-                 SET name = ?, given_name = ?, family_name = ?, locale = ?
+                 SET name = ?, given_name = ?, family_name = ?, locale = ?, email_address = ?
                  WHERE user_id = ?'''
 
-        self.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], user_id,))
+        self.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], user_dict["email_address"], user_id,))
 
     def update_user_settings(self, user_id, theme, use_auto_complete, enable_vim):
         sql = '''UPDATE users

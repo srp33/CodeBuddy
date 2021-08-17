@@ -3,15 +3,11 @@
         </div> 
         <div class="columns">
             <div class="column is-half is-offset-one-quarter" style="background-color: white">
+                <p><strong>User ID:</strong> {{ user_info['user_id'] }}</p>
                 <p><strong>First name:</strong> {{ user_info['given_name'] }}</p>
                 <p><strong>Last name:</strong> {{ user_info['family_name'] }}</p>
-                <p><strong>Email:</strong> {{ user_info['user_id'] }}</p>
-                <p><strong>Locale:</strong> {{ user_info['locale'] }}</p>
+                <p><strong>Email address:</strong> {{ user_info['email_address'] }}</p>
             </div>
         </div>
-        <div class="note-text">
-            <p><i>Note: This information was received from Google.</i></p>
-        </div> 
-
     </div>
 </div>
