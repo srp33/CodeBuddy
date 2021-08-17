@@ -1,6 +1,5 @@
 from tornado.web import *
 
-
 class TestHandler(RequestHandler):
     def get(self):
         try:

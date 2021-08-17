@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class ProfileStudentHelpRequestsHandler(BaseUserHandler):
     def get(self):
         try:

@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class RemoveInstructorHandler(BaseUserHandler):
     def post(self, course, old_instructor):
         try:

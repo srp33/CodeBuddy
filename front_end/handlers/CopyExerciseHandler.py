@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class CopyExerciseHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         out_dict = {"result": ""}

@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM python:3.9.6-slim-buster
 
 # See https://jtreminio.com/blog/running-docker-containers-as-current-host-user/#ok-so-what-actually-works
 ARG USER_ID=1000
@@ -6,38 +6,45 @@ ARG GROUP_ID=1000
 ARG USER=codebuddy
 
 ADD VERSION /
+ADD front_end/aux/*.py /tmp/
+ADD front_end/html/footer.html /tmp/footer_version.html
+RUN python /tmp/modify_version.py
+
 ADD Settings.yaml /
 
+#Not sure if we need to do this:
+#RUN wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
+#  && echo "fc84b8954141ed3c59ac7a1adfc8051c93171bae7ba34d7f9aeecd3b148f1527 mariadb_repo_setup" \
+##  && chmod +x mariadb_repo_setup \
+##  && ./mariadb_repo_setup
+
 RUN apt-get update \
- && apt-get --assume-yes install mariadb-server \
- && apt-get install -y bzip2 zip nodejs npm vim \
-# && apt-get --assume-yes install libmariadb3 libmariadb-dev \
+ && apt-get install -y bzip2 zip nodejs npm wget curl git vim \
+                       libmariadb3 libmariadb-dev \
  && apt-get -y autoremove \
- && apt-get clean \
- && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
- && conda install -c conda-forge spacy \
- && python -m spacy download en_core_web_sm \
- && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+ && apt-get clean
 
-RUN apt-get -y install curl
+RUN mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
 
-RUN wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
- && echo "fc84b8954141ed3c59ac7a1adfc8051c93171bae7ba34d7f9aeecd3b148f1527  mariadb_repo_setup" \
- && chmod +x mariadb_repo_setup \
- && ./mariadb_repo_setup \
- && apt-get -y install libmariadb3 libmariadb-dev \
- && pip install mariadb
+# We'll map the user inside to the container to the user outside the container.
+# This ensures that the permissions on files shared via volumes will be
+# translatable in both directions.
+RUN groupadd -g ${GROUP_ID} ${USER} && \
+    useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
+    install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} && \
+    chown --silent --no-dereference --recursive \
+          ${USER_ID}:${GROUP_ID} \
+          /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
 
-#RUN TIMEZONE=$(grep "time_zone: " Settings.yaml | sed -En "s/time_zone: (.*)/\1/p") \
-# && apt-get update \
-# && apt-get install -y bzip2 tzdata zip \
-# && ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime \
-# && echo "$TIMEZONE" | tee /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata \
-# && apt-get -y autoremove \
-# && apt-get clean \
-# && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
-# && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
-ADD front_end/aux/*.py /tmp/
+USER $USER
+
+ENV PATH="/home/codebuddy/.local/bin:${PATH}"
+
+RUN python -m pip install tornado==6.0.4 requests==2.24.0 Pillow==8.3.1 \
+                          PyYAML==5.3.1 markdown2==2.3.8 spacy==3.1.1 \
+                          python-cas==1.5.0 mariadb==1.0.7
+
+RUN python -m spacy download en_core_web_sm
 
 RUN cd /static \
  && mkdir bulma \
@@ -61,10 +68,6 @@ RUN cd /static \
  && rm -rf ace-builds \
  && wget -O /static/fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
 
-## To learn about bulmaswatch, see https://jenil.github.io/bulmaswatch/flatly.
-## This is a basic way to install bulmaswatch.
-## For more advanced used, may need to use this strategy: https://bulma.io/documentation/customize/with-node-sass/
-
 ADD front_end/css/*.css /static/
 ADD front_end/images/* /static/
 ADD front_end/js/* /static/
@@ -81,16 +84,5 @@ ADD front_end/CodeBuddy_dump.sql /
 
 RUN bash /app/build_html.sh
 
-# We'll map the user inside to the container to the user outside the container.
-# This ensures that the permissions on files shared via volumes will be
-# translatable in both directions.
- RUN groupadd -g ${GROUP_ID} ${USER} && \
-     useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
-    install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} && \
-    chown --silent --no-dereference --recursive \
-          ${USER_ID}:${GROUP_ID} \
-          /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
-
- USER $USER
-
- ENTRYPOINT ["bash", "/app/startup.sh"]
+#ENTRYPOINT ["bash"]
+ENTRYPOINT ["bash", "/app/startup.sh"]

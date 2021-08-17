@@ -1,7 +1,6 @@
 from BaseUserHandler import *
 import datetime as dt
 
-
 class CourseHandler(BaseUserHandler):
     def get(self, course):
         user_info = self.get_user_info()

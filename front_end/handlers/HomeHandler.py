@@ -3,7 +3,6 @@ import contextvars
 from content import *
 from helper import *
 
-
 class HomeHandler(RequestHandler):
     def prepare(self):
         self.user_info_var = contextvars.ContextVar("user_info")

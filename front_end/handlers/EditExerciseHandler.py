@@ -1,7 +1,6 @@
 from BaseUserHandler import *
 import datetime as dt
 
-
 class EditExerciseHandler(BaseUserHandler):
     def get(self, course, assignment, exercise):
         try:
@@ -30,6 +29,8 @@ class EditExerciseHandler(BaseUserHandler):
             old_text_output = exercise_details["expected_text_output"]
             old_image_output = exercise_details["expected_image_output"]
             old_tests = exercise_details["tests"]
+            # Saves number of old tests. If there are fewer old than new tests, CodeBuddy will later raise a warning.
+            num_old_tests = len(old_tests)
 
             exercise_basics["title"] = self.get_body_argument("title").strip() #required
             exercise_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
@@ -46,8 +47,11 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["show_answer"] = self.get_body_argument("show_answer") == "Yes"
             exercise_details["show_student_submissions"] = self.get_body_argument("show_student_submissions") == "Yes"
             exercise_details["enable_pair_programming"] = self.get_body_argument("enable_pair_programming") == "Yes"
-            exercise_details["check_code"] = self.get_body_argument("check_code_text").strip().replace("\r", "")
             exercise_details["hold_output_constant"] = self.get_body_argument("hold_output_constant") == "Yes"
+
+            # Saves check_code into a temporary variable to reload into exercise_details after code has finished executing.
+            exercise_details["check_code"] = ""
+            check_code = self.get_body_argument("check_code_text").strip().replace("\r", "")
 
             tests = self.get_body_argument("tests_json")
             tests = json.loads(tests) if tests and len(tests) != 0 else []
@@ -134,6 +138,16 @@ class EditExerciseHandler(BaseUserHandler):
                                     if len(empty_tests) > 0:
                                         result = f"Warning: {len(empty_tests)} of your tests produced no output."
 
+                                    if exercise:
+                                        num_submissions = sum(list(map(lambda x: int(x[1]["num_submissions"]), self.content.get_exercise_scores(course, assignment, exercise))))
+                                    else:
+                                        num_submissions = 0
+
+                                    # If number of tests is greater than before last save and number of submissions on this exercise is greater than zero, raise warning.
+                                    if num_old_tests < len(tests) and num_submissions > 0:
+                                        result = f"Warning: You have increased the number of tests, and this exercise already has {num_submissions} submissions. This will render the output of those submissions unviewable for students. However, their submission scores will not change."
+
+                                    exercise_details["check_code"] = check_code
                                     exercise = self.content.save_exercise(exercise_basics, exercise_details)
 
                                     exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
@@ -149,4 +163,3 @@ class EditExerciseHandler(BaseUserHandler):
             render_error(self, f"Your solution timed out after {self.settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds.")
         except Exception as inst:
             render_error(self, traceback.format_exc())
-

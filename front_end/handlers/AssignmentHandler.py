@@ -1,7 +1,6 @@
 from BaseUserHandler import *
 import datetime as dt
 
-
 class AssignmentHandler(BaseUserHandler):
     def get(self, course, assignment):
         if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):

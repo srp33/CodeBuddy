@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class GetPresubmissionHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, student_id):
         user_info = self.get_user_info()

@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class DownloadFileHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, file_name):
         try:

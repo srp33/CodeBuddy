@@ -1,7 +1,6 @@
 import logging
 import contextvars
 
-
 class LoggingFilter(logging.Filter):
     def prepare(self):
         self.user_info_var = contextvars.ContextVar("user_info")

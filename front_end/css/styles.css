@@ -184,7 +184,6 @@ pre {
 
 /* Styles block of student's code on view_answer.html */
 .student-content {
-    font-size: 14px;
     border: 2px solid  #1AB28C; /* dark teal */
     width: 100%;
     border-left: 12px solid  #1AB28C; /* dark teal */
@@ -195,7 +194,6 @@ pre {
 
 /* Styles block of instructor's code on view_answer.html */
 .instructor-content {
-    font-size: 14px;
     border: 2px solid  #363636;
     width: 100%;
     border-left: 12px solid  #363636;
@@ -464,13 +462,13 @@ td > button {
 .passing-btn-color {
     background-color: #1AB28C; /* teal */
     border-color: #1AB28C; /* teal */
-    color: #363636; /* dark grey */
+    color: #FFFFFF; /* white */
 }
 
 .failing-btn-color {
     background-color: #FF9138; /* orange */
     border-color: #FF9138; /* orange */
-    color: #363636; /* dark grey */
+    color: #FFFFFF; /* white */
 }
 
 /* Makes a green bordered div for passing tests. */
@@ -556,4 +554,8 @@ module {
   align-items: center;
   font-size: 1.25rem;
   padding: 0.5rem 2rem;
+}
+
+.test-content pre {
+  font-size: 1em;
 }

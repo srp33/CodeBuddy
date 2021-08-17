@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class RemoveAssistantHandler(BaseUserHandler):
     def post(self, course, old_assistant):
         try:

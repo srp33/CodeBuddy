@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class CopyAssignmentHandler(BaseUserHandler):
     def post(self, course, assignment):
         try:

@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class MoveExerciseHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         try:

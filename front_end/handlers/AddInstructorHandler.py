@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class AddInstructorHandler(BaseUserHandler):
     def get(self, course):
         try:

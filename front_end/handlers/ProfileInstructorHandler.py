@@ -1,6 +1,5 @@
 from BaseUserHandler import *
 
-
 class ProfileInstructorHandler(BaseUserHandler):
     def get (self, course_id, user_id):
         try:
