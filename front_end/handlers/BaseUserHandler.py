@@ -22,11 +22,13 @@ class BaseUserHandler(RequestHandler):
                 self.user_instructor_courses_var.set([str(x) for x in self.content.get_courses_with_role(user_id.decode(), "instructor")])
                 self.user_assistant_courses_var.set([str(x) for x in self.content.get_courses_with_role(user_id.decode(), "assistant")])
             else:
+                self.set_secure_cookie("redirect_path", self.request.path)
+
                 if self.settings_dict["mode"] == "production":
-                    self.set_secure_cookie("redirect_path", self.request.path)
                     self.redirect("/login")
                 else:
-                    self.redirect("/devlogin{}".format(self.request.path))
+                    self.redirect("/login")
+                    #self.redirect("/devlogin")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

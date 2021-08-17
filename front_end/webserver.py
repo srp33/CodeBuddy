@@ -94,7 +94,7 @@ def make_app():
         url(r"\/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
         url(r"/googlelogin", GoogleLoginHandler, name="googlelogin"),
         url(r"/login", CASLoginHandler, name="caslogin"),
-        url(r"/devlogin(/.+)?", DevelopmentLoginHandler, name="devlogin"),
+        url(r"/devlogin", DevelopmentLoginHandler, name="devlogin"),
         url(r"/logout", LogoutHandler, name="logout"),
         url(r"/test", TestHandler, name="test"),
     ], autoescape=None)
