@@ -32,10 +32,10 @@ class Content_maria:
         # Connect to MariaDB Platform
         try:
             conn = mariadb.connect(
-                # user="db_user",
-                # password="db_user_passwd",
-                # host="192.0.2.1",
-                # port=3306,
+                user="codebuddy",
+                password="",
+                host="localhost",
+                port=3306,
                 database=f"{settings_dict['db_name']}_mariadb"
             )
             print("working??")

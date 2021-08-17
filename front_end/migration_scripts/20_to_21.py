@@ -45,7 +45,11 @@ else:
 
             progress_file.write('\n\n\n\n\n\incoming migration\n\n\n\n\n\n')
 
-            run_command(f"mysql> CREATE DATABASE CodeBuddy_mariadb")
+            run_command(f"mysql start")
+            progress_file.write(run_command('''mysql select @@hostname;
+show variables where Variable_name like "%host%" '''))
+
+            run_command(f"mysql CREATE DATABASE CodeBuddy_mariadb")
             # run_command(f"mysql {settings_dict['db_name']_mariadb} > file.sql")
             run_command(f"mysql CodeBuddy_mariadb > CodeBuddy_dump.sql")
             # progress_file.write(f"mysql {settings_dict['db_name']}_mariadb > {settings_dict['db_name']}_dump.sql" + '\n')
