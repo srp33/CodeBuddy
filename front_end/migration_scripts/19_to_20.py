@@ -32,7 +32,7 @@ else:
 
             run_command(f"touch {settings_dict['db_name'][:-3]}_dump.sql")
             progress_file.write(run_command("ls *dump.sql"))
-            run_command("sqlite3 " + settings_dict['db_name'] + " .dump | python dump_for_mysql.py > " + settings_dict['db_name'][:-3] + "_dump.sql")
+            run_command("sqlite3 " + settings_dict['db_name'] + " .dump | python dump_for_mysql.py")
             progress_file.write("sqlite3 " + settings_dict['db_name'] + " .dump | python dump_for_mysql.py > " + settings_dict['db_name'][:-3] + "_dump.sql\n")
             progress_file.write(run_command("ls *dump.sql")  + "\n")
             progress_file.write(run_command("pwd"))
@@ -45,17 +45,14 @@ else:
 
             progress_file.write('\n\n\n\n\n\incoming migration\n\n\n\n\n\n')
 
-            run_command(f"mysql> CREATE DATABASE {settings_dict[db_name][:-3]}_mariadb")
+            run_command(f"mysql> CREATE DATABASE CodeBuddy_mariadb")
             # run_command(f"mysql {settings_dict['db_name']_mariadb} > file.sql")
-            run_command(f"mysql {settings_dict['db_name'][:-3]}_mariadb > {settings_dict['db_name']}_dump.sql")
+            run_command(f"mysql CodeBuddy_mariadb > CodeBuddy_dump.sql")
             # progress_file.write(f"mysql {settings_dict['db_name']}_mariadb > {settings_dict['db_name']}_dump.sql" + '\n')
             #
             # progress_file.write('post migration\n')
-            try:
-                content = Content_maria(settings_dict)
-                progress_file.write("\n\n\n\n\n\n\n" + content.get_database_version())
-            except:
-                print(traceback.format_exc())
+            content = Content_maria(settings_dict)
+            progress_file.write("\n\n\n\n\n\n\n" + content.get_database_version())
 
         print("***Success***")
 

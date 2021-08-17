@@ -11,7 +11,7 @@ import math
 import os
 import re
 import spacy
-import mysql.connector as mariadb
+import mariadb
 import yaml
 from yaml import load
 from yaml import Loader

@@ -11,12 +11,22 @@ ADD Settings.yaml /
 RUN apt-get update \
  && apt-get --assume-yes install mariadb-server \
  && apt-get install -y bzip2 zip nodejs npm vim \
+# && apt-get --assume-yes install libmariadb3 libmariadb-dev \
  && apt-get -y autoremove \
  && apt-get clean \
  && conda install -y tornado==6.0.4 requests==2.24.0 Pillow==7.1.2 PyYAML==5.3.1 markdown2==2.3.8 curl==7.69.1 git==2.23.0 \
  && conda install -c conda-forge spacy \
  && python -m spacy download en_core_web_sm \
  && mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+
+RUN apt-get -y install curl
+
+RUN wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
+ && echo "fc84b8954141ed3c59ac7a1adfc8051c93171bae7ba34d7f9aeecd3b148f1527  mariadb_repo_setup" \
+ && chmod +x mariadb_repo_setup \
+ && ./mariadb_repo_setup \
+ && apt-get -y install libmariadb3 libmariadb-dev \
+ && pip install mariadb
 
 #RUN TIMEZONE=$(grep "time_zone: " Settings.yaml | sed -En "s/time_zone: (.*)/\1/p") \
 # && apt-get update \
@@ -67,19 +77,20 @@ ADD front_end/handlers/*.py /app/
 ADD front_end/*.py /app/
 ADD front_end/secrets.yaml /app/
 ADD front_end/dump_for_mysql.py /app/
+ADD front_end/CodeBuddy_dump.sql /
 
 RUN bash /app/build_html.sh
 
 # We'll map the user inside to the container to the user outside the container.
 # This ensures that the permissions on files shared via volumes will be
 # translatable in both directions.
-RUN groupadd -g ${GROUP_ID} ${USER} && \
-    useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
+ RUN groupadd -g ${GROUP_ID} ${USER} && \
+     useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
     install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} && \
     chown --silent --no-dereference --recursive \
           ${USER_ID}:${GROUP_ID} \
           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
 
-USER $USER
+ USER $USER
 
-ENTRYPOINT ["bash", "/app/startup.sh"]
+ ENTRYPOINT ["bash", "/app/startup.sh"]
