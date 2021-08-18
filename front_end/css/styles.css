@@ -78,6 +78,8 @@ pre {
 }
 
 .landing-course-list {
+  /* If we ever want to return the course list on the landing page to the more rigid grid of set width boxes,  */
+  /* change justify-content to center, and set width to 400px. */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -561,7 +563,6 @@ module {
 
 .instructions pre {
   background-color: whitesmoke;
-  color: #da1039;
   font-size: 0.875em;
   font-weight: normal;
   padding: 0.25em 0.5em 0.25em;
