@@ -2,11 +2,15 @@
     <h2>{{ course_basics["title"] }}</h2>
     <p>{{ course_details["introduction"] }}</p>
 
+    {% if has_pair_programming %}
+        <a class="button is-primary" href="/view_pp/{{ course_basics['id'] }}">Pair Programming Assignments</a>
+    {% end %}
+
     {% if len(assignments) > 0 %}
 
         <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
         <link rel="stylesheet" href="/static/modal.css">
-    
+
         <table class="table" id="assignment_table">
             <thead>
                 <tr>
