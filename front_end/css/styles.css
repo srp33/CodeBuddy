@@ -571,3 +571,7 @@ module {
 .instructions p {
   white-space: pre-wrap; /* Maintains newlines inside paragraphs */
 }
+
+.pair {
+  margin: 1em 0;
+}

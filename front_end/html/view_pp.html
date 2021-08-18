@@ -1,0 +1,27 @@
+{% if course_basics["exists"] %}
+    <h2>Pair Programming Assignments</h2>
+    <p>
+      The following pairs will be used for turning in assignments in this course. Pairings are randomized and reset each week.
+    </p>
+
+    {% for pair in student_pairs %}
+        <!-- Styles student pair based on whether it contains the user. -->
+        {% if pair['is_user'] %}
+        <div class="pair student-content">
+        {% else %}
+        <div class="pair instructor-content">
+        {% end %}
+
+        <!-- Renders student pairs based on parity of grouping. -->
+        {% if len(pair['pair']) > 2 %}
+          <strong>{{ pair['pair'][0] }}</strong> will be pair programming with<br>
+          <strong>{{ pair['pair'][1] }}</strong> and<br>
+          <strong>{{ pair['pair'][2] }}</strong>
+        {% else %}
+          <strong>{{ pair['pair'][0] }}</strong> will be pair programming with<br>
+          <strong>{{ pair['pair'][1] }}</strong>
+        {% end %}
+        </div>
+    {% end %}
+{% end %}
+<br /><br />

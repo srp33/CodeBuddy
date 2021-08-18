@@ -1,4 +1,5 @@
 import atexit
+import random
 from datetime import datetime, timezone
 import glob
 import gzip
@@ -586,9 +587,12 @@ class Content:
 
         return registered_courses
 
-    def get_partner_info(self, course, user_id):
+    def get_partner_info(self, course, user_id, include_self=False):
         # Gets list of users.
-        users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
+        if include_self:
+            users = [x[1] for x in self.get_registered_students(course)]
+        else:
+            users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
 
         # Adds users to dict to find duplicate names.
         user_duplicates_dict = {}
@@ -2018,6 +2022,38 @@ class Content:
 
         if os.path.exists(tmp_dir_path):
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
+
+    def course_has_pair_programming(self, course_id):
+        sql = '''SELECT enable_pair_programming
+                 FROM exercises
+                 WHERE course_id = ?'''
+
+        exercises = self.fetchall(sql, (course_id, ))
+        exercises = [x['enable_pair_programming'] for x in exercises]
+
+        # Return whether any of the exercises in a course have pair programming enabled.
+        return any(exercises)
+
+    def get_student_pairs(self, course_id, user_name):
+        # Uses the week of the year as a seed.
+        seed = datetime.now().isocalendar().week
+
+        # Gets student names registered in a course (will add obscured emails to the end of the name in the case of duplicate names)
+        students = list(self.get_partner_info(course_id, '', True).keys())
+        # Randomizes students using seed
+        random.Random(seed).shuffle(students)
+
+        if len(students) % 2 == 0:
+            pairs = [[students[i], students[i + 1]] for i in range(0, len(students), 2)]
+        else:
+            # If there is an odd number of students, add the last student to a trio.
+            pairs = [[students[i], students[i + 1]] for i in range(0, len(students) - 1, 2)]
+            pairs[-1].append(students[-1])
+
+        # Indicates which pair the user is in.
+        pairs = [{'is_user': True, 'pair': pair} if user_name in pair else {'is_user': False, 'pair': pair} for pair in pairs]
+
+        return pairs
 
     def rebuild_exercises(self, assignment_title=None):
         with open("/logs/progress.log", "w") as progress_file:
