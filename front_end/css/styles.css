@@ -575,3 +575,7 @@ module {
 .pair {
   margin: 1em 0;
 }
+
+.level {
+  align-items: flex-start;
+}
