@@ -20,7 +20,8 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
 
                     if response:
                         user_dict = json.loads(response.decode('utf-8'))
-                        user_id = user_dict["email"]
+                        user_id = user_dict["email"].split("@")[0]
+                        user_dict["email_address"] = user_dict["email"]
 
                         if self.content.user_exists(user_id):
                             # Update user with current information when they already exist.

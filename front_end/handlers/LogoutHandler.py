@@ -10,10 +10,10 @@ class LogoutHandler(RequestHandler):
         try:
             self.clear_all_cookies()
 
-            if self.settings_dict["mode"] == "production":
-                self.redirect("https://accounts.google.com/Logout")
-            else:
-                self.redirect("/")
+            #if self.settings_dict["mode"] == "production":
+                #self.redirect("https://accounts.google.com/Logout")
+            #else:
+            self.redirect("/")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
