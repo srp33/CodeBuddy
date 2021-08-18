@@ -598,18 +598,18 @@ class Content:
         user_duplicates_dict = {}
         for user in users:
             if user["name"] in user_duplicates_dict.keys():
-                user_duplicates_dict[user["name"]].append(user["id"])
+                user_duplicates_dict[user["name"]].append({'id': user["id"], 'email': user['email']})
             else:
-                user_duplicates_dict[user["name"]] = [user["id"]]
+                user_duplicates_dict[user["name"]] = [{'id': user["id"], 'email': user['email']}]
 
         # Adds all users to a dictionary with name (and obscured email if applicable) as key and id as value.
         user_dict = {}
         for user in user_duplicates_dict:
             if len(user_duplicates_dict[user]) > 1:
-                for id in user_duplicates_dict[user]:
-                    user_dict[user + " — " + self.obscure_email(id, user_duplicates_dict[user])] = id
+                for user_info in user_duplicates_dict[user]:
+                    user_dict[user + " — " + self.obscure_email(user_info['email'], list(map(lambda x: x['email'], user_duplicates_dict[user])))] = user_info['id']
             else:
-                user_dict[user] = user_duplicates_dict[user][0]
+                user_dict[user] = user_duplicates_dict[user][0]['id']
 
         return user_dict
 
@@ -635,14 +635,14 @@ class Content:
     def get_registered_students(self, course_id):
         registered_students = []
 
-        sql = '''SELECT r.user_id, u.name
+        sql = '''SELECT r.user_id, u.name, u.email_address
                  FROM course_registrations r
                  INNER JOIN users u
                    ON r.user_id = u.user_id
                  WHERE r.course_id = ?'''
 
         for student in self.fetchall(sql, (course_id,)):
-            student_info = {"id": student["user_id"], "name": student["name"]}
+            student_info = {"id": student["user_id"], "name": student["name"], 'email': student['email_address']}
             registered_students.append([student["user_id"], student_info])
 
         return registered_students
@@ -2024,15 +2024,12 @@ class Content:
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
     def course_has_pair_programming(self, course_id):
-        sql = '''SELECT enable_pair_programming
+        sql = '''SELECT MAX(enable_pair_programming) as enable_pair_programming
                  FROM exercises
                  WHERE course_id = ?'''
 
-        exercises = self.fetchall(sql, (course_id, ))
-        exercises = [x['enable_pair_programming'] for x in exercises]
-
-        # Return whether any of the exercises in a course have pair programming enabled.
-        return any(exercises)
+        has_pair_programming = self.fetchone(sql, (course_id, ))["enable_pair_programming"]
+        return has_pair_programming
 
     def get_student_pairs(self, course_id, user_name):
         # Uses the week of the year as a seed.
@@ -2040,6 +2037,7 @@ class Content:
 
         # Gets student names registered in a course (will add obscured emails to the end of the name in the case of duplicate names)
         students = list(self.get_partner_info(course_id, '', True).keys())
+
         # Randomizes students using seed
         random.Random(seed).shuffle(students)
 
