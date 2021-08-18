@@ -558,3 +558,15 @@ module {
 .test-content pre {
   font-size: 1em;
 }
+
+.instructions pre {
+  background-color: whitesmoke;
+  color: #da1039;
+  font-size: 0.875em;
+  font-weight: normal;
+  padding: 0.25em 0.5em 0.25em;
+}
+
+.instructions p {
+  white-space: pre-wrap; /* Maintains newlines inside paragraphs */
+}
