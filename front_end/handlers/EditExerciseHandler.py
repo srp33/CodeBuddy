@@ -139,7 +139,9 @@ class EditExerciseHandler(BaseUserHandler):
                                         result = f"Warning: {len(empty_tests)} of your tests produced no output."
 
                                     if exercise:
-                                        num_submissions = sum(list(map(lambda x: int(x[1]["num_submissions"]), self.content.get_exercise_scores(course, assignment, exercise))))
+                                        # Get scores from content (which also contains data about the number of submissions in an exercise)
+                                        scores = self.content.get_exercise_scores(course, assignment, exercise)
+                                        num_submissions = sum(list(map(lambda x: int(x[1]["num_submissions"]), scores)))
                                     else:
                                         num_submissions = 0
 
