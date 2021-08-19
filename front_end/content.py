@@ -459,14 +459,14 @@ class Content:
 
     def get_courses_connected_to_user(self, user_id):
         courses = []
-        sql = '''SELECT p.course_id, c.title
+        sql = '''SELECT p.course_id, c.title, c.consent_text
                  FROM permissions p
                  INNER JOIN courses c
                    ON p.course_id = c.course_id
                  WHERE user_id = ?'''
 
         for course in self.fetchall(sql, (user_id,)):
-            course_basics = {"id": course["course_id"], "title": course["title"]}
+            course_basics = {"id": course["course_id"], "title": course["title"], "consent_text": course["consent_text"]}
             courses.append([course["course_id"], course_basics])
         return courses
 
