@@ -938,15 +938,17 @@ class Content:
 
         sql = '''SELECT DISTINCT code
                  FROM submissions
-                 WHERE course_id = ?
+                 WHERE (course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?
                    AND passed = 1
-                   AND user_id != ?
+                   AND user_id != ?)
+                   AND (partner_id != ?
+                   OR partner_id IS NULL)
                  GROUP BY user_id
                  ORDER BY date'''
 
-        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
+        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, user_id)):
             student_submissions.append([index, submission["code"]])
             index += 1
         return student_submissions
@@ -2043,10 +2045,12 @@ class Content:
 
         if len(students) % 2 == 0:
             pairs = [[students[i], students[i + 1]] for i in range(0, len(students), 2)]
-        else:
+        elif len(students) > 1:
             # If there is an odd number of students, add the last student to a trio.
             pairs = [[students[i], students[i + 1]] for i in range(0, len(students) - 1, 2)]
             pairs[-1].append(students[-1])
+        else:
+            pairs = [[students[0], 'No other partners available.']]
 
         # Indicates which pair the user is in.
         pairs = [{'is_user': True, 'pair': pair} if user_name in pair else {'is_user': False, 'pair': pair} for pair in pairs]
