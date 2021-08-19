@@ -57,7 +57,7 @@ def make_app():
         url(r"\/delete_assignment_submissions\/([^\/]+)\/([^\/]+)?", DeleteAssignmentSubmissionsHandler, name="delete_assignment_submissions"),
         url(r"\/exercise\/([^\/]+)\/([^\/]+)/([^\/]+)", ExerciseHandler, name="exercise"),
         url(r"\/edit_exercise\/([^\/]+)\/([^\/]+)/([^\/]+)?", EditExerciseHandler, name="edit_exercise"),
-        url(r"\/create_video_exercise\/([^\/]+)\/([^\/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
+        url(r"\/create_youtube_exercise\/([^\/]+)\/([^\/]+)", CreateYouTubeExerciseHandler, name="create_youtube_exercise"),
         url(r"\/move_exercise\/([^\/]+)\/([^\/]+)/([^\/]+)?", MoveExerciseHandler, name="move_exercise"),
         url(r"\/copy_exercise\/([^\/]+)\/([^\/]+)/([^\/]+)?", CopyExerciseHandler, name="copy_exercise"),
         url(r"\/delete_exercise\/([^\/]+)\/([^\/]+)/([^\/]+)?", DeleteExerciseHandler, name="delete_exercise"),

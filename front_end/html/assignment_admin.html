@@ -88,25 +88,25 @@
                 }
             }
 
-            function showVideoModal() {
-                var modal = document.getElementById("video_modal");
+            function showYouTubeModal() {
+                var modal = document.getElementById("youtube_modal");
                 var span = document.getElementsByClassName("close")[3];
 
                 modal.style.display = "block";
-                document.getElementById("video_title").focus();
+                document.getElementById("youtube_title").focus();
 
-                var cancelButton = document.getElementById("video_cancel_button");
-                var createButton = document.getElementById("video_create_button");
-                document.getElementById("video_title").focus();
-                document.getElementById("video_error").innerHTML = "";
+                var cancelButton = document.getElementById("youtube_cancel_button");
+                var createButton = document.getElementById("youtube_create_button");
+                document.getElementById("youtube_title").focus();
+                document.getElementById("youtube_error").innerHTML = "";
 
                 createButton.onclick = function() {
-                    var title = document.getElementById("video_title").value.trim();
-                    var instructions = document.getElementById("video_instructions").value.trim();
-                    var url = document.getElementById("video_url").value.trim();
+                    var title = document.getElementById("youtube_title").value.trim();
+                    var instructions = document.getElementById("youtube_instructions").value.trim();
+                    var url = document.getElementById("youtube_url").value.trim();
 
                     if (title.length == 0 || instructions.length == 0 || url == 0) {
-                        document.getElementById("video_error").innerHTML = "<div class='notification error-message'>All inputs must be specified.</div>";
+                        document.getElementById("youtube_error").innerHTML = "<div class='notification error-message'>All inputs must be specified.</div>";
                         return;
                     }
 
@@ -114,21 +114,20 @@
 
                     post_data = {"title": title, "instructions": instructions + "\n\nyoutube:" + youtube_id};
 
-                    $.post("/create_video_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                    $.post("/create_youtube_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
                         post_data,
                         function(data, status) {
                             var message = JSON.parse(data)["message"];
 
                             if (message == "") {
-                                document.getElementById("video_error").innerHTML = "";
+                                document.getElementById("youtube_error").innerHTML = "";
                                 modal.style.display = "none";
                                 location.reload();
                             }
                             else {
-                                document.getElementById("video_error").innerHTML = "<div class='notification error-message'>" + message + "</div>";
+                                document.getElementById("youtube_error").innerHTML = "<div class='notification error-message'>" + message + "</div>";
                             }
                     });
-
                 }
 
                 cancelButton.onclick = function() {
@@ -235,29 +234,29 @@
             </div>
         </div>
 
-        <div id="video_modal" class="modal">
+        <div id="youtube_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <p><strong>Create video exercise</strong></p>               
+                <p><strong>Create YouTube exercise</strong></p>               
                 <p>Use this option to create an exercise that displays a YouTube video and asks the user to submit a response based on a prompt in the video.</p>
 
                 <p>Title:
-                    <input class="input is-medium is-primary" type="text" id="video_title" name="video_title"/>
+                    <input class="input is-medium is-primary" type="text" id="youtube_title" name="youtube_title"/>
                 </p>
 
                 <p>Instructions:
-                    <input class="input is-medium is-primary" type="text" id="video_instructions" name="video_instructions" value="Please watch this video and then enter the requested response."/>
+                    <input class="input is-medium is-primary" type="text" id="youtube_instructions" name="youtube_instructions" value="Please watch this video and then enter the requested response."/>
                 </p>
 
                 <p>YouTube video URL:
-                    <input class="input is-medium is-primary" type="text" id="video_url" name="video_url"/>
+                    <input class="input is-medium is-primary" type="text" id="youtube_url" name="youtube_url"/>
                 </p>
 
-                <div id="video_error"></div>
+                <div id="youtube_error"></div>
 
                 <p class="buttons">
-                    <button type="button" id="video_cancel_button" class="modal-button button is-light">Cancel</button>
-                    <input type="submit" id="video_create_button" class="modal-button button is-dark" value="Create"/>
+                    <button type="button" id="youtube_cancel_button" class="modal-button button is-light">Cancel</button>
+                    <input type="submit" id="youtube_create_button" class="modal-button button is-dark" value="Create"/>
                 </p>
             </div>
         </div>
@@ -265,7 +264,7 @@
         <div style="display: inline;">
             <div class="buttons">
                 <button class="button is-dark" onclick="window.location.href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">New exercise</button>
-                <button class="button is-orange" onclick="showVideoModal()">New video exercise</button>
+                <button class="button" onclick="showYouTubeModal()">New YouTube exercise</button>
             </div>
             <button class="button is-primary is-pulled-right" onclick="window.location.href='/view_scores/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}';">View scores</button>
         </div>
