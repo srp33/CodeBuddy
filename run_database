@@ -1,0 +1,26 @@
+#! /bin/bash
+
+database_dir_path="$(pwd)/database"
+container_name="codebuddy_database_dev"
+database_port=3305
+
+mkdir -p "$database_dir_path"
+
+./stop_database "$container_name"
+
+#docker run -i -t \
+docker run -d \
+           -p 127.0.0.1:${database_port}:3306 \
+           --name "$container_name" \
+           -v "$database_dir_path":/var/lib/mysql \
+           -v "$(pwd)"/secrets:/secrets \
+           -e MARIADB_ROOT_PASSWORD_FILE=/secrets/MARIADB_ROOT_PASSWORD \
+           -e MARIADB_USER_FILE=/secrets/MARIADB_USER \
+           -e MARIADB_PASSWORD_FILE=/secrets/MARIADB_PASSWORD \
+           -e MARIADB_DATABASE_FILE=/secrets/MARIADB_DATABASE \
+           mariadb:10.6.4
+
+#https://hub.docker.com/_/mariadb/
+
+#TODO:
+#  Dump and restore scripts.

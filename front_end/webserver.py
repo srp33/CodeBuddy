@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if "PORT" in os.environ and "MPORT" in os.environ:
         application = make_app()
 
-        secrets_dict = load_yaml_dict(read_file("/app/secrets.yaml"))
+        secrets_dict = load_yaml_dict(read_file("/secrets/front_end.yaml"))
         application.settings["cookie_secret"] = secrets_dict["cookie"]
         application.settings["google_oauth"] = {
             "key": secrets_dict["google_oauth_key"],
@@ -141,7 +141,6 @@ if __name__ == "__main__":
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
         content = Content(settings_dict)
-        content.create_database_tables()
 
         database_version = content.get_database_version()
         code_version = int(read_file("VERSION").rstrip())
@@ -149,8 +148,6 @@ if __name__ == "__main__":
         # Check to see whether there is a database migration script (should only be one per version).
         # If so, make a backup copy of the database and then do the migration.
         for v in range(database_version, code_version):
-            run_command("bash /etc/cron.hourly/back_up_database.sh")
-
             migration = f"{v}_to_{v + 1}"
             print(f"Checking database status for version {v+1}...")
 
@@ -169,7 +166,6 @@ if __name__ == "__main__":
             else:
                 print(f"Database migration failed for verson {v+1}, so rolling back...")
                 print(result)
-                run_command("bash /etc/cron.hourly/restore_database.sh")
                 sys.exit(1)
 
         server = tornado.httpserver.HTTPServer(application)
