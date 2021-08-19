@@ -821,7 +821,8 @@
                     minLines: 10,
                     maxLines: 15,
                     fontSize: "12pt"
-                    });`);
+                    });
+                    test_code_editor_${test_index}.focus()`);
 
                 current_tests.push(test_index)
 
@@ -840,6 +841,7 @@
 
             function show_test_instructions(i) {
               document.getElementById(`test_instructions_div_${i}`).style.display = (document.getElementById(`test_instructions_div_${i}`).style.display == "none") ? "block" : "none";
+              document.getElementById(`test_instructions_${i}`).focus();
             }
 
             function remove_test_code(i) {

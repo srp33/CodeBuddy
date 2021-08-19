@@ -205,7 +205,6 @@ pre {
 
 /* Styles block of other students' anonymized code on view_answer.html */
 .extra-content {
-    font-size: 14px;
     border: 2px solid  #0095e3; /* blue */
     width: 100%;
     border-left: 12px solid  #0095e3; /* blue */
