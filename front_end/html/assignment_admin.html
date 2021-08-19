@@ -114,7 +114,7 @@
 
                     post_data = {"title": title, "instructions": instructions + "\n\nyoutube:" + youtube_id};
 
-                    $.post("/create_youtube_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                    $.post("/create_video_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
                         post_data,
                         function(data, status) {
                             var message = JSON.parse(data)["message"];
