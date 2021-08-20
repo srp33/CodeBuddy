@@ -660,7 +660,7 @@ class Content:
         return registered_students
 
     # Gets whether or not a student has passed each assignment in the course.
-    def get_assignment_statuses(self, course_id, user_id):
+    def get_assignment_statuses(self, course_id, user_id, nice_sort=True):
         sql = '''SELECT assignment_id,
                         title,
                         start_date,
