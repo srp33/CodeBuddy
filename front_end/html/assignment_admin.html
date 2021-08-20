@@ -110,9 +110,21 @@
                         return;
                     }
 
-                    var video_id = url.replace("https://youtu.be/", "").replace("https://www.youtube.com/watch?v=", "").replace("&feature=youtu.be", "");
-
-                    post_data = {"title": title, "instructions": instructions + "\n\nyoutube:" + video_id};
+                    if (url.includes("youtube") || url.includes("youtu.be")) {
+                      var video_id = url.replace("https://youtu.be/", "").replace("https://www.youtube.com/watch?v=", "").replace("&feature=youtu.be", "");
+                      post_data = {"title": title, "instructions": instructions + "\n\nyoutube:" + video_id};
+                    }
+                    else {
+                      if (url.includes("panopto.com")) {
+                        var url_parts = url.replace("https://", "").split("/Panopto/Pages/Viewer.aspx?id=");
+                        var video_id = url_parts[0] + "/" + url_parts[1];
+                        post_data = {"title": title, "instructions": instructions + "\n\npanopto:" + video_id};
+                      }
+                      else {
+                        document.getElementById("video_error").innerHTML = "<div class='notification error-message'>The video URL is invalid.</div>";
+                        return;
+                      }
+                    }
 
                     $.post("/create_video_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
                         post_data,
@@ -238,7 +250,8 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <p><strong>Create video exercise</strong></p>               
-                <p>Use this option to create an exercise that displays a video and asks the user to submit a response based on a prompt in the video.</p>
+
+                <p>Use this option to create an exercise that displays a video and asks the user to submit a response based on a prompt in the video. <a href="https://youtube.com" target="_blank">YouTube</a> and <a href="https://panopto.com" target="_blank">Panopto</a> are currently supported.</p>
 
                 <p>Title:
                     <input class="input is-medium is-primary" type="text" id="video_title" name="video_title"/>
