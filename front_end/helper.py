@@ -85,16 +85,16 @@ def sort_nicely(l):
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key = alphanum_key)
 
-#def sort_nested_by_index(nested_list, index):
-#    l_dict = {}
-#    for row in nested_list:
-#        l_dict[row[index]] = row
-#
-#    sorted_list = []
-#    for key in sort_nicely(l_dict):
-#        sorted_list.append(l_dict[key])
-#
-#    return sorted_list
+def sort_list_of_dicts_nicely(lst, key):
+    sort_dict = {}
+    for item in lst:
+        sort_dict[item[key]] = item
+
+    sorted_list = []
+    for dict_key in sort_nicely(sort_dict.keys()):
+        sorted_list.append(sort_dict[dict_key])
+
+    return sorted_list
 
 def get_columns_dict(nested_list, key_col_index, value_col_index):
     columns_dict = {}
