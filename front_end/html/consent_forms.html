@@ -7,15 +7,13 @@
                 
                 {% if registered_courses %}
                     {% for course in registered_courses %}
-
-                        {% if course[1]["consent_text"] != '' and course[1]["consent_text"] %}
+                        {% if course[1]["consent_text"] and course[1]["consent_text"] != '' %}
                             <p class="space-div">Consent form for <strong>{{ course[1]["title"] }}:</strong></p>
                             <div class="suggestion-div space-div" style="background-color: white">
                                 <p>{{ course[1]["consent_text"] }}</p>
-                                <p><strong>I, {{ user_info['name'] }}, consent to participate in this study under the terms described above.</strong></p>
+                                <p><strong>I, {{ user_info['name'] }}, consent to participate in this study under the 
                             </div>
                         {% end %}
-
                     {% end %}
                 {% else %}
                     <p>You have not yet registered for a course.</p>
@@ -25,15 +23,14 @@
                 <h2 style="display: inline">Student Consent Forms</h2>
                 <br>
                 {% if registered_courses %}
-
                     {% for course in registered_courses %}
-                        {% if course[1]["consent_text"] != '' and course[1]["consent_text"] %}
+                        {% if course[1]["consent_text"] and course[1]["consent_text"] != '' %}
                             <p class="space-div">Consent forms for <strong>{{ course[1]["title"] }}:</strong></p>
 
                             {% for student in course[1]['student_names'] %}
                                 <div class="suggestion-div space-div" style="background-color: white">
                                     <p>{{ course[1]["consent_text"] }}</p>
-                                    <p><strong>I, {{ student[1]['name'] }}, consent to participate in this study under the terms described above.</strong></p>
+                                    <p><strong>I, {{ student[1]['name'] }}, consent to participate in this study under
                                 </div>
                             {% end %}
 

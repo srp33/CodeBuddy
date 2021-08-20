@@ -12,12 +12,6 @@ RUN python /tmp/modify_version.py
 
 ADD Settings.yaml /
 
-#Not sure if we need to do this:
-#RUN wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
-#  && echo "fc84b8954141ed3c59ac7a1adfc8051c93171bae7ba34d7f9aeecd3b148f1527 mariadb_repo_setup" \
-##  && chmod +x mariadb_repo_setup \
-##  && ./mariadb_repo_setup
-
 RUN apt-get update \
  && apt-get install -y bzip2 zip nodejs npm wget curl git vim \
                        libmariadb3 libmariadb-dev \
@@ -76,9 +70,9 @@ ADD front_end/startup.sh /app/
 ADD front_end/scheduled_scripts/* /scheduled_scripts/
 ADD front_end/migration_scripts/* /migration_scripts/
 ADD front_end/html/* /tmp/
+RUN bash /app/build_html.sh
 ADD front_end/handlers/*.py /app/
 ADD front_end/*.py /app/
-ADD front_end/secrets.yaml /app/
 ADD front_end/dump_for_mysql.py /app/
 ADD front_end/CodeBuddy_dump.sql /
 

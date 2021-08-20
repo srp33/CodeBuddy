@@ -78,8 +78,10 @@ pre {
 }
 
 .landing-course-list {
+  /* If we ever want to return the course list on the landing page to the more rigid grid of set width boxes,  */
+  /* change justify-content to center, and set width to 400px. */
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -99,7 +101,6 @@ pre {
     padding: 20px;
     background-color: #f5f5f5;
     border-radius: 15px;
-    width: 400px;
     margin: 20px;
 }
 
@@ -204,7 +205,6 @@ pre {
 
 /* Styles block of other students' anonymized code on view_answer.html */
 .extra-content {
-    font-size: 14px;
     border: 2px solid  #0095e3; /* blue */
     width: 100%;
     border-left: 12px solid  #0095e3; /* blue */
@@ -558,4 +558,23 @@ module {
 
 .test-content pre {
   font-size: 1em;
+}
+
+.instructions pre {
+  background-color: whitesmoke;
+  font-size: 0.875em;
+  font-weight: normal;
+  padding: 0.25em 0.5em 0.25em;
+}
+
+.instructions p {
+  white-space: pre-wrap; /* Maintains newlines inside paragraphs */
+}
+
+.pair {
+  margin: 1em 0;
+}
+
+.level {
+  align-items: flex-start;
 }

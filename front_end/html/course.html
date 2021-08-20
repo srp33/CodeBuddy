@@ -2,6 +2,10 @@
     <h2>{{ course_basics["title"] }}</h2>
     <p>{{ course_details["introduction"] }}</p>
 
+    {% if has_pair_programming %}
+        <a class="button is-primary" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
+    {% end %}
+
     <h3>Assignments</h3>
 
     {% if len(assignment_statuses) > 0 %}

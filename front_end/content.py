@@ -1,4 +1,5 @@
 import atexit
+import random
 from datetime import datetime, timezone
 import glob
 import gzip
@@ -458,14 +459,14 @@ class Content:
 
     def get_courses_connected_to_user(self, user_id):
         courses = []
-        sql = '''SELECT p.course_id, c.title
+        sql = '''SELECT p.course_id, c.title, c.consent_text
                  FROM permissions p
                  INNER JOIN courses c
                    ON p.course_id = c.course_id
                  WHERE user_id = ?'''
 
         for course in self.fetchall(sql, (user_id,)):
-            course_basics = {"id": course["course_id"], "title": course["title"]}
+            course_basics = {"id": course["course_id"], "title": course["title"], "consent_text": course["consent_text"]}
             courses.append([course["course_id"], course_basics])
         return courses
 
@@ -586,26 +587,29 @@ class Content:
 
         return registered_courses
 
-    def get_partner_info(self, course, user_id):
+    def get_partner_info(self, course, user_id, include_self=False):
         # Gets list of users.
-        users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
+        if include_self:
+            users = [x[1] for x in self.get_registered_students(course)]
+        else:
+            users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
 
         # Adds users to dict to find duplicate names.
         user_duplicates_dict = {}
         for user in users:
             if user["name"] in user_duplicates_dict.keys():
-                user_duplicates_dict[user["name"]].append(user["id"])
+                user_duplicates_dict[user["name"]].append({'id': user["id"], 'email': user['email']})
             else:
-                user_duplicates_dict[user["name"]] = [user["id"]]
+                user_duplicates_dict[user["name"]] = [{'id': user["id"], 'email': user['email']}]
 
         # Adds all users to a dictionary with name (and obscured email if applicable) as key and id as value.
         user_dict = {}
         for user in user_duplicates_dict:
             if len(user_duplicates_dict[user]) > 1:
-                for id in user_duplicates_dict[user]:
-                    user_dict[user + " — " + self.obscure_email(id, user_duplicates_dict[user])] = id
+                for user_info in user_duplicates_dict[user]:
+                    user_dict[user + " — " + self.obscure_email(user_info['email'], list(map(lambda x: x['email'], user_duplicates_dict[user])))] = user_info['id']
             else:
-                user_dict[user] = user_duplicates_dict[user][0]
+                user_dict[user] = user_duplicates_dict[user][0]['id']
 
         return user_dict
 
@@ -631,14 +635,14 @@ class Content:
     def get_registered_students(self, course_id):
         registered_students = []
 
-        sql = '''SELECT r.user_id, u.name
+        sql = '''SELECT r.user_id, u.name, u.email_address
                  FROM course_registrations r
                  INNER JOIN users u
                    ON r.user_id = u.user_id
                  WHERE r.course_id = ?'''
 
         for student in self.fetchall(sql, (course_id,)):
-            student_info = {"id": student["user_id"], "name": student["name"]}
+            student_info = {"id": student["user_id"], "name": student["name"], 'email': student['email_address']}
             registered_students.append([student["user_id"], student_info])
 
         return registered_students
@@ -934,15 +938,17 @@ class Content:
 
         sql = '''SELECT DISTINCT code
                  FROM submissions
-                 WHERE course_id = ?
+                 WHERE (course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?
                    AND passed = 1
-                   AND user_id != ?
+                   AND user_id != ?)
+                   AND (partner_id != ?
+                   OR partner_id IS NULL)
                  GROUP BY user_id
                  ORDER BY date'''
 
-        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
+        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, user_id)):
             student_submissions.append([index, submission["code"]])
             index += 1
         return student_submissions
@@ -2018,6 +2024,38 @@ class Content:
 
         if os.path.exists(tmp_dir_path):
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
+
+    def course_has_pair_programming(self, course_id):
+        sql = '''SELECT MAX(enable_pair_programming) as enable_pair_programming
+                 FROM exercises
+                 WHERE course_id = ?'''
+
+        has_pair_programming = self.fetchone(sql, (course_id, ))["enable_pair_programming"]
+        return has_pair_programming
+
+    def get_student_pairs(self, course_id, user_name):
+        # Uses the week of the year as a seed.
+        seed = datetime.now().isocalendar().week
+
+        # Gets student names registered in a course (will add obscured emails to the end of the name in the case of duplicate names)
+        students = list(self.get_partner_info(course_id, '', True).keys())
+
+        # Randomizes students using seed
+        random.Random(seed).shuffle(students)
+
+        if len(students) % 2 == 0:
+            pairs = [[students[i], students[i + 1]] for i in range(0, len(students), 2)]
+        elif len(students) > 1:
+            # If there is an odd number of students, add the last student to a trio.
+            pairs = [[students[i], students[i + 1]] for i in range(0, len(students) - 1, 2)]
+            pairs[-1].append(students[-1])
+        else:
+            pairs = [[students[0], 'No other partners available.']]
+
+        # Indicates which pair the user is in.
+        pairs = [{'is_user': True, 'pair': pair} if user_name in pair else {'is_user': False, 'pair': pair} for pair in pairs]
+
+        return pairs
 
     def rebuild_exercises(self, assignment_title=None):
         with open("/logs/progress.log", "w") as progress_file:

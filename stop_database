@@ -1,0 +1,12 @@
+#! /bin/bash
+
+container_name="$1"
+
+if [[ "$container_name" == "" ]]
+then
+  echo "No container name was specified."
+  exit 1
+fi
+
+docker container stop "$container_name" 2> /dev/null
+docker container rm "$container_name" 2> /dev/null

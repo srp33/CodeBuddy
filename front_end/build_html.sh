@@ -24,6 +24,7 @@ cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html prof
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_student_help_requests.html profile_bottom.html footer_version.html > /app/profile_student_help_requests.html
 cat profile_header.html javascript_container.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_preferences.html profile_bottom.html footer_version.html > /app/profile_preferences.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html course.html container_bottom.html footer_version.html > /app/course.html
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html view_pp.html container_bottom.html footer_version.html > /app/view_pp.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html course_admin.html container_bottom.html footer_version.html > /app/course_admin.html
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html edit_course.html container_bottom.html footer_version.html > /app/edit_course.html
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html delete_course.html container_bottom.html footer_version.html > /app/delete_course.html

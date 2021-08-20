@@ -1,0 +1,11 @@
+#! /bin/bash
+
+backup_dir_path="$(pwd)/backup"
+backup_file="CodeBuddy.sql.gz"
+container_name="codebuddy_database_dev"
+
+docker exec -u $(id -u ${USER}):$(id -g ${USER}) "$container_name" \
+    sh -c 'exec mysqldump --all-databases -uroot -p"$(cat secrets/MARIADB_ROOT_PASSWORD)"' | \
+    gzip > "$backup_dir_path"/$backup_file
+
+#https://hub.docker.com/_/mariadb/
