@@ -512,9 +512,7 @@ class Content:
 
         return courses
 
-    def get_assignments(self, course_id, show_hidden=True):
-        assignments = []
-
+    def get_assignments(self, course_id, show_hidden=True, nice_sort=True):
         sql = '''SELECT c.course_id, c.title as course_title, c.visible as course_visible, a.assignment_id,
                         a.title as assignment_title, a.visible as assignment_visible, a.start_date, a.due_date
                  FROM assignments a
@@ -523,30 +521,44 @@ class Content:
                  WHERE c.course_id = ?
                  ORDER BY a.title'''
 
+        assignments = []
         for row in self.fetchall(sql, (course_id,)):
             if row["assignment_visible"] or show_hidden:
-                course_basics = {"id": row["course_id"], "title": row["course_title"], "visible": bool(row["course_visible"]), "exists": True}
-                assignment_basics = {"id": row["assignment_id"], "title": row["assignment_title"], "visible": row["assignment_visible"], "start_date": row["start_date"], "due_date": row["due_date"], "exists": False, "course": course_basics}
-                assignments.append([row["assignment_id"], assignment_basics])
+                assignments.append(dict(row))
 
-        return assignments
+        if nice_sort:
+            assignments = sort_list_of_dicts_nicely(assignments, "assignment_title")
 
-    def get_exercises(self, course_id, assignment_id, show_hidden=True):
-        exercises = []
+        assignments2 = []
+        for assignment in assignments:
+            course_basics = {"id": assignment["course_id"], "title": assignment["course_title"], "visible": bool(assignment["course_visible"]), "exists": True}
+            assignment_basics = {"id": assignment["assignment_id"], "title": assignment["assignment_title"], "visible": assignment["assignment_visible"], "start_date": assignment["start_date"], "due_date": assignment["due_date"], "exists": False, "course": course_basics}
+            assignments2.append([assignment["assignment_id"], assignment_basics])
 
+        return assignments2
+
+    def get_exercises(self, course_id, assignment_id, show_hidden=True, nice_sort=True):
         sql = '''SELECT exercise_id, title, visible, enable_pair_programming
                  FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?
                  ORDER BY title'''
 
+        exercises = []
         for exercise in self.fetchall(sql, (course_id, assignment_id,)):
             if exercise["visible"] or show_hidden:
-                assignment_basics = self.get_assignment_basics(course_id, assignment_id)
-                exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
-                exercises.append([exercise["exercise_id"], exercise_basics, course_id, assignment_id])
+                exercises.append(dict(exercise))
 
-        return exercises
+        if nice_sort:
+            exercises = sort_list_of_dicts_nicely(exercises, "title")
+
+        exercises2 = []
+        for exercise in exercises:
+            assignment_basics = self.get_assignment_basics(course_id, assignment_id)
+            exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
+            exercises2.append([exercise["exercise_id"], exercise_basics, course_id, assignment_id])
+
+        return exercises2
 
     def get_available_courses(self, user_id):
         available_courses = []
@@ -648,7 +660,7 @@ class Content:
         return registered_students
 
     # Gets whether or not a student has passed each assignment in the course.
-    def get_assignment_statuses(self, course_id, user_id):
+    def get_assignment_statuses(self, course_id, user_id, nice_sort=True):
         sql = '''SELECT assignment_id,
                         title,
                         start_date,
@@ -687,16 +699,23 @@ class Content:
                  GROUP BY assignment_id, title
                  ORDER BY title'''
 
-        assignment_statuses = []
+        statuses = []
         for row in self.fetchall(sql, (user_id, int(course_id),)):
-            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "start_date": row["start_date"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_exercises": row["num_exercises"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
-            assignment_statuses.append([row["assignment_id"], assignment_dict])
+            statuses.append(dict(row))
 
-        return assignment_statuses
+        if nice_sort:
+            statuses = sort_list_of_dicts_nicely(statuses, "title")
+
+        statuses2 = []
+        for status in statuses:
+            assignment_dict = {"id": status["assignment_id"], "title": status["title"], "start_date": status["start_date"], "due_date": status["due_date"], "passed": status["passed_all"], "in_progress": status["in_progress"], "num_passed": status["num_passed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "hour_timer": status["hour_timer"], "minute_timer": status["minute_timer"]}
+            statuses2.append([status["assignment_id"], assignment_dict])
+
+        return statuses2
 
     # Gets the number of submissions a student has made for each exercise
     # in an assignment and whether or not they have passed the exercise.
-    def get_exercise_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
+    def get_exercise_statuses(self, course_id, assignment_id, user_id, show_hidden=True, nice_sort=True):
         # This happens when you are creating a new assignment.
         if not assignment_id:
             return []
@@ -725,12 +744,19 @@ class Content:
                  GROUP BY e.assignment_id, e.exercise_id
                  ORDER BY e.title'''
 
-        exercise_statuses = []
+        statuses = []
         for row in self.fetchall(sql, (user_id, user_id, int(course_id), int(assignment_id),)):
-            exercise_dict = {"enable_pair_programming": row["enable_pair_programming"], "id": row["exercise_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"], "score": row["score"]}
-            exercise_statuses.append([row["exercise_id"], exercise_dict])
+            statuses.append(dict(row))
 
-        return exercise_statuses
+        if nice_sort:
+            statuses = sort_list_of_dicts_nicely(statuses, "title")
+
+        statuses2 = []
+        for status in statuses:
+            exercise_dict = {"enable_pair_programming": status["enable_pair_programming"], "id": status["exercise_id"], "title": status["title"], "passed": status["passed"], "num_submissions": status["num_submissions"], "in_progress": status["in_progress"], "score": status["score"]}
+            statuses2.append([status["exercise_id"], exercise_dict])
+
+        return statuses2
 
     ## Calculates the average score across all students for each assignment in a course,
     ## as well as the number of students who have completed each assignment.
