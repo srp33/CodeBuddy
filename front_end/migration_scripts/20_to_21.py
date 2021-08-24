@@ -9,7 +9,7 @@ from content import *
 from content_maria import *
 
 settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-content = Content(settings_dict)
+content = ContentSQLite(settings_dict)
 
 version = read_file("/VERSION").rstrip()
 
@@ -21,42 +21,70 @@ check_sql = '''SELECT COUNT(*) AS count
 if content.fetchone(check_sql)["count"] > 0:
     print("***NotNeeded***")
 else:
-    with open("/migration_scripts/19_to_20.sql") as sql_file:
+    with open("/migration_scripts/20_to_21.sql") as sql_file:
         sql_statements = sql_file.read().split(";")
 
     try:
         with open("/logs/progress.log", "w") as progress_file:
             for sql in sql_statements:
                 progress_file.write(sql + "\n")
+
                 content.execute(sql)
 
-            run_command(f"touch {settings_dict['db_name'][:-3]}_dump.sql")
-            progress_file.write(run_command("ls *dump.sql"))
-            run_command("sqlite3 " + settings_dict['db_name'] + " .dump | python dump_for_mysql.py")
-            progress_file.write("sqlite3 " + settings_dict['db_name'] + " .dump | python dump_for_mysql.py > " + settings_dict['db_name'][:-3] + "_dump.sql\n")
-            progress_file.write(run_command("ls *dump.sql")  + "\n")
-            progress_file.write(run_command("pwd"))
+            sqlite_dump = content.dump_database()
 
-            # with open('file.sql', 'w') as make_db:
-            #     make_db.write("CREATE DATABASE IF NOT EXISTS CodeBuddy")
+            content = Content(settings_dict)
 
-            with open('CodeBuddy_dump.sql') as x:
-                progress_file.write(x.read())
+            with open(sqlite_dump) as db_dump:
+                create_statements = []
+                other_statements = []
 
-            progress_file.write('\n\n\n\n\n\incoming migration\n\n\n\n\n\n')
+                missing_parantheses = None
+                for c in re.split(r"(?!\B[`'][^`']*);(?![^`']*[`']\B)", db_dump.read()):
+                    s = c.strip()
 
-            run_command(f"mysql start")
-            progress_file.write(run_command('''mysql select @@hostname;
-show variables where Variable_name like "%host%" '''))
+                    if missing_parantheses is not None:
+                        s = f"{missing_parantheses};{s}"
 
-            run_command(f"mysql CREATE DATABASE CodeBuddy_mariadb")
-            # run_command(f"mysql {settings_dict['db_name']_mariadb} > file.sql")
-            run_command(f"mysql CodeBuddy_mariadb > CodeBuddy_dump.sql")
-            # progress_file.write(f"mysql {settings_dict['db_name']}_mariadb > {settings_dict['db_name']}_dump.sql" + '\n')
-            #
-            # progress_file.write('post migration\n')
-            content = Content_maria(settings_dict)
-            progress_file.write("\n\n\n\n\n\n\n" + content.get_database_version())
+                    if not s.endswith(")"):
+                        missing_parantheses = s
+                    else:
+                        missing_parantheses = None
+                        if "TABLE" in s:
+                            if 'CREATE TABLE' in s:
+                                if "INSERT INTO " in s:
+                                    create_statements.append(s.split(';')[0])
+                                    other_statements.append(s.split(';')[1])
+                                else:
+                                    create_statements.append(s)
+                        else:
+                            other_statements.append(s)
+
+                order = ['courses','users','assignments','exercises','problems','submissions','tests','presubmissions','submission_outputs','help_requests','metadata','scores','course_registrations','permissions','user_assignment_starts']
+                order =  [f"CREATE TABLE IF NOT EXISTS `{o}`" for o in order]
+                create = []
+
+                if len(order) != len(create_statements):
+                    sys.exit(1)
+
+                for i in range(len(order)):
+                    for j in range(len(create_statements)):
+                        if create_statements[j].strip().startswith(order[i]):
+                            create.append(create_statements[j])
+                            break
+
+                content.execute("SET FOREIGN_KEY_CHECKS=0")
+
+                for c in create:
+                    content.execute(c)
+
+                for o in other_statements:
+                    content.execute(o)
+
+                content.execute("INSERT INTO `metadata` VALUES(21);")
+                content.execute("SET FOREIGN_KEY_CHECKS=1")
+
+            progress_file.write(f"current db version post migration: {str(content.get_database_version())}")
 
         print("***Success***")
 

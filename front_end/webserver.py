@@ -140,10 +140,13 @@ if __name__ == "__main__":
             "secret": secrets_dict["google_oauth_secret"]}
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
-        content = Content(settings_dict)
+        content = ContentSQLite(settings_dict)
 
         database_version = content.get_database_version()
         code_version = int(read_file("VERSION").rstrip())
+
+        # REMOVE course_registration AND user_assignment_start
+        # CHECK FOR 5's in the METADATA
 
         # Check to see whether there is a database migration script (should only be one per version).
         # If so, make a backup copy of the database and then do the migration.
