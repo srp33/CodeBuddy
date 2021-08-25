@@ -24,9 +24,9 @@ a {
     padding-top: 3.5rem;
 }
 
-/* Sets padding width around the entire site's content. */
+/* Sets padding width or buffer around the entire site's content. */
 .container-padding {
-    padding: 3.5rem 10em;
+    padding: 3.5rem 5em;
 }
 
 /* Hides div. */
@@ -577,4 +577,10 @@ module {
 
 .level {
   align-items: flex-start;
+}
+
+.white-box {
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  padding: 1em 2em;
 }

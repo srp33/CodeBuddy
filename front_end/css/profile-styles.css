@@ -21,8 +21,18 @@
     margin: 10px;
 }
 
+/* Controls alignment of content on menu pages */
+/* Uncomment out the first two lines to center all menu content */
+.tab-content {
+    /* display: flex;
+    justify-content: center; */
+    margin-bottom: 40px;
+}
+
+/* Controls alignment of titles on menu pages */
+/* Change text-align to center to center all titles */
 .tab-title {
-    text-align: center;
+    text-align: left;
     margin-bottom: 40px;
 }
 

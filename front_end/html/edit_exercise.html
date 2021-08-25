@@ -866,6 +866,7 @@
                 new_tests[`{{i}}`] = {'image_output': `{{exercise_details["tests"][i]['image_output']}}`, 'text_output': `{{exercise_details["tests"][i]['text_output']}}` }
             {% end %}
 
+            {% if exercise_basics['exists'] %}
             // Populate with existing tests.
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
@@ -924,6 +925,7 @@
                    document.getElementById(`p_wrapper_${i}`).innerHTML = content;
                  }
                });
+            {% end %}
 
             {% if exercise_details["data_files"] != "" %}
                 // add previously uploaded files to the page
