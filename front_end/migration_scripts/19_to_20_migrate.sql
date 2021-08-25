@@ -12,8 +12,8 @@ DELETE FROM users;
 
 -- Delete old tables
 
-DROP TABLE course_registration;
-DROP TABLE user_assignment_start;
+DROP TABLE IF EXISTS course_registration;
+DROP TABLE IF EXISTS user_assignment_start;
 
 -- Add email_address field to users table.
 

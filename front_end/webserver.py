@@ -141,12 +141,10 @@ if __name__ == "__main__":
         settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
         content = ContentSQLite(settings_dict)
+        content.create_database_tables()
 
         database_version = content.get_database_version()
         code_version = int(read_file("VERSION").rstrip())
-
-        # REMOVE course_registration AND user_assignment_start
-        # CHECK FOR 5's in the METADATA
 
         # Check to see whether there is a database migration script (should only be one per version).
         # If so, make a backup copy of the database and then do the migration.
@@ -165,7 +163,8 @@ if __name__ == "__main__":
                 print("Database migration not needed.")
             elif "***Success***" in result:
                 print(f"Database successfully migrated to version {v+1}.")
-                content.update_database_version(code_version)
+                new_version = v + 1
+                content.update_database_version(new_version)
             else:
                 print(f"Database migration failed for verson {v+1}, so rolling back...")
                 print(result)

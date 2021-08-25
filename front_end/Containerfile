@@ -73,8 +73,6 @@ ADD front_end/html/* /tmp/
 RUN bash /app/build_html.sh
 ADD front_end/handlers/*.py /app/
 ADD front_end/*.py /app/
-ADD front_end/dump_for_mysql.py /app/
-ADD front_end/CodeBuddy_dump.sql /
 
 RUN bash /app/build_html.sh
 

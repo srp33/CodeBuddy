@@ -73,7 +73,11 @@ class ContentSQLite:
     #   to the database are implemented as migration scripts.
     def create_database_tables(self):
         self.execute('''CREATE TABLE IF NOT EXISTS metadata (version integer NOT NULL);''')
-        self.execute('''INSERT INTO metadata (version) VALUES (5);''')
+
+        num_metadata_rows = self.fetchall('''SELECT COUNT(*) FROM metadata;''')[0][0]
+
+        if num_metadata_rows == 0:
+            self.execute('''INSERT INTO metadata (version) VALUES (5);''')
 
         self.execute('''CREATE TABLE IF NOT EXISTS users (
                           user_id text PRIMARY KEY,
@@ -2193,7 +2197,8 @@ class ContentSQLite:
             progress_file.write(f"Done rerunning submissions.\n")
             progress_file.flush()
 
-    def this_line_is_useless(self, line):
+    # This is a helper function used by dump_database
+    def line_is_useless(self, line):
         useless_es = [
         'BEGIN TRANSACTION',
         'COMMIT',
@@ -2206,21 +2211,26 @@ class ContentSQLite:
                 return True
 
     def dump_database(self,):
+        # Much of this code is based off of the code found in this exchange so the syntax is a little different than I would have used
+        # https://stackoverflow.com/questions/18671/quick-easy-way-to-migrate-sqlite3-to-mysql
+        
         sqlite_dump_raw = '/logs/CodeBuddy_dump_raw.sql'
         sqlite_dump_parsed = '/logs/CodeBuddy_dump.sql'
 
+        # Writes the initial raw sqlite dump to a file.
         f = open(sqlite_dump_raw, 'w')
         for line in self.conn.iterdump():
             f.write('%s\n' % line)
         f.close()
 
+        # Begin parsing the raw sqlite dump.
         with open(sqlite_dump_parsed, 'w') as dumpfile:
             with open(sqlite_dump_raw) as raw:
-                searching_for_end = False
+                inside_create_statement = False
                 add_comma = False
 
                 for line in raw:
-                    if self.this_line_is_useless(line):
+                    if self.line_is_useless(line):
                         continue
 
                     # this line was necessary because '');
@@ -2229,59 +2239,60 @@ class ContentSQLite:
                         line = re.sub(r"''\);", r'``);', line)
 
                     if re.match(r'^CREATE TABLE.*', line):
-                        searching_for_end = True
+                        inside_create_statement = True
 
                     m = re.search('CREATE TABLE IF NOT EXISTS "?(\w*)"?(.*)', line)
                     n = re.search('CREATE TABLE "?(\w*)"?(.*)', line)
                     if m:
                         name, sub = m.groups()
+                        # Replaces double quotation marks with backticks per MYSQL specification in CREATE statements
                         line = "CREATE TABLE IF NOT EXISTS `%(name)s`%(sub)s\n"
                         line = line % dict(name=name, sub=sub)
                     elif n:
                         name, sub = n.groups()
-                        # if name in parent_tables:
+                        # Replaces double quotation marks with backticks per MYSQL specification in CREATE statements
                         line = "CREATE TABLE IF NOT EXISTS `%(name)s`%(sub)s\n"
-                        # else:
-                        #     line = "DROP TABLE IF EXISTS %(name)s;\nCREATE TABLE IF NOT EXISTS `%(name)s`%(sub)s\n"
                         line = line % dict(name=name, sub=sub)
                     else:
                         m = re.search('INSERT INTO "(\w*)"(.*)', line)
                         if m:
+                            # Replaces double quotation marks with backticks per MYSQL specification in INSERT statements
                             line = 'INSERT INTO `%s`%s\n' % m.groups()
                             line = line.replace('"', r'\"')
-                            # line = line.replace('"', "`")
 
-                    line = re.sub(r"([^'])'t'(.)", "\1THIS_IS_TRUE\2", line)
-                    line = line.replace('THIS_IS_TRUE', '1')
-                    line = re.sub(r"([^'])'f'(.)", "\1THIS_IS_FALSE\2", line)
-                    line = line.replace('THIS_IS_FALSE', '0')
-
+                    # For some reason sqlite often doubles up on quote marks in formatting their dumps. This converts double '' marks inside a word such as don''t or we''l to \'.
                     line = re.sub(r"(\w)''(\w)", r"\1\'\2", line)
-                    # Add auto_increment if it is not there since sqlite auto_increments ALL
-                    # primary keys
-                    if searching_for_end:
-                        if "data_files text" in line:
-                            line = line.replace("data_files text", "data_files longtext")
 
+                    if inside_create_statement:
+                        # Makes sure that large columns are allocated more space.
+                        line = line.replace("data_files text", "data_files mediumtext")
+                        line = line.replace("image_output text", "image_output mediumtext")
+
+                        # I think MYSQL didn't like that a text field was being used as a PRIMARY KEY
                         if "id text" in line:
                             line = re.sub("id text", "id int", line)
                             line = re.sub("user_id int", "user_id varchar(255)", line)
 
+                        # Adds auto_increment if it is not there since sqlite auto_increments all primary keys
                         if re.search(r"integer(?:\s+\w+)*\s*PRIMARY KEY(?:\s+\w+)*\s*,", line):
                             line = line.replace("PRIMARY KEY AUTOINCREMENT", "PRIMARY KEY AUTO_INCREMENT")
                             line = line.replace("PRIMARY KEY,", "PRIMARY KEY AUTO_INCREMENT,")
 
                         m = re.search(r"FOREIGN KEY", line)
                         if m:
+                            # Formats foreign key constraints according to MYSQL specifications
                             substring = re.search(r"FOREIGN KEY \((\w+)(\s*)", line).groups()[0]
                             line = re.sub(r"FOREIGN KEY \((\w+)(\s*)", r"CONSTRAINT foreign_key_\1 FOREIGN KEY (\1\2", line)
                             line = line.replace(f"foreign_key_{substring}", f"foreign_key_{substring}_{name}")
+
+                            # Sometimes sqlite leaves off a comma in between foreign key constraints so this block is neccessary to put them back in.
                             if add_comma:
                                 line = f", {line}"
                             lastchar = line.strip()[-1]
                             if lastchar != "," and lastchar != ";":
                                 add_comma = True
-                        # replace " and ' with ` because mysql doesn't like quotes in CREATE commands
+
+                        # Replaces " and ' with ` because MYSQL doesn't like quotes in CREATE commands
                         if line.find('DEFAULT') == -1:
                             line = line.replace(r'"', r'`').replace(r"'", r'`')
                         else:
@@ -2293,17 +2304,18 @@ class ContentSQLite:
                         if re.match(r".*, ``\);", line):
                             line = re.sub(r'``\);', r"'');", line)
 
-                        if searching_for_end and re.match(r'.*\);', line):
+                        if inside_create_statement and re.match(r'.*\);', line):
+                            inside_create_statement = False
                             add_comma = False
-                            searching_for_end = False
 
                         if re.match(r"CREATE INDEX", line):
                             line = re.sub('"', '`', line)
 
+                        # Formats AUTOINCREMENT per MYSQL specifications
                         if re.match(r"AUTOINCREMENT", line):
                             line = re.sub("AUTOINCREMENT", "AUTO_INCREMENT", line)
 
-
                     dumpfile.write(line + "\n")
 
+        # Returns the name of the parsed file
         return sqlite_dump_parsed

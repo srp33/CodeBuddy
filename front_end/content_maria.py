@@ -668,7 +668,6 @@ class Content:
                         start_date,
                         due_date,
                         SUM(passed) AS num_passed,
-                        COUNT(assignment_id) AS num_exercises,
                         SUM(passed) = COUNT(assignment_id) AS passed_all,
                         (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress,
                         has_timer,
