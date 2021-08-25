@@ -23,6 +23,7 @@
 
 /* Controls alignment of content on menu pages */
 /* Uncomment out the first two lines to center all menu content */
+/* You may also have to remove the class is-three-fifths on the page profile_courses.html */
 .tab-content {
     /* display: flex;
     justify-content: center; */
