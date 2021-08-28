@@ -74,5 +74,7 @@ RUN bash /app/build_html.sh
 ADD front_end/handlers/*.py /app/
 ADD front_end/*.py /app/
 
+RUN bash /app/build_html.sh
+
 #ENTRYPOINT ["bash"]
 ENTRYPOINT ["bash", "/app/startup.sh"]

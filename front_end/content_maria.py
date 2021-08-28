@@ -1,5 +1,4 @@
 import atexit
-import random
 from datetime import datetime, timezone
 import glob
 import gzip
@@ -12,7 +11,7 @@ import math
 import os
 import re
 import spacy
-import sqlite3
+import mariadb
 import yaml
 from yaml import load
 from yaml import Loader
@@ -24,18 +23,35 @@ import zipfile
 
 BLANK_IMAGE = "/9j/4AAQSkZJRgABAQEAlgCWAAD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCALQA8ADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z"
 
-class ContentSQLite:
+class Content:
     def __init__(self, settings_dict):
         self.__settings_dict = settings_dict
 
-        # This enables auto-commit.
-        self.conn = sqlite3.connect(f"/database/{settings_dict['db_name']}",
-                isolation_level = None,
-                detect_types = sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES,
-                timeout = 30)
-        self.conn.row_factory = sqlite3.Row
-        #self.execute("PRAGMA foreign_keys=ON")
-        self.execute("PRAGMA foreign_keys=OFF")
+        HOST = "127.0.0.1"
+        PORT = 3304
+
+        with open("secrets/MARIADB_USER") as pfile:
+            USERNAME = pfile.read().strip("\n")
+
+        with open("secrets/MARIADB_PASSWORD") as pfile:
+            PASSWORD = pfile.read().strip("\n")
+
+        with open("secrets/MARIADB_DATABASE") as pfile:
+            DATABASE = pfile.read().strip("\n")
+
+        # Connect to MariaDB Platform
+        try:
+            self.conn = mariadb.connect(
+                user=USERNAME,
+                password=PASSWORD,
+                host=HOST,
+                port=PORT,
+                database=DATABASE
+            )
+            print('success:)')
+        except mariadb.Error as e:
+            print(f"Error connecting to MariaDB Platform: {e}")
+            sys.exit(1)
 
         atexit.register(self.close)
 
@@ -66,18 +82,11 @@ class ContentSQLite:
 
         return result
 
-    def dump(self,):
-        return self.conn.iterdump()
-
     # This function creates tables as they were in version 5. Subsequent changes
     #   to the database are implemented as migration scripts.
     def create_database_tables(self):
         self.execute('''CREATE TABLE IF NOT EXISTS metadata (version integer NOT NULL);''')
-
-        num_metadata_rows = self.fetchall('''SELECT COUNT(*) FROM metadata;''')[0][0]
-
-        if num_metadata_rows == 0:
-            self.execute('''INSERT INTO metadata (version) VALUES (5);''')
+        self.execute('''INSERT INTO metadata (version) VALUES (5);''')
 
         self.execute('''CREATE TABLE IF NOT EXISTS users (
                           user_id text PRIMARY KEY,
@@ -203,10 +212,10 @@ class ContentSQLite:
                      );''')
 
     def get_database_version(self):
-        sql = '''SELECT MAX(version) AS version
+        sql = '''SELECT MAX(version)
                  FROM metadata'''
 
-        return self.fetchone(sql)["version"]
+        return self.fetchone(sql)[0]
 
     def update_database_version(self, version):
         sql = '''DELETE FROM metadata'''
@@ -360,10 +369,10 @@ class ContentSQLite:
     def add_user(self, user_id, user_dict):
         self.set_user_dict_defaults(user_dict)
 
-        sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme, email_address)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)'''
+        sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme)
+                 VALUES (?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow", user_dict["email_address"]))
+        self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow"))
 
     def register_user_for_course(self, course_id, user_id):
         sql = '''INSERT INTO course_registrations (course_id, user_id)
@@ -405,7 +414,8 @@ class ContentSQLite:
                  WHERE user_id = ?'''
 
         user = self.fetchone(sql, (user_id,))
-        user_info = {"enable_vim": user["enable_vim"], "user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "email_address": user["email_address"]}
+        user_info = {"enable_vim": user["enable_vim"], "user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"],
+                     "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"]}
 
         return user_info
 
@@ -466,14 +476,14 @@ class ContentSQLite:
 
     def get_courses_connected_to_user(self, user_id):
         courses = []
-        sql = '''SELECT p.course_id, c.title, c.consent_text
+        sql = '''SELECT p.course_id, c.title
                  FROM permissions p
                  INNER JOIN courses c
                    ON p.course_id = c.course_id
                  WHERE user_id = ?'''
 
         for course in self.fetchall(sql, (user_id,)):
-            course_basics = {"id": course["course_id"], "title": course["title"], "consent_text": course["consent_text"]}
+            course_basics = {"id": course["course_id"], "title": course["title"]}
             courses.append([course["course_id"], course_basics])
         return courses
 
@@ -519,7 +529,9 @@ class ContentSQLite:
 
         return courses
 
-    def get_assignments(self, course_id, show_hidden=True, nice_sort=True):
+    def get_assignments(self, course_id, show_hidden=True):
+        assignments = []
+
         sql = '''SELECT c.course_id, c.title as course_title, c.visible as course_visible, a.assignment_id,
                         a.title as assignment_title, a.visible as assignment_visible, a.start_date, a.due_date
                  FROM assignments a
@@ -528,44 +540,30 @@ class ContentSQLite:
                  WHERE c.course_id = ?
                  ORDER BY a.title'''
 
-        assignments = []
         for row in self.fetchall(sql, (course_id,)):
             if row["assignment_visible"] or show_hidden:
-                assignments.append(dict(row))
+                course_basics = {"id": row["course_id"], "title": row["course_title"], "visible": bool(row["course_visible"]), "exists": True}
+                assignment_basics = {"id": row["assignment_id"], "title": row["assignment_title"], "visible": row["assignment_visible"], "start_date": row["start_date"], "due_date": row["due_date"], "exists": False, "course": course_basics}
+                assignments.append([row["assignment_id"], assignment_basics])
 
-        if nice_sort:
-            assignments = sort_list_of_dicts_nicely(assignments, "assignment_title")
+        return assignments
 
-        assignments2 = []
-        for assignment in assignments:
-            course_basics = {"id": assignment["course_id"], "title": assignment["course_title"], "visible": bool(assignment["course_visible"]), "exists": True}
-            assignment_basics = {"id": assignment["assignment_id"], "title": assignment["assignment_title"], "visible": assignment["assignment_visible"], "start_date": assignment["start_date"], "due_date": assignment["due_date"], "exists": False, "course": course_basics}
-            assignments2.append([assignment["assignment_id"], assignment_basics])
+    def get_exercises(self, course_id, assignment_id, show_hidden=True):
+        exercises = []
 
-        return assignments2
-
-    def get_exercises(self, course_id, assignment_id, show_hidden=True, nice_sort=True):
         sql = '''SELECT exercise_id, title, visible, enable_pair_programming
                  FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?
                  ORDER BY title'''
 
-        exercises = []
         for exercise in self.fetchall(sql, (course_id, assignment_id,)):
             if exercise["visible"] or show_hidden:
-                exercises.append(dict(exercise))
+                assignment_basics = self.get_assignment_basics(course_id, assignment_id)
+                exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
+                exercises.append([exercise["exercise_id"], exercise_basics, course_id, assignment_id])
 
-        if nice_sort:
-            exercises = sort_list_of_dicts_nicely(exercises, "title")
-
-        exercises2 = []
-        for exercise in exercises:
-            assignment_basics = self.get_assignment_basics(course_id, assignment_id)
-            exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
-            exercises2.append([exercise["exercise_id"], exercise_basics, course_id, assignment_id])
-
-        return exercises2
+        return exercises
 
     def get_available_courses(self, user_id):
         available_courses = []
@@ -606,29 +604,26 @@ class ContentSQLite:
 
         return registered_courses
 
-    def get_partner_info(self, course, user_id, include_self=False):
+    def get_partner_info(self, course, user_id):
         # Gets list of users.
-        if include_self:
-            users = [x[1] for x in self.get_registered_students(course)]
-        else:
-            users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
+        users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
 
         # Adds users to dict to find duplicate names.
         user_duplicates_dict = {}
         for user in users:
             if user["name"] in user_duplicates_dict.keys():
-                user_duplicates_dict[user["name"]].append({'id': user["id"], 'email': user['email']})
+                user_duplicates_dict[user["name"]].append(user["id"])
             else:
-                user_duplicates_dict[user["name"]] = [{'id': user["id"], 'email': user['email']}]
+                user_duplicates_dict[user["name"]] = [user["id"]]
 
         # Adds all users to a dictionary with name (and obscured email if applicable) as key and id as value.
         user_dict = {}
         for user in user_duplicates_dict:
             if len(user_duplicates_dict[user]) > 1:
-                for user_info in user_duplicates_dict[user]:
-                    user_dict[user + " — " + self.obscure_email(user_info['email'], list(map(lambda x: x['email'], user_duplicates_dict[user])))] = user_info['id']
+                for id in user_duplicates_dict[user]:
+                    user_dict[user + " — " + self.obscure_email(id, user_duplicates_dict[user])] = id
             else:
-                user_dict[user] = user_duplicates_dict[user][0]['id']
+                user_dict[user] = user_duplicates_dict[user][0]
 
         return user_dict
 
@@ -654,26 +649,25 @@ class ContentSQLite:
     def get_registered_students(self, course_id):
         registered_students = []
 
-        sql = '''SELECT r.user_id, u.name, u.email_address
+        sql = '''SELECT r.user_id, u.name
                  FROM course_registrations r
                  INNER JOIN users u
                    ON r.user_id = u.user_id
                  WHERE r.course_id = ?'''
 
         for student in self.fetchall(sql, (course_id,)):
-            student_info = {"id": student["user_id"], "name": student["name"], 'email': student['email_address']}
+            student_info = {"id": student["user_id"], "name": student["name"]}
             registered_students.append([student["user_id"], student_info])
 
         return registered_students
 
     # Gets whether or not a student has passed each assignment in the course.
-    def get_assignment_statuses(self, course_id, user_id, nice_sort=True):
+    def get_assignment_statuses(self, course_id, user_id):
         sql = '''SELECT assignment_id,
                         title,
                         start_date,
                         due_date,
                         SUM(passed) AS num_passed,
-                        COUNT(assignment_id) AS num_exercises,
                         SUM(passed) = COUNT(assignment_id) AS passed_all,
                         (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress,
                         has_timer,
@@ -706,23 +700,16 @@ class ContentSQLite:
                  GROUP BY assignment_id, title
                  ORDER BY title'''
 
-        statuses = []
+        assignment_statuses = []
         for row in self.fetchall(sql, (user_id, int(course_id),)):
-            statuses.append(dict(row))
+            assignment_dict = {"id": row["assignment_id"], "title": row["title"], "start_date": row["start_date"], "due_date": row["due_date"], "passed": row["passed_all"], "in_progress": row["in_progress"], "num_passed": row["num_passed"], "num_exercises": row["num_exercises"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
+            assignment_statuses.append([row["assignment_id"], assignment_dict])
 
-        if nice_sort:
-            statuses = sort_list_of_dicts_nicely(statuses, "title")
-
-        statuses2 = []
-        for status in statuses:
-            assignment_dict = {"id": status["assignment_id"], "title": status["title"], "start_date": status["start_date"], "due_date": status["due_date"], "passed": status["passed_all"], "in_progress": status["in_progress"], "num_passed": status["num_passed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "hour_timer": status["hour_timer"], "minute_timer": status["minute_timer"]}
-            statuses2.append([status["assignment_id"], assignment_dict])
-
-        return statuses2
+        return assignment_statuses
 
     # Gets the number of submissions a student has made for each exercise
     # in an assignment and whether or not they have passed the exercise.
-    def get_exercise_statuses(self, course_id, assignment_id, user_id, show_hidden=True, nice_sort=True):
+    def get_exercise_statuses(self, course_id, assignment_id, user_id, show_hidden=True):
         # This happens when you are creating a new assignment.
         if not assignment_id:
             return []
@@ -751,19 +738,12 @@ class ContentSQLite:
                  GROUP BY e.assignment_id, e.exercise_id
                  ORDER BY e.title'''
 
-        statuses = []
+        exercise_statuses = []
         for row in self.fetchall(sql, (user_id, user_id, int(course_id), int(assignment_id),)):
-            statuses.append(dict(row))
+            exercise_dict = {"enable_pair_programming": row["enable_pair_programming"], "id": row["exercise_id"], "title": row["title"], "passed": row["passed"], "num_submissions": row["num_submissions"], "in_progress": row["in_progress"], "score": row["score"]}
+            exercise_statuses.append([row["exercise_id"], exercise_dict])
 
-        if nice_sort:
-            statuses = sort_list_of_dicts_nicely(statuses, "title")
-
-        statuses2 = []
-        for status in statuses:
-            exercise_dict = {"enable_pair_programming": status["enable_pair_programming"], "id": status["exercise_id"], "title": status["title"], "passed": status["passed"], "num_submissions": status["num_submissions"], "in_progress": status["in_progress"], "score": status["score"]}
-            statuses2.append([status["exercise_id"], exercise_dict])
-
-        return statuses2
+        return exercise_statuses
 
     ## Calculates the average score across all students for each assignment in a course,
     ## as well as the number of students who have completed each assignment.
@@ -971,17 +951,15 @@ class ContentSQLite:
 
         sql = '''SELECT DISTINCT code
                  FROM submissions
-                 WHERE (course_id = ?
+                 WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?
                    AND passed = 1
-                   AND user_id != ?)
-                   AND (partner_id != ?
-                   OR partner_id IS NULL)
+                   AND user_id != ?
                  GROUP BY user_id
                  ORDER BY date'''
 
-        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, user_id)):
+        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
             student_submissions.append([index, submission["code"]])
             index += 1
         return student_submissions
@@ -1750,10 +1728,10 @@ class ContentSQLite:
         self.set_user_dict_defaults(user_dict)
 
         sql = '''UPDATE users
-                 SET name = ?, given_name = ?, family_name = ?, locale = ?, email_address = ?
+                 SET name = ?, given_name = ?, family_name = ?, locale = ?
                  WHERE user_id = ?'''
 
-        self.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], user_dict["email_address"], user_id,))
+        self.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], user_id,))
 
     def update_user_settings(self, user_id, theme, use_auto_complete, enable_vim):
         sql = '''UPDATE users
@@ -2058,38 +2036,6 @@ class ContentSQLite:
         if os.path.exists(tmp_dir_path):
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
-    def course_has_pair_programming(self, course_id):
-        sql = '''SELECT MAX(enable_pair_programming) as enable_pair_programming
-                 FROM exercises
-                 WHERE course_id = ?'''
-
-        has_pair_programming = self.fetchone(sql, (course_id, ))["enable_pair_programming"]
-        return has_pair_programming
-
-    def get_student_pairs(self, course_id, user_name):
-        # Uses the week of the year as a seed.
-        seed = datetime.now().isocalendar().week
-
-        # Gets student names registered in a course (will add obscured emails to the end of the name in the case of duplicate names)
-        students = list(self.get_partner_info(course_id, '', True).keys())
-
-        # Randomizes students using seed
-        random.Random(seed).shuffle(students)
-
-        if len(students) % 2 == 0:
-            pairs = [[students[i], students[i + 1]] for i in range(0, len(students), 2)]
-        elif len(students) > 1:
-            # If there is an odd number of students, add the last student to a trio.
-            pairs = [[students[i], students[i + 1]] for i in range(0, len(students) - 1, 2)]
-            pairs[-1].append(students[-1])
-        else:
-            pairs = [[students[0], 'No other partners available.']]
-
-        # Indicates which pair the user is in.
-        pairs = [{'is_user': True, 'pair': pair} if user_name in pair else {'is_user': False, 'pair': pair} for pair in pairs]
-
-        return pairs
-
     def rebuild_exercises(self, assignment_title=None):
         with open("/logs/progress.log", "w") as progress_file:
             progress_file.write("Retrieving exercises that need to be rebuilt...\n")
@@ -2196,130 +2142,3 @@ class ContentSQLite:
 
             progress_file.write(f"Done rerunning submissions.\n")
             progress_file.flush()
-
-    # This is a helper function used by dump_database
-    def line_is_useless(self, line):
-        useless_es = [
-        'BEGIN TRANSACTION',
-        'COMMIT',
-        'sqlite_sequence',
-        'CREATE UNIQUE INDEX',
-        'PRAGMA foreign_keys=OFF',
-        ]
-        for useless in useless_es:
-            if re.search(useless, line):
-                return True
-
-    def dump_database(self,):
-        # Much of this code is based off of the code found in this exchange so the syntax is a little different than I would have used
-        # https://stackoverflow.com/questions/18671/quick-easy-way-to-migrate-sqlite3-to-mysql
-
-        sqlite_dump_raw = '/logs/CodeBuddy_dump_raw.sql'
-        sqlite_dump_parsed = '/logs/CodeBuddy_dump.sql'
-
-        # Writes the initial raw sqlite dump to a file.
-        f = open(sqlite_dump_raw, 'w')
-        for line in self.conn.iterdump():
-            f.write('%s\n' % line)
-        f.close()
-
-        # Begin parsing the raw sqlite dump.
-        with open(sqlite_dump_parsed, 'w') as dumpfile:
-            with open(sqlite_dump_raw) as raw:
-                inside_create_statement = False
-                add_comma = False
-
-                for line in raw:
-                    if self.line_is_useless(line):
-                        continue
-
-                    # this line was necessary because '');
-                    # would be converted to \'); which isn't appropriate
-                    if re.match(r".*, ''\);", line):
-                        line = re.sub(r"''\);", r'``);', line)
-
-                    if re.match(r'^CREATE TABLE.*', line):
-                        inside_create_statement = True
-
-                    m = re.search('CREATE TABLE IF NOT EXISTS "?(\w*)"?(.*)', line)
-                    n = re.search('CREATE TABLE "?(\w*)"?(.*)', line)
-                    if m:
-                        name, sub = m.groups()
-                        # Replaces double quotation marks with backticks per MYSQL specification in CREATE statements
-                        line = "CREATE TABLE IF NOT EXISTS `%(name)s`%(sub)s\n"
-                        line = line % dict(name=name, sub=sub)
-                    elif n:
-                        name, sub = n.groups()
-                        # Replaces double quotation marks with backticks per MYSQL specification in CREATE statements
-                        line = "CREATE TABLE IF NOT EXISTS `%(name)s`%(sub)s\n"
-                        line = line % dict(name=name, sub=sub)
-                    else:
-                        m = re.search('INSERT INTO "(\w*)"(.*)', line)
-                        if m:
-                            # Replaces double quotation marks with backticks per MYSQL specification in INSERT statements
-                            line = 'INSERT INTO `%s`%s\n' % m.groups()
-                            line = line.replace('"', r'\"')
-
-                    if inside_create_statement:
-                        # Makes sure that large columns are allocated more space.
-                        line = line.replace("data_files text", "data_files mediumtext")
-                        line = line.replace("image_output text", "image_output mediumtext")
-                        line = line.replace("answer_code text", "answer_code longtext")
-
-                        # I think MYSQL didn't like that a text field was being used as a PRIMARY KEY
-                        if "id text" in line:
-                            line = re.sub("id text", "id int", line)
-                            line = re.sub("user_id int", "user_id varchar(255)", line)
-
-                        # Adds auto_increment if it is not there since sqlite auto_increments all primary keys
-                        if re.search(r"integer(?:\s+\w+)*\s*PRIMARY KEY(?:\s+\w+)*\s*,", line):
-                            line = line.replace("PRIMARY KEY AUTOINCREMENT", "PRIMARY KEY AUTO_INCREMENT")
-                            line = line.replace("PRIMARY KEY,", "PRIMARY KEY AUTO_INCREMENT,")
-
-                        m = re.search(r"FOREIGN KEY", line)
-                        if m:
-                            # Formats foreign key constraints according to MYSQL specifications
-                            substring = re.search(r"FOREIGN KEY \((\w+)(\s*)", line).groups()[0]
-                            line = re.sub(r"FOREIGN KEY \((\w+)(\s*)", r"CONSTRAINT foreign_key_\1 FOREIGN KEY (\1\2", line)
-                            line = line.replace(f"foreign_key_{substring}", f"foreign_key_{substring}_{name}")
-
-                            # Sometimes sqlite leaves off a comma in between foreign key constraints so this block is neccessary to put them back in.
-                            if add_comma:
-                                line = f", {line}"
-                            lastchar = line.strip()[-1]
-                            if lastchar != "," and lastchar != ";":
-                                add_comma = True
-
-                        # Replaces " and ' with ` because MYSQL doesn't like quotes in CREATE commands
-                        if line.find('DEFAULT') == -1:
-                            line = line.replace(r'"', r'`').replace(r"'", r'`')
-                        else:
-                            parts = line.split('DEFAULT')
-                            parts[0] = parts[0].replace(r'"', r'`').replace(r"'", r'`')
-                            line = 'DEFAULT'.join(parts)
-
-                        # And now we convert it back (see above)
-                        if re.match(r".*, ``\);", line):
-                            line = re.sub(r'``\);', r"'');", line)
-
-                        if inside_create_statement and re.match(r'.*\);', line):
-                            inside_create_statement = False
-                            add_comma = False
-
-                        if re.match(r"CREATE INDEX", line):
-                            line = re.sub('"', '`', line)
-
-                        # Formats AUTOINCREMENT per MYSQL specifications
-                        if re.match(r"AUTOINCREMENT", line):
-                            line = re.sub("AUTOINCREMENT", "AUTO_INCREMENT", line)
-                            
-                    # If not inside create statement
-                    else:
-                        # For some reason sqlite often doubles up on quote marks in formatting their dumps. This converts double '' marks not indicating a blank sql value to \'.
-                        line = re.sub(r"([^,])''([^,])", r"\1\'\2", line)
-
-
-                    dumpfile.write(line + "\n")
-
-        # Returns the name of the parsed file
-        return sqlite_dump_parsed

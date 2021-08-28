@@ -8,7 +8,7 @@ from content import *
 class CASLoginHandler(RequestHandler):
     def prepare(self):
         self.settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-        self.content = Content(self.settings_dict)
+        self.content = ContentSQLite(self.settings_dict)
 
     async def get(self):
         try:
