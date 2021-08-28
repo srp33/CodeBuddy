@@ -2213,7 +2213,7 @@ class ContentSQLite:
     def dump_database(self,):
         # Much of this code is based off of the code found in this exchange so the syntax is a little different than I would have used
         # https://stackoverflow.com/questions/18671/quick-easy-way-to-migrate-sqlite3-to-mysql
-        
+
         sqlite_dump_raw = '/logs/CodeBuddy_dump_raw.sql'
         sqlite_dump_parsed = '/logs/CodeBuddy_dump.sql'
 
@@ -2260,13 +2260,11 @@ class ContentSQLite:
                             line = 'INSERT INTO `%s`%s\n' % m.groups()
                             line = line.replace('"', r'\"')
 
-                    # For some reason sqlite often doubles up on quote marks in formatting their dumps. This converts double '' marks inside a word such as don''t or we''l to \'.
-                    line = re.sub(r"(\w)''(\w)", r"\1\'\2", line)
-
                     if inside_create_statement:
                         # Makes sure that large columns are allocated more space.
                         line = line.replace("data_files text", "data_files mediumtext")
                         line = line.replace("image_output text", "image_output mediumtext")
+                        line = line.replace("answer_code text", "answer_code longtext")
 
                         # I think MYSQL didn't like that a text field was being used as a PRIMARY KEY
                         if "id text" in line:
@@ -2314,6 +2312,12 @@ class ContentSQLite:
                         # Formats AUTOINCREMENT per MYSQL specifications
                         if re.match(r"AUTOINCREMENT", line):
                             line = re.sub("AUTOINCREMENT", "AUTO_INCREMENT", line)
+                            
+                    # If not inside create statement
+                    else:
+                        # For some reason sqlite often doubles up on quote marks in formatting their dumps. This converts double '' marks not indicating a blank sql value to \'.
+                        line = re.sub(r"([^,])''([^,])", r"\1\'\2", line)
+
 
                     dumpfile.write(line + "\n")
 
