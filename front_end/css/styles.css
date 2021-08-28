@@ -295,11 +295,6 @@ td > button {
     width: 75%;
 }
 
-/* This width is set at 63% so as to not cause the Previous Exercise and Next Exercise buttons to wrap onto a second line. */
-.e-title-container {
-    width: 63%;
-}
-
 .a-visible {
     margin-right: 100px;
 }
