@@ -24,9 +24,9 @@ a {
     padding-top: 3.5rem;
 }
 
-/* Sets padding width around the entire site's content. */
+/* Sets padding width or buffer around the entire site's content. */
 .container-padding {
-    padding: 3.5rem 10em;
+    padding: 3.5rem 5em;
 }
 
 /* Hides div. */
@@ -293,11 +293,6 @@ td > button {
 
 .a-title-container {
     width: 75%;
-}
-
-/* This width is set at 63% so as to not cause the Previous Exercise and Next Exercise buttons to wrap onto a second line. */
-.e-title-container {
-    width: 63%;
 }
 
 .a-visible {
@@ -577,4 +572,10 @@ module {
 
 .level {
   align-items: flex-start;
+}
+
+.white-box {
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  padding: 1em 2em;
 }

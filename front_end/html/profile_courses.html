@@ -31,14 +31,16 @@
 
         <div>
             <div class="bottom-spacing">
-                <h2 style="display: inline">My Courses</h2>
-                {% if not is_administrator and not is_instructor %}
+                <div class="tab-title">
+                  <h3 style="display: inline">My Courses</h3>
+                </div>
+                {% if not is_administrator %}
                     <div class="buttons is-pulled-right">
                         <a class="button is-primary" onclick="showRegistration()">Register for a course</a>
                     </div>
                 {% end %}
             </div>
-            <div>
+            <div class='tab-content'>
             {% if registered_courses %}
                 <div class="columns scrollable">
                     <div class="column is-three-fifths">
