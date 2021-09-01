@@ -27,8 +27,8 @@ class BaseUserHandler(RequestHandler):
                 if self.settings_dict["mode"] == "production":
                     self.redirect("/login")
                 else:
-                    self.redirect("/login")
-                    #self.redirect("/devlogin")
+                    #self.redirect("/login")
+                    self.redirect("/devlogin")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

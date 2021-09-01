@@ -468,6 +468,7 @@ class Content:
         for course in self.fetchall(sql, (user_id,)):
             course_basics = {"id": course["course_id"], "title": course["title"], "consent_text": course["consent_text"]}
             courses.append([course["course_id"], course_basics])
+
         return courses
 
     def get_course_ids(self):
