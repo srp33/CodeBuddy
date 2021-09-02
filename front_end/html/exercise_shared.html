@@ -404,7 +404,7 @@
                  }
                  {% end %}
 
-                function submit() {
+                async function submit() {
                     user_code = editor.getValue();
 
                     if (user_code.trim() == "")
@@ -427,7 +427,7 @@
 
                     post_data = { "partner_key": partner_key, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
 
-                    $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                    await $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
                         post_data,
                        function(data, status) {
                            json_data = JSON.parse(data);
@@ -447,7 +447,7 @@
                            }
                        });
                    editor.focus();
-                   show_past_submissions();
+                   await show_past_submissions();
                    return false;
                  }
 
@@ -470,13 +470,11 @@
                                 } else {
                                   submit();
                                   modal.style.display = "none";
-                                  location.reload();
                                 }
                          });
                        } else {
                          submit();
                          modal.style.display = "none";
-                         location.reload();
                        }
                      }
 
