@@ -507,17 +507,18 @@
                 {% end %}
                 </div>
             {% else %}
+                <div id="expected_tests"></div>
                 <p><em>This exercise is configured so that the expected output is not shown.</em></p>
             {% end %}
-        {% end %}
 
-        {% if exercise_details["back_end"] != "any_response" %}
             <p><span id="code_output"></span></p>
 
             {% if exercise_details["show_expected"] %}
                 <p><span id="diff_output"></span></p>
             {% end %}
             <p><span id="test_output"></span></p>
+        {% else %}
+        <div id="expected_tests"></div>
         {% end %}
 
         <div id="submissions"></div>

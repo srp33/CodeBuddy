@@ -435,7 +435,6 @@
 
                            document.getElementById("expected_tests").style.display = "none"
 
-                           show_past_submissions();
                            if (json_data.submission_id != "") {
                                last_submission_id = json_data.submission_id;
 
@@ -448,6 +447,7 @@
                            }
                        });
                    editor.focus();
+                   show_past_submissions();
                    return false;
                  }
 
@@ -623,12 +623,11 @@
 
             editor.focus();
             editor.getSession().setMode("{{ code_completion_path }}");
-            show_past_submissions();
             last_submission_id = {{ num_submissions }};
 
             if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
                 document.getElementById("submit_button").disabled = true;
-            show_past_submissions()
+            show_past_submissions();
             </script>
 
         {% else %}
