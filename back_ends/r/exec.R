@@ -4,27 +4,12 @@ check_code_file_path = commandArgs()[11]
 output_type = commandArgs()[12]
 
 options(warn=-1) # Silences printing to console globally.
-
-# Code that didn't work right for both base R graphics and ggplot2
-#exec_jpg <- function(code) {
-#  library(magick)
-#  library(ggplot2)
-#
-#  fig <- image_graph(bg="white", res=150, clip=FALSE)
-#
-#  eval(parse(text=code))
-#
-#  if (!is.null(ggplot2::last_plot()))
-#    print(ggplot2::last_plot())
-#
-#  dev.off()
-#
-#  return(image_write(fig, path="/sandbox/image_output", format="jpg", flatten=FALSE))
-#}
+options(tidyverse.quiet = TRUE)
 
 if (file.exists(check_code_file_path)) {
   check_code <- readChar(check_code_file_path, file.info(check_code_file_path)$size)
   check_output <- capture.output(suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=check_code))))),split=TRUE)
+
   if (length(check_output) > 0) {
     quit()
   }
@@ -45,10 +30,14 @@ exec_jpg <- function(code, i=0) {
   }
 }
 
+code <- readChar(code_file_path, file.info(code_file_path)$size)
+
 if (output_type == "txt") {
-  system(paste("Rscript", code_file_path)) # Runs code using Rscript.
+  #system(paste("Rscript", code_file_path)) # Runs code using Rscript.
+  suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=code)))))
+  
 } else {
-  code <- readChar(code_file_path, file.info(code_file_path)$size)
+  #code <- readChar(code_file_path, file.info(code_file_path)$size)
   suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(code))))
 }
 
@@ -60,17 +49,20 @@ if (dir.exists(tests_dir_path)) {
     for (i in seq_along(tests)) {
         setwd(file.path(outputs_dir, paste("test_", i, sep="")))
 
+        test_code <- readChar(tests[i], file.info(tests[i])$size)
+
         if (output_type == "txt") {
-          filename <- "text_output"
+          test_code = paste("options(warn=-1)", "options(tidyverse.quiet = TRUE)", test_code, sep="\n")
+          cat(test_code, file=tests[i], sep="\n", append=FALSE)
 
           out <- system(paste("Rscript", tests[i]), intern = TRUE) # Runs test code using Rscript and saves it to variable.
-          cat(out, file=filename, sep="\n", append=TRUE) # Writes variable to output file.
-        } else {
-          filename <- "image_output"
 
-          test_code <- readChar(tests[i], file.info(tests[i])$size)
+          cat(out, file="text_output", sep="\n", append=TRUE) # Writes variable to output file.
+        } else {
+          #test_code <- readChar(tests[i], file.info(tests[i])$size)
           out <- suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(test_code, i)))) # Executes code to save image as jpg.
-          cat(out, file=filename, sep="\n", append=FALSE) # Saves text output to file in case of traceback.
+
+          cat(out, file="image_output", sep="\n", append=FALSE) # Saves text output to file in case of traceback.
         }
     }
 }
