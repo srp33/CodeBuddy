@@ -19,7 +19,7 @@ class SubmitHandler(BaseUserHandler):
             # The variables 'diff' and 'passed' refer to the solution code, while 'test_outcomes' contains diff and passed values for each test.
             diff, passed, test_outcomes = check_exercise_output(exercise_details, text_output, image_output, tests)
 
-            out_dict["text_output"] = text_output.strip()
+            out_dict["text_output"] = format_output_as_html(text_output.strip())
             out_dict["image_output"] = image_output
             out_dict["tests"] = test_outcomes
             out_dict["diff"] = format_output_as_html(diff)
@@ -50,5 +50,6 @@ class SubmitHandler(BaseUserHandler):
         except Exception as inst:
             out_dict["text_output"] = format_output_as_html(traceback.format_exc())
             out_dict["passed"] = False
+
         self.write(json.dumps(out_dict))
 

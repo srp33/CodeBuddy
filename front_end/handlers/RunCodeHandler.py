@@ -12,7 +12,7 @@ class RunCodeHandler(BaseUserHandler):
             text_output, image_output, tests = exec_code(self.settings_dict, code, exercise_basics, exercise_details, request=None)
             diff, passed, tests = check_exercise_output(exercise_details, text_output, image_output, tests)
 
-            out_dict["text_output"] = text_output
+            out_dict["text_output"] = format_output_as_html(text_output)
             out_dict["tests"] = tests
             out_dict["image_output"] = image_output
         except ConnectionError as inst:

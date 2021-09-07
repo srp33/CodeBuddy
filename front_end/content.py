@@ -1732,13 +1732,28 @@ class Content:
 
         self.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id,))
 
-        sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, code, test_instructions, text_output, image_output)
-                 SELECT ?, ?, exercise_id, code, test_instructions, text_output, image_output
-                 FROM tests
+        sql = '''SELECT exercise_id, title
+                 FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        self.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id,))
+        for row in self.fetchall(sql, (course_id, assignment_id,)):
+            sql = '''SELECT exercise_id
+                     FROM exercises
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND title = ?'''
+
+            new_exercise_id = self.fetchone(sql, (new_course_id, new_assignment_id, row["title"]))["exercise_id"]
+
+            sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, code, test_instructions, text_output, image_output)
+                     SELECT ?, ?, ?, code, test_instructions, text_output, image_output
+                     FROM tests
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND exercise_id = ?'''
+
+            self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, course_id, assignment_id, row["exercise_id"]))
 
     def update_user(self, user_id, user_dict):
         self.set_user_dict_defaults(user_dict)

@@ -114,13 +114,14 @@
                 document.getElementById("student_comment").focus();
 
                 var submitButton = document.getElementById("submit_request_button");
-                submitButton.onclick = function() {
+                submitButton.onclick = async function() {
                     var user_code = editor.getValue();
                     var student_comment = document.getElementById("student_comment").value;
                     var post_data = { "user_code": user_code, "student_comment": student_comment };
 
-                    $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", post_data);
+                    await $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", post_data);
                     modal.style.display = "none";
+
                     location.reload();
                 }
 
@@ -146,9 +147,10 @@
                 modal.style.display = "block";
 
                 var deleteButton = document.getElementById("delete_request_button");
-                deleteButton.onclick = function() {
-                    $.post("/delete_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}");
+                deleteButton.onclick = async function() {
+                    await $.post("/delete_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}");
                     modal.style.display = "none";
+
                     location.reload();
                 }
 

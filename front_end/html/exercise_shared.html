@@ -159,9 +159,10 @@
                     var deleteButton = document.getElementById("delete_submissions_button");
                     var cancelButton = document.getElementById("delete_submissions_cancel_button");
 
-                    deleteButton.onclick = function() {
-                        $.post("/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}");
+                    deleteButton.onclick = async function() {
+                        await $.post("/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}");
                         modal.style.display = "none";
+
                         location.reload();
                     }
 

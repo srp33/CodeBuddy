@@ -23,7 +23,7 @@ class GetSubmissionHandler(BaseUserHandler):
                 diff, passed, tests = check_exercise_output(exercise_details, submission_info["text_output"], submission_info["image_output"], submission_info["tests"])
 
                 submission_info["diff"] = format_output_as_html(diff)
-                submission_info["text_output"] = submission_info["text_output"]
+                submission_info["text_output"] = format_output_as_html(submission_info["text_output"])
                 submission_info["tests"] = tests
         except Exception as inst:
             submission_info["diff"] = ""

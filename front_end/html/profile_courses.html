@@ -249,8 +249,9 @@
         var cancelButton = document.getElementById("leave_cancel_button");
         var leaveButton = document.getElementById("leave_button");
 
-        leaveButton.onclick = function() {
-            $.post("/unregister/" + course_id + "/{{ user_info['user_id'] }}");
+        leaveButton.onclick = async function() {
+            await $.post("/unregister/" + course_id + "/{{ user_info['user_id'] }}");
+
             modal.style.display = "none";
             location.reload();
         }

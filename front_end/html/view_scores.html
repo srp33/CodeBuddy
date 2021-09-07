@@ -14,9 +14,10 @@
                 var cancelButton = document.getElementById("cancel_button");
                 var resetButton = document.getElementById("reset_button");
 
-                resetButton.onclick = function() {
-                    $.post("/reset_timer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + student_id);
+                resetButton.onclick = async function() {
+                    await $.post("/reset_timer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + student_id);
                     modal.style.display = "none";
+
                     location.reload();
                 }
 
