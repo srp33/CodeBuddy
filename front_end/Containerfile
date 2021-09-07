@@ -14,7 +14,7 @@ ADD Settings.yaml /
 
 RUN apt-get update \
  && apt-get install -y bzip2 zip nodejs npm wget curl git vim \
-                       libmariadb3 libmariadb-dev \
+                       sqlite3 libmariadb3 libmariadb-dev \
  && apt-get -y autoremove \
  && apt-get clean
 

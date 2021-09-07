@@ -1,0 +1,10 @@
+UPDATE tests SET exercise_id = 1589 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1376;
+UPDATE tests SET exercise_id = 1594 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1472;
+UPDATE tests SET exercise_id = 1595 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1473;
+UPDATE tests SET exercise_id = 1596 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1474;
+UPDATE tests SET exercise_id = 1590 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1381;
+UPDATE tests SET exercise_id = 1591 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1382;
+UPDATE tests SET exercise_id = 1592 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1383;
+UPDATE tests SET exercise_id = 1588 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1369;
+UPDATE tests SET exercise_id = 1593 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1384;
+UPDATE tests SET exercise_id = 1597 WHERE course_id = 12 AND assignment_id = 211 AND exercise_id = 1486
