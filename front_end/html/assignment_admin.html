@@ -18,11 +18,16 @@
                 var cancelButton = document.getElementById("delete_cancel_button");
                 var deleteButton = document.getElementById("delete_button");
 
-                deleteButton.onclick = async function() {
-                    await $.post("/delete_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_id);
-                    modal.style.display = "none";
-
-                    location.reload();
+                deleteButton.onclick = function() {
+                    $.ajax({
+                        type: 'POST',
+                        url: "/delete_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_id,
+                        success: function(result) {
+                            modal.style.display = "none";
+                            location.reload();
+                        },
+                        async: false
+                    });
                 }
 
                 cancelButton.onclick = function() {
@@ -69,11 +74,16 @@
                 var deleteButton = document.getElementById("delete_submissions_button");
                 var cancelButton = document.getElementById("delete_submissions_cancel_button");
 
-                deleteButton.onclick = async function() {
-                    await $.post("/delete_assignment_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
-                    modal.style.display = "none";
-
-                    location.reload();
+                deleteButton.onclick = function() {
+                    $.ajax({
+                        type: 'POST',
+                        url: "/delete_assignment_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                        success: function(result) {
+                            modal.style.display = "none";
+                            location.reload();
+                        },
+                        async: false
+                    });
                 }
 
                 cancelButton.onclick = function() {

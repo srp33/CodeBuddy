@@ -45,9 +45,9 @@ class ProfileCoursesHandler(BaseUserHandler):
             if self.is_administrator():
                 registered_courses = self.content.get_courses()
                 available_courses = None
-            elif self.is_instructor() or self.is_assistant():
-                registered_courses = self.content.get_courses_connected_to_user(user_id)
-                available_courses = None
+            #elif self.is_instructor() or self.is_assistant():
+            #    registered_courses = self.content.get_courses_connected_to_user(user_id)
+            #    available_courses = None
             else:
                 registered_courses = self.content.get_registered_courses(user_id)
                 available_courses = self.content.get_available_courses(user_id)

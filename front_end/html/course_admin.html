@@ -137,11 +137,16 @@
         var cancelButton = document.getElementById("delete_cancel_button");
         var deleteButton = document.getElementById("delete_button");
 
-        deleteButton.onclick = async function() {
-            await $.post("/delete_assignment/{{ course_basics['id'] }}/" + assignment_id);
-
-            modal.style.display = "none";
-            location.reload();
+        deleteButton.onclick = function() {
+            $.ajax({
+                type: 'POST',
+                url: "/delete_assignment/{{ course_basics['id'] }}/" + assignment_id,
+                success: function(result) {
+                    modal.style.display = "none";
+                    location.reload();
+                },
+                async: false
+            });
         }
 
         cancelButton.onclick = function() {
@@ -167,10 +172,15 @@
         var cancelButton = document.getElementById("delete_submissions_cancel_button");
 
         deleteButton.onclick = async function() {
-            await $.post("/delete_course_submissions/{{ course_basics['id'] }}");
-
-            modal.style.display = "none";
-            location.reload();
+            $.ajax({
+                type: 'POST',
+                url: "/delete_course_submissions/{{ course_basics['id'] }}",
+                success: function(result) {
+                    modal.style.display = "none";
+                    location.reload();
+                },
+                async: false
+            });
         }
 
         cancelButton.onclick = function() {

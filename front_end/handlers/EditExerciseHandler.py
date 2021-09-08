@@ -18,7 +18,7 @@ class EditExerciseHandler(BaseUserHandler):
 
     def post(self, course, assignment, exercise):
         try:
-            if not self.is_administrator() and not self.is_instructor_for_course(course):
+            if not self.is_administrator() and not self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 self.render("permissions.html")
                 return
 
