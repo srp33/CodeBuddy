@@ -88,7 +88,7 @@ def make_app():
         url(r"\/help_requests\/([^\/]+)", HelpRequestsHandler, name="help_requests"),
         url(r"\/submit_request\/([^\/]+)\/([^\/]+)\/([^\/]+)", SubmitHelpRequestHandler, name="submit_request"),
         url(r"\/view_request\/([^\/]+)\/([^\/]+)\/([^\/]+)\/([^\/]+)", ViewHelpRequestsHandler, name="view_request"),
-        url(r"\/view_pp\/([^\/]+)", ViewPartnerAssignmentsHandler, name="view_pp"),
+        url(r"\/view_pp\/([^\/]+)", ViewPairProgrammingAssignmentsHandler, name="view_pp"),
         url(r"\/delete_request\/([^\/]+)\/([^\/]+)\/([^\/]+)\/([^\/]+)", DeleteHelpRequestHandler, name="delete_request"),
         url(r"\/back_end\/([^\/]+)", BackEndHandler, name="back_end"),
         url(r"/static/(.+)", StaticFileHandler, name="static_file"),

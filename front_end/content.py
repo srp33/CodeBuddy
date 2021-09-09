@@ -209,6 +209,18 @@ class Content:
                  VALUES (?)'''
         self.execute(sql, (version,))
 
+    def get_non_students(self, course_id):
+        non_students = []
+
+        sql = '''SELECT user_id
+                 FROM permissions r
+                 WHERE role = 'administrator' OR course_id = ?'''
+
+        for row in self.fetchall(sql, (course_id,)):
+            non_students.append(row["user_id"])
+
+        return non_students
+
     def set_user_assignment_start_time(self, course_id, assignment_id, user_id, start_time):
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
 
@@ -601,11 +613,13 @@ class Content:
         return registered_courses
 
     def get_partner_info(self, course, user_id, include_self=False):
+        non_students = self.get_non_students(course)
+
         # Gets list of users.
         if include_self:
-            users = [x[1] for x in self.get_registered_students(course)]
+            users = [x[1] for x in self.get_registered_students(course) if x[0] not in non_students]
         else:
-            users = [x[1] for x in self.get_registered_students(course) if not x[0] == user_id]
+            users = [x[1] for x in self.get_registered_students(course) if x[0] != user_id and x[0] not in non_students]
 
         # Adds users to dict to find duplicate names.
         user_duplicates_dict = {}
@@ -2085,14 +2099,19 @@ class Content:
         # Randomizes students using seed
         random.Random(seed).shuffle(students)
 
-        if len(students) % 2 == 0:
+        if len(students) == 0:
+            pairs = []
+        elif len(students) % 2 == 0:
             pairs = [[students[i], students[i + 1]] for i in range(0, len(students), 2)]
-        elif len(students) > 1:
-            # If there is an odd number of students, add the last student to a trio.
-            pairs = [[students[i], students[i + 1]] for i in range(0, len(students) - 1, 2)]
-            pairs[-1].append(students[-1])
         else:
-            pairs = [[students[0], 'No other partners available.']]
+            # Create pairs for everyone except the last student.
+            pairs = [[students[i], students[i + 1]] for i in range(0, len(students) - 1, 2)]
+
+            # This code creates a trio.
+            #pairs[-1].append(students[-1])
+
+            # This code puts one person on their own.
+            pairs.extend([[students[-1]]])
 
         # Indicates which pair the user is in.
         pairs = [{'is_user': True, 'pair': pair} if user_name in pair else {'is_user': False, 'pair': pair} for pair in pairs]

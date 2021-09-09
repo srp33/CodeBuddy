@@ -13,13 +13,11 @@
         {% end %}
 
         <!-- Renders student pairs based on parity of grouping. -->
-        {% if len(pair['pair']) > 2 %}
-          <strong>{{ pair['pair'][0] }}</strong> is paired with<br>
-          <strong>{{ pair['pair'][1] }}</strong> and<br>
-          <strong>{{ pair['pair'][2] }}</strong>
-        {% else %}
+        {% if len(pair['pair']) == 2 %}
           <strong>{{ pair['pair'][0] }}</strong> is paired with<br>
           <strong>{{ pair['pair'][1] }}</strong>
+        {% else %}
+          <strong>{{ pair['pair'][0] }}</strong> does not have a partner this week.
         {% end %}
         </div>
     {% end %}

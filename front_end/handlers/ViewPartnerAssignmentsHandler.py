@@ -1,9 +1,10 @@
 from BaseUserHandler import *
 import datetime as dt
 
-class ViewPartnerAssignmentsHandler(BaseUserHandler):
+class ViewPairProgrammingAssignmentsHandler(BaseUserHandler):
     def get(self, course):
         user_info = self.get_user_info()
+
         if not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course) and user_info["user_id"] not in list(map(lambda x: x[0], self.content.get_registered_students(course))):
             self.render("unavailable_assignment.html", courses=self.content.get_courses(),
                         assignments=self.content.get_assignments(course),
