@@ -228,7 +228,7 @@
         <div class="shadow-box">
             <div class="row-container bottom-space">
                 <div class="a-title-container">
-                    <p><strong>Title*: </strong></p>
+                    <p><strong>Title*:</strong></p>
                     <p><input name="title" id="title" class="input is-grey is-fullwidth" placeholder="Please specify a descriptive title." autofocus></p>
                 </div>
                 <div class="a-visible">
@@ -623,7 +623,7 @@
               document.getElementById(`test_${i}`).style.display = (document.getElementById(`test_${i}`).style.display == "none") ? "block" : "none";
             }
             {% if exercise_basics["title"] != "" %}
-            document.getElementById("title").value = "{{ exercise_basics["title"] }}";
+                document.getElementById("title").value = '{{ exercise_basics["title"] }}';
             {% end %}
 
             document.getElementById("myForm").onsubmit = function(evt) {

@@ -65,7 +65,6 @@ class EditExerciseHandler(BaseUserHandler):
             else:
                 exercise_details["data_files"] = {}
 
-
             result = "Success: The exercise was saved!"
 
             any_response_counts = exercise_details["back_end"] == "any_response"
