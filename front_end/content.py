@@ -34,8 +34,12 @@ class Content:
                 detect_types = sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES,
                 timeout = 30)
         self.conn.row_factory = sqlite3.Row
-        #self.execute("PRAGMA foreign_keys=ON")
+
         self.execute("PRAGMA foreign_keys=OFF")
+        self.execute("PRAGMA cache_size = 1000000")
+        self.execute("PRAGMA mmap_size = 1000000")
+        self.execute("PRAGMA journal_mode = wal")
+        self.execute("PRAGMA temp_store = MEMORY")
 
         atexit.register(self.close)
 
@@ -1719,7 +1723,6 @@ class Content:
         self.execute(sql, (course, assignment, exercise, user_id,))
 
     def save_help_request_suggestion(self, course, assignment, exercise, user_id, suggestion, approved, suggester_id, approver_id, more_info_needed):
-
         sql = '''UPDATE help_requests
                  SET suggestion = ?, approved = ?, suggester_id = ?, approver_id = ?, more_info_needed = ?
                  WHERE course_id = ?

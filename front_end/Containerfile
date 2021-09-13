@@ -5,13 +5,6 @@ ARG USER_ID=1000
 ARG GROUP_ID=1000
 ARG USER=codebuddy
 
-ADD VERSION /
-ADD front_end/aux/*.py /tmp/
-ADD front_end/html/footer.html /tmp/footer_version.html
-RUN python /tmp/modify_version.py
-
-ADD Settings.yaml /
-
 RUN apt-get update \
  && apt-get install -y bzip2 zip nodejs npm wget curl git vim \
                        sqlite3 libmariadb3 libmariadb-dev \
@@ -29,6 +22,13 @@ RUN groupadd -g ${GROUP_ID} ${USER} && \
     chown --silent --no-dereference --recursive \
           ${USER_ID}:${GROUP_ID} \
           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+
+ADD VERSION /
+ADD front_end/aux/*.py /tmp/
+ADD front_end/html/footer.html /tmp/footer_version.html
+RUN python /tmp/modify_version.py
+
+ADD Settings.yaml /
 
 USER $USER
 
