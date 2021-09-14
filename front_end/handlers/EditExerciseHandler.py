@@ -6,11 +6,14 @@ class EditExerciseHandler(BaseUserHandler):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 exercises = self.content.get_exercises(course, assignment)
+
+                exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
                 exercise_details = self.content.get_exercise_details(course, assignment, exercise)
                 exercise_details["expected_text_output"] = format_output_as_html(exercise_details["expected_text_output"])
+
                 next_prev_exercises = self.content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
-                self.render("edit_exercise.html", courses=self.content.get_courses(), assignments=self.content.get_assignments(course), exercises=exercises, tests=self.content.get_tests(course, assignment, exercise), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), exercise_basics=self.content.get_exercise_basics(course, assignment, exercise), exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=self.settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(self.settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info(), old_text_output='', old_image_output='', old_tests=[])
+                self.render("edit_exercise.html", courses=self.content.get_courses(), assignments=self.content.get_assignments(course), exercises=exercises, tests=self.content.get_tests(course, assignment, exercise), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_details=exercise_details, json_files=escape_json_string(json.dumps(exercise_details["data_files"])), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=self.settings_dict["back_ends"][exercise_details["back_end"]]["code_completion_path"], back_ends=sort_nicely(self.settings_dict["back_ends"].keys()), result=None, user_info=self.get_user_info(), old_text_output='', old_image_output='', old_tests=[])
             else:
                 self.render("permissions.html")
         except Exception as inst:

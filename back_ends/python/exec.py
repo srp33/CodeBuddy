@@ -19,21 +19,21 @@ if os.path.exists(check_code_file_path):
 
 if os.path.isdir(tests_dir_path):
     if output_type == "txt":
-        for test_path in glob.glob(f"{tests_dir_path}test*"):
+        for test_path in glob.glob(f"{tests_dir_path}testzyxyz_*"):
             result = subprocess.run(f"python {test_path}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.decode()
             result = re.sub(r"Traceback \(most recent call last\)", r"Traceback (most recent call last)", result)
             # Gets test number from filename and matches it to output filename.
             i = test_path.split("_")[1]
-            filename = f"{tests_dir_path}outputs/test_{i}/text_output"
+            filename = f"{tests_dir_path}outputs/testzyxyz_{i}/text_output"
 
             # Saves test output in unique folder under outputs directory.
             with open(filename, "w") as test_output:
                 test_output.write(result)
     else:
-        for test_path in glob.glob(f"{tests_dir_path}test*"):
+        for test_path in glob.glob(f"{tests_dir_path}testzyxyz_*"):
             # Gets test number from filename and matches it to output filename.
             i = test_path.split("_")[1]
-            filename = f"{tests_dir_path}outputs/test_{i}/image_output"
+            filename = f"{tests_dir_path}outputs/testzyxyz_{i}/image_output"
 
             # Adds code for saving image to test code.
             with open(test_path, "a") as test_file:

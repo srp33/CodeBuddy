@@ -23,19 +23,21 @@ then
   # Moves code file into tests directory so that they can access it.
   mv "$code_file_path".py $tests_dir_path
   cd $tests_dir_path
+
   # Saves code in temporary file.
   cat code.py > temp.py
-  for test_path in test*
+
+  for test_path in testzyxyz_*
   do
     if [[ "$output_type" == "jpg" ]]
     then
       # Refresh code from temporary copy.
       cat temp.py > code.py
       # Adds code specifying where to save image.
-      python /mod_code_for_jpg.py "$tests_dir_path"code.py ${test_path:5}
-      test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/image_output"
+      python /mod_code_for_jpg.py "$tests_dir_path"code.py ${test_path:10}
+      test_outputs_path="${tests_dir_path}outputs/testzyxyz_${test_path:10}/image_output"
     else
-      test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/text_output"
+      test_outputs_path="${tests_dir_path}outputs/testzyxyz_${test_path:10}/text_output"
     fi
     # Saves test output to file.
     bash "$test_path" > $test_outputs_path

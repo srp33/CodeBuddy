@@ -44,10 +44,10 @@ if (output_type == "txt") {
 if (dir.exists(tests_dir_path)) {
     setwd(file.path(tests_dir_path, "outputs"))
     outputs_dir <- getwd()
-    tests <- list.files(path=tests_dir_path, pattern="test*", full.names=TRUE, recursive=FALSE)
+    tests <- list.files(path=tests_dir_path, pattern="testzyxyz_*", full.names=TRUE, recursive=FALSE)
 
     for (i in seq_along(tests)) {
-        setwd(file.path(outputs_dir, paste("test_", i, sep="")))
+        setwd(file.path(outputs_dir, paste("testzyxyz_", i, sep="")))
 
         test_code <- readChar(tests[i], file.info(tests[i])$size)
 

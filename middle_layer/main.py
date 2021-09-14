@@ -33,6 +33,7 @@ def exec(info: ExecInfo):
     base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
     cpus = 1
     tmp_dir_path = None
+
     try:
         # This is meant to identify any old temp directories that inadvertently were not deleted.
         # This is not the best design, but it is simple.
@@ -53,13 +54,16 @@ def exec(info: ExecInfo):
 
         # Save each test case in its own file under the directory 'tests'.
         if len(info.tests) > 0:
-
             for i in range(len(info.tests)):
+                # We use an odd file name to avoid classes with any data files the user may create.
+                # There's probably a more clever way to do it.
+                test_file_name = f"testzyxyz_{i + 1}"
+
                 # Writes test code to a file.
-                filename = f"{tmp_dir_path}/tests/test_{int(i + 1)}"
+                filename = f"{tmp_dir_path}/tests/{test_file_name}"
 
                 # Preemptively creates directory for test outputs.
-                outputname = f"{tmp_dir_path}/tests/outputs/test_{int(i + 1)}/image_output" if info.output_type == "jpg" else f"{tmp_dir_path}/tests/outputs/test_{int(i + 1)}/text_output"
+                outputname = f"{tmp_dir_path}/tests/outputs/{test_file_name}/image_output" if info.output_type == "jpg" else f"{tmp_dir_path}/tests/outputs/{test_file_name}/text_output"
 
                 os.makedirs(os.path.dirname(filename), exist_ok=True)
                 os.makedirs(os.path.dirname(outputname), exist_ok=True)
@@ -119,7 +123,6 @@ def exec(info: ExecInfo):
 
                         for output_path in outputs:
                             if "image" not in output_path:
-
                                 # Reads text output.
                                 with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
                                     test_text_output = output_file.read()

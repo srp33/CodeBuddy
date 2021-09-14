@@ -623,7 +623,7 @@
               document.getElementById(`test_${i}`).style.display = (document.getElementById(`test_${i}`).style.display == "none") ? "block" : "none";
             }
             {% if exercise_basics["title"] != "" %}
-                document.getElementById("title").value = '{{ exercise_basics["title"] }}';
+                document.getElementById("title").value = '{{ exercise_basics["title"].replace("'", "\\'") }}';
             {% end %}
 
             document.getElementById("myForm").onsubmit = function(evt) {

@@ -22,10 +22,10 @@ if [ -d "$tests_dir_path" ]
 then
   cd $tests_dir_path
 
-  for test_path in test*
+  for test_path in testzyxyz_*
   do
     # Sets filename for test output.
-    test_outputs_path="${tests_dir_path}outputs/test_${test_path:5}/text_output"
+    test_outputs_path="${tests_dir_path}outputs/testzyxyz_${test_path:10}/text_output"
     # Saves test output to file.
     bash "$test_path" > $test_outputs_path
   done
