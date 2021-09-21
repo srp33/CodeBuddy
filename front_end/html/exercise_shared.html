@@ -550,7 +550,7 @@
                               if (presubmission_data != null){
                                 editor.setValue(presubmission_data.code);
                                 if (document.getElementById("saved_div") != null)
-                                  document.getElementById("saved_div").innerHTML = "Code loaded from last session";
+                                  document.getElementById("saved_div").innerHTML = "Code loaded from last session.";
                               }
 
                               if (json_data.length > 0) {
@@ -592,24 +592,44 @@
             setInterval(function() {
               // autosave if code has changed
               if (codeChanged) {
-                save_presubmission();
+                save_presubmission(true);
               }
             }, 60 * 1000);
 
-            async function save_presubmission() {
+            function save_presubmission(autosave) {
               user_code = editor.getValue();
               if (user_code.trim() == "")
                 return false;
+
               saved_div = document.getElementById("saved_div");
               saved_div.innerHTML = "Please wait while your code is being saved...";
-              await $.post("/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", {"user_code": user_code});
 
-              codeChanged = false;
-              last_saved_at = new Intl.DateTimeFormat('default', {
-                hour: 'numeric',
-                minute: 'numeric',
-              }).format(Date.now())
-              saved_div.innerHTML = `Last saved at ${last_saved_at}`
+              $.ajax({
+                type: 'POST',
+                url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                data: {"user_code": user_code},
+                success: function(result) {
+                  if (result == "") {
+                    codeChanged = false;
+
+                    last_saved_at = new Intl.DateTimeFormat('default', {
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    }).format(Date.now());
+
+                    if (autosave)
+                      saved_div.innerHTML = `Auto-saved at ${last_saved_at}.`;
+                    else
+                      saved_div.innerHTML = `Saved at ${last_saved_at}.`;
+                  }
+                  else {
+                    console.log("An error occurred when the user attempted to save their code. The error message is below.");
+                    console.log(result);
+                    saved_div.innerHTML = "An error occurred, so your code may not have saved. If this error persists, please contact the instructor.";
+                  }
+                },
+                async: false
+              });
             }
 
             {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}

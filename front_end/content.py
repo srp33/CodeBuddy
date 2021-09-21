@@ -844,7 +844,10 @@ class Content:
     def get_assignment_scores(self, course_id, assignment_id):
         scores = []
 
-        sql = '''SELECT u.name, s.user_id, (SUM(s.score) / b.num_exercises) AS percent_passed
+        sql = '''SELECT u.name,
+                        s.user_id,
+                        (SUM(s.score) / b.num_exercises) AS percent_passed,
+                        sub.last_submission_time
                  FROM scores s
                  INNER JOIN users u
                    ON s.user_id = u.user_id
@@ -855,6 +858,14 @@ class Content:
                      AND assignment_id = ?
                      AND visible = 1
                   ) b
+                 INNER JOIN (
+                   SELECT user_id, strftime('%Y-%m-%d %H:%M:%S', MAX(date)) AS last_submission_time
+                   FROM submissions
+                   WHERE course_id = ?
+                     AND assignment_id = ?
+                   GROUP BY user_id
+                 ) sub
+                   ON s.user_id = sub.user_id
                  WHERE s.course_id = ?
                    AND s.assignment_id = ?
                    AND s.user_id NOT IN
@@ -874,8 +885,8 @@ class Content:
                  GROUP BY s.course_id, s.assignment_id, s.user_id
                  ORDER BY u.family_name, u.given_name'''
 
-        for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id),)):
-            scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"]}
+        for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id),)):
+            scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"], "last_submission_time": user["last_submission_time"]}
             scores.append([user["user_id"], scores_dict])
 
         return scores

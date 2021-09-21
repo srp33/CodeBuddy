@@ -26,6 +26,10 @@
                             modal.style.display = "none";
                             location.reload();
                         },
+                        error: function (jqXHR, textStatus, errorThrown)
+                        {
+                            console.log(textStatus);
+                        },
                         async: false
                     });
                 }
