@@ -138,6 +138,9 @@ def compare_outputs(expected_text, actual_text, expected_image, actual_image, ou
         if actual_text == "":
             return "", False
 
+        if len(expected_text) > 200:
+            return "", False
+
         diff_output, num_differences = diff_strings(expected_text, actual_text)
 
         # Only return diff output if the differences are relatively small.
@@ -145,6 +148,7 @@ def compare_outputs(expected_text, actual_text, expected_image, actual_image, ou
             diff_output = ""
 
         diff_output = diff_output.replace("\\t", "[tab]")
+
         return diff_output, False
     else:
         if expected_image == actual_image:
