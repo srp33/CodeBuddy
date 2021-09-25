@@ -468,49 +468,13 @@
                         <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
                     {% elif exercise_details["expected_image_output"] != "" %}
                         <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
-                    {% else %}
-                        <p><pre>[Expected solution does not produce an image.]</pre></p>
                     {% end %}
                 {% end %}
-
-                <div id="expected_tests">
-
-                {% if len(exercise_details["tests"]) > 0 %}
-
-                <h6>Test code (to be executed after your solution):</h6>
-
-                    {% for i in range(len(exercise_details["tests"])) %}
-
-                    <div class="neutral-bd-color bottom-space test-content">
-                        <div style="padding: 1.25em 1.5em;">
-                            {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                                <h6 style="display: inline;">Test {{i + 1}} code:</h6>
-                                <p><pre>{{ exercise_details["tests"][i]["code"] }}</pre></p>
-
-                                <h6 style="display: inline;">Test {{i + 1}} expected output:</h6>
-
-                                {% if exercise_details["output_type"] == "txt" %}
-                                    <p><pre style="margin:0">{{ exercise_details["tests"][i]["text_output"] }}</pre></p>
-                                {% else %}
-                                    <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['tests'][i]['image_output'] }}" width="100%"/></figure></p>
-                                {% end %}
-                        {% else %}
-                            <h6>Test {{i + 1}}:</h6>
-                            <div style="-moz-osx-font-smoothing: auto;-webkit-font-smoothing: auto;margin:0">
-                                <p>Details for this test are hidden from students. However, the instructor provided the following hint.</p>
-                                <hr>
-                                <p>{{exercise_details["tests"][i]["test_instructions"]}}</p>
-                            </div>
-                        {% end %}
-                        </div>
-                    </div>
-
-                    {% end %}
-                {% end %}
-                </div>
             {% else %}
-                <div id="expected_tests"></div>
-                <p><em>This exercise is configured so that the expected output is not shown.</em></p>
+                {% if len(exercise_details["tests"]) == 0 %}
+                    <div id="expected_tests"></div>
+                    <p><em>This exercise is configured so that the expected output is not shown.</em></p>
+                {% end %}
             {% end %}
 
             <p><span id="code_output"></span></p>
@@ -518,9 +482,10 @@
             {% if exercise_details["show_expected"] %}
                 <p><span id="diff_output"></span></p>
             {% end %}
+
             <p><span id="test_output"></span></p>
         {% else %}
-        <div id="expected_tests"></div>
+            <div id="expected_tests"></div>
         {% end %}
 
         <div id="submissions"></div>

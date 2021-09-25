@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class GetSubmissionHandler(BaseUserHandler):
-    def get(self, course, assignment, exercise, student_id, submission_id):
+    def get(self, course, assignment, exercise, student_id, submission_id, check_for_presubmission):
         try:
             assignment_details = self.content.get_assignment_details(course, assignment, True)
             client_ip = get_client_ip_address(self.request)
@@ -25,7 +25,16 @@ class GetSubmissionHandler(BaseUserHandler):
                 submission_info["diff"] = format_output_as_html(diff)
                 submission_info["text_output"] = format_output_as_html(submission_info["text_output"])
                 submission_info["tests"] = tests
+
+                submission_info["using_presubmission"] = False
+                if check_for_presubmission == "true":
+                    presubmission_code = self.content.get_presubmission(course, assignment, exercise, student_id)
+
+                    if presubmission_code:
+                        submission_info["code"] = presubmission_code
+                        submission_info["using_presubmission"] = True
         except Exception as inst:
+            print(traceback.format_exc())
             submission_info["diff"] = ""
             submission_info["text_output"] = format_output_as_html(traceback.format_exc())
 

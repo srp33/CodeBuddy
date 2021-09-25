@@ -16,6 +16,7 @@ class SubmitHandler(BaseUserHandler):
 
             # Executes code and saves text, image, and test outputs in respective variables.
             text_output, image_output, tests = exec_code(self.settings_dict, code, exercise_basics, exercise_details, self.request)
+
             # The variables 'diff' and 'passed' refer to the solution code, while 'test_outcomes' contains diff and passed values for each test.
             diff, passed, test_outcomes = check_exercise_output(exercise_details, text_output, image_output, tests)
 

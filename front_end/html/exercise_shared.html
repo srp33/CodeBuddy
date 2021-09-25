@@ -203,59 +203,81 @@
                         expected_tests.style.display = "none";
                     }
 
-                    var test_output = "<h6>Test outputs:</h6>\n\n";
-                        var tests = json_data.tests;
-                        {% for i in range(len(exercise_details["tests"]))%}
-                            // This try/catch statement ensures that test output will only be displayed if a submission for each required test is able to be found.
-                            try {
-                                document.getElementById('test_output').style.display = "block"
-                                button_bd_color = (tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color");
-                                test_message = (tests[{{i}}].passed ? "passed" : "did not pass");
-                                {% if exercise_details["tests"][i]["test_instructions"] == "" %}
-                                    test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><h6 style="padding: 1.25em 1.5em;margin:0;">Test {{i + 1}} ${test_message}.</h6>`;
-                                    test_output += `<div id="test_${tests[{{i}}].test}" style="padding: 0 1.25em 1.5em 1.25em;"><hr style="margin: 0 0 1.5rem 0;">
-                                      <h6>Test code:</h6>
-                                      <pre>{{exercise_details["tests"][i]["code"]}}</pre>
-                                      <h6>Your output:</h6>\n\n`;
-                                    {% if exercise_details["output_type"] == "txt" %}
-                                        if (tests[{{i}}].text_output == "")
-                                            test_output += "<p><pre>[Your solution produced no output.]</pre></p>";
-                                        else
-                                            test_output += `<p><pre>${tests[{{i}}].text_output}</pre><p>`;
-                                        test_output += `<h6>Expected output:</h6>\n\n`;
-                                        test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
-                                    {% else %}
-                                        if (tests[{{i}}]["image_output"] == "") {
-                                            if (tests[{{i}}]["text_output"] == "")
-                                                test_output += "<p><pre>[Your solution did not produce an image.]</pre></p>";
-                                            else
-                                                test_output += `<p><pre>${tests[{{i}}].text_output}</pre><p>`;
-                                        } else
-                                            test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].image_output + "' width='100%' /></figure></p>";
+                    var test_output = "<h6>Tests:</h6>\n\n";
 
-                                        test_output += `<h6>Expected output:</h6>\n\n`;
-                                        test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + '{{exercise_details["tests"][i]["image_output"]}}' + "' width='100%' /></figure></p>";
-                                    {% end %}
+                    {% for i in range(len(exercise_details["tests"]))%}
+                        document.getElementById('test_output').style.display = "block";
 
-                                    if (tests[{{i}}].diff_output != "") {
-                                        test_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
-                                        {% if exercise_details["output_type"] == "txt" %}
-                                            test_output += "<p><pre>" + tests[{{i}}].diff_output + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                                        {% else %}
-                                            test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
-                                        {% end %}
-                                    }
-                                    test_output += `</div></div>`
-                                {% else %}
-                                    test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(${tests[{{i}}].test})'><div style="padding:1.25em 1.5em;"><h6 style="margin:0">Test {{i + 1}} ${test_message}.</h6><div id="test_${tests[{{i}}].test}"><hr>Details for this test are hidden from students. However, the instructor provided the following instructions.<hr>
-                                    {{exercise_details["tests"][i]["test_instructions"]}}</div></div></div>`;
-                                {% end %}
-                            test_output += `<br />`
-                        } catch(e) {
-                          document.getElementById('test_output').style.display = "none"
+                        if (json_data == null) {
+                            button_bd_color = "neutral-bd-color";
+                            test_message = "";
+
+                        } else {
+                            button_bd_color = json_data.tests[{{i}}].passed ? "passing-bd-color" : "failing-bd-color";
+                            test_message = json_data.tests[{{i}}].passed ? "passed." : "did not pass.";
                         }
+
+                        test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest({{i}})'>`;
+                        test_output += `<h6 style="padding: 1em 1.25em;margin:0">Test {{i + 1}} ${test_message}</h6>`;
+                        test_output += `<div id="test_{{i}}" style="padding: 0 1.25em 1.5em 1.25em;">`;
+
+                        {% if exercise_details["tests"][i]["visible"] %}
+                            test_output += `<h6>Test code:</h6>`;
+                            test_output += `<pre>{{exercise_details["tests"][i]["code"]}}</pre>`;
+                        {% else %}
+                            test_output += `Details for this test are hidden from students. `;
+                            test_output += `However, the instructor provided the following instructions.`;
+                            test_output += `<hr style="margin: 1.5rem0 1.5rem 1.5rem 1.5rem;">`;
+                            test_output += `{{exercise_details["tests"][i]["test_instructions"]}}`;
                         {% end %}
-                    return test_output
+
+                        if (json_data != null) {
+                            test_output += `<hr style="margin: 1.5rem0 1.5rem 1.5rem 1.5rem;">`;
+
+                            test_output += `<h6>Your output:</h6>\n\n`;
+
+                            {% if exercise_details["output_type"] == "txt" %}
+                                if (json_data.tests[{{i}}].text_output == "")
+                                    test_output += "<p><pre>[Your solution produced no output.]</pre></p>";
+                                else
+                                    test_output += `<p><pre>${json_data.tests[{{i}}].text_output}</pre><p>`;
+                            {% else %}
+                                if (json_data.tests[{{i}}]["image_output"] == "")
+                                    test_output += "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                                else
+                                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[{{i}}].image_output + "' width='100%' /></figure></p>";
+
+                                if (json_data.tests[{{i}}]["text_output"] != "")
+                                    test_output += `<p><pre>${json_data.tests[{{i}}].text_output}</pre><p>`;
+                            {% end %}
+
+                            {% if exercise_details["tests"][i]["visible"] %}
+                                test_output += `<h6>Expected output:</h6>\n\n`;
+
+                                {% if exercise_details["output_type"] == "txt" %}
+                                    test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
+                                {% else %}
+                                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + '{{exercise_details["tests"][i]["image_output"]}}' + "' width='100%' /></figure></p>";
+                                {% end %}
+
+                                if (json_data.tests[{{i}}].diff_output != "") {
+                                    test_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
+
+                                    {% if exercise_details["output_type"] == "txt" %}
+                                        test_output += "<p><pre>" + json_data.tests[{{i}}].diff_output + "</pre></p>\n\n";
+                                        test_output += "<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                    {% else %}
+                                        test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
+                                    {% end %}
+                                }
+                            {% end %}
+                        }
+
+                        test_output += `</div></div>`
+                        test_output += `<br />`
+
+                        document.getElementById("test_output").innerHTML = test_output;
+                    {% end %}
                 }
 
                 function build_image_output(json_output) {
@@ -273,7 +295,7 @@
                     return output;
                 }
 
-                function check_code(json_data) {
+                function display_results(json_data) {
                     var result = "";
 
                     if (json_data.passed) {
@@ -334,10 +356,9 @@
                             document.getElementById("code_output").innerHTML = code_output;
                         }
 
-                        // build test buttons
+                        // Build test buttons
                         {% if exercise_details["tests"] != [] %}
-                            test_output = build_tests_output(json_data);
-                            document.getElementById("test_output").innerHTML = test_output;
+                            build_tests_output(json_data);
                         {% end %}
                     {% end %}
                 }
@@ -362,48 +383,51 @@
                         document.getElementById("diff_output").innerHTML = "";
                     {% end %}
 
-                    post_data = { "user_code": user_code };
+                    $.ajax({
+                      type: 'POST',
+                      url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                      data: {"user_code": user_code},
+                      success: function(result) {
+                        var json_data = JSON.parse(result);
 
-                    $.post("/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                        post_data,
-                        function(data, status) {
-                            var json_data = JSON.parse(data);
-                            var expected_text = `{{exercise_details["expected_text_output"]}}`;
-                            var expected_image = `{{exercise_details["expected_image_output"]}}`;
+                        var expected_text = `{{exercise_details["expected_text_output"]}}`;
+                        var expected_image = `{{exercise_details["expected_image_output"]}}`;
 
-                            if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
-                                var code_output = "<h6>Your output:</h6>\n\n";
-                                code_output += build_text_output(json_data.text_output);
-                                code_output += build_image_output(json_data.image_output);
-                                document.getElementById("code_output").innerHTML = code_output;
-                            }
+                        if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
+                          var code_output = "<h6>Your output:</h6>\n\n";
+                          code_output += build_text_output(json_data.text_output);
+                          code_output += build_image_output(json_data.image_output);
+                          document.getElementById("code_output").innerHTML = code_output;
+                        }
 
-                            // build test buttons
-                            {% if exercise_details["tests"] != [] %}
-                                test_output = build_tests_output(json_data);
-                                document.getElementById("test_output").innerHTML = test_output;
-                            {% end %}
+                        // Build test buttons
+                        {% if exercise_details["tests"] != [] %}
+                            build_tests_output(json_data);
+                        {% end %}
 
-                            document.getElementById("result").innerHTML = "";
-                        })
+                        result_div.innerHTML = "";
+                      },
+                      async: false
+                    });
+
                     editor.focus();
                     return false;
                 }
 
-                 submitButton = document.getElementById("submit_button");
+                submitButton = document.getElementById("submit_button");
 
-                 {% if exercise_details["enable_pair_programming"] %}
-                 if (submitButton != null)
-                  submitButton.onclick = function() {
-                     submitModal()
-                 }
-                 {% else %}
-                 if (submitButton != null) {
-                   submitButton.onclick = function() {
-                       submit()
-                   }
-                 }
-                 {% end %}
+                {% if exercise_details["enable_pair_programming"] %}
+                  if (submitButton != null)
+                    submitButton.onclick = function() {
+                      submitModal()
+                  }
+                {% else %}
+                  if (submitButton != null) {
+                    submitButton.onclick = function() {
+                      submit()
+                  }
+                }
+                {% end %}
 
                 async function submit() {
                     user_code = editor.getValue();
@@ -411,7 +435,7 @@
                     if (user_code.trim() == "")
                         return false;
 
-                    // get partner_id
+                    // Get partner_id
                     let partner_key = document.getElementById("partner_key").value != "" ? document.getElementById("partner_key").value : null;
 
                     result_div = document.getElementById("result");
@@ -432,9 +456,7 @@
                         post_data,
                        function(data, status) {
                            json_data = JSON.parse(data);
-                           check_code(json_data);
-
-                           document.getElementById("expected_tests").style.display = "none"
+                           display_results(json_data);
 
                            if (json_data.submission_id != "") {
                                last_submission_id = json_data.submission_id;
@@ -448,7 +470,7 @@
                            }
                        });
                    editor.focus();
-                   await show_past_submissions();
+                   await show_past_submission_buttons();
                    return false;
                  }
 
@@ -494,47 +516,53 @@
                      }
                  }
 
-                function get_submission(submission_id, scroll) {
-                   var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                   if (document.getElementById("saved_div") != null)
-                       document.getElementById("saved_div").innerHTML = "";
+                function get_submission(submission_id, scroll, check_for_presubmission) {
+                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
+                    if (document.getElementById("saved_div") != null)
+                        document.getElementById("saved_div").innerHTML = "";
 
-                   var i;
-                   for (i = 0; i < submission_buttons.length; i++) {
-                       if (submission_buttons[i].id == submission_id)
-                           submission_buttons[i].style.border = "solid #34495e";
-                       else
-                           submission_buttons[i].style.border = "none";
-                   }
+                    var i;
+                    for (i = 0; i < submission_buttons.length; i++) {
+                        if (submission_buttons[i].id == submission_id)
+                            submission_buttons[i].style.border = "solid #34495e";
+                        else
+                            submission_buttons[i].style.border = "none";
+                    }
 
-                   {% if exercise_details["back_end"] != "any_response" %}
-                       document.getElementById("code_output").innerHTML = "";
+                    {% if exercise_details["back_end"] != "any_response" %}
+                        document.getElementById("code_output").innerHTML = "";
 
-                       {% if exercise_details["show_expected"] %}
-                           document.getElementById("diff_output").innerHTML = "";
-                       {% end %}
-                   {% end %}
+                        {% if exercise_details["show_expected"] %}
+                            document.getElementById("diff_output").innerHTML = "";
+                        {% end %}
+                    {% end %}
 
-                   {% if exercise_details["show_expected"] and exercise_details["back_end"] != "any_response" %}
-                       document.getElementById("diff_output").innerHTML = "";
-                   {% end %}
+                    {% if exercise_details["show_expected"] and exercise_details["back_end"] != "any_response" %}
+                        document.getElementById("diff_output").innerHTML = "";
+                    {% end %}
 
-                   $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id,
-                       function (data, status) {
-                           var json_data = JSON.parse(data);
-                           editor.setValue(json_data.code, 1);
-                           check_code(json_data);
-                       });
+                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id + `/${check_for_presubmission}` ,
+                        function (data, status) {
+                            var json_data = JSON.parse(data);
+                            editor.setValue(json_data.code, 1);
+
+                            if (json_data.using_presubmission)
+                                if (document.getElementById("saved_div") != null)
+                                    document.getElementById("saved_div").innerHTML = "Code loaded from last session.";
+
+                            display_results(json_data);
+                        });
 
                     if (scroll && document.getElementById("your_code_header") != null)
-                       document.getElementById("your_code_header").scrollIntoView();
+                        document.getElementById("your_code_header").scrollIntoView();
 
-                   editor.focus();
-                   return false;
+                    editor.focus();
+                    return false;
                 }
 
-                function show_past_submissions() {
+                function show_past_submission_buttons() {
                     submissions_div = document.getElementById("submissions");
+
                     $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
                         function (data, status) {
                             var json_data = JSON.parse(data);
@@ -542,52 +570,45 @@
                             var revert_html = "";
                             var current_code = editor.getValue()
 
-                            $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
-                            function(data, status) {
-                              var presubmission_data = JSON.parse(data);
+                            if (json_data.length > 0) {
+                                submission_html += "<h6>Past submissions:</h6>\n";
+                                submission_html += "<div class='buttons'>\n";
+                                var i;
 
-                              //show student's presubmission, if applicable
-                              if (presubmission_data != null){
-                                editor.setValue(presubmission_data.code);
-                                if (document.getElementById("saved_div") != null)
-                                  document.getElementById("saved_div").innerHTML = "Code loaded from last session.";
-                              }
+                                for (i = 0; i < json_data.length; i++) {
+                                    submission_id = json_data[i][0];
+                                    the_date = json_data[i][1];
+                                    passed = json_data[i][2];
+                                    partner_name = json_data[i][3]
 
-                              if (json_data.length > 0) {
-                                  submission_html += "<h6>Past submissions:</h6>\n";
-                                  submission_html += "<div class='buttons'>\n";
-                                  var i;
+                                    if (passed)
+                                        button_bd_color = "passing-btn-color";
+                                    else
+                                        button_bd_color = "failing-btn-color";
 
-                                  for (i = 0; i < json_data.length; i++) {
-                                      submission_id = json_data[i][0];
-                                      the_date = json_data[i][1];
-                                      passed = json_data[i][2];
-                                      partner_name = json_data[i][3]
+                                    var submission_date = new Date(the_date).toLocaleString();
 
-                                      //show student's most recent submission
-                                      if (i == 0 && presubmission_data == null)
-                                          get_submission(submission_id, false);
+                                    if (partner_name)
+                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true, false)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                    else
+                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true, false)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                                }
 
-                                      if (passed)
-                                          button_bd_color = "passing-btn-color";
-                                      else
-                                          button_bd_color = "failing-btn-color";
+                                submission_html += "</div><br />\n";
+                            }
 
-                                      var submission_date = new Date(the_date).toLocaleString();
-
-                                      if (partner_name) {
-                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
-                                      }
-                                      else {
-                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true)'><b>${submission_id}.</b> ${submission_date}</button>`;
-                                      }
-                                                                      }
-                                  submission_html += "</div><br />\n";
-                              }
-                              submissions_div.innerHTML = submission_html;
-                            });
+                            submissions_div.innerHTML = submission_html;
                         });
-            }
+                }
+
+                function get_presubmission() {
+                    $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+                        function (data, status) {
+                            if (data.length > 0) {
+                                editor.setValue(data, 1);
+                            }
+                        });
+                }
 
             setInterval(function() {
               // autosave if code has changed
@@ -646,7 +667,18 @@
 
             if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
                 document.getElementById("submit_button").disabled = true;
-            show_past_submissions();
+
+            show_past_submission_buttons();
+
+            if (last_submission_id > 0) {
+                get_submission(last_submission_id, false, true);
+            }
+            else {
+                {% if exercise_details["tests"] != [] %}
+                    get_presubmission();
+                    build_tests_output(null);
+                {% end %}
+            }
             </script>
 
         {% else %}

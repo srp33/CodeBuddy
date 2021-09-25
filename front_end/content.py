@@ -1410,10 +1410,8 @@ class Content:
                         AND user_id = ?
                         AND submission_id = ?'''
 
-        test_row = self.fetchall(test_sql, (int(course), int(assignment), int(exercise), user, int(submission),))
-
         tests = []
-        for test in test_row:
+        for test in self.fetchall(test_sql, (int(course), int(assignment), int(exercise), user, int(submission),)):
             tests.append({"test": test["submission_output_id"], "text_output": test["text_output"], "image_output": test["image_output"]})
 
         return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests": tests}
@@ -1437,7 +1435,7 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user))
 
-        return {"code": row["code"]} if row else None
+        return row["code"] if row else None
 
     def get_course_details(self, course, format_output=False):
         if not course:
@@ -1503,7 +1501,7 @@ class Content:
         tests = self.fetchall(sql, (int(course), int(assignment), int(exercise),))
 
         for test in tests:
-            exercise_dict["tests"].append({"test": test["test_id"], "code": test["code"], "test_instructions": test["test_instructions"], "text_output": test["text_output"], "image_output": test["image_output"]})
+            exercise_dict["tests"].append({"test": test["test_id"], "code": test["code"], "test_instructions": test["test_instructions"], "visible": test["test_instructions"] == "", "text_output": test["text_output"], "image_output": test["image_output"]})
 
         if row["data_files"]:
             exercise_dict["data_files"] = json.loads(row["data_files"])
