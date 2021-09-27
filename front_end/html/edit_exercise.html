@@ -429,7 +429,7 @@
                 <div id="tests_div"></div>
 
                 <div>
-                    <a class="button is-grey" onclick="showAddTest()">Add test</a>
+                    <a class="button is-grey" onclick="showAddTest(true)">Add test</a>
                 </div>
             </div>
         </div>
@@ -718,7 +718,7 @@
                 updateFiles();
             }
 
-            async function showAddTest() {
+            async function showAddTest(changeFocus) {
                 test_index += 1;
                 var test_div = document.createElement("div");
                 test_div.style.margin = "0 0 80px 0";
@@ -822,7 +822,9 @@
                     maxLines: 15,
                     fontSize: "12pt"
                     });
-                    test_code_editor_${test_index}.focus()`);
+                    if (changeFocus)
+                      test_code_editor_${test_index}.focus()`
+                );
 
                 current_tests.push(test_index)
 
@@ -871,7 +873,7 @@
             $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
                  var json_data = JSON.parse(data);
                  for (i in json_data) {
-                   showAddTest();
+                   showAddTest(false);
 
                    eval(`test_code_editor_${i}.setValue(json_data[i].code)`);
                    if (json_data[i].test_instructions != "") {
