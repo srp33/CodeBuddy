@@ -369,7 +369,7 @@
 
         {% if exercise_details["hint"] != "" %}
             <div class="top-space">
-                <button class="button is-primary" onclick="showHint()">Hint</button>
+                <button class="button is-light is-danger is-outlined" onclick="showHint()">Hint</button>
             </div>
         {% end %}
 
@@ -421,11 +421,11 @@
         </p>
 
         <div id="saved_div" style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"></div>
-        <div class="buttons">
 
-            <a class="button is-medium is-primary" onclick='save_presubmission(false)'>Save</a>
+        <div class="buttons">
+            <!--<a class="button is-medium is-primary" onclick='save_presubmission(false)'>Save</a>-->
             {% if exercise_details["back_end"] != "any_response" %}
-                <a class="button is-medium is-primary" onclick='run_code()'>Run</a>
+                <a class="button is-medium is-primary" onclick='run_code()' id='run_button'>Run</a>
             {% end %}
 
             <a class="button is-medium is-dark" id='submit_button'>Submit</a>

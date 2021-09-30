@@ -25,7 +25,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details = self.content.get_assignment_details(course, assignment)
 
             assignment_basics["title"] = self.get_body_argument("title").strip()
-            assignment_details["introduction"] = self.get_body_argument("introduction").strip()
+            assignment_details["introduction"] = remove_html_tags(self.get_body_argument("introduction").strip())
             assignment_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
             assignment_details["has_start_date"] = self.get_body_argument("has_start_date") == "Select"
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"

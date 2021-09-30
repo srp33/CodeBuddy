@@ -304,7 +304,7 @@ td > button {
 }
 
 .hint-div {
-    border: 2px solid  #1AB28C;
+    border: 2px solid  #000000;
     border-radius: 5px;
     background-color: white;
     margin-top: 10px;
@@ -539,8 +539,13 @@ module {
   font-family: monospace;
 }
 
-.textarea, .input {
+.input {
   font-size: 1.25rem;
+}
+
+.textarea {
+  font-size: 1.25rem;
+  font-family: monospace;
 }
 
 #navbar-start {

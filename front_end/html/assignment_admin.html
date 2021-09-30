@@ -193,20 +193,20 @@
                         </td>
 
                         {% if exercise[1]["visible"] == 0 %}
-                            <td class="has-text-centered">Hidden</td>
+                            <td>Hidden</td>
                             <td> </td>
                             <td> </td>
                         {% else %}
-                            <td class="has-text-centered">Visible</td>
-                            <td class="has-text-centered"><a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Scores</a></td>
-                            <td class="has-text-centered"><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Submissions</a></td>
+                            <td>Visible</td>
+                            <td><a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Scores</a></td>
+                            <td><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Submissions</a></td>
                         {% end %}
-                        <td class="has-text-centered">
+                        <td>
                             <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </td>
-                        <td class="has-text-centered">
+                        <td>
                             <a onclick="showDeleteModal({{ exercise[1]['id'] }})">
                                 <i class="fas fa-trash-alt"></i>
                             </a> 

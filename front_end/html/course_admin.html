@@ -3,7 +3,7 @@
     <p>{{ course_details["introduction"] }}</p>
 
     {% if has_pair_programming %}
-        <a class="button is-primary is-outlined" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
+        <a class="button is-light is-danger is-outlined is-medium" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
     {% end %}
 
     {% if len(assignments) > 0 %}
@@ -29,15 +29,15 @@
                 <tr>
                     <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
                     {% if assignment[1]["visible"] == 0 %}
-                        <td class="has-text-centered">Hidden</td>
+                        <td>Hidden</td>
                         <td> </td>
                         <td> </td>
                         <!--<td> </td>
                         <td> </td>-->
                     {% else %}
-                        <td class="has-text-centered">Visible</td>
+                        <td>Visible</td>
                         {% if assignment[1]["start_date"] %}
-                            <td class="has-text-centered">
+                            <td>
                                 <script>
                                     var s = new Date("{{ assignment[1]['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
                                     document.write(convertDate(s));
@@ -47,7 +47,7 @@
                             <td> </td>
                         {% end %}
                         {% if assignment[1]["due_date"] %} 
-                            <td class="has-text-centered">
+                            <td>
                                 <script>
                                     var d = new Date("{{ assignment[1]['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
                                     document.write(convertDate(d));
@@ -65,12 +65,12 @@
                             <td class="has-text-centered">No scores yet</td>
                         {% end %}-->
                     {% end %}
-                    <td class="has-text-centered">
+                    <td>
                         <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">
                             <i class="fas fa-edit"></i>
                         </a>
                     </td>
-                    <td class="has-text-centered">
+                    <td>
                         <a onclick="showDeleteModal({{ assignment[1]['id'] }})">
                             <i class="fas fa-trash-alt"></i>
                         </a>

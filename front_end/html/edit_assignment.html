@@ -52,8 +52,7 @@
 
         <div class="top-space">
             <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
-            <p><div class="textarea is-grey is-fullwidth monospace" id="introduction" placeholder="Please provide an introduction for this assignment." style="min-height: 400px" contenteditable="true">{{ assignment_details["introduction"] }}</div></p>
-            <textarea name="introduction" id="introduction_text" class="invisible"></textarea>
+            <p><textarea class="textarea" name="introduction" rows=10 placeholder="Please provide an introduction for this assignment.">{{ assignment_details["introduction"] }}</textarea></p>
         </div>
     </div>
 
@@ -370,10 +369,6 @@
         else {
             timer_div.style.display = "none";
         }
-    }
-
-    document.getElementById("assignmentForm").onsubmit = function(evt) {
-        document.getElementById("introduction_text").value = document.getElementById("introduction").innerHTML
     }
 </script>
 <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>

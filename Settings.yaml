@@ -1,6 +1,15 @@
 mode: development
 domain: codebuddy.byu.edu
 db_name: CodeBuddy.db
+allowed_external_urls:
+  - https://geomoer.github.io/moer-base-r/assets/data/cheatsheets/base-r.pdf
+  - https://github.com/rstudio/cheatsheets/raw/master/data-import.pdf
+  - https://github.com/rstudio/cheatsheets/raw/master/data-visualization.pdf
+  - https://github.com/rstudio/cheatsheets/raw/master/data-transformation.pdf
+  - https://github.com/rstudio/cheatsheets/raw/master/tidyr.pdf 
+  - https://github.com/rstudio/cheatsheets/raw/master/strings.pdf
+  - https://github.com/rstudio/cheatsheets/raw/master/factors.pdf
+  - https://github.com/rstudio/cheatsheets/raw/master/lubridate.pdf
 back_ends:
     free_response:
         description: Please write an answer based on the instructions provided.
@@ -25,6 +34,7 @@ back_ends:
                 Image (ggplot2)
             txt: |-
                 Text
+
     python:
         description: Please write Python code based on the instructions provided.
         image_name: srp33/codebuddy_python

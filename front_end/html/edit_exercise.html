@@ -156,7 +156,7 @@
             line <- readLines(connection, n=1)
             search <- "len"
             \nwhile(length(line) > 0) {
-            \tif (grepl(search, line)) {
+            \tif (grepl(tolower(search), tolower(line))) {
             \t\tprint("Error: len() function not allowed in this exercise")
             \t\tbreak
             \t}
