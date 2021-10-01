@@ -8,8 +8,10 @@ class ExternalSiteHandler(RequestHandler):
         try:
             settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
 
+            print(url)
             print(settings_dict["allowed_external_urls"])
             if url in settings_dict["allowed_external_urls"]:
+                print("got here")
                 url_hash = hashlib.md5(url.encode()).hexdigest()
                 cache_file_path = f"/tmp/cache/{url_hash}"
 
