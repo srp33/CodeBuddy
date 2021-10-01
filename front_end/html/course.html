@@ -3,7 +3,7 @@
     <p>{{ course_details["introduction"] }}</p>
 
     {% if has_pair_programming %}
-        <a class="button is-light is-danger is-outlined is-medium" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
+        <a class="button is-danger is-outlined" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
     {% end %}
 
     <h3>Assignments</h3>
