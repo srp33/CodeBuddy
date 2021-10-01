@@ -32,6 +32,8 @@ function run_container {
                --build-arg GROUP_ID=$(id -g ${USER}) \
                .
 
+  mkdir -p /tmp/cache
+
   #docker run -d \
   docker run -i -t \
     --rm \
@@ -40,6 +42,7 @@ function run_container {
     --log-driver=none \
     --name ${container_name} \
     --read-only \
+    -v /tmp/cache:/tmp/cache \
     ${run_args} \
     ${image_name}
 }
