@@ -71,7 +71,15 @@
                         <td class="has-text-left">{{ score[1]["name"] }}</td>
                         <td class="has-text-left">{{ score[0] }}</td>
                         <td class="has-text-left">{{ round(score[1]["percent_passed"]) }}%</td>
-                        <td class="has-text-left">{{ score[1]["last_submission_time"] }}</td>
+                        <td class="has-text-left">
+                            <script>
+                                // Adjust date to use local time zone.
+                                var the_date = new Date("{{ score[1]['last_submission_time'] }}");
+                                var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
+                                the_date.setTime(the_date_mod);
+                                document.write(the_date.toLocaleString());
+                            </script>
+                        </td>
                         {% if assignment_details["has_timer"] %}
                             {% if score[0] in start_times %}
                                 {% if start_times[score[0]]["timer_ended"] %}
