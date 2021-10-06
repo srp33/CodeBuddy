@@ -17,7 +17,7 @@ cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html prof
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html consent_forms.html profile_bottom.html footer_version.html > /app/consent_forms.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_personal_info.html profile_bottom.html footer_version.html > /app/profile_personal_info.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_admin.html profile_bottom.html footer_version.html > /app/profile_admin.html
-cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_select_course.html profile_bottom.html footer_version.html > /app/profile_select_course.html
+cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_instructor_select_course.html profile_bottom.html footer_version.html > /app/profile_instructor_select_course.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_instructor.html profile_bottom.html footer_version.html > /app/profile_instructor.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_manage_users.html profile_bottom.html footer_version.html > /app/profile_manage_users.html
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_help_requests.html profile_bottom.html footer_version.html > /app/profile_help_requests.html

@@ -1,6 +1,6 @@
 from BaseUserHandler import *
 
-class ProfileSelectCourseHandler(BaseUserHandler):
+class ProfileInstructorSelectCourseHandler(BaseUserHandler):
     def get(self, user_id):
         try:
             if self.is_administrator():
@@ -9,7 +9,7 @@ class ProfileSelectCourseHandler(BaseUserHandler):
                 courses = self.content.get_courses_connected_to_user(user_id)
 
             if len(courses) > 1:
-                self.render("profile_select_course.html", courses=courses, page="instructor", user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant(), registered_courses=self.content.get_registered_courses(user_id))
+                self.render("profile_instructor_select_course.html", courses=courses, page="instructor", user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant(), registered_courses=self.content.get_registered_courses(user_id))
             elif len(courses) == 0:
                 # Prevents CodeBuddy from crashing in the case of zero courses.
                 self.render("unavailable_assignment.html", course_basics={"exists": False, "no_courses_created": True}, assignments=[], user_info=self.get_user_info(), registered_courses=self.content.get_registered_courses(user_id))

@@ -75,7 +75,7 @@ def make_app():
         url(r"/profile/consent_forms/([^/]+)", ConsentFormsHandler, name="consent_forms"),
         url(r"/profile/help_requests", ProfileHelpRequestsHandler, name="profile_help_requests"),
         url(r"/profile/instructor/([^/]+)/([^/]+)", ProfileInstructorHandler, name="profile_instructor"),
-        url(r"/profile/instructor/course/([^/]+)", ProfileSelectCourseHandler, name="profile_select_course"),
+        url(r"/profile/instructor_select_course/([^/]+)", ProfileInstructorSelectCourseHandler, name="profile_instructor_select_course"),
         url(r"/profile/manage_users", ProfileManageUsersHandler, name="profile_manage_users"),
         url(r"/profile/personal_info/([^/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
         url(r"/profile/preferences/([^/]+)", ProfilePreferencesHandler, name="profile_preferences"),
