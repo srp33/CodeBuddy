@@ -187,7 +187,7 @@
                     <li><a href="/view_scores/{{ course['id'] }}/{{ assignment[1]['id'] }}">{{ assignment[1]['title'] }}</a></li>
                 {% end %}
                 </ul>
-                <p><a href="/download_all_scores/{{ course['id'] }}">Download all scores</a></p>
+                <p><a href="/download_course_scores/{{ course['id'] }}">Download scores</a></p>
             {% else %}
                 <p>There are no scores for this course.</p>
             {% end %}

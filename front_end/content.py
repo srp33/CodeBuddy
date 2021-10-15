@@ -2035,7 +2035,19 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
-    def create_scores_text(self, course_id, assignment_id):
+    def create_course_scores_text(self, course_id):
+        out_file_text = "Assignment_ID,Assignment_Title,Student_ID,Score\n"
+
+        for assignment_id in self.get_assignment_ids(course_id):
+            assignment_title = self.get_assignment_basics(course_id, assignment_id)["title"]
+            assignment_scores = self.get_assignment_scores(course_id, assignment_id)
+
+            for score_dict in assignment_scores:
+                out_file_text += f"{assignment_id},{assignment_title},{score_dict[0]},{score_dict[1]['percent_passed']}\n"
+
+        return out_file_text
+
+    def create_assignment_scores_text(self, course_id, assignment_id):
         out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
         scores = self.get_assignment_scores(course_id, assignment_id)
 
