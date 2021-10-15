@@ -1,6 +1,6 @@
 from BaseUserHandler import *
 
-class DownloadScoresHandler(BaseUserHandler):
+class DownloadAssignmentScoresHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):

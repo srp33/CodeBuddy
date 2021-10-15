@@ -301,7 +301,7 @@
         <div>
             <a href="/course/{{ course_basics['id'] }}">Back to course</a>
             | <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a>
-            | <a href="/download_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ download_file_name }}">Download scores</a><br />
+            | <a href="/download_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ download_file_name }}">Download scores</a><br />
 
             {% if is_administrator or is_instructor %}
                 <a onclick="showCopyAssignmentModal()">Copy assignment</a>
