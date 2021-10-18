@@ -46,8 +46,7 @@
     </div>
 
     <div class="top-space">
-        <p><div class="textarea is-grey is-fullwidth monospace" id="introduction" placeholder="Please provide an introduction for this course." style="min-height: 400px" contenteditable="true">{{ course_details["introduction"] }}</div></p>
-        <textarea name="introduction" id="introduction_text" class="invisible"></textarea>
+        <textarea class="textarea" name="introduction" rows=10 placeholder="Please provide an introduction for this course.">{{ course_details["introduction"] }}</textarea>
     </div>
 </div>
 
@@ -97,7 +96,6 @@
   }
 
   document.getElementById("courseForm").onsubmit = function(evt) {
-      document.getElementById("introduction_text").value = document.getElementById("introduction").innerHTML;
       if (document.getElementById("enable_research").value == "No")
           document.getElementById("consent_form_text").value = document.getElementById("consent_alternative_text").value = "";
   }

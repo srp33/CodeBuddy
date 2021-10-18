@@ -37,7 +37,7 @@ class EditExerciseHandler(BaseUserHandler):
 
             exercise_basics["title"] = self.get_body_argument("title").strip() #required
             exercise_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
-            exercise_details["instructions"] = self.get_body_argument("instructions").strip().replace("\r", "") #required
+            exercise_details["instructions"] = remove_html_tags(self.get_body_argument("instructions").strip().replace("\r", ""))
             exercise_details["back_end"] = self.get_body_argument("back_end")
             exercise_details["output_type"] = self.get_body_argument("output_type")
             exercise_details["answer_code"] = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required (usually)

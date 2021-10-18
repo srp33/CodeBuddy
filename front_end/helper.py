@@ -79,7 +79,10 @@ def convert_markdown_to_html(text):
 
 # This function addresses a temporary problem and may be removed when it is no longer needed.
 def remove_html_tags(text):
-    return re.sub(r"<[^>]*>", "", text)
+    #text = text.replace("<div><br></div>", "\n\n")
+    text = text.replace("<div>", "\n")
+    text = re.sub(r"<[^>]*>", "", text)
+    return text
 
 def format_output_as_html(output):
     return html.escape(output).replace(" ", "&nbsp;").replace("\t", "&emsp;").replace("\n", "<br />")

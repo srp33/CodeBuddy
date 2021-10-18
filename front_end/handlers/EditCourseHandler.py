@@ -22,7 +22,7 @@ class EditCourseHandler(BaseUserHandler):
 
             course_basics["title"] = self.get_body_argument("title").strip()
             course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
-            course_details["introduction"] = self.get_body_argument("introduction").strip()
+            course_details["introduction"] = remove_html_tags(self.get_body_argument("introduction").strip())
             course_details["passcode"] = self.get_body_argument("passcode").strip()
             course_details["consent_text"] = self.get_body_argument("consent_form").strip()
             course_details["consent_alternative_text"] = self.get_body_argument("consent_alternative").strip()
