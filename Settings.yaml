@@ -11,14 +11,8 @@ allowed_external_urls:
   - https://github.com/rstudio/cheatsheets/raw/master/factors.pdf
   - https://github.com/rstudio/cheatsheets/raw/master/lubridate.pdf
 back_ends:
-    free_response:
+    not_code:
         description: Please write an answer based on the instructions provided.
-        code_completion_path: ace/mode/text
-        output_types:
-            txt: |-
-                Text
-    any_response:
-        description: Please write an answer based on the instructions provided. Any response will be given credit.
         code_completion_path: ace/mode/text
         output_types:
             txt: |-

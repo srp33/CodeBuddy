@@ -299,7 +299,7 @@
                     var result = "";
 
                     if (json_data.passed) {
-                        {% if exercise_details["back_end"] == "any_response" %}
+                        {% if exercise_details["allow_any_response"] %}
                             result = "<div class='notification success-message' style='color:white'><p><strong>Thank you for your submission.</strong></p>\n\n";
                         {% else %}
                             result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
@@ -318,10 +318,13 @@
                         result += "</div>\n\n"
                     }
                     else {
-                        // This should never be reached when exercise_details["back_end"] == "any_response" because JavaScript doesn't submit if their solution is blank.
-                        result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+                        {% if exercise_details["allow_any_response"] %}
+                            result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not produce any output.</strong></p></div>\n\n";
+                        {% else %}
+                            result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+                        {% end %}
 
-                        {% if exercise_details["show_expected"] %}
+                        {% if not exercise_details["allow_any_response"] and exercise_details["show_expected"] %}
                             var diff_output = "";
 
                             if (json_data.diff.length > 0) {
@@ -339,11 +342,18 @@
 
                     document.getElementById("result").innerHTML = result;
 
-                    {% if exercise_details["back_end"] != "any_response" %}
+                    {% if exercise_details["allow_any_response"] %}
+                        if (json_data.text_output != "" || json_data.image_output != "") {
+                            var code_output = "<h6>Your output:</h6>\n\n";
+                            code_output += build_text_output(json_data.text_output);
+                            code_output += build_image_output(json_data.image_output);
+                            document.getElementById("code_output").innerHTML = code_output;
+                        }
+                    {% else %}
                         var expected_text = `{{exercise_details["expected_text_output"]}}`;
                         var expected_image = `{{exercise_details["expected_image_output"]}}`;
 
-                        // If output includes an index error, provide student with a more helpful error messages instead.
+                        // If output includes an index error, provide student with a more helpful error message instead.
                         if (json_data.text_output.includes("IndexError:&nbsp;list&nbsp;index&nbsp;out&nbsp;of&nbsp;range")) {
                             var code_output = "<h6>Your output:</h6>\n\n";
                             code_output += "Output is not available for this submission. This may be due to the instructor editing the exercise since you last submitted."
@@ -442,7 +452,7 @@
                     result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
                     result_div.scrollIntoView();
 
-                    {% if exercise_details["back_end"] != "any_response" %}
+                    {% if not exercise_details["allow_any_response"] %}
                         document.getElementById("code_output").innerHTML = "";
 
                         {% if exercise_details["show_expected"] %}
@@ -529,7 +539,7 @@
                             submission_buttons[i].style.border = "none";
                     }
 
-                    {% if exercise_details["back_end"] != "any_response" %}
+                    {% if not exercise_details["allow_any_response"] %}
                         document.getElementById("code_output").innerHTML = "";
 
                         {% if exercise_details["show_expected"] %}
@@ -537,7 +547,7 @@
                         {% end %}
                     {% end %}
 
-                    {% if exercise_details["show_expected"] and exercise_details["back_end"] != "any_response" %}
+                    {% if exercise_details["show_expected"] and not exercise_details["allow_any_response"] %}
                         document.getElementById("diff_output").innerHTML = "";
                     {% end %}
 
@@ -653,7 +663,7 @@
               });
             }
 
-            {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "any_response" and exercise_details["back_end"] != "free_response" %}
+            {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
                 editor.setOptions({
                     enableBasicAutocompletion: false,
                     enableSnippets: true,

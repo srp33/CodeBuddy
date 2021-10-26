@@ -40,6 +40,7 @@ class EditExerciseHandler(BaseUserHandler):
             exercise_details["instructions"] = remove_html_tags(self.get_body_argument("instructions").strip().replace("\r", ""))
             exercise_details["back_end"] = self.get_body_argument("back_end")
             exercise_details["output_type"] = self.get_body_argument("output_type")
+            exercise_details["allow_any_response"] = self.get_body_argument("allow_any_response") == "Yes"
             exercise_details["answer_code"] = self.get_body_argument("answer_code_text").strip().replace("\r", "") #required (usually)
             exercise_details["answer_description"] = self.get_body_argument("answer_description").strip().replace("\r", "")
             exercise_details["hint"] = self.get_body_argument("hint").strip().replace("\r", "")
@@ -70,9 +71,7 @@ class EditExerciseHandler(BaseUserHandler):
 
             result = "Success: The exercise was saved!"
 
-            any_response_counts = exercise_details["back_end"] == "any_response"
-
-            if exercise_basics["title"] == "" or exercise_details["instructions"] == "" or (not any_response_counts and exercise_details["answer_code"] == ""):
+            if exercise_basics["title"] == "" or exercise_details["instructions"] == "" or (not exercise_details["allow_any_response"] and exercise_details["answer_code"] == ""):
                 result = "Error: One of the required fields is missing."
             else:
                 if self.content.has_duplicate_title(self.content.get_exercises(course, assignment), exercise_basics["id"], exercise_basics["title"]):
@@ -133,7 +132,7 @@ class EditExerciseHandler(BaseUserHandler):
                                 exercise_details["expected_text_output"] = text_output.strip()
                                 exercise_details["expected_image_output"] = image_output
 
-                                if not any_response_counts and text_output == "" and image_output == "" and len(empty_tests) == len(tests):
+                                if not exercise_details["allow_any_response"] and text_output == "" and image_output == "" and len(empty_tests) == len(tests):
                                     result = f"Error: No output was produced."
                                 else:
                                     # If some but not all of tests have empty outputs, the exercise will still be saved but the instructor will be flagged with all tests that didn't produce any output.

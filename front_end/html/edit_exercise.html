@@ -46,10 +46,8 @@
         // object for matching example code with back_end
         let exampleDict = {
           // Solution additional instructions
-          free_response_solution_instructions:
+          not_code_solution_instructions:
             `For this type of exercise, your solution itself will be used as the expected output.`,
-          any_response_solution_instructions:
-            `For this type of exercise, you don't need to enter a solution.`,
           python_solution_instructions:
             ``,
           bash_solution_instructions:
@@ -60,8 +58,7 @@
             ``,
 
           // Test Code additional instructions
-          free_response_test_code_instructions: '',
-          any_response_test_code_instructions: '',
+          not_code_test_code_instructions: '',
           python_test_code_instructions:
             ``,
           bash_test_code_instructions:
@@ -72,8 +69,7 @@
             ``,
 
           // Pre-Execution Code additional instructions
-          free_response_check_code_instructions: '',
-          any_response_check_code_instructions: '',
+          not_code_check_code_instructions: '',
           python_check_code_instructions:
             `Write your pre-execution code in Python.`,
           bash_check_code_instructions:
@@ -84,8 +80,7 @@
             `Write your pre-execution code in R.`,
 
           // Back end specific Solution examples
-          free_response_solution_example: '',
-          any_response_solution_example: '',
+          not_code_solution_example: '',
           python_solution_example:
             `def add_numbers(x, y):
             \treturn(x + y)`,
@@ -105,8 +100,7 @@
             }`,
 
           // Back end specific Test Code examples
-          free_response_test_code_example: '',
-          any_response_test_code_example: '',
+          not_code_test_code_example: '',
           python_test_code_example:
             `# Python example code
             print(add_numbers(2, 3))`,
@@ -120,8 +114,7 @@
             print(add_numbers(2, 3))`,
 
           // Back end specific Pre-Execution Code examples
-          free_response_check_example: '',
-          any_response_check_example: '',
+          not_code_check_example: '',
           bash_check_example:
             `# Bash example code
             FIND='#'
@@ -251,7 +244,7 @@
             <div class="front-row-container">
                 <div class="a-visible">
                     <p><strong>Back end: </strong>
-                        <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end (programming language environment) that will be used to check the students' solution.">
+                        <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end that will be used to check the students' solution. In most cases, a back end is associated with a specific programming language. The not_code option enables students to submit a solution by entering text rather than coding.">
                             <i class="far fa-question-circle"></i>
                         </label>
                         <div class="select is-grey">
@@ -268,10 +261,26 @@
                     </p>
                 </div>
 
-                <div>
+                <div class="a-visible">
                     <p><strong>Output type: </strong>
                         <div class="select is-grey">
                             <select name="output_type" id="output_types" class="edit-select">
+                            </select>
+                        </div>
+                    </p>
+                </div>
+
+                <div class="a-visible">
+                    <p><strong>Allow any response: </strong>
+                        <div class="select is-grey">
+                            <select name="allow_any_response" class="edit-select">
+                            {% if exercise_details["allow_any_response"] %}
+                                <option value="Yes" selected>Yes</option>
+                                <option value="No">No</option>
+                            {% else %}
+                                <option value="Yes">Yes</option>
+                                <option value="No" selected>No</option>
+                            {% end %}
                             </select>
                         </div>
                     </p>

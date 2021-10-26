@@ -113,7 +113,7 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
 def exec_code(settings_dict, code, exercise_basics, exercise_details, request=None):
     this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
 
-    if exercise_details["back_end"] in ['free_response', 'any_response']:
+    if exercise_details["back_end"] == 'not_code':
         # In this case, the code is the answer that the student provided.
         return code.strip(), "", []
 
@@ -176,8 +176,11 @@ def compare_outputs(expected_text, actual_text, expected_image, actual_image, ou
         return diff_output, diff_percent < 0.01 # Pass if they are similar.
 
 def check_exercise_output(exercise_details, actual_text, actual_image, tests):
-    if exercise_details["back_end"] == "any_response" and (len(actual_text) > 0 or len(actual_image) > 0):
-        return "", True, []
+    if exercise_details["allow_any_response"]:
+        if (len(actual_text) > 0 or len(actual_image) > 0):
+            return "", True, []
+        else:
+            return "", False, []
 
     diff_output, passed = compare_outputs(exercise_details["expected_text_output"], actual_text, exercise_details["expected_image_output"], actual_image, exercise_details["output_type"])
     expected_test_outputs = exercise_details["tests"]

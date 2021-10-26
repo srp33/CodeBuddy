@@ -37,7 +37,7 @@
             <textarea class="textarea is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
 
             <div class="buttons top-space">
-                {% if exercise_details["back_end"] != "any_response" %}
+                {% if exercise_details["back_end"] != "not_code" %}
                     <a class="button is-medium is-primary" onclick='run_code()'>Run</a>
                 {% end %}
             </div>
@@ -56,7 +56,7 @@
                     {% end %}
                 {% end %}
 
-                {% if exercise_details["back_end"] != "any_response" %}
+                {% if not exercise_details["allow_any_response"] %}
                     <p><span id="code_output"></span></p>
 
                     {% if exercise_details["show_expected"] %}

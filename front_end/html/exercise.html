@@ -424,14 +424,14 @@
 
         <div class="buttons">
             <!--<a class="button is-medium is-primary" onclick='save_presubmission(false)'>Save</a>-->
-            {% if exercise_details["back_end"] != "any_response" %}
+            {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
                 <a class="button is-medium is-primary" onclick='run_code()' id='run_button'>Run</a>
             {% end %}
 
             <a class="button is-medium is-dark" id='submit_button'>Submit</a>
 
-            {% if exercise_details["back_end"] == "any_response" %}
-                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'.">
+            {% if exercise_details["allow_any_response"] %}
+                <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'.">
             {% else %}
                 <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. You can highlight a section of your solution and then hit 'Run' to test just that section. If you highlight a section of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation.">
             {% end %}
@@ -455,7 +455,7 @@
 
         <p><div id="result"></div></p>
 
-        {% if exercise_details["back_end"] != "any_response" %}
+        {% if not exercise_details["allow_any_response"] %}
             {% if exercise_details["show_expected"] %}
                 {% if exercise_details["expected_text_output"] != "" or exercise_details["expected_image_output"] != "" %}
                     <div>
@@ -485,6 +485,7 @@
 
             <p><span id="test_output"></span></p>
         {% else %}
+            <p><span id="code_output"></span></p>
             <div id="expected_tests"></div>
         {% end %}
 
