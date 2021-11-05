@@ -154,7 +154,9 @@ def compare_outputs(expected_text, actual_text, expected_image, actual_image, ou
         if num_differences > 20:
             diff_output = ""
 
-        diff_output = diff_output.replace("\\t", "[tab]")
+        # Sometimes it's difficult for students to differentiate between spaces
+        #  and tabs. This is intended to help.
+        diff_output = diff_output.replace("\t", "{tab}")
 
         return diff_output, False
     else:
