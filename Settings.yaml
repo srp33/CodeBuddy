@@ -21,7 +21,7 @@ back_ends:
         description: Please write R code based on the instructions provided.
         image_name: srp33/codebuddy_r
         memory_allowed_mb: 100
-        timeout_seconds: 120
+        timeout_seconds: 60
         code_completion_path: ace/mode/r
         output_types:
             jpg: |-

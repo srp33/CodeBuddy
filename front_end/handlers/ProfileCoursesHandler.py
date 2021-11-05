@@ -27,7 +27,7 @@ class ProfileCoursesHandler(BaseUserHandler):
             result = ""
 
             if not consent_given:
-                result = "You may not register for this course without providing consent to participate in the research study. Please review the instructions on what you should do if you decline to participate in the study."
+                result = "Error: You may not register for this course without providing consent to participate in the research study. Please review the instructions on what you should do if you decline to participate in the study."
             elif (course_passcode == None or course_passcode == passcode):
                 if (self.content.course_exists(course_id)):
                     if (self.content.check_user_registered(course_id, user_id)):

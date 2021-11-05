@@ -15,18 +15,19 @@ if (file.exists(check_code_file_path)) {
   }
 }
 
-exec_jpg <- function(code, i=0) {
+# We use this weird parameter name to avoid clashes with user's code.
+exec_jpg <- function(code, index_zxyxy=0) {
   library(ggplot2)
 
   pdf(NULL) # Prevents Rplots.pdf from being created.
 
   eval(parse(text=code))
 
-  if (i == 0) {
+  if (index_zxyxy == 0) {
     ggsave("/sandbox/image_output", dpi = 150, device = "jpeg")
   }
   else {
-    ggsave(paste("/sandbox/test_image_output_", i, sep=""), dpi = 150, device = "jpeg")
+    ggsave(paste("/sandbox/test_image_output_", index_zxyxy, sep=""), dpi = 150, device = "jpeg")
   }
 }
 
@@ -38,6 +39,7 @@ if (output_type == "txt") {
   
 } else {
   #code <- readChar(code_file_path, file.info(code_file_path)$size)
+
   suppressMessages(suppressWarnings(suppressPackageStartupMessages(exec_jpg(code))))
 }
 

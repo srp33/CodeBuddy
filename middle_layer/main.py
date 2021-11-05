@@ -55,7 +55,7 @@ def exec(info: ExecInfo):
         # Save each test case in its own file under the directory 'tests'.
         if len(info.tests) > 0:
             for i in range(len(info.tests)):
-                # We use an odd file name to avoid classes with any data files the user may create.
+                # We use an odd file name to avoid clashes with any data files the user may create.
                 # There's probably a more clever way to do it.
                 test_file_name = f"testzyxyz_{i + 1}"
 
@@ -97,7 +97,7 @@ def exec(info: ExecInfo):
 
         # Check whether the command timed out.
         if result.returncode == 137 or stdout == "Killed":
-            return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": ""}
+            return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": "", "tests": json.dumps([])}
 
         text_output_lines = []
         tests = []
@@ -155,10 +155,9 @@ def exec(info: ExecInfo):
                     image_output = encode_image_bytes(output_file.read())
 
         # Converts tests to JSON form for transfer to front end.
-        tests = json.dumps(tests)
-        return {"text_output": "\n".join(text_output_lines), "image_output": image_output, "tests": tests}
+        return {"text_output": "\n".join(text_output_lines), "image_output": image_output, "tests": json.dumps(tests)}
     except Exception as inst:
-        return {"text_output": traceback.format_exc(), "image_output": ""}
+        return {"text_output": traceback.format_exc(), "image_output": "", "tests": json.dumps([])}
     finally:
         if tmp_dir_path:
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
