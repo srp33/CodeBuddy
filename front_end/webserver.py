@@ -31,7 +31,6 @@ import zipfile
 def make_app():
     app = Application([
         url(r"/", HomeHandler),
-        url(r"/add_instructor/([^/]+)", AddInstructorHandler, name="add_instructor"),
         url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
         url(r"/back_end/([^/]+)", BackEndHandler, name="back_end"),
         url(r"/check_partners/([^/]+)", CheckPartnersHandler, name="check_partners"),

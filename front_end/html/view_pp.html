@@ -7,15 +7,15 @@
     {% for pair in student_pairs %}
         <!-- Styles student pair based on whether it contains the user. -->
         {% if pair['is_user'] %}
-        <div class="pair student-content">
+          <div class="pair student-content">
         {% else %}
-        <div class="pair instructor-content">
+          <div class="pair instructor-content">
         {% end %}
 
         <!-- Renders student pairs based on parity of grouping. -->
         {% if len(pair['pair']) == 2 %}
-          <strong>{{ pair['pair'][0] }}</strong> is paired with<br>
-          <strong>{{ pair['pair'][1] }}</strong>
+          <strong>{{ pair['pair'][0] }} (driver)</strong> is paired with<br>
+          <strong>{{ pair['pair'][1] }} (navigator)</strong>
         {% else %}
           <strong>{{ pair['pair'][0] }}</strong> does not have a partner this week.
         {% end %}

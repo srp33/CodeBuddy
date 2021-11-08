@@ -213,18 +213,6 @@ class Content:
                  VALUES (?)'''
         self.execute(sql, (version,))
 
-    def get_non_students(self, course_id):
-        non_students = []
-
-        sql = '''SELECT user_id
-                 FROM permissions r
-                 WHERE role = 'administrator' OR course_id = ?'''
-
-        for row in self.fetchall(sql, (course_id,)):
-            non_students.append(row["user_id"])
-
-        return non_students
-
     def set_user_assignment_start_time(self, course_id, assignment_id, user_id, start_time):
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
 
@@ -587,11 +575,18 @@ class Content:
                     SELECT course_id
                     FROM course_registrations
                     WHERE user_id = ?
+
+                    UNION
+
+                    SELECT course_id
+                    FROM permissions
+                    WHERE user_id = ?
+                      AND (role = 'instructor' OR role = 'assistant')
                  )
                    AND visible = 1
                  ORDER BY title'''
 
-        for course in self.fetchall(sql, (user_id,)):
+        for course in self.fetchall(sql, (user_id, user_id, )):
             course_basics = {"id": course["course_id"], "title": course["title"], "introduction": course["introduction"], "passcode": course["passcode"], "consent_text": course["consent_text"], "consent_alternative_text": course["consent_alternative_text"]}
             course_basics["consent_text"] = convert_markdown_to_html(course_basics["consent_text"])
             course_basics["consent_alternative_text"] = convert_markdown_to_html(course_basics["consent_alternative_text"])
@@ -607,9 +602,17 @@ class Content:
                  INNER JOIN courses c
                    ON r.course_id = c.course_id
                  WHERE r.user_id = ?
-                   AND c.visible = 1'''
+                   AND c.visible = 1
 
-        for course in self.fetchall(sql, (user_id,)):
+                 UNION
+
+                 SELECT p.course_id, c.title, c.consent_text
+                 FROM permissions p
+                 INNER JOIN courses c
+                   ON p.course_id = c.course_id
+                 WHERE p.user_id = ?'''
+
+        for course in self.fetchall(sql, (user_id, user_id, )):
             course_basics = {"id": course["course_id"], "title": course["title"], "consent_text": course["consent_text"]}
             course_basics["consent_text"] = convert_markdown_to_html(course_basics["consent_text"])
             registered_courses.append([course["course_id"], course_basics])
@@ -617,13 +620,11 @@ class Content:
         return registered_courses
 
     def get_partner_info(self, course, user_id, include_self=False):
-        non_students = self.get_non_students(course)
-
         # Gets list of users.
         if include_self:
-            users = [x[1] for x in self.get_registered_students(course) if x[0] not in non_students]
+            users = [x[1] for x in self.get_registered_students(course)]
         else:
-            users = [x[1] for x in self.get_registered_students(course) if x[0] != user_id and x[0] not in non_students]
+            users = [x[1] for x in self.get_registered_students(course) if x[0] != user_id]
 
         # Adds users to dict to find duplicate names.
         user_duplicates_dict = {}
