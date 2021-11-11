@@ -645,12 +645,24 @@
                 tests_array = []
                 for (i of current_tests) {
                     var code = eval(`test_code_editor_${i}.getValue()`);
+
+                    var visible_to_students = document.getElementById(`show_test_code_${i}`).value == "Yes";
+                    var instructions = document.getElementById(`test_instructions_${i}`).value;
+
+                    //var instructions = "";
+                    //if (document.getElementById(`show_test_code_${i}`).value == "No") {
+                    //    instructions = document.getElementById(`test_instructions_${i}`).value;
+                    //}
+
                     // clear instructions before submitting if visibility is set to "Yes"
-                    var instructions = (document.getElementById(`show_test_code_${i}`).value == "Yes") ? "" : document.getElementById(`test_instructions_${i}`).value;
-                    // set instructions to "Test Code Hidden" if visibility is set to "No" and no other instructions given
-                    instructions = ((document.getElementById(`show_test_code_${i}`).value == "No") && (instructions == "")) ? "Test Code Hidden." : instructions
-                    if (code != "")
-                      tests_array.push({code: code, test_instructions: instructions})
+                    //var instructions = () ? "" : document.getElementById(`test_instructions_${i}`).value;
+
+                    // set instructions to default message if visibility is set to "No" and no other instructions given
+                    // instructions = ((document.getElementById(`show_test_code_${i}`).value == "No") && (instructions == "")) ? "" : instructions
+                    //instructions = ((document.getElementById(`show_test_code_${i}`).value == "No") && (instructions == "")) ? "" : instructions
+
+                    //if (code != "")
+                    tests_array.push({visible_to_students: visible_to_students, code: code, test_instructions: instructions})
                 }
 
                 tests_array = JSON.stringify(tests_array)
@@ -738,7 +750,7 @@
                 var line_break = document.createElement("hr");
                 var d_button = document.createElement("button");
                 d_button.classList.add("button", "is-orange", "space-div", "is-pulled-right");
-                d_button.innerHTML = "Remove Test Code";
+                d_button.innerHTML = "Remove Test";
                 d_button.id = `delete_button_${test_index}`;
                 d_button.setAttribute("onclick", `remove_test_code(${test_index})`);
 
@@ -807,13 +819,14 @@
                 output_button.id = `output_button_${test_index}`
                 output_button.style = 'cursor:pointer'
                 output_button.setAttribute('onclick', `showTest(${test_index})`)
-                output_button.innerHTML = `Test ${test_index + 1} Output`
+                //output_button.innerHTML = `Test ${test_index + 1} Output`
+                //output_button.innerHTML = `Output:`
                 var output_content = document.createElement("div")
                 output_content.id = `test_${test_index}`
                 var test_p_wrapper = document.createElement('p')
                 test_p_wrapper.id = `p_wrapper_${test_index}`
 
-                output_content.appendChild(document.createElement('hr'))
+                //output_content.appendChild(document.createElement('hr'))
                 output_content.appendChild(test_p_wrapper)
                 output_button.appendChild(output_content)
                 output_div.appendChild(output_button)
@@ -835,17 +848,17 @@
                       test_code_editor_${test_index}.focus()`
                 );
 
-                current_tests.push(test_index)
+                current_tests.push(test_index);
 
                 // Shows toggle example button if there are not zero tests.
                 if (current_tests.length != 0) {
-                  document.getElementById("test_example_div").style.display = "block"
+                  document.getElementById("test_example_div").style.display = "block";
                 } else {
-                  document.getElementById("test_example_div").style.display = "none"
+                  document.getElementById("test_example_div").style.display = "none";
                 }
 
 
-                var output_type = await document.getElementById("output_types").value
+                var output_type = await document.getElementById("output_types").value;
                 if (output_type != "")
                     updateBackEndOptions(document.getElementById("back_end").value, output_type);
             }

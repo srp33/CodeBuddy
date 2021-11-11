@@ -59,7 +59,6 @@ class EditExerciseHandler(BaseUserHandler):
 
             tests = self.get_body_argument("tests_json")
             tests = json.loads(tests) if tests and len(tests) != 0 else []
-            exercise_details["tests"] = tests
 
             old_files = self.get_body_argument("file_container")
             new_files = self.request.files
@@ -81,9 +80,14 @@ class EditExerciseHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 80 characters."
 
                     else:
-                        #if not re.match('^[a-zA-Z0-9()\s\"\-]*$', exercise_basics["title"]):
-                        #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
-                        #else:
+                        for test in tests:
+                            visible_to_students = test.pop("visible_to_students")
+
+                            if not visible_to_students and test["test_instructions"].strip() == "":
+                                result = "Error: At least one of the tests was marked as invisible, but no instructions were provided for that test."
+                                break
+
+                        if not result.startswith("Error:"):
                             if new_files:
                                 data_files = {}
                                 total_size = 0
@@ -108,7 +112,7 @@ class EditExerciseHandler(BaseUserHandler):
                                 if not passed or not all(list(map(lambda x: x["passed"], test_outcomes))):
                                     result = "Error: new output does not match pre-existing output."
                                 else:
-                                    # Returns exercise_details['tests'] to its new tests.
+                                    # Sets exercise_details['tests'] to the new tests.
                                     exercise_details["tests"] = tests
 
                             if not result.startswith("Error:"):

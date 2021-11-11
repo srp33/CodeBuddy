@@ -217,59 +217,62 @@
                             test_message = json_data.tests[{{i}}].passed ? "passed." : "did not pass.";
                         }
 
-                        test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest({{i}})'>`;
-                        test_output += `<h6 style="padding: 1em 1.25em;margin:0">Test {{i + 1}} ${test_message}</h6>`;
-                        test_output += `<div id="test_{{i}}" style="padding: 0 1.25em 1.5em 1.25em;">`;
+                        test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;'>`;
+                        //test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest({{i}})'>`;
+                        //test_output += `<h6 style="padding: 1em 1.25em;margin:0">Test {{i + 1}} ${test_message}</h6>`;
+
+                        // This defines the box that surrounds each test.
+                        test_output += `<div id="test_{{i}}" style="padding: 0.5em 1.25em 0.5em 1.25em;margin:0">`;
 
                         {% if exercise_details["tests"][i]["visible"] %}
-                            test_output += `<h6>Test code:</h6>`;
-                            test_output += `<pre>{{exercise_details["tests"][i]["code"]}}</pre>`;
+                            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Test code:</h6>`;
+                            test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">{{exercise_details["tests"][i]["code"]}}</pre>`;
+
+                            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
+
+                            {% if exercise_details["output_type"] == "txt" %}
+                                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">{{exercise_details["tests"][i]["text_output"]}}</pre>`;
+                            {% else %}
+                                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + '{{exercise_details["tests"][i]["image_output"]}}' + `' width='100%' /></figure></p>`;
+                            {% end %}
+
+                            if (json_data != null && json_data.tests[{{i}}].diff_output != "") {
+                                test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</h6>\n\n`;
+
+                                {% if exercise_details["output_type"] == "txt" %}
+                                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + json_data.tests[{{i}}].diff_output + "</pre>\n\n";
+                                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
+                                {% else %}
+                                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + json_data.tests[{{i}}].diff_output + `' width='100%' /></figure></p><br />`;
+                                {% end %}
+                            }
                         {% else %}
-                            test_output += `Details for this test are hidden from students. `;
-                            test_output += `However, the instructor provided the following instructions.`;
-                            test_output += `<hr style="margin: 1.5rem0 1.5rem 1.5rem 1.5rem;">`;
-                            test_output += `{{exercise_details["tests"][i]["test_instructions"]}}`;
+                            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Details for this test are hidden from students.`;
+
+                            {% if exercise_details["tests"][i]["test_instructions"] != "" %}
+                                test_output += ` However, the instructor provided the following instructions.</h6>`;
+                                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0">{{exercise_details["tests"][i]["test_instructions"]}}</p>`;
+                            {% else %}
+                                test_output += "</h6>";
+                            {% end %}
                         {% end %}
 
                         if (json_data != null) {
-                            test_output += `<hr style="margin: 1.5rem0 1.5rem 1.5rem 1.5rem;">`;
-
-                            test_output += `<h6>Your output:</h6>\n\n`;
+                            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
 
                             {% if exercise_details["output_type"] == "txt" %}
                                 if (json_data.tests[{{i}}].text_output == "")
-                                    test_output += "<p><pre>[Your solution produced no output.]</pre></p>";
+                                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
                                 else
-                                    test_output += `<p><pre>${json_data.tests[{{i}}].text_output}</pre><p>`;
+                                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[{{i}}].text_output}</pre>`;
                             {% else %}
                                 if (json_data.tests[{{i}}]["image_output"] == "")
-                                    test_output += "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
                                 else
                                     test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[{{i}}].image_output + "' width='100%' /></figure></p>";
 
                                 if (json_data.tests[{{i}}]["text_output"] != "")
-                                    test_output += `<p><pre>${json_data.tests[{{i}}].text_output}</pre><p>`;
-                            {% end %}
-
-                            {% if exercise_details["tests"][i]["visible"] %}
-                                test_output += `<h6>Expected output:</h6>\n\n`;
-
-                                {% if exercise_details["output_type"] == "txt" %}
-                                    test_output += `<pre>{{exercise_details["tests"][i]["text_output"]}}</pre>`;
-                                {% else %}
-                                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + '{{exercise_details["tests"][i]["image_output"]}}' + "' width='100%' /></figure></p>";
-                                {% end %}
-
-                                if (json_data.tests[{{i}}].diff_output != "") {
-                                    test_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
-
-                                    {% if exercise_details["output_type"] == "txt" %}
-                                        test_output += "<p><pre>" + json_data.tests[{{i}}].diff_output + "</pre></p>\n\n";
-                                        test_output += "<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                                    {% else %}
-                                        test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[{{i}}].diff_output + "' width='100%' /></figure></p><br />";
-                                    {% end %}
-                                }
+                                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[{{i}}].text_output}</pre>`;
                             {% end %}
                         }
 
@@ -373,9 +376,9 @@
                     {% end %}
                 }
 
-                function showTest(i) {
-                  document.getElementById(`test_${i}`).style.display = (document.getElementById(`test_${i}`).style.display == "none") ? "block" : "none";
-                }
+                //function showTest(i) {
+                //  document.getElementById(`test_${i}`).style.display = (document.getElementById(`test_${i}`).style.display == "none") ? "block" : "none";
+                //}
 
                 function run_code() {
                     user_code = editor.getSelectedText();
