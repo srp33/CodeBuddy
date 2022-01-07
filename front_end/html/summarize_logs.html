@@ -73,28 +73,30 @@
     </div>
     <div class="column is-half">
         <h4>Download log files</h4>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>File Name</th>
-                    <th>Download Link</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Hits Any User</td>
-                    <td><a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz">Download</a></td>
-                </tr>
-                <tr>
-                    <td>Hits Per User</td>
-                    <td><a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz">Download</a></td>
-                </tr>
-                <tr>
-                    <td>Load Duration</td>
-                    <td><a href="/logs/summarized/LoadDuration.tsv.gz" download="LoadDuration.tsv.gz">Download</a></td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Download Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Hits Any User</td>
+                        <td><a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz">Download</a></td>
+                    </tr>
+                    <tr>
+                        <td>Hits Per User</td>
+                        <td><a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz">Download</a></td>
+                    </tr>
+                    <tr>
+                        <td>Load Duration</td>
+                        <td><a href="/logs/summarized/LoadDuration.tsv.gz" download="LoadDuration.tsv.gz">Download</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -142,40 +144,42 @@
 </form>
 
 {% if show_table %}
-    <table class="table is-striped" id="Table1">
-        <thead>
-            <tr>
-                <th>Line</th>
-                <th>Year</th>
-                <th>Month</th>
-                <th>Day</th>
-                <th>Hour</th>
-                <th>Value</th>
-                <th>Page</th>
-                <th>Course Title</th>
-                <th>Assignment Title</th>
-                <th>Exercise Title</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for line_num, line in log_dict.items() %}
-            {% if line[8] == filter %}
+    <div class="table-container">
+        <table class="table is-striped" id="Table1">
+            <thead>
                 <tr>
-                    <th>{{ line_num }}</th>
-                    {% for item in line %}
-                        <td class="has-text-centered">{{ item }}</td> 
-                    {% end %}     
+                    <th>Line</th>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Day</th>
+                    <th>Hour</th>
+                    <th>Value</th>
+                    <th>Page</th>
+                    <th>Course Title</th>
+                    <th>Assignment Title</th>
+                    <th>Exercise Title</th>
                 </tr>
-            {% elif filter == "No filter" %}
-                <tr>
-                    <th>{{ line_num }}</th>
-                    {% for item in line %}
-                        <td class="has-text-centered">{{ item }}</td> 
-                    {% end %}     
-                </tr>
-            {% end %}
-        {% end %}    
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for line_num, line in log_dict.items() %}
+                {% if line[8] == filter %}
+                    <tr>
+                        <th>{{ line_num }}</th>
+                        {% for item in line %}
+                            <td class="has-text-centered">{{ item }}</td> 
+                        {% end %}     
+                    </tr>
+                {% elif filter == "No filter" %}
+                    <tr>
+                        <th>{{ line_num }}</th>
+                        {% for item in line %}
+                            <td class="has-text-centered">{{ item }}</td> 
+                        {% end %}     
+                    </tr>
+                {% end %}
+            {% end %}    
+            </tbody>
+        </table>
+    </div>
 {% end %}  
 <br /><br />

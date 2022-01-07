@@ -1,16 +1,16 @@
 code_file_path = commandArgs()[9]
 tests_dir_path = commandArgs()[10]
-check_code_file_path = commandArgs()[11]
+verification_code_file_path = commandArgs()[11]
 output_type = commandArgs()[12]
 
 options(warn=-1) # Silences printing to console globally.
 options(tidyverse.quiet = TRUE)
 
-if (file.exists(check_code_file_path)) {
-  check_code <- readChar(check_code_file_path, file.info(check_code_file_path)$size)
-  check_output <- capture.output(suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=check_code))))),split=TRUE)
+if (file.exists(verification_code_file_path)) {
+  verification_code <- readChar(verification_code_file_path, file.info(verification_code_file_path)$size)
+  verification_output <- capture.output(suppressMessages(suppressWarnings(suppressPackageStartupMessages(eval(parse(text=verification_code))))),split=TRUE)
 
-  if (length(check_output) > 0) {
+  if (length(verification_output) > 0) {
     quit()
   }
 }

@@ -170,12 +170,13 @@
         </script>
 
         {% if len(exercises) > 0 %}
-            <table class="table" id="assignment_table">
+        <div class="table-container">
+            <table class="table is-striped" id="assignment_table">
                 <thead>
                     <tr>
                         <th>Exercise</th>
                         <th>Visibility</th>
-                        <th>Scores</th>
+                        <th>Avg. Score</th>
                         <th>Submissions</th>
                         <th>Edit</th>
                         <th>Delete</th>
@@ -197,7 +198,7 @@
                             <td> </td>
                         {% else %}
                             <td>Visible</td>
-                            <td><a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Scores</a></td>
+                            <td><a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a></td>
                             <td><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">Submissions</a></td>
                         {% end %}
                         <td>
@@ -214,7 +215,7 @@
                 {% end %}  
                 </tbody>
             </table>
-
+        </div>
         {% else %}
             <p><strong>No exercises have been created for this assignment.</strong></p>
         {% end %}

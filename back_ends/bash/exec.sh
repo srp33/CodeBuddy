@@ -1,14 +1,11 @@
-code_file_path="$1"
-tests_dir_path="$2"
-check_code_file_path="$3"
 # We won't use this because this back end only supports text-based back ends.
-#output_type="$4"
+#output_type="$1"
 
-if [ -f "$check_code_file_path" ]
+if [ -f "verification_code" ]
 then
-  # Adds a newline to student's code if not already present and ensures that bash checking code doesn't skip the final line.
+  # Adds a newline to student's code if not already present and ensures that verifcation code doesn't skip the final line.
   sed -i -e '$a\' "$code_file_path"
-  value=$(bash $check_code_file_path)
+  value=$(bash verification_code)
   if [[ "$value" ]]
   then
     echo "$value"
@@ -16,17 +13,10 @@ then
   fi
 fi
 
-bash "$code_file_path"
+cd tests
 
-if [ -d "$tests_dir_path" ]
-then
-  cd $tests_dir_path
-
-  for test_path in testzyxyz_*
-  do
-    # Sets filename for test output.
-    test_outputs_path="${tests_dir_path}outputs/testzyxyz_${test_path:10}/text_output"
-    # Saves test output to file.
-    bash "$test_path" > $test_outputs_path
-  done
-fi
+for test_id in *
+do
+  # Saves test output to file.
+  bash ${test_id}/code > ${test_id}/text_output
+done

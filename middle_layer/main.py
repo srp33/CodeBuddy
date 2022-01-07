@@ -15,8 +15,8 @@ import traceback
 class ExecInfo(BaseModel):
     image_name: str
     code: str
-    tests: list
-    check_code: str
+    tests: dict
+    verification_code: str
     data_files: dict
     output_type: str
     memory_allowed_mb: int
@@ -43,53 +43,33 @@ def exec(info: ExecInfo):
         os.makedirs(base_tmp_dir_path, exist_ok=True)
         tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
 
-        # Save the user's code to a file that will be accessible inside the container.
-        with open(f"{tmp_dir_path}/code", "w") as code_file:
-            code_file.write(info.code)
+        # Save the verification code to a file that will be accessible inside the container.
+        if len(info.verification_code) > 0:
+            with open(f"{tmp_dir_path}/verification_code", "w") as verification_file:
+                verification_file.write(info.verification_code)
 
-        # Save the check code to a file that will be accessible inside the container.
-        if len(info.check_code) > 0:
-            with open(f"{tmp_dir_path}/check_code", "w") as check_file:
-                check_file.write(info.check_code)
+        # Save information for each test under a subdirectory under 'tests'.
+        for test_title in info.tests:
+            info.tests[test_title]["dir_path"] = f"{tmp_dir_path}/tests/{info.tests[test_title]['test_id']}"
+            os.makedirs(info.tests[test_title]["dir_path"], exist_ok=True)
 
-        # Save each test case in its own file under the directory 'tests'.
-        if len(info.tests) > 0:
-            for i in range(len(info.tests)):
-                # We use an odd file name to avoid clashes with any data files the user may create.
-                # There's probably a more clever way to do it.
-                test_file_name = f"testzyxyz_{i + 1}"
+            if info.image_name.endswith("python_script"):
+                info.tests[test_title]["code_file_name"] = "code.py"
+                info.tests[test_title]["code"] = info.tests[test_title]["before_code"] + "\n\n" + info.tests[test_title]["after_code"]
+            else:
+                info.tests[test_title]["code_file_name"] = "code"
+                info.tests[test_title]["code"] = info.tests[test_title]["before_code"] + "\n\n" + info.code + "\n\n" + info.tests[test_title]["after_code"]
 
-                # Writes test code to a file.
-                filename = f"{tmp_dir_path}/tests/{test_file_name}"
+            with open(f"{info.tests[test_title]['dir_path']}/{info.tests[test_title]['code_file_name']}", "w") as test_file:
+                test_file.write(info.tests[test_title]["code"])
 
-                # Preemptively creates directory for test outputs.
-                outputname = f"{tmp_dir_path}/tests/outputs/{test_file_name}/image_output" if info.output_type == "jpg" else f"{tmp_dir_path}/tests/outputs/{test_file_name}/text_output"
-
-                os.makedirs(os.path.dirname(filename), exist_ok=True)
-                os.makedirs(os.path.dirname(outputname), exist_ok=True)
-
-                with open(filename, "w") as test_file:
-                    if "python_script" not in info.image_name:
-                        test_file.write(info.code)
-                        test_file.write("\n\n")
-
-                        test_file.write(info.tests[i]["code"])
-                    else:
-                        test_file.write(info.tests[i]["code"])
-
-
-        # Save any data files so they will be accessible inside the container.
-        for key, value in info.data_files.items():
-            with open(f"{tmp_dir_path}/{key}", "w") as data_file:
-                data_file.write(value)
-
-            # If any tests exist, save data files so they will be accessible to them.
-            if len(info.tests) > 0:
-                with open(f"{tmp_dir_path}/tests/{key}", "w") as data_file:
+            # Save any data files so they will be accessible inside the container.
+            for key, value in info.data_files.items():
+                with open(f"{info.tests[test_title]['dir_path']}/{key}", "w") as data_file:
                     data_file.write(value)
 
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest /sandbox/code /sandbox/tests/ /sandbox/check_code {info.output_type}"
+        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
@@ -97,70 +77,38 @@ def exec(info: ExecInfo):
 
         # Check whether the command timed out.
         if result.returncode == 137 or stdout == "Killed":
-            return {"text_output": f"The time to execute your code exceeded {info.timeout_seconds} seconds.", "image_output": "", "tests": json.dumps([])}
+            raise Exception(f"The time to execute your code exceeded the timeout ({info.timeout_seconds} seconds) or was unable to complete for some other reason.")
 
-        text_output_lines = []
-        tests = []
-        image_output = ""
+        test_outputs = {}
 
-        for text_output_line in stdout.split("\n"):
-            text_output_line = text_output_line.strip()
-            if text_output_line == "" or text_output_line == docker_warning:
-                continue
-            text_output_lines.append(text_output_line)
+        for test_title in info.tests:
+            text_output = ""
+            text_output_file_path = f"{info.tests[test_title]['dir_path']}/text_output"
 
-        try:
-            if os.path.isdir(f"{tmp_dir_path}/tests/"):
-                for test_output in sorted(os.listdir(f"{tmp_dir_path}/tests/outputs/")):
-                    # Gets the test number from filename.
-                    i = test_output.split('_')[-1]
+            if os.path.exists(text_output_file_path):
+                with open(text_output_file_path) as output_file:
+                    text_output = output_file.read().strip()
+            else:
+                text_output = "No text output was generated."
 
-                    # Preloads text and image output with empty values.
-                    test_text_output = test_image_output = ""
+            image_output = ""
+            if info.output_type == "jpg":
+                image_output_file_path = f"{info.tests[test_title]['dir_path']}/text_output"
 
-                    outputs = os.listdir(f"{tmp_dir_path}/tests/outputs/{test_output}")
-                    if len(outputs) > 0:
+                if os.path.exists(image_output_file_path):
+                    with open(image_output_file_path, "rb") as output_file:
+                        image_output = encode_image_bytes(output_file.read())
+            else:
+                image_output = "No image output was generated."
 
-                        for output_path in outputs:
-                            if "image" not in output_path:
-                                # Reads text output.
-                                with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
-                                    test_text_output = output_file.read()
-                            else:
-                                # Reads text output in case it contains traceback from an error writing the image.
-                                with open(f"{tmp_dir_path}/tests/outputs/{test_output}/{output_path}") as output_file:
-                                    test_text_output = output_file.read()
-                                try:
-                                    # Looks for image file under tmp_dir_path.
-                                    with open(f"{tmp_dir_path}/test_image_output_{i}", "rb") as output_file:
-                                        test_image_output = encode_image_bytes(output_file.read())
-                                except:
-                                    try:
-                                        # Python script backend saves images here.
-                                        with open(f"{tmp_dir_path}/tests/test_image_output_{i}", "rb") as output_file:
-                                            test_image_output = encode_image_bytes(output_file.read())
-                                    except:
-                                        # Image failed to save.
-                                        pass
-                    # Loads text and/or image outputs for each test to a dictionary.
-                    tests.append({"test": i, "text_output": test_text_output.strip(), "image_output": test_image_output})
-        except:
-            print(traceback.format_exc())
-
-        if info.output_type == "jpg":
-            image_file_path = f"{tmp_dir_path}/image_output"
-
-            if os.path.exists(image_file_path):
-                with open(image_file_path, "rb") as output_file:
-                    image_output = encode_image_bytes(output_file.read())
-
-        # Converts tests to JSON form for transfer to front end.
-        return {"text_output": "\n".join(text_output_lines), "image_output": image_output, "tests": json.dumps(tests)}
+            test_outputs[test_title] = {"text_output": text_output, "image_output": image_output}
     except Exception as inst:
-        return {"text_output": traceback.format_exc(), "image_output": "", "tests": json.dumps([])}
+        return {"message": traceback.format_exc(), "test_outputs": {}}
     finally:
         if tmp_dir_path:
             shutil.rmtree(tmp_dir_path, ignore_errors=True)
+
+    return {"message": "", "test_outputs": test_outputs}
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")

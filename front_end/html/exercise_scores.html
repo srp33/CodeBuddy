@@ -1,29 +1,30 @@
 {% if len(exercise_scores) > 0 %}
     <h2>Scores for {{ exercise_basics["title"] }}</h2>
 
-    <table class="table" id="scores_table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Student ID</th>
-                <th># Submissions</th>
-                <th>Score</th>
-                <th>View</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for student in exercise_scores %}
-            <tr>
-                <td>{{ student[1]["name"] }}</td>
-                <td>{{ student[1]["user_id"] }}</td>
-                <td>{{ student[1]["num_submissions"] }}</td>
-                <td>{{ student[1]["score"] }}%</td>
-                <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student[1]['user_id'] }}">View</a></td>
-            </tr>
-        {% end %}  
-        </tbody>
-    </table>
-
+    <div class="table-container">
+        <table class="table is-striped" id="scores_table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Student ID</th>
+                    <th># Submissions</th>
+                    <th>Score</th>
+                    <th>View</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for student in exercise_scores %}
+                <tr>
+                    <td>{{ student[1]["name"] }}</td>
+                    <td>{{ student[1]["user_id"] }}</td>
+                    <td>{{ student[1]["num_submissions"] }}</td>
+                    <td>{{ student[1]["score"] }}%</td>
+                    <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student[1]['user_id'] }}">View</a></td>
+                </tr>
+            {% end %}  
+            </tbody>
+        </table>
+    </div>
 {% else %}
     <h2>No submissions have been made for this exercise.</h2>
 {% end %}

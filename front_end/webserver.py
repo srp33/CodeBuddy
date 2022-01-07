@@ -32,7 +32,6 @@ def make_app():
     app = Application([
         url(r"/", HomeHandler),
         url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
-        url(r"/back_end/([^/]+)", BackEndHandler, name="back_end"),
         url(r"/check_partners/([^/]+)", CheckPartnersHandler, name="check_partners"),
         url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
         url(r"/copy_assignment/([^/]+)/([^/]+)?", CopyAssignmentHandler, name="copy_assignment"),
@@ -62,10 +61,8 @@ def make_app():
         url(r"/get_presubmission/([^/]+)/([^/]+)/([^/]+)/([^/]+)", GetPresubmissionHandler, name="get_presubmission"),
         url(r"/get_submission/([^/]+)/([^/]+)/([^/]+)/([^/]+)/(\d+)/(true|false)", GetSubmissionHandler, name="get_submission"),
         url(r"/get_submissions/([^/]+)/([^/]+)/([^/]+)/([^/]+)", GetSubmissionsHandler, name="get_submissions"),
-        url(r"/get_tests/([^/]+)/([^/]+)/([^/]+)", GetTestsHandler, name="get_tests"),
         url(r"/googlelogin", GoogleLoginHandler, name="googlelogin"),
         url(r"/help_requests/([^/]+)", HelpRequestsHandler, name="help_requests"),
-        url(r"/import_course", ImportCourseHandler, name="import_course"),
         url(r"/login", CASLoginHandler, name="caslogin"),
         url(r"/logout", LogoutHandler, name="logout"),
         url(r"/move_exercise/([^/]+)/([^/]+)/([^/]+)?", MoveExerciseHandler, name="move_exercise"),

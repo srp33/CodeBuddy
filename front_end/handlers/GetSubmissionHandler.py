@@ -15,7 +15,7 @@ class GetSubmissionHandler(BaseUserHandler):
                            assignment_basics=self.content.get_assignment_basics(course, assignment), error="restricted_ip",
                            user_info=user_info)
             elif user_info["user_id"] != student_id and not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
-                submission_info = ["Submissions may only be view by their author."]
+                submission_info = ["Submissions may only be viewed by their author."]
             else:
                 exercise_details = self.content.get_exercise_details(course, assignment, exercise)
                 submission_info = self.content.get_submission_info(course, assignment, exercise, student_id, submission_id)

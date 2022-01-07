@@ -15,28 +15,30 @@
 
         <form method="post" action="/edit_scores/{{ course_basics['id']}}/{{ assignment_basics['id'] }}/{{ student_id }}">
 
-        <table class="table" id="scores_table">
-            <thead>
-                <tr>
-                <th>Exercise</th>
-                <th># Submissions</th>
-                <th>Score</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for exercise in exercise_statuses %}
-                <tr>
-                    {% if exercise[1]["num_submissions"] > 0 %}
-                        <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}/{{ student_id }}">{{ exercise[1]["title"] }}</a></td>
-                    {% else %}
-                        <td>{{ exercise[1]["title"] }}</td>
-                    {% end %}
-                    <td class="has-text-centered">{{ exercise[1]["num_submissions"] }}</td>
-                    <td class="has-text-centered"><input class="input is-medium is-primary" style="width: 50px;" id="{{ exercise[1]['id'] }}" name="{{ exercise[1]['id'] }}" type="text" datainput value="{{ round(exercise[1]['score']) }}"></td>
-                </tr>
-            {% end %}    
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table class="table is-striped" id="scores_table">
+                <thead>
+                    <tr>
+                    <th>Exercise</th>
+                    <th># Submissions</th>
+                    <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for exercise in exercise_statuses %}
+                    <tr>
+                        {% if exercise[1]["num_submissions"] > 0 %}
+                            <td><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}/{{ student_id }}">{{ exercise[1]["title"] }}</a></td>
+                        {% else %}
+                            <td>{{ exercise[1]["title"] }}</td>
+                        {% end %}
+                        <td>{{ exercise[1]["num_submissions"] }}</td>
+                        <td><input class="input is-medium is-primary" style="width: 90px;" id="{{ exercise[1]['id'] }}" name="{{ exercise[1]['id'] }}" type="text" datainput value="{{ round(exercise[1]['score']) }}"></td>
+                    </tr>
+                {% end %}    
+                </tbody>
+            </table>
+        </div>
 
         <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save"/></p>        
         <br />

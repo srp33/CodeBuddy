@@ -82,10 +82,11 @@ def remove_html_tags(text):
     #text = text.replace("<div><br></div>", "\n\n")
     text = text.replace("<div>", "\n")
     text = re.sub(r"<[^>]*>", "", text)
+
     return text
 
 def format_output_as_html(output):
-    return html.escape(output).replace(" ", "&nbsp;").replace("\t", "&emsp;").replace("\n", "<br />")
+    return html.escape(output).replace(" ", "&nbsp;").replace("\t", "&emsp;").replace("\n", "<br />").replace("`", "&#96;")
 
 # Kudos: https://arcpy.wordpress.com/2012/05/11/sorting-alphanumeric-strings-in-python/
 def sort_nicely(l):
@@ -110,33 +111,29 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(settings_dict, code, exercise_basics, exercise_details, request=None):
-    this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
-
+def exec_code(settings_dict, code, verification_code, exercise_details, request=None):
+    # In this case, the code is the answer that the student provided.
     if exercise_details["back_end"] == 'not_code':
-        # In this case, the code is the answer that the student provided.
-        return code.strip(), "", []
+        for test_title in exercise_details["tests"]:
+            exercise_details["tests"][test_title]["text_output"] = code.strip()
+            exercise_details["tests"][test_title]["image_output"] = code.strip()
 
+    this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
     timeout = this_settings_dict["timeout_seconds"]
+
     data_dict = {"image_name": this_settings_dict["image_name"],
                  "code": code.strip(),
                  "tests": exercise_details["tests"],
-                 "check_code": exercise_details["check_code"],
+                 "verification_code": verification_code,
                  "data_files": exercise_details["data_files"],
                  "output_type": exercise_details["output_type"],
                  "memory_allowed_mb": this_settings_dict["memory_allowed_mb"],
                  "timeout_seconds": timeout
                  }
 
-    middle_layer_port = os.environ['MPORT']
+    response = requests.post(f"http://127.0.0.1:{os.environ['MPORT']}/exec/", json.dumps(data_dict), timeout=timeout)
 
-    response = requests.post(f"http://127.0.0.1:{middle_layer_port}/exec/", json.dumps(data_dict), timeout=timeout)
-
-    response_dict = json.loads(response.content)
-
-    # The keys 'text_output' and 'image_output' refer to output produced by the student's code, while 'tests' is a dictionary containing the image and text outputs specific to each test case written by the instructor.
-    # Tests must be converted from JSON form to a list of dictionaries.
-    return response_dict["text_output"], response_dict["image_output"], json.loads(response_dict["tests"])
+    return json.loads(response.content)
 
 def compare_outputs(expected_text, actual_text, expected_image, actual_image, output_type):
     if output_type == "txt":

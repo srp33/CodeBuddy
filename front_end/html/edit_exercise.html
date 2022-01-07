@@ -1,1018 +1,805 @@
-<form enctype='multipart/form-data' method="post" action="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}" id="myForm" />
+<div class="row-container is-hidden" id="edit_header">
+    <h2>Edit exercise</h2>
 
-<input type="select" name="hold_output_constant" class="invisible" id="hold_output_constant_checkbox" value="No">
-{% if exercise_basics["exists"] %}
-    <div class="row-container">
-        <h2>Edit exercise</h2>
-        <p>
-            {% if result %}
-                <a href="#code-output" class="right-space">View code output</a>
-            {% end %}
+    <p>
+        <a href="#output_header" class="right-space" onclick="showOutput(false, true)">View output</a>
 
-            <input type="submit" class="button is-dark" value="Save" />
-            <button type="button" class="button is-white hold_output_constant_button" onclick="holdOutputConstant()">Hold output constant</button>
-            <button class="button is-white" onclick="location.href='/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ exercise_basics["id"] }}'; return false;">Done</button>
-            {% if prev_exercise %}
-                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
-            {% end %}
-            {% if next_exercise %}
-                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
-            {% end %}
-        </p>
-    </div>
-{% else %}
-    <h2>Create exercise</h2>
-{% end %}
+        {% if not is_assistant %}
+            <button class="button is-dark" onclick="save()">Save</button>
+        {% end %}
 
-{% if result %}
-    {% if result.startswith("Error:") %}
-        <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
-    {% elif result.startswith("Code") %}
-        <p><pre class="error-message">{{ result }}</pre></p>
-    {% elif result.startswith("Warning") %}
-        <p><div class="notification is-warning"><strong>{{ result }}</strong></div></p>
-    {% else %}
-        <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
-    {% end %}
-{% end %}
+        <button class="button is-white" id="done_button">Done</button>
+        {% if prev_exercise %}
+            <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+        {% end %}
+        {% if next_exercise %}
+            <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+        {% end %}
+    </p>
+</div>
+
+<h2 id="create_header">Create exercise</h2>
+
+<div class="notification is-danger is-hidden" id="result_message"></div>
 
 {% if course_basics["exists"] %}
   {% if assignment_basics["exists"] %}
-
-    <!-- Global JavaScript -->
-    <script>
-        var current_tests = [];
-
-        // object for matching example code with back_end
-        let exampleDict = {
-          // Solution additional instructions
-          not_code_solution_instructions:
-            `For this type of exercise, your solution itself will be used as the expected output.`,
-          python_solution_instructions:
-            ``,
-          bash_solution_instructions:
-            ``,
-          python_script_solution_instructions:
-            `For this type of exercise, write your solution in Python. You will write the bash code that executes your Python script in Test code.`,
-          r_solution_instructions:
-            ``,
-
-          // Test Code additional instructions
-          not_code_test_code_instructions: '',
-          python_test_code_instructions:
-            ``,
-          bash_test_code_instructions:
-            ``,
-          python_script_test_code_instructions:
-            `Write a bash script to run your solution code (saved as 'code.py') using Python and arguments.`,
-          r_test_code_instructions:
-            ``,
-
-          // Pre-Execution Code additional instructions
-          not_code_check_code_instructions: '',
-          python_check_code_instructions:
-            `Write your pre-execution code in Python.`,
-          bash_check_code_instructions:
-            `Write your pre-execution code in bash.`,
-          python_script_check_code_instructions:
-            `Write your pre-execution code in bash.`,
-          r_check_code_instructions:
-            `Write your pre-execution code in R.`,
-
-          // Back end specific Solution examples
-          not_code_solution_example: '',
-          python_solution_example:
-            `def add_numbers(x, y):
-            \treturn(x + y)`,
-          bash_solution_example:
-            `mkdir Assignment1
-             cd Assignment1
-             touch newfile
-             ls`,
-          python_script_solution_example:
-            `import sys
-            \nprint(sys.argv[1])
-            `,
-          r_solution_example:
-            `# R example code
-            add_numbers <- function(x, y) {
-            \treturn(x + y)
-            }`,
-
-          // Back end specific Test Code examples
-          not_code_test_code_example: '',
-          python_test_code_example:
-            `# Python example code
-            print(add_numbers(2, 3))`,
-          bash_test_code_example:
-            ``,
-          python_script_test_code_example:
-            `# Python script example code
-            python code.py "Hello world!"`,
-          r_test_code_example:
-            `# R example code
-            print(add_numbers(2, 3))`,
-
-          // Back end specific Pre-Execution Code examples
-          not_code_check_example: '',
-          bash_check_example:
-            `# Bash example code
-            FIND='#'
-            while read -r line;
-            \tdo
-            \tif grep -q "$FIND" <<< "$line"; then
-            \t\techo "Error: $FIND operator not allowed in this exercise"
-            \t\tbreak"
-            \tfi
-            done < code`,
-          python_check_example:
-            `# Python example code
-            with open("code") as student_code:
-            \tfor line in student_code:
-            \t\tif "len(" in line:
-            \t\t\tprint("Error: len() function not permitted in this exercise")
-            \t\t\tbreak`,
-          python_script_check_example:
-            `# Python script example code
-            FIND='#'
-            while read -r line;
-            \tdo
-            \tif grep -q "$FIND" <<< "$line"; then
-            \t\techo "Error: $FIND operator not allowed in this exercise"
-            \t\tbreak"
-            \tfi
-            done < code`,
-          r_check_example:
-            `# R example code
-            connection <- file("code")
-            open(connection)
-            line <- readLines(connection, n=1)
-            search <- "len"
-            \nwhile(length(line) > 0) {
-            \tif (grepl(tolower(search), tolower(line))) {
-            \t\tprint("Error: len() function not allowed in this exercise")
-            \t\tbreak
-            \t}
-            \n\tline <- readLines(connection, n=1)
-            }
-            \nclose(connection)`,
-        }
-
-        function updateBackEndOptions(back_end, output_type_to_select) {
-            // Clear out existing options from the dropdown
-            $("#output_types").empty();
-
-            ot_select = document.getElementById("output_types");
-            $.get('/back_end/' + back_end, function( data ) {
-                var json_data = JSON.parse(data);
-
-                var i;
-                for (i = 0; i < Object.keys(json_data["output_types"]).length; i++) {
-                    key = Object.keys(json_data["output_types"])[i];
-                    description = json_data["output_types"][key];
-
-                    var opt = document.createElement('option');
-                    opt.style.width = "50px";
-                    opt.innerHTML = description;
-                    opt.value = key;
-
-                    if (output_type_to_select == '') {
-                        if (key == "txt")
-                            opt.selected = true;
-                    }
-                    else {
-                        if (key == output_type_to_select)
-                            opt.selected = true;
-                    }
-                    ot_select.appendChild(opt);
-                }
-
-                answer_code_editor.getSession().setMode(json_data["code_completion_path"]);
-                starter_code_editor.getSession().setMode(json_data["code_completion_path"]);
-                check_code_editor.getSession().setMode(json_data["code_completion_path"]);
-
-                for (i of current_tests) {
-                  eval(`test_code_editor_${i}.getSession().setMode(json_data["code_completion_path"])`);
-                }
-            });
-
-            // load back_end specific instructions for solution, test_code, and pre-execution code
-            let back_end_type = document.getElementById("back_end").value;
-            if (exampleDict[back_end_type + "_solution_instructions"] != "")
-              document.getElementById("solution_additional_instructions").innerHTML = "<p><em>" + exampleDict[back_end_type + "_solution_instructions"] + "</em></p>"
-            else
-              document.getElementById("solution_additional_instructions").innerHTML = ""
-
-            if (exampleDict[back_end_type + "_test_code_instructions"] != "")
-              $("p.test_code_additional_instructions").html("<p><em>" + exampleDict[back_end_type + "_test_code_instructions"] + "</em></p>");
-            else
-              $("p.test_code_additional_instructions").html("");
-
-            if (exampleDict[back_end_type + "_check_code_instructions"] != "")
-              document.getElementById("check_code_additional_instructions").innerHTML = "<p><em>" + exampleDict[back_end_type + "_check_code_instructions"] + "</em></p>"
-            else
-              document.getElementById("check_code_additional_instructions").innerHTML = ""
-        }
-
-
-        ace.require("ace/ext/language_tools");
-    </script>
-
-        <div class="shadow-box">
-            <div class="row-container bottom-space">
-                <div class="a-title-container">
-                    <p><strong>Title*:</strong></p>
-                    <p><input name="title" id="title" class="input is-grey is-fullwidth" placeholder="Please specify a descriptive title." autofocus></p>
-                </div>
-                <div class="a-visible">
-                    <p><strong>Visible: </strong>
-                        <div class="select is-grey">
-                            <select name="is_visible" class="edit-select">
-                            {% if exercise_basics["visible"] %}
-                                <option value="Yes" selected>Yes</option>
-                                <option value="No">No</option>
-                            {% else %}
-                                <option value="Yes">Yes</option>
-                                <option value="No" selected>No</option>
-                            {% end %}
-                            </select>
-                        </div>
-                    </p>
-                </div>
+    <div class="shadow-box">
+        <div class="row-container bottom-space">
+            <div class="a-title-container">
+                <p><strong>Title*:</strong></p>
+                <p><input id="title" class="input is-grey is-fullwidth" placeholder="Please specify a descriptive title." autofocus></p>
             </div>
-
-            <div class="front-row-container">
-                <div class="a-visible">
-                    <p><strong>Back end: </strong>
-                        <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end that will be used to check the students' solution. In most cases, a back end is associated with a specific programming language. The not_code option enables students to submit a solution by entering text rather than coding.">
-                            <i class="far fa-question-circle"></i>
-                        </label>
-                        <div class="select is-grey">
-                            <select name="back_end" id="back_end" onchange="updateBackEndOptions(this.value, '')" class="edit-select">
-                            {% for back_end in back_ends %}
-                                <option
-                                {% if back_end == exercise_details["back_end"] %}
-                                    selected
-                                {% end %}
-                                >{{ back_end }}</option>
-                            {% end %}
-                            </select>
-                        </div>
-                    </p>
-                </div>
-
-                <div class="a-visible">
-                    <p><strong>Output type: </strong>
-                        <div class="select is-grey">
-                            <select name="output_type" id="output_types" class="edit-select">
-                            </select>
-                        </div>
-                    </p>
-                </div>
-
-                <div class="a-visible">
-                    <p><strong>Allow any response: </strong>
-                        <div class="select is-grey">
-                            <select name="allow_any_response" class="edit-select">
-                            {% if exercise_details["allow_any_response"] %}
-                                <option value="Yes" selected>Yes</option>
-                                <option value="No">No</option>
-                            {% else %}
-                                <option value="Yes">Yes</option>
-                                <option value="No" selected>No</option>
-                            {% end %}
-                            </select>
-                        </div>
-                    </p>
-                </div>
-            </div>
-
-            <div class="top-space">
-                <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
-                <!--<p><div class="textarea is-grey is-fullwidth monospace" id="instructions" placeholder="Please provide instructions for this exercise." style="min-height: 400px" contenteditable="true">{{ exercise_details["instructions"] }}</div></p>-->
-                <p><textarea name="instructions" id="instructions_text" class="textarea" rows=10 placeholder="Please provide instructions for this assignment.">{{ exercise_details["instructions"] }}</textarea></p>
-            </div>
-
-            <div class="row-container top-space">
-                <div>
-                    <p><strong>Enable pair programming for this exercise: </strong>
-                        <div class="select is-grey">
-                            <select id="enable_pair_programming" name="enable_pair_programming" class="edit-select">
-                            {% if exercise_details["enable_pair_programming"] %}
-                                <option value="Yes" selected>Yes</option>
-                                <option value="No">No</option>
-                            {% else %}
-                                <option value="Yes">Yes</option>
-                                <option value="No" selected>No</option>
-                            {% end %}
-                            </select>
-                        </div>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="shadow-box">
-            <p><strong>Credit: </strong>
-                <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
-                <br />Please provide a link to the data source(s) if you obtained the dataset from someone else.
-            </p>
-            <textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" name="credit">{{ exercise_details["credit"] }}</textarea></p>
-
-            <div id="file_upload">
-                <p><strong>Data file(s): </strong>
-                    <br />Optionally, you can upload data files that students will use on this exercise. To upload more than one, select multiple files in a single upload or click "Add another file". The maximum total file size is 10 megabytes across all files.
-                </p>
-                <div id="uploaded_files" class="uploaded-files"></div>
-                <input id="file_container" name="file_container" style="display: none;"></input>
-                <div id="data_file" class="file is-small has-name space-div">
-                    <label class="file-label">
-                        <input class="file-input" type="file" name="data" multiple>
-                        <span class="file-cta">
-                            <span class="file-icon">
-                            <i class="fas fa-upload"></i>
-                            </span>
-                            <span class="file-label">Choose a file…</span>
-                        </span>
-                        <span class="file-name"></span>
-                    </label>
-                </div>
-            </div>
-            <div id="add_file">
-
-                <a class="button is-grey" onclick="showAddFile()">Add another file</a>
-            </div>
-        </div>
-
-        <div class="shadow-box">
-            <div>
-                <p><strong>Solution*: </strong></p>
-                <p>Please specify a solution for this exercise. If it requires programming, the solution will be executed, and the output of your solution will be used as the expected output. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new exercise instead.</p>
-                <p id="solution_additional_instructions"></p>
-                <textarea name="answer_code" id="answer_code" placeholder="Please provide a solution." rows="10">{{ exercise_details["answer_code"] }}</textarea>
-                <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
-                <textarea name="answer_code_text" id="answer_code_text" class="invisible"></textarea>
-            </div>
-
-            <div class="button is-light bottom-space" id="example_solution_button" onclick="showExampleSolution()">
-              Toggle Example Code
-              <input type="checkbox" class="invisible" id="example_solution_checkbox">
-            </div>
-
-            <div id="code-output">
-            {% if exercise_basics["exists"] %}
-                {% if old_text_output != '' or old_image_output != '' %}
-                        <p><strong>Old output:</strong><br />
-
-                    {% if old_text_output != '' %}
-                        <p><pre><code>{{ old_text_output }}</code></pre></p>
-                    {% end %}
-                    {% if old_image_output != '' %}
-                        <p><figure class='img'><img src='data:image/jpg;base64,{{ old_image_output }}' width='95%' /></figure></p>
-                    {% end %}
-
-                    <p><strong>New output:</strong><br />
-                {% else %}
-                    <p><strong>Output:</strong><br />
-                {% end %}
-                {% if exercise_details["expected_text_output"] != "" %}
-                    <p><pre><code>{{ exercise_details["expected_text_output"] }}</code></pre></p>
-                {% elif exercise_details["expected_image_output"] == "" %}
-                    <p><pre>[This solution produced no output.]</pre></p>
-                {% end %}
-                {% if exercise_details["expected_image_output"] != "" %}
-                    <p><figure class='img'><img src='data:image/jpg;base64,{{ exercise_details["expected_image_output"] }}' width='95%' /></figure></p>
-                {% end %}
-            {% end %}
-            </div>
-
-            <div>
-                <p><strong>Show expected output: </strong>
+            <div class="a-visible">
+                <p><strong>Visibility: </strong>
                     <div class="select is-grey">
-                        <select name="show_expected" class="edit-select">
-                        {% if exercise_details["show_expected"] %}
-                            <option value="Yes" selected>Yes</option>
+                        <select id="visible" class="edit-select">
                             <option value="No">No</option>
-                        {% else %}
                             <option value="Yes">Yes</option>
-                            <option value="No" selected>No</option>
-                        {% end %}
                         </select>
                     </div>
                 </p>
             </div>
         </div>
 
-        <div class="shadow-box">
-            <div>
-                <p><strong>Pre-execution logic:</strong></p>
-                <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
-                <p>
-                <p id="check_code_additional_instructions"></p>
-                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide checking code." rows="10" id="check_code" name="check_code">{% if exercise_details["check_code"] %}{{ exercise_details["check_code"] }}{% end %}</textarea>
-                    <textarea name="check_code_text" id="check_code_text" class="invisible"></textarea>
-                </p>
-            </div>
-
-            <div class="button is-light space-div" id="example_check_code_button" onclick="showExamplePreExecution()">
-              Toggle Example Code
-              <input type="checkbox" class="invisible" id="example_check_code_checkbox">
-            </div>
-        </div>
-
-        <div class="shadow-box">
-            <div id="test_upload">
-                <p><strong>Tests:</strong></p>
-                <p>You can write one or more tests that evaluate the integrity of the student's code. Oftentimes, tests are used when the instructor has asked students to write a function, and each test invokes the function using certain parameters. Either way, the test code will be invoked after the student's code. For each test, you may indicate whether the test code should be visible to students. Hidden tests help to ensure that the student cannot guess the expected output. Generally, when tests are used, we recommend including at least one visible test and one hidden test.</p>
-                <p class="test_code_additional_instructions"></p>
-
-                <div id="test_example_div" style="display:none">
-                    <div class="button is-light bottom-space" id="example_test_code_button" onclick="showExampleTestCode()">
-                      Toggle Example Code
-                      <input type="checkbox" class="invisible" id="example_test_code_checkbox">
+        <div class="front-row-container">
+            <div class="a-visible">
+                <p><strong>Back end: </strong>
+                    <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Choose the back end that will be used to check the students' solution. In most cases, a back end is associated with a specific programming language. The not_code option enables students to submit a solution by entering text rather than coding.">
+                        <i class="far fa-question-circle"></i>
+                    </label>
+                    <div class="select is-grey">
+                        <select id="back_end" onchange="updateBackEndOptions(this.value, null)" class="edit-select">
+                        </select>
                     </div>
-                    <pre id="test_code_example" style="display:none"><code></code></pre>
-                </div>
-
-                <input id="tests_container" name="tests_container" style="display: none;"></input>
-                <div id="tests_div"></div>
-
-                <div>
-                    <a class="button is-grey" onclick="showAddTest(true)">Add test</a>
-                </div>
+                </p>
             </div>
-        </div>
 
-        <div class="shadow-box">
-            <div>
-                <p><strong>Starter code: </strong></p>
-                <p>Starter code will be given to a student when they haven't made any submissions yet. They'll be able to add to this code in order to solve the exercise.</p>
-                <p>
-                    <textarea class="textarea is-fullwidth monospace" placeholder="Please provide starter code." rows="10" id="starter_code" name="starter_code">{% if exercise_details["starter_code"] %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
-                    <textarea name="starter_code_text" id="starter_code_text" class="invisible"></textarea>
+            <div class="a-visible">
+                <p><strong>Output type: </strong>
+                    <div class="select is-grey">
+                        <select id="output_type" class="edit-select">
+                        </select>
+                    </div>
+                </p>
+            </div>
+
+            <div class="a-visible">
+                <p><strong>Allow any response: </strong>
+                    <div class="select is-grey">
+                        <select id="allow_any_response" class="edit-select">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
                 </p>
             </div>
         </div>
 
-        <div class="shadow-box">
-            <div class="space-div">
-                <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p>
-                <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" name="hint">{{ exercise_details["hint"] }}</textarea></p>
-            </div>
-
-            <div class="bottom-space">
-                <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p>
-                <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" name="answer_description">{{ exercise_details["answer_description"] }}</textarea></p>
-            </div>
-
-            <div class="row-container bottom-space">
-                <div>
-                    <p><strong>Allow students to view the instructor's solution after they pass the exercise: </strong>
-
-                        <div class="select is-grey">
-                            <select name="show_answer" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
-                            {% if exercise_details["show_answer"] %}
-                                <option value="Yes" selected>Yes</option>
-                                <option value="No">No</option>
-                            {% else %}
-                                <option value="Yes">Yes</option>
-                                <option value="No" selected>No</option>
-                            {% end %}
-                            </select>
-                        </div>
-                    </p>
-                </div>
-            </div>
-
-            <div class="row-container bottom-space">
-                <div>
-                    <p><strong>Allow students to see anonymized submissions from other students: </strong>
-                        <div class="select is-grey">
-                            <select name="show_student_submissions" id="show_student_submissions" class="edit-select">
-                            {% if exercise_details["show_student_submissions"] %}
-                                <option value="Yes" selected>Yes</option>
-                                <option value="No">No</option>
-                            {% else %}
-                                <option value="Yes">Yes</option>
-                                <option value="No" selected>No</option>
-                            {% end %}
-                            </select>
-                        </div>
-                    </p>
-                </div>
-            </div>
-
-            <div class="row-container bottom-space">
-                <div>
-                    <p><strong>Maximum # of submissions:</strong></p>
-                    <p>
-                        <div class="select is-grey">
-                            <select name="max_submissions" class="edit-select">
-                            {% for i in range(101) %}
-                                {% if i == 0 %}
-                                    {% if exercise_details["max_submissions"] == i %}
-                                        <option value="0" selected>Unlimited</option>
-                                    {% else %}
-                                        <option value="0">Unlimited</option>
-                                    {% end %}
-                                {% else %}
-                                    {% if exercise_details["max_submissions"] == i %}
-                                        <option selected>{{ i }}</option>
-                                    {% else %}
-                                        <option>{{ i }}</option>
-                                    {% end %}
-                                {% end %}
-                            {% end %}
-                            </select>
-                        </div>
-                    </p>
-                </div>
-            </div>
+        <div class="top-space">
+            <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
+            <p><textarea id="instructions" class="textarea" rows=10 placeholder="Please provide instructions for this assignment."></textarea></p>
         </div>
 
-        <textarea name="tests_json" id="tests_json" class="invisible"></textarea>
-        <div class="invisible" id="save_code"></div>
+        <div class="row-container top-space">
+            <div>
+                <p><strong>Enable pair programming for this exercise: </strong>
+                    <div class="select is-grey">
+                        <select id="enable_pair_programming" class="edit-select">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+    </div>
 
-        <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
-        <p style="display:flex;align-items:center;justify-content:space-between;">
-        <span>
-        {% if exercise_basics["exists"] %}
-            <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Done</a> |
-        {% end %}
-            <a href="#top">Back to top</a>
-        </span>
-        {% if exercise_basics["exists"] %}
-            <button type="button" class="is-pulled-right button is-white hold_output_constant_button" onclick="holdOutputConstant()">Hold output constant</button>
-        {% end %}
+    <div class="shadow-box">
+        <p><strong>Credit: </strong>
+            <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
+            <br />Please provide a link to the data source(s) if you obtained the dataset from someone else.
         </p>
 
-        <!-- Code to modify page behavior at the end of loading -->
-        <script>
-            function saveCode() {
-              var save_code = document.getElementById("save_code").innerHTML
-              return save_code.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&")
+        <textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" id="credit"></textarea></p>
+
+        <p><strong>Data file(s):</strong></p>
+
+        <p>Optionally, you can upload data files that students will use on this exercise. You can upload more than one file, if needed. The maximum amount of data per exercise is 10 megabytes across all files.</p>
+
+        <div id="files_table" class="table-container"></div>
+
+        <div class="file is-normal">
+            <label class="file-label">
+                <input class="file-input" type="file" id="upload_file_control" multiple>
+                <span class="file-cta">
+                    <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label">
+                        Upload a file...
+                    </span>
+                </span>
+            </label>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <div>
+            <p><strong>Solution*: </strong></p>
+            <p>Please specify a solution for this exercise. If it requires programming, the solution will be executed, and the output of your solution will be used as the expected output. Please note: If your solution changes after students have already submitted answers, any students' answers that were previously marked as correct will remain as correct, but only your most recent solution will appear when students view past submissions. This may be confusing to students, so use caution when changing the solution; consider creating a new exercise instead.</p>
+            <p id="solution_additional_instructions"></p>
+            <textarea id="solution_code" id="solution_code" placeholder="Please provide a solution." rows="10"></textarea>
+            <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
+        </div>
+
+        <div class="button is-light space-div" id="example_solution_button" onclick="toggleExample('solution')">
+          Show example code
+        </div>
+
+        <!--<div>
+            <p><strong>Show expected output: </strong></p>
+            <div class="select is-grey">
+                <select id="show_expected" class="edit-select">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+        </div>-->
+    </div>
+
+    <div class="shadow-box">
+        <div>
+            <p><strong>Verification logic:</strong></p>
+            <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
+            <p>
+            <p id="verification_additional_instructions"></p>
+                <textarea class="textarea is-fullwidth monospace" placeholder="Please provide verification code." rows="10" id="verification_code" id="verification_code"></textarea>
+            </p>
+        </div>
+
+        <div class="button is-light space-div" id="example_verification_button" onclick="toggleExample('verification')">
+          Show example code
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <p><strong>Tests:</strong></p>
+
+        <p>You must write one or more tests to evaluate the students' code. A test can be as simple as executing the student's code and verifying that their output matches the output of the instructor's solution. Additionally, you can include code that is executed before and/or after the students' code. For example, you could use code that declares variables <em>before</em> the student's code is executed. Or if you have asked students to write function(s); you could use code that invokes their function(s) <em>after</em> the student'each has been executed. You might include multiple such tests so ensure their code works properly in multiple scenarios. For each test, you must indicate whether the test code will be visible to students, whether the expected output will be visible to students, and whether the output of students' code will be visible to them. To aid in debugging, we recommend that at least one test show the test code, expected output, and the students' output. However, hiding this information for at least one test can help to prevent cheating.</p>
+
+        <p id="test_additional_instructions"></p>
+
+        <div id="tests_table" class="table-container"></div>
+
+        <div class="button is-light bottom-space mt-9" id="add_test_button">
+            Add test
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <div>
+            <p><strong>Starter code: </strong></p>
+            <p>Starter code will be given to a student when they haven't made any submissions yet. They'll be able to add to this code in order to solve the exercise.</p>
+            <p>
+                <textarea class="textarea is-fullwidth monospace" placeholder="Please provide starter code." rows="10" id="starter_code" id="starter_code"></textarea>
+            </p>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <div class="space-div">
+            <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p>
+            <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" id="hint"></textarea></p>
+        </div>
+
+        <div class="bottom-space">
+            <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p>
+            <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" id="solution_description"></textarea></p>
+        </div>
+
+        <div class="row-container bottom-space">
+            <div>
+                <p><strong>Allow students to view the instructor's solution after they pass the exercise: </strong>
+
+                    <div class="select is-grey">
+                        <select id="show_instructor_solution" class="edit-select" onchange="showStudentSubmissionsDiv(this.value)">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <div class="row-container bottom-space">
+            <div>
+                <p><strong>Allow students to see anonymized submissions from peers: </strong>
+                    <div class="select is-grey">
+                        <select id="show_peer_solutions" class="edit-select">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <div class="row-container bottom-space">
+            <div>
+                <p><strong>Maximum # of submissions:</strong></p>
+                <p>
+                    <div class="select is-grey">
+                        <select id="max_submissions" class="edit-select">
+                        {% for i in [0, 1, 2, 3, 4, 5, 10, 20, 50, 100] %}
+                            {% if i == 0 %}
+                                <option value="0">Unlimited</option>
+                            {% else %}
+                                <option>{{ i }}</option>
+                            {% end %}
+                        {% end %}
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <p><button class="button is-dark is-fullwidth" onclick="save()">Save</button></p>
+
+    <div class="is-hidden" id="output">
+    </div>
+
+    <div id="add_test_modal" class="modal is-clipped">
+        <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title is-size-5 has-text-centered has-text-weight-bold">Add test</p>
+                    <button class="delete" aria-label="close" id="add_test_modal_close"></button>
+                </header>
+
+                <section class="modal-card-body">
+                    <div class="has-text-weight-medium mb-2">Test title*:<br />
+                      <textarea id="add_test_title" placeholder="Please specify a short, descriptive title." class="textarea is-fullwidth" rows="1" autofocus></textarea>
+                    </div>
+
+                    <div class="has-text-weight-medium mb-2">Instructions:<br />
+                      <textarea id="add_test_instructions" placeholder="You may specify instructions for students." class="textarea is-fullwidth" rows="4"></textarea>
+                    </div>
+
+                    <div class="has-text-weight-medium mb-2">Code that will be executed <em>before</em> the student's code:<br />
+                      <textarea id="before_test_code" placeholder="Please specify any code that will be executed before the student's code." class="textarea is-fullwidth monospace"></textarea>
+                    </div>
+
+                    <div class="has-text-weight-medium mb-2">Code that will be executed <em>after</em> the student's code*:<br />
+                      <textarea id="after_test_code" placeholder="Please specify any code that will be executed after the student's code." class="textarea is-fullwidth monospace"></textarea>
+                    </div>
+
+                    <div class="button is-light bottom-space" id="example_after_test_button" onclick="toggleExample('after_test')">
+                        Show example code
+                    </div>
+
+                    <div class="has-text-weight-medium mb-2">Do you want students to see the test code?</div>
+                    <div class="select is-primary">
+                        <select id="can_see_test_code">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="has-text-weight-medium mb-2 mt-4">Do you want students to see the expected output?</div>
+                    <div class="select is-primary">
+                        <select id="can_see_expected_output">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="has-text-weight-medium mb-2 mt-4">Do you want students to see the output of their code?</div>
+                    <div class="select is-primary">
+                        <select id="can_see_code_output">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+
+                    <div id="test_message" class="notification mt-4 mb-1"></div>
+                    <input type="hidden" id="previous_test_title" />
+                </section>
+
+                <footer class="modal-card-foot">
+                    <button class="button is-success" id="add_test_modal_add">Add / Update</button>
+                    <button class="button" id="add_test_modal_cancel">Cancel</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <div id="view_file_modal" class="modal is-clipped">
+        <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title is-size-5 has-text-centered has-text-weight-bold" id="view_file_modal_header"></p>
+                    <button class="delete" aria-label="close" id="view_file_modal_close"></button>
+                </header>
+
+                <section class="modal-card-body">
+                    <textarea id="view_file_modal_text" class="textarea is-fullwidth"></textarea>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+        // Functions
+        function showTests() {
+            if (Object.keys(exercise_details_obj["tests"]).length == 0) {
+                $("#tests_table").addClass("is-hidden");
+                return;
             }
 
-            function showExampleSolution() {
-                document.getElementById("example_solution_checkbox").checked = !(document.getElementById("example_solution_checkbox").checked);
-                if (document.getElementById("example_solution_checkbox").checked == true) {
-                  document.getElementById("example_solution_button").classList.remove("is-light");
-                  document.getElementById("example_solution_button").classList.add("is-primary");
-                  // Saves current code.
-                  document.getElementById("save_code").innerHTML = answer_code_editor.getValue();
-                  // Displays example code.
-                  answer_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_solution_example']);
-              } else {
-                  document.getElementById("example_solution_button").classList.remove("is-primary");
-                  document.getElementById("example_solution_button").classList.add("is-light");
-                  answer_code_editor.setValue(saveCode())
-              }
+            var html = "<table class='table is-striped'>";
+            html += "<thead><tr><th>Title</th><th>See test code</th><th>See expected output</th><th>See code output</th><th>Edit</th><th>Delete</th></thead>";
+            html += "<tbody>";
+
+            for (const test_title in sortObj(exercise_details_obj["tests"])) {
+                html += "<tr>";
+                html += `  <td>${test_title}</td>`;
+                html += `  <td>${exercise_details_obj["tests"][test_title].can_see_test_code ? "Yes" : "No"}</td>`;
+                html += `  <td>${exercise_details_obj["tests"][test_title].can_see_expected_output ? "Yes" : "No"}</td>`;
+                html += `  <td>${exercise_details_obj["tests"][test_title].can_see_code_output ? "Yes" : "No"}</td>`;
+                html += `  <td>
+                               <a onclick="editTest('${test_title}')">
+                                   <i class="fas fa-edit"></i>
+                               </a>
+                           </td>`;
+                html += `  <td>
+                               <a onclick="removeTest('${test_title}')">
+                                   <i class="fas fa-trash-alt"></i>
+                               </a>
+                           </td>`;
+                html += "</tr>";
             }
 
-            function showExampleTestCode() {
-                document.getElementById("example_test_code_checkbox").checked = !(document.getElementById("example_test_code_checkbox").checked);
-                if (document.getElementById("example_test_code_checkbox").checked == true) {
-                  document.getElementById("example_test_code_button").classList.remove("is-light");
-                  document.getElementById("example_test_code_button").classList.add("is-primary");
-                  // Displays example code.
-                  document.getElementById("test_code_example").innerHTML = exampleDict[document.getElementById("back_end").value + '_test_code_example'];
-                  document.getElementById("test_code_example").style.display = "block";
-              } else {
-                  document.getElementById("example_test_code_button").classList.remove("is-primary");
-                  document.getElementById("example_test_code_button").classList.add("is-light");
-                  // Removes example code.
-                  document.getElementById("test_code_example").innerHTML = "";
-                  document.getElementById("test_code_example").style.display = "none";
-              }
+            html += "</tbody>";
+            html += "</table>";
+
+            $("#tests_table")[0].innerHTML = html;
+            $("#tests_table").removeClass("is-hidden");
+        }
+
+        function showFiles() {
+            if (Object.keys(exercise_details_obj["data_files"]).length == 0) {
+                $("#files_table").addClass("is-hidden");
+                return;
             }
 
-            function showExamplePreExecution() {
-                document.getElementById("example_check_code_checkbox").checked = !(document.getElementById("example_check_code_checkbox").checked);
-                if (document.getElementById("example_check_code_checkbox").checked == true) {
-                  document.getElementById("example_check_code_button").classList.remove("is-light");
-                  document.getElementById("example_check_code_button").classList.add("is-primary");
-                  // Saves current code.
-                  document.getElementById("save_code").innerHTML = check_code_editor.getValue();
-                  // Displays example code.
-                  check_code_editor.setValue(exampleDict[document.getElementById("back_end").value + '_check_example']);
-              } else {
-                  document.getElementById("example_check_code_button").classList.remove("is-primary");
-                  document.getElementById("example_check_code_button").classList.add("is-light");
-                  check_code_editor.setValue(saveCode())
-              }
+            var html = "<table class='table is-striped'>";
+            html += "<thead><tr><th>Name</th><th>Size (bytes)</th><th>View</th><th>Delete</th></thead>";
+            html += "<tbody>";
+
+            for (const file_name in sortObj(exercise_details_obj["data_files"])) {
+                html += "<tr>";
+                html += `  <td>${file_name}</td>`;
+                html += `  <td>${exercise_details_obj["data_files"][file_name]["size"]}</td>`;
+                html += `  <td>
+                               <a onclick="viewFile('${file_name}')">
+                                   <i class="fas fa-file-alt"></i>
+                               </a>
+                           </td>`;
+                html += `  <td>
+                               <a onclick="removeFile('${file_name}')">
+                                   <i class="fas fa-trash-alt"></i>
+                               </a>
+                           </td>`;
+                html += "</tr>";
             }
 
-            var answer_code_editor = ace.edit("answer_code", {
-                theme: "ace/theme/{{ user_info['ace_theme'] }}",
-                autoScrollEditorIntoView: true,
-                minLines: 10,
-                maxLines: 25,
-                fontSize: "12pt"
-            });
-
-            var starter_code_editor = ace.edit("starter_code", {
-                theme: "ace/theme/{{ user_info['ace_theme'] }}",
-                autoScrollEditorIntoView: true,
-                minLines: 10,
-                maxLines: 15,
-                fontSize: "12pt"
-            });
-
-            var check_code_editor = ace.edit("check_code", {
-                theme: "ace/theme/{{ user_info['ace_theme'] }}",
-                autoScrollEditorIntoView: true,
-                minLines: 10,
-                maxLines: 15,
-                fontSize: "12pt"
-            });
-
-            updateBackEndOptions('{{ exercise_details["back_end"] }}', '{{ exercise_details["output_type"] }}');
-
-            function showTest(i) {
-              document.getElementById(`test_${i}`).style.display = (document.getElementById(`test_${i}`).style.display == "none") ? "block" : "none";
-            }
-            {% if exercise_basics["title"] != "" %}
-                document.getElementById("title").value = '{{ exercise_basics["title"].replace("'", "\\'") }}';
-            {% end %}
-
-            document.getElementById("myForm").onsubmit = function(evt) {
-                localStorage.setItem("hold_output_constant_checkbox", document.getElementById("hold_output_constant_checkbox").value);
-                document.getElementById("answer_code_text").value = answer_code_editor.getValue();
-                document.getElementById("starter_code_text").value = starter_code_editor.getValue();
-                document.getElementById("check_code_text").value = check_code_editor.getValue();
-                //document.getElementById("instructions_text").value = document.getElementById("instructions").innerHTML
-
-                tests_array = []
-                for (i of current_tests) {
-                    var code = eval(`test_code_editor_${i}.getValue()`);
-
-                    var visible_to_students = document.getElementById(`show_test_code_${i}`).value == "Yes";
-                    var instructions = document.getElementById(`test_instructions_${i}`).value;
-
-                    //var instructions = "";
-                    //if (document.getElementById(`show_test_code_${i}`).value == "No") {
-                    //    instructions = document.getElementById(`test_instructions_${i}`).value;
-                    //}
-
-                    // clear instructions before submitting if visibility is set to "Yes"
-                    //var instructions = () ? "" : document.getElementById(`test_instructions_${i}`).value;
-
-                    // set instructions to default message if visibility is set to "No" and no other instructions given
-                    // instructions = ((document.getElementById(`show_test_code_${i}`).value == "No") && (instructions == "")) ? "" : instructions
-                    //instructions = ((document.getElementById(`show_test_code_${i}`).value == "No") && (instructions == "")) ? "" : instructions
-
-                    //if (code != "")
-                    tests_array.push({visible_to_students: visible_to_students, code: code, test_instructions: instructions})
-                }
-
-                tests_array = JSON.stringify(tests_array)
-                document.getElementById("tests_json").value = tests_array;
-            }
-
-            window.onunload = function(e) {
-              localStorage.setItem("hold_output_constant_checkbox", document.getElementById("hold_output_constant_checkbox").value);
-            };
-
-            document.getElementById("hold_output_constant_checkbox").value = localStorage.getItem("hold_output_constant_checkbox");
-            localStorage.setItem("hold_output_constant_checkbox", "No");
-            if (document.getElementById("hold_output_constant_checkbox").value == "Yes") {
-                var buttons = Array.from(document.getElementsByClassName('hold_output_constant_button'));
-                buttons.forEach(x => {x.classList.remove("is-white")});
-                buttons.forEach(x => {x.classList.add("is-primary")});
-            }
-
-            function holdOutputConstant() {
-                var buttons = Array.from(document.getElementsByClassName('hold_output_constant_button'));
-                document.getElementById("hold_output_constant_checkbox").value = (document.getElementById("hold_output_constant_checkbox").value == "Yes") ? "No" : "Yes";
-                if (document.getElementById("hold_output_constant_checkbox").value == "Yes") {
-                  buttons.forEach(x => {x.classList.remove("is-white")});
-                  buttons.forEach(x => {x.classList.add("is-primary")});
-              } else {
-                  buttons.forEach(x => {x.classList.remove("is-primary")});
-                  buttons.forEach(x => {x.classList.add("is-white")});
-              }
-            }
-
-            var index = 1;
-            var test_index = -1;
-
-            function showAddFile() {
-                var file_div = document.createElement("div");
-                file_div.classList.add("file", "is-small", "has-name", "space-div");
-
-                var file_label = document.createElement("label");
-                file_label.className = "file-label";
-
-                var file_input = document.createElement("input");
-                file_input.className = "file-input";
-                file_input.setAttribute("name", "data" + index);
-                index += 1;
-                file_input.type = "file";
-                file_input.multiple = true;
-                file_label.appendChild(file_input);
-
-                var file_span = document.createElement("span");
-                file_span.className = "file-cta";
-
-                var icon_span = document.createElement("span");
-                icon_span.className = "file-icon";
-                var icon = document.createElement("i");
-                icon.classList.add("fas", "fa-upload");
-                icon_span.appendChild(icon);
-                file_span.appendChild(icon_span);
-
-                var label_span = document.createElement("span");
-                label_span.className = "file-label";
-                label_span.innerHTML = "Choose a file...";
-                file_span.appendChild(label_span);
-                file_label.appendChild(file_span);
-
-                var name_span = document.createElement("span");
-                name_span.className = "file-name";
-                file_label.appendChild(name_span);
-
-                file_div.appendChild(file_label);
-
-                var file_upload_div = document.getElementById("file_upload");
-                file_upload_div.appendChild(file_div);
-
-                updateFiles();
-            }
-
-            async function showAddTest(changeFocus) {
-                test_index += 1;
-                var test_div = document.createElement("div");
-                test_div.style.margin = "0 0 80px 0";
-                test_div.id = `test_div_${test_index}`
-                var p_wrapper = document.createElement("p");
-                p_wrapper.classList.add("top-space");
-
-                var line_break = document.createElement("hr");
-                var d_button = document.createElement("button");
-                d_button.classList.add("button", "is-orange", "space-div", "is-pulled-right");
-                d_button.innerHTML = "Remove Test";
-                d_button.id = `delete_button_${test_index}`;
-                d_button.setAttribute("onclick", `remove_test_code(${test_index})`);
-
-                var test_editor = document.createElement("textarea");
-                test_editor.setAttribute("placeholder", "Please provide test code.");
-                test_editor.setAttribute("rows", "10");
-                test_editor.setAttribute("name", `test_code_${test_index}`)
-                test_editor.setAttribute("id", `test_code_${test_index}`)
-                test_editor.classList.add("textarea", "is-fullwidth", "monospace");
-
-                var toggle_vis_div = document.createElement("div")
-                toggle_vis_div.classList.add("space-div");
-
-                var vis_span = document.createElement("strong");
-                vis_span.innerHTML = "Visible to students:"
-
-                var test_instructions_div = document.createElement("div");
-                test_instructions_div.setAttribute("id", `test_instructions_div_${test_index}`)
-                test_instructions_div.style.marginTop = "50px";
-                test_instructions_div.style.display = "none"
-
-                var test_instructions_span = document.createElement("strong");
-                test_instructions_span.innerHTML = "Provide instructions for this test case:"
-
-                var test_instructions = document.createElement("textarea")
-                test_instructions.setAttribute("name", `test_instructions_${test_index}`)
-                test_instructions.setAttribute("id", `test_instructions_${test_index}`)
-                test_instructions.classList.add("textarea", "is-grey", "is-fullwidth", "monospace")
-
-                var select_div = document.createElement("div");
-                select_div.classList.add("select", "is-grey");
-
-                var select_vis = document.createElement("select")
-                select_vis.setAttribute("id", `show_test_code_${test_index}`)
-                select_vis.classList.add("edit-select", "bottom-space");
-                select_vis.setAttribute("onchange", `show_test_instructions(${test_index})`);
-
-                var yes_opt = document.createElement("option")
-                yes_opt.value = "Yes";
-                yes_opt.innerHTML = "Yes";
-                select_vis.appendChild(yes_opt)
-
-                var no_opt = document.createElement("option")
-                no_opt.value = "No";
-                no_opt.innerHTML = "No";
-                select_vis.appendChild(no_opt)
-
-                p_wrapper.appendChild(line_break);
-                p_wrapper.appendChild(test_editor)
-                p_wrapper.appendChild(d_button);
-
-                test_instructions_div.appendChild(test_instructions_span);
-                test_instructions_div.appendChild(test_instructions);
-                select_div.appendChild(vis_span);
-                select_div.appendChild(select_vis);
-                toggle_vis_div.appendChild(select_div)
-                toggle_vis_div.appendChild(test_instructions_div)
-
-                var output_div = document.createElement("div");
-                output_div.id = `output_div_${test_index}`;
-                output_div.style.marginTop = '60px'
-                output_div.style.display = 'none'
-                var output_button = document.createElement("pre")
-                output_button.classList.add("passing-bd-color");
-                output_button.classList.add("test-content");
-                output_button.id = `output_button_${test_index}`
-                output_button.style = 'cursor:pointer'
-                output_button.setAttribute('onclick', `showTest(${test_index})`)
-                //output_button.innerHTML = `Test ${test_index + 1} Output`
-                //output_button.innerHTML = `Output:`
-                var output_content = document.createElement("div")
-                output_content.id = `test_${test_index}`
-                var test_p_wrapper = document.createElement('p')
-                test_p_wrapper.id = `p_wrapper_${test_index}`
-
-                //output_content.appendChild(document.createElement('hr'))
-                output_content.appendChild(test_p_wrapper)
-                output_button.appendChild(output_content)
-                output_div.appendChild(output_button)
-                test_div.appendChild(p_wrapper)
-                test_div.appendChild(toggle_vis_div)
-                test_div.appendChild(output_div)
-
-                var tests_div = document.getElementById("tests_div");
-                tests_div.appendChild(test_div)
-
-                eval(`test_code_editor_${test_index} = ace.edit('test_code_${test_index}', {
-                    theme: "ace/theme/{{ user_info['ace_theme'] }}",
-                    autoScrollEditorIntoView: true,
-                    minLines: 10,
-                    maxLines: 15,
-                    fontSize: "12pt"
-                    });
-                    if (changeFocus)
-                      test_code_editor_${test_index}.focus()`
-                );
-
-                current_tests.push(test_index);
-
-                // Shows toggle example button if there are not zero tests.
-                if (current_tests.length != 0) {
-                  document.getElementById("test_example_div").style.display = "block";
-                } else {
-                  document.getElementById("test_example_div").style.display = "none";
-                }
-
-
-                var output_type = await document.getElementById("output_types").value;
-                if (output_type != "")
-                    updateBackEndOptions(document.getElementById("back_end").value, output_type);
-            }
-
-            function show_test_instructions(i) {
-              document.getElementById(`test_instructions_div_${i}`).style.display = (document.getElementById(`test_instructions_div_${i}`).style.display == "none") ? "block" : "none";
-              document.getElementById(`test_instructions_${i}`).focus();
-            }
-
-            function remove_test_code(i) {
-              var test_code_to_remove = document.getElementById(`test_div_${i}`)
-              test_code_to_remove.remove();
-              var index_to_remove = current_tests.indexOf(i)
-              current_tests.splice(index_to_remove, 1)
-
-              // Hides toggle example button if there are no tests.
-              if (current_tests.length != 0) {
-                document.getElementById("test_example_div").style.display = "block"
-              } else {
-                document.getElementById("test_example_div").style.display = "none"
-              }
-            }
-
-            const container = document.querySelector("#file_upload");
-
-            var new_tests = {}
-
-            {% for i in range(len(exercise_details["tests"])) %}
-                new_tests[`{{i}}`] = {'image_output': `{{exercise_details["tests"][i]['image_output']}}`, 'text_output': `{{exercise_details["tests"][i]['text_output']}}` }
-            {% end %}
-
-            {% if exercise_basics['exists'] %}
-            // Populate with existing tests.
-            $.get("/get_tests/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", function (data, status) {
-                 var json_data = JSON.parse(data);
-                 for (i in json_data) {
-                   showAddTest(false);
-
-                   eval(`test_code_editor_${i}.setValue(json_data[i].code)`);
-                   if (json_data[i].test_instructions != "") {
-                      eval(`show_test_code_${i}.value = "No"`);
-                      eval(`test_instructions_${i}.value = ${JSON.stringify(json_data[i].test_instructions)}`);
-                      eval(`test_instructions_div_${i}.style.display = 'block'`);
-                   }
-
-                   document.getElementById(`output_div_${i}`).style.display = 'block';
-                   document.getElementById(`test_div_${i}`).style.margin = '0 0 25px 0';
-
-                   var content = "";
-
-                   if (json_data[i].text_output != "") {
-                      {% if len(old_tests) > 0 %}
-                          content +=  `<p><strong>Old output:</strong><br />`
-                          content += `<pre>${json_data[i].text_output}</pre>`;
-
-                          content +=  `<p><strong>New output:</strong><br />`
-                          content += `<pre>${new_tests[i].text_output}</pre>`;
-                      {% else %}
-                          content += `<pre>${json_data[i].text_output}</pre>`;
-                      {% end %}
-                   }
-
-                   if (json_data[i].image_output != "") {
-                       {% if len(old_tests) > 0 %}
-                          content += `<p><strong>Old output:</strong><br />`
-                          content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
-
-                          content += `<p><strong>New output:</strong><br />`
-                          content += `<figure class='img'><img src='data:image/jpg;base64,${new_tests[i].image_output}' width='100%' /></figure>`;
-                       {% else %}
-                          content += `<figure class='img'><img src='data:image/jpg;base64,${json_data[i].image_output}' width='100%' /></figure>`;
-                       {% end %}
-                   }
-
-                   if ((Object.keys(new_tests).length > 0) && ((json_data[i].image_output != new_tests[i].image_output) || (json_data[i].text_output != new_tests[i].text_output))) {
-                      var output_btn = document.getElementById(`output_button_${i}`)
-                      output_btn.classList.remove('passing-bd-color');
-                      output_btn.classList.add('failing-bd-color');
-                      output_btn.innerHTML = `Test ${parseInt(i) + 1} output did not match previous output.`;
-                   }
-                   else if ((json_data[i].image_output) == "" && (json_data[i].text_output == "")) {
-                      content = '<pre>[This test produced no output.]</pre>';
-                      var output_btn = document.getElementById(`output_button_${i}`)
-                      output_btn.classList.remove('passing-bd-color');
-                      output_btn.classList.add('failing-bd-color');
-                      output_btn.innerHTML = `Test ${parseInt(i) + 1} produced no output.`;
-                   }
-                   document.getElementById(`p_wrapper_${i}`).innerHTML = content;
-                 }
-               });
-            {% end %}
-
-            {% if exercise_details["data_files"] != "" %}
-                // add previously uploaded files to the page
-                data_file_div = document.getElementById("data_file");
-                data_file_div.style.display = "none";
-                var uploaded_files = JSON.parse('{{ json_files }}');
-                var file_container = document.getElementById("file_container");
-                file_container.value = JSON.stringify(uploaded_files);
-
-                upload_div = document.getElementById("uploaded_files");
-                for (let i = 0; i < {{ len(exercise_details["data_files"]) }}; i++) {
-                    var file_div = document.createElement("div");
-                    file_div.setAttribute("class", "uploaded-file");
-                    file_div.setAttribute("id", i);
-
-                    var text = document.createElement("p");
-                    text.setAttribute("class", "file-text");
-
-                    // sort data files alphabetically by file name
-                    var file_name = document.createTextNode({{ sorted(exercise_details["data_files"], key=str.lower) }}[i]);
-                    text.appendChild(file_name);
-
-                    var d_button = document.createElement("button");
-                    d_button.classList.add("button", "is-small", "is-primary", "is-inverted");
-                    d_button.textContent = "X";
-
-                    d_button.addEventListener("click", function(event) {
-                        event.preventDefault();
-                        delete uploaded_files[{{ sorted(exercise_details["data_files"], key=str.lower) }}[i]];
-                        file_container.value = JSON.stringify(uploaded_files);
-
-                        var file_div_to_remove = document.getElementById(i);
-                        file_div_to_remove.style.display = "none";
-                    });
-
-                    file_div.appendChild(text);
-                    file_div.appendChild(d_button);
-                    upload_div.appendChild(file_div);
-                }
-            {% end %}
-
-            updateFiles();
-
-            function updateFiles() {
-                var files = container.querySelectorAll("div.file");
-
-                files.forEach(function(file) {
-                    var fileInput = file.querySelector("input");
-                    var fileName = file.querySelector("span.file-name");
-
-                    fileInput.onchange = () => {
-                        if (fileInput.files.length == 1) {
-                            fileName.textContent = fileInput.files[0].name;
-                        }
-                        else if (fileInput.files.length > 1) {
-                            fileName.textContent = fileInput.files.length + " files";
-                        }
+            html += "</tbody>";
+            html += "</table>";
+
+            $("#files_table")[0].innerHTML = html;
+            $("#files_table").removeClass("is-hidden");
+        }
+
+        function showOutput(update, scroll) {
+            if (update) {
+                var html = `<h3>Test output:</h3><div class='shadow-box'>`;
+
+                for (let test_title of Object.keys(exercise_details_obj["tests"])) {
+                    if (Object.keys(exercise_details_obj["tests"]).length > 1)
+                        html += `<div class="space-div"><p><strong>${test_title}:</strong></p>`;
+
+                    if (exercise_details_obj["tests"][test_title]["text_output"] != "") {
+                        html += `<pre><code>${exercise_details_obj["tests"][test_title]["text_output"]}</code></pre>`;
                     }
-                });
+
+                    if (exercise_details_obj["output_type"] == "jpg" && exercise_details_obj["tests"][test_title]["image_output"] != "") {
+                        html += `<p><figure class='img'><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["image_output"]}' width='95%' /></figure></p>`;
+                    }
+
+                    html += "</div>";
+                }
+
+                $("#output")[0].innerHTML = html + "</div>";
             }
-        </script>
-        <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
-        </form>
+
+            if (scroll)
+                $("#output")[0].scrollIntoView();
+        }
+
+        function updateBackEndOptions(back_end, output_type) {
+            // Find dropdown and clear out existing options
+            be_select = document.getElementById("back_end");
+            be_select.options.length = 0;
+
+            // Set the back end options
+            for (let back_end_option of Object.keys(back_ends_obj)) {
+                var opt = document.createElement('option');
+                opt.value = back_end_option;
+                opt.innerHTML = back_end_option;
+
+                if (back_end == back_end_option)
+                    opt.selected = true;
+
+                be_select.appendChild(opt);
+            }
+
+            ot_select = document.getElementById("output_type");
+            ot_select.options.length = 0;
+
+            // Set the output type
+            for (let output_type_option of Object.keys(back_ends_obj[back_end]["output_types"])) {
+                var opt = document.createElement('option');
+                opt.value = output_type_option;
+                opt.innerHTML = back_ends_obj[back_end]["output_types"][output_type_option];
+
+                if (output_type_option == output_type)
+                    opt.selected = true;
+
+                ot_select.appendChild(opt);
+            }
+
+            // Update code completion settings for code editors
+            solution_code_editor.getSession().setMode(back_ends_obj[back_end]["code_completion_path"]);
+            starter_code_editor.getSession().setMode(back_ends_obj[back_end]["code_completion_path"]);
+            verification_code_editor.getSession().setMode(back_ends_obj[back_end]["code_completion_path"]);
+
+            // Load back_end specific instructions and examples
+            document.getElementById("solution_additional_instructions").innerHTML = `<em>${back_ends_obj[back_end].solution_instructions}</em>`;
+            document.getElementById("verification_additional_instructions").innerHTML = `<em>${back_ends_obj[back_end].verification_instructions}</em>`;
+            document.getElementById("test_additional_instructions").innerHTML = `<em>${back_ends_obj[back_end].test_instructions}</em>`;
+
+            examples_obj["solution"] = back_ends_obj[back_end]["solution_example"];
+            examples_obj["verification"] = back_ends_obj[back_end]["verification_example"];
+            examples_obj["after_test"] = back_ends_obj[back_end]["after_test_example"];
+
+            showHideExampleButton("solution");
+            showHideExampleButton("verification");
+            showHideExampleButton("after_test");
+        }
+
+        function showHideExampleButton(example_type) {
+            if (examples_obj[example_type] == "")
+                $(`#example_${example_type}_button`).addClass("is-hidden");
+            else
+                $(`#example_${example_type}_button`).removeClass("is-hidden");
+        }
+
+        function toggleExample(example_type) {
+            eval(`editor = ${example_type}_code_editor;`);
+            var toggleButton = document.getElementById(`example_${example_type}_button`);
+
+            if (editor.getValue() == examples_obj[example_type]) {
+                editor.setValue(cache_obj[example_type], -1);
+                toggleButton.classList.remove("is-primary");
+                toggleButton.classList.add("is-light");
+                toggleButton.innerHTML = "Show example code";
+            }
+            else {
+                cache_obj[example_type] = editor.getValue();
+                editor.setValue(examples_obj[example_type], -1);
+                toggleButton.classList.remove("is-light");
+                toggleButton.classList.add("is-primary");
+                toggleButton.innerHTML = "Go back to previous code";
+            }
+        }
+
+        function showTestMessage(message, isError, isMonospace) {
+            $("#test_message").removeClass("is-hidden");
+
+            if (isError) {
+                $("#test_message").removeClass("is-warning");
+                $("#test_message").addClass("is-danger");
+            }
+            else {
+                $("#test_message").removeClass("is-danger");
+                $("#test_message").addClass("is-warning");
+            }
+
+            if (isMonospace)
+                $("#test_message")[0].innerHTML = `<pre>${message}</pre>`;
+            else
+                $("#test_message")[0].innerHTML = message;
+
+            $("#test_message")[0].scrollIntoView();
+        }
+
+        function editTest(test_title) {
+            document.getElementById("add_test_title").value = test_title;
+            document.getElementById("add_test_instructions").value = exercise_details_obj["tests"][test_title].instructions;
+            before_test_code_editor.setValue(exercise_details_obj["tests"][test_title].before_code, -1);
+            after_test_code_editor.setValue(exercise_details_obj["tests"][test_title].after_code, -1);
+            document.getElementById("can_see_test_code").value = exercise_details_obj["tests"][test_title].can_see_test_code ? "Yes" : "No";
+            document.getElementById("can_see_expected_output").value = exercise_details_obj["tests"][test_title].can_see_expected_output ? "Yes" : "No";
+            document.getElementById("can_see_code_output").value = exercise_details_obj["tests"][test_title].can_see_code_output ? "Yes" : "No";
+
+            $("#test_message")[0].innerHTML = "";
+            $("#test_message").addClass("is-hidden");
+
+            document.getElementById("previous_test_title").value = test_title;
+
+            $("#add_test_modal").addClass("is-active");
+            $("#add_test_title").focus();
+        }
+
+        function removeTest(test_title) {
+            delete exercise_details_obj["tests"][test_title];
+            showTests();
+        }
+
+        function viewFile(file_name) {
+            $("#view_file_modal_header")[0].innerHTML = file_name;
+            view_file_editor.setValue(exercise_details_obj["data_files"][file_name]["contents"], -1);
+            $("#view_file_modal").addClass("is-active");
+        }
+
+        function removeFile(file_name) {
+            delete exercise_details_obj["data_files"][file_name];
+            showFiles();
+        }
+
+        function getEditor(textAreaID, minLines, maxLines) {
+            return ace.edit(textAreaID, {
+                theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                minLines: minLines,
+                maxLines: maxLines,
+                fontSize: "12pt"
+            });
+        }
+
+        function getValue(id) {
+            return $(`#${id}`)[0].value;
+        }
+
+        function setValue(id, value) {
+            $(`#${id}`)[0].value = value;
+        }
+
+        function showResultMessage(messageHTML, isError) {
+            if (isError) {
+                $("#result_message").addClass("is-danger");
+                $("#result_message").removeClass("is-primary");
+            }
+            else {
+                $("#result_message").addClass("is-primary");
+                $("#result_message").removeClass("is-danger");
+            }
+
+            $("#result_message").removeClass("is-hidden");
+            $("#result_message")[0].innerHTML = messageHTML;
+            $("#result_message")[0].scrollIntoView();
+        }
+
+        function load() {
+            if (exercise_basics_obj["exists"]) {
+                $("#edit_header").removeClass("is-hidden");
+                $("#create_header").addClass("is-hidden");
+                $("#output").removeClass("is-hidden");
+            }
+            else {
+                $("#edit_header").addClass("is-hidden");
+                $("#create_header").removeClass("is-hidden");
+                $("#output").addClass("is-hidden");
+            }
+
+            updateBackEndOptions(exercise_details_obj["back_end"]);
+
+            setValue("title", exercise_basics_obj["title"]);
+
+            for (let id of ["back_end", "output_type", "instructions", "credit", "hint", "solution_description", "max_submissions"])
+                setValue(id, exercise_details_obj[id]);
+
+            for (let id of ["visible", "allow_any_response", "enable_pair_programming", "show_instructor_solution", "show_peer_solutions"])
+                setValue(id, exercise_details_obj[id] ? "Yes" : "No");
+
+            solution_code_editor.setValue(exercise_details_obj["solution_code"], -1);
+            verification_code_editor.setValue(exercise_details_obj["verification_code"], -1);
+            starter_code_editor.setValue(exercise_details_obj["starter_code"], -1);
+
+            showTests();
+            showFiles();
+            showOutput(true, false);
+        }
+
+        function save() {
+            const title = getValue("title").trim();
+            const instructions = getValue("instructions").trim().replace("\r", "");
+            const allow_any_response = getValue("allow_any_response") == "Yes";
+            const solution_code = solution_code_editor.getValue().trim().replace("\r", "");
+
+            // Check submission details
+            if (title == "")
+                return(showResultMessage("Please provide a title.", true));
+            if (title.length > 80)
+                return(showResultMessage("The title cannot exceed 80 characters in length.", true));
+            if (instructions == "")
+                return(showResultMessage("Please provide instructions.", true));
+            if (!allow_any_response && solution_code == "")
+                return(showResultMessage("Except when any response is allowed, you must provide a solution.", true));
+
+            // Make sure total file size is not larger than 10 MB across all files.
+            var total_file_size = 0;
+            for (let file_name of Object.keys(exercise_details_obj["data_files"]))
+                total_file_size += exercise_details_obj["data_files"][file_name]["size"];
+            if (total_file_size > 10 * 1024 * 1024)
+                return(showResultMessage(`The total file size [${total_file_size}] exceeds the 10 megabyte limit.`, true));
+
+            var submission_obj = {
+                "title": title,
+                "visible": getValue("visible") == "Yes",
+                "back_end": getValue("back_end"),
+                "output_type": getValue("output_type"),
+                "allow_any_response": allow_any_response,
+                "instructions": instructions,
+                "enable_pair_programming": getValue("enable_pair_programming") == "Yes",
+                "credit": getValue("credit").trim().replace("\r", ""),
+                "solution_code": solution_code,
+                "verification_code": verification_code_editor.getValue().trim().replace("\r", ""),
+                "starter_code": starter_code_editor.getValue().trim().replace("\r", ""),
+                "hint": getValue("hint").trim().replace("\r", ""),
+                "solution_description": getValue("solution_description").trim().replace("\r", ""),
+                "show_instructor_solution": getValue("show_instructor_solution") == "Yes",
+                "show_peer_solutions": getValue("show_peer_solutions") == "Yes",
+                "max_submissions": getValue("max_submissions"),
+                "data_files": exercise_details_obj["data_files"],
+                "tests": exercise_details_obj["tests"]
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: "/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_basics_obj['id'],
+                data: JSON.stringify(submission_obj),
+                async: true})
+                .done(function(data) {
+                    var json_data = JSON.parse(data);
+
+                    if (json_data["message"] == "") {
+                        // Success
+                        exercise_basics_obj["id"] = json_data["exercise_id"];
+                        exercise_details_obj = json_data["exercise_details"];
+                        console.log("Success");
+
+                        //showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, true);
+                        //showOutput(true, false);
+                    }
+                    else {
+                        showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, true);
+                    }
+                })
+                .fail(function(data) {
+                    showResultMessage("<p>An error occurred when connecting to the server. It may be down.</p>", true);
+                });
+        }
+
+        $("#done_button").click(function() {
+            location.href = `/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/${exercise_basics_obj["id"]}`;
+        });
+
+        $("#add_test_modal_add").click(function() {
+            var test_title = document.getElementById("add_test_title").value;
+            var test_instructions = document.getElementById("add_test_instructions").value;
+            var before_test_code = before_test_code_editor.getValue();
+            var after_test_code = after_test_code_editor.getValue();
+
+            var can_see_test_code = document.getElementById("can_see_test_code").value == "Yes";
+            var can_see_expected_output = document.getElementById("can_see_expected_output").value == "Yes";
+            var can_see_code_output = document.getElementById("can_see_code_output").value == "Yes";
+
+            // Make sure title is valid
+            if (test_title.trim().length > 30)
+                return showTestMessage("The maximum title length is 30 characters.", true, false);
+            if (test_title.trim() == "")
+                return showTestMessage("Please specify a title.", true, false);
+            if (test_title.includes("'") || test_title.includes("\""))
+                return showTestMessage("The title cannot include quotation marks or apostrophes.", true, false);
+
+            // Make sure other inputs are valid
+            if (after_test_code.trim() == "")
+                return showTestMessage("Please specify test code to be executed after the student's code.", true, false);
+            if (!can_see_test_code && test_instructions.trim() == "")
+                return showTestMessage("Please provide instructions when the test code is hidden.", true, false);
+
+            // This uses a similar approach to UNIX permissions.
+            //var visibility = can_see_test_code + can_see_expected_output * 2 + can_see_code_output * 4;
+
+            let previous_test_title = document.getElementById("previous_test_title").value;
+
+            if (test_title != previous_test_title) {
+                if (previous_test_title != "" && previous_test_title in exercise_details_obj["tests"])
+                    delete exercise_details_obj["tests"][previous_test_title];
+
+                if (test_title in exercise_details_obj["tests"])
+                    return showTestMessage("A test with that title has already been created. Please choose a different title.", true, false);
+            }
+
+            exercise_details_obj["tests"][test_title] = {"instructions": test_instructions, "can_see_test_code": can_see_test_code, "can_see_expected_output": can_see_expected_output, "can_see_code_output": can_see_code_output, "before_code": before_test_code, "after_code": after_test_code, "text_output": "", "image_output": "", "test_id": -1};
+            showTests();
+
+            $("#add_test_modal").removeClass("is-active");
+        });
+
+        $("#add_test_modal_cancel").click(function() {
+            $("#add_test_modal").removeClass("is-active");
+        });
+
+        $("#add_test_modal_close").click(function() {
+            $("#add_test_modal").removeClass("is-active");
+        });
+
+        $("#add_test_button").click(function() {
+            document.getElementById("add_test_title").value = "";
+            document.getElementById("add_test_instructions").value = "";
+            before_test_code_editor.setValue("", -1);
+            after_test_code_editor.setValue("", -1);
+            document.getElementById("can_see_test_code").value = "Yes";
+            document.getElementById("can_see_expected_output").value = "Yes";
+            document.getElementById("can_see_code_output").value = "Yes";
+
+            $("#test_message")[0].innerHTML = "";
+            $("#test_message").addClass("is-hidden");
+
+            document.getElementById("previous_test_title").value = "";
+
+            $("#add_test_modal").addClass("is-active");
+            $("#add_test_title").focus();
+        });
+
+        $("#view_file_modal_close").click(function() {
+            $("#view_file_modal").removeClass("is-active");
+        });
+
+        $("#upload_file_control").change(function() {
+            (async () => {
+                for (var i = 0; i < $("#upload_file_control")[0].files.length; i++) {
+                    const fileName = $("#upload_file_control")[0].files[i]["name"];
+                    const fileText = await $("#upload_file_control")[0].files[i].text();
+
+                    exercise_details_obj["data_files"][fileName] = {"contents": fileText, "size": $("#upload_file_control")[0].files[i]["size"]};
+                }
+
+                showFiles();
+            })();
+        });
+
+        // Code to run on page load
+        var solution_code_editor = getEditor("solution_code", 10, 25);
+        var starter_code_editor = getEditor("starter_code", 10, 15);
+        var verification_code_editor = getEditor("verification_code", 10, 15);
+        var before_test_code_editor = getEditor("before_test_code", 2, 15);
+        var after_test_code_editor = getEditor("after_test_code", 2, 15);
+        var view_file_editor = getEditor("view_file_modal_text", 15, 15);
+        ace.require("ace/ext/language_tools");
+
+        var exercise_basics_obj = JSON.parse("{{ exercise_basics_json }}");
+        var exercise_details_obj = JSON.parse("{{ exercise_details_json }}");
+        var back_ends_obj = JSON.parse("{{ back_ends_json }}");
+        var examples_obj = {};
+        var cache_obj = {};
+
+        load();
+    </script>
+
     {% else %}
         This assignment has not been created yet.
     {% end %}

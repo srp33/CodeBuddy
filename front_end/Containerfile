@@ -28,8 +28,6 @@ ADD front_end/aux/*.py /tmp/
 ADD front_end/html/footer.html /tmp/footer_version.html
 RUN python /tmp/modify_version.py
 
-ADD Settings.yaml /
-
 USER $USER
 
 ENV PATH="/home/codebuddy/.local/bin:${PATH}"
@@ -62,6 +60,7 @@ RUN cd /static \
  && rm -rf ace-builds \
  && wget -O /static/fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
 
+ADD Settings.yaml /
 ADD front_end/css/*.css /static/
 ADD front_end/images/* /static/
 ADD front_end/js/* /static/
@@ -69,10 +68,10 @@ ADD front_end/build_html.sh /app/
 ADD front_end/startup.sh /app/
 ADD front_end/scheduled_scripts/* /scheduled_scripts/
 ADD front_end/migration_scripts/* /migration_scripts/
-ADD front_end/html/* /tmp/
-RUN bash /app/build_html.sh
 ADD front_end/handlers/*.py /app/
 ADD front_end/*.py /app/
+ADD front_end/html/* /tmp/
+RUN bash /app/build_html.sh
 
 #ENTRYPOINT ["bash"]
 ENTRYPOINT ["bash", "/app/startup.sh"]

@@ -3,82 +3,80 @@
     <p>{{ course_details["introduction"] }}</p>
 
     {% if has_pair_programming %}
-        <a class="button is-danger is-outlined" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
+        <div class="mb-5">
+            <a class="button is-danger is-outlined" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
+        </div>
     {% end %}
 
     {% if len(assignments) > 0 %}
-
         <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
         <link rel="stylesheet" href="/static/modal.css">
 
-        <table class="table" id="assignment_table">
-            <thead>
-                <tr>
-                    <th>Assignment</th>
-                    <th>Visibility</th>
-                    <th>Start Date</th>
-                    <th>Due Date</th>
-                    <!--<th># Completed</th>-->
-                    <!--<th>Avg. Score</th>-->
-                    <th>Edit</th>
-                    <th>Delete</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for assignment in assignments %}
-                <tr>
-                    <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
-                    {% if assignment[1]["visible"] == 0 %}
-                        <td>Hidden</td>
-                        <td> </td>
-                        <td> </td>
-                        <!--<td> </td>
-                        <td> </td>-->
-                    {% else %}
-                        <td>Visible</td>
-                        {% if assignment[1]["start_date"] %}
-                            <td>
-                                <script>
-                                    var s = new Date("{{ assignment[1]['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-                                    document.write(convertDate(s));
-                                </script>
-                            </td>
-                        {% else %}
+        <div class="table-container">
+            <table class="table is-striped" id="assignment_table">
+                <thead>
+                    <tr>
+                        <th>Assignment</th>
+                        <th>Visibility</th>
+                        <th>Start Date</th>
+                        <th>Due Date</th>
+                        <th># Completed</th>
+                        <th>Avg. Score</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for assignment in assignments %}
+                    <tr>
+                        <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+                        {% if assignment[1]["visible"] == 0 %}
+                            <td>Hidden</td>
                             <td> </td>
-                        {% end %}
-                        {% if assignment[1]["due_date"] %} 
-                            <td>
-                                <script>
-                                    var d = new Date("{{ assignment[1]['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-                                    document.write(convertDate(d));
-                                </script>
-                            </td>
-                        {% else %}
                             <td> </td>
-                        {% end %}
-
-                        <!--<td class="has-text-centered">{{ course_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_scores[assignment[1]["id"]]["num_students"] }}</td>
-
-                        {% if course_scores[assignment[1]["id"]]["avg_score"] %}
-                            <td class="has-text-centered">{{ course_scores[assignment[1]["id"]]["avg_score"] }}%</td>
+                            <td> </td>
+                            <td> </td>
                         {% else %}
-                            <td class="has-text-centered">No scores yet</td>
-                        {% end %}-->
-                    {% end %}
-                    <td>
-                        <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                    </td>
-                    <td>
-                        <a onclick="showDeleteModal({{ assignment[1]['id'] }})">
-                            <i class="fas fa-trash-alt"></i>
-                        </a>
-                    </td>
-                </tr>
-            {% end %}
-            </tbody>
-        </table>
+                            <td>Visible</td>
+                            {% if assignment[1]["start_date"] %}
+                                <td>
+                                    <script>
+                                        var s = new Date("{{ assignment[1]['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+                                        document.write(convertDate(s));
+                                    </script>
+                                </td>
+                            {% else %}
+                                <td> </td>
+                            {% end %}
+                            {% if assignment[1]["due_date"] %} 
+                                <td>
+                                    <script>
+                                        var d = new Date("{{ assignment[1]['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
+                                        document.write(convertDate(d));
+                                    </script>
+                                </td>
+                            {% else %}
+                                <td> </td>
+                            {% end %}
+
+                            <td>{{ course_summary_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_summary_scores[assignment[1]["id"]]["num_students"] }}</td>
+                            <td>{{ course_summary_scores[assignment[1]["id"]]["avg_score"] }}%</td>
+                        {% end %}
+                        <td>
+                            <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a onclick="showDeleteModal({{ assignment[1]['id'] }})">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% end %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
         <p><strong>No assignments have been created for this course.</strong></p>
     {% end %}

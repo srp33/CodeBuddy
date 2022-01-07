@@ -308,9 +308,9 @@
                             result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
                         {% end %}
 
-                        {% if exercise_details["show_student_submissions"] %}
+                        {% if exercise_details["show_peer_solutions"] %}
                             result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a></p>";
-                        {% elif exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
+                        {% elif exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
                             result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
                         {% end %}
 
@@ -353,8 +353,8 @@
                             document.getElementById("code_output").innerHTML = code_output;
                         }
                     {% else %}
-                        var expected_text = `{{exercise_details["expected_text_output"]}}`;
-                        var expected_image = `{{exercise_details["expected_image_output"]}}`;
+                        var expected_text = `{{ exercise_details["expected_text_output"] }}`;
+                        var expected_image = `{{ exercise_details["expected_image_output"] }}`;
 
                         // If output includes an index error, provide student with a more helpful error message instead.
                         if (json_data.text_output.includes("IndexError:&nbsp;list&nbsp;index&nbsp;out&nbsp;of&nbsp;range")) {
@@ -403,8 +403,8 @@
                       success: function(result) {
                         var json_data = JSON.parse(result);
 
-                        var expected_text = `{{exercise_details["expected_text_output"]}}`;
-                        var expected_image = `{{exercise_details["expected_image_output"]}}`;
+                        var expected_text = `{{ exercise_details["expected_text_output"] }}`;
+                        var expected_image = `{{ exercise_details["expected_image_output"] }}`;
 
                         if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
                           var code_output = "<h6>Your output:</h6>\n\n";
@@ -557,7 +557,7 @@
                     $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id + `/${check_for_presubmission}` ,
                         function (data, status) {
                             var json_data = JSON.parse(data);
-                            editor.setValue(json_data.code, 1);
+                            editor.setValue(json_data.code, -1);
 
                             if (json_data.using_presubmission)
                                 if (document.getElementById("saved_div") != null)
@@ -618,7 +618,7 @@
                     $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
                         function (data, status) {
                             if (data.length > 0) {
-                                editor.setValue(data, 1);
+                                editor.setValue(data, -1);
                             }
                         });
                 }

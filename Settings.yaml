@@ -2,25 +2,80 @@ mode: development
 domain: codebuddy.byu.edu
 db_name: CodeBuddy.db
 allowed_external_urls:
-  - https://geomoer.github.io/moer-base-r/assets/data/cheatsheets/base-r.pdf
-  - https://github.com/rstudio/cheatsheets/raw/master/data-import.pdf
-  - https://github.com/rstudio/cheatsheets/raw/master/data-visualization.pdf
-  - https://github.com/rstudio/cheatsheets/raw/master/data-transformation.pdf
-  - https://github.com/rstudio/cheatsheets/raw/master/tidyr.pdf 
-  - https://github.com/rstudio/cheatsheets/raw/master/strings.pdf
-  - https://github.com/rstudio/cheatsheets/raw/master/factors.pdf
-  - https://github.com/rstudio/cheatsheets/raw/master/lubridate.pdf
+  - https://github.com/rstudio/cheatsheets/raw/main/base-r.pdf
+  - https://github.com/rstudio/cheatsheets/raw/main/data-import.pdf
+  - https://github.com/rstudio/cheatsheets/raw/main/data-visualization.pdf
+  - https://github.com/rstudio/cheatsheets/raw/main/data-transformation.pdf
+  - https://github.com/rstudio/cheatsheets/raw/main/tidyr.pdf 
+  - https://github.com/rstudio/cheatsheets/raw/main/strings.pdf
+  - https://github.com/rstudio/cheatsheets/raw/main/factors.pdf
+  - https://github.com/rstudio/cheatsheets/raw/main/lubridate.pdf
 back_ends:
+    bash:
+        description: bash commands
+        image_name: srp33/codebuddy_bash
+        memory_allowed_mb: 500
+        timeout_seconds: 60
+        code_completion_path: ace/mode/plain_text
+        output_types:
+            txt: |-
+                Text (standard out)
+        solution_instructions: ""
+        solution_example: "mkdir Assignment1\ncd Assignment1\ntouch newfile\nls"
+        verification_instructions: "Write your verification code in bash."
+        verification_example: "FIND='#'\nwhile read -r line;\n\tdo\n\tif grep -q \"$FIND\" <<< \"$line\"; then\n\t\techo \"Error: $FIND operator not allowed in this exercise\"\n\t\tbreak\"\n\tfi\ndone < code"
+        test_instructions: ""
+        after_test_example: ""
     not_code:
         description: Please write an answer based on the instructions provided.
         code_completion_path: ace/mode/text
         output_types:
             txt: |-
                 Text
+        solution_instructions: "For this type of exercise, your solution itself will be used as the expected output."
+        solution_example: ""
+        verification_instructions: ""
+        verification_example: ""
+        test_instructions: ""
+        after_test_example: ""
+    python:
+        description: Please write Python code based on the instructions provided.
+        image_name: srp33/codebuddy_python
+        memory_allowed_mb: 500
+        timeout_seconds: 60
+        code_completion_path: ace/mode/python
+        output_types:
+            jpg: |-
+                Image (matplotlib or seaborn)
+            txt: |-
+                Text
+        solution_instructions: ""
+        solution_example: "def add_numbers(x, y):\n\treturn(x + y)"
+        verification_instructions: "Write your verification code in Python."
+        verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
+        test_instructions: ""
+        after_test_example: "print(add_numbers(2, 3))"
+    python_script:
+        description: Please write Python code based on the instructions provided. Your code will be stored in a script called code.py.
+        image_name: srp33/codebuddy_python_script
+        memory_allowed_mb: 500
+        timeout_seconds: 60
+        code_completion_path: ace/mode/python
+        output_types:
+            jpg: |-
+                Image (matplotlib or seaborn)
+            txt: |-
+                Text
+        solution_instructions: "For this type of exercise, write your solution in Python. You will write bash commands that execute your Python script under the Tests section."
+        solution_example: "import sys\n\nprint(sys.argv[1])"
+        verification_instructions: "Write your verification code in bash."
+        verification_example: "FIND='#'\nwhile read -r line;\n\tdo\n\tif grep -q \"$FIND\" <<< \"$line\"; then\n\t\techo \"Error: $FIND operator not allowed in this exercise\"\n\t\tbreak\"\tfi\ndone < code"
+        test_instructions: "Each test will consist of a bash script that will invoke the student's solution code (saved as 'code.py')."
+        after_test_example: "python code.py \"Hello world!\""
     r:
         description: Please write R code based on the instructions provided.
         image_name: srp33/codebuddy_r
-        memory_allowed_mb: 100
+        memory_allowed_mb: 500
         timeout_seconds: 60
         code_completion_path: ace/mode/r
         output_types:
@@ -28,35 +83,9 @@ back_ends:
                 Image (ggplot2)
             txt: |-
                 Text
-
-    python:
-        description: Please write Python code based on the instructions provided.
-        image_name: srp33/codebuddy_python
-        memory_allowed_mb: 100
-        timeout_seconds: 60
-        code_completion_path: ace/mode/python
-        output_types:
-            jpg: |-
-                Image (matplotlib or seaborn)
-            txt: |-
-                Text
-    python_script:
-        description: Please write Python code based on the instructions provided. Your code will be stored in a script called code.py.
-        image_name: srp33/codebuddy_python_script
-        memory_allowed_mb: 100
-        timeout_seconds: 60
-        code_completion_path: ace/mode/python
-        output_types:
-            jpg: |-
-                Image (matplotlib or seaborn)
-            txt: |-
-                Text
-    bash:
-        description: bash commands
-        image_name: srp33/codebuddy_bash
-        memory_allowed_mb: 100
-        timeout_seconds: 60
-        code_completion_path: ace/mode/plain_text
-        output_types:
-            txt: |-
-                Text (standard out)
+        solution_instructions: ""
+        solution_example: "# R example code\nadd_numbers <- function(x, y) {\n\treturn(x + y)\n}"
+        verification_instructions: "Write your verification code in R."
+        verification_example: "connection <- file('code')\nopen(connection)\nline <- readLines(connection, n=1)\nsearch <- 'len'\n\nwhile(length(line) > 0) {\n\tif (grepl(tolower(search), tolower(line))) {\n\t\tprint('Error: len() function not allowed in this exercise')\n\t\tbreak\n\t}\n\n\tline <- readLines(connection, n=1)\n}\n\nclose(connection)"
+        test_instructions: ""
+        after_test_example: "print(add_numbers(2, 3))"

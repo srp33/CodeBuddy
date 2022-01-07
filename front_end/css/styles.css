@@ -172,9 +172,9 @@ pre {
     padding: 2px;
 }
 
-.table {
-    background-color: #f5f5f5 !important; /* light grey */
-}
+/*.graytable {
+    background-color: #f5f5f5 !important;
+}*/
 
 /* Sets sizing for icons in tables (ie checkmarks, circles, etc) */
 .table-icon {
@@ -523,16 +523,16 @@ td > button {
     align-items: center;
 }
 
-/* Styles textareas that allow images to be pasted directly into them. */
+/* Styles textareas that allow images to be pasted directly into them.
 div[contenteditable] {
   overflow-y: scroll;
   font-size: 1.25rem;
-}
+} */
 
-/* Styles said images inside textareas. */
+/* Styles said images inside textareas.
 div[contenteditable] img {
   max-height: 20em;
-}
+} */
 
 /* Sets error messages to monospace. */
 module {

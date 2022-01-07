@@ -1,0 +1,1 @@
+The check script should return a "count" value. If it is greater than zero, the migration is already done.

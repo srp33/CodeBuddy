@@ -1,13 +1,13 @@
 code_file_path="$1"
 tests_dir_path="$2"
-check_code_file_path="$3"
+verification_code_file_path="$3"
 output_type="$4"
 
-if [ -f "$check_code_file_path" ]
+if [ -f "$verification_code_file_path" ]
 then
-  # Adds a newline to student's code if not already present and ensures that bash checking code doesn't skip the final line.
+  # Adds a newline to student's code if not already present and ensures that verification code doesn't skip the final line.
   sed -i -e '$a\' "$code_file_path"
-  value=$(bash $check_code_file_path)
+  value=$(bash $verification_code_file_path)
   if [[ "$value" ]]
   then
     echo "$value"

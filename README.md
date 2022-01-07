@@ -14,3 +14,11 @@ MARIADB_ROOT_PASSWORD - This will be the root password. Use whatever password yo
 MARIADB_USER - This will be the user ID that the app will use to access the database.
 MARIADB_PASSWORD - This will be the password that the app will use to access the database.
 MARIADB_DATABASE - The name of the database.
+
+For middle layer, install gunicorn, uvicorn, arrow, fastapi. pip will also need to be installed...
+
+### SSL
+
+If you have a proxy, create a self-signed certificate and specify path in Settings.yaml. See https://wiki.debian.org/Self-Signed_Certificate.
+
+If you don't, you need to get a certificate from digicert, etc....

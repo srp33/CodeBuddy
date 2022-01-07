@@ -1,5 +1,5 @@
 from content import *
-from tornado.web import *
+from tornado.web import RequestHandler
 import traceback
 import contextvars
 

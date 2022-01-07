@@ -21,77 +21,79 @@
     </div>
 </div>
 
-<table class="table" id="request_table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Student Name</th>
-            <th>Assignment</th>
-            <th>Exercise</th>
-            <th>Request</th>
-            <th>MIN
-                <label class="has-tooltip-multiline" data-tooltip="More info needed: Once the student sees this request and gives more information, this flag will be removed automatically.">
-                    <i class="far fa-question-circle"></i>
-                </label>
-            </th>
-            <th>Suggestion Made</th>
-            <th>Approved
-                <label class="has-tooltip-multiline" data-tooltip="Assistants can make suggestions, but they must be approved by an instructor or admin before the student will be able to see them.">
-                    <i class="far fa-question-circle"></i>
-                </label>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    {% if help_requests %}
-        {% for request in help_requests %}
-        <tr>
-            <td>
-                <script>
-                    var s = new Date("{{ request['date'].strftime('%Y-%m-%dT%H:%M:%S.%f') }}");
-                    document.write(convertDate(s));
-                </script>
-            </td>
-            <td>{{ request["name"] }}</td>
-            <td>{{ request["assignment_title"] }}</td> 
-            <td>{{ request["exercise_title"] }}</td>
-            <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}" class="button is-primary">View</a></td>
-            {% if request["more_info_needed"] %}
-                <td>Yes</td>
-            {% else %}
-                <td>No</td>
+<div class="table-container">
+    <table class="table is-striped" id="request_table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Student Name</th>
+                <th>Assignment</th>
+                <th>Exercise</th>
+                <th>Request</th>
+                <th>MIN
+                    <label class="has-tooltip-multiline" data-tooltip="More info needed: Once the student sees this request and gives more information, this flag will be removed automatically.">
+                        <i class="far fa-question-circle"></i>
+                    </label>
+                </th>
+                <th>Suggestion Made</th>
+                <th>Approved
+                    <label class="has-tooltip-multiline" data-tooltip="Assistants can make suggestions, but they must be approved by an instructor or admin before the student will be able to see them.">
+                        <i class="far fa-question-circle"></i>
+                    </label>
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if help_requests %}
+            {% for request in help_requests %}
+            <tr>
+                <td>
+                    <script>
+                        var s = new Date("{{ request['date'].strftime('%Y-%m-%dT%H:%M:%S.%f') }}");
+                        document.write(convertDate(s));
+                    </script>
+                </td>
+                <td>{{ request["name"] }}</td>
+                <td>{{ request["assignment_title"] }}</td> 
+                <td>{{ request["exercise_title"] }}</td>
+                <td><a href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}" class="button is-primary">View</a></td>
+                {% if request["more_info_needed"] %}
+                    <td>Yes</td>
+                {% else %}
+                    <td>No</td>
+                {% end %}
+                {% if request["suggestion"] %}
+                    <td>
+                        <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
+                    </td>
+                {% else %}
+                    <td>
+                        <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
+                    </td>
+                {% end %}
+                {% if request["approved"] %}
+                    <td>
+                        <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
+                    </td>
+                {% else %}
+                    <td>
+                        <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
+                    </td>
+                {% end %}
+                <form method="post" action="/delete_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">
+                <td>
+                    <button type="submit">
+                        <i class="fas fa-trash-alt fa-lg"></i>
+                    </button>
+                </td>
+                </form>
+            </tr>
             {% end %}
-            {% if request["suggestion"] %}
-                <td>
-                    <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
-                </td>
-            {% else %}
-                <td>
-                    <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
-                </td>
-            {% end %}
-            {% if request["approved"] %}
-                <td>
-                    <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
-                </td>
-            {% else %}
-                <td>
-                    <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
-                </td>
-            {% end %}
-            <form method="post" action="/delete_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">
-            <td>
-                <button type="submit">
-                    <i class="fas fa-trash-alt fa-lg"></i>
-                </button>
-            </td>
-            </form>
-        </tr>
-        {% end %}
-    {% end %}    
-    </tbody>
-</table>
+        {% end %}    
+        </tbody>
+    </table>
+</div>
 
 <div>
     <a href="/profile/help_requests">Back to tools</a>
