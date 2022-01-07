@@ -69,4 +69,8 @@ class EditExerciseHandler(BaseUserHandler):
         except Exception as inst:
             results["message"] = traceback.format_exc()
 
-        self.write(json.dumps(results))
+        try:
+            self.write(json.dumps(results, default=str))
+        except:
+            results = {"exercise_id": None, "message": traceback.format_exc(), "exercise_details": None}
+            self.write(json.dumps(results))

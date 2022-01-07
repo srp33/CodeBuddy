@@ -1684,9 +1684,9 @@ class Content:
                         image_output = ""
 
                     sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, can_see_test_code, can_see_expected_output, can_see_code_output, text_output, image_output)
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-                    test_id = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], title, exercise_details["tests"][title]["before_code"], exercise_details["tests"][title]["after_code"], exercise_details["tests"][title]["instructions"], exercise_details["can_see_test_code"], exercise_details["can_see_expected_output"], exercise_details["can_see_code_output"], exercise_details["tests"][title]["text_output"], image_output])
+                    test_id = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], title, exercise_details["tests"][title]["before_code"], exercise_details["tests"][title]["after_code"], exercise_details["tests"][title]["instructions"], exercise_details["tests"][title]["can_see_test_code"], exercise_details["tests"][title]["can_see_expected_output"], exercise_details["tests"][title]["can_see_code_output"], exercise_details["tests"][title]["text_output"], image_output])
 
         else:
             sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, allow_any_response, show_instructor_solution, show_peer_solutions, starter_code, date_created, date_updated, enable_pair_programming, verification_code)

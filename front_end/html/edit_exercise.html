@@ -576,19 +576,20 @@
             $(`#${id}`)[0].value = value;
         }
 
-        function showResultMessage(messageHTML, isError) {
-            if (isError) {
-                $("#result_message").addClass("is-danger");
-                $("#result_message").removeClass("is-primary");
-            }
-            else {
-                $("#result_message").addClass("is-primary");
-                $("#result_message").removeClass("is-danger");
-            }
+        function showResultMessage(messageHTML, messageType) {
+            $("#result_message").removeClass("is-primary");
+            $("#result_message").removeClass("is-warning");
+            $("#result_message").removeClass("is-danger");
+
+            $("#result_message").addClass(`is-${messageType}`);
 
             $("#result_message").removeClass("is-hidden");
             $("#result_message")[0].innerHTML = messageHTML;
             $("#result_message")[0].scrollIntoView();
+        }
+
+        function hideResultMessage() {
+            $("#result_message").addClass("is-hidden");
         }
 
         function load() {
@@ -630,20 +631,20 @@
 
             // Check submission details
             if (title == "")
-                return(showResultMessage("Please provide a title.", true));
+                return(showResultMessage("Please provide a title.", "danger"));
             if (title.length > 80)
-                return(showResultMessage("The title cannot exceed 80 characters in length.", true));
+                return(showResultMessage("The title cannot exceed 80 characters in length.", "danger"));
             if (instructions == "")
-                return(showResultMessage("Please provide instructions.", true));
+                return(showResultMessage("Please provide instructions.", "danger"));
             if (!allow_any_response && solution_code == "")
-                return(showResultMessage("Except when any response is allowed, you must provide a solution.", true));
+                return(showResultMessage("Except when any response is allowed, you must provide a solution.", "danger"));
 
             // Make sure total file size is not larger than 10 MB across all files.
             var total_file_size = 0;
             for (let file_name of Object.keys(exercise_details_obj["data_files"]))
                 total_file_size += exercise_details_obj["data_files"][file_name]["size"];
             if (total_file_size > 10 * 1024 * 1024)
-                return(showResultMessage(`The total file size [${total_file_size}] exceeds the 10 megabyte limit.`, true));
+                return(showResultMessage(`The total file size [${total_file_size}] exceeds the 10 megabyte limit.`, "danger"));
 
             var submission_obj = {
                 "title": title,
@@ -666,6 +667,8 @@
                 "tests": exercise_details_obj["tests"]
             }
 
+            showResultMessage("<b>Please wait...</b>", "warning");
+
             $.ajax({
                 type: 'POST',
                 url: "/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_basics_obj['id'],
@@ -678,17 +681,16 @@
                         // Success
                         exercise_basics_obj["id"] = json_data["exercise_id"];
                         exercise_details_obj = json_data["exercise_details"];
-                        console.log("Success");
 
-                        //showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, true);
-                        //showOutput(true, false);
+                        showOutput(true, false);
+                        showResultMessage("<b>The exercise was saved successfully.</b>", "primary");
                     }
                     else {
-                        showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, true);
+                        showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, "danger");
                     }
                 })
                 .fail(function(data) {
-                    showResultMessage("<p>An error occurred when connecting to the server. It may be down.</p>", true);
+                    showResultMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
                 });
         }
 
