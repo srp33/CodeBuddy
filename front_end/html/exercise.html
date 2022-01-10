@@ -457,7 +457,7 @@
 
         {% if not exercise_details["allow_any_response"] %}
             {% if exercise_details["show_expected"] %}
-                {% if len(exercise_details["expected_text_output"]) > 0 or exercise_details["expected_image_output"] != "" %}
+                {% if len(exercise_details["expected_txt_output"]) > 0 or exercise_details["expected_jpg_output"] != "" %}
                     <div>
                         <h6 style="display: inline">Expected output:</h6>
                         <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your solution with the expected output to find and fix errors, as needed.">
@@ -466,9 +466,9 @@
                     </div>
 
                     {% if exercise_details["output_type"] == "txt" %}
-                        <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
-                    {% elif exercise_details["expected_image_output"] != "" %}
-                        <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
+                        <p><pre>{{ exercise_details["expected_txt_output"] }}</pre></p>
+                    {% elif exercise_details["expected_jpg_output"] != "" %}
+                        <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_jpg_output'] }}" width="100%"/></figure></p>
                     {% end %}
                 {% end %}
             {% else %}

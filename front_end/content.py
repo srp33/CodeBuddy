@@ -1422,7 +1422,7 @@ class Content:
             return self.get_submission_info(course, assignment, exercise, user, last_submission_id)
 
     def get_submission_info(self, course, assignment, exercise, user, submission):
-        sql = '''SELECT code, text_output, image_output, passed, date, partner_id
+        sql = '''SELECT code, txt_output, jpg_output, passed, date, partner_id
                  FROM submissions
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -1432,7 +1432,7 @@ class Content:
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
 
-        test_sql = '''SELECT submission_output_id, text_output, image_output
+        test_sql = '''SELECT submission_output_id, txt_output, jpg_output
                       FROM submission_outputs
                       WHERE course_id = ?
                         AND assignment_id = ?
@@ -1442,9 +1442,9 @@ class Content:
 
         tests = []
         for test in self.fetchall(test_sql, (int(course), int(assignment), int(exercise), user, int(submission),)):
-            tests.append({"test": test["submission_output_id"], "text_output": test["text_output"], "image_output": test["image_output"]})
+            tests.append({"test": test["submission_output_id"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]})
 
-        return {"id": submission, "code": row["code"], "text_output": row["text_output"], "image_output": row["image_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests": tests}
+        return {"id": submission, "code": row["code"], "txt_output": row["txt_output"], "jpg_output": row["jpg_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests": tests}
 
     def delete_presubmission(self, course, assignment, exercise, user):
         sql = '''DELETE FROM presubmissions
@@ -1528,8 +1528,8 @@ class Content:
                    can_see_test_code,
                    can_see_expected_output,
                    can_see_code_output,
-                   text_output,
-                   image_output
+                   txt_output,
+                   jpg_output
                  FROM tests
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -1545,7 +1545,7 @@ class Content:
             if title == "":
                 title = f"Test {test_index}"
 
-            exercise_dict["tests"][title] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "text_output": test["text_output"], "image_output": test["image_output"]}
+            exercise_dict["tests"][title] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]}
 
         if format_content:
             exercise_dict["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_dict["instructions"])) # Removes html markup from instructions before converting markdown to html
@@ -1656,60 +1656,70 @@ class Content:
         return assignment_basics["id"]
 
     def save_exercise(self, exercise_basics, exercise_details):
-        if exercise_basics["exists"]:
-            sql = '''UPDATE exercises
-                     SET title = ?, visible = ?, solution_code = ?, solution_description = ?, hint = ?,
-                         max_submissions = ?, credit = ?, data_files = ?, back_end = ?,
-                         instructions = ?, output_type = ?, allow_any_response = ?, show_instructor_solution = ?,
-                         show_peer_solutions = ?, starter_code = ?,
-                         date_updated = ?, enable_pair_programming = ?, verification_code = ?
-                     WHERE course_id = ?
-                       AND assignment_id = ?
-                       AND exercise_id = ?'''
+        cursor = self.conn.cursor()
+        cursor.execute("BEGIN")
 
-            self.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["show_instructor_solution"], exercise_details["show_peer_solutions"], exercise_details["starter_code"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
+        try:
+            if exercise_basics["exists"]:
+                sql = '''
+                    UPDATE exercises
+                    SET title = ?, visible = ?, solution_code = ?, solution_description = ?, hint = ?,
+                        max_submissions = ?, credit = ?, data_files = ?, back_end = ?,
+                        instructions = ?, output_type = ?, allow_any_response = ?, show_instructor_solution = ?,
+                        show_peer_solutions = ?, starter_code = ?,
+                        date_updated = ?, enable_pair_programming = ?, verification_code = ?
+                    WHERE course_id = ?
+                      AND assignment_id = ?
+                      AND exercise_id = ?'''
 
-            sql = '''DELETE FROM tests
-                     WHERE course_id = ?
-                       AND assignment_id = ?
-                       AND exercise_id = ?'''
+                cursor.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["show_instructor_solution"], exercise_details["show_peer_solutions"], exercise_details["starter_code"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 
-            self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
+                sql = '''DELETE FROM tests
+                         WHERE course_id = ?
+                           AND assignment_id = ?
+                           AND exercise_id = ?'''
 
-            if len(exercise_details["tests"]) > 0:
+                cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
+
                 for title in exercise_details["tests"]:
-                    # Only saves 'image_output' if it isn't blank.
-                    image_output = exercise_details["tests"][title]["image_output"]
-                    if image_output != "" and image_output.strip() == BLANK_IMAGE.strip():
-                        image_output = ""
+                    # Only saves 'jpg_output' if it isn't blank.
+                    jpg_output = exercise_details["tests"][title]["jpg_output"]
+                    #if jpg_output != "" and jpg_output.strip() == BLANK_IMAGE.strip():
+                    if jpg_output != "" and jpg_output.strip() == BLANK_IMAGE:
+                        jpg_output = ""
 
-                    sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, can_see_test_code, can_see_expected_output, can_see_code_output, text_output, image_output)
+                    sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, can_see_test_code, can_see_expected_output, can_see_code_output, txt_output, jpg_output)
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-                    test_id = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], title, exercise_details["tests"][title]["before_code"], exercise_details["tests"][title]["after_code"], exercise_details["tests"][title]["instructions"], exercise_details["tests"][title]["can_see_test_code"], exercise_details["tests"][title]["can_see_expected_output"], exercise_details["tests"][title]["can_see_code_output"], exercise_details["tests"][title]["text_output"], image_output])
+                    test_id = cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], title, exercise_details["tests"][title]["before_code"], exercise_details["tests"][title]["after_code"], exercise_details["tests"][title]["instructions"], exercise_details["tests"][title]["can_see_test_code"], exercise_details["tests"][title]["can_see_expected_output"], exercise_details["tests"][title]["can_see_code_output"], exercise_details["tests"][title]["txt_output"], jpg_output])
 
-        else:
-            sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, allow_any_response, show_instructor_solution, show_peer_solutions, starter_code, date_created, date_updated, enable_pair_programming, verification_code)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            else:
+                sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, allow_any_response, show_instructor_solution, show_peer_solutions, starter_code, date_created, date_updated, enable_pair_programming, verification_code)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            exercise_basics["id"] = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["show_instructor_solution"], exercise_details["show_peer_solutions"], exercise_details["starter_code"], exercise_details["date_created"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"]])
+                exercise_basics["id"] = cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["show_instructor_solution"], exercise_details["show_peer_solutions"], exercise_details["starter_code"], exercise_details["date_created"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"]])
 
-            exercise_basics["exists"] = True
+                exercise_basics["exists"] = True
 
-            sql = '''DELETE FROM tests
-                     WHERE course_id = ?
-                       AND assignment_id = ?
-                       AND exercise_id = ?'''
+                sql = '''DELETE FROM tests
+                         WHERE course_id = ?
+                           AND assignment_id = ?
+                           AND exercise_id = ?'''
 
-            self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
+                cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 
-            if len(exercise_details["tests"]) > 0:
                 for title in exercise_details["tests"]:
-                    sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, text_output, image_output, can_see_test_code, can_see_expected_output, can_see_code_output)
+                    sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
-                    test_id = self.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], title, exercise_details["tests"][title]["before_code"], exercise_details["tests"][title]["after_code"], exercise_details["tests"][title]["instructions"], exercise_details["tests"][title]["text_output"], exercise_details["tests"][title]["image_output"], exercise_details["tests"][title]["can_see_test_code"], exercise_details["tests"][title]["can_see_expected_output"], exercise_details["tests"][title]["can_see_code_output"]])
+                    test_id = cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], title, exercise_details["tests"][title]["before_code"], exercise_details["tests"][title]["after_code"], exercise_details["tests"][title]["instructions"], exercise_details["tests"][title]["txt_output"], exercise_details["tests"][title]["jpg_output"], exercise_details["tests"][title]["can_see_test_code"], exercise_details["tests"][title]["can_see_expected_output"], exercise_details["tests"][title]["can_see_code_output"]])
 
+            cursor.execute("COMMIT")
+        except self.conn.Error:
+            cursor.execute("ROLLBACK")
+            raise
+
+        cursor.close()
         return exercise_basics["id"]
 
     def save_presubmission(self, course, assignment, exercise, user, code):
@@ -1718,44 +1728,45 @@ class Content:
 
         self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
 
-    def save_submission(self, course, assignment, exercise, user, code, text_output, image_output, passed, tests, partner_id=None):
-        # Only saves 'image_output' if it isn't blank.
+    def save_submission(self, course, assignment, exercise, user, code, txt_output, jpg_output, passed, tests, partner_id=None):
+        # Only saves 'jpg_output' if it isn't blank.
         try:
-            if image_output != "":
-                image_output = "" if image_output.strip() == BLANK_IMAGE.strip() else image_output
+            if jpg_output != "":
+                #jpg_output = "" if jpg_output.strip() == BLANK_IMAGE.strip() else jpg_output
+                jpg_output = "" if jpg_output.strip() == BLANK_IMAGE else jpg_output
 
             submission_id = self.get_next_submission_id(course, assignment, exercise, user)
-            sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, text_output, image_output, passed, date, partner_id)
+            sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, txt_output, jpg_output, passed, date, partner_id)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, text_output, image_output, passed, datetime.now(), partner_id])
+            self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, txt_output, jpg_output, passed, datetime.now(), partner_id])
 
             if len(tests) > 0:
-                test_sql = '''INSERT OR REPLACE INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, text_output, image_output)
+                test_sql = '''INSERT OR REPLACE INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, txt_output, jpg_output)
                              VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
                 for test in tests:
-                    self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["text_output"], test["image_output"]])
+                    self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["txt_output"], test["jpg_output"]])
 
             # Saves submission for partner.
             if partner_id:
                 submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
-                self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, text_output, image_output, passed, datetime.now(), user])
+                self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, txt_output, jpg_output, passed, datetime.now(), user])
 
                 if len(tests) > 0:
                     for test in tests:
-                        self.execute(test_sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), test["text_output"], test["image_output"]])
+                        self.execute(test_sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), test["txt_output"], test["jpg_output"]])
 
         except:
             print(traceback.format_exc())
 
         return submission_id
 
-    def save_help_request(self, course, assignment, exercise, user_id, code, text_output, image_output, student_comment, date):
-        sql = '''INSERT INTO help_requests (course_id, assignment_id, exercise_id, user_id, code, text_output, image_output, student_comment, approved, date, more_info_needed)
+    def save_help_request(self, course, assignment, exercise, user_id, code, txt_output, jpg_output, student_comment, date):
+        sql = '''INSERT INTO help_requests (course_id, assignment_id, exercise_id, user_id, code, txt_output, jpg_output, student_comment, approved, date, more_info_needed)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, (course, assignment, exercise, user_id, code, text_output, image_output, student_comment, 0, date, 0,))
+        self.execute(sql, (course, assignment, exercise, user_id, code, txt_output, jpg_output, student_comment, 0, date, 0,))
 
     def update_help_request(self, course, assignment, exercise, user_id, student_comment):
         sql = '''UPDATE help_requests
@@ -1815,8 +1826,8 @@ class Content:
 
             new_exercise_id = self.fetchone(sql, (new_course_id, new_assignment_id, row["title"]))["exercise_id"]
 
-            sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, text_output, image_output, can_see_test_code, can_see_expected_output, can_see_code_output)
-                     SELECT ?, ?, ?, title, before_code, after_code, instructions, text_output, image_output, can_see_test_code, can_see_expected_output, can_see_code_output
+            sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
+                     SELECT ?, ?, ?, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output
                      FROM tests
                      WHERE course_id = ?
                        AND assignment_id = ?
@@ -1913,8 +1924,8 @@ class Content:
 
             new_exercise_id = self.execute(sql, (new_title, course_id, assignment_id, exercise_id, ))
 
-            sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, text_output, image_output, can_see_test_code, can_see_expected_output, can_see_code_output)
-                     SELECT course_id, assignment_id, ?, title, before_code, after_code, instructions, text_output, image_output, can_see_test_code, can_see_expected_output, can_see_code_output
+            sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
+                     SELECT course_id, assignment_id, ?, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output
                      FROM tests
                      WHERE course_id = ?
                        AND assignment_id = ?
@@ -2101,7 +2112,7 @@ class Content:
 
     def export_data(self, course_basics, table_name, output_tsv_file_path):
         if table_name == "submissions":
-            sql = '''SELECT c.title, a.title, e.title, s.user_id, s.submission_id, s.code, s.text_output, s.image_output, s.passed, s.date
+            sql = '''SELECT c.title, a.title, e.title, s.user_id, s.submission_id, s.code, s.txt_output, s.jpg_output, s.passed, s.date
                     FROM submissions s
                     INNER JOIN courses c
                       ON c.course_id = s.course_id

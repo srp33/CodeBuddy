@@ -181,7 +181,7 @@
                     }
                 }
 
-                function build_text_output(json_output) {
+                function build_txt_output(json_output) {
                     var output = "";
 
                     if (json_output == "")
@@ -231,9 +231,9 @@
                             test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
 
                             {% if exercise_details["output_type"] == "txt" %}
-                                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">{{exercise_details["tests"][i]["text_output"]}}</pre>`;
+                                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">{{exercise_details["tests"][i]["txt_output"]}}</pre>`;
                             {% else %}
-                                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + '{{exercise_details["tests"][i]["image_output"]}}' + `' width='100%' /></figure></p>`;
+                                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + '{{exercise_details["tests"][i]["jpg_output"]}}' + `' width='100%' /></figure></p>`;
                             {% end %}
 
                             if (json_data != null && json_data.tests[{{i}}].diff_output != "") {
@@ -261,18 +261,18 @@
                             test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
 
                             {% if exercise_details["output_type"] == "txt" %}
-                                if (json_data.tests[{{i}}].text_output == "")
+                                if (json_data.tests[{{i}}].txt_output == "")
                                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
                                 else
-                                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[{{i}}].text_output}</pre>`;
+                                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[{{i}}].txt_output}</pre>`;
                             {% else %}
-                                if (json_data.tests[{{i}}]["image_output"] == "")
+                                if (json_data.tests[{{i}}]["jpg_output"] == "")
                                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
                                 else
-                                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[{{i}}].image_output + "' width='100%' /></figure></p>";
+                                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[{{i}}].jpg_output + "' width='100%' /></figure></p>";
 
-                                if (json_data.tests[{{i}}]["text_output"] != "")
-                                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[{{i}}].text_output}</pre>`;
+                                if (json_data.tests[{{i}}]["txt_output"] != "")
+                                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[{{i}}].txt_output}</pre>`;
                             {% end %}
                         }
 
@@ -283,7 +283,7 @@
                     {% end %}
                 }
 
-                function build_image_output(json_output) {
+                function build_jpg_output(json_output) {
                     var output = "";
 
                     if (json_output == "")
@@ -346,26 +346,26 @@
                     document.getElementById("result").innerHTML = result;
 
                     {% if exercise_details["allow_any_response"] %}
-                        if (json_data.text_output != "" || json_data.image_output != "") {
+                        if (json_data.txt_output != "" || json_data.jpg_output != "") {
                             var code_output = "<h6>Your output:</h6>\n\n";
-                            code_output += build_text_output(json_data.text_output);
-                            code_output += build_image_output(json_data.image_output);
+                            code_output += build_txt_output(json_data.txt_output);
+                            code_output += build_jpg_output(json_data.jpg_output);
                             document.getElementById("code_output").innerHTML = code_output;
                         }
                     {% else %}
-                        var expected_text = `{{ exercise_details["expected_text_output"] }}`;
-                        var expected_image = `{{ exercise_details["expected_image_output"] }}`;
+                        var expected_text = `{{ exercise_details["expected_txt_output"] }}`;
+                        var expected_image = `{{ exercise_details["expected_jpg_output"] }}`;
 
                         // If output includes an index error, provide student with a more helpful error message instead.
-                        if (json_data.text_output.includes("IndexError:&nbsp;list&nbsp;index&nbsp;out&nbsp;of&nbsp;range")) {
+                        if (json_data.txt_output.includes("IndexError:&nbsp;list&nbsp;index&nbsp;out&nbsp;of&nbsp;range")) {
                             var code_output = "<h6>Your output:</h6>\n\n";
                             code_output += "Output is not available for this submission. This may be due to the instructor editing the exercise since you last submitted."
                             document.getElementById("code_output").innerHTML = code_output;
                         }
-                        else if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
+                        else if (((json_data.txt_output != "") || (json_data.jpg_output != "")) || ((expected_text != "") || (expected_image != ""))) {
                             var code_output = "<h6>Your output:</h6>\n\n";
-                            code_output += build_text_output(json_data.text_output);
-                            code_output += build_image_output(json_data.image_output);
+                            code_output += build_txt_output(json_data.txt_output);
+                            code_output += build_jpg_output(json_data.jpg_output);
                             document.getElementById("code_output").innerHTML = code_output;
                         }
 
@@ -403,13 +403,13 @@
                       success: function(result) {
                         var json_data = JSON.parse(result);
 
-                        var expected_text = `{{ exercise_details["expected_text_output"] }}`;
-                        var expected_image = `{{ exercise_details["expected_image_output"] }}`;
+                        var expected_text = `{{ exercise_details["expected_txt_output"] }}`;
+                        var expected_image = `{{ exercise_details["expected_jpg_output"] }}`;
 
-                        if (((json_data.text_output != "") || (json_data.image_output != "")) || ((expected_text != "") || (expected_image != ""))) {
+                        if (((json_data.txt_output != "") || (json_data.jpg_output != "")) || ((expected_text != "") || (expected_image != ""))) {
                           var code_output = "<h6>Your output:</h6>\n\n";
-                          code_output += build_text_output(json_data.text_output);
-                          code_output += build_image_output(json_data.image_output);
+                          code_output += build_txt_output(json_data.txt_output);
+                          code_output += build_jpg_output(json_data.jpg_output);
                           document.getElementById("code_output").innerHTML = code_output;
                         }
 

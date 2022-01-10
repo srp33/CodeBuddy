@@ -5,14 +5,16 @@ DROP TABLE submission_outputs;
 CREATE TABLE test_submissions (
   test_id integer NOT NULL,
   submission_id integer NOT NULL,
-  text_output text,
-  image_output text,
+  txt_output text,
+  jpg_output text,
   FOREIGN KEY (test_id) REFERENCES submissions (test_id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (submission_id) REFERENCES submissions (submission_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 ALTER TABLE tests RENAME COLUMN test_instructions TO instructions;
 ALTER TABLE tests RENAME COLUMN code TO after_code;
+ALTER TABLE tests RENAME COLUMN text_output TO txt_output;
+ALTER TABLE tests RENAME COLUMN image_output TO jpg_output;
 ALTER TABLE tests ADD COLUMN title text NOT NULL DEFAULT '';
 ALTER TABLE tests ADD COLUMN before_code integer NOT NULL DEFAULT '';
 ALTER TABLE tests ADD COLUMN can_see_test_code integer NOT NULL DEFAULT 1;
@@ -27,7 +29,7 @@ UPDATE tests
 SET can_see_test_code = 0, can_see_expected_output = 0, can_see_code_output = 1
 WHERE instructions != '';
 
-INSERT INTO tests (course_id, assignment_id, exercise_id, title, instructions, before_code, after_code, text_output, image_output, can_see_test_code, can_see_expected_output, can_see_code_output)
+INSERT INTO tests (course_id, assignment_id, exercise_id, title, instructions, before_code, after_code, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
 SELECT course_id, assignment_id, exercise_id, 'Main output', '', '', '', expected_text_output, expected_image_output, 1, show_expected, 1
 FROM exercises
 WHERE (expected_text_output != '' AND expected_text_output != 'sh: 0: getcwd() failed: No such file or directory') OR expected_image_output != '';

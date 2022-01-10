@@ -44,7 +44,8 @@ def exec(info: ExecInfo):
         tmp_dir_path = tempfile.mkdtemp(dir=base_tmp_dir_path)
 
         # Save the verification code to a file that will be accessible inside the container.
-        if len(info.verification_code) > 0:
+        do_verification = len(info.verification_code.strip()) > 0
+        if do_verification:
             with open(f"{tmp_dir_path}/verification_code", "w") as verification_file:
                 verification_file.write(info.verification_code)
 
@@ -53,15 +54,16 @@ def exec(info: ExecInfo):
             info.tests[test_title]["dir_path"] = f"{tmp_dir_path}/tests/{info.tests[test_title]['test_id']}"
             os.makedirs(info.tests[test_title]["dir_path"], exist_ok=True)
 
-            if info.image_name.endswith("python_script"):
-                info.tests[test_title]["code_file_name"] = "code.py"
-                info.tests[test_title]["code"] = info.tests[test_title]["before_code"] + "\n\n" + info.tests[test_title]["after_code"]
-            else:
-                info.tests[test_title]["code_file_name"] = "code"
-                info.tests[test_title]["code"] = info.tests[test_title]["before_code"] + "\n\n" + info.code + "\n\n" + info.tests[test_title]["after_code"]
+            with open(f"{info.tests[test_title]['dir_path']}/before_code", "w") as code_file:
+                if info.tests[test_title]["before_code"].strip() != "":
+                    code_file.write(info.tests[test_title]["before_code"].strip() + "\n\n")
 
-            with open(f"{info.tests[test_title]['dir_path']}/{info.tests[test_title]['code_file_name']}", "w") as test_file:
-                test_file.write(info.tests[test_title]["code"])
+            with open(f"{info.tests[test_title]['dir_path']}/main_code", "w") as code_file:
+                code_file.write(info.code.strip() + "\n\n")
+
+            with open(f"{info.tests[test_title]['dir_path']}/after_code", "w") as code_file:
+                if info.tests[test_title]["after_code"].strip() != "":
+                    code_file.write(info.tests[test_title]["after_code"].strip() + "\n\n")
 
             # Save any data files so they will be accessible inside the container.
             for key, value in info.data_files.items():
@@ -69,7 +71,7 @@ def exec(info: ExecInfo):
                     data_file.write(value)
 
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {info.output_type}"
+        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
@@ -82,26 +84,22 @@ def exec(info: ExecInfo):
         test_outputs = {}
 
         for test_title in info.tests:
-            text_output = ""
-            text_output_file_path = f"{info.tests[test_title]['dir_path']}/text_output"
+            txt_output = ""
+            txt_output_file_path = f"{info.tests[test_title]['dir_path']}/txt_output"
 
-            if os.path.exists(text_output_file_path):
-                with open(text_output_file_path) as output_file:
-                    text_output = output_file.read().strip()
-            else:
-                text_output = "No text output was generated."
+            if os.path.exists(txt_output_file_path) and os.path.getsize(txt_output_file_path) > 0:
+                with open(txt_output_file_path) as output_file:
+                    txt_output = output_file.read().strip()
 
-            image_output = ""
+            jpg_output = ""
             if info.output_type == "jpg":
-                image_output_file_path = f"{info.tests[test_title]['dir_path']}/text_output"
+                jpg_output_file_path = f"{info.tests[test_title]['dir_path']}/jpg_output"
 
-                if os.path.exists(image_output_file_path):
-                    with open(image_output_file_path, "rb") as output_file:
-                        image_output = encode_image_bytes(output_file.read())
-            else:
-                image_output = "No image output was generated."
+                if os.path.exists(jpg_output_file_path) and os.path.getsize(jpg_output_file_path) > 0:
+                    with open(jpg_output_file_path, "rb") as output_file:
+                        jpg_output = encode_image_bytes(output_file.read())
 
-            test_outputs[test_title] = {"text_output": text_output, "image_output": image_output}
+            test_outputs[test_title] = {"txt_output": txt_output, "jpg_output": jpg_output}
     except Exception as inst:
         return {"message": traceback.format_exc(), "test_outputs": {}}
     finally:

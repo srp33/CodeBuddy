@@ -10,9 +10,9 @@ for test_id in *
 do
   cd ${base_dir}/tests/${test_id}
 
-  if [[ "${do_verification}" == "True" ]]
+  if [[ "${done_with_verification}" == "False" ]]
   then
-    if [[ "${done_with_verification}" == "False" ]]
+    if [[ "${do_verification}" == "True" ]]
     then
       cp main_code code
       value="$(bash /verify_code.sh ${base_dir}/verification_code)"
@@ -23,9 +23,9 @@ do
         echo "$value"
         exit
       fi
-
-      done_with_verification=True
     fi
+
+    done_with_verification=True
   fi
 
   if [[ "${output_type}" == "jpg" ]]

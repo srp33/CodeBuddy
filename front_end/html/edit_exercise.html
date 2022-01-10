@@ -410,12 +410,12 @@
                     if (Object.keys(exercise_details_obj["tests"]).length > 1)
                         html += `<div class="space-div"><p><strong>${test_title}:</strong></p>`;
 
-                    if (exercise_details_obj["tests"][test_title]["text_output"] != "") {
-                        html += `<pre><code>${exercise_details_obj["tests"][test_title]["text_output"]}</code></pre>`;
+                    if (exercise_details_obj["tests"][test_title]["txt_output"] != "") {
+                        html += `<pre><code>${exercise_details_obj["tests"][test_title]["txt_output"]}</code></pre>`;
                     }
 
-                    if (exercise_details_obj["output_type"] == "jpg" && exercise_details_obj["tests"][test_title]["image_output"] != "") {
-                        html += `<p><figure class='img'><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["image_output"]}' width='95%' /></figure></p>`;
+                    if (exercise_details_obj["output_type"] == "jpg" && exercise_details_obj["tests"][test_title]["jpg_output"] != "") {
+                        html += `<p><figure class='img'><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["jpg_output"]}' width='95%' /></figure></p>`;
                     }
 
                     html += "</div>";
@@ -735,7 +735,7 @@
                     return showTestMessage("A test with that title has already been created. Please choose a different title.", true, false);
             }
 
-            exercise_details_obj["tests"][test_title] = {"instructions": test_instructions, "can_see_test_code": can_see_test_code, "can_see_expected_output": can_see_expected_output, "can_see_code_output": can_see_code_output, "before_code": before_test_code, "after_code": after_test_code, "text_output": "", "image_output": "", "test_id": -1};
+            exercise_details_obj["tests"][test_title] = {"instructions": test_instructions, "can_see_test_code": can_see_test_code, "can_see_expected_output": can_see_expected_output, "can_see_code_output": can_see_code_output, "before_code": before_test_code, "after_code": after_test_code, "txt_output": "", "jpg_output": "", "test_id": -1};
             showTests();
 
             $("#add_test_modal").removeClass("is-active");

@@ -46,13 +46,13 @@
 
             <div class="top-space">
 
-                {% if exercise_details["expected_text_output"] != "" or exercise_details["expected_image_output"] != "" %}
+                {% if exercise_details["expected_txt_output"] != "" or exercise_details["expected_jpg_output"] != "" %}
                     <h6 style="display: inline">Expected output:</h6>
 
                     {% if exercise_details["output_type"] == "txt" %}
-                        <p><pre>{{ exercise_details["expected_text_output"] }}</pre></p>
+                        <p><pre>{{ exercise_details["expected_txt_output"] }}</pre></p>
                     {% else %}
-                        <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_image_output'] }}" width="100%"/></figure></p>
+                        <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_jpg_output'] }}" width="100%"/></figure></p>
                     {% end %}
                 {% end %}
 

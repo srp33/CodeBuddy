@@ -9,6 +9,8 @@ RUN apt-get update -qq && apt-get install -y \
 
 RUN R -e "install.packages(c('car', 'conflicted', 'igraph', 'magick', 'mapproj', 'maps', 'ranger', 'tidymodels', 'workflows', 'tune', 'XML'))"
 
-ADD exec.R /
+ADD *.py /
+ADD *.R /
+ADD *.sh /
 
-ENTRYPOINT ["Rscript", "--vanilla", "/exec.R"]
+ENTRYPOINT ["bash", "/exec.sh"]

@@ -2,10 +2,15 @@
 
 set -o errexit
 
-for container_dir in $(pwd)/back_ends/*
-do
-  image_name=srp33/codebuddy_$(basename $container_dir)
+current_dir="$(pwd)"
 
-  cd $container_dir
+for container_dir in ${current_dir}/back_ends/*
+do
+  image_name=srp33/codebuddy_$(basename ${container_dir})
+
+  cd ${container_dir}
+
+  cp ${current_dir}/exec_back_end.sh ${container_dir}/exec.sh
+
   docker build -t ${image_name} -f Containerfile .
 done

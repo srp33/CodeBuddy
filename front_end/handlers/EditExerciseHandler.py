@@ -9,7 +9,7 @@ class EditExerciseHandler(BaseUserHandler):
 
                 exercise_details = self.content.get_exercise_details(course, assignment, exercise)
                 for test_title in exercise_details["tests"]:
-                    exercise_details["tests"][test_title]["text_output"] = format_output_as_html(exercise_details["tests"][test_title]["text_output"])
+                    exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
 
                 next_prev_exercises = self.content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
@@ -43,14 +43,14 @@ class EditExerciseHandler(BaseUserHandler):
                     has_non_empty_output = False
 
                     for test_title in exec_response["test_outputs"]:
-                        text_output = exec_response["test_outputs"][test_title]["text_output"]
-                        image_output = exec_response["test_outputs"][test_title]["image_output"]
+                        txt_output = exec_response["test_outputs"][test_title]["txt_output"]
+                        jpg_output = exec_response["test_outputs"][test_title]["jpg_output"]
 
-                        exercise_details["tests"][test_title]["text_output"] = text_output
-                        exercise_details["tests"][test_title]["image_output"] = image_output
-                        exercise_details["tests"][test_title]["text_output_formatted"] = format_output_as_html(text_output)
+                        exercise_details["tests"][test_title]["txt_output"] = txt_output
+                        exercise_details["tests"][test_title]["jpg_output"] = jpg_output
+                        exercise_details["tests"][test_title]["txt_output_formatted"] = format_output_as_html(txt_output)
 
-                        if text_output != "" or image_output != "":
+                        if txt_output != "" or jpg_output != "":
                             has_non_empty_output = True
 
                     if has_non_empty_output or exercise_details["allow_any_response"]:

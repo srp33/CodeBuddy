@@ -10,7 +10,7 @@ RUN apt-get update \
 
 ENV MPLCONFIGDIR /tmp
 
-ADD exec.sh /
+ADD *.sh /
 ADD *.py /
 
 ENTRYPOINT ["bash", "/exec.sh"]
