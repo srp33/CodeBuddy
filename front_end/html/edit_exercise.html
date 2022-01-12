@@ -164,9 +164,9 @@
     </div>
 
     <div class="shadow-box">
-        <p><strong>Tests:</strong></p>
+        <p><strong>Tests*:</strong></p>
 
-        <p>You must write one or more tests to evaluate the students' code. A test can be as simple as executing the student's code and verifying that their output matches the output of the instructor's solution. Additionally, you can include code that is executed before and/or after the students' code. For example, you could use code that declares variables <em>before</em> the student's code is executed. Or if you have asked students to write function(s); you could use code that invokes their function(s) <em>after</em> the student'each has been executed. You might include multiple such tests so ensure their code works properly in multiple scenarios. For each test, you must indicate whether the test code will be visible to students, whether the expected output will be visible to students, and whether the output of students' code will be visible to them. To aid in debugging, we recommend that at least one test show the test code, expected output, and the students' output. However, hiding this information for at least one test can help to prevent cheating.</p>
+        <p>Write one or more tests to evaluate the students' code. A test can be as simple as executing the student's code and verifying that their output matches the output of the instructor's solution. Additionally, you can include code that is executed before and/or after the students' code. For example, you could use code that declares variables <em>before</em> the student's code is executed. Or if you have asked students to write function(s); you could use code that invokes their function(s) <em>after</em> the student'each has been executed. You might include multiple such tests so ensure their code works properly in multiple scenarios. For each test, you must indicate whether the test code will be visible to students, whether the expected output will be visible to students, and whether the output of students' code will be visible to them. To aid in debugging, we recommend that at least one test show the test code, expected output, and the students' output. However, hiding this information for at least one test can help to prevent cheating.</p>
 
         <p id="test_additional_instructions"></p>
 
@@ -585,7 +585,7 @@
 
             $("#result_message").removeClass("is-hidden");
             $("#result_message")[0].innerHTML = messageHTML;
-            $("#result_message")[0].scrollIntoView();
+            window.scrollTo(0, 0);
         }
 
         function hideResultMessage() {
@@ -638,6 +638,10 @@
                 return(showResultMessage("Please provide instructions.", "danger"));
             if (!allow_any_response && solution_code == "")
                 return(showResultMessage("Except when any response is allowed, you must provide a solution.", "danger"));
+
+            // Make sure we have at least one test.
+            if (Object.keys(exercise_details_obj["tests"]).length == 0)
+                return(showResultMessage("You must provide at least one test.", "danger"));
 
             // Make sure total file size is not larger than 10 MB across all files.
             var total_file_size = 0;

@@ -1553,6 +1553,9 @@ class Content:
             exercise_dict["solution_description"] = convert_markdown_to_html(exercise_dict["solution_description"])
             exercise_dict["hint"] =  convert_markdown_to_html(exercise_dict["hint"])
 
+            for test_title in exercise_dict["tests"]:
+                exercise_dict["tests"][test_title]["txt_output"] = format_output_as_html(exercise_dict["tests"][test_title]["txt_output"])
+
         return exercise_dict
 
     def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):

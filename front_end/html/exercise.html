@@ -455,39 +455,42 @@
 
         <p><div id="result"></div></p>
 
-        {% if not exercise_details["allow_any_response"] %}
-            {% if exercise_details["show_expected"] %}
-                {% if len(exercise_details["expected_txt_output"]) > 0 or exercise_details["expected_jpg_output"] != "" %}
-                    <div>
-                        <h6 style="display: inline">Expected output:</h6>
-                        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your solution with the expected output to find and fix errors, as needed.">
-                            <i class="far fa-question-circle"></i>
-                        </label>
-                    </div>
+        {% for test_title in sorted(exercise_details["tests"]) %}
+            <p>{{ test_title }}</p>
+            <!-- if exercise_details["allow_any_response"] 
+                <p><span id="code_output"></span></p>
+                <div id="expected_tests"></div>
+            else -->
+                <!--if exercise_details["show_expected"] -->
+                <!--if len(exercise_details["expected_txt_output"]) > 0 or exercise_details["expected_jpg_output"] != "" -->
+                        <!--<div>
+                            <h6 style="display: inline">Expected output:</h6>
+                            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your solution with the expected output to find and fix errors, as needed.">
+                                <i class="far fa-question-circle"></i>
+                            </label>
+                        </div>-->
 
-                    {% if exercise_details["output_type"] == "txt" %}
-                        <p><pre>{{ exercise_details["expected_txt_output"] }}</pre></p>
-                    {% elif exercise_details["expected_jpg_output"] != "" %}
-                        <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_jpg_output'] }}" width="100%"/></figure></p>
-                    {% end %}
-                {% end %}
-            {% else %}
-                {% if len(exercise_details["tests"]) == 0 %}
-                    <div id="expected_tests"></div>
-                    <p><em>This exercise is configured so that the expected output is not shown.</em></p>
-                {% end %}
-            {% end %}
+                        <!--if exercise_details["output_type"] == "txt" -->
+                            <!--<p><pre> exercise_details["expected_txt_output"] }}</pre></p>-->
+                        <!-- elif exercise_details["expected_jpg_output"] != "" -->
+                            <!--<p><figure class="img"><img src="data:image/jpg;base64, exercise_details['expected_jpg_output'] " width="100%"/></figure></p>-->
+                        <!-- end -->
+                    <!-- end -->
+                <!-- else -->
+                    <!-- if len(exercise_details["tests"]) == 0 -->
+                        <!--<div id="expected_tests"></div>
+                        <p><em>This exercise is configured so that the expected output is not shown.</em></p>-->
+                    <!-- end -->
+                <!-- end -->
 
-            <p><span id="code_output"></span></p>
+                <p><span id="code_output"></span></p>
 
-            {% if exercise_details["show_expected"] %}
-                <p><span id="diff_output"></span></p>
-            {% end %}
+                <!-- if exercise_details["show_expected"] -->
+                    <p><span id="diff_output"></span></p>
+                <!-- end -->
 
-            <p><span id="test_output"></span></p>
-        {% else %}
-            <p><span id="code_output"></span></p>
-            <div id="expected_tests"></div>
+                <p><span id="test_output"></span></p>
+            <!-- end -->
         {% end %}
 
         <div id="submissions"></div>
