@@ -81,8 +81,8 @@ class EditAssignmentHandler(BaseUserHandler):
                 if self.content.has_duplicate_title(self.content.get_assignments(course), assignment_basics["id"], assignment_basics["title"]):
                     result = "Error: An assignment with that title already exists."
                 else:
-                    if len(assignment_basics["title"]) > 80:
-                        result = "Error: The title cannot exceed 80 characters."
+                    if len(assignment_basics["title"]) > 100:
+                        result = "Error: The title cannot exceed 100 characters."
                     else:
                         if assignment_details["start_date"] and assignment_details["due_date"] and assignment_details["start_date"] > assignment_details["due_date"]:
                             result = "Error: The start date must be earlier than the due date."

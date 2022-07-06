@@ -1,3 +1,4 @@
+<!--TODO: Use txt_output_formatted rather than just txt_output when displaying it on this page-->
 <div class="row-container is-hidden" id="edit_header">
     <h2>Edit exercise</h2>
 
@@ -260,6 +261,7 @@
 
                 <section class="modal-card-body">
                     <div class="has-text-weight-medium mb-2">Test title*:<br />
+                      <input type="hidden" id="add_test_id" />
                       <textarea id="add_test_title" placeholder="Please specify a short, descriptive title." class="textarea is-fullwidth" rows="1" autofocus></textarea>
                     </div>
 
@@ -526,10 +528,13 @@
         }
 
         function editTest(test_title) {
+            document.getElementById("add_test_id").value = exercise_details_obj["tests"][test_title].test_id;
             document.getElementById("add_test_title").value = test_title;
             document.getElementById("add_test_instructions").value = exercise_details_obj["tests"][test_title].instructions;
+
             before_test_code_editor.setValue(exercise_details_obj["tests"][test_title].before_code, -1);
             after_test_code_editor.setValue(exercise_details_obj["tests"][test_title].after_code, -1);
+
             document.getElementById("can_see_test_code").value = exercise_details_obj["tests"][test_title].can_see_test_code ? "Yes" : "No";
             document.getElementById("can_see_expected_output").value = exercise_details_obj["tests"][test_title].can_see_expected_output ? "Yes" : "No";
             document.getElementById("can_see_code_output").value = exercise_details_obj["tests"][test_title].can_see_code_output ? "Yes" : "No";
@@ -703,6 +708,10 @@
         });
 
         $("#add_test_modal_add").click(function() {
+            var test_id = document.getElementById("add_test_id").value;
+            if (test_id == "")
+                test_id = -1;
+
             var test_title = document.getElementById("add_test_title").value;
             var test_instructions = document.getElementById("add_test_instructions").value;
             var before_test_code = before_test_code_editor.getValue();
@@ -721,8 +730,6 @@
                 return showTestMessage("The title cannot include quotation marks or apostrophes.", true, false);
 
             // Make sure other inputs are valid
-            if (after_test_code.trim() == "")
-                return showTestMessage("Please specify test code to be executed after the student's code.", true, false);
             if (!can_see_test_code && test_instructions.trim() == "")
                 return showTestMessage("Please provide instructions when the test code is hidden.", true, false);
 
@@ -739,7 +746,7 @@
                     return showTestMessage("A test with that title has already been created. Please choose a different title.", true, false);
             }
 
-            exercise_details_obj["tests"][test_title] = {"instructions": test_instructions, "can_see_test_code": can_see_test_code, "can_see_expected_output": can_see_expected_output, "can_see_code_output": can_see_code_output, "before_code": before_test_code, "after_code": after_test_code, "txt_output": "", "jpg_output": "", "test_id": -1};
+            exercise_details_obj["tests"][test_title] = {"instructions": test_instructions, "can_see_test_code": can_see_test_code, "can_see_expected_output": can_see_expected_output, "can_see_code_output": can_see_code_output, "before_code": before_test_code, "after_code": after_test_code, "txt_output": "", "jpg_output": "", "test_id": test_id};
             showTests();
 
             $("#add_test_modal").removeClass("is-active");
@@ -792,8 +799,8 @@
         var solution_code_editor = getEditor("solution_code", 10, 25);
         var starter_code_editor = getEditor("starter_code", 10, 15);
         var verification_code_editor = getEditor("verification_code", 10, 15);
-        var before_test_code_editor = getEditor("before_test_code", 2, 15);
-        var after_test_code_editor = getEditor("after_test_code", 2, 15);
+        var before_test_code_editor = getEditor("before_test_code", 5, 15);
+        var after_test_code_editor = getEditor("after_test_code", 5, 15);
         var view_file_editor = getEditor("view_file_modal_text", 15, 15);
         ace.require("ace/ext/language_tools");
 

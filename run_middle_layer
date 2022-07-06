@@ -20,5 +20,5 @@ else
   echo "Killed gunicorn daemon on port $port - ($pid)"
 fi
 
-#gunicorn main:app -b 127.0.0.1:${port} -w 1 -k uvicorn.workers.UvicornWorker
-nohup gunicorn main:app -b 127.0.0.1:${port} -w 1 -k uvicorn.workers.UvicornWorker &
+gunicorn main:app -b 127.0.0.1:${port} -w 1 -k uvicorn.workers.UvicornWorker
+#nohup gunicorn main:app -b 127.0.0.1:${port} -w 1 -k uvicorn.workers.UvicornWorker &

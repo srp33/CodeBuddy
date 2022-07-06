@@ -3,14 +3,22 @@
 set -o errexit
 
 current_dir="$(pwd)"
+tmp_dir=/tmp/codebuddy_backends
 
 for container_dir in ${current_dir}/back_ends/*
 do
-  image_name=srp33/codebuddy_$(basename ${container_dir})
+    dir_name=$(basename ${container_dir})
+    image_name=srp33/codebuddy_${dir_name}
+    dir_path=${tmp_dir}/${dir_name}
 
-  cd ${container_dir}
+    rm -rf ${dir_pat}
+    mkdir -p ${dir_path}
 
-  cp ${current_dir}/exec_back_end.sh ${container_dir}/exec.sh
+    cp -r ${container_dir}/* ${dir_path}/
+    cp ${current_dir}/exec_back_end.sh ${dir_path}/exec.sh
 
-  docker build -t ${image_name} -f Containerfile .
+    cd ${dir_path}
+    docker build -t ${image_name} -f Containerfile .
+
+    rm -rf ${dir_pat}
 done

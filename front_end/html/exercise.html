@@ -88,21 +88,24 @@
                 }
             }*/
 
-            function copyLink() {
+            /*function copyLink() {
                 var copyText = document.getElementById("share_link");
                 copyText.select();
-                copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+                copyText.setSelectionRange(0, 99999); //For mobile devices
                 document.execCommand("copy");
                 alert("Copied the text: " + copyText.value);
-            }
+            }*/
 
-            function showHint() {
-                var hint_div = document.getElementById("hint_div");
-                if (hint_div.style.display == "block") {
-                    hint_div.style.display = "none";
+            function showHideHint() {
+                if ($("#hint_text").hasClass("is-hidden")) {
+                    $("#hint_button")[0].innerHTML = "Hide hint";
+                    $("#hint_text").removeClass("is-hidden");
+                    $("#hint_button").addClass("is-light");
                 }
                 else {
-                    hint_div.style.display = "block";
+                    $("#hint_button")[0].innerHTML = "Show hint";
+                    $("#hint_text").addClass("is-hidden");
+                    $("#hint_button").removeClass("is-light");
                 }
             }
 
@@ -345,35 +348,36 @@
 
         <div class="instructions">
             <h6>Instructions:</h6>
-            <div>{{ exercise_details["instructions"] }}</div>
+            <div id="instructions">{{ exercise_details["instructions"] }}</div>
             {% if exercise_basics["enable_pair_programming"] %}
-            <hr>
-            <p><i style='margin: 0 .5em;' class="fab fa-product-hunt"></i><em>Pair programming is enabled for this exercise.</em></p>
+                <hr>
+                <p><i style='margin: 0 .5em;' class="fab fa-product-hunt"></i><em>Pair programming is enabled for this exercise.</em></p>
             {% end %}
         </div>
 
         {% if len(exercise_details["data_files"]) > 0 %}
-            <h6>Data files:</h6>
             <div id="data_file_div" class="top-space">
-                {% for key_index in range(len(exercise_details["data_files"])) %}
-                    <p>
-                        <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ list(exercise_details['data_files'].keys())[key_index] }}">{{ list(exercise_details["data_files"].keys())[key_index] }}</a>
-                        <a class="button is-white" id="data_button_{{ key_index }}" onclick="showHideData('data_panel_{{ key_index }}', 'data_button_{{ key_index }}')">Show</a>
-                    </p>
-                    <pre id="data_panel_{{ key_index }}" hidden>
-                        {{ exercise_details["data_files"][list(exercise_details["data_files"].keys())[key_index]].strip() }}
-                    </pre>
-                {% end %}
+            <h6>Data files:</h6>
+            {% for data_file_index in range(len(exercise_details["data_files"])) %}
+                <p>
+                    <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">{{ list(exercise_details["data_files"].keys())[data_file_index] }}</a>
+                    <a class="button is-white" id="data_button_{{ data_file_index }}" onclick="showHideData('data_panel_{{ data_file_index }}', 'data_button_{{ data_file_index }}')">Show</a>
+                </p>
+                <pre id="data_panel_{{ data_file_index }}" hidden>
+                    {{ exercise_details["data_files"][sorted(list(exercise_details["data_files"].keys()))[data_file_index]] }}
+                </pre>
+            {% end %}
             </div>
         {% end %}
 
         {% if exercise_details["hint"] != "" %}
             <div class="top-space">
-                <button class="button is-light is-danger is-outlined" onclick="showHint()">Hint</button>
+                <button id="hint_button" class="button is-warning" onclick="showHideHint()">Show hint</button>
             </div>
+
+            <div id="hint_text" class="is-hidden hint-text"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
         {% end %}
 
-        <div id="hint_div" class="invisible hint-div"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
 
         <!--Here's the assignment timer.-->
 
@@ -453,51 +457,15 @@
 
         <!--Below is all of the code that shows the output, past submissions, and messaging once a solution has been run or submitted-->
 
-        <p><div id="result"></div></p>
+        <p id="result"></p>
 
-        {% for test_title in sorted(exercise_details["tests"]) %}
-            <p>{{ test_title }}</p>
-            <!-- if exercise_details["allow_any_response"] 
-                <p><span id="code_output"></span></p>
-                <div id="expected_tests"></div>
-            else -->
-                <!--if exercise_details["show_expected"] -->
-                <!--if len(exercise_details["expected_txt_output"]) > 0 or exercise_details["expected_jpg_output"] != "" -->
-                        <!--<div>
-                            <h6 style="display: inline">Expected output:</h6>
-                            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Compare the output from your solution with the expected output to find and fix errors, as needed.">
-                                <i class="far fa-question-circle"></i>
-                            </label>
-                        </div>-->
+        <p id="test_outputs"></p>
 
-                        <!--if exercise_details["output_type"] == "txt" -->
-                            <!--<p><pre> exercise_details["expected_txt_output"] }}</pre></p>-->
-                        <!-- elif exercise_details["expected_jpg_output"] != "" -->
-                            <!--<p><figure class="img"><img src="data:image/jpg;base64, exercise_details['expected_jpg_output'] " width="100%"/></figure></p>-->
-                        <!-- end -->
-                    <!-- end -->
-                <!-- else -->
-                    <!-- if len(exercise_details["tests"]) == 0 -->
-                        <!--<div id="expected_tests"></div>
-                        <p><em>This exercise is configured so that the expected output is not shown.</em></p>-->
-                    <!-- end -->
-                <!-- end -->
-
-                <p><span id="code_output"></span></p>
-
-                <!-- if exercise_details["show_expected"] -->
-                    <p><span id="diff_output"></span></p>
-                <!-- end -->
-
-                <p><span id="test_output"></span></p>
-            <!-- end -->
-        {% end %}
-
-        <div id="submissions"></div>
+        <p><div id="submissions"></div></p>
 
         {% if len(exercise_details["credit"]) > 0 %}
-        <div class="front-row-container">
-            <p style="padding-right: 5px;"><em>Credit: </em></p>
-            <p><em>{{ exercise_details["credit"] }}</em></p>
-        </div>
+            <div class="front-row-container">
+                <p style="padding-right: 5px;"><em>Credit: </em></p>
+                <p><em>{{ exercise_details["credit"] }}</em></p>
+            </div>
         {% end %}

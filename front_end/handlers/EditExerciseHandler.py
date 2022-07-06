@@ -37,7 +37,7 @@ class EditExerciseHandler(BaseUserHandler):
                     exercise_details["date_created"] = current_time
                 exercise_details["date_updated"] = current_time
 
-                exec_response = exec_code(self.settings_dict, exercise_details["solution_code"], "", exercise_details)
+                exec_response = exec_code(self.settings_dict, exercise_details["solution_code"], "", exercise_details, True)
 
                 if exec_response["message"] == "":
                     has_non_empty_output = False
@@ -47,8 +47,8 @@ class EditExerciseHandler(BaseUserHandler):
                         jpg_output = exec_response["test_outputs"][test_title]["jpg_output"]
 
                         exercise_details["tests"][test_title]["txt_output"] = txt_output
+                        exercise_details["tests"][test_title]["txt_output_formatted"] = exec_response["test_outputs"][test_title]["txt_output_formatted"]
                         exercise_details["tests"][test_title]["jpg_output"] = jpg_output
-                        exercise_details["tests"][test_title]["txt_output_formatted"] = format_output_as_html(txt_output)
 
                         if txt_output != "" or jpg_output != "":
                             has_non_empty_output = True

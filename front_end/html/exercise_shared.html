@@ -1,374 +1,6 @@
             <link rel="stylesheet" href="/static/modal.css">
 
-            <!--The next divs contain the modals for this page-->
-
-            <div id="move_exercise_modal" class="modal">
-                <form method="post" action="/move_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
-                <div class="modal-content">
-                    <!--<span class="close">&times;</span>-->
-                    <p>Move an exercise to a different assignment:</p>
-                    <div class="select is-light">
-                        <select name="new_assignment_id" id="new_assignment_id">
-                        {% for assignment in assignment_options %}
-                            <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
-                        {% end %}
-                        </select>
-                    </div>
-                    <p class="buttons">
-                        <a id="move_cancel_button" class="modal-button button is-light">Cancel</a>
-                        <input type="submit" id="move_button" class="modal-button button is-dark" value="Move"/>
-                    </p>
-                </div>
-                </form>
-            </div>
-
-            <div id="delete_submissions_modal" class="modal">
-                <div class="modal-content">
-                    <!--<span class="close">&times;</span>-->
-                    <p>Are you sure you want to delete all submissions for this exercise?</p>
-                    <p><font color="red">This will also delete all scores for this exercise.</font></p>
-                    <p class="buttons">
-                        <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
-                        <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
-                    </p>
-                </div>
-            </div>
-
-            <div id="copy_exercise_modal" class="modal">
-                <div class="modal-content">
-                    <!--<span class="close">&times;</span>-->
-                    <h6>Copy exercise within the same assignment:</h6>
-                    <div class="notification is-warning is-light" id="copy_exercise_message" style="display:none"></div>
-                    <p>New title:</p>
-                        <input class="input is-medium is-primary" type="text" id="new_title" name="new_title" placeholder="{{exercise_basics['title']}}" value="{{exercise_basics['title']}}"/>
-                    <p class="buttons">
-                        <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
-                        <button onclick="copyExercise({{ course_basics['id'] }}, {{assignment_basics['id']}}, {{ exercise_basics['id'] }})" id="copy_button" class="modal-button button is-dark">Copy</button>
-                    </p>
-                </div>
-            </div>
-
-            <!--Navigation links at the bottom of the page-->
-
-            <p>
-            {% if is_administrator or is_instructor or is_assistant %}
-                <a href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a>
-            {% end %}
-
-            {% if is_administrator or is_instructor %}
-                {% if len(assignments) > 1 %}
-                    | <a onclick="showMoveExerciseModal()">Move exercise</a>
-                {% end %}
-
-                | <a onclick="showCopyExerciseModal()">Copy exercise</a><br />
-
-                <a onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
-            {% end %}
-
-            </p>
-
-            <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to exercise list</a>
-
-            {% if student_id == user_id %}
-                <br /><br />
-            {% end %}
-
             <script>
-                ace.require("ace/ext/language_tools");
-                 var editor = ace.edit("user_code", {
-                     theme: "ace/theme/{{ user_info['ace_theme'] }}",
-                     autoScrollEditorIntoView: false,
-                     minLines: 20,
-                     fontSize: "12pt"
-                 });
-                 let codeChanged = false
-
-                 editor.session.on('change', function(delta) {
-                   codeChanged = true
-                 });
-
-                 {% if user_info['enable_vim'] %}
-                    editor.setKeyboardHandler("ace/keyboard/vim");
-                 {% end %}
-
-                function copyExercise(course, assignment, exercise) {
-                    var new_title = document.getElementById("new_title").value;
-                    var message = document.getElementById("copy_exercise_message")
-                    var modal = document.getElementById("copy_exercise_modal");
-
-                    $.post(`/copy_exercise/${course}/${assignment}/${exercise}`, {"new_title": new_title},
-                        function(data) {
-                            var json_data = JSON.parse(data);
-                            if (json_data.result != "") {
-                              message.innerHTML = json_data.result;
-                              message.style.display = "block";
-                            }
-                            else {
-                                modal.style.display = "none";
-                                location.reload();
-                            }
-                    });
-                }
-
-                function showCopyExerciseModal() {
-                    var modal = document.getElementById("copy_exercise_modal");
-                    //var span = document.getElementsByClassName("close")[4];
-                    modal.style.display = "block";
-
-                    var cancelButton = document.getElementById("copy_cancel_button");
-
-                    cancelButton.onclick = function() {
-                        modal.style.display = "none";
-                    }
-
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                            modal.style.display = "none";
-                        }
-                    }
-                }
-
-                function showMoveExerciseModal() {
-                    var modal = document.getElementById("move_exercise_modal");
-                    //var span = document.getElementsByClassName("close")[4];
-                    modal.style.display = "block";
-
-                    var cancelButton = document.getElementById("move_cancel_button");
-
-                    cancelButton.onclick = function() {
-                        modal.style.display = "none";
-                    }
-
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                            modal.style.display = "none";
-                        }
-                    }
-                }
-
-                function showDeleteSubmissionsModal() {
-                    var modal = document.getElementById("delete_submissions_modal");
-                    // var span = document.getElementsByClassName("close")[5];
-                    modal.style.display = "block";
-
-                    var deleteButton = document.getElementById("delete_submissions_button");
-                    var cancelButton = document.getElementById("delete_submissions_cancel_button");
-
-                    deleteButton.onclick = async function() {
-                        await $.post("/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}");
-                        modal.style.display = "none";
-
-                        location.reload();
-                    }
-
-                    cancelButton.onclick = function() {
-                        modal.style.display = "none";
-                    }
-
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                            modal.style.display = "none";
-                        }
-                    }
-                }
-
-                //function build_txt_output(json_output) {
-                //    var output = "";
-
-                //    if (json_output == "")
-                //        {% if exercise_details["output_type"] == "txt" %}
-                //            output = "<p><pre>[Your solution produced no output.]</pre></p>";
-                //        {% else %}
-                //            output = "";
-                //        {% end %}
-                //    else
-                //        output = "<p><pre>" + json_output + "</pre></p>";
-
-                //    return output;
-                //}
-
-                //function build_tests_output(json_data) {
-                //    var expected_tests = document.getElementById("expected_tests");
-
-                //    if (expected_tests != null) {
-                //        expected_tests.style.display = "none";
-                //    }
-
-                //    var test_output = "<h6>Tests:</h6>\n\n";
-
-                //    {% for test_title in exercise_details["tests"] %}
-                //        document.getElementById('test_output').style.display = "block";
-
-                //        if (json_data == null) {
-                //            button_bd_color = "neutral-bd-color";
-                //            test_message = "";
-
-                //        } else {
-                //            button_bd_color = json_data.tests[test_title].passed ? "passing-bd-color" : "failing-bd-color";
-                //            test_message = json_data.tests[test_title].passed ? "passed." : "did not pass.";
-                //        }
-
-                //        test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;'>`;
-                        //test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(test_title)'>`;
-                        //test_output += `<h6 style="padding: 1em 1.25em;margin:0">{{test_title}} ${test_message}</h6>`;
-
-                        // This defines the box that surrounds each test.
-                //        test_output += `<div id="test_{{test_title}}" style="padding: 0.5em 1.25em 0.5em 1.25em;margin:0">`;
-
-                //        if exercise_details["tests"][test_title]["visible"]
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Test code:</h6>`;
-                //            test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">{{exercise_details["tests"][test_title]["code"]}}</pre>`;
-
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
-
-                //            {% if exercise_details["output_type"] == "txt" %}
-                //                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">{{exercise_details["tests"][test_title]["txt_output"]}}</pre>`;
-                //            {% else %}
-                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + '{{exercise_details["tests"][test_title]["jpg_output"]}}' + `' width='100%' /></figure></p>`;
-                //            {% end %}
-
-                //            if (json_data != null && json_data.tests[{{test_title}}].diff_output != "") {
-                //                test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</h6>\n\n`;
-
-                //                {% if exercise_details["output_type"] == "txt" %}
-                //                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + json_data.tests[{{test_title}}].diff_output + "</pre>\n\n";
-                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
-                //                {% else %}
-                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + json_data.tests[{{test_title}}].diff_output + `' width='100%' /></figure></p><br />`;
-                //                {% end %}
-                //            }
-                //        {% else %}
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Details for this test are hidden from students.`;
-
-                //            {% if exercise_details["tests"][test_title]["test_instructions"] != "" %}
-                //                test_output += ` However, the instructor provided the following instructions.</h6>`;
-                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0">{{exercise_details["tests"][test_title]["test_instructions"]}}</p>`;
-                //            {% else %}
-                //                test_output += "</h6>";
-                //            {% end %}
-                //        {% end %}
-
-                //        if (json_data != null) {
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
-
-                //            {% if exercise_details["output_type"] == "txt" %}
-                //                if (json_data.tests[{{test_title}}].txt_output == "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
-                //                else
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[{{test_title}}].txt_output}</pre>`;
-                //            {% else %}
-                //                if (json_data.tests[{{test_title}}]["jpg_output"] == "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
-                //                else
-                //                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[{{test_title}}].jpg_output + "' width='100%' /></figure></p>";
-
-                //                if (json_data.tests[{{test_title}}]["txt_output"] != "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[{{test_title}}].txt_output}</pre>`;
-                //            {% end %}
-                //        }
-
-                //        test_output += `</div></div>`
-                //        test_output += `<br />`
-
-                //        document.getElementById("test_output").innerHTML = test_output;
-                    {% end %}
-                //}
-
-                //function build_jpg_output(json_output) {
-                //    var output = "";
-
-                //    if (json_output == "")
-                //        {% if exercise_details["output_type"] == "jpg" %}
-                //            output = "<p><pre>[Your solution did not produce an image.]</pre></p>";
-                //        {% else %}
-                //            output = "";
-                //        {% end %}
-                //    else
-                //        output = "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
-
-                //    return output;
-                //}
-
-                function display_results(json_data) {
-                    var result = "";
-
-                    if (json_data.passed) {
-                        {% if exercise_details["allow_any_response"] %}
-                            result = "<div class='notification success-message' style='color:white'><p><strong>Thank you for your submission.</strong></p>\n\n";
-                        {% else %}
-                            result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>\n\n";
-                        {% end %}
-
-                        {% if exercise_details["show_peer_solutions"] %}
-                            result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a></p>";
-                        {% elif exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
-                            result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
-                        {% end %}
-
-                        {% if next_exercise %}
-                            result += "<p><a class='grey-text' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
-                        {% end %}
-
-                        result += "</div>\n\n"
-                    }
-                    else {
-                        {% if exercise_details["allow_any_response"] %}
-                            result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not produce any output.</strong></p></div>\n\n";
-                        {% else %}
-                            result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
-                        {% end %}
-
-                        {% if not exercise_details["allow_any_response"] and exercise_details["show_expected"] %}
-                            var diff_output = "";
-
-                            if (json_data.diff.length > 0) {
-                                diff_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
-                                {% if exercise_details["output_type"] == "txt" %}
-                                    diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
-                                {% else %}
-                                    diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
-                                {% end %}
-                            }
-
-                            document.getElementById("diff_output").innerHTML = diff_output;
-                        {% end %}
-                    }
-
-                    document.getElementById("result").innerHTML = result;
-
-                    {% if exercise_details["allow_any_response"] %}
-                        if (json_data.txt_output != "" || json_data.jpg_output != "") {
-                            var code_output = "<h6>Your output:</h6>\n\n";
-                            code_output += build_txt_output(json_data.txt_output);
-                            code_output += build_jpg_output(json_data.jpg_output);
-                            document.getElementById("code_output").innerHTML = code_output;
-                        }
-                    {% else %}
-                        var expected_text = `exercise_details["expected_txt_output"]`;
-                        var expected_image = `exercise_details["expected_jpg_output"]`;
-
-                        // If output includes an index error, provide student with a more helpful error message instead.
-                        if (json_data.txt_output.includes("IndexError:&nbsp;list&nbsp;index&nbsp;out&nbsp;of&nbsp;range")) {
-                            var code_output = "<h6>Your output:</h6>\n\n";
-                            code_output += "Output is not available for this submission. This may be due to the instructor editing the exercise since you last submitted."
-                            document.getElementById("code_output").innerHTML = code_output;
-                        }
-                        else if (((json_data.txt_output != "") || (json_data.jpg_output != "")) || ((expected_text != "") || (expected_image != ""))) {
-                            var code_output = "<h6>Your output:</h6>\n\n";
-                            code_output += build_txt_output(json_data.txt_output);
-                            code_output += build_jpg_output(json_data.jpg_output);
-                            document.getElementById("code_output").innerHTML = code_output;
-                        }
-
-                        // Build test buttons
-                        //build_tests_output(json_data);
-                    {% end %}
-                }
-
-                //function showTest(i) {
-                //  document.getElementById(`test_${i}`).style.display = (document.getElementById(`test_${i}`).style.display == "none") ? "block" : "none";
-                //}
-
                 function run_code() {
                     user_code = editor.getSelectedText();
                     if (user_code.trim() == "")
@@ -376,58 +8,40 @@
                     if (user_code.trim() == "")
                         return false;
 
-                    result_div = document.getElementById("result");
-                    result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
-                    result_div.scrollIntoView();
-                    document.getElementById("code_output").innerHTML = "";
-
-                    {% if exercise_details["show_expected"] %}
-                        document.getElementById("diff_output").innerHTML = "";
-                    {% end %}
+                    showWaitMessage();
 
                     $.ajax({
-                      type: 'POST',
-                      url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                      data: {"user_code": user_code},
-                      success: function(result) {
-                        var json_data = JSON.parse(result);
+                        type: 'POST',
+                        url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                        data: {"user_code": user_code},
+                        success: function(result) {
+                            var response_dict = JSON.parse(result);
 
-                        var expected_text = `exercise_details["expected_txt_output"]`;
-                        var expected_image = `exercise_details["expected_jpg_output"]`;
+                            if (response_dict["message"] != "") {
+                                showErrorMessage(response_dict["message"]);
+                                return;
+                            }
 
-                        if (((json_data.txt_output != "") || (json_data.jpg_output != "")) || ((expected_text != "") || (expected_image != ""))) {
-                          var code_output = "<h6>Your output:</h6>\n\n";
-                          code_output += build_txt_output(json_data.txt_output);
-                          code_output += build_jpg_output(json_data.jpg_output);
-                          document.getElementById("code_output").innerHTML = code_output;
-                        }
+                            if (allTestsPassed(response_dict["test_outputs"])) {
+                                showSuccessMessage();
+                            }
+                            else {
+                                hideWaitMessage();
+                            }
 
-                        // Build test buttons
-                        //build_tests_output(json_data);
+                            showTestOutputs(response_dict["test_outputs"]);
 
-                        result_div.innerHTML = "";
-                      },
-                      async: true
+                            // Build test buttons
+                            //build_tests_output(response_dict);
+
+                            //TODO: Do the same AJAX error handling we are doing in edit_exercise.
+                        },
+                        async: true
                     });
 
                     editor.focus();
                     return false;
                 }
-
-                submitButton = document.getElementById("submit_button");
-
-                {% if exercise_details["enable_pair_programming"] %}
-                  if (submitButton != null)
-                    submitButton.onclick = function() {
-                      submitModal()
-                  }
-                {% else %}
-                  if (submitButton != null) {
-                    submitButton.onclick = function() {
-                      submit()
-                  }
-                }
-                {% end %}
 
                 async function submit() {
                     user_code = editor.getValue();
@@ -442,79 +56,389 @@
                     result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
                     result_div.scrollIntoView();
 
-                    {% if not exercise_details["allow_any_response"] %}
+                    // if not exercise_details["allow_any_response"]
                         document.getElementById("code_output").innerHTML = "";
 
-                        {% if exercise_details["show_expected"] %}
+                        // if exercise_details["show_expected"]
                             document.getElementById("diff_output").innerHTML = "";
-                        {% end %}
-                    {% end %}
 
                     post_data = { "partner_key": partner_key, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
 
                     await $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
                         post_data,
-                       function(data, status) {
-                           json_data = JSON.parse(data);
-                           display_results(json_data);
 
-                           if (json_data.submission_id != "") {
-                               last_submission_id = json_data.submission_id;
+                        function(data, status) {
+                            json_data = JSON.parse(data);
+                            display_results(json_data);
+ 
+                            if (json_data.submission_id != "") {
+                                last_submission_id = json_data.submission_id;
 
-                               {% if exercise_details["max_submissions"] > 0 %}
-                                   document.getElementById("num_submissions").innerHTML = last_submission_id;
+                                {% if exercise_details["max_submissions"] > 0 %}
+                                    document.getElementById("num_submissions").innerHTML = last_submission_id;
 
-                                   if (last_submission_id >= {{ exercise_details["max_submissions"] }})
-                                       document.getElementById("submit_button").disabled = true;
-                               {% end %}
-                           }
-                       });
-                   editor.focus();
-                   await show_past_submission_buttons();
-                   return false;
-                 }
+                                    if (last_submission_id >= {{ exercise_details["max_submissions"] }})
+                                        document.getElementById("submit_button").disabled = true;
+                                {% end %}
+                            }
+                        });
 
-                 function submitModal() {
-                     var modal = document.getElementById("submit_exercise_modal");
-                     var span = document.getElementsByClassName("close")[4];
+                    editor.focus();
 
-                     modal.style.display = "block";
+                    await show_past_submission_buttons();
+                    return false;
+                }
 
-                     var cancelButton = document.getElementById("submit_cancel_button");
-                     var modalSubmitButton = document.getElementById("modal_submit_button");
+                function showWaitMessage() {
+                    $("#result")[0].innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
+                    $("#result")[0].scrollIntoView();
+                }
 
-                     modalSubmitButton.onclick = function() {
-                       let partner_key = document.getElementById("partner_key").value;
-                       if (partner_key != "") {
-                         $.post("/check_partners/{{ course_basics['id'] }}", {"partner_key": partner_key},
-                            function(data, status) {
-                                if(!(JSON.parse(data))) {
-                                  document.getElementById("invalid_partner").innerHTML = "<div style='margin:15px 0px' class='space_div notification is-warning is-light smaller-font'>Invalid partner chosen, please try again.</div>";
-                                } else {
-                                  submit();
-                                  modal.style.display = "none";
-                                }
-                         });
-                       } else {
-                         submit();
-                         modal.style.display = "none";
-                       }
-                     }
+                function hideWaitMessage() {
+                    $("#result")[0].innerHTML = "";
+                }
 
-                     cancelButton.onclick = function() {
-                         modal.style.display = "none";
-                     }
+                function showErrorMessage(message) {
+                    $("#result")[0].innerHTML = `<div class='notification error-message smaller-font' style='color: white'><pre>${message}</pre></div>`;
+                    $("#result")[0].scrollIntoView();
+                }
 
-                     span.onclick = function() {
-                         modal.style.display = "none";
-                     }
+                function showSuccessMessage(message) {
+                    {% if exercise_details["allow_any_response"] %}
+                        var result = "<div class='notification success-message' style='color:white'><p><strong>Thank you for your submission.</strong></p>";
+                    {% else %}
+                        {% if len(exercise_details["tests"]) == 1 %}
+                            var result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produced the expected output.</strong></p>";
+                        {% else %}
+                            var result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution passed all of the tests.</strong></p>";
+                        {% end %}
+                    {% end %}
 
-                     window.onclick = function(event) {
-                         if (event.target == modal) {
-                             modal.style.display = "none";
-                         }
-                     }
-                 }
+                    {% if exercise_details["show_peer_solutions"] %}
+                        result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View other students' solutions</a></p>";
+                    {% elif exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
+                        result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
+                    {% end %}
+
+                    {% if next_exercise %}
+                        result += "<p><a class='grey-text' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
+                    {% end %}
+
+                    result += "</div>"
+
+                    $("#result")[0].innerHTML = result;
+                    $("#result")[0].scrollIntoView();
+                }
+
+                function allTestsPassed(test_outputs) {
+                    for (let test_title of Object.keys(test_outputs))
+                        if (!test_outputs[test_title]["passed"])
+                            return false;
+                    return true;
+                }
+
+                function showTestOutputs(test_outputs) {
+                    // This is what we do if we haven't gone to the server yet.
+                    if (test_outputs == null) {
+                        test_outputs = {};
+                        for (let test_title of Object.keys(tests)) {
+                            test_outputs[test_title] = {};
+                            test_outputs[test_title]["txt_output"] = null;
+                            test_outputs[test_title]["jpg_output"] = null;
+                            test_outputs[test_title]["passed"] = null;
+                        }
+                    }
+
+                    if (Object.keys(test_outputs).length == 1) {
+                        var output = "<h6>Test:</h6>" + buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
+                    } else {
+                        var output = "<h6>Tests:</h6>";
+
+                        const test_titles = Object.keys(test_outputs)
+                        for (let test_title of test_titles) {
+                            //output += "<p>" + test_title + "</p>";
+                            output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
+                        }
+                    }
+
+                //        document.getElementById('test_output').style.display = "block";
+
+                //        if (json_data == null) {
+                //            button_bd_color = "neutral-bd-color";
+                //            test_message = "";
+
+                //        } else {
+                //            button_bd_color = json_data.tests[test_title].passed ? "passing-bd-color" : "failing-bd-color";
+                //            test_message = json_data.tests[test_title].passed ? "passed." : "did not pass.";
+                //        }
+
+                //        test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;'>`;
+                        //test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(test_title)'>`;
+                        //test_output += `<h6 style="padding: 1em 1.25em;margin:0">test_title ${test_message}</h6>`;
+
+                        // This defines the box that surrounds each test.
+                //        test_output += `<div id="test_test_title" style="padding: 0.5em 1.25em 0.5em 1.25em;margin:0">`;
+
+                //        if exercise_details["tests"][test_title]["visible"]
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Test code:</h6>`;
+                //            test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["code"]</pre>`;
+
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
+
+                //            if exercise_details["output_type"] == "txt"
+                //                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["txt_output"]</pre>`;
+                //            else
+                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + 'exercise_details["tests"][test_title]["jpg_output"]' + `' width='100%' /></figure></p>`;
+
+                //            if (json_data != null && json_data.tests[test_title].diff_output != "") {
+                //                test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</h6>\n\n`;
+
+                //                if exercise_details["output_type"] == "txt"
+                //                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + json_data.tests[test_title].diff_output + "</pre>\n\n";
+                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
+                //                else
+                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + json_data.tests[test_title].diff_output + `' width='100%' /></figure></p><br />`;
+                //            }
+                //        else
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Details for this test are hidden from students.`;
+
+                //            if exercise_details["tests"][test_title]["test_instructions"] != ""
+                //                test_output += ` However, the instructor provided the following instructions.</h6>`;
+                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["test_instructions"]</p>`;
+                //            else
+                //                test_output += "</h6>";
+
+                //        if (json_data != null) {
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
+
+                //            if exercise_details["output_type"] == "txt"
+                //                if (json_data.tests[test_title].txt_output == "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
+                //                else
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
+                //            else
+                //                if (json_data.tests[test_title]["jpg_output"] == "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
+                //                else
+                //                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[test_title].jpg_output + "' width='100%' /></figure></p>";
+
+                //                if (json_data.tests[test_title]["txt_output"] != "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
+                //        }
+
+                //        test_output += `</div></div>`
+                //        test_output += `<br />`
+
+                //        document.getElementById("test_output").innerHTML = test_output;
+                    $("#test_outputs")[0].innerHTML = output;
+                }
+
+                function buildTestOutput(test_outputs, test_title, show_title, is_last) {
+                    if (test_outputs[test_title].passed == null) {
+                        var test_class = "neutral-bd-color";
+                        var test_message = show_title ? test_title : "";
+                    }
+                    else {
+                        if (test_outputs[test_title].passed) {
+                            var test_class = "passing-bd-color";
+
+                            if (show_title)
+                                var test_message = `${test_title} - Passing`;
+                            else
+                                var test_message = `Passing`;
+                        }
+                        else {
+                            var test_class = "failing-bd-color";
+
+                            if (show_title)
+                                var test_message = `${test_title} - Not passing`;
+                            else
+                                var test_message = `Not passing`;
+                        }
+                    }
+
+                    if (is_last)
+                        var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 0px">`;
+                    else
+                        var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 10px">`;
+
+                    if (test_message == "")
+                        output += `<div style="padding: 0.75em 0.5em 0em 1.25em;margin:0"> </div>`;
+                    else
+                        output += `<h6 style="padding: 0.75em 0.5em 0.25em 1.25em;margin:0">${test_message}</h6>`;
+
+                    output += '<div style="padding: 0em 1.25em 0.75em 1.25em">';
+
+                    if (tests[test_title].can_see_test_code) {
+                        if (tests[test_title].before_code != "") {
+                            var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed before your code:</div>';
+                            if (test_outputs[test_title].passed != null)
+                                message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed before your code:</div>';
+
+                            //output += message + '<pre style="padding: 1.25em 0.5em 1.25em 0.75em;margin:0">' + tests[test_title].before_code + '</pre>';
+                            output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].before_code + '</pre>';
+                        }
+
+                        if (tests[test_title].after_code != "") {
+                            var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed after your code:</div>';
+                            if (test_outputs[test_title].passed != null)
+                                message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed after your code:</div>';
+
+                            //output += message + '<pre style="padding: 1.25em 0.5em 1.25em 0.75em;margin:0">' + tests[test_title].after_code + '</pre>';
+                            output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].after_code + '</pre>';
+                        }
+                    }
+                    else {
+                        output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The test code will not be shown for this test.</em></div>';
+                    }
+
+                    if (tests[test_title].can_see_expected_output) {
+                        var expected_output = "";
+
+                        if (tests[test_title]["txt_output"] != null && tests[test_title]["txt_output"] != "") {
+                            expected_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title]["txt_output"] + '</pre>';
+                        }
+
+                        if (tests[test_title]["jpg_output"] != null && tests[test_title]["jpg_output"] != "") {
+                            expected_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + tests[test_title]["jpg_output"] + '" width="100%" /></p>';
+                        }
+
+                        output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</div>' + expected_output;
+                    }
+                    else {
+                        output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The expected output will not be shown for this test.</em></div>';
+                    }
+
+                    if (test_outputs[test_title].passed != null) {
+                        if (tests[test_title].can_see_code_output) {
+                            var user_output = "";
+
+                            if (test_outputs[test_title]["txt_output"] != null && test_outputs[test_title]["txt_output"] != "") {
+                                user_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + test_outputs[test_title]["txt_output_formatted"] + '</pre>';
+                            }
+
+                            if (test_outputs[test_title]["jpg_output"] != null && test_outputs[test_title]["jpg_output"] != "") {
+                                user_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_outputs[test_title]["jpg_output"] + '" width="100%" /></p>';
+                            }
+
+                            if (user_output != "")
+                                output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</div>' + user_output;
+
+                            if (test_outputs[test_title]["diff_output"] != null && test_outputs[test_title]["diff_output"] != "") {
+                                output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</div>`;
+
+                                {% if exercise_details["output_type"] == "txt" %}
+                                    output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + test_outputs[test_title]["diff_output"] + "</pre>";
+                                    output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
+                                {% else %}
+                                    output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_outputs[test_title]["diff_output"] + '" width="100%" /></p>';
+                                    output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>Black indicates parts of the image that are identical to the expected output. White indicates parts of the image that are different from the expected output.</em></p>`;
+                                {% end %}
+                            }
+                        }
+                        else {
+                            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>Your output will not be shown for this test.</em></div>';
+                        }
+                    }
+
+                    //TODO: Submit button not working.
+                    //TODO: Make sure it works when the back end is down ("message" != "").
+                    //TODO: Show previous submission buttons. If they have submitted previously, show that when the page loads.
+
+                    output += `</div>`;
+                    output += `</div>`;
+
+                //        if exercise_details["tests"][test_title]["visible"]
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Test code:</h6>`;
+                //            test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["code"]</pre>`;
+
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
+
+                //            if exercise_details["output_type"] == "txt"
+                //                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["txt_output"]</pre>`;
+                //            else
+                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + 'exercise_details["tests"][test_title]["jpg_output"]' + `' width='100%' /></figure></p>`;
+
+                //            if (json_data != null && json_data.tests[test_title].diff_output != "") {
+                //                test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</h6>\n\n`;
+
+                //                if exercise_details["output_type"] == "txt"
+                //                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + json_data.tests[test_title].diff_output + "</pre>\n\n";
+                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
+                //                else
+                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + json_data.tests[test_title].diff_output + `' width='100%' /></figure></p><br />`;
+                //            }
+                //        else
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Details for this test are hidden from students.`;
+
+                //            if exercise_details["tests"][test_title]["test_instructions"] != ""
+                //                test_output += ` However, the instructor provided the following instructions.</h6>`;
+                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["test_instructions"]</p>`;
+                //            else
+                //                test_output += "</h6>";
+
+                //        if (json_data != null) {
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
+
+                //            if exercise_details["output_type"] == "txt"
+                //                if (json_data.tests[test_title].txt_output == "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
+                //                else
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
+                //            else
+                //                if (json_data.tests[test_title]["jpg_output"] == "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
+                //                else
+                //                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[test_title].jpg_output + "' width='100%' /></figure></p>";
+
+                //                if (json_data.tests[test_title]["txt_output"] != "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
+                //        }
+
+                    return output;
+                }
+
+                function submitModal() {
+                    var modal = document.getElementById("submit_exercise_modal");
+                    var span = document.getElementsByClassName("close")[4];
+
+                    modal.style.display = "block";
+
+                    var cancelButton = document.getElementById("submit_cancel_button");
+                    var modalSubmitButton = document.getElementById("modal_submit_button");
+
+                    modalSubmitButton.onclick = function() {
+                        let partner_key = document.getElementById("partner_key").value;
+                        if (partner_key != "") {
+                            $.post("/check_partners/{{ course_basics['id'] }}", {"partner_key": partner_key},
+                                function(data, status) {
+                                    if(!(JSON.parse(data))) {
+                                        document.getElementById("invalid_partner").innerHTML = "<div style='margin:15px 0px' class='space_div notification is-warning is-light smaller-font'>Invalid partner chosen, please try again.</div>";
+                                    } else {
+                                        submit();
+                                        modal.style.display = "none";
+                                    }
+                                });
+                        } else {
+                            submit();
+                            modal.style.display = "none";
+                        }
+                    }
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
 
                 function get_submission(submission_id, scroll, check_for_presubmission) {
                     var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
@@ -532,14 +456,12 @@
                     {% if not exercise_details["allow_any_response"] %}
                         document.getElementById("code_output").innerHTML = "";
 
-                        {% if exercise_details["show_expected"] %}
+                        // if exercise_details["show_expected"]
                             document.getElementById("diff_output").innerHTML = "";
-                        {% end %}
                     {% end %}
 
-                    {% if exercise_details["show_expected"] and not exercise_details["allow_any_response"] %}
+                    // if exercise_details["show_expected"] and not exercise_details["allow_any_response"]
                         document.getElementById("diff_output").innerHTML = "";
-                    {% end %}
 
                     $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id + `/${check_for_presubmission}` ,
                         function (data, status) {
@@ -610,75 +532,285 @@
                         });
                 }
 
-            setInterval(function() {
-              // autosave if code has changed
-              if (codeChanged) {
-                save_presubmission(true);
-              }
-            }, 60 * 1000);
+                function save_presubmission(autosave) {
+                    user_code = editor.getValue();
+                    if (user_code.trim() == "")
+                        return false;
 
-            function save_presubmission(autosave) {
-              user_code = editor.getValue();
-              if (user_code.trim() == "")
-                return false;
+                    saved_div = document.getElementById("saved_div");
+                    saved_div.innerHTML = "Please wait while your code is being saved...";
 
-              saved_div = document.getElementById("saved_div");
-              saved_div.innerHTML = "Please wait while your code is being saved...";
+                    $.ajax({
+                        type: 'POST',
+                        url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                        data: {"user_code": user_code},
+                        success: function(result) {
+                            if (result == "") {
+                                codeChanged = false;
 
-              $.ajax({
-                type: 'POST',
-                url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                data: {"user_code": user_code},
-                success: function(result) {
-                  if (result == "") {
-                    codeChanged = false;
+                            last_saved_at = new Intl.DateTimeFormat('default', {
+                                hour: 'numeric',
+                                minute: 'numeric',
+                            }).format(Date.now());
 
-                    last_saved_at = new Intl.DateTimeFormat('default', {
-                      hour: 'numeric',
-                      minute: 'numeric',
-                    }).format(Date.now());
+                            if (autosave)
+                                saved_div.innerHTML = `Auto-saved at ${last_saved_at}.`;
+                            else
+                                saved_div.innerHTML = `Saved at ${last_saved_at}.`;
+                           }
+                           else {
+                               console.log("An error occurred when the user attempted to save their code. The error message is below.");
+                               console.log(result);
+                               saved_div.innerHTML = "An error occurred, so your code may not have saved. If this error persists, please contact the instructor.";
+                           }
+                        },
+                        async: false
+                    });
+                }
 
-                    if (autosave)
-                      saved_div.innerHTML = `Auto-saved at ${last_saved_at}.`;
+                function display_results(json_data) {
+                    var result = "";
+
+                    if (json_data.passed) {
+console.log("passed11");
+                        {% if exercise_details["allow_any_response"] %}
+                            result = "<div class='notification success-message' style='color:white'><p><strong>Thank you for your submission.</strong></p>";
+                        {% else %}
+                            result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produces the expected output.</strong></p>";
+                        {% end %}
+
+                        {% if exercise_details["show_peer_solutions"] %}
+                            result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View others' solutions</a></p>";
+                        {% elif exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
+                            result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
+                        {% end %}
+
+                        {% if next_exercise %}
+                            result += "<p><a class='grey-text' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>";
+                        {% end %}
+
+                        result += "</div>\n\n"
+                    }
+                    else {
+console.log("failed11");
+                        {% if exercise_details["allow_any_response"] %}
+                            result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not produce any output.</strong></p></div>";
+                        {% else %}
+                            result = "<div class='notification error-message smaller-font' style='color: white'><p><strong>Your solution did not pass.</strong></p>\n\n<p>The output does not match the expected output. Please modify your solution and try again.</div>\n\n";
+                        {% end %}
+
+                        // if not exercise_details["allow_any_response"] and exercise_details["show_expected"]
+                            var diff_output = "";
+
+                            if (json_data.diff.length > 0) {
+                                diff_output += "<h6>Difference between your output and the expected output:</h6>\n\n";
+                                {% if exercise_details["output_type"] == "txt" %}
+                                    diff_output += "<p><pre>" + json_data.diff + "</pre></p>\n\n<p><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>";
+                                {% else %}
+                                    //diff_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.diff + "' width='100%' /></figure></p>";
+                                {% end %}
+                            }
+
+                            document.getElementById("diff_output").innerHTML = diff_output;
+                    }
+
+                    document.getElementById("result").innerHTML = result;
+
+                    {% if exercise_details["allow_any_response"] %}
+                        if (json_data.txt_output != "" || json_data.jpg_output != "") {
+                            var code_output = "<h6>Your output:</h6>\n\n";
+
+                            code_output += build_txt_output(json_data.txt_output);
+                            code_output += build_jpg_output(json_data.jpg_output);
+                            document.getElementById("code_output").innerHTML = code_output;
+                        }
+                    {% else %}
+                        var expected_text = `exercise_details["expected_txt_output"]`;
+                        var expected_image = `exercise_details["expected_jpg_output"]`;
+
+                        // If output includes an index error, provide student with a more helpful error message instead.
+                        if (json_data.txt_output.includes("IndexError:&nbsp;list&nbsp;index&nbsp;out&nbsp;of&nbsp;range")) {
+                            var code_output = "<h6>Your output:</h6>\n\n";
+                            code_output += "Output is not available for this submission. This may be due to the instructor editing the exercise since you last submitted."
+                            document.getElementById("code_output").innerHTML = code_output;
+                        }
+                        else if (((json_data.txt_output != "") || (json_data.jpg_output != "")) || ((expected_text != "") || (expected_image != ""))) {
+                            var code_output = "<h6>Your output:</h6>\n\n";
+                            code_output += build_txt_output(json_data.txt_output);
+                            code_output += build_jpg_output(json_data.jpg_output);
+                            document.getElementById("code_output").innerHTML = code_output;
+                        }
+
+                        // Build test buttons
+                        //build_tests_output(json_data);
+                    {% end %}
+                }
+
+                //function build_tests_output(json_data) {
+                //    var expected_tests = document.getElementById("expected_tests");
+
+                //    if (expected_tests != null) {
+                //        expected_tests.style.display = "none";
+                //    }
+
+                //    var test_output = "<h6>Tests:</h6>\n\n";
+
+                //    for test_title in exercise_details["tests"]
+                //        document.getElementById('test_output').style.display = "block";
+
+                //        if (json_data == null) {
+                //            button_bd_color = "neutral-bd-color";
+                //            test_message = "";
+
+                //        } else {
+                //            button_bd_color = json_data.tests[test_title].passed ? "passing-bd-color" : "failing-bd-color";
+                //            test_message = json_data.tests[test_title].passed ? "passed." : "did not pass.";
+                //        }
+
+                //        test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;'>`;
+                        //test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(test_title)'>`;
+                        //test_output += `<h6 style="padding: 1em 1.25em;margin:0">test_title ${test_message}</h6>`;
+
+                        // This defines the box that surrounds each test.
+                //        test_output += `<div id="test_test_title" style="padding: 0.5em 1.25em 0.5em 1.25em;margin:0">`;
+
+                //        if exercise_details["tests"][test_title]["visible"]
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Test code:</h6>`;
+                //            test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["code"]</pre>`;
+
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
+
+                //            if exercise_details["output_type"] == "txt"
+                //                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["txt_output"]</pre>`;
+                //            else
+                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + 'exercise_details["tests"][test_title]["jpg_output"]' + `' width='100%' /></figure></p>`;
+
+                //            if (json_data != null && json_data.tests[test_title].diff_output != "") {
+                //                test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</h6>\n\n`;
+
+                //                if exercise_details["output_type"] == "txt"
+                //                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + json_data.tests[test_title].diff_output + "</pre>\n\n";
+                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
+                //                else
+                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + json_data.tests[test_title].diff_output + `' width='100%' /></figure></p><br />`;
+                //            }
+                //        else
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Details for this test are hidden from students.`;
+
+                //            if exercise_details["tests"][test_title]["test_instructions"] != ""
+                //                test_output += ` However, the instructor provided the following instructions.</h6>`;
+                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["test_instructions"]</p>`;
+                //            else
+                //                test_output += "</h6>";
+
+                //        if (json_data != null) {
+                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
+
+                //            if exercise_details["output_type"] == "txt"
+                //                if (json_data.tests[test_title].txt_output == "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
+                //                else
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
+                //            else
+                //                if (json_data.tests[test_title]["jpg_output"] == "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
+                //                else
+                //                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[test_title].jpg_output + "' width='100%' /></figure></p>";
+
+                //                if (json_data.tests[test_title]["txt_output"] != "")
+                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
+                //        }
+
+                //        test_output += `</div></div>`
+                //        test_output += `<br />`
+
+                //        document.getElementById("test_output").innerHTML = test_output;
+                //}
+
+                function build_txt_output(json_output) {
+                    var output = "";
+
+                    if (json_output == "") {
+                        // if exercise_details["output_type"] == "txt" 
+                        //    output = "<p><pre>[Your solution produced no output.]</pre></p>";
+                        //else
+                        //    output = "";
+                    }
+                    else {
+                        output = "<p><pre>" + json_output + "</pre></p>";
+                    }
+
+                    return output;
+                }
+
+                function build_jpg_output(json_output) {
+                    var output = "";
+
+                    if (json_output == "")
+                        {% if exercise_details["output_type"] == "jpg" %}
+                            output = "<p><pre>[Your solution did not produce an image.]</pre></p>";
+                        {% else %}
+                            output = "";
+                        {% end %}
                     else
-                      saved_div.innerHTML = `Saved at ${last_saved_at}.`;
-                  }
-                  else {
-                    console.log("An error occurred when the user attempted to save their code. The error message is below.");
-                    console.log(result);
-                    saved_div.innerHTML = "An error occurred, so your code may not have saved. If this error persists, please contact the instructor.";
-                  }
-                },
-                async: false
-              });
-            }
+                        output = "<p><figure class='img'><img src='data:image/jpg;base64," + json_output + "' width='100%' /></figure></p>";
 
-            {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
-                editor.setOptions({
-                    enableBasicAutocompletion: false,
-                    enableSnippets: true,
-                    enableLiveAutocompletion: true
+                    return output;
+                }
+
+                ace.require("ace/ext/language_tools");
+                var editor = ace.edit("user_code", {
+                    theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                    autoScrollEditorIntoView: false,
+                    minLines: 20,
+                    fontSize: "12pt"
                 });
-            {% end %}
+                let codeChanged = false
 
-            editor.focus();
-            editor.getSession().setMode("{{ code_completion_path }}");
-            last_submission_id = {{ num_submissions }};
+                editor.session.on('change', function(delta) {
+                  codeChanged = true
+                });
 
-            if ({{ exercise_details["max_submissions"] }} > 0 && last_submission_id >= {{ exercise_details["max_submissions"] }})
-                document.getElementById("submit_button").disabled = true;
+                {% if user_info['enable_vim'] %}
+                   editor.setKeyboardHandler("ace/keyboard/vim");
+                {% end %}
 
-            show_past_submission_buttons();
+                {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
+                    editor.setOptions({
+                        enableBasicAutocompletion: false,
+                        enableSnippets: true,
+                        enableLiveAutocompletion: true
+                    });
+                {% end %}
 
-            if (last_submission_id > 0) {
-                get_submission(last_submission_id, false, true);
-            }
-            else {
-                get_presubmission();
-                //build_tests_output(null);
-            }
+                editor.focus();
+                editor.getSession().setMode("{{ code_completion_path }}");
+
+                // Autosave if code has changed
+                setInterval(function() {
+                    if (codeChanged) {
+                        save_presubmission(true);
+                    }
+                }, 60 * 1000);
+
+                submitButton = document.getElementById("submit_button");
+
+                {% if exercise_details["enable_pair_programming"] %}
+                      if (submitButton != null)
+                          submitButton.onclick = function() {
+                              submitModal()
+                      }
+                {% else %}
+                    if (submitButton != null) {
+                        submitButton.onclick = function() {
+                        submit()
+                    }
+                }
+                {% end %}
+
+                const tests = JSON.parse("{{ tests_json }}");
+                showTestOutputs(null);
             </script>
-
         {% else %}
             <p>This exercise does not exist.</p>
         {% end %}

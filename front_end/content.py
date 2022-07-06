@@ -38,7 +38,7 @@ class Content:
         self.execute("PRAGMA foreign_keys=OFF")
         self.execute("PRAGMA cache_size = 1000000")
         self.execute("PRAGMA mmap_size = 1000000")
-        self.execute("PRAGMA journal_mode = wal")
+        #self.execute("PRAGMA journal_mode = wal")
         self.execute("PRAGMA temp_store = MEMORY")
 
         atexit.register(self.close)

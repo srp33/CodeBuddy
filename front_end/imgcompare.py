@@ -31,20 +31,20 @@ from PIL import ImageChops
 class ImageCompareException(Exception):
     pass
 
-def diff_jpg(expected_image_string, answer_image_string):
+def diff_jpg(expected_image_string, user_image_string):
     expected_bytes = decode_image_string(expected_image_string)
-    answer_bytes = decode_image_string(answer_image_string)
+    answer_bytes = decode_image_string(user_image_string)
 
     expected_image = Image.open(io.BytesIO(expected_bytes))
-    answer_image = Image.open(io.BytesIO(answer_bytes))
+    user_image = Image.open(io.BytesIO(answer_bytes))
     expected_image = expected_image.convert("L")
-    answer_image = answer_image.convert("L")
+    user_image = user_image.convert("L")
 
-    diff_image = pixel_diff(expected_image, answer_image)
+    diff_image = pixel_diff(expected_image, user_image)
     diff_percent = image_diff_percent(expected_image.size, diff_image)
 
     expected_image.close()
-    answer_image.close()
+    user_image.close()
 
     return diff_image, diff_percent
 

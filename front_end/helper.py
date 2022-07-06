@@ -111,12 +111,15 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(settings_dict, code, verification_code, exercise_details, request=None):
+def exec_code(settings_dict, code, verification_code, exercise_details, add_formatted_txt = False):
     # In this case, the code is the answer that the student provided.
     if exercise_details["back_end"] == 'not_code':
+        response = {"message": "", "test_outputs": {}}
+
         for test_title in exercise_details["tests"]:
-            exercise_details["tests"][test_title]["text_output"] = code.strip()
-            exercise_details["tests"][test_title]["image_output"] = code.strip()
+            response["test_outputs"][test_title]["txt_output"] = code.strip()
+
+        return response
 
     this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
     timeout = this_settings_dict["timeout_seconds"]
@@ -132,20 +135,41 @@ def exec_code(settings_dict, code, verification_code, exercise_details, request=
                  }
 
     response = requests.post(f"http://127.0.0.1:{os.environ['MPORT']}/exec/", json.dumps(data_dict), timeout=timeout)
+    response = json.loads(response.content)
 
-    return json.loads(response.content)
+    if add_formatted_txt:
+        for test_title in response["test_outputs"]:
+            response["test_outputs"][test_title]["txt_output_formatted"] = format_output_as_html(response["test_outputs"][test_title]["txt_output"])
 
-def compare_outputs(expected_text, actual_text, expected_image, actual_image, output_type):
-    if output_type == "txt":
-        if expected_text == actual_text:
+    return response
+
+def check_test_outputs(exercise_details, test_outputs):
+    for test_title in exercise_details["tests"]:
+        test_outputs[test_title]["passed"] = False
+
+        if exercise_details["allow_any_response"]:
+            if len(test_outputs[test_title]["txt_output"]) > 0 or len(test_outputs[test_title]["jpg_output"]) > 0:
+                test_outputs[test_title]["passed"] = True
+        else:
+            diff_output, passed = compare_outputs(exercise_details, test_outputs, test_title)
+            test_outputs[test_title]["passed"] = passed
+            test_outputs[test_title]["diff_output"] = diff_output
+
+def compare_outputs(exercise_details, test_outputs, test_title):
+    expected_txt = exercise_details["tests"][test_title]["txt_output"]
+    actual_txt = test_outputs[test_title]["txt_output"]
+    expected_jpg = exercise_details["tests"][test_title]["jpg_output"]
+    actual_jpg = test_outputs[test_title]["jpg_output"]
+
+    if exercise_details["output_type"] == "txt":
+        if expected_txt == actual_txt:
             return "", True
-        if actual_text == "":
+        if actual_txt == "":
+            return "", False
+        if len(expected_txt) > 200:
             return "", False
 
-        if len(expected_text) > 200:
-            return "", False
-
-        diff_output, num_differences = diff_strings(expected_text, actual_text)
+        diff_output, num_differences = diff_strings(expected_txt, actual_txt)
 
         # Only return diff output if the differences are relatively small.
         if num_differences > 20:
@@ -153,46 +177,46 @@ def compare_outputs(expected_text, actual_text, expected_image, actual_image, ou
 
         # Sometimes it's difficult for students to differentiate between spaces
         #  and tabs. This is intended to help.
-        diff_output = diff_output.replace("\t", "{tab}")
+        diff_output = format_output_as_html(diff_output.replace("\t", "{tab}"))
 
         return diff_output, False
     else:
-        if expected_image == actual_image:
+        if expected_jpg == actual_jpg:
             return "", True
-        if actual_image == "":
+        if actual_jpg == "":
             return "", False
-        elif expected_image == "":
+        elif expected_jpg == "":
             return "", True
 
-        diff_image, diff_percent = diff_jpg(expected_image, actual_image)
-
-        diff_output = ""
+        image_diff, diff_percent = diff_jpg(expected_jpg, actual_jpg)
 
         if diff_percent < 10.0:
             # Only return diff output if the differences are relatively small.
-            diff_output = encode_image_bytes(convert_image_to_bytes(diff_image))
+            diff_output = encode_image_bytes(convert_image_to_bytes(image_diff))
+        else:
+            diff_output = ""
 
         return diff_output, diff_percent < 0.01 # Pass if they are similar.
 
-def check_exercise_output(exercise_details, actual_text, actual_image, tests):
-    if exercise_details["allow_any_response"]:
-        if (len(actual_text) > 0 or len(actual_image) > 0):
-            return "", True, []
-        else:
-            return "", False, []
-
-    diff_output, passed = compare_outputs(exercise_details["expected_text_output"], actual_text, exercise_details["expected_image_output"], actual_image, exercise_details["output_type"])
-    expected_test_outputs = exercise_details["tests"]
-
-    test_outcomes = []
-
-    for i in range(len(expected_test_outputs)):
-        test_diff_output, test_passed = compare_outputs(expected_test_outputs[i]["text_output"], tests[i]["text_output"], expected_test_outputs[i]["image_output"], tests[i]["image_output"], exercise_details["output_type"])
-        test_outcomes.append({"test": expected_test_outputs[i]["test"], "diff_output": test_diff_output, "passed": test_passed, "text_output": tests[i]["text_output"], "image_output": tests[i]["image_output"]})
-
-    passed = True if passed and all(list(map(lambda x: x["passed"], test_outcomes))) else False
-
-    return diff_output, passed, test_outcomes
+#def check_exercise_output(exercise_details, actual_text, actual_image, tests):
+#    if exercise_details["allow_any_response"]:
+#        if (len(actual_text) > 0 or len(actual_image) > 0):
+#            return "", True, []
+#        else:
+#            return "", False, []
+#
+#    diff_output, passed = compare_outputs(exercise_details["expected_text_output"], actual_text, exercise_details["expected_image_output"], actual_image, exercise_details["output_type"])
+#    expected_test_outputs = exercise_details["tests"]
+#
+#    test_outcomes = []
+#
+#    for i in range(len(expected_test_outputs)):
+#        test_diff_output, test_passed = compare_outputs(expected_test_outputs[i]["text_output"], tests[i]["text_output"], expected_test_outputs[i]["image_output"], tests[i]["image_output"], exercise_details["output_type"])
+#        test_outcomes.append({"test": expected_test_outputs[i]["test"], "diff_output": test_diff_output, "passed": test_passed, "text_output": tests[i]["text_output"], "image_output": tests[i]["image_output"]})
+#
+#    passed = True if passed and all(list(map(lambda x: x["passed"], test_outcomes))) else False
+#
+#    return diff_output, passed, test_outcomes
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")

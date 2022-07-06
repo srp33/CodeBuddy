@@ -31,8 +31,8 @@ do
   if [[ "${output_type}" == "jpg" ]]
   then
     # We may get some text output when creating images.
-    bash /exec_code_jpg_output.sh > txt_output
+    bash /exec_code_jpg_output.sh &> txt_output
   else
-    bash /exec_code_txt_output.sh > txt_output
+    bash /exec_code_txt_output.sh &> txt_output
   fi
 done

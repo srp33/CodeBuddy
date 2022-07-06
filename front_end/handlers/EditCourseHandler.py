@@ -44,8 +44,8 @@ class EditCourseHandler(BaseUserHandler):
                     #if re.search(r"[^\w ]", title):
                     #    result = "Error: The title can only contain alphanumeric characters and spaces."
                     #else:
-                    if len(course_basics["title"]) > 80:
-                        result = "Error: The title cannot exceed 80 characters."
+                    if len(course_basics["title"]) > 100:
+                        result = "Error: The title cannot exceed 100 characters."
                     else:
                         #self.content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
                         self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["consent_text"], course_details["consent_alternative_text"], None, dt.datetime.now())
