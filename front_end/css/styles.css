@@ -140,7 +140,7 @@ pre {
     color: white;
 }
 
-.error-message {
+.not-passing {
     background-color: #FF9138; /* orange */
     border-color: #FF9138; /* orange */
     color: white;

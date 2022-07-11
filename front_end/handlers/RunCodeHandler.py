@@ -2,7 +2,7 @@ from BaseUserHandler import *
 
 class RunCodeHandler(BaseUserHandler):
     async def post(self, course, assignment, exercise):
-        out_dict = {"message": "", "test_outputs": {}}
+        out_dict = {"message": "", "test_outputs": {}, "all_passed": False}
 
         try:
             code = self.get_body_argument("user_code").replace("\r", "")
@@ -12,7 +12,7 @@ class RunCodeHandler(BaseUserHandler):
             out_dict = exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 
             if out_dict["message"] == "":
-                check_test_outputs(exercise_details, out_dict["test_outputs"])
+                out_dict["all_passed"] = check_test_outputs(exercise_details, out_dict["test_outputs"])
         except ConnectionError as inst:
             out_dict["message"] = "The front-end server was unable to contact the back-end server."
         except ReadTimeout as inst:

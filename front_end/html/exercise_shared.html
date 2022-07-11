@@ -1,118 +1,136 @@
             <link rel="stylesheet" href="/static/modal.css">
 
             <script>
+                function get_user_code() {
+                    user_code = editor.getSelectedText().trim();
+
+                    if (user_code == "")
+                        user_code = editor.getValue().trim();
+
+                    return user_code;
+                }
+                
                 function run_code() {
-                    user_code = editor.getSelectedText();
-                    if (user_code.trim() == "")
-                        user_code = editor.getValue();
-                    if (user_code.trim() == "")
+                    user_code = get_user_code();
+                    if (user_code == "")
                         return false;
 
+                    hideMessages();
                     showWaitMessage();
 
                     $.ajax({
                         type: 'POST',
                         url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
                         data: {"user_code": user_code},
-                        success: function(result) {
+                        async: true})
+                        .done(function(result) {
                             var response_dict = JSON.parse(result);
 
-                            if (response_dict["message"] != "") {
+                            if (response_dict["message"] == "") {
+                                hideMessages();
+                                showTestOutputs(response_dict["test_outputs"]);
+
+                                if (response_dict["all_passed"])
+                                    showInfoMessage("Be sure to click on Submit so your solution and score will be saved.");
+                            }
+                            else
                                 showErrorMessage(response_dict["message"]);
-                                return;
-                            }
-
-                            if (allTestsPassed(response_dict["test_outputs"])) {
-                                showSuccessMessage();
-                            }
-                            else {
-                                hideWaitMessage();
-                            }
-
-                            showTestOutputs(response_dict["test_outputs"]);
-
-                            // Build test buttons
-                            //build_tests_output(response_dict);
-
-                            //TODO: Do the same AJAX error handling we are doing in edit_exercise.
-                        },
-                        async: true
-                    });
+                        })
+                        .fail(function(result) {
+                            showErrorMessage(result);
+                        });
 
                     editor.focus();
                     return false;
                 }
 
-                async function submit() {
-                    user_code = editor.getValue();
-
-                    if (user_code.trim() == "")
+                function submit() {
+                    user_code = get_user_code();
+                    if (user_code == "") {
                         return false;
+                    }
 
-                    // Get partner_id
-                    let partner_key = document.getElementById("partner_key").value != "" ? document.getElementById("partner_key").value : null;
+                    hideMessages();
+                    showWaitMessage();
 
-                    result_div = document.getElementById("result");
-                    result_div.innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
-                    result_div.scrollIntoView();
+                    let partner_id = $("#partner_id")[0].value == "" ? null : $("#partner_id")[0].value;
+                    post_data = { "partner_id": partner_id, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
 
-                    // if not exercise_details["allow_any_response"]
-                        document.getElementById("code_output").innerHTML = "";
+                    $.ajax({
+                        type: 'POST',
+                        url: "/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                        data: post_data,
+                        async: true})
+                        .done(function(result) {
+                            var response_dict = JSON.parse(result);
 
-                        // if exercise_details["show_expected"]
-                            document.getElementById("diff_output").innerHTML = "";
+                            if (response_dict["message"] == "") {
+                                hideMessages();
+                                showTestOutputs(response_dict["test_outputs"]);
 
-                    post_data = { "partner_key": partner_key, "user_code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
-
-                    await $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                        post_data,
-
-                        function(data, status) {
-                            json_data = JSON.parse(data);
-                            display_results(json_data);
- 
-                            if (json_data.submission_id != "") {
-                                last_submission_id = json_data.submission_id;
-
-                                {% if exercise_details["max_submissions"] > 0 %}
-                                    document.getElementById("num_submissions").innerHTML = last_submission_id;
-
-                                    if (last_submission_id >= {{ exercise_details["max_submissions"] }})
-                                        document.getElementById("submit_button").disabled = true;
-                                {% end %}
+                                if (response_dict["all_passed"])
+                                    showSuccessMessage();
+                                else
+                                    showNotPassingMessage(response_dict["test_outputs"].length);
                             }
+                            else {
+                                showErrorMessage(response_dict["message"]);
+                            }
+                        })
+                        .fail(function(result) {
+                            showErrorMessage(result);
                         });
 
                     editor.focus();
 
-                    await show_past_submission_buttons();
+
+//                    $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                    //await $.post("/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+//                        post_data,
+//
+ //                       function(data, status) {
+ //                           json_data = JSON.parse(data);
+ //                           display_results(json_data);
+ 
+//                            if (json_data.submission_id != "") {
+//                                last_submission_id = json_data.submission_id;
+
+//                                {% if exercise_details["max_submissions"] > 0 %}
+//                                    document.getElementById("num_submissions").innerHTML = last_submission_id;
+
+//                                    if (last_submission_id >= {{ exercise_details["max_submissions"] }})
+//                                        document.getElementById("submit_button").disabled = true;
+//                                {% end %}
+//                            }
+//                        });
+
+                    //await show_past_submission_buttons();
+//                    show_past_submission_buttons();
                     return false;
                 }
 
                 function showWaitMessage() {
-                    $("#result")[0].innerHTML = "<div class='notification is-warning is-light smaller-font'>Please wait while your solution is being executed...</div>";
-                    $("#result")[0].scrollIntoView();
+                    $("#result_message")[0].innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
+                    $("#result_message")[0].scrollIntoView();
                 }
 
-                function hideWaitMessage() {
-                    $("#result")[0].innerHTML = "";
+                 function hideMessages() {
+                    $("#result_message")[0].innerHTML = "";
+                    $("#test_outputs")[0].innerHTML = "";
                 }
 
-                function showErrorMessage(message) {
-                    $("#result")[0].innerHTML = `<div class='notification error-message smaller-font' style='color: white'><pre>${message}</pre></div>`;
-                    $("#result")[0].scrollIntoView();
-                }
-
-                function showSuccessMessage(message) {
+                function showSuccessMessage() {
                     {% if exercise_details["allow_any_response"] %}
-                        var result = "<div class='notification success-message' style='color:white'><p><strong>Thank you for your submission.</strong></p>";
+                        let message = "Thank you for your submission.";
                     {% else %}
                         {% if len(exercise_details["tests"]) == 1 %}
-                            var result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution produced the expected output.</strong></p>";
+                            var message = "Congratulations! Your solution passes the test.";
                         {% else %}
-                            var result = "<div class='notification success-message smaller-font' style='color:white'><p><strong>Congratulations! Your solution passed all of the tests.</strong></p>";
+                            var message = "Congratulations! Your solution passes all of the tests.";
                         {% end %}
                     {% end %}
+
+                    var result = "<div class='notification success-message' style='color:white'><p><strong>" + message + "</strong></p>";
 
                     {% if exercise_details["show_peer_solutions"] %}
                         result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View other students' solutions</a></p>";
@@ -126,15 +144,27 @@
 
                     result += "</div>"
 
-                    $("#result")[0].innerHTML = result;
-                    $("#result")[0].scrollIntoView();
+                    $("#result_message")[0].innerHTML = result;
                 }
 
-                function allTestsPassed(test_outputs) {
-                    for (let test_title of Object.keys(test_outputs))
-                        if (!test_outputs[test_title]["passed"])
-                            return false;
-                    return true;
+                function showNotPassingMessage(num_tests) {
+                    var message = "Your solution does not yet pass the test";
+
+                    if (num_tests > 1)
+                        message += "s";
+                    
+                    message += ". Keep working at it. You can do this!";
+
+                    $("#result_message")[0].innerHTML = `<div class='notification not-passing' style='color: white'>${message}</div>`;
+                }
+
+                function showErrorMessage(message) {
+                    $("#result_message")[0].innerHTML = `<div class='notification is-danger' style='color: white'>An error occurred while your code was being executed.</div><pre>${message}</pre>`;
+                    $("#result_message")[0].scrollIntoView();
+                }
+
+                function showInfoMessage(message) {
+                    $("#result_message")[0].innerHTML = `<div class='notification is-dark'>${message}</div>`;
                 }
 
                 function showTestOutputs(test_outputs) {
@@ -161,76 +191,8 @@
                         }
                     }
 
-                //        document.getElementById('test_output').style.display = "block";
-
-                //        if (json_data == null) {
-                //            button_bd_color = "neutral-bd-color";
-                //            test_message = "";
-
-                //        } else {
-                //            button_bd_color = json_data.tests[test_title].passed ? "passing-bd-color" : "failing-bd-color";
-                //            test_message = json_data.tests[test_title].passed ? "passed." : "did not pass.";
-                //        }
-
-                //        test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;'>`;
-                        //test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(test_title)'>`;
-                        //test_output += `<h6 style="padding: 1em 1.25em;margin:0">test_title ${test_message}</h6>`;
-
-                        // This defines the box that surrounds each test.
-                //        test_output += `<div id="test_test_title" style="padding: 0.5em 1.25em 0.5em 1.25em;margin:0">`;
-
-                //        if exercise_details["tests"][test_title]["visible"]
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Test code:</h6>`;
-                //            test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["code"]</pre>`;
-
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
-
-                //            if exercise_details["output_type"] == "txt"
-                //                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["txt_output"]</pre>`;
-                //            else
-                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + 'exercise_details["tests"][test_title]["jpg_output"]' + `' width='100%' /></figure></p>`;
-
-                //            if (json_data != null && json_data.tests[test_title].diff_output != "") {
-                //                test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</h6>\n\n`;
-
-                //                if exercise_details["output_type"] == "txt"
-                //                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + json_data.tests[test_title].diff_output + "</pre>\n\n";
-                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
-                //                else
-                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + json_data.tests[test_title].diff_output + `' width='100%' /></figure></p><br />`;
-                //            }
-                //        else
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Details for this test are hidden from students.`;
-
-                //            if exercise_details["tests"][test_title]["test_instructions"] != ""
-                //                test_output += ` However, the instructor provided the following instructions.</h6>`;
-                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["test_instructions"]</p>`;
-                //            else
-                //                test_output += "</h6>";
-
-                //        if (json_data != null) {
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
-
-                //            if exercise_details["output_type"] == "txt"
-                //                if (json_data.tests[test_title].txt_output == "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
-                //                else
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
-                //            else
-                //                if (json_data.tests[test_title]["jpg_output"] == "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
-                //                else
-                //                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[test_title].jpg_output + "' width='100%' /></figure></p>";
-
-                //                if (json_data.tests[test_title]["txt_output"] != "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
-                //        }
-
-                //        test_output += `</div></div>`
-                //        test_output += `<br />`
-
-                //        document.getElementById("test_output").innerHTML = test_output;
                     $("#test_outputs")[0].innerHTML = output;
+                    $("#test_outputs")[0].scrollIntoView();
                 }
 
                 function buildTestOutput(test_outputs, test_title, show_title, is_last) {
@@ -269,13 +231,16 @@
 
                     output += '<div style="padding: 0em 1.25em 0.75em 1.25em">';
 
+                    if (tests[test_title]["instructions"] != "") {
+                        output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">${tests[test_title]["instructions"]}</div>`;
+                    }
+
                     if (tests[test_title].can_see_test_code) {
                         if (tests[test_title].before_code != "") {
                             var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed before your code:</div>';
                             if (test_outputs[test_title].passed != null)
                                 message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed before your code:</div>';
 
-                            //output += message + '<pre style="padding: 1.25em 0.5em 1.25em 0.75em;margin:0">' + tests[test_title].before_code + '</pre>';
                             output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].before_code + '</pre>';
                         }
 
@@ -284,7 +249,6 @@
                             if (test_outputs[test_title].passed != null)
                                 message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed after your code:</div>';
 
-                            //output += message + '<pre style="padding: 1.25em 0.5em 1.25em 0.75em;margin:0">' + tests[test_title].after_code + '</pre>';
                             output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].after_code + '</pre>';
                         }
                     }
@@ -292,21 +256,23 @@
                         output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The test code will not be shown for this test.</em></div>';
                     }
 
-                    if (tests[test_title].can_see_expected_output) {
-                        var expected_output = "";
+                    if (test_outputs[test_title]["passed"] == null || !test_outputs[test_title]["passed"]) {
+                        if (tests[test_title].can_see_expected_output) {
+                            var expected_output = "";
 
-                        if (tests[test_title]["txt_output"] != null && tests[test_title]["txt_output"] != "") {
-                            expected_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title]["txt_output"] + '</pre>';
+                            if (tests[test_title]["txt_output"] != null && tests[test_title]["txt_output"] != "") {
+                                expected_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title]["txt_output"] + '</pre>';
+                            }
+
+                            if (tests[test_title]["jpg_output"] != null && tests[test_title]["jpg_output"] != "") {
+                                expected_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + tests[test_title]["jpg_output"] + '" width="100%" /></p>';
+                            }
+
+                            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</div>' + expected_output;
                         }
-
-                        if (tests[test_title]["jpg_output"] != null && tests[test_title]["jpg_output"] != "") {
-                            expected_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + tests[test_title]["jpg_output"] + '" width="100%" /></p>';
+                        else {
+                            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The expected output will not be shown for this test.</em></div>';
                         }
-
-                        output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</div>' + expected_output;
-                    }
-                    else {
-                        output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The expected output will not be shown for this test.</em></div>';
                     }
 
                     if (test_outputs[test_title].passed != null) {
@@ -328,11 +294,11 @@
                                 output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</div>`;
 
                                 {% if exercise_details["output_type"] == "txt" %}
-                                    output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + test_outputs[test_title]["diff_output"] + "</pre>";
-                                    output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
+                                    output += `<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">` + test_outputs[test_title]["diff_output"] + "</pre>";
+                                    output += `<p style="padding: 0.5em 0.5em 0.5em 0.66em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
                                 {% else %}
                                     output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_outputs[test_title]["diff_output"] + '" width="100%" /></p>';
-                                    output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>Black indicates parts of the image that are identical to the expected output. White indicates parts of the image that are different from the expected output.</em></p>`;
+                                    output += `<p style="padding: 0.5em 0.5em 0.5em 0em;margin:0"><em>Black indicates parts of the image that are identical to the expected output. White indicates parts of the image that are different from the expected output.</em></p>`;
                                 {% end %}
                             }
                         }
@@ -341,64 +307,18 @@
                         }
                     }
 
-                    //TODO: Submit button not working.
-                    //TODO: Make sure it works when the back end is down ("message" != "").
-                    //TODO: Show previous submission buttons. If they have submitted previously, show that when the page loads.
-
                     output += `</div>`;
                     output += `</div>`;
-
-                //        if exercise_details["tests"][test_title]["visible"]
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Test code:</h6>`;
-                //            test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["code"]</pre>`;
-
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
-
-                //            if exercise_details["output_type"] == "txt"
-                //                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["txt_output"]</pre>`;
-                //            else
-                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + 'exercise_details["tests"][test_title]["jpg_output"]' + `' width='100%' /></figure></p>`;
-
-                //            if (json_data != null && json_data.tests[test_title].diff_output != "") {
-                //                test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</h6>\n\n`;
-
-                //                if exercise_details["output_type"] == "txt"
-                //                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + json_data.tests[test_title].diff_output + "</pre>\n\n";
-                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
-                //                else
-                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + json_data.tests[test_title].diff_output + `' width='100%' /></figure></p><br />`;
-                //            }
-                //        else
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Details for this test are hidden from students.`;
-
-                //            if exercise_details["tests"][test_title]["test_instructions"] != ""
-                //                test_output += ` However, the instructor provided the following instructions.</h6>`;
-                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["test_instructions"]</p>`;
-                //            else
-                //                test_output += "</h6>";
-
-                //        if (json_data != null) {
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
-
-                //            if exercise_details["output_type"] == "txt"
-                //                if (json_data.tests[test_title].txt_output == "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
-                //                else
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
-                //            else
-                //                if (json_data.tests[test_title]["jpg_output"] == "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
-                //                else
-                //                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[test_title].jpg_output + "' width='100%' /></figure></p>";
-
-                //                if (json_data.tests[test_title]["txt_output"] != "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
-                //        }
 
                     return output;
                 }
 
-                function submitModal() {
+                function showSubmitModal() {
+                    user_code = get_user_code();
+                    if (user_code == "") {
+                        return false;
+                    }
+
                     var modal = document.getElementById("submit_exercise_modal");
                     var span = document.getElementsByClassName("close")[4];
 
@@ -408,20 +328,35 @@
                     var modalSubmitButton = document.getElementById("modal_submit_button");
 
                     modalSubmitButton.onclick = function() {
-                        let partner_key = document.getElementById("partner_key").value;
-                        if (partner_key != "") {
-                            $.post("/check_partners/{{ course_basics['id'] }}", {"partner_key": partner_key},
-                                function(data, status) {
-                                    if(!(JSON.parse(data))) {
-                                        document.getElementById("invalid_partner").innerHTML = "<div style='margin:15px 0px' class='space_div notification is-warning is-light smaller-font'>Invalid partner chosen, please try again.</div>";
-                                    } else {
-                                        submit();
-                                        modal.style.display = "none";
-                                    }
-                                });
-                        } else {
+                        let partner_name = $("#partner_name")[0].value;
+
+                        if (partner_name == "") {
                             submit();
                             modal.style.display = "none";
+                        } else {
+                            $("#submit_exercise_modal_message")[0].innerHTML = "";
+
+                            $.ajax({
+                                type: 'GET',
+                                url: "/get_partner_id/{{ course_basics['id'] }}/" + partner_name,
+                                async: false
+                                })
+                                .done(function(data) {
+                                    response = JSON.parse(data);
+
+                                    if (response == "") {
+                                        $("#submit_exercise_modal_message")[0].innerHTML = "<div style='margin:15px 0px' class='space_div notification is-danger is-light smaller-font'>An invalid partner was specified. Please try again.</div>";
+                                    }
+                                    else {
+                                        $("#partner_id")[0].value = response;
+                                        modal.style.display = "none";
+                                        submit();
+                                    }
+                                })
+                                .fail(function(data) {
+                                    $("#submit_exercise_modal_message")[0].innerHTML = "<div style='margin:15px 0px' class='space_div notification is-danger is-light smaller-font'>An unexpected error occurred. Please try again and notify the instructor if the error persists.</div>";
+                                    console.log(data);
+                                });
                         }
                     }
 
@@ -614,7 +549,7 @@ console.log("failed11");
                             document.getElementById("diff_output").innerHTML = diff_output;
                     }
 
-                    document.getElementById("result").innerHTML = result;
+                    document.getElementById("message_result").innerHTML = result;
 
                     {% if exercise_details["allow_any_response"] %}
                         if (json_data.txt_output != "" || json_data.jpg_output != "") {
@@ -645,87 +580,6 @@ console.log("failed11");
                         //build_tests_output(json_data);
                     {% end %}
                 }
-
-                //function build_tests_output(json_data) {
-                //    var expected_tests = document.getElementById("expected_tests");
-
-                //    if (expected_tests != null) {
-                //        expected_tests.style.display = "none";
-                //    }
-
-                //    var test_output = "<h6>Tests:</h6>\n\n";
-
-                //    for test_title in exercise_details["tests"]
-                //        document.getElementById('test_output').style.display = "block";
-
-                //        if (json_data == null) {
-                //            button_bd_color = "neutral-bd-color";
-                //            test_message = "";
-
-                //        } else {
-                //            button_bd_color = json_data.tests[test_title].passed ? "passing-bd-color" : "failing-bd-color";
-                //            test_message = json_data.tests[test_title].passed ? "passed." : "did not pass.";
-                //        }
-
-                //        test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;'>`;
-                        //test_output += `<div class='${button_bd_color} test-content' style='cursor:pointer;' onclick='showTest(test_title)'>`;
-                        //test_output += `<h6 style="padding: 1em 1.25em;margin:0">test_title ${test_message}</h6>`;
-
-                        // This defines the box that surrounds each test.
-                //        test_output += `<div id="test_test_title" style="padding: 0.5em 1.25em 0.5em 1.25em;margin:0">`;
-
-                //        if exercise_details["tests"][test_title]["visible"]
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Test code:</h6>`;
-                //            test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["code"]</pre>`;
-
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</h6>\n\n`;
-
-                //            if exercise_details["output_type"] == "txt"
-                //                test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["txt_output"]</pre>`;
-                //            else
-                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + 'exercise_details["tests"][test_title]["jpg_output"]' + `' width='100%' /></figure></p>`;
-
-                //            if (json_data != null && json_data.tests[test_title].diff_output != "") {
-                //                test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</h6>\n\n`;
-
-                //                if exercise_details["output_type"] == "txt"
-                //                     test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">` + json_data.tests[test_title].diff_output + "</pre>\n\n";
-                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>A <code>+</code> in brackets indicates that your output had an extra character.<br />A <code>-</code> in brackets indicates that your output was missing the specified character.</em></p>`;
-                //                else
-                //                     test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0"><figure class='img'><img src='data:image/jpg;base64,` + json_data.tests[test_title].diff_output + `' width='100%' /></figure></p><br />`;
-                //            }
-                //        else
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Details for this test are hidden from students.`;
-
-                //            if exercise_details["tests"][test_title]["test_instructions"] != ""
-                //                test_output += ` However, the instructor provided the following instructions.</h6>`;
-                //                test_output += `<p style="padding: 0.5em 0em 0.5em 0em;margin:0">exercise_details["tests"][test_title]["test_instructions"]</p>`;
-                //            else
-                //                test_output += "</h6>";
-
-                //        if (json_data != null) {
-                //            test_output += `<h6 style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</h6>\n\n`;
-
-                //            if exercise_details["output_type"] == "txt"
-                //                if (json_data.tests[test_title].txt_output == "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution produced no output.]</pre>`;
-                //                else
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
-                //            else
-                //                if (json_data.tests[test_title]["jpg_output"] == "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">[Your solution did not produce an image.]</pre>`;
-                //                else
-                //                    test_output += "<p><figure class='img'><img src='data:image/jpg;base64," + json_data.tests[test_title].jpg_output + "' width='100%' /></figure></p>";
-
-                //                if (json_data.tests[test_title]["txt_output"] != "")
-                //                    test_output += `<pre style="padding: 0.5em 0em 0.5em 0em;margin:0">${json_data.tests[test_title].txt_output}</pre>`;
-                //        }
-
-                //        test_output += `</div></div>`
-                //        test_output += `<br />`
-
-                //        document.getElementById("test_output").innerHTML = test_output;
-                //}
 
                 function build_txt_output(json_output) {
                     var output = "";
@@ -787,18 +641,18 @@ console.log("failed11");
                 editor.getSession().setMode("{{ code_completion_path }}");
 
                 // Autosave if code has changed
-                setInterval(function() {
-                    if (codeChanged) {
-                        save_presubmission(true);
-                    }
-                }, 60 * 1000);
+//                setInterval(function() {
+//                    if (codeChanged) {
+//                        save_presubmission(true);
+//                    }
+//                }, 60 * 1000);
 
                 submitButton = document.getElementById("submit_button");
 
                 {% if exercise_details["enable_pair_programming"] %}
                       if (submitButton != null)
                           submitButton.onclick = function() {
-                              submitModal()
+                              showSubmitModal()
                       }
                 {% else %}
                     if (submitButton != null) {
@@ -820,3 +674,17 @@ console.log("failed11");
 {% else %}
     <p>This course does not exist.</p>
 {% end %}
+
+//TODO: Submit button not working.
+//        Make sure it works when the middle layer is down.
+//        Make sure allow any response exercises work.
+//        Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
+//        Make sure instructor's solution page still working after submissions.
+//TODO: Clean up display_results()
+//        Show previous submission buttons.
+//        If they have submitted previously, show latest submission when the page loads.
+//TODO: student_exercise.html
+//TODO: Start with a fresh database and make sure data files are handled correctly.
+//        Make sure it works properly to view previous submissions for students from last semester.
+//        Do we need to write a Python script that saves files to disk and then reads them back? Or just convert them to bytes and find size.
+//TODO: Make sure we have log information indicating when students view the instructor's solution.

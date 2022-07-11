@@ -1,5 +1,5 @@
 {% if exercise_basics["exists"] %}
-    {% if exercise_details["show_answer"] or assignment_details["view_answer_late"] or exercise_details["show_student_submissions"] %}
+    {% if exercise_details["show_instructor_solution"] or assignment_details["view_answer_late"] or exercise_details["show_peer_solutions"] %}
         {% if not last_submission and not assignment_details["due_date"] %}
             <p>You do not have any submissions for this exercise yet. You must first submit a passing solution.</p>
         {% else %}
@@ -10,7 +10,7 @@
                     <pre class="student-content">{{ last_submission["code"] }}</pre>
                 {% end %}
 
-                {% if exercise_details["show_answer"] %}
+                {% if exercise_details["show_instructor_solution"] %}
                     {% if exercise_details["answer_code"] != "" %}
                         <h4>Instructor's solution:</h4>
                         <pre class="instructor-content">{{ exercise_details["answer_code"]}}</pre>
@@ -24,9 +24,9 @@
                 {% end %}
                 </div><br />
 
-                {% if exercise_details["show_student_submissions"] %}
+                {% if exercise_details["show_peer_solutions"] %}
                     {% if student_submissions %}
-                        {% if exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
+                        {% if exercise_details["show_instructor_solution"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
                             <div class="buttons">
                                 <a class="button is-dark" id="other_button" onclick="showOtherSolutions()"></a>
                             </div>
@@ -66,7 +66,7 @@
 {% end %}
 <br /><br />
 
-{% if exercise_details["show_student_submissions"] %}
+{% if exercise_details["show_peer_solutions"] %}
     <script>
         function showOtherSolutions() {
             var solutions_div = document.getElementById("other_solutions");
@@ -82,7 +82,7 @@
             }
         }
 
-        {% if exercise_details["show_answer"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
+        {% if exercise_details["show_instructor_solution"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
             showOtherSolutions();
         {% end %}
 </script>

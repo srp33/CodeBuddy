@@ -9,7 +9,8 @@ class EditExerciseHandler(BaseUserHandler):
 
                 exercise_details = self.content.get_exercise_details(course, assignment, exercise)
                 for test_title in exercise_details["tests"]:
-                    exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
+                    exercise_details["tests"][test_title]["txt_output"] = exercise_details["tests"][test_title]["txt_output"]
+                    exercise_details["tests"][test_title]["txt_output_formatted"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
 
                 next_prev_exercises = self.content.get_next_prev_exercises(course, assignment, exercise, exercises)
 

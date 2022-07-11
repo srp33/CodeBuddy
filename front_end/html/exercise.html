@@ -202,16 +202,6 @@
                     data_button.innerHTML = "Show";
                 }
             }
-            function showUsers(selection) {
-                var partner_selection = document.getElementById("partner_selection");
-                if (selection == "Yes") {
-                    partner_selection.style.display = "inline";
-                }
-                else {
-                    partner_selection.style.display = "none";
-                }
-            }
-
         </script>
 
         <!--The following divs contain all of the modals for this page-->
@@ -280,28 +270,28 @@
         <div id="submit_exercise_modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <p id="confirm_submit"></p>
-                <h6 style="display:inline">Using Pair Programming:</h6>
+                <h6 style="display:inline">Pair programming:</h6>
                 <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
                     <i class="far fa-question-circle"></i>
                 </label><br />
 
-                <div id="invalid_partner"></div>
+                <div id="submit_exercise_modal_message"></div>
 
                 <div id="partner_selection">
-                {% if users %}
-                <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
+                    {% if users %}
+                        <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
 
-                <input class="space_div input is-primary" list="users_list" id="partner_key" placeholder="Enter partner's name here...">
-                <datalist id="users_list">
-                        {% for user in users %}
-                            <option value="{{ user }}"></option>
-                        {% end %}
-                </datalist>
-                {% else %}
-                <p>There are no other registered students in this course.</p>
-                <input class="invisible" id="partner_key">
-                {% end %}
+                        <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
+                        <datalist id="users_list">
+                            {% for user_name in users %}
+                                <option value="{{ user_name }}"></option>
+                            {% end %}
+                        </datalist>
+                    {% else %}
+                        <p>There are no other registered students in this course.</p>
+                    {% end %}
+
+                    <input type="hidden" id="partner_id" />
                 </div>
 
                 <p class="buttons">
@@ -429,7 +419,7 @@
         <div class="buttons">
             <!--<a class="button is-medium is-primary" onclick='save_presubmission(false)'>Save</a>-->
             {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
-                <a class="button is-medium is-primary" onclick='run_code()' id='run_button'>Run</a>
+                <a class="button is-medium is-primary is-outlined" onclick='run_code()' id='run_button'>Run</a>
             {% end %}
 
             <a class="button is-medium is-dark" id='submit_button'>Submit</a>
@@ -457,9 +447,9 @@
 
         <!--Below is all of the code that shows the output, past submissions, and messaging once a solution has been run or submitted-->
 
-        <p id="result"></p>
-
         <p id="test_outputs"></p>
+
+        <p id="result_message"></p>
 
         <p><div id="submissions"></div></p>
 

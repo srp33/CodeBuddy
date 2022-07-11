@@ -1,6 +1,29 @@
 DROP TABLE user_assignment_start;
 
-DROP TABLE submission_outputs;
+CREATE TABLE submissions2 (
+  course_id integer NOT NULL,
+  assignment_id integer NOT NULL,
+  exercise_id integer NOT NULL,
+  user_id text NOT NULL,
+  submission_id integer NOT NULL,
+  code text NOT NULL,
+  passed integer NOT NULL,
+  date timestamp NOT NULL,
+  partner_id text DEFAULT NULL,
+  FOREIGN KEY (course_id) REFERENCES "courses" (course_id) ON DELETE CASCADE,
+  FOREIGN KEY (assignment_id) REFERENCES "assignments" (assignment_id) ON DELETE  CASCADE,
+  FOREIGN KEY (exercise_id) REFERENCES "exercises" (exercise_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES "users" (user_id) ON DELETE CASCADE,
+  PRIMARY KEY (submission_id AUTOINCREMENT)
+);
+
+INSERT INTO submissions2 (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
+SELECT course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id
+FROM submissions;
+
+DROP TABLE submissions;
+
+ALTER TABLE submissions2 RENAME TO submissions;
 
 CREATE TABLE test_submissions (
   test_id integer NOT NULL,
@@ -33,6 +56,8 @@ INSERT INTO tests (course_id, assignment_id, exercise_id, title, instructions, b
 SELECT course_id, assignment_id, exercise_id, 'Main output', '', '', '', expected_text_output, expected_image_output, 1, show_expected, 1
 FROM exercises
 WHERE (expected_text_output != '' AND expected_text_output != 'sh: 0: getcwd() failed: No such file or directory') OR expected_image_output != '';
+
+DROP TABLE submission_outputs;
 
 CREATE TABLE exercises2 (
   course_id integer NOT NULL,
@@ -87,4 +112,7 @@ FROM exercises;
 
 DROP TABLE exercises;
 
-ALTER TABLE exercises2 RENAME TO exercises
+ALTER TABLE exercises2 RENAME TO exercises;
+
+DELETE
+FROM presubmissions

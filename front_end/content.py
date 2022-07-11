@@ -671,7 +671,8 @@ class Content:
                  FROM course_registrations r
                  INNER JOIN users u
                    ON r.user_id = u.user_id
-                 WHERE r.course_id = ?'''
+                 WHERE r.course_id = ?
+                 ORDER BY u.name'''
 
         for student in self.fetchall(sql, (course_id,)):
             student_info = {"id": student["user_id"], "name": student["name"], 'email': student['email_address']}
@@ -1555,6 +1556,7 @@ class Content:
 
             for test_title in exercise_dict["tests"]:
                 exercise_dict["tests"][test_title]["txt_output"] = format_output_as_html(exercise_dict["tests"][test_title]["txt_output"])
+                exercise_dict["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_dict["tests"][test_title]["instructions"])
 
         return exercise_dict
 
@@ -1731,37 +1733,25 @@ class Content:
 
         self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
 
-    def save_submission(self, course, assignment, exercise, user, code, txt_output, jpg_output, passed, tests, partner_id=None):
-        # Only saves 'jpg_output' if it isn't blank.
-        try:
-            if jpg_output != "":
-                #jpg_output = "" if jpg_output.strip() == BLANK_IMAGE.strip() else jpg_output
-                jpg_output = "" if jpg_output.strip() == BLANK_IMAGE else jpg_output
+    def save_submission(self, course, assignment, exercise, user, code, passed, exercise_details, test_outputs, partner_id=None):
+        #submission_id = self.get_next_submission_id(course, assignment, exercise, user)
+        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            submission_id = self.get_next_submission_id(course, assignment, exercise, user)
-            sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, submission_id, code, txt_output, jpg_output, passed, date, partner_id)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        submission_id = self.execute(sql, [int(course), int(assignment), int(exercise), user, code, passed, datetime.now(), partner_id])
 
-            self.execute(sql, [int(course), int(assignment), int(exercise), user, int(submission_id), code, txt_output, jpg_output, passed, datetime.now(), partner_id])
+        #TODO: Execute this all in one batch
+        if len(test_outputs) > 0:
+            test_sql = '''INSERT INTO test_submissions (test_id, submission_id, txt_output, jpg_output)
+                          VALUES (?, ?, ?, ?)'''
 
-            if len(tests) > 0:
-                test_sql = '''INSERT OR REPLACE INTO submission_outputs (course_id, assignment_id, exercise_id, user_id, submission_id, txt_output, jpg_output)
-                             VALUES (?, ?, ?, ?, ?, ?, ?)'''
+            for test_title, test_dict in test_outputs.items():
+                if test_dict["jpg_output"] != "":
+                    #if test_dict["jpg_output"].strip() == BLANK_IMAGE.strip():
+                    if test_dict["jpg_output"].strip() == BLANK_IMAGE:
+                        test_dict["jpg_output"] = ""
 
-                for test in tests:
-                    self.execute(test_sql, [int(course), int(assignment), int(exercise), user, int(submission_id), test["txt_output"], test["jpg_output"]])
-
-            # Saves submission for partner.
-            if partner_id:
-                submission_id = self.get_next_submission_id(course, assignment, exercise, partner_id)
-                self.execute(sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), code, txt_output, jpg_output, passed, datetime.now(), user])
-
-                if len(tests) > 0:
-                    for test in tests:
-                        self.execute(test_sql, [int(course), int(assignment), int(exercise), partner_id, int(submission_id), test["txt_output"], test["jpg_output"]])
-
-        except:
-            print(traceback.format_exc())
+                self.execute(test_sql, [exercise_details["tests"][test_title]["test_id"], submission_id, test_dict["txt_output"], test_dict["jpg_output"]])
 
         return submission_id
 

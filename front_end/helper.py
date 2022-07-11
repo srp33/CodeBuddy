@@ -144,6 +144,8 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
     return response
 
 def check_test_outputs(exercise_details, test_outputs):
+    all_passed = True
+
     for test_title in exercise_details["tests"]:
         test_outputs[test_title]["passed"] = False
 
@@ -154,6 +156,11 @@ def check_test_outputs(exercise_details, test_outputs):
             diff_output, passed = compare_outputs(exercise_details, test_outputs, test_title)
             test_outputs[test_title]["passed"] = passed
             test_outputs[test_title]["diff_output"] = diff_output
+
+            if passed == False:
+                all_passed = False
+
+    return all_passed
 
 def compare_outputs(exercise_details, test_outputs, test_title):
     expected_txt = exercise_details["tests"][test_title]["txt_output"]

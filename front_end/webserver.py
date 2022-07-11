@@ -32,7 +32,6 @@ def make_app():
     app = Application([
         url(r"/", HomeHandler),
         url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
-        url(r"/check_partners/([^/]+)", CheckPartnersHandler, name="check_partners"),
         url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
         url(r"/copy_assignment/([^/]+)/([^/]+)?", CopyAssignmentHandler, name="copy_assignment"),
         url(r"/copy_exercise/([^/]+)/([^/]+)/([^/]+)?", CopyExerciseHandler, name="copy_exercise"),
@@ -58,6 +57,7 @@ def make_app():
         url(r"/exercise_submissions/([^/]+)/([^/]+)/([^/]+)", ExerciseSubmissionsHandler, name="exercise_submissions"),
         url(r"/export_course/([^/]+)?", ExportCourseHandler, name="export_course"),
         url(r"/export_submissions/([^/]+)?", ExportSubmissionsHandler, name="export_submissions"),
+        url(r"/get_partner_id/([^/]+)/([^/]+)", GetPartnerIDHandler, name="get_partner_id"),
         url(r"/get_presubmission/([^/]+)/([^/]+)/([^/]+)/([^/]+)", GetPresubmissionHandler, name="get_presubmission"),
         url(r"/get_submission/([^/]+)/([^/]+)/([^/]+)/([^/]+)/(\d+)/(true|false)", GetSubmissionHandler, name="get_submission"),
         url(r"/get_submissions/([^/]+)/([^/]+)/([^/]+)/([^/]+)", GetSubmissionsHandler, name="get_submissions"),

@@ -1,4 +1,3 @@
-<!--TODO: Use txt_output_formatted rather than just txt_output when displaying it on this page-->
 <div class="row-container is-hidden" id="edit_header">
     <h2>Edit exercise</h2>
 
@@ -78,7 +77,7 @@
         </div>
 
         <div class="top-space">
-            <p><strong>Instructions*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write instructions for this exercise.</p>
+            <p><strong>Instructions*: </strong><br />Please write instructions for this exercise. You may use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text.</p>
             <p><textarea id="instructions" class="textarea" rows=10 placeholder="Please provide instructions for this assignment."></textarea></p>
         </div>
 
@@ -98,7 +97,7 @@
 
     <div class="shadow-box">
         <p><strong>Credit: </strong>
-            <br />If anyone should be given credit for creating this exercise, please indicate that using <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax.</a>
+            <br />If anyone should be given credit for creating this exercise, please indicate that here. You may use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text.
             <br />Please provide a link to the data source(s) if you obtained the dataset from someone else.
         </p>
 
@@ -190,12 +189,12 @@
 
     <div class="shadow-box">
         <div class="space-div">
-            <p><strong>Hint:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an <em>optional</em> hint for this exercise.</p>
+            <p><strong>Hint:</strong><br />You may specify a hint for this exercise. Use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text.</p>
             <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="3" id="hint"></textarea></p>
         </div>
 
         <div class="bottom-space">
-            <p><strong>Solution description:</strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a tutorial that describes your solution to this exercise.</p>
+            <p><strong>Solution description:</strong><br />You may write a description of your solution. Use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text.</p>
             <p><textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" id="solution_description"></textarea></p>
         </div>
 
@@ -266,7 +265,7 @@
                     </div>
 
                     <div class="has-text-weight-medium mb-2">Instructions:<br />
-                      <textarea id="add_test_instructions" placeholder="You may specify instructions for students." class="textarea is-fullwidth" rows="4"></textarea>
+                      <textarea id="add_test_instructions" placeholder="You may specify instructions about this test. Use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text." class="textarea is-fullwidth" rows="4"></textarea>
                     </div>
 
                     <div class="has-text-weight-medium mb-2">Code that will be executed <em>before</em> the student's code:<br />
@@ -412,8 +411,8 @@
                     if (Object.keys(exercise_details_obj["tests"]).length > 1)
                         html += `<div class="space-div"><p><strong>${test_title}:</strong></p>`;
 
-                    if (exercise_details_obj["tests"][test_title]["txt_output"] != "") {
-                        html += `<pre><code>${exercise_details_obj["tests"][test_title]["txt_output"]}</code></pre>`;
+                    if (exercise_details_obj["tests"][test_title]["txt_output_formatted"] != "") {
+                        html += `<pre><code>${exercise_details_obj["tests"][test_title]["txt_output_formatted"]}</code></pre>`;
                     }
 
                     if (exercise_details_obj["output_type"] == "jpg" && exercise_details_obj["tests"][test_title]["jpg_output"] != "") {
