@@ -67,9 +67,11 @@
                             if (response_dict["message"] == "") {
                                 hideMessages();
                                 showTestOutputs(response_dict["test_outputs"]);
+                                submissions[response_dict["submission_id"]]["test_outputs"] = response_dict["test_outputs"]
 
                                 if (response_dict["all_passed"])
                                     showSuccessMessage();
+                                    show_past_submission_buttons();
                                 else
                                     showNotPassingMessage(response_dict["test_outputs"].length);
                             }
@@ -412,8 +414,7 @@
                     editor.setValue(this_submission.code, -1);
                     editor.focus();
                     $("#user_code")[0].scrollIntoView();
-                    TODO: showTestOutputs();
-                    //Should we include test outputs with submissions?
+                    showTestOutputs(submissions[this_submission]["test_outputs"]);
 
 //                            if (json_data.using_presubmission)
 //                                if (document.getElementById("saved_div") != null)

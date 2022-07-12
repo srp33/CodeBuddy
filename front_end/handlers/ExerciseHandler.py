@@ -47,7 +47,7 @@ class ExerciseHandler(BaseUserHandler):
                 start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_id())
                 #TODO
                 tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
-                submissions_json = escape_json_string(json.dumps(self.content.get_submissions(course, assignment, exercise, self.get_user_id())))
+                submissions_json = escape_json_string(json.dumps(self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)))
 
                 self.render("exercise.html", users=user_list, courses=courses, assignments=assignments, exercises=exercises, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, exercise_basics=exercise_basics, exercise_details=exercise_details, tests_json=tests_json, submissions_json=submissions_json, exercise_statuses=exercise_statuses, assignment_options=[x[1] for x in self.content.get_assignments(course) if str(x[0]) != assignment], curr_datetime=dt.datetime.now(), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], num_submissions=num_submissions, domain=self.settings_dict['domain'], start_time=start_time, user_info=self.get_user_info(), user_id=self.get_user_id(), student_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course), help_request=help_request, same_suggestion=same_suggestion)
         except Exception as inst:

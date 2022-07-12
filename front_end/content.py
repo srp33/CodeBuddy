@@ -1046,27 +1046,28 @@ class Content:
 
             self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
 
-    def get_submissions(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''SELECT submission_id, test_id, txt_output, jpg_output
-                 FROM test_outputs
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?'''
+    def get_submissions(self, course_id, assignment_id, exercise_id, user_id, exercise_details):
+        sql = '''SELECT to.submission_id, t.title, to.txt_output, to.jpg_output
+                 FROM test_outputs to
+                 INNER JOIN tests t ON to.test_id = t.test_id
+                 WHERE to.course_id = ?
+                   AND to.assignment_id = ?
+                   AND to.exercise_id = ?
+                   AND to.user_id = ?'''
 
         test_outputs = {}
         for row in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
             submission_id = row["submission_id"]
-            test_id = row["test_id"]
+            test_title = row["title"]
 
             if not submission_id in test_outputs:
                 test_outputs[submission_id] = {}
 
-            if not test_id in test_outputs[submission_id]:
-                test_outputs[submission_id][test_id] = {}
+            if not test_title in test_outputs[submission_id]:
+                test_outputs[submission_id][test_title] = {}
 
-            test_outputs[submission_id][test_id]["txt_output"] = row["txt_output"]
-            test_outputs[submission_id][test_id]["jpg_output"] = row["jpg_output"]
+            test_outputs[submission_id][test_title]["txt_output"] = row["txt_output"]
+            test_outputs[submission_id][test_title]["jpg_output"] = row["jpg_output"]
 
         sql = '''SELECT s.submission_id, s.code, s.passed, s.date, u.name AS partner_name
                  FROM submissions s
@@ -1081,6 +1082,8 @@ class Content:
         submissions = []
 
         for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
+            check_test_outputs(exercise_details, test_outputs[submission["submission_id"])
+
             submissions.append({"id": submission["submission_id"], "code": submission["code"], "passed": submission["passed"], "date": submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": submission["partner_name"], "test_outputs": test_outputs[submission["submission_id"]]})
 
         return submissions
