@@ -1,5 +1,5 @@
 mode: development
-domain: codebuddy.byu.edu
+domain: codebuddy.ls.byu.edu
 db_name: CodeBuddy.db
 allowed_external_urls:
   - https://github.com/rstudio/cheatsheets/raw/main/base-r.pdf

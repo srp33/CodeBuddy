@@ -25,12 +25,12 @@ DROP TABLE submissions;
 
 ALTER TABLE submissions2 RENAME TO submissions;
 
-CREATE TABLE test_submissions (
+CREATE TABLE test_outputs (
   test_id integer NOT NULL,
   submission_id integer NOT NULL,
   txt_output text,
   jpg_output text,
-  FOREIGN KEY (test_id) REFERENCES submissions (test_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (test_id) REFERENCES tests (test_id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (submission_id) REFERENCES submissions (submission_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 

@@ -10,11 +10,6 @@ DELETE FROM submission_outputs;
 DELETE FROM user_assignment_starts;
 DELETE FROM users;
 
--- Delete old tables
-
-DROP TABLE course_registration;
-DROP TABLE user_assignment_start;
-
 -- Add email_address field to users table.
 
 ALTER TABLE users ADD COLUMN email_address text NOT NULL DEFAULT '';

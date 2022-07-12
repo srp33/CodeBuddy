@@ -25,7 +25,7 @@
                 </div><br />
 
                 {% if exercise_details["show_peer_solutions"] %}
-                    {% if student_submissions %}
+                    {% if peer_submissions %}
                         {% if exercise_details["show_instructor_solution"] and (exercise_details["answer_code"] != "" or exercise_details["answer_description"] != "") %}
                             <div class="buttons">
                                 <a class="button is-dark" id="other_button" onclick="showOtherSolutions()"></a>
@@ -38,7 +38,7 @@
                             <div id="other_solutions">
                         {% end %}
 
-                        {% for submission in student_submissions %}
+                        {% for submission in peer_submissions %}
                             <p>Submission {{ submission[0] }}:</p>
                             <pre class="extra-content">{{ submission[1] }}</pre>
                         {% end %}

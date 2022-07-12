@@ -29,8 +29,6 @@ else:
                 progress_file.write(sql + "\n")
                 content.execute(sql)
 
-        content.rebuild_exercises()
-        content.rerun_submissions()
         print("***Success***")
     except:
         print(traceback.format_exc())

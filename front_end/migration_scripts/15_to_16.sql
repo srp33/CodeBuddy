@@ -39,19 +39,13 @@ INSERT INTO tests (course_id, assignment_id, exercise_id, code, test_instruction
               AND test_code != ""
               AND show_test_code = 0;
 
-DROP TABLE course_registration;
-
 DELETE FROM course_registrations WHERE user_id NOT IN (SELECT user_id FROM permissions WHERE role = 'administrator' or role = 'instructor');
 
 DELETE FROM submissions WHERE user_id NOT IN (SELECT user_id FROM permissions WHERE role = 'administrator' or role = 'instructor');
 
 DELETE FROM metadata WHERE version = 5;
 
-DROP TABLE problems;
-
 DELETE FROM scores WHERE user_id NOT IN (SELECT user_id FROM permissions WHERE role = 'administrator' or role = 'instructor');
-
-DROP TABLE user_assignment_start;
 
 DELETE FROM user_assignment_starts WHERE user_id NOT IN (SELECT user_id FROM permissions WHERE role = 'administrator' or role = 'instructor');
 

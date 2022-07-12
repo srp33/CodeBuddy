@@ -73,6 +73,7 @@ class Content:
     # This function creates tables as they were in version 5. Subsequent changes
     #   to the database are implemented as migration scripts.
     def create_database_tables(self):
+        print("Creating the initial database schema...")
         self.execute('''CREATE TABLE IF NOT EXISTS metadata (version integer NOT NULL);''')
         self.execute('''INSERT INTO metadata (version) VALUES (5);''')
 
@@ -200,6 +201,16 @@ class Content:
                      );''')
 
     def get_database_version(self):
+        sql = "SELECT COUNT(*) AS count FROM sqlite_master"
+
+        # This tells us whether we have created the initial database scheme.
+        # If not, create it.
+        num_tables = self.fetchone(sql)["count"]
+
+        if num_tables == 0:
+            self.create_database_tables()
+            return 5
+
         sql = '''SELECT MAX(version) AS version
                  FROM metadata'''
 
@@ -1035,9 +1046,29 @@ class Content:
 
             self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
 
-    def get_submissions_basic(self, course_id, assignment_id, exercise_id, user_id):
-        submissions = []
-        sql = '''SELECT s.submission_id, s.date, s.passed, u.name
+    def get_submissions(self, course_id, assignment_id, exercise_id, user_id):
+        sql = '''SELECT submission_id, test_id, txt_output, jpg_output
+                 FROM test_outputs
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+
+        test_outputs = {}
+        for row in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
+            submission_id = row["submission_id"]
+            test_id = row["test_id"]
+
+            if not submission_id in test_outputs:
+                test_outputs[submission_id] = {}
+
+            if not test_id in test_outputs[submission_id]:
+                test_outputs[submission_id][test_id] = {}
+
+            test_outputs[submission_id][test_id]["txt_output"] = row["txt_output"]
+            test_outputs[submission_id][test_id]["jpg_output"] = row["jpg_output"]
+
+        sql = '''SELECT s.submission_id, s.code, s.passed, s.date, u.name AS partner_name
                  FROM submissions s
                  LEFT JOIN users u
                    ON s.partner_id = u.user_id
@@ -1045,13 +1076,16 @@ class Content:
                    AND s.assignment_id = ?
                    AND s.exercise_id = ?
                    AND s.user_id = ?
-                 ORDER BY s.submission_id DESC'''
+                 ORDER BY s.submission_id'''
+
+        submissions = []
 
         for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
-            submissions.append([submission["submission_id"], submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), submission["passed"], submission["name"]])
+            submissions.append({"id": submission["submission_id"], "code": submission["code"], "passed": submission["passed"], "date": submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": submission["partner_name"], "test_outputs": test_outputs[submission["submission_id"]]})
+
         return submissions
 
-    def get_student_submissions(self, course_id, assignment_id, exercise_id, user_id):
+    def get_peer_submissions(self, course_id, assignment_id, exercise_id, user_id):
         student_submissions = []
         index = 1
 
@@ -1403,49 +1437,49 @@ class Content:
 
         return {"previous": prev_exercise, "next": next_exercise}
 
-    def get_num_submissions(self, course, assignment, exercise, user):
-        sql = '''SELECT COUNT(*)
-                 FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?'''
-
-        return self.fetchone(sql, (int(course), int(assignment), int(exercise), user,))[0]
-
-    def get_next_submission_id(self, course, assignment, exercise, user):
-        return self.get_num_submissions(course, assignment, exercise, user) + 1
-
-    def get_last_submission(self, course, assignment, exercise, user):
-        last_submission_id = self.get_num_submissions(course, assignment, exercise, user)
-
-        if last_submission_id > 0:
-            return self.get_submission_info(course, assignment, exercise, user, last_submission_id)
-
-    def get_submission_info(self, course, assignment, exercise, user, submission):
-        sql = '''SELECT code, txt_output, jpg_output, passed, date, partner_id
-                 FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?
-                   AND submission_id = ?'''
-
-        row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
-
-        test_sql = '''SELECT submission_output_id, txt_output, jpg_output
-                      FROM submission_outputs
-                      WHERE course_id = ?
-                        AND assignment_id = ?
-                        AND exercise_id = ?
-                        AND user_id = ?
-                        AND submission_id = ?'''
-
-        tests = []
-        for test in self.fetchall(test_sql, (int(course), int(assignment), int(exercise), user, int(submission),)):
-            tests.append({"test": test["submission_output_id"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]})
-
-        return {"id": submission, "code": row["code"], "txt_output": row["txt_output"], "jpg_output": row["jpg_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests": tests}
+#    def get_num_submissions(self, course, assignment, exercise, user):
+#        sql = '''SELECT COUNT(*)
+#                 FROM submissions
+#                 WHERE course_id = ?
+#                   AND assignment_id = ?
+#                   AND exercise_id = ?
+#                   AND user_id = ?'''
+#
+#        return self.fetchone(sql, (int(course), int(assignment), int(exercise), user,))[0]
+#
+#    def get_next_submission_id(self, course, assignment, exercise, user):
+#        return self.get_num_submissions(course, assignment, exercise, user) + 1
+#
+#    def get_last_submission(self, course, assignment, exercise, user):
+#        last_submission_id = self.get_num_submissions(course, assignment, exercise, user)
+#
+#        if last_submission_id > 0:
+#            return self.get_submission_info(course, assignment, exercise, user, last_submission_id)
+#
+#    def get_submission_info(self, course, assignment, exercise, user, submission):
+#        sql = '''SELECT code, txt_output, jpg_output, passed, date, partner_id
+#                 FROM submissions
+#                 WHERE course_id = ?
+#                   AND assignment_id = ?
+#                   AND exercise_id = ?
+#                   AND user_id = ?
+#                   AND submission_id = ?'''
+#
+#        row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
+#
+#        test_sql = '''SELECT submission_output_id, txt_output, jpg_output
+#                      FROM submission_outputs
+#                      WHERE course_id = ?
+#                        AND assignment_id = ?
+#                        AND exercise_id = ?
+#                        AND user_id = ?
+#                        AND submission_id = ?'''
+#
+#        tests = []
+#        for test in self.fetchall(test_sql, (int(course), int(assignment), int(exercise), user, int(submission),)):
+#            tests.append({"test": test["submission_output_id"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]})
+#
+#        return {"id": submission, "code": row["code"], "txt_output": row["txt_output"], "jpg_output": row["jpg_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests": tests}
 
     def delete_presubmission(self, course, assignment, exercise, user):
         sql = '''DELETE FROM presubmissions
@@ -1740,9 +1774,9 @@ class Content:
 
         submission_id = self.execute(sql, [int(course), int(assignment), int(exercise), user, code, passed, datetime.now(), partner_id])
 
-        #TODO: Execute this all in one batch
+        #TODO: Execute this all in one transaction
         if len(test_outputs) > 0:
-            test_sql = '''INSERT INTO test_submissions (test_id, submission_id, txt_output, jpg_output)
+            test_sql = '''INSERT INTO test_outputs (test_id, submission_id, txt_output, jpg_output)
                           VALUES (?, ?, ?, ?)'''
 
             for test_title, test_dict in test_outputs.items():
@@ -1850,7 +1884,6 @@ class Content:
 
         submissions = self.fetchall(sql, (user_id,))
         if submissions:
-
             sql = '''DELETE FROM scores
                      WHERE user_id = ?'''
             self.execute(sql, (user_id,))

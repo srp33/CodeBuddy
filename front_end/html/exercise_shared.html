@@ -9,7 +9,7 @@
 
                     return user_code;
                 }
-                
+
                 function run_code() {
                     user_code = get_user_code();
                     if (user_code == "")
@@ -376,86 +376,100 @@
                 }
 
                 function get_submission(submission_id, scroll, check_for_presubmission) {
-                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
-                    if (document.getElementById("saved_div") != null)
-                        document.getElementById("saved_div").innerHTML = "";
+//                    if (document.getElementById("saved_div") != null)
+//                        document.getElementById("saved_div").innerHTML = "";
 
-                    var i;
-                    for (i = 0; i < submission_buttons.length; i++) {
-                        if (submission_buttons[i].id == submission_id)
-                            submission_buttons[i].style.border = "solid #34495e";
+//                    var submission_buttons = document.getElementsByClassName('button is-primary is-medium');
+
+//                    var i;
+//                    for (i = 0; i < submissions.length; i++) {
+
+                    var this_submission;
+                    for (let submission of submissions) {
+                        if (submission.id == submission_id) {
+                            this_submission = submission;
+                            $(`#submission_button_${submission_id}`)[0].style.border = "solid #34495e";
+                        }
                         else
-                            submission_buttons[i].style.border = "none";
+                            $(`#submission_button_${submission_id}`)[0].style.border = "none";
+//                            submission_buttons[i].style.border = "none";
                     }
 
                     {% if not exercise_details["allow_any_response"] %}
-                        document.getElementById("code_output").innerHTML = "";
+//                        $("#code_output")[0].innerHTML = "";
 
                         // if exercise_details["show_expected"]
-                            document.getElementById("diff_output").innerHTML = "";
+//                            document.getElementById("diff_output").innerHTML = "";
                     {% end %}
 
                     // if exercise_details["show_expected"] and not exercise_details["allow_any_response"]
-                        document.getElementById("diff_output").innerHTML = "";
+//                        document.getElementById("diff_output").innerHTML = "";
 
-                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id + `/${check_for_presubmission}` ,
-                        function (data, status) {
-                            var json_data = JSON.parse(data);
-                            editor.setValue(json_data.code, -1);
+//                    $.get("/get_submission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}/" + submission_id + `/${check_for_presubmission}` ,
+//                        function (data, status) {
+//                            var json_data = JSON.parse(data);
 
-                            if (json_data.using_presubmission)
-                                if (document.getElementById("saved_div") != null)
-                                    document.getElementById("saved_div").innerHTML = "Code loaded from last session.";
-
-                            display_results(json_data);
-                        });
-
-                    if (scroll && document.getElementById("your_code_header") != null)
-                        document.getElementById("your_code_header").scrollIntoView();
-
+                    editor.setValue(this_submission.code, -1);
                     editor.focus();
-                    return false;
+                    $("#user_code")[0].scrollIntoView();
+                    TODO: showTestOutputs();
+                    //Should we include test outputs with submissions?
+
+//                            if (json_data.using_presubmission)
+//                                if (document.getElementById("saved_div") != null)
+//                                    document.getElementById("saved_div").innerHTML = "Code loaded from last session.";
+
+//                            display_results(json_data);
+//                        });
+
+//                    if (scroll && document.getElementById("your_code_header") != null)
+//                        document.getElementById("your_code_header").scrollIntoView();
+
+//                    return false;
                 }
 
                 function show_past_submission_buttons() {
                     submissions_div = document.getElementById("submissions");
 
-                    $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
-                        function (data, status) {
-                            var json_data = JSON.parse(data);
-                            var submission_html = "";
-                            var revert_html = "";
-                            var current_code = editor.getValue()
+//                    $.get("/get_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+//                        function (data, status) {
+//                            var json_data = JSON.parse(data);
 
-                            if (json_data.length > 0) {
-                                submission_html += "<h6>Past submissions:</h6>\n";
-                                submission_html += "<div class='buttons'>\n";
-                                var i;
 
-                                for (i = 0; i < json_data.length; i++) {
-                                    submission_id = json_data[i][0];
-                                    the_date = json_data[i][1];
-                                    passed = json_data[i][2];
-                                    partner_name = json_data[i][3]
+                    var submission_html = "";
+                    var revert_html = "";
+                    var current_code = editor.getValue()
 
-                                    if (passed)
-                                        button_bd_color = "passing-btn-color";
-                                    else
-                                        button_bd_color = "failing-btn-color";
+                    if (submissions.length > 0) {
+                        submission_html += "<h6>Past submissions:</h6>";
+                        submission_html += "<div class='buttons'>";
 
-                                    var submission_date = new Date(the_date).toLocaleString();
+                        var i;
+                        for (i = 0; i < submissions.length; i++) {
+                            submission = submissions[i];
+//                                    submission_id = json_data[i][0];
+//                                    the_date = json_data[i][1];
+//                                    passed = json_data[i][2];
+//                                    partner_name = json_data[i][3]
 
-                                    if (partner_name)
-                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true, false)'><b>${submission_id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
-                                    else
-                                        submission_html += `<button class='button ${button_bd_color}' id='${submission_id}' style='display: block; width: 315px;' onclick='get_submission(${submission_id}, true, false)'><b>${submission_id}.</b> ${submission_date}</button>`;
+                            if (submission.passed)
+                                button_bd_color = "passing-btn-color";
+                            else
+                                button_bd_color = "failing-btn-color";
+
+                            var submission_date = new Date(submission.date).toLocaleString();
+
+                            if (submission.partner_name)
+                                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, false)'><b>${submission.id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${submission.partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                            else
+                                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, false)'><b>${submission.id}.</b> ${submission_date}</button>`;
                                 }
 
-                                submission_html += "</div><br />\n";
-                            }
+                        submission_html += "</div><br />";
+                    }
 
-                            submissions_div.innerHTML = submission_html;
-                        });
+                    submissions_div.innerHTML = submission_html;
+//                    });
                 }
 
                 function get_presubmission() {
@@ -663,6 +677,7 @@ console.log("failed11");
                 {% end %}
 
                 const tests = JSON.parse("{{ tests_json }}");
+                var submissions = JSON.parse("{{ submissions_json }}");
                 showTestOutputs(null);
             </script>
         {% else %}
@@ -680,6 +695,7 @@ console.log("failed11");
 //        Make sure allow any response exercises work.
 //        Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
 //        Make sure instructor's solution page still working after submissions.
+//        Remove GetSubmissionsHandler? and GetSubmissionHandler?
 //TODO: Clean up display_results()
 //        Show previous submission buttons.
 //        If they have submitted previously, show latest submission when the page loads.
