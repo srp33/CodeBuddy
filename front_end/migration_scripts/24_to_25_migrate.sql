@@ -1,4 +1,4 @@
-DROP TABLE user_assignment_start;
+DROP TABLE IF EXISTS user_assignment_start;
 
 CREATE TABLE submissions2 (
   course_id integer NOT NULL,
@@ -21,7 +21,7 @@ INSERT INTO submissions2 (course_id, assignment_id, exercise_id, user_id, code, 
 SELECT course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id
 FROM submissions;
 
-DROP TABLE submissions;
+DROP TABLE IF EXISTS submissions;
 
 ALTER TABLE submissions2 RENAME TO submissions;
 
@@ -57,7 +57,7 @@ SELECT course_id, assignment_id, exercise_id, 'Main output', '', '', '', expecte
 FROM exercises
 WHERE (expected_text_output != '' AND expected_text_output != 'sh: 0: getcwd() failed: No such file or directory') OR expected_image_output != '';
 
-DROP TABLE submission_outputs;
+DROP TABLE IF EXISTS submission_outputs;
 
 CREATE TABLE exercises2 (
   course_id integer NOT NULL,
@@ -110,7 +110,7 @@ SELECT course_id,
        allow_any_response
 FROM exercises;
 
-DROP TABLE exercises;
+DROP TABLE IF EXISTS exercises;
 
 ALTER TABLE exercises2 RENAME TO exercises;
 

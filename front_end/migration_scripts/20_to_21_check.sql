@@ -1,4 +1,4 @@
-SELECT MAX(count) = 0 as count
+SELECT IFNULL(MAX(count) = 0, 0) as count
 FROM (
   SELECT COUNT(*) as count
   FROM exercises

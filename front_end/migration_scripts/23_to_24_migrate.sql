@@ -1,4 +1,4 @@
-DROP TABLE course_registration;
+DROP TABLE IF EXISTS course_registration;
 
 DELETE FROM course_registrations WHERE user_id = 'jtgrooms' AND course_id = 9;
 DELETE FROM course_registrations WHERE user_id = 'anp37' AND course_id = 4;

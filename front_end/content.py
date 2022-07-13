@@ -217,6 +217,8 @@ class Content:
         return self.fetchone(sql)["version"]
 
     def update_database_version(self, version):
+        print(f"Updating database to version {version}")
+
         sql = '''DELETE FROM metadata'''
         self.execute(sql)
 
@@ -1082,7 +1084,7 @@ class Content:
         submissions = []
 
         for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
-            check_test_outputs(exercise_details, test_outputs[submission["submission_id"])
+            check_test_outputs(exercise_details, test_outputs[submission["submission_id"]])
 
             submissions.append({"id": submission["submission_id"], "code": submission["code"], "passed": submission["passed"], "date": submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": submission["partner_name"], "test_outputs": test_outputs[submission["submission_id"]]})
 

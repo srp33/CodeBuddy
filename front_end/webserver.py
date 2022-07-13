@@ -141,6 +141,10 @@ if __name__ == "__main__":
         database_version = content.get_database_version()
         code_version = int(read_file("VERSION").rstrip())
 
+        if database_version != code_version:
+            print(f"Current database version: {database_version}")
+            print(f"Current code version: {code_version}")
+
         # Check to see whether there is a database migration script (should only be one per version).
         # If so, make a backup copy of the database and then do the migration.
         for v in range(database_version, code_version):
@@ -158,9 +162,9 @@ if __name__ == "__main__":
                 print("Database migration not needed.")
             elif "***Success***" in result:
                 print(f"Database successfully migrated to version {v+1}.")
-                content.update_database_version(code_version)
+                content.update_database_version(v + 1)
             else:
-                print(f"Database migration failed for verson {v+1}, so rolling back...")
+                print(f"Database migration failed for version {v+1}...")
                 print(result)
                 sys.exit(1)
 
