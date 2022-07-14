@@ -2,13 +2,13 @@ from BaseUserHandler import *
 
 class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, exercise):
-        out_dict = {"message": "", "test_outputs": {}, "all_passed": False, "submission_id": ""}
+        out_dict = {"message": "", "test_outputs": {}, "all_passed": False, "partner_name": None, "submission_id": ""}
 
         try:
             user_id = self.get_user_id()
             partner_id = self.get_body_argument("partner_id") if self.get_body_argument("partner_id") else None
 
-            code = self.get_body_argument("user_code").replace("\r", "")
+            code = self.get_body_argument("code").replace("\r", "")
             exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.content.get_exercise_details(course, assignment, exercise)
             assignment_details = self.content.get_assignment_details(course, assignment)
@@ -36,6 +36,7 @@ class SubmitHandler(BaseUserHandler):
             if partner_id:
                 partner_exercise_score = self.content.get_exercise_score(course, assignment, exercise, partner_id)
                 partner_new_score = self.content.calc_exercise_score(assignment_details, out_dict["all_passed"])
+
                 if not partner_exercise_score or partner_exercise_score < partner_new_score:
                     self.content.save_exercise_score(course, assignment, exercise, partner_id, new_score)
         except ConnectionError as inst:

@@ -1049,13 +1049,18 @@ class Content:
             self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
 
     def get_submissions(self, course_id, assignment_id, exercise_id, user_id, exercise_details):
-        sql = '''SELECT to.submission_id, t.title, to.txt_output, to.jpg_output
-                 FROM test_outputs to
-                 INNER JOIN tests t ON to.test_id = t.test_id
-                 WHERE to.course_id = ?
-                   AND to.assignment_id = ?
-                   AND to.exercise_id = ?
-                   AND to.user_id = ?'''
+        sql = '''SELECT o.submission_id, t.title, o.txt_output, o.jpg_output
+                 FROM test_outputs o
+                 INNER JOIN tests t
+                   ON o.test_id = t.test_id
+                 INNER JOIN submissions s
+                   ON o.submission_id = s.submission_id
+                 LEFT JOIN users u
+                   ON s.partner_id = u.user_id
+                 WHERE t.course_id = ?
+                   AND t.assignment_id = ?
+                   AND t.exercise_id = ?
+                   AND s.user_id = ?'''
 
         test_outputs = {}
         for row in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
@@ -1083,10 +1088,16 @@ class Content:
 
         submissions = []
 
-        for submission in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
-            check_test_outputs(exercise_details, test_outputs[submission["submission_id"]])
+        for row in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
+            submission_test_outputs = {}
 
-            submissions.append({"id": submission["submission_id"], "code": submission["code"], "passed": submission["passed"], "date": submission["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": submission["partner_name"], "test_outputs": test_outputs[submission["submission_id"]]})
+            # It is possible we will have a submission but that the test outputs were not preserved
+            # due to an issue with migrating the database in summer 2022.
+            if row["submission_id"] in test_outputs:
+                submission_test_outputs = test_outputs[row["submission_id"]]
+                check_test_outputs(exercise_details, submission_test_outputs)
+
+            submissions.append({"id": row["submission_id"], "code": row["code"], "passed": row["passed"], "date": row["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
 
         return submissions
 

@@ -393,8 +393,8 @@
 
         <!--Below is the ace text editor and all of the elements that appear around it-->
 
-        <p class="top-space">
-            <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and num_submissions == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+        <p class="top-space" id="user_code_area">
+            <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and submissions.length == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
             {% if assignment_details["enable_help_requests"] %}
                 <div class="buttons is-pulled-right">
                     {% if help_request %}
@@ -436,7 +436,7 @@
 
         <div>
             {% if exercise_details["max_submissions"] > 0 %}
-                <label style="padding-right: 5px;"><em>You have made <span id="num_submissions">{{ num_submissions }}</span> of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></label>
+                <label style="padding-right: 5px;"><em>You have made ??? of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></label>
             {% end %}
         </div>
 
