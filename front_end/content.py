@@ -1049,6 +1049,12 @@ class Content:
             self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
 
     def get_submissions(self, course_id, assignment_id, exercise_id, user_id, exercise_details):
+        #TODO
+        sql = "SELECT test_id, title FROM tests WHERE course_id = 2 AND assignment_id = 77 AND exercise_id = 669"
+        for row in self.fetchall(sql):
+            print(row["test_id"])
+            print(row["title"])
+
         sql = '''SELECT o.submission_id, t.title, o.txt_output, o.jpg_output
                  FROM test_outputs o
                  INNER JOIN tests t
@@ -1075,6 +1081,7 @@ class Content:
 
             test_outputs[submission_id][test_title]["txt_output"] = row["txt_output"]
             test_outputs[submission_id][test_title]["jpg_output"] = row["jpg_output"]
+            test_outputs[submission_id][test_title]["txt_output_formatted"] = format_output_as_html(row["txt_output"])
 
         sql = '''SELECT s.submission_id, s.code, s.passed, s.date, u.name AS partner_name
                  FROM submissions s
@@ -1087,14 +1094,14 @@ class Content:
                  ORDER BY s.submission_id'''
 
         submissions = []
+        #print(test_outputs)
 
         for row in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
             submission_test_outputs = {}
 
-            # It is possible we will have a submission but that the test outputs were not preserved
-            # due to an issue with migrating the database in summer 2022.
             if row["submission_id"] in test_outputs:
                 submission_test_outputs = test_outputs[row["submission_id"]]
+                #print(submission_test_outputs)
                 check_test_outputs(exercise_details, submission_test_outputs)
 
             submissions.append({"id": row["submission_id"], "code": row["code"], "passed": row["passed"], "date": row["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
@@ -1453,50 +1460,6 @@ class Content:
 
         return {"previous": prev_exercise, "next": next_exercise}
 
-#    def get_num_submissions(self, course, assignment, exercise, user):
-#        sql = '''SELECT COUNT(*)
-#                 FROM submissions
-#                 WHERE course_id = ?
-#                   AND assignment_id = ?
-#                   AND exercise_id = ?
-#                   AND user_id = ?'''
-#
-#        return self.fetchone(sql, (int(course), int(assignment), int(exercise), user,))[0]
-#
-#    def get_next_submission_id(self, course, assignment, exercise, user):
-#        return self.get_num_submissions(course, assignment, exercise, user) + 1
-#
-#    def get_last_submission(self, course, assignment, exercise, user):
-#        last_submission_id = self.get_num_submissions(course, assignment, exercise, user)
-#
-#        if last_submission_id > 0:
-#            return self.get_submission_info(course, assignment, exercise, user, last_submission_id)
-#
-#    def get_submission_info(self, course, assignment, exercise, user, submission):
-#        sql = '''SELECT code, txt_output, jpg_output, passed, date, partner_id
-#                 FROM submissions
-#                 WHERE course_id = ?
-#                   AND assignment_id = ?
-#                   AND exercise_id = ?
-#                   AND user_id = ?
-#                   AND submission_id = ?'''
-#
-#        row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user, int(submission),))
-#
-#        test_sql = '''SELECT submission_output_id, txt_output, jpg_output
-#                      FROM submission_outputs
-#                      WHERE course_id = ?
-#                        AND assignment_id = ?
-#                        AND exercise_id = ?
-#                        AND user_id = ?
-#                        AND submission_id = ?'''
-#
-#        tests = []
-#        for test in self.fetchall(test_sql, (int(course), int(assignment), int(exercise), user, int(submission),)):
-#            tests.append({"test": test["submission_output_id"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]})
-#
-#        return {"id": submission, "code": row["code"], "txt_output": row["txt_output"], "jpg_output": row["jpg_output"], "passed": row["passed"], "date": row["date"].strftime("%m/%d/%Y, %I:%M:%S %p"), "exists": True, "partner_id": row["partner_id"], "tests": tests}
-
     def delete_presubmission(self, course, assignment, exercise, user):
         sql = '''DELETE FROM presubmissions
                  WHERE course_id = ?
@@ -1588,13 +1551,14 @@ class Content:
 
         tests = self.fetchall(sql, (int(course), int(assignment), int(exercise),))
 
-        test_index = 0
+#TODO: Clean this up?
+#        test_index = 0
         for test in tests:
-            test_index += 1
+#            test_index += 1
 
             title = test["title"]
-            if title == "":
-                title = f"Test {test_index}"
+#            if title == "":
+#                title = f"Test {test_index}"
 
             exercise_dict["tests"][title] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]}
 

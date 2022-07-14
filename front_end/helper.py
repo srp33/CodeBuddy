@@ -147,6 +147,12 @@ def check_test_outputs(exercise_details, test_outputs):
     all_passed = True
 
     for test_title in exercise_details["tests"]:
+        # It is possible we will have a submission but that the test outputs were not preserved
+        # due to an issue with migrating the database in summer 2022.
+        if test_title not in test_outputs:
+            test_outputs[test_title] = {"passed": None, "txt_output": None, "jpg_output": None, "diff_output": None}
+            continue
+
         test_outputs[test_title]["passed"] = False
 
         if exercise_details["allow_any_response"]:

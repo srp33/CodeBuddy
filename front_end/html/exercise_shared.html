@@ -154,10 +154,12 @@
                 }
 
                 function showTestOutputs(test_outputs, scroll) {
-//TODO: Only show if we actually have test outputs.
+                    var output = "";
+
                     // This is what we do if we haven't gone to the server yet.
-                    if (test_outputs == null) {
+                    if (test_outputs == null || test_outputs.length == 0) {
                         test_outputs = {};
+
                         for (let test_title of Object.keys(tests)) {
                             test_outputs[test_title] = {};
                             test_outputs[test_title]["txt_output"] = null;
@@ -169,9 +171,9 @@
                     if (Object.keys(test_outputs).length == 1) {
                         var output = "<h6>Test:</h6>" + buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
                     } else {
-                        var output = "<h6>Tests:</h6>";
+                        output += "<h6>Tests:</h6>";
 
-                        const test_titles = Object.keys(test_outputs)
+                        const test_titles = Object.keys(test_outputs);
                         for (let test_title of test_titles) {
                             //output += "<p>" + test_title + "</p>";
                             output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
@@ -185,6 +187,12 @@
                 }
 
                 function buildTestOutput(test_outputs, test_title, show_title, is_last) {
+                    if (!(test_title in tests)) {
+console.log(test_title);
+console.log(tests);
+                        return "";
+                    }
+
                     if (test_outputs[test_title].passed == null) {
                         var test_class = "neutral-bd-color";
                         var test_message = show_title ? test_title : "";
@@ -365,15 +373,18 @@
                 }
 
                 function get_submission(submission_id, scroll) {
+                    hideMessages();
+
                     var this_submission;
 
                     for (let submission of submissions) {
                         if (submission.id == submission_id) {
                             this_submission = submission;
-                            $(`#submission_button_${submission_id}`)[0].style.border = "solid #000000";
+                            $(`#submission_button_${submission.id}`)[0].style.border = "solid #000000";
                         }
-                        else
-                            $(`#submission_button_${submission_id}`)[0].style.border = "none";
+                        else {
+                            $(`#submission_button_${submission.id}`)[0].style.border = "none";
+                        }
                     }
 
                     if (scroll)
@@ -518,29 +529,29 @@
                 }
                 {% end %}
 
+                const tests = JSON.parse("{{ tests_json }}");
+
                 var submissions = JSON.parse("{{ submissions_json }}");
                 show_past_submissions();
 
                 if (submissions.length > 0)
-                    get_submission(submissions[0].id, false);
-
-                const tests = JSON.parse("{{ tests_json }}");
-                showTestOutputs(null, false);
+                    get_submission(submissions[submissions.length - 1].id, false);
+                else
+                    showTestOutputs(null, false);
 
 //TODO: Submit button not working.
+//        Simplify the code for changing the border on the submission buttons.
+//        Time zones not working perfectly on past submission buttons.
+//        Make sure we handle max_submissions.
 //        Make sure it works when the middle layer is down.
 //        Make sure allow any response exercises work.
 //        Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
 //        Make sure instructor's solution page still working after submissions.
 //        Remove GetSubmissionsHandler? and GetSubmissionHandler?
-//        Time zones not working perfectly on past submission buttons.
-//TODO: Clean up display_results()
-//        Show previous submission buttons.
-//        If they have submitted previously, show latest submission when the page loads.
 //TODO: student_exercise.html
 //TODO: Start with a fresh database and make sure data files are handled correctly.
-//        Make sure it works properly to view previous submissions for students from last semester.
 //        Do we need to write a Python script that saves files to disk and then reads them back? Or just convert them to bytes and find size.
+//        Make sure it works properly to view previous submissions for students from last semester.
 //TODO: Make sure we have log information indicating when students view the instructor's solution.
             </script>
         {% else %}
