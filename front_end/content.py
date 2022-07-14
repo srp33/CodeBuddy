@@ -226,6 +226,8 @@ class Content:
                  VALUES (?)'''
         self.execute(sql, (version,))
 
+        print(f"Done updating database to version {version}")
+
     def set_user_assignment_start_time(self, course_id, assignment_id, user_id, start_time):
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
 
@@ -1049,12 +1051,6 @@ class Content:
             self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
 
     def get_submissions(self, course_id, assignment_id, exercise_id, user_id, exercise_details):
-        #TODO
-        sql = "SELECT test_id, title FROM tests WHERE course_id = 2 AND assignment_id = 77 AND exercise_id = 669"
-        for row in self.fetchall(sql):
-            print(row["test_id"])
-            print(row["title"])
-
         sql = '''SELECT o.submission_id, t.title, o.txt_output, o.jpg_output
                  FROM test_outputs o
                  INNER JOIN tests t
@@ -1094,14 +1090,12 @@ class Content:
                  ORDER BY s.submission_id'''
 
         submissions = []
-        #print(test_outputs)
 
         for row in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
             submission_test_outputs = {}
 
             if row["submission_id"] in test_outputs:
                 submission_test_outputs = test_outputs[row["submission_id"]]
-                #print(submission_test_outputs)
                 check_test_outputs(exercise_details, submission_test_outputs)
 
             submissions.append({"id": row["submission_id"], "code": row["code"], "passed": row["passed"], "date": row["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
@@ -1551,16 +1545,8 @@ class Content:
 
         tests = self.fetchall(sql, (int(course), int(assignment), int(exercise),))
 
-#TODO: Clean this up?
-#        test_index = 0
         for test in tests:
-#            test_index += 1
-
-            title = test["title"]
-#            if title == "":
-#                title = f"Test {test_index}"
-
-            exercise_dict["tests"][title] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]}
+            exercise_dict["tests"][test["title"]] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]}
 
         if format_content:
             exercise_dict["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_dict["instructions"])) # Removes html markup from instructions before converting markdown to html
@@ -1755,6 +1741,7 @@ class Content:
         submission_id = self.execute(sql, [int(course), int(assignment), int(exercise), user, code, passed, datetime.now(), partner_id])
 
         #TODO: Execute this all in one transaction
+        #      https://stackoverflow.com/questions/54289555/how-do-i-execute-an-sqlite-script-from-within-python
         if len(test_outputs) > 0:
             test_sql = '''INSERT INTO test_outputs (test_id, submission_id, txt_output, jpg_output)
                           VALUES (?, ?, ?, ?)'''

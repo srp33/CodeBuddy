@@ -68,9 +68,8 @@
                                 hideMessages();
                                 showTestOutputs(response_dict["test_outputs"], true);
 
-                                if (response_dict["all_passed"]) {
+                                if (response_dict["all_passed"])
                                     showSuccessMessage();
-                                }
                                 else
                                     showNotPassingMessage(response_dict["test_outputs"].length);
 
@@ -372,7 +371,7 @@ console.log(tests);
                     }
                 }
 
-                function get_submission(submission_id, scroll) {
+                function get_submission(submission_id, scroll, change_border) {
                     hideMessages();
 
                     var this_submission;
@@ -380,7 +379,9 @@ console.log(tests);
                     for (let submission of submissions) {
                         if (submission.id == submission_id) {
                             this_submission = submission;
-                            $(`#submission_button_${submission.id}`)[0].style.border = "solid #000000";
+
+                            if (change_border)
+                                $(`#submission_button_${submission.id}`)[0].style.border = "solid #000000";
                         }
                         else {
                             $(`#submission_button_${submission.id}`)[0].style.border = "none";
@@ -392,6 +393,18 @@ console.log(tests);
 
                     editor.focus();
                     editor.setValue(this_submission.code, -1);
+
+
+//TODO
+//                    hideMessages();
+//                    showTestOutputs(response_dict["test_outputs"], true);
+//
+//                    if (response_dict["all_passed"])
+//                        showSuccessMessage();
+//                    else
+//                        showNotPassingMessage(response_dict["test_outputs"].length);
+
+
 
                     for (let submission of submissions)
                         if (submission.id == this_submission.id) {
@@ -423,9 +436,9 @@ console.log(tests);
                             var submission_date = new Date(submission.date).toLocaleString();
 
                             if (submission.partner_name)
-                                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true)'><b>${submission.id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${submission.partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, true)'><b>${submission.id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${submission.partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
                             else
-                                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true)'><b>${i + 1}.</b> ${submission_date}</button>`;
+                                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date}</button>`;
                         }
 
                         submission_html += "</div><br />";
@@ -535,12 +548,11 @@ console.log(tests);
                 show_past_submissions();
 
                 if (submissions.length > 0)
-                    get_submission(submissions[submissions.length - 1].id, false);
+                    get_submission(submissions[submissions.length - 1].id, false, false);
                 else
                     showTestOutputs(null, false);
 
 //TODO: Submit button not working.
-//        Simplify the code for changing the border on the submission buttons.
 //        Time zones not working perfectly on past submission buttons.
 //        Make sure we handle max_submissions.
 //        Make sure it works when the middle layer is down.
@@ -548,7 +560,10 @@ console.log(tests);
 //        Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
 //        Make sure instructor's solution page still working after submissions.
 //        Remove GetSubmissionsHandler? and GetSubmissionHandler?
-//TODO: student_exercise.html
+//TODO: It should have a separate link (and page) for the peer's solution. Randomly pick one peer solution.
+//        Make a note for BIO 165 that they will only see one peer's solution (unless they refresh?).
+//TODO: Clean up exercise.html
+//TODO: Clean up student_exercise.html
 //TODO: Start with a fresh database and make sure data files are handled correctly.
 //        Do we need to write a Python script that saves files to disk and then reads them back? Or just convert them to bytes and find size.
 //        Make sure it works properly to view previous submissions for students from last semester.
