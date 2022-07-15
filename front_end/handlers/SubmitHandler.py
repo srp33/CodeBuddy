@@ -1,4 +1,5 @@
 from BaseUserHandler import *
+from dateutil import parser
 
 class SubmitHandler(BaseUserHandler):
     async def post(self, course, assignment, exercise):
@@ -6,9 +7,10 @@ class SubmitHandler(BaseUserHandler):
 
         try:
             user_id = self.get_user_id()
+            code = self.get_body_argument("code").replace("\r", "")
+            date = parser.parse(self.get_body_argument("date"))
             partner_id = self.get_body_argument("partner_id") if self.get_body_argument("partner_id") else None
 
-            code = self.get_body_argument("code").replace("\r", "")
             exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.content.get_exercise_details(course, assignment, exercise)
             assignment_details = self.content.get_assignment_details(course, assignment)
@@ -17,10 +19,10 @@ class SubmitHandler(BaseUserHandler):
 
             if out_dict["message"] == "":
                 out_dict["all_passed"] = check_test_outputs(exercise_details, out_dict["test_outputs"])
-                out_dict["submission_id"] = self.content.save_submission(course, assignment, exercise, user_id, code, out_dict["all_passed"], exercise_details, out_dict["test_outputs"], partner_id)
+                out_dict["submission_id"] = self.content.save_submission(course, assignment, exercise, user_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], partner_id)
 
                 if partner_id:
-                    self.content.save_submission(course, assignment, exercise, partner_id, code, out_dict["all_passed"], exercise_details, out_dict["test_outputs"], user_id)
+                    self.content.save_submission(course, assignment, exercise, partner_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], user_id)
 
 #TODO: Reenable this?
 #            self.content.delete_presubmission(course, assignment, exercise, user_id)

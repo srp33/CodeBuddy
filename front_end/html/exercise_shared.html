@@ -54,7 +54,9 @@
                     showWaitMessage();
 
                     let partner_id = $("#partner_id")[0].value == "" ? null : $("#partner_id")[0].value;
-                    post_data = { "partner_id": partner_id, "code": user_code, "date": new Date().toLocaleString("en-US", {timeZone: "UTC"})};
+                    let submission_date = new Date();
+
+                    post_data = { "partner_id": partner_id, "code": user_code, "date": submission_date.toLocaleString("en-US", {timeZone: "UTC"})};
 
                     $.ajax({
                         type: 'POST',
@@ -65,23 +67,16 @@
                             var response_dict = JSON.parse(result);
 
                             if (response_dict["message"] == "") {
-                                hideMessages();
-                                showTestOutputs(response_dict["test_outputs"], true);
-
-                                if (response_dict["all_passed"])
-                                    showSuccessMessage();
-                                else
-                                    showNotPassingMessage(response_dict["test_outputs"].length);
-
                                 submissions.push({
                                     "id": response_dict["submission_id"],
                                     "code": user_code,
-                                    "date": post_data["date"],
+                                    "date": submission_date.toLocaleString(),
                                     "passed": response_dict["all_passed"],
                                     "partner_name": response_dict["partner_name"],
                                     "test_outputs": response_dict["test_outputs"]});
 
                                 show_past_submissions();
+                                get_submission(response_dict["submission_id"], false, true);
                             }
                             else {
                                 showErrorMessage(response_dict["message"]);
@@ -168,15 +163,19 @@
                     }
 
                     if (Object.keys(test_outputs).length == 1) {
-                        var output = "<h6>Test:</h6>" + buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
+                        var test_header = "<h6>Test:</h6>";
+                        var tests_output = buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
                     } else {
-                        output += "<h6>Tests:</h6>";
+                        var test_header = "<h6>Tests:</h6>";
+                        var tests_output = "";
 
                         const test_titles = Object.keys(test_outputs);
-                        for (let test_title of test_titles) {
-                            //output += "<p>" + test_title + "</p>";
-                            output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
-                        }
+                        for (let test_title of test_titles)
+                            tests_output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
+                    }
+
+                    if (tests_output != "") {
+                        output += test_header + tests_output;
                     }
 
                     $("#test_outputs")[0].innerHTML = output;
@@ -187,8 +186,6 @@
 
                 function buildTestOutput(test_outputs, test_title, show_title, is_last) {
                     if (!(test_title in tests)) {
-console.log(test_title);
-console.log(tests);
                         return "";
                     }
 
@@ -394,19 +391,12 @@ console.log(tests);
                     editor.focus();
                     editor.setValue(this_submission.code, -1);
 
-//TODO
-//                    if (response_dict["all_passed"])
-//                        showSuccessMessage();
-//                    else
-//                        showNotPassingMessage(response_dict["test_outputs"].length);
+                    if (this_submission["passed"])
+                        showSuccessMessage();
+                    else
+                        showNotPassingMessage(this_submission["test_outputs"].length);
 
-
-
-                    for (let submission of submissions)
-                        if (submission.id == this_submission.id) {
-                            showTestOutputs(submission["test_outputs"], false);
-                            break;
-                        }
+                    showTestOutputs(this_submission["test_outputs"], false);
                 }
 
                 function show_past_submissions() {
@@ -544,18 +534,17 @@ console.log(tests);
                 show_past_submissions();
 
                 if (submissions.length > 0)
-                    get_submission(submissions[submissions.length - 1].id, false, false);
+                    get_submission(submissions[submissions.length - 1].id, false, true);
                 else
                     showTestOutputs(null, false);
 
-//TODO: Submit button not working.
-//        Time zones not working perfectly on past submission buttons.
-//        Make sure we handle max_submissions.
-//        Make sure it works when the middle layer is down.
-//        Make sure allow any response exercises work.
-//        Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
-//        Make sure instructor's solution page still working after submissions.
-//        Remove GetSubmissionsHandler? and GetSubmissionHandler?
+//TODO: Make sure we handle max_submissions.
+//      Make sure allow any response exercises work.
+//        On edit_exercise.html, it gives me an error if I allow any response but there are no tests. How to handle this?
+//      Make sure pair programming works correctly (test it with multiple, non-admin accounts).
+//      Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
+//      Make sure instructor's solution page still working after submissions.
+//      Remove GetSubmissionsHandler? and GetSubmissionHandler?
 //TODO: It should have a separate link (and page) for the peer's solution. Randomly pick one peer solution.
 //        Make a note for BIO 165 that they will only see one peer's solution (unless they refresh?).
 //TODO: Clean up exercise.html

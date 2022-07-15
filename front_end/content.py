@@ -1733,12 +1733,11 @@ class Content:
 
         self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
 
-    def save_submission(self, course, assignment, exercise, user, code, passed, exercise_details, test_outputs, partner_id=None):
-        #submission_id = self.get_next_submission_id(course, assignment, exercise, user)
+    def save_submission(self, course, assignment, exercise, user, code, passed, date, exercise_details, test_outputs, partner_id=None):
         sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        submission_id = self.execute(sql, [int(course), int(assignment), int(exercise), user, code, passed, datetime.now(), partner_id])
+        submission_id = self.execute(sql, [int(course), int(assignment), int(exercise), user, code, passed, date, partner_id])
 
         #TODO: Execute this all in one transaction
         #      https://stackoverflow.com/questions/54289555/how-do-i-execute-an-sqlite-script-from-within-python
