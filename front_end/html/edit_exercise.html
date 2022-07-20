@@ -405,24 +405,26 @@
 
         function showOutput(update, scroll) {
             if (update) {
-                var html = `<h3>Test output:</h3><div class='shadow-box'>`;
+                if (getValue("allow_any_response") == "No") {
+                    var html = `<h3>Test output:</h3><div class='shadow-box'>`;
 
-                for (let test_title of Object.keys(exercise_details_obj["tests"])) {
-                    if (Object.keys(exercise_details_obj["tests"]).length > 1)
-                        html += `<div class="space-div"><p><strong>${test_title}:</strong></p>`;
+                    for (let test_title of Object.keys(exercise_details_obj["tests"])) {
+                        if (Object.keys(exercise_details_obj["tests"]).length > 1)
+                            html += `<div class="space-div"><p><strong>${test_title}:</strong></p>`;
 
-                    if (exercise_details_obj["tests"][test_title]["txt_output_formatted"] != "") {
-                        html += `<pre><code>${exercise_details_obj["tests"][test_title]["txt_output_formatted"]}</code></pre>`;
+                        if (exercise_details_obj["tests"][test_title]["txt_output_formatted"] != "") {
+                            html += `<pre><code>${exercise_details_obj["tests"][test_title]["txt_output_formatted"]}</code></pre>`;
+                        }
+
+                        if (exercise_details_obj["output_type"] == "jpg" && exercise_details_obj["tests"][test_title]["jpg_output"] != "") {
+                            html += `<p><figure class='img'><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["jpg_output"]}' width='95%' /></figure></p>`;
+                        }
+
+                        html += "</div>";
                     }
 
-                    if (exercise_details_obj["output_type"] == "jpg" && exercise_details_obj["tests"][test_title]["jpg_output"] != "") {
-                        html += `<p><figure class='img'><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["jpg_output"]}' width='95%' /></figure></p>`;
-                    }
-
-                    html += "</div>";
+                    $("#output")[0].innerHTML = html + "</div>";
                 }
-
-                $("#output")[0].innerHTML = html + "</div>";
             }
 
             if (scroll)
@@ -644,8 +646,9 @@
                 return(showResultMessage("Except when any response is allowed, you must provide a solution.", "danger"));
 
             // Make sure we have at least one test.
-            if (Object.keys(exercise_details_obj["tests"]).length == 0)
-                return(showResultMessage("You must provide at least one test.", "danger"));
+            console.log(exercise_details_obj["allow_any_response"]);
+            if (Object.keys(exercise_details_obj["tests"]).length == 0 && !allow_any_response)
+                return(showResultMessage("Except when any response is allowed, you must provide at least one test.", "danger"));
 
             // Make sure total file size is not larger than 10 MB across all files.
             var total_file_size = 0;

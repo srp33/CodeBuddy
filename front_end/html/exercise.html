@@ -434,11 +434,7 @@
             </p>
         </div>
 
-        <div>
-            {% if exercise_details["max_submissions"] > 0 %}
-                <label style="padding-right: 5px;"><em>You have made ??? of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></label>
-            {% end %}
-        </div>
+        <div id="max_submissions_message"></div>
 
         {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
             <script>document.getElementById("submit_button").disabled = true;</script>

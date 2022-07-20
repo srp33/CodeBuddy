@@ -90,7 +90,7 @@
                 }
 
                 function showWaitMessage() {
-                    $("#result_message")[0].innerHTML = "<div class='notification is-warning'>Please wait while your solution is being executed...</div>";
+                    $("#result_message")[0].innerHTML = "<div class='notification is-warning'>Please wait while your solution is being processed...</div>";
                     $("#result_message")[0].scrollIntoView();
                 }
 
@@ -139,7 +139,7 @@
                 }
 
                 function showErrorMessage(message) {
-                    $("#result_message")[0].innerHTML = `<div class='notification is-danger' style='color: white'>An error occurred while your code was being executed.</div><pre>${message}</pre>`;
+                    $("#result_message")[0].innerHTML = `<div class='notification is-danger' style='color: white'>An error occurred while your code was being processed.</div><pre>${message}</pre>`;
                     $("#result_message")[0].scrollIntoView();
                 }
 
@@ -218,7 +218,7 @@
                         var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 10px">`;
 
                     if (test_message == "")
-                        output += `<div style="padding: 0.75em 0.5em 0em 1.25em;margin:0"> </div>`;
+                        output += `<div style="padding: 0.75em 0.5em 0em 1.25em;margin:0"></div>`;
                     else
                         output += `<h6 style="padding: 0.75em 0.5em 0.25em 1.25em;margin:0">${test_message}</h6>`;
 
@@ -396,7 +396,16 @@
                     else
                         showNotPassingMessage(this_submission["test_outputs"].length);
 
+                    if ({{ exercise_details["max_submissions"]}} > 0 && submissions.length >= {{ exercise_details["max_submissions"]}}) {
+                        $("#submit_button")[0].disabled = true;
+                        $("#submit_button")[0].hidden = true;
+                    }
+
                     showTestOutputs(this_submission["test_outputs"], false);
+
+                    {% if exercise_details["max_submissions"] > 0 %}
+                        $("#max_submissions_message")[0].innerHTML = `<div style="padding: 0em 0.5em 1.25em 0em;margin:0"><em>You have made ${submissions.length} of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></div>`;
+                    {% end %}
                 }
 
                 function show_past_submissions() {
@@ -523,9 +532,12 @@
                 {% else %}
                     if (submitButton != null) {
                         submitButton.onclick = function() {
-                        submit()
+                            if (submitButton.disabled)
+                                showErrorMessage("You have exceeded the maximum number of allowed submissions for this exercise.");
+                            else
+                                submit()
+                        }
                     }
-                }
                 {% end %}
 
                 const tests = JSON.parse("{{ tests_json }}");
@@ -539,11 +551,9 @@
                     showTestOutputs(null, false);
 
 //TODO: Make sure we handle max_submissions.
-//      Make sure allow any response exercises work.
-//        On edit_exercise.html, it gives me an error if I allow any response but there are no tests. How to handle this?
-//      Make sure pair programming works correctly (test it with multiple, non-admin accounts).
-//      Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
 //      Make sure instructor's solution page still working after submissions.
+//      Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
+//      Make sure pair programming works correctly (test it with multiple, non-admin accounts).
 //      Remove GetSubmissionsHandler? and GetSubmissionHandler?
 //TODO: It should have a separate link (and page) for the peer's solution. Randomly pick one peer solution.
 //        Make a note for BIO 165 that they will only see one peer's solution (unless they refresh?).

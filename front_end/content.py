@@ -1102,6 +1102,16 @@ class Content:
 
         return submissions
 
+    def get_num_submissions(self, course_id, assignment_id, exercise_id, user_id):
+        sql = '''SELECT COUNT(submission_id) AS num
+                 FROM submissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+
+        return self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id, ))["num"]
+
     def get_peer_submissions(self, course_id, assignment_id, exercise_id, user_id):
         student_submissions = []
         index = 1
@@ -1700,10 +1710,11 @@ class Content:
 
             else:
                 sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, allow_any_response, show_instructor_solution, show_peer_solutions, starter_code, date_created, date_updated, enable_pair_programming, verification_code)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-                exercise_basics["id"] = cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["show_instructor_solution"], exercise_details["show_peer_solutions"], exercise_details["starter_code"], exercise_details["date_created"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"]])
+                cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["show_instructor_solution"], exercise_details["show_peer_solutions"], exercise_details["starter_code"], exercise_details["date_created"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"]])
 
+                exercise_basics["id"] = cursor.lastrowid
                 exercise_basics["exists"] = True
 
                 sql = '''DELETE FROM tests
