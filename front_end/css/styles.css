@@ -203,16 +203,6 @@ pre {
     background-color: white;
 }
 
-/* Styles block of other students' anonymized code on view_answer.html */
-.extra-content {
-    border: 2px solid  #0095e3; /* blue */
-    width: 100%;
-    border-left: 12px solid  #0095e3; /* blue */
-    border-radius: 5px;
-    padding: 14px;
-    background-color: white;
-}
-
 /* Styles help request comments. */
 .comment {
     font-size: 14px;

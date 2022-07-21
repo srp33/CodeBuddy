@@ -278,9 +278,8 @@
                 <div id="submit_exercise_modal_message"></div>
 
                 <div id="partner_selection">
-                    {% if users %}
                         <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
-
+                    {% if users %}
                         <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
                         <datalist id="users_list">
                             {% for user_name in users %}
@@ -288,7 +287,7 @@
                             {% end %}
                         </datalist>
                     {% else %}
-                        <p>There are no other registered students in this course.</p>
+                        <p>There are no other registered students in this course, so your only option is to leave this field blank.</p>
                     {% end %}
 
                     <input type="hidden" id="partner_id" />
@@ -440,8 +439,6 @@
             <script>document.getElementById("submit_button").disabled = true;</script>
             <div class='notification is-warning'><p>Click <a style='color:#2166ac' href="/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.</p></div>
         {% end %}
-
-        <!--Below is all of the code that shows the output, past submissions, and messaging once a solution has been run or submitted-->
 
         <p id="test_outputs"></p>
 

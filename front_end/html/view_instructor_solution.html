@@ -1,0 +1,33 @@
+{% if exercise_basics["exists"] %}
+    {% if exercise_details["show_instructor_solution"] %}
+        {% if user_code == "" %}
+            <p>You must submit a passing solution before you can view the instructor's solution.</p>
+        {% else %}
+            {% if exercise_details["solution_code"] == "" %}
+                <p>There is no instructor's solution for this exercise.</p><!--This happens when any response is allowed.-->
+            {% else %}
+                <div>
+                    <h4>Your solution:</h4>
+                    <pre class="student-content">{{ user_code }}</pre>
+
+                    {% if exercise_details["solution_code"] != "" %}
+                        <h4>Instructor's solution:</h4>
+                        <pre class="instructor-content">{{ exercise_details["solution_code"] }}</pre>
+                    {% end %}
+
+                    {% if exercise_details["solution_description"] != "" %}
+                        <h4>Instructor's comments:</h4>
+                        <p>{{ exercise_details["solution_description"] }}</p>
+                    {% end %}
+                </div>
+
+                <br />
+                <p><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Back to exercise</a></p>
+            {% end %}
+        {% end %}
+    {% else %}
+        <p>This exercise is configured so that the instructor's solution is not shown.</p>
+    {% end %}
+{% else %}
+    <p>This exercise does not exist.</p>
+{% end %}

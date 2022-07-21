@@ -75,7 +75,7 @@ CREATE TABLE exercises2 (
   instructions text NOT NULL,
   output_type text NOT NULL,
   show_instructor_solution integer NOT NULL,
-  show_peer_solutions integer NOT NULL,
+  show_peer_solution integer NOT NULL,
   starter_code text,
   date_created timestamp NOT NULL,
   date_updated timestamp NOT NULL,

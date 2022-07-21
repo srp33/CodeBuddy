@@ -112,10 +112,12 @@
 
                     var result = "<div class='notification success-message' style='color:white'><p><strong>" + message + "</strong></p>";
 
-                    {% if exercise_details["show_peer_solutions"] %}
-                        result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View other students' solutions</a></p>";
-                    {% elif exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
-                        result += "<p><a class='grey-text' href='/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution</a></p>";
+                    {% if exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
+                        result += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution.</a></p>";
+                    {% end %}
+
+                    {% if exercise_details["show_peer_solution"] and (exercise_details["solution_code"] != "") %}
+                        result += "<p><a class='grey-text' href='/view_peer_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View a solution from one of your peers.</a></p>";
                     {% end %}
 
                     {% if next_exercise %}
@@ -533,7 +535,7 @@
                     if (submitButton != null) {
                         submitButton.onclick = function() {
                             if (submitButton.disabled)
-                                showErrorMessage("You have exceeded the maximum number of allowed submissions for this exercise.");
+                                showErrorMessage("You are not allowed to make a submission.");
                             else
                                 submit()
                         }
@@ -550,19 +552,13 @@
                 else
                     showTestOutputs(null, false);
 
-//TODO: Make sure we handle max_submissions.
-//      Make sure instructor's solution page still working after submissions.
-//      Change the "View instructor's solution" link to be dynamic, depending on whether peers' solutions are visible.
-//      Make sure pair programming works correctly (test it with multiple, non-admin accounts).
-//      Remove GetSubmissionsHandler? and GetSubmissionHandler?
-//TODO: It should have a separate link (and page) for the peer's solution. Randomly pick one peer solution.
-//        Make a note for BIO 165 that they will only see one peer's solution (unless they refresh?).
-//TODO: Clean up exercise.html
 //TODO: Clean up student_exercise.html
 //TODO: Start with a fresh database and make sure data files are handled correctly.
 //        Do we need to write a Python script that saves files to disk and then reads them back? Or just convert them to bytes and find size.
 //        Make sure it works properly to view previous submissions for students from last semester.
+//TODO: Option to copy course (loop through each assignment).
 //TODO: Make sure we have log information indicating when students view the instructor's solution.
+//TODO: Make sure we have a way for users to submit a survey response when viewing the instructor's solution.
             </script>
         {% else %}
             <p>This exercise does not exist.</p>

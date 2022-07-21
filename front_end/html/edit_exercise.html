@@ -216,7 +216,7 @@
             <div>
                 <p><strong>Allow students to see anonymized submissions from peers: </strong>
                     <div class="select is-grey">
-                        <select id="show_peer_solutions" class="edit-select">
+                        <select id="show_peer_solution" class="edit-select">
                             <option value="No">No</option>
                             <option value="Yes">Yes</option>
                         </select>
@@ -617,7 +617,7 @@
             for (let id of ["back_end", "output_type", "instructions", "credit", "hint", "solution_description", "max_submissions"])
                 setValue(id, exercise_details_obj[id]);
 
-            for (let id of ["visible", "allow_any_response", "enable_pair_programming", "show_instructor_solution", "show_peer_solutions"])
+            for (let id of ["visible", "allow_any_response", "enable_pair_programming", "show_instructor_solution", "show_peer_solution"])
                 setValue(id, exercise_details_obj[id] ? "Yes" : "No");
 
             solution_code_editor.setValue(exercise_details_obj["solution_code"], -1);
@@ -672,7 +672,7 @@
                 "hint": getValue("hint").trim().replace("\r", ""),
                 "solution_description": getValue("solution_description").trim().replace("\r", ""),
                 "show_instructor_solution": getValue("show_instructor_solution") == "Yes",
-                "show_peer_solutions": getValue("show_peer_solutions") == "Yes",
+                "show_peer_solution": getValue("show_peer_solution") == "Yes",
                 "max_submissions": getValue("max_submissions"),
                 "data_files": exercise_details_obj["data_files"],
                 "tests": exercise_details_obj["tests"]
