@@ -1,6 +1,6 @@
 {% if exercise_basics["exists"] %}
     {% if exercise_details["show_instructor_solution"] %}
-        {% if user_code == "" %}
+        {% if user_code == "" and not is_administrator and not is_instructor and not is_assistant %}
             <p>You must submit a passing solution before you can view the instructor's solution.</p>
         {% else %}
             {% if exercise_details["solution_code"] == "" %}

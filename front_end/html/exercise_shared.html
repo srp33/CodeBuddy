@@ -120,7 +120,7 @@
                         result += "<p><a class='grey-text' href='/view_peer_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View a solution from one of your peers.</a></p>";
                     {% end %}
 
-                    {% if next_exercise %}
+                    {% if "next_exercise" in globals() and next_exercise %}
                         result += "<p><a class='grey-text' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Next exercise</a></p>\n\n";
                     {% end %}
 
@@ -553,6 +553,7 @@
                     showTestOutputs(null, false);
 
 //TODO: Clean up student_exercise.html
+//TODO: On each submission on the exercise page, show who their partner was (when applicable).
 //TODO: Start with a fresh database and make sure data files are handled correctly.
 //        Do we need to write a Python script that saves files to disk and then reads them back? Or just convert them to bytes and find size.
 //        Make sure it works properly to view previous submissions for students from last semester.

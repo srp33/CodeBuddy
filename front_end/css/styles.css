@@ -431,7 +431,7 @@ td > button {
 
 .student-exercise-notification {
     color: white;
-    background-color: #1AB28C; /* dark teal */
+    background-color: gray;
     border-radius: 5px;
     padding: 20px;
     font-size: 20px;

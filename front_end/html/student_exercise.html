@@ -1,69 +1,78 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
-            <div class="student-exercise-notification">{{ student_info["name"] }}'s submissions</div>
+            <script>
+            function showHideData(dataPanelID, dataButtonID) {
+                var data_panel = document.getElementById(dataPanelID);
+                var data_button = document.getElementById(dataButtonID);
 
-            <div class="row-container bottom-space">
-                <div>
-                    <h4 style="display: inline-block;">{{ exercise_basics["assignment"]["title"] }}: {{ exercise_basics["title"] }}</h4>
-                </div>
-                <div class="buttons is-pulled-right">
-                    <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
-                    <a class="button is-white" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View exercise</a>
+                if (data_panel.hidden) {
+                    data_panel.hidden = false;
+                    data_button.innerHTML = "Hide";
+                }
+                else {
+                    data_panel.hidden = true;
+                    data_button.innerHTML = "Show";
+                }
+            }
+            </script>
+
+            <div class="student-exercise-notification">Submissions for {{ student_info["name"] }}</div>
+
+            <div>
+                <h4 style="display: inline-block;">Assignment: {{ exercise_basics["assignment"]["title"] }}</h4>
+                <div class="row-container">
+                    <div>
+                        <h5 style="display: inline-block;">Exercise: {{ exercise_basics["title"] }}</h5>
+                    </div>
                 </div>
             </div>
 
             <div class="instructions">
                 <h6>Instructions:</h6>
-                <div class="smaller-font">{{ exercise_details["instructions"] }}</div>
+                <div id="instructions">{{ exercise_details["instructions"] }}</div>
+                {% if exercise_basics["enable_pair_programming"] %}
+                    <hr>
+                    <p><i style='margin: 0 .5em;' class="fab fa-product-hunt"></i><em>Pair programming is enabled for this exercise.</em></p>
+                {% end %}
             </div>
 
-            <h6>Instructor's solution:</h6>
-
-            <pre>{{ exercise_details["answer_code"]}}</pre>
-
-            {% if exercise_details["tests"] != [] %}
-            <h6>Test code (to be executed after student solution):</h6>
-                {% for test in exercise_details["tests"] %}
-                    {% if test["test_instructions"] == "" %}
-                        <pre class="smaller-font">{{ test["code"] }}</pre>
-                    {% else %}
-                        <pre class="smaller-font">Test Code Hidden.</pre>
-                    {% end %}
+            {% if len(exercise_details["data_files"]) > 0 %}
+                <div id="data_file_div" class="top-space">
+                <h6>Data files:</h6>
+                {% for data_file_index in range(len(exercise_details["data_files"])) %}
+                    <p>
+                        <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">{{ list(exercise_details["data_files"].keys())[data_file_index] }}</a>
+                        <a class="button is-white" id="data_button_{{ data_file_index }}" onclick="showHideData('data_panel_{{ data_file_index }}', 'data_button_{{ data_file_index }}')">Show</a>
+                    </p>
+                    <pre id="data_panel_{{ data_file_index }}" hidden>
+                        {{ exercise_details["data_files"][sorted(list(exercise_details["data_files"].keys()))[data_file_index]] }}
+                    </pre>
                 {% end %}
+                </div>
             {% end %}
 
-            <h6 id="your_code_header" style="display: inline">Student's solution:</h6>
-            <textarea class="textarea is-fullwidth monospace" placeholder="Type your solution here" rows="15" id="user_code"></textarea>
+            <p class="top-space" id="user_code_area">
+                <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code"></textarea>
+            </p>
 
-            <div class="buttons top-space">
-                {% if exercise_details["back_end"] != "not_code" %}
-                    <a class="button is-medium is-primary" onclick='run_code()'>Run</a>
+            <div class="buttons">
+                {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
+                    <a class="button is-medium is-primary is-outlined" onclick='run_code()' id='run_button'>Run</a>
                 {% end %}
+
+                {% if exercise_details["allow_any_response"] %}
+                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'.">
+                {% else %}
+                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. You can highlight a section of your solution and then hit 'Run' to test just that section. If you highlight a section of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation.">
+                {% end %}
+
+                    <i class="far fa-question-circle"></i>
+                </p>
             </div>
 
-            <div id="result"></div>
+            <p id="test_outputs"></p>
 
-            <div class="top-space">
+            <p id="result_message"></p>
 
-                {% if exercise_details["expected_txt_output"] != "" or exercise_details["expected_jpg_output"] != "" %}
-                    <h6 style="display: inline">Expected output:</h6>
-
-                    {% if exercise_details["output_type"] == "txt" %}
-                        <p><pre>{{ exercise_details["expected_txt_output"] }}</pre></p>
-                    {% else %}
-                        <p><figure class="img"><img src="data:image/jpg;base64,{{ exercise_details['expected_jpg_output'] }}" width="100%"/></figure></p>
-                    {% end %}
-                {% end %}
-
-                {% if not exercise_details["allow_any_response"] %}
-                    <p><span id="code_output"></span></p>
-
-                    {% if exercise_details["show_expected"] %}
-                        <p><span id="diff_output"></span></p>
-                    {% end %}
-                    <p><span id="test_output"></span></p>
-                {% end %}
-            </div>
-
-            <div id="submissions"></div>
+            <p><div id="submissions"></div></p>
