@@ -211,26 +211,6 @@ def compare_outputs(exercise_details, test_outputs, test_title):
 
         return diff_output, diff_percent < 0.01 # Pass if they are similar.
 
-#def check_exercise_output(exercise_details, actual_text, actual_image, tests):
-#    if exercise_details["allow_any_response"]:
-#        if (len(actual_text) > 0 or len(actual_image) > 0):
-#            return "", True, []
-#        else:
-#            return "", False, []
-#
-#    diff_output, passed = compare_outputs(exercise_details["expected_text_output"], actual_text, exercise_details["expected_image_output"], actual_image, exercise_details["output_type"])
-#    expected_test_outputs = exercise_details["tests"]
-#
-#    test_outcomes = []
-#
-#    for i in range(len(expected_test_outputs)):
-#        test_diff_output, test_passed = compare_outputs(expected_test_outputs[i]["text_output"], tests[i]["text_output"], expected_test_outputs[i]["image_output"], tests[i]["image_output"], exercise_details["output_type"])
-#        test_outcomes.append({"test": expected_test_outputs[i]["test"], "diff_output": test_diff_output, "passed": test_passed, "text_output": tests[i]["text_output"], "image_output": tests[i]["image_output"]})
-#
-#    passed = True if passed and all(list(map(lambda x: x["passed"], test_outcomes))) else False
-#
-#    return diff_output, passed, test_outcomes
-
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
 
@@ -320,3 +300,13 @@ def get_client_ip_address(request):
     return request.headers.get("X-Real-IP") or \
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
+
+def format_exercise_details(exercise_details):
+    exercise_details["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_details["instructions"])) # Removes html markup from instructions before converting markdown to html
+    exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
+    exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
+    exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
+
+    for test_title in exercise_details["tests"]:
+        exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
+        exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])

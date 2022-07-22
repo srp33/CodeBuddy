@@ -1545,7 +1545,7 @@ class Content:
 
         return assignment_dict
 
-    def get_exercise_details(self, course, assignment, exercise, format_content=False):
+    def get_exercise_details(self, course, assignment, exercise):
         if not exercise:
             return {"instructions": "", "back_end": "python", "output_type": "txt", "allow_any_response": False, "solution_code": "", "solution_description": "", "hint": "", "max_submissions": 0, "starter_code": "", "credit": "", "data_files": [], "show_instructor_solution": True, "show_peer_solution": False, "date_created": None, "date_updated": None, "enable_pair_programming": False, "verification_code": "", "tests": {}}
 
@@ -1578,16 +1578,6 @@ class Content:
 
         for test in tests:
             exercise_dict["tests"][test["title"]] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]}
-
-        if format_content:
-            exercise_dict["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_dict["instructions"])) # Removes html markup from instructions before converting markdown to html
-            exercise_dict["credit"] = convert_markdown_to_html(exercise_dict["credit"])
-            exercise_dict["solution_description"] = convert_markdown_to_html(exercise_dict["solution_description"])
-            exercise_dict["hint"] =  convert_markdown_to_html(exercise_dict["hint"])
-
-            for test_title in exercise_dict["tests"]:
-                exercise_dict["tests"][test_title]["txt_output"] = format_output_as_html(exercise_dict["tests"][test_title]["txt_output"])
-                exercise_dict["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_dict["tests"][test_title]["instructions"])
 
         return exercise_dict
 

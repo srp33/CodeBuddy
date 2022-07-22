@@ -15,7 +15,7 @@ class ViewPeerSolutionHandler(BaseUserHandler):
             assignment_basics = self.content.get_assignment_basics(course, assignment)
             exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
             assignment_details = self.content.get_assignment_details(course, assignment)
-            exercise_details = self.content.get_exercise_details(course, assignment, exercise, format_content=True)
+            exercise_details = format_exercise_details(self.content.get_exercise_details(course, assignment, exercise))
             exercise_statuses = self.content.get_exercise_statuses(course, assignment, user)
             user_code = self.content.get_most_recent_submission_code(course, assignment, exercise, user)
             peer_code = self.content.get_peer_code(course, assignment, exercise, user)

@@ -75,7 +75,7 @@ def exec(info: ExecInfo):
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
-        stdout = result.stdout.decode().replace(docker_warning, "").strip()
+        stdout = result.stdout.decode().replace(docker_warning, "")
 
         # Check whether the command timed out.
         if result.returncode == 137 or stdout == "Killed":

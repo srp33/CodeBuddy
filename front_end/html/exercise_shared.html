@@ -99,7 +99,7 @@
                     $("#test_outputs")[0].innerHTML = "";
                 }
 
-                function showSuccessMessage() {
+                function showSuccessMessage(submission) {
                     {% if exercise_details["allow_any_response"] %}
                         let message = "Thank you for your submission.";
                     {% else %}
@@ -108,16 +108,19 @@
                         {% else %}
                             var message = "Congratulations! Your solution passes all of the tests.";
                         {% end %}
+
+                        if (submission.partner_name != null)
+                            message += ` Your programming partner was ${submission.partner_name}.`
                     {% end %}
 
                     var result = "<div class='notification success-message' style='color:white'><p><strong>" + message + "</strong></p>";
 
                     {% if exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
-                        result += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View the instructor's solution.</a></p>";
+                        result += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> the instructor's solution.</p>";
                     {% end %}
 
                     {% if exercise_details["show_peer_solution"] and (exercise_details["solution_code"] != "") %}
-                        result += "<p><a class='grey-text' href='/view_peer_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View a solution from one of your peers.</a></p>";
+                    result += "<p><a class='grey-text' href='/view_peer_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> a solution from one of your peers.</p>";
                     {% end %}
 
                     {% if "next_exercise" in globals() and next_exercise %}
@@ -394,7 +397,7 @@
                     editor.setValue(this_submission.code, -1);
 
                     if (this_submission["passed"])
-                        showSuccessMessage();
+                        showSuccessMessage(this_submission);
                     else
                         showNotPassingMessage(this_submission["test_outputs"].length);
 
@@ -418,7 +421,11 @@
                     var current_code = editor.getValue()
 
                     if (submissions.length > 0) {
-                        submission_html += "<h6>Past submissions:</h6>";
+                        if (submissions.length == 1)
+                            submission_html += "<h6>Past submission:</h6>";
+                        else
+                            submission_html += "<h6>Past submissions:</h6>";
+
                         submission_html += "<div class='buttons'>";
 
                         var i;
@@ -433,7 +440,7 @@
                             var submission_date = new Date(submission.date).toLocaleString();
 
                             if (submission.partner_name)
-                                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, true)'><b>${submission.id}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programmed with ${submission.partner_name}."><i class="fab fa-product-hunt"></i></label></button>`;
+                                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Programming partner: ${submission.partner_name}"><i class="fab fa-product-hunt"></i></label></button>`;
                             else
                                 submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date}</button>`;
                         }
@@ -551,15 +558,6 @@
                     get_submission(submissions[submissions.length - 1].id, false, true);
                 else
                     showTestOutputs(null, false);
-
-//TODO: Clean up student_exercise.html
-//TODO: On each submission on the exercise page, show who their partner was (when applicable).
-//TODO: Start with a fresh database and make sure data files are handled correctly.
-//        Do we need to write a Python script that saves files to disk and then reads them back? Or just convert them to bytes and find size.
-//        Make sure it works properly to view previous submissions for students from last semester.
-//TODO: Option to copy course (loop through each assignment).
-//TODO: Make sure we have log information indicating when students view the instructor's solution.
-//TODO: Make sure we have a way for users to submit a survey response when viewing the instructor's solution.
             </script>
         {% else %}
             <p>This exercise does not exist.</p>

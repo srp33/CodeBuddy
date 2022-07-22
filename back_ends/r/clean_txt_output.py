@@ -14,7 +14,7 @@ if os.path.exists("txt_output"):
             line = re.sub(r"Error in parse\(text = code\) : <text>:\d+:0", "Error", line)
             line = re.sub(r"Error in eval\(parse\(text = code\)\) :", "Error:", line)
 
-            output_lines += line
+            output_lines += line.lstrip()
 
     with open("txt_output", "w") as output_file:
         output_file.write("".join(output_lines))

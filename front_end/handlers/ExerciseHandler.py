@@ -15,7 +15,7 @@ class ExerciseHandler(BaseUserHandler):
             exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
 
             assignment_details = self.content.get_assignment_details(course, assignment)
-            exercise_details = self.content.get_exercise_details(course, assignment, exercise, format_content=True)
+            exercise_details = self.content.get_exercise_details(course, assignment, exercise)
 
             if not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course) and assignment_details["has_timer"]:
                 start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_id())
@@ -44,8 +44,9 @@ class ExerciseHandler(BaseUserHandler):
                 user_list = list(self.content.get_partner_info(course, self.get_user_info()["user_id"]).keys())
                 exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_id())
                 start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_id())
-                tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
 
+                tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
+                #format_exercise_details(exercise_details)
                 submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
                 submissions_json = escape_json_string(json.dumps(submissions))
 
