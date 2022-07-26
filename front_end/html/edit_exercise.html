@@ -384,13 +384,13 @@
             }
 
             var html = "<table class='table is-striped'>";
-            html += "<thead><tr><th>Name</th><th>Size (bytes)</th><th>View</th><th>Delete</th></thead>";
+            html += "<thead><tr><th>Name</th><th>Size (characters)</th><th>View</th><th>Delete</th></thead>";
             html += "<tbody>";
 
             for (const file_name in sortObj(exercise_details_obj["data_files"])) {
                 html += "<tr>";
                 html += `  <td>${file_name}</td>`;
-                html += `  <td>${exercise_details_obj["data_files"][file_name]["size"]}</td>`;
+                html += `  <td>${exercise_details_obj["data_files"][file_name].length}</td>`;
                 html += `  <td>
                                <a onclick="viewFile('${file_name}')">
                                    <i class="fas fa-file-alt"></i>
@@ -564,7 +564,7 @@
 
         function viewFile(file_name) {
             $("#view_file_modal_header")[0].innerHTML = file_name;
-            view_file_editor.setValue(exercise_details_obj["data_files"][file_name]["contents"], -1);
+            view_file_editor.setValue(exercise_details_obj["data_files"][file_name], -1);
             $("#view_file_modal").addClass("is-active");
         }
 
@@ -654,16 +654,17 @@
                 return(showResultMessage("Except when any response is allowed, you must provide a solution.", "danger"));
 
             // Make sure we have at least one test.
-            console.log(exercise_details_obj["allow_any_response"]);
             if (Object.keys(exercise_details_obj["tests"]).length == 0 && !allow_any_response)
                 return(showResultMessage("Except when any response is allowed, you must provide at least one test.", "danger"));
 
-            // Make sure total file size is not larger than 10 MB across all files.
+            // Make sure total file size is not too large across all files.
             var total_file_size = 0;
             for (let file_name of Object.keys(exercise_details_obj["data_files"]))
-                total_file_size += exercise_details_obj["data_files"][file_name]["size"];
-            if (total_file_size > 10 * 1024 * 1024)
-                return(showResultMessage(`The total file size [${total_file_size}] exceeds the 10 megabyte limit.`, "danger"));
+                total_file_size += exercise_details_obj["data_files"][file_name].length;
+
+            let file_size_limit = 10 * 1000 * 1000;
+            if (total_file_size > file_size_limit)
+                return(showResultMessage(`The total file size [${total_file_size}] exceeds the 10,000,000 character limit.`, "danger"));
 
             var submission_obj = {
                 "title": title,
@@ -798,7 +799,8 @@
                     const fileName = $("#upload_file_control")[0].files[i]["name"];
                     const fileText = await $("#upload_file_control")[0].files[i].text();
 
-                    exercise_details_obj["data_files"][fileName] = {"contents": fileText, "size": $("#upload_file_control")[0].files[i]["size"]};
+                    //exercise_details_obj["data_files"][fileName] = {"contents": fileText, "size": $("#upload_file_control")[0].files[i]["size"]};
+                    exercise_details_obj["data_files"][fileName] = fileText;
                 }
 
                 showFiles();
