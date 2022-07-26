@@ -55,6 +55,43 @@
                 modal.style.display = "block";
 
                 var cancelButton = document.getElementById("copy_cancel_button");
+                var copyButton = document.getElementById("copy_button");
+
+                var messageElement = $("#copy_assignment_message");
+                messageElement[0].innerHTML = "";
+                messageElement.removeClass("is-danger");
+                messageElement.addClass("is-success");
+                messageElement.addClass("is-hidden");
+
+                copyButton.onclick = function() {
+                    $.ajax({
+                        type: 'POST',
+                        url: "/copy_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                        data: {"new_course_id": $("#new_course_id")[0].value},
+                        async: false})
+                        .done(function(data) {
+                            var json_data = JSON.parse(data);
+                            messageElement.removeClass("is-hidden");
+
+                            if (json_data.result == "") {
+                                messageElement[0].innerHTML = "The course was copied successfully!";
+                                messageElement.removeClass("is-danger");
+                                messageElement.addClass("is-success");
+                            }
+                            else {
+                                messageElement[0].innerHTML = json_data.result;
+                                messageElement.removeClass("is-success");
+                                messageElement.addClass("is-danger");
+                            }
+                        })
+                        .fail(function(data) {
+                            messageElement.removeClass("is-hidden");
+                            messageElement[0].innerHTML = "An error occurred when attempting to connect to the server. Please notify the instructor.";
+                            console.log(data);
+                            messageElement.removeClass("is-success");
+                            messageElement.addClass("is-danger");
+                        });
+                }
 
                 cancelButton.onclick = function() {
                     modal.style.display = "none";
@@ -63,6 +100,7 @@
                 span.onclick = function() {
                     modal.style.display = "none";
                 }
+
                 window.onclick = function(event) {
                     if (event.target == modal) {
                         modal.style.display = "none";
@@ -232,10 +270,12 @@
         </div>
 
         <div id="copy_assignment_modal" class="modal">
-            <form method="post" action="/copy_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <p>Copy an assignment to a different course:</p>
+                <h4>Copy an assignment to another course:</h4>
+
+                <div class="notification" id="copy_assignment_message"></div>
+
                 <div class="select is-primary">
                     <select name="new_course_id" id="new_course_id">
                     {% for course in course_options %}
@@ -243,12 +283,12 @@
                     {% end %}
                     </select>
                 </div>
+
                 <p class="buttons">
                     <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
-                    <input type="submit" id="copy_button" class="modal-button button is-dark" value="Copy"/>
+                    <a id="copy_button" class="modal-button button is-dark">Copy</a>
                 </p>
             </div>
-            </form>
         </div>
 
         <div id="delete_submissions_modal" class="modal">

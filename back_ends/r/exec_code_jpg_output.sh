@@ -10,7 +10,7 @@ echo "pdf(NULL)" >> code
 
 cat main_code >> code
 
-echo "ggsave('image_output', dpi = 150, device = 'jpeg')" >> code
+echo "ggsave('jpg_output', dpi = 150, device = 'jpeg')" >> code
 
 cat after_code >> code
 

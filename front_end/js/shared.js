@@ -10,31 +10,3 @@ function convertDate(d) {
   " " + time;
   return start_date;
 }
-
-// https://www.w3docs.com/snippets/javascript/how-to-sort-javascript-object-by-key.html
-function sortObj(obj) {
-  return Object.keys(obj).sort().reduce(function (result, key) {
-    result[key] = obj[key];
-    return result;
-  }, {});
-}
-
-// allow pasting images into contenteditable fields
-//$('div[contenteditable]').bind('paste', function(e) {
-//  if (e.originalEvent.clipboardData.items[0].kind != "string") {
-//  	var data = e.originalEvent.clipboardData.items[0].getAsFile()
-//  	var elem = this;
-//  	var fr = new FileReader;
-
-//  	fr.onloadend = function() {
-//  	  var img = new Image;
-//  	  img.src = fr.result;
-//  	  img.onload = function() {
-//  		  $(elem).append(img);
-//  	  };
-//  	};
-
-//  	fr.readAsDataURL(data);
-//  	e.preventDefault();
-//  }
-//});

@@ -72,11 +72,11 @@ class ImportCourseHandler(BaseUserHandler):
                         date_updated = convert_string_to_date(exercise_list[21])
 
                         expected_text_output = ""
-                        expected_image_output = ""
+                        expected_jpg_output = ""
                         if expected_output == "txt":
                             expected_text_output = exercise_list[13]
                         else:
-                            expected_image_output = exercise_list[13]
+                            expected_jpg_output = exercise_list[13]
 
                         self.content.specify_exercise_details(exercise_details, instructions, back_end, output_type, answer_code, answer_description, hint, max_submissions, starter_code, test_code, credit, data_files, show_expected, show_test_code, show_answer, expected_output, date_created, date_updated)
                         self.content.save_exercise(exercise_basics, exercise_details)

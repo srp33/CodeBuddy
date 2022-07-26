@@ -68,7 +68,7 @@
                             </a>
                         </td>
                         <td>
-                            <a onclick="showDeleteModal({{ assignment[1]['id'] }})">
+                            <a onclick="showDeleteAssignmentModal({{ assignment[1]['id'] }})">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </td>
@@ -81,10 +81,25 @@
         <p><strong>No assignments have been created for this course.</strong></p>
     {% end %}
 
+    <div id="copy_course_modal" class="modal">
+        <div class="modal-content">
+            <h4>Make a copy of this course</h4>
+            <div class="notification is-danger" id="copy_course_message" style="display:none"></div>
+            <p>New title:</p>
+
+            <input class="input is-medium is-primary" type="text" id="new_title" name="new_title" placeholder="{{course_basics['title']}}" value="{{course_basics['title']}}"/>
+            <p class="buttons">
+                <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
+                <button onclick="copyCourse({{ course_basics['id'] }})" id="copy_button" class="modal-button button is-dark">Copy</button>
+            </p>
+        </div>
+    </div>
+
     <div id="delete_assignment_modal" class="modal" style="display:none;">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <p id="confirm_delete"></p>
+            <h4>Are you sure you want to delete this assignment?</h4>
+            <div class="notification is-danger" id="delete_assignment_message" style="display:none"></div>
             <p class="buttons">
                 <a id="delete_cancel_button" class="modal-button button is-light">Cancel</a>
                 <a id="delete_button" class="modal-button button is-dark">Delete</a>
@@ -113,85 +128,134 @@
         <p><br />
         {% if is_administrator or is_instructor %}
             <a href="/edit_course/{{ course_basics['id'] }}">Edit course</a> |
+            <a onclick="showCopyCourseModal()">Copy course</a> |
             <a href="/delete_course/{{ course_basics['id'] }}">Delete course</a> |
             <a onclick="showDeleteSubmissionsModal()">Delete course submissions</a>
         {% end %}
         </p>
     </div>
 
+    <script>
+        function showCopyCourseModal() {
+            var modal = document.getElementById("copy_course_modal");
+            modal.style.display = "block";
+
+            var cancelButton = document.getElementById("copy_cancel_button");
+
+            cancelButton.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        function showDeleteAssignmentModal(assignment_id) {
+            var modal = document.getElementById("delete_assignment_modal");
+            var span = document.getElementsByClassName("close")[0];
+
+            modal.style.display = "block";
+
+            var cancelButton = document.getElementById("delete_cancel_button");
+            var deleteButton = document.getElementById("delete_button");
+
+            var message = document.getElementById("delete_assignment_message")
+            message.innerHTML = "";
+            message.style.display = "none";
+
+            deleteButton.onclick = function() {
+                $.ajax({
+                    type: 'POST',
+                    url: "/delete_assignment/{{ course_basics['id'] }}/" + assignment_id,
+                    success: function(data) {
+                        var json_data = JSON.parse(data);
+
+                        if (json_data.result == "") {
+                            modal.style.display = "none";
+                            location.reload();
+                        }
+                        else {
+                            message.innerHTML = json_data.result;
+                            message.style.display = "block";
+                        }
+                    },
+                    async: false
+                });
+            }
+
+            cancelButton.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        function showDeleteSubmissionsModal() {
+            var modal = document.getElementById("delete_submissions_modal");
+            var span = document.getElementsByClassName("close")[1];
+            modal.style.display = "block";
+
+            var deleteButton = document.getElementById("delete_submissions_button");
+            var cancelButton = document.getElementById("delete_submissions_cancel_button");
+
+            deleteButton.onclick = async function() {
+                $.ajax({
+                    type: 'POST',
+                    url: "/delete_course_submissions/{{ course_basics['id'] }}",
+                    success: function(result) {
+                        modal.style.display = "none";
+                        location.reload();
+                    },
+                    async: false
+                });
+            }
+
+            cancelButton.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        function copyCourse(course) {
+            var new_title = document.getElementById("new_title").value;
+            var message = document.getElementById("copy_course_message")
+            var modal = document.getElementById("copy_course_modal");
+
+            $.post(`/copy_course/${course}`, {"new_title": new_title},
+                function(data) {
+                    var json_data = JSON.parse(data);
+
+                    if (json_data.result == "") {
+                        modal.style.display = "none";
+                        location.reload();
+                    }
+                    else {
+                        message.innerHTML = json_data.result;
+                        message.style.display = "block";
+                    }
+            });
+        }
+    </script>
 {% else %}
     <h2>This course does not exist.</h2>
 {% end %}
-
-<script>
-    function showDeleteModal(assignment_id) {
-        var modal = document.getElementById("delete_assignment_modal");
-        var span = document.getElementsByClassName("close")[0];
-        var confirm_text = document.getElementById("confirm_delete");
-
-        modal.style.display = "block";
-        confirm_text.innerHTML = 'Are you sure you want to delete this assignment?';
-
-        var cancelButton = document.getElementById("delete_cancel_button");
-        var deleteButton = document.getElementById("delete_button");
-
-        deleteButton.onclick = function() {
-            $.ajax({
-                type: 'POST',
-                url: "/delete_assignment/{{ course_basics['id'] }}/" + assignment_id,
-                success: function(result) {
-                    modal.style.display = "none";
-                    location.reload();
-                },
-                async: false
-            });
-        }
-
-        cancelButton.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    }
-
-    function showDeleteSubmissionsModal() {
-        var modal = document.getElementById("delete_submissions_modal");
-        var span = document.getElementsByClassName("close")[1];
-        modal.style.display = "block";
-
-        var deleteButton = document.getElementById("delete_submissions_button");
-        var cancelButton = document.getElementById("delete_submissions_cancel_button");
-
-        deleteButton.onclick = async function() {
-            $.ajax({
-                type: 'POST',
-                url: "/delete_course_submissions/{{ course_basics['id'] }}",
-                success: function(result) {
-                    modal.style.display = "none";
-                    location.reload();
-                },
-                async: false
-            });
-        }
-
-        cancelButton.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    }
-</script>

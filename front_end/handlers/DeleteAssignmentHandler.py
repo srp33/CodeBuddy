@@ -2,12 +2,14 @@ from BaseUserHandler import *
 
 class DeleteAssignmentHandler(BaseUserHandler):
     def post(self, course, assignment):
+        out_dict = {"result": ""}
+
         try:
             if not self.is_administrator() and not self.is_instructor_for_course(course):
-                self.render("permissions.html")
-                return
-
-            self.content.delete_assignment(self.content.get_assignment_basics(course, assignment))
+                out_dict["result"] = "You do not have permission to perform this task."
+            else:
+                self.content.delete_assignment(self.content.get_assignment_basics(course, assignment))
         except Exception as inst:
-            render_error(self, traceback.format_exc())
+            out_dict["result"] = traceback.format_exc()
 
+        self.write(json.dumps(out_dict))

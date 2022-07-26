@@ -141,6 +141,7 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
         for test_title in response["test_outputs"]:
             response["test_outputs"][test_title]["txt_output_formatted"] = format_output_as_html(response["test_outputs"][test_title]["txt_output"])
 
+    response["all_passed"] = False # This is our default assumption.
     return response
 
 def check_test_outputs(exercise_details, test_outputs):

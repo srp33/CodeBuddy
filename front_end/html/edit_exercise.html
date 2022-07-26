@@ -24,6 +24,16 @@
 
 {% if course_basics["exists"] %}
   {% if assignment_basics["exists"] %}
+    <script>
+        // https://www.w3docs.com/snippets/javascript/how-to-sort-javascript-object-by-key.html
+        function sortObj(obj) {
+            return Object.keys(obj).sort().reduce(function (result, key) {
+                result[key] = obj[key];
+                return result;
+            }, {});
+        }
+    </script>
+
     <div class="shadow-box">
         <div class="row-container bottom-space">
             <div class="a-title-container">
@@ -328,8 +338,6 @@
             </div>
         </div>
     </div>
-
-    <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
         // Functions

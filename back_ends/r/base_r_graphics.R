@@ -12,5 +12,5 @@
 #
 #  dev.off()
 #
-#  return(image_write(fig, path="/sandbox/image_output", format="jpg", flatten=FALSE))
+#  return(image_write(fig, path="/sandbox/jpg_output", format="jpg", flatten=FALSE))
 #}

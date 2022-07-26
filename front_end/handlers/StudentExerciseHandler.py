@@ -23,7 +23,7 @@ class StudentExerciseHandler(BaseUserHandler):
                 student_info = self.content.get_user_info(student_id)
 
                 tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
-                #format_exercise_details(exercise_details)
+                format_exercise_details(exercise_details)
 
                 self.render("student_exercise.html", student_info=student_info, student_id=student_id, courses=courses, course_basics=course_basics, assignments=assignments, assignment_basics=assignment_basics, exercises=exercises, exercise_basics=exercise_basics, assignment_details=assignment_details, exercise_details=exercise_details, tests_json=tests_json, exercise_statuses=exercise_statuses, assignment_options=assignment_options, code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], submissions_json=submissions_json, num_submissions=num_submissions, user_info=self.get_user_info(), user_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
             else:

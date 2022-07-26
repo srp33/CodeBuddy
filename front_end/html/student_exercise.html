@@ -1,23 +1,7 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
-            <script>
-            function showHideData(dataPanelID, dataButtonID) {
-                var data_panel = document.getElementById(dataPanelID);
-                var data_button = document.getElementById(dataButtonID);
-
-                if (data_panel.hidden) {
-                    data_panel.hidden = false;
-                    data_button.innerHTML = "Hide";
-                }
-                else {
-                    data_panel.hidden = true;
-                    data_button.innerHTML = "Show";
-                }
-            }
-            </script>
-
-            <div class="student-exercise-notification">Submission(s) for {{ student_info["name"] }}</div>
+            <div class="student-exercise-notification">{{ student_info["name"] }}</div>
 
             <div>
                 <h4 style="display: inline-block;">Assignment: {{ exercise_basics["assignment"]["title"] }}</h4>
@@ -31,10 +15,6 @@
             <div class="instructions">
                 <h6>Instructions:</h6>
                 <div id="instructions">{{ exercise_details["instructions"] }}</div>
-                {% if exercise_basics["enable_pair_programming"] %}
-                    <hr>
-                    <p><i style='margin: 0 .5em;' class="fab fa-product-hunt"></i><em>Pair programming is enabled for this exercise.</em></p>
-                {% end %}
             </div>
 
             {% if len(exercise_details["data_files"]) > 0 %}
@@ -58,7 +38,7 @@
 
             <div class="buttons">
                 {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
-                    <a class="button is-medium is-primary is-outlined" onclick='run_code()' id='run_button'>Run</a>
+                    <a class="button is-medium is-primary is-outlined" onclick='run_code(false)' id='run_button'>Run</a>
                 {% end %}
             </div>
 
@@ -67,3 +47,50 @@
             <p id="result_message"></p>
 
             <p><div id="submissions"></div></p>
+
+            <script>
+                ace.require("ace/ext/language_tools");
+                var editor = ace.edit("user_code", {
+                    theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                    autoScrollEditorIntoView: false,
+                    minLines: 20,
+                    fontSize: "12pt"
+                });
+                let codeChanged = false
+
+                {% if user_info['enable_vim'] %}
+                   editor.setKeyboardHandler("ace/keyboard/vim");
+                {% end %}
+
+                {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
+                    editor.setOptions({
+                        enableBasicAutocompletion: false,
+                        enableSnippets: true,
+                        enableLiveAutocompletion: true
+                    });
+                {% end %}
+
+                editor.focus();
+                editor.getSession().setMode("{{ code_completion_path }}");
+
+                const tests = JSON.parse("{{ tests_json }}");
+
+                var submissions = JSON.parse("{{ submissions_json }}");
+                show_past_submissions();
+
+                if (submissions.length > 0)
+                    get_submission(submissions[submissions.length - 1].id, false, true);
+                else
+                    showTestOutputs(null, false);
+            </script>
+
+            <p><a href="/student_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ student_id }}">Back to student scores</a></p>
+        {% else %}
+            <p>This exercise does not exist.</p>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
+{% else %}
+    <p>This course does not exist.</p>
+{% end %}

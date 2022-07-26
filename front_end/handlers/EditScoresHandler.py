@@ -13,7 +13,6 @@ class EditScoresHandler(BaseUserHandler):
     def post(self, course, assignment, student_id):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
-
                 exercise_statuses = self.content.get_exercise_statuses(course, assignment, student_id)
                 result = ""
                 for exercise in exercise_statuses:

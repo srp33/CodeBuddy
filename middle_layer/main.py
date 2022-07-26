@@ -66,9 +66,9 @@ def exec(info: ExecInfo):
                     code_file.write(info.tests[test_title]["after_code"].strip() + "\n\n")
 
             # Save any data files so they will be accessible inside the container.
-            for key, valueDict in info.data_files.items():
-                with open(f"{info.tests[test_title]['dir_path']}/{key}", "w") as data_file:
-                    data_file.write(valueDict["contents"])
+            for file_name, contents in info.data_files.items():
+                with open(f"{info.tests[test_title]['dir_path']}/{file_name}", "w") as data_file:
+                    data_file.write(contents)
 
         # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
         docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"

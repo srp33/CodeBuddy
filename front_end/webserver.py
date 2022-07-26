@@ -34,6 +34,7 @@ def make_app():
         url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
         url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
         url(r"/copy_assignment/([^/]+)/([^/]+)?", CopyAssignmentHandler, name="copy_assignment"),
+        url(r"/copy_course/([^/]+)", CopyCourseHandler, name="copy_course"),
         url(r"/copy_exercise/([^/]+)/([^/]+)/([^/]+)?", CopyExerciseHandler, name="copy_exercise"),
         url(r"/course/([^/]+)", CourseHandler, name="course"),
         url(r"/delete_assignment/([^/]+)/([^/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
@@ -160,7 +161,7 @@ if __name__ == "__main__":
             if "***NotNeeded***" in result:
                 print("Database migration not needed.")
             elif "***Success***" in result:
-                print(f"Database successfully migrated to version {v+1}.")
+                print(f"Database successfully migrated to version {v+1}")
                 content.update_database_version(v + 1)
             else:
                 print(f"Database migration failed for version {v+1}...")
