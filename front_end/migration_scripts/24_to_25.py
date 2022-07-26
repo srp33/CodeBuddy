@@ -59,4 +59,30 @@ else:
                     print(f"Updating title to {title} for exercise {exercise_id}, test {test_id}")
                     content.execute(sql, (title, test_id, ))
 
+        sql = '''SELECT course_id, assignment_id, exercise_id
+                 FROM exercises
+                 WHERE output_type = 'jpg'
+                   AND back_end = 'python' OR back_end = 'python_script' '''
+
+        ids = []
+        for row in content.fetchall(sql):
+            ids.append([row["course_id"], row["assignment_id"], row["exercise_id"]])
+
+        for x in ids:
+            exercise_details = content.get_exercise_details(x[0], x[1], x[2])
+            exec_response = exec_code(settings_dict, exercise_details["solution_code"], "", exercise_details)
+
+            for test_title in exec_response["test_outputs"]:
+                txt_output = exec_response["test_outputs"][test_title]["txt_output"]
+                jpg_output = exec_response["test_outputs"][test_title]["jpg_output"]
+
+                sql = '''UPDATE tests
+                         SET txt_output = ?, jpg_output = ?
+                         WHERE course_id = ?
+                           AND assignment_id = ?
+                           AND exercise_id = ?
+                           AND title = ?'''
+
+                content.execute(sql, (txt_output, jpg_output, x[0], x[1], x[2], test_title, ))
+
         print("***Success***")
