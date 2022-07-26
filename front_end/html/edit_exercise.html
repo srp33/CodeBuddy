@@ -41,7 +41,7 @@
                 <p><input id="title" class="input is-grey is-fullwidth" placeholder="Please specify a descriptive title." autofocus></p>
             </div>
             <div class="a-visible">
-                <p><strong>Visibility: </strong>
+                <p><strong>Visible to students: </strong>
                     <div class="select is-grey">
                         <select id="visible" class="edit-select">
                             <option value="No">No</option>
@@ -625,8 +625,10 @@
             for (let id of ["back_end", "output_type", "instructions", "credit", "hint", "solution_description", "max_submissions"])
                 setValue(id, exercise_details_obj[id]);
 
-            for (let id of ["visible", "allow_any_response", "enable_pair_programming", "show_instructor_solution", "show_peer_solution"])
+            for (let id of ["allow_any_response", "enable_pair_programming", "show_instructor_solution", "show_peer_solution"])
                 setValue(id, exercise_details_obj[id] ? "Yes" : "No");
+
+            setValue("visible", exercise_basics_obj["visible"] ? "Yes" : "No");
 
             solution_code_editor.setValue(exercise_details_obj["solution_code"], -1);
             verification_code_editor.setValue(exercise_details_obj["verification_code"], -1);
@@ -743,9 +745,6 @@
             // Make sure other inputs are valid
             if (!can_see_test_code && test_instructions.trim() == "")
                 return showTestMessage("Please provide instructions when the test code is hidden.", true, false);
-
-            // This uses a similar approach to UNIX permissions.
-            //var visibility = can_see_test_code + can_see_expected_output * 2 + can_see_code_output * 4;
 
             let previous_test_title = document.getElementById("previous_test_title").value;
 
