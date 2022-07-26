@@ -30,7 +30,8 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_start_date"] = self.get_body_argument("has_start_date") == "Select"
             assignment_details["has_due_date"] = self.get_body_argument("has_due_date") == "Select"
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
-            assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
+            #assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
+            assignment_details["enable_help_requests"] = False
             assignment_details["allowed_ip_addresses"] = [x.strip() for x in self.get_body_argument("allowed_ip_addresses").split(",") if x != "" and x != ","]
 
             if assignment_details["has_start_date"]:

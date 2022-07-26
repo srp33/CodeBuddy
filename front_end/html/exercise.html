@@ -170,7 +170,7 @@
                 </div>
             </div>-->
 
-            <div id="help_request_modal" class="modal">
+            <!--<div id="help_request_modal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
                     {% if help_request and help_request["more_info_needed"] %}
@@ -213,7 +213,7 @@
                     <br><p>Instructor's suggestion:</p>
                     <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
                 </div>
-            </div>
+            </div>-->
 
             <div>
               <h4 style="display: inline-block;">Assignment: {{ exercise_basics["assignment"]["title"] }}</h4>
@@ -302,6 +302,7 @@
 
             <p class="top-space" id="user_code_area">
                 <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and num_submissions == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+                <!--
                 {% if assignment_details["enable_help_requests"] %}
                     <div class="buttons is-pulled-right">
                         {% if help_request %}
@@ -319,6 +320,7 @@
                         {% end %}
                     </div>
                 {% end %}
+                -->
             </p>
 
             <div id="saved_div" style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"></div>

@@ -115,4 +115,10 @@ DROP TABLE IF EXISTS exercises;
 ALTER TABLE exercises2 RENAME TO exercises;
 
 DELETE
-FROM presubmissions
+FROM presubmissions;
+
+DELETE
+FROM help_requests;
+
+UPDATE assignments
+SET enable_help_requests = 0
