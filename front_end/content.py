@@ -412,14 +412,18 @@ class Content:
         return False
 
     def get_user_info(self, user_id):
+        null_user_info = {"enable_vim": False, "user_id": None, "name": None, "given_name": None, "family_name": None, "locale": None, "ace_theme": None, "use_auto_complete": True, "email_address": None}
+
         sql = '''SELECT *
                  FROM users
                  WHERE user_id = ?'''
 
         user = self.fetchone(sql, (user_id,))
-        user_info = {"enable_vim": user["enable_vim"], "user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "email_address": user["email_address"]}
 
-        return user_info
+        if not user:
+            return null_user_info
+
+        return {"enable_vim": user["enable_vim"], "user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "email_address": user["email_address"]}
 
     def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role
