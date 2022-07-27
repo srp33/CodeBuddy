@@ -89,6 +89,22 @@
                 <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
             {% end %}
 
+            {% if is_administrator or is_instructor %}
+                <div class="buttons">
+                    <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+
+                    <a class="button is-outlined" href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a>
+
+                    {% if len(assignments) > 1 %}
+                        <a class="button is-outlined" onclick="showMoveExerciseModal()">Move exercise</a>
+                    {% end %}
+
+                    <a class="button is-outlined" onclick="showCopyExerciseModal()">Copy exercise</a>
+
+                    <a class="button is-outlined" onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
+                </div>
+            {% end %}
+
             <div class="instructions">
                 <!--<h6>Instructions:</h6>-->
                 <div id="instructions">{{ exercise_details["instructions"] }}</div>
@@ -280,20 +296,6 @@
                 {% end %}
 
                 <!--<button class="button is-light is-pulled-right" onclick="showLinkModal()">Share</button>-->
-
-                {% if is_administrator or is_instructor %}
-                    <a class="button is-outlined" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
-
-                    <a class="button is-outlined" href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a>
-
-                    {% if len(assignments) > 1 %}
-                        <a class="button is-outlined" onclick="showMoveExerciseModal()">Move exercise</a>
-                    {% end %}
-
-                    <a class="button is-outlined" onclick="showCopyExerciseModal()">Copy exercise</a>
-
-                    <a class="button is-outlined" onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
-                {% end %}
             </div>
 
             <div id="submit_exercise_modal" class="modal">

@@ -121,10 +121,6 @@ function showSuccessMessage(submission) {
         result += "<p><a class='grey-text' href='/view_peer_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> a solution from one of your peers.</p>";
     {% end %}
 
-    {% if "next_exercise" in globals() and next_exercise %}
-        result += "<p><a class='grey-text' href='/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}'>Go to</a> the next exercise.</p>\n\n";
-    {% end %}
-
     result += "</div>"
 
     $("#result_message")[0].innerHTML = result;
