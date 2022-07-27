@@ -1424,7 +1424,7 @@ class Content:
         null_course = {"id": "", "title": "", "visible": True, "exists": False}
 
         if not course_id:
-            null_course
+            return null_course
 
         sql = '''SELECT course_id, title, visible
                  FROM courses
