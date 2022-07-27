@@ -9,7 +9,7 @@ class EditAssignmentHandler(BaseUserHandler):
                 hour_options = list(range(13))
                 minute_options = list(range(61))
 
-                self.render("edit_assignment.html", courses=self.content.get_courses(), assignments=self.content.get_assignments(course), exercises=self.content.get_exercises(course, assignment), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), assignment_details=self.content.get_assignment_details(course, assignment), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_info=self.get_user_info())
+                self.render("edit_assignment.html", courses=self.get_courses(), assignments=self.content.get_assignments(course), exercises=self.content.get_exercises(course, assignment), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), assignment_details=self.content.get_assignment_details(course, assignment), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -98,7 +98,7 @@ class EditAssignmentHandler(BaseUserHandler):
             hour_options = list(range(13))
             minute_options = list(range(61))
 
-            self.render("edit_assignment.html", courses=self.content.get_courses(), assignments=self.content.get_assignments(course), exercises=self.content.get_exercises(course, assignment), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_info=self.get_user_info())
+            self.render("edit_assignment.html", courses=self.get_courses(), assignments=self.content.get_assignments(course), exercises=self.content.get_exercises(course, assignment), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_info=self.get_user_info())
 
         except Exception as inst:
             render_error(self, traceback.format_exc())

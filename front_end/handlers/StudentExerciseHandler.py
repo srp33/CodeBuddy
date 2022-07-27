@@ -4,7 +4,7 @@ class StudentExerciseHandler(BaseUserHandler):
     def get(self, course, assignment, exercise, student_id):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
-                courses = self.content.get_courses(True)
+                courses = self.get_courses(True)
                 assignments = self.content.get_assignments(course, True)
                 exercises = self.content.get_exercises(course, assignment, True)
                 course_basics = self.content.get_course_basics(course)

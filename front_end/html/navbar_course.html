@@ -1,16 +1,15 @@
             <div class="navbar-item has-dropdown is-hoverable">
-                {% if len(courses) > 0 and "course_basics" in globals() and course_basics["exists"] %}
+                {% if len(courses) > 1 and "course_basics" in globals() and course_basics["exists"] %}
                     <a class="navbar-link is-arrowless" href="/course/{{ course_basics['id'] }}">
                         {{ course_basics["title"] }}
+
                         <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
                     </a>
 
                     <div id="moreDropdown" class="navbar-dropdown">
-                    {% for course in courses %}
-                        {% if course[0] != course_basics["id"] %}
+                        {% for course in courses %}
                             <a class="navbar-item" href="/course/{{ course[0] }}">{{ course[1]["title"] }}</a>
                         {% end %}
-                    {% end %}
                     </div>
                 {% end %}
             </div>

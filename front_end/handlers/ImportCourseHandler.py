@@ -25,7 +25,7 @@ class ImportCourseHandler(BaseUserHandler):
                 self.content.specify_course_basics(course_basics, course_list[1], bool(course_list[3]))
 
                 # Check whether course already exists.
-                if self.content.has_duplicate_title(self.content.get_courses(), course_basics["id"], course_list[1]):
+                if self.content.has_duplicate_title(self.get_courses(), course_basics["id"], course_list[1]):
                     result = f"Error: A course with that title already exists."
                 else:
                     course_details = self.content.get_course_details(course_id)

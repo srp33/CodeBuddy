@@ -212,72 +212,7 @@
 
             <p id="result_message"></p>
 
-            <p><div id="submissions"></div></p>
-
-            <script>
-                ace.require("ace/ext/language_tools");
-                var editor = ace.edit("user_code", {
-                    theme: "ace/theme/{{ user_info['ace_theme'] }}",
-                    autoScrollEditorIntoView: false,
-                    minLines: 20,
-                    fontSize: "12pt"
-                });
-                let codeChanged = false
-
-                editor.session.on('change', function(delta) {
-                  codeChanged = true
-                });
-
-                {% if user_info['enable_vim'] %}
-                   editor.setKeyboardHandler("ace/keyboard/vim");
-                {% end %}
-
-                {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
-                    editor.setOptions({
-                        enableBasicAutocompletion: false,
-                        enableSnippets: true,
-                        enableLiveAutocompletion: true
-                    });
-                {% end %}
-
-                editor.focus();
-                editor.getSession().setMode("{{ code_completion_path }}");
-
-                // Autosave if code has changed
-//                setInterval(function() {
-//                    if (codeChanged) {
-//                        save_presubmission(true);
-//                    }
-//                }, 60 * 1000);
-
-                submitButton = document.getElementById("submit_button");
-
-                {% if exercise_details["enable_pair_programming"] %}
-                      if (submitButton != null)
-                          submitButton.onclick = function() {
-                              showSubmitModal()
-                      }
-                {% else %}
-                    if (submitButton != null) {
-                        submitButton.onclick = function() {
-                            if (submitButton.disabled)
-                                showErrorMessage("You are not allowed to make a submission.");
-                            else
-                                submit()
-                        }
-                    }
-                {% end %}
-
-                const tests = JSON.parse("{{ tests_json }}");
-
-                var submissions = JSON.parse("{{ submissions_json }}");
-                show_past_submissions();
-
-                if (submissions.length > 0)
-                    get_submission(submissions[submissions.length - 1].id, false, true);
-                else
-                    showTestOutputs(null, false);
-            </script>
+            <p id="submissions"></p>
 
             {% if len(exercise_details["credit"]) > 0 %}
                 <div class="front-row-container">
@@ -439,7 +374,70 @@
                 </div>
             </div>-->
 
+            <script>
+                ace.require("ace/ext/language_tools");
+                var editor = ace.edit("user_code", {
+                    theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                    autoScrollEditorIntoView: false,
+                    minLines: 20,
+                    fontSize: "12pt"
+                });
+                let codeChanged = false
 
+                editor.session.on('change', function(delta) {
+                  codeChanged = true
+                });
+
+                {% if user_info['enable_vim'] %}
+                   editor.setKeyboardHandler("ace/keyboard/vim");
+                {% end %}
+
+                {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
+                    editor.setOptions({
+                        enableBasicAutocompletion: false,
+                        enableSnippets: true,
+                        enableLiveAutocompletion: true
+                    });
+                {% end %}
+
+                editor.focus();
+                editor.getSession().setMode("{{ code_completion_path }}");
+
+                // Autosave if code has changed
+//                setInterval(function() {
+//                    if (codeChanged) {
+//                        save_presubmission(true);
+//                    }
+//                }, 60 * 1000);
+
+                submitButton = document.getElementById("submit_button");
+
+                {% if exercise_details["enable_pair_programming"] %}
+                      if (submitButton != null)
+                          submitButton.onclick = function() {
+                              showSubmitModal()
+                      }
+                {% else %}
+                    if (submitButton != null) {
+                        submitButton.onclick = function() {
+                            if (submitButton.disabled)
+                                showErrorMessage("You are not allowed to make a submission.");
+                            else
+                                submit()
+                        }
+                    }
+                {% end %}
+
+                const tests = JSON.parse("{{ tests_json }}");
+
+                var submissions = JSON.parse("{{ submissions_json }}");
+                show_past_submissions();
+
+                if (submissions.length > 0)
+                    get_submission(submissions[submissions.length - 1].id, false, true);
+                else
+                    showTestOutputs(null, false);
+            </script>
         {% else %}
             <p>This exercise does not exist.</p>
         {% end %}

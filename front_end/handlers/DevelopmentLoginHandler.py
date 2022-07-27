@@ -7,7 +7,7 @@ class DevelopmentLoginHandler(RequestHandler):
         self.content = Content(self.settings_dict)
 
     def get(self):
-        self.render("devlogin.html", courses=self.content.get_courses(False))
+        self.render("devlogin.html")
 
     def post(self):
         try:

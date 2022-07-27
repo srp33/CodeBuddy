@@ -4,7 +4,7 @@ class ProfileCoursesHandler(BaseUserHandler):
     def get(self, user_id):
         try:
             if self.is_administrator():
-                registered_courses = self.content.get_courses()
+                registered_courses = self.get_courses(True)
                 available_courses = None
             else:
                 registered_courses = self.content.get_registered_courses(user_id)
@@ -43,7 +43,7 @@ class ProfileCoursesHandler(BaseUserHandler):
                 result = "Error: Incorrect passcode."
 
             if self.is_administrator():
-                registered_courses = self.content.get_courses()
+                registered_courses = self.get_courses()
                 available_courses = None
             else:
                 registered_courses = self.content.get_registered_courses(user_id)

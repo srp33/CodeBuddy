@@ -476,7 +476,7 @@ class Content:
         else:
             return False
 
-    def get_courses_connected_to_user(self, user_id):
+    def get_courses_for_user(self, user_id):
         courses = []
         sql = '''SELECT p.course_id, c.title, c.consent_text
                  FROM permissions p
@@ -1421,15 +1421,19 @@ class Content:
             assignment_details["date_created"] = date_updated
 
     def get_course_basics(self, course_id):
-        if not course_id:
-            return {"id": "", "title": "", "visible": True, "exists": False}
+        null_course = {"id": "", "title": "", "visible": True, "exists": False}
 
+        if not course_id:
+            null_course
 
         sql = '''SELECT course_id, title, visible
                  FROM courses
                  WHERE course_id = ?'''
 
         row = self.fetchone(sql, (int(course_id),))
+
+        if not row:
+            return null_course
 
         return {"id": row["course_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True}
 
@@ -1507,14 +1511,19 @@ class Content:
         return row["code"] if row else None
 
     def get_course_details(self, course, format_output=False):
+        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "consent_text": "", "consent_alternative_text": ""}
+
         if not course:
-            return {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "consent_text": "", "consent_alternative_text": ""}
+            return null_course
 
         sql = '''SELECT introduction, passcode, date_created, date_updated, consent_text, consent_alternative_text
                  FROM courses
                  WHERE course_id = ?'''
 
         row = self.fetchone(sql, (int(course),))
+
+        if not row:
+            return null_course
 
         course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "consent_text": row["consent_text"], "consent_alternative_text": row["consent_alternative_text"]}
         if format_output:
@@ -1525,8 +1534,10 @@ class Content:
         return course_dict
 
     def get_assignment_details(self, course, assignment, format_output=False):
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "allowed_ip_addresses": None}
+
         if not assignment:
-            return {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "allowed_ip_addresses": None}
+            return null_assignment
 
         sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, allowed_ip_addresses, has_timer, hour_timer, minute_timer
                  FROM assignments
@@ -1534,6 +1545,9 @@ class Content:
                    AND assignment_id = ?'''
 
         row = self.fetchone(sql, (int(course), int(assignment),))
+
+        if not row:
+            return null_assignment
 
         assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
 
@@ -1546,8 +1560,10 @@ class Content:
         return assignment_dict
 
     def get_exercise_details(self, course, assignment, exercise):
+        null_exercise = {"instructions": "", "back_end": "python", "output_type": "txt", "allow_any_response": False, "solution_code": "", "solution_description": "", "hint": "", "max_submissions": 0, "starter_code": "", "credit": "", "data_files": [], "show_instructor_solution": True, "show_peer_solution": False, "date_created": None, "date_updated": None, "enable_pair_programming": False, "verification_code": "", "tests": {}}
+
         if not exercise:
-            return {"instructions": "", "back_end": "python", "output_type": "txt", "allow_any_response": False, "solution_code": "", "solution_description": "", "hint": "", "max_submissions": 0, "starter_code": "", "credit": "", "data_files": [], "show_instructor_solution": True, "show_peer_solution": False, "date_created": None, "date_updated": None, "enable_pair_programming": False, "verification_code": "", "tests": {}}
+            return null_exercise
 
         sql = '''SELECT instructions, back_end, output_type, allow_any_response, solution_code, solution_description, hint, max_submissions, starter_code, credit, data_files, show_instructor_solution, show_peer_solution, date_created, date_updated, enable_pair_programming, verification_code
                  FROM exercises
@@ -1556,6 +1572,9 @@ class Content:
                    AND exercise_id = ?'''
 
         row = self.fetchone(sql, (int(course), int(assignment), int(exercise),))
+
+        if not row:
+            return null_exercise
 
         exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "allow_any_response": row["allow_any_response"], "solution_code": row["solution_code"], "solution_description": row["solution_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "credit": row["credit"], "data_files": json.loads(row["data_files"]), "show_instructor_solution": row["show_instructor_solution"], "show_peer_solution": row["show_peer_solution"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"], "verification_code": row["verification_code"], "tests": {}}
 

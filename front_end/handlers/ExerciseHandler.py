@@ -6,7 +6,7 @@ class ExerciseHandler(BaseUserHandler):
         try:
             show = self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
 
-            courses = self.content.get_courses(show)
+            courses = self.get_courses(show)
             assignments = self.content.get_assignments(course, show)
             exercises = self.content.get_exercises(course, assignment, show)
 

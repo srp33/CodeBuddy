@@ -42,7 +42,7 @@ class ProfileManageUsersHandler(BaseUserHandler):
                             result = f"Error: At least one administrator must remain in the system."
                     elif self.content.user_has_role(delete_user, course_id, "instructor"):
                         if len(self.content.get_users_from_role(course_id, "instructor")) > 1:
-                            if self.content.is_administrator(user_id):
+                            if self.content.is_administrator(self.get_user_id()):
                                 self.content.delete_user(delete_user)
                                 result = f"Success: The user '{delete_user}' has been deleted."
                             else:

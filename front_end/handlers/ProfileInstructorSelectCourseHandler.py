@@ -6,7 +6,7 @@ class ProfileInstructorSelectCourseHandler(BaseUserHandler):
             if self.is_administrator():
                 courses = self.content.get_courses()
             elif self.is_instructor():
-                courses = self.content.get_courses_connected_to_user(user_id)
+                courses = self.content.get_courses_for_user(user_id)
 
             if len(courses) > 1:
                 self.render("profile_instructor_select_course.html", courses=courses, page="instructor", user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant(), registered_courses=self.content.get_registered_courses(user_id))

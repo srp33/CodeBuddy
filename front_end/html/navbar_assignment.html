@@ -7,12 +7,8 @@
 
                     <div id="moreDropdown" class="navbar-dropdown">
                     {% for assignment in assignments %}
-                        {% if assignment[0] != assignment_basics["id"] %}
-                            <a class="navbar-item" href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
-                        {% end %}
+                        <a class="navbar-item" href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
                     {% end %}
                     </div>
                 {% end %}
             </div>
-            <div class="navbar-item"></div>
-            <div class="navbar-item"></div>

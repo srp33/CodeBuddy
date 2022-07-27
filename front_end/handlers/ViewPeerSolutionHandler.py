@@ -8,7 +8,7 @@ class ViewPeerSolutionHandler(BaseUserHandler):
             user = self.get_user_id()
             user_info = self.get_user_info()
 
-            courses = self.content.get_courses()
+            courses = self.get_courses()
             assignments = self.content.get_assignments(course)
             exercises = self.content.get_exercises(course, assignment)
             course_basics = self.content.get_course_basics(course)

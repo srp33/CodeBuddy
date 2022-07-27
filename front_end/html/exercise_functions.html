@@ -376,7 +376,7 @@ function show_past_submissions() {
                 submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date}</button>`;
         }
 
-        submission_html += "</div><br />";
+        submission_html += "</div>";
     }
 
     submissions_div.innerHTML = submission_html;
