@@ -160,6 +160,9 @@ if __name__ == "__main__":
 
             if "***NotNeeded***" in result:
                 print("Database migration not needed.")
+
+                if ((v + 1) == code_version):
+                    content.update_database_version(v + 1)
             elif "***Success***" in result:
                 print(f"Database successfully migrated to version {v+1}")
                 content.update_database_version(v + 1)
