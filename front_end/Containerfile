@@ -2,11 +2,15 @@ FROM python:3.9.6-slim-buster
 
 RUN apt-get update \
  && apt-get install -y bzip2 zip nodejs npm wget curl git vim \
-                       sqlite3 libmariadb3 libmariadb-dev \
+                       sqlite3 libmariadb3 libmariadb-dev openssl \
  && apt-get -y autoremove \
  && apt-get clean
 
-RUN mkdir -p /app /conda /course /migration_scripts /scheduled_scripts /static
+RUN mkdir -p /app /certs /conda /course /migration_scripts /scheduled_scripts /static
+
+RUN openssl req -new -newkey rsa:2048 -days 30650 -nodes -x509 -keyout /certs/cert.key -out /certs/cert.crt -subj "/  C=GB/ST=London/L=London/O=Global Security/OU=IT Department/CN=example.com" \
+ && chmod 644 /certs/cert.key \
+ && chmod 644 /certs/cert.crt
 
 # See https://jtreminio.com/blog/running-docker-containers-as-current-host-user/#ok-so-what-actually-works
 ARG USER_ID=1000

@@ -1,4 +1,5 @@
 mode: development
+#mode: production
 domain: codebuddy.ls.byu.edu
 db_name: CodeBuddy.db
 allowed_external_urls:

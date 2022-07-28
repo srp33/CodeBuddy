@@ -171,7 +171,14 @@ if __name__ == "__main__":
                 print(result)
                 sys.exit(1)
 
-        server = tornado.httpserver.HTTPServer(application)
+        if settings_dict["mode"] == "development":
+            server = tornado.httpserver.HTTPServer(application)
+        else:
+            server = tornado.httpserver.HTTPServer(application, ssl_options={
+              "certfile": "/certs/cert.crt",
+              "keyfile": "/certs/cert.key",
+            })
+
         server.bind(int(os.environ['PORT']))
         server.start(int(os.environ['NUM_PROCESSES']))
 

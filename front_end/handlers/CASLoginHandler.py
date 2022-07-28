@@ -15,7 +15,8 @@ class CASLoginHandler(RequestHandler):
             if self.settings_dict["mode"] == "production":
                 service_url = f"https://{self.settings_dict['domain']}/login?next=%2Flogin"
             else:
-                service_url="http://lscodebuddy.byu.edu:8008/login?next=%2Flogin"
+                raise Exception("You cannot authenticate with CAS in development mode")
+                #service_url="http://codebuddy.ls.byu.edu:8008/login?next=%2Flogin"
 
             server_url="https://cas.byu.edu/cas/"
 
