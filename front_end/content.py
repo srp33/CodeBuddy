@@ -1760,9 +1760,22 @@ class Content:
 
                 for title in exercise_details["tests"]:
                     sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-                    test_id = cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], title, exercise_details["tests"][title]["before_code"], exercise_details["tests"][title]["after_code"], exercise_details["tests"][title]["instructions"], exercise_details["tests"][title]["txt_output"], exercise_details["tests"][title]["jpg_output"], exercise_details["tests"][title]["can_see_test_code"], exercise_details["tests"][title]["can_see_expected_output"], exercise_details["tests"][title]["can_see_code_output"]])
+                    test_id = cursor.execute(sql, [
+                        exercise_basics["assignment"]["course"]["id"],
+                        exercise_basics["assignment"]["id"],
+                        exercise_basics["id"],
+                        title,
+                        exercise_details["tests"][title]["before_code"],
+                        exercise_details["tests"][title]["after_code"],
+                        exercise_details["tests"][title]["instructions"],
+                        exercise_details["tests"][title]["txt_output"],
+                        exercise_details["tests"][title]["jpg_output"],
+                        exercise_details["tests"][title]["can_see_test_code"],
+                        exercise_details["tests"][title]["can_see_expected_output"],
+                        exercise_details["tests"][title]["can_see_code_output"],
+                    ])
 
             cursor.execute("COMMIT")
         except self.conn.Error:

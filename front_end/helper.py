@@ -134,7 +134,10 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
                  "timeout_seconds": timeout
                  }
 
-    response = requests.post(f"http://127.0.0.1:{os.environ['MPORT']}/exec/", json.dumps(data_dict), timeout=timeout)
+    host = os.environ['MHOST']
+    if not host:
+        host = '127.0.0.1'
+    response = requests.post(f"http://{host}:{os.environ['MPORT']}/exec/", json.dumps(data_dict), timeout=timeout)
     response = json.loads(response.content)
 
     if add_formatted_txt:
