@@ -47,7 +47,7 @@ function run_container {
     ${image_name}
 }
 
-args="-e NUM_PROCESSES=2 -e PORT=8008 -e MPORT=9798 -e MHOST=host.docker.internal -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets"
+args="-e NUM_PROCESSES=2 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets"
 
 # if MacOS, set the MHOST environment variable and bind the port 8008
 if [[ $(uname) == "Darwin" ]]
