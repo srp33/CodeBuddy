@@ -47,7 +47,18 @@ function run_container {
     ${image_name}
 }
 
+args="-e NUM_PROCESSES=2 -e PORT=8008 -e MPORT=9798 -e MHOST=host.docker.internal -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets"
+
+# if MacOS, set the MHOST environment variable and bind the port 8008
+if [[ $(uname) == "Darwin" ]]
+then
+  args="-p 8008:8008 -e MHOST=host.docker.internal $args"
+# otherwise, assume linux and use the network host which does not work on Docker for Mac
+else
+  args="--network host $args"
+fi
+
+echo "ARGS: $args"
 #run_container front_end "--network host -e NUM_PROCESSES=4 -e PORT=9001 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets" ""
 #run_container front_end "--network host -e NUM_PROCESSES=2 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets" ""
-run_container front_end "--network host -e NUM_PROCESSES=2 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets" ""
-#run_container front_end "-p 8008:8008 -e NUM_PROCESSES=2 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets" ""
+run_container front_end "$args" ""
