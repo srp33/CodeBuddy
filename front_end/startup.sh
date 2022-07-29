@@ -8,4 +8,4 @@
 #bash /scheduled_scripts/restore_database.sh
 
 echo "Starting server..."
-python /app/webserver.py
+python /app/server/webserver.py

@@ -15,3 +15,8 @@ backup
 2_*
 .idea
 .remote*
+.vscode/
+node_modules/
+.DS_Store
+static/
+front_end/server/html/
