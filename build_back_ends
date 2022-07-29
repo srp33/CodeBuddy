@@ -2,23 +2,36 @@
 
 set -o errexit
 
+mode=${1}
+
+if [[ "${mode}" == "" ]]
+then
+  echo Please specify the mode when building the back end containers.
+  exit 1
+fi
+
 current_dir="$(pwd)"
 tmp_dir=/tmp/codebuddy_backends
 
 for container_dir in ${current_dir}/back_ends/*
 do
     dir_name=$(basename ${container_dir})
-    image_name=srp33/codebuddy_${dir_name}
+    image_name=codebuddy/${dir_name}_${mode}
     dir_path=${tmp_dir}/${dir_name}
 
-    rm -rf ${dir_pat}
+    rm -rf ${dir_path}
     mkdir -p ${dir_path}
 
     cp -r ${container_dir}/* ${dir_path}/
     cp ${current_dir}/exec_back_end.sh ${dir_path}/exec.sh
 
     cd ${dir_path}
-    docker build -t ${image_name} -f Containerfile .
 
-    rm -rf ${dir_pat}
+    docker build \
+        -t ${image_name}:version$(cat VERSION) \
+        -t ${image_name}:latest \
+        -f Containerfile \
+        .
+
+    rm -rf ${dir_path}
 done

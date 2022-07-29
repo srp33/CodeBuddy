@@ -269,20 +269,21 @@ function buildTestOutput(test_outputs, test_title, show_title, is_last) {
 
     if (test_outputs[test_title].passed != null) {
         if (tests[test_title].can_see_code_output) {
-            var user_output = "";
+            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</div>';
 
-            if (test_outputs[test_title]["txt_output"] != null && test_outputs[test_title]["txt_output"] != "") {
-                user_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + test_outputs[test_title]["txt_output_formatted"] + '</pre>';
+            if ("{{ exercise_details["output_type"] }}" == "txt" || test_outputs[test_title]["txt_output"] != "")
+                output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + test_outputs[test_title]["txt_output_formatted"] + '</pre>';
+
+            if ("{{ exercise_details["output_type"] }}" == "jpg") {
+                if (test_outputs[test_title]["jpg_output"] == "") {
+                    output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">[No image was generated.]</pre>';
+                }
+                else {
+                    output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_outputs[test_title]["jpg_output"] + '" width="100%" /></p>';
+                }
             }
 
-            if (test_outputs[test_title]["jpg_output"] != null && test_outputs[test_title]["jpg_output"] != "") {
-                user_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_outputs[test_title]["jpg_output"] + '" width="100%" /></p>';
-            }
-
-            if (user_output != "")
-                output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</div>' + user_output;
-
-            if (test_outputs[test_title]["diff_output"] != null && test_outputs[test_title]["diff_output"] != "") {
+            if (test_outputs[test_title]["diff_output"] != "") {
                 output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</div>`;
 
                 {% if exercise_details["output_type"] == "txt" %}

@@ -124,7 +124,7 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
     this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
     timeout = this_settings_dict["timeout_seconds"]
 
-    data_dict = {"image_name": this_settings_dict["image_name"],
+    data_dict = {"image_name": f"codebuddy/{exercise_details['back_end']}_{settings_dict['mode']}",
                  "code": code.strip(),
                  "tests": exercise_details["tests"],
                  "verification_code": verification_code,

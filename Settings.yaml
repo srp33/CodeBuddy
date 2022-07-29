@@ -1,6 +1,16 @@
 mode: development
 #mode: production
 domain: codebuddy.ls.byu.edu
+#domain: codebuddy.byu.edu
+f_port: 8008
+m_port: 9798
+f_num_processes: 2
+m_num_processes: 2
+f_memory_gb: 4
+f_run_in_background: no
+#f_run_in_background: yes
+m_run_in_background: no
+#m_run_in_background: yes
 db_name: CodeBuddy.db
 allowed_external_urls:
   - https://github.com/rstudio/cheatsheets/raw/main/base-r.pdf
@@ -14,7 +24,6 @@ allowed_external_urls:
 back_ends:
     bash:
         description: bash commands
-        image_name: srp33/codebuddy_bash
         memory_allowed_mb: 500
         timeout_seconds: 60
         code_completion_path: ace/mode/plain_text
@@ -41,7 +50,6 @@ back_ends:
         after_test_example: ""
     python:
         description: Please write Python code based on the instructions provided.
-        image_name: srp33/codebuddy_python
         memory_allowed_mb: 500
         timeout_seconds: 60
         code_completion_path: ace/mode/python
@@ -58,7 +66,6 @@ back_ends:
         after_test_example: "print(add_numbers(2, 3))"
     python_script:
         description: Please write Python code based on the instructions provided. Your code will be stored in a script called code.py.
-        image_name: srp33/codebuddy_python_script
         memory_allowed_mb: 500
         timeout_seconds: 60
         code_completion_path: ace/mode/python
@@ -75,7 +82,6 @@ back_ends:
         after_test_example: "python code.py \"Hello world!\""
     r:
         description: Please write R code based on the instructions provided.
-        image_name: srp33/codebuddy_r
         memory_allowed_mb: 500
         timeout_seconds: 60
         code_completion_path: ace/mode/r

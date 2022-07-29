@@ -2,63 +2,64 @@
 
 mkdir -p database logs/summarized logs/archive
 
-function run_container {
-  subdir_name="$1"
-  run_args="$2"
-  tag="$3"
+mode=$(grep "^mode: " Settings.yaml | sed "1s/mode: //")
+f_port=$(grep "^f_port: " Settings.yaml | sed "1s/f_port: //")
+m_port=$(grep "^m_port: " Settings.yaml | sed "1s/m_port: //")
+f_num_processes=$(grep "^f_num_processes: " Settings.yaml | sed "1s/f_num_processes: //")
+f_memory_gb=$(grep "^f_memory_gb: " Settings.yaml | sed "1s/f_memory_gb: //")
+f_run_in_background=$(grep "^f_run_in_background: " Settings.yaml | sed "1s/f_run_in_background: //")
 
-  if [[ "${subdir_name}" == "" ]]
-  then
-    echo "No subdirectory name was specified."
-    exit 1
-  fi
+args="-e NUM_PROCESSES=${f_num_processes} -e PORT=${f_port} -e MPORT=${m_port} -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets"
 
-  if [[ "${tag}" == "" ]]
-  then
-    tag=version$(cat VERSION)
-  fi
+# If MacOS, set the MHOST environment variable and bind the port
+if [[ $(uname) == "Darwin" ]]
+then
+  # Otherwise, assume Linux and use the network host which does not work on Docker for Mac
+  args="-p ${f_port}:${f_port} -e MHOST=host.docker.internal $args"
+else
+  args="--network host $args"
+fi
 
-  container_name=${subdir_name}_$USER
+echo "ARGS: ${args}"
 
-  docker container stop ${container_name} 2> /dev/null
+container_name=front_end_${mode}_${USER}
 
-  set -o errexit
+docker container stop ${container_name} 2> /dev/null
 
-  image_name=srp33/codebuddy_${subdir_name}
+# We run this after the stop command; otherwise, it will not continue past this point if there is no container running. There's probably a better way.
+set -o errexit
 
-  docker build -t ${image_name} \
-               -f ${subdir_name}/Containerfile \
-               --build-arg USER_ID=$(id -u ${USER}) \
-               --build-arg GROUP_ID=$(id -g ${USER}) \
-               .
+image_name=codebuddy/front_end_${mode}
 
-  mkdir -p /tmp/cache
+docker build -t ${image_name}:version$(cat VERSION) \
+             -t ${image_name}:latest \
+             -f front_end/Containerfile \
+             --build-arg USER_ID=$(id -u ${USER}) \
+             --build-arg GROUP_ID=$(id -g ${USER}) \
+             .
+mkdir -p /tmp/cache
 
-  #docker run -d \
-  docker run -i -t \
-    --rm \
-    --memory=4g \
+if [[ "${f_run_in_background}" = "yes" ]]
+then
+  docker run -d \
+    --restart "unless-stopped" \
+    --memory=${f_memory_gb}g \
     --cap-drop=ALL \
     --log-driver=none \
     --name ${container_name} \
     --read-only \
     -v /tmp/cache:/tmp/cache \
-    ${run_args} \
+    ${args} \
     ${image_name}
-}
-
-args="-e NUM_PROCESSES=2 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets"
-
-# if MacOS, set the MHOST environment variable and bind the port 8008
-if [[ $(uname) == "Darwin" ]]
-then
-  args="-p 8008:8008 -e MHOST=host.docker.internal $args"
-# otherwise, assume linux and use the network host which does not work on Docker for Mac
 else
-  args="--network host $args"
+  docker run -i -t \
+    --rm \
+    --memory=${f_memory_gb}g \
+    --cap-drop=ALL \
+    --log-driver=none \
+    --name ${container_name} \
+    --read-only \
+    -v /tmp/cache:/tmp/cache \
+    ${args} \
+    ${image_name}
 fi
-
-echo "ARGS: $args"
-#run_container front_end "--network host -e NUM_PROCESSES=4 -e PORT=9001 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets" ""
-#run_container front_end "--network host -e NUM_PROCESSES=2 -e PORT=8008 -e MPORT=9798 -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets" ""
-run_container front_end "$args" ""
