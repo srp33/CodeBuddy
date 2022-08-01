@@ -32,15 +32,16 @@ set -o errexit
 image_name=codebuddy/front_end_${mode}
 
 cp Settings.yaml front_end/
+cp VERSION front_end/
 
-docker build -t ${image_name}:version$(cat front_end/VERSION) \
+docker build -t ${image_name}:version$(cat VERSION) \
              -t ${image_name}:latest \
              -f front_end/Containerfile \
              --build-arg USER_ID=$(id -u ${USER}) \
              --build-arg GROUP_ID=$(id -g ${USER}) \
              ./front_end
 
-rm -f front_end/Settings.yaml
+rm -f front_end/Settings.yaml front_end/VERSION
 
 mkdir -p /tmp/cache
 

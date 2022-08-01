@@ -24,6 +24,7 @@ do
 
     cp -r ${container_dir}/* ${dir_path}/
     cp ${current_dir}/exec_back_end.sh ${dir_path}/exec.sh
+    cp ${current_dir}/VERSION ${dir_path}/
 
     cd ${dir_path}
 

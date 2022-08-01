@@ -70,17 +70,21 @@ def exec(info: ExecInfo):
                 with open(f"{info.tests[test_title]['dir_path']}/{file_name}", "w") as data_file:
                     data_file.write(contents)
 
-        # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-        docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
+        if info.timeout_seconds <= 0:
+            docker_command = f"docker run --rm --user $(id -u):$(id -g) --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
+        else:
+            # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
+            docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
         stdout = result.stdout.decode().replace(docker_warning, "")
 
         # Check whether the command timed out.
-        if result.returncode == 137 or stdout == "Killed":
+        if result.returncode == 137 or stdout == "Killed" and info.timeout_seconds > 0:
             raise Exception(f"The time to execute your code exceeded the timeout ({info.timeout_seconds} seconds) or was unable to complete for some other reason.")
 
+        print(stdout)
         if result.returncode != 0:
             raise Exception(f"The following error occurred on the back end: {stdout}")
 

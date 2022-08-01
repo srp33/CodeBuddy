@@ -126,7 +126,11 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
         return response
 
     this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
-    timeout = this_settings_dict["timeout_seconds"]
+
+    if settings_dict["mode"] == "development":
+        timeout = -1
+    else:
+        timeout = this_settings_dict["timeout_seconds"]
 
     data_dict = {"image_name": f"codebuddy/{exercise_details['back_end']}_{settings_dict['mode']}",
                  "code": code.strip(),
@@ -143,7 +147,11 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
     else:
         host = '127.0.0.1'
 
-    response = requests.post(f"http://{host}:{os.environ['MPORT']}/exec/", json.dumps(data_dict), timeout=timeout)
+    request_timeout = 30
+    if settings_dict["mode"] != "development":
+        request_timeout = timeout
+
+    response = requests.post(f"http://{host}:{os.environ['MPORT']}/exec/", json.dumps(data_dict), timeout=request_timeout)
     response = json.loads(response.content)
 
     if add_formatted_txt:

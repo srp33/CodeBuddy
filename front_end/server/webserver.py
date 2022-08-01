@@ -151,7 +151,7 @@ if __name__ == "__main__":
         content = Content(settings_dict)
 
         database_version = content.get_database_version()
-        code_version = int(read_file("VERSION").rstrip())
+        code_version = int(read_file("../VERSION").rstrip())
 
         if database_version != code_version:
             print(f"Current database version: {database_version}")
