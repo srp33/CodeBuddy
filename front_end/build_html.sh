@@ -3,7 +3,8 @@
 # Simple pages
 OUTPUT="/app"
 if [[ $1 != "" ]]; then
-  OUTPUT=$(realpath $1)
+  #OUTPUT=$(realpath $1)
+  OUTPUT=$(pwd)/$1
 fi
 
 mkdir -p $OUTPUT

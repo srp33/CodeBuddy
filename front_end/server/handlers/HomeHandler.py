@@ -7,7 +7,7 @@ class HomeHandler(RequestHandler):
     def prepare(self):
         self.user_info_var = contextvars.ContextVar("user_info")
         self.user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
-        self.settings_dict = load_yaml_dict(read_file("Settings.yaml"))
+        self.settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
         self.content = Content(self.settings_dict)
 
         try:

@@ -52,7 +52,7 @@ RUN python -m spacy download en_core_web_sm
 
 WORKDIR /app
 ADD VERSION .
-ADD Settings.yaml .
+ADD Settings.yaml /
 ADD startup.sh .
 ADD server ./server
 ADD migration_scripts ./migration_scripts
@@ -60,4 +60,4 @@ ADD scheduled_scripts ./scheduled_scripts
 COPY --from=builder /front_end/static ./static
 COPY --from=builder /front_end/html ./server/html
 
-ENTRYPOINT ["bash", "/app/startup.sh"]
+#ENTRYPOINT ["bash", "/app/startup.sh"]

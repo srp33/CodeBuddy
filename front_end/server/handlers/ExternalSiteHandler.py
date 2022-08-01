@@ -10,7 +10,7 @@ class ExternalSiteHandler(RequestHandler):
             url = re.sub(r"https://?", "https://", url)
             url = re.sub(r"http://?", "http://", url)
 
-            settings_dict = load_yaml_dict(read_file("Settings.yaml"))
+            settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
 
             if url in settings_dict["allowed_external_urls"]:
                 url_hash = hashlib.md5(url.encode()).hexdigest()

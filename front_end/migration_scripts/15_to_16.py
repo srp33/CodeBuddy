@@ -8,7 +8,7 @@ sys.path.append('./server')
 from helper import *
 from content import *
 
-settings_dict = load_yaml_dict(read_file("Settings.yaml"))
+settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
 content = Content(settings_dict)
 
 version = read_file("VERSION").rstrip()
@@ -42,6 +42,6 @@ else:
             except:
                 pass
     else:
-        for sql in sql_statements:    
+        for sql in sql_statements:
             content.execute(sql)
         print("***Success***")

@@ -6,7 +6,7 @@ import sys
 sys.path.append('./server')
 from helper import *
 
-settings_dict = load_yaml_dict(read_file("Settings.yaml"))
+settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
 
 conn = open_db(settings_dict['db_name'])
 conn.row_factory = sqlite3.Row
