@@ -19,7 +19,7 @@ cursor.execute("PRAGMA foreign_keys=ON")
 atexit.register(conn.close)
 atexit.register(cursor.close)
 
-version = read_file("VERSION").rstrip()
+version = read_file("../VERSION").rstrip()
 
 # This tells us whether the migration has already happened.
 check_sql = '''SELECT COUNT(*) AS count

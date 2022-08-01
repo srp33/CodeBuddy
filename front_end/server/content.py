@@ -2283,7 +2283,7 @@ class Content:
         return temp_dir_path, zip_file_name, zip_file_path
 
     def zip_export_files(self, temp_dir_path, zip_file_name, zip_file_path, descriptor):
-        os.system(f"cp VERSION {temp_dir_path}/{descriptor}/")
+        os.system(f"cp ../VERSION {temp_dir_path}/{descriptor}/")
         os.system(f"cd {temp_dir_path}; zip -r -qq {zip_file_path} .")
 
     def create_export_paths(self, temp_dir_path, descriptor):
