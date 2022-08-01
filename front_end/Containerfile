@@ -1,7 +1,7 @@
 FROM node:18-buster-slim as builder
 
 WORKDIR /front_end
-ADD package*.json .
+ADD package*.json /front_end/
 ADD build.js .
 ADD build_html.sh .
 ADD ui ./ui
