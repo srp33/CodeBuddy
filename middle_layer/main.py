@@ -84,7 +84,6 @@ def exec(info: ExecInfo):
         if result.returncode == 137 or stdout == "Killed" and info.timeout_seconds > 0:
             raise Exception(f"The time to execute your code exceeded the timeout ({info.timeout_seconds} seconds) or was unable to complete for some other reason.")
 
-        print(stdout)
         if result.returncode != 0:
             raise Exception(f"The following error occurred on the back end: {stdout}")
 
