@@ -1,0 +1,449 @@
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        {% if exercise_basics["exists"] %}
+            <link rel="stylesheet" href="/static/css/modal.css">
+            <link rel="stylesheet" href="/static/css/timer.css">
+
+            <script>
+                function startTimer() {
+                    start_time_js = new Date("{{ start_time }}");
+                    start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
+
+                    var deadline = start_time_js;
+                    deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
+                    deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
+
+                    initializeClock('clockdiv', deadline);
+                }
+
+                function getTimeRemaining(endtime){
+                    const total = Date.parse(endtime) - Date.parse(new Date());
+                    const seconds = Math.floor( (total/1000) % 60 );
+                    const minutes = Math.floor( (total/1000/60) % 60 );
+                    const hours = Math.floor( (total/(1000*60*60)) % 24 );
+
+                    return {
+                        total,
+                        hours,
+                        minutes,
+                        seconds
+                    };
+                }
+
+                function initializeClock(id, endtime) {
+                    const clock = document.getElementById(id);
+                    const hoursSpan = clock.querySelector('.hours');
+                    const minutesSpan = clock.querySelector('.minutes');
+                    const secondsSpan = clock.querySelector('.seconds');
+
+                    function updateClock(){
+                        const t = getTimeRemaining(endtime);
+                        hoursSpan.innerHTML = t.hours;
+                        minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+                        secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+
+                        if (t.total == 120000) {
+                            var modal = document.getElementById("time_modal");
+                            var span = document.getElementsByClassName("close")[0];
+                            modal.style.display = "block";
+                            span.onclick = function() {
+                                modal.style.display = "none";
+                            }
+                            window.onclick = function(event) {
+                                if (event.target == modal) {
+                                    modal.style.display = "none";
+                                }
+                            }
+                        }
+
+                        if (t.total <= 0) {
+                            clearInterval(timeinterval);
+                            hoursSpan.innerHTML = 0;
+                            minutesSpan.innerHTML = 0;
+                            secondsSpan.innerHTML = 0;
+
+                            {% if not (assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime) %}
+                                window.location.replace("/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
+                            {% end %}
+                        }
+                    }
+
+                    updateClock(); // run function once at first to avoid delay
+                    var timeinterval = setInterval(updateClock,1000);
+                }
+            </script>
+
+            <!--<div>
+              <h4 style="display: inline-block;">Assignment: {{ exercise_basics["assignment"]["title"] }}</h4>
+              <div class="row-container">
+                  <div>
+                      <h5 style="display: inline-block;">Exercise: {{ exercise_basics["title"] }}</h5>
+                  </div>
+              </div>
+            </div>-->
+
+            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
+                <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
+            {% end %}
+            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
+                <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
+            {% end %}
+
+            {% if is_administrator or is_instructor %}
+                <div class="buttons">
+                    <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+
+                    <a class="button is-outlined" href="/exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View scores</a>
+
+                    {% if len(assignments) > 1 %}
+                        <a class="button is-outlined" onclick="showMoveExerciseModal()">Move exercise</a>
+                    {% end %}
+
+                    <a class="button is-outlined" onclick="showCopyExerciseModal()">Copy exercise</a>
+
+                    <a class="button is-outlined" onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
+                </div>
+            {% end %}
+
+            <div class="instructions">
+                <!--<h6>Instructions:</h6>-->
+                <div id="instructions">{{ exercise_details["instructions"] }}</div>
+                {% if exercise_basics["enable_pair_programming"] %}
+                    <hr>
+                    <p><i style='margin: 0 .5em;' class="fab fa-product-hunt"></i><em>Pair programming is enabled for this exercise.</em></p>
+                {% end %}
+            </div>
+
+            {% if len(exercise_details["data_files"]) > 0 %}
+                <div id="data_file_div" class="top-space">
+                <h6>Data files:</h6>
+                {% for data_file_index in range(len(exercise_details["data_files"])) %}
+                    <p>
+                        <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">{{ list(exercise_details["data_files"].keys())[data_file_index] }}</a>
+                        <a class="button is-white" id="data_button_{{ data_file_index }}" onclick="showHideData('data_panel_{{ data_file_index }}', 'data_button_{{ data_file_index }}')">Show</a>
+                    </p>
+                    <pre id="data_panel_{{ data_file_index }}" hidden>
+                        {{ exercise_details["data_files"][sorted(list(exercise_details["data_files"].keys()))[data_file_index]] }}
+                    </pre>
+                {% end %}
+                </div>
+            {% end %}
+
+            {% if exercise_details["hint"] != "" %}
+                <div class="top-space">
+                    <button id="hint_button" class="button is-warning" onclick="showHideHint()">Show hint</button>
+                </div>
+
+                <div id="hint_text" class="is-hidden hint-text"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
+            {% end %}
+
+            <!--Here's the assignment timer.-->
+
+            {% if assignment_details["has_timer"] %}
+                {% if start_time %}
+                    <div id="clockdiv">
+                    <div>
+                        <span class="hours"></span>
+                        <div class="smalltext">Hours</div>
+                    </div>
+                    <div>
+                        <span class="minutes"></span>
+                        <div class="smalltext">Minutes</div>
+                    </div>
+                    <div>
+                        <span class="seconds"></span>
+                        <div class="smalltext">Seconds</div>
+                    </div>
+                    </div>
+                    <script>startTimer();</script>
+                {% end %}
+            {% end %}
+
+            <p class="top-space" id="user_code_area">
+                <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and num_submissions == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+                <!--
+                {% if assignment_details["enable_help_requests"] %}
+                    <div class="buttons is-pulled-right">
+                        {% if help_request %}
+                            {% if help_request["more_info_needed"] %}
+                                <a class="button is-danger is-light" onclick="showHelpRequestModal()">More info needed</a>
+                            {% elif same_suggestion %}
+                                <a class="button is-success is-light" onclick="showMatchingModal()">Matching suggestion</a>
+                            {% elif help_request["approved"] %}
+                                <a class="button is-primary" onclick="showSuggestionModal()">View suggestion</a>
+                            {% else %}
+                                <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
+                            {% end %}
+                        {% else %}
+                            <a class="button is-white" onclick="showHelpRequestModal()">Request help</a>
+                        {% end %}
+                    </div>
+                {% end %}
+                -->
+            </p>
+
+            <div id="saved_div" style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"></div>
+
+            <div class="buttons">
+                <!--<a class="button is-medium is-primary" onclick='save_presubmission(false)'>Save</a>-->
+                {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
+                    <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
+                {% end %}
+
+                <a class="button is-medium is-dark" id='submit_button'>Submit</a>
+
+                {% if exercise_details["allow_any_response"] %}
+                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
+                {% else %}
+                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. You can highlight a section of your solution and then hit 'Run' to test just that section. If you highlight a section of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation." />
+                {% end %}
+
+                <i class="far fa-question-circle"></i>
+            </div>
+
+            <div id="max_submissions_message"></div>
+
+            {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
+                <script>document.getElementById("submit_button").disabled = true;</script>
+                <div class='notification is-warning'><p>Click <a style='color:#2166ac' href="/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.</p></div>
+            {% end %}
+
+            <p id="test_outputs"></p>
+
+            <p id="result_message"></p>
+
+            <p id="submissions"></p>
+
+            {% if len(exercise_details["credit"]) > 0 %}
+                <div class="front-row-container">
+                    <p style="padding-right: 5px;"><em>Credit: </em></p>
+                    <p><em>{{ exercise_details["credit"] }}</em></p>
+                </div>
+            {% end %}
+
+            <div class="buttons">
+                {% if prev_exercise %}
+                    <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+                {% end %}
+
+                {% if next_exercise %}
+                    <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+                {% end %}
+
+                <!--<button class="button is-light is-pulled-right" onclick="showLinkModal()">Share</button>-->
+            </div>
+
+            <div id="submit_exercise_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h6 style="display:inline">Pair programming:</h6>
+                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
+                        <i class="far fa-question-circle"></i>
+                    </label><br />
+
+                    <div id="submit_exercise_modal_message"></div>
+
+                    <div id="partner_selection">
+                        <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
+                        {% if users %}
+                            <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
+                            <datalist id="users_list">
+                                {% for user_name in users %}
+                                    <option value="{{ user_name }}"></option>
+                                {% end %}
+                            </datalist>
+                        {% else %}
+                            <p>There are no other registered students in this course, so your only option is to leave this field blank.</p>
+                        {% end %}
+
+                        <input type="hidden" id="partner_id" />
+                    </div>
+
+                    <p class="buttons">
+                        <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
+                    </p>
+                </div>
+            </div>
+
+            <div id="move_exercise_modal" class="modal">
+                <form method="post" action="/move_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
+                <div class="modal-content">
+                    <!--<span class="close">&times;</span>-->
+                    <p>Move an exercise to a different assignment:</p>
+                    <div class="select is-light">
+                        <select name="new_assignment_id" id="new_assignment_id">
+                        {% for assignment in assignment_options %}
+                            <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
+                        {% end %}
+                        </select>
+                    </div>
+                    <p class="buttons">
+                        <a id="move_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="move_button" class="modal-button button is-dark" value="Move"/>
+                    </p>
+                </div>
+                </form>
+            </div>
+
+            <div id="copy_exercise_modal" class="modal">
+                <div class="modal-content">
+                    <h4>Copy exercise within the same assignment:</h4>
+                    <div class="notification is-danger" id="copy_exercise_message" style="display:none"></div>
+
+                    <p>New title:</p>
+                    <input class="input is-medium is-primary" type="text" id="new_title" name="new_title" placeholder="{{exercise_basics['title']}}" value="{{exercise_basics['title']}}"/>
+
+                    <p class="buttons">
+                        <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <button onclick="copyExercise({{ course_basics['id'] }}, {{assignment_basics['id']}}, {{ exercise_basics['id'] }})" id="copy_button" class="modal-button button is-dark">Copy</button>
+                    </p>
+                </div>
+            </div>
+
+            <div id="delete_submissions_modal" class="modal">
+                <div class="modal-content">
+                    <!--<span class="close">&times;</span>-->
+                    <p>Are you sure you want to delete all submissions for this exercise?</p>
+                    <p><font color="red">This will also delete all scores for this exercise.</font></p>
+                    <p class="buttons">
+                        <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
+                        <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
+                    </p>
+                </div>
+            </div>
+
+            <div id="time_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>You have less than 2 minutes remaining. If you are still working, submit a solution to avoid losing your work.</p>
+                </div>
+            </div>
+
+            <!--<div id="share_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Share this link with an instructor or assistant:</p>
+                    <input class="input is-medium is-primary" type="text" id="share_link" value="https://{{ domain }}/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}" readonly>
+                    <button class="modal-button button is-dark" onclick="copyLink()">Copy Link</button>
+                </div>
+            </div>-->
+
+            <!--<div id="help_request_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    {% if help_request and help_request["more_info_needed"] %}
+                        <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></p>
+                        {% if help_request["suggestion"] %}
+                            <p>Comment made by your instructor/assistant:<br />
+                            <span class="green-text">{{ help_request["suggestion"] }}</span></p>
+                        {% end %}
+                        <p>Please update your comment to help us better understand what you need help with:</p>
+                    {% else %}
+                        <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
+                        <p>Please write a comment to help us better understand what you need help with:</p>
+                    {% end %}
+                    <textarea class="textarea is-primary is-fullwidth monospace" id="student_comment" name="student_comment">{% if help_request and help_request["more_info_needed"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
+                    <p class="buttons">
+                        <a id="cancel_request_button" class="modal-button button is-light">Cancel</a>
+                        <a id="submit_request_button" class="modal-button button is-dark">Submit</a>
+                    </p>
+                </div>
+            </div>
+
+            <div id="matching_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p><strong>A student in this class previously submitted a help request with the same output as your request. The instructor/assistant made this suggestion:</strong></p>
+                    <span class="green-text">{{ same_suggestion }}</span></p>
+                    <p>If this suggestion is helpful, do you want to cancel your own request?</p>
+                    <p class="buttons">
+                        <a id="delete_request_button" class="modal-button button is-light">Cancel request</a>
+                        <a id="keep_request_button" class="modal-button button is-dark">Keep request</a>
+                    </p>
+                </div>
+            </div>
+
+            <div id="suggestion_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Your comment from the help request:</p>
+                    <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["student_comment"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
+                    <br><p>Instructor's suggestion:</p>
+                    <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
+                </div>
+            </div>-->
+
+            <script>
+                ace.require("ace/ext/language_tools");
+                var editor = ace.edit("user_code", {
+                    theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                    autoScrollEditorIntoView: false,
+                    minLines: 20,
+                    fontSize: "12pt"
+                });
+                let codeChanged = false
+
+                editor.session.on('change', function(delta) {
+                  codeChanged = true
+                });
+
+                {% if user_info['enable_vim'] %}
+                   editor.setKeyboardHandler("ace/keyboard/vim");
+                {% end %}
+
+                {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
+                    editor.setOptions({
+                        enableBasicAutocompletion: false,
+                        enableSnippets: true,
+                        enableLiveAutocompletion: true
+                    });
+                {% end %}
+
+                editor.focus();
+                editor.getSession().setMode("{{ code_completion_path }}");
+
+                // Autosave if code has changed
+//                setInterval(function() {
+//                    if (codeChanged) {
+//                        save_presubmission(true);
+//                    }
+//                }, 60 * 1000);
+
+                submitButton = document.getElementById("submit_button");
+
+                {% if exercise_details["enable_pair_programming"] %}
+                      if (submitButton != null)
+                          submitButton.onclick = function() {
+                              showSubmitModal()
+                      }
+                {% else %}
+                    if (submitButton != null) {
+                        submitButton.onclick = function() {
+                            if (submitButton.disabled)
+                                showErrorMessage("You are not allowed to make a submission.");
+                            else
+                                submit()
+                        }
+                    }
+                {% end %}
+
+                const tests = JSON.parse("{{ tests_json }}");
+
+                var submissions = JSON.parse("{{ submissions_json }}");
+                show_past_submissions();
+
+                if (submissions.length > 0)
+                    get_submission(submissions[submissions.length - 1].id, false, true);
+                else
+                    showTestOutputs(null, false);
+            </script>
+        {% else %}
+            <p>This exercise does not exist.</p>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
+{% else %}
+    <p>This course does not exist.</p>
+{% end %}

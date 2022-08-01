@@ -3,7 +3,7 @@ import sqlite3
 import sys
 import traceback
 
-sys.path.append('/app')
+sys.path.append('./server')
 from content import *
 from helper import *
 
@@ -16,10 +16,10 @@ migration_numbers = sys.argv[1]
 # 8_to_9_check.sql and 8_to_9_migrate.sql, respectively.
 # The check query must have a column called "count" in the select
 # statement.
-check_file_path = f"/migration_scripts/{migration_numbers}_check.sql"
-migrate_file_path = f"/migration_scripts/{migration_numbers}_migrate.sql"
+check_file_path = f"migration_scripts/{migration_numbers}_check.sql"
+migrate_file_path = f"migration_scripts/{migration_numbers}_migrate.sql"
 
-settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+settings_dict = load_yaml_dict(read_file("Settings.yaml"))
 content = Content(settings_dict)
 
 check_sql = read_file(check_file_path)

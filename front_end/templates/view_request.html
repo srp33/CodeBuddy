@@ -1,0 +1,300 @@
+<style>
+    #moving-div {
+        margin-left:100%;
+        width: 1000px;
+        height:100%;
+        background-color: white;
+        position: fixed;
+        z-index: 2;
+        box-shadow: -5px 0px 40px 5px #c0bfbf;
+    }
+</style>
+
+<script
+  src="https://code.jquery.com/jquery-3.6.0.min.js"
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+  crossorigin="anonymous"></script>
+
+
+<div id="moving-div" class="front-row-container invisible">
+    <div id="tall-button" class="tall-button" onclick="hideMovingDiv()">
+        <span style="color: white;">
+            <i class="fas fa-chevron-right"></i>
+        </span>
+    </div>
+    <div class="padded-div">
+    {% if similar_requests %}
+        {% for request in similar_requests %}
+            <div class="bottom-space">
+                <button type="button" class="spread-div clickable collapsible">
+                    <p id="first-p">Help request for {{ request["name"] }}</p>
+                    <p><strong>Percent similarity: {{ round(request["psim"] * 100, 2) }}%</strong></p>
+                </button>
+                <div class="c-content">
+                    <p><strong>Comment:</strong></p>
+                    <pre class="comment">{{ request["student_comment"] }}</pre>
+                    <p><strong>Code:</strong></p>
+                    <pre class="student-content">{{ request["code"] }}</pre>
+                    <p><strong>Text output:</strong></p>
+                    <pre class="instructor-content">{{ request["text_output"] }}</pre>
+                    {% if request["suggestion"] %}
+                        <p><strong>Suggestion:</strong></p>
+                        <pre>{{ request["suggestion"] }}</pre>
+                        <button class="button is-primary is-inverted" onclick="useSuggestion(`{{ request['suggestion'] }}`)">Use this suggestion for the request I'm viewing</button>
+                    {% end %}
+                    <div class="buttons space-buttons">
+                        <a class="button is-dark" href="/view_request/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
+                    </div>
+                </div>
+            </div>
+        {% end %}
+    {% end %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="content is-medium">
+
+        <div class="spread-div">
+            <h4>View help request for {{ help_request["name"] }}</h4>
+            {% if similar_requests %}
+                <button class="button is-primary" onclick="showMovingDiv()">
+                    {% if len(similar_requests) == 1 %}
+                        1 similar request
+                    {% else %}
+                        {{ len(similar_requests) }} similar requests
+                    {% end %}
+                </button>
+            {% end %}
+        </div>
+        <h6>{{ assignment_basics["title"] }}: {{ exercise_basics["title"] }}</h6>
+
+        {% if result %}
+            {% if result.startswith("Error:") %}
+                <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+            {% else %}
+                <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
+            {% end %}
+        {% end %}
+
+        <div class="instructions">
+            <h6>Instructions:</h6>
+            <div class="smaller-font">{{ exercise_details["instructions"] }}</div>
+        </div>
+
+        <form method="post" action="/view_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ help_request['user_id'] }}">
+
+        <div>
+            <h6>Student comment:</h6>
+            <pre class="comment">{{ help_request["student_comment"] }}</pre>
+            <h6>Code:</h6>
+            <textarea id="editor" class="textarea monospace" rows="20">{{ help_request["code"] }}</textarea>
+            <div class="buttons">
+                <button type="button" id="show_answer_button" class="button is-dark" onclick="showAnswerCode()">View solution</button>
+                <button type="button" id="show_test_code_button" class="button is-dark" onclick="showTestCode()" {% if not exercise_details['test_code'] %}disabled{% end %}>View test code</button>
+                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="This button is disabled if the exercise doesn't include test code.">
+                    <i class="far fa-question-circle"></i>
+                </label>
+            </div>
+            <div id="answer_code" class="invisible">
+                <textarea id="answer_editor" class="textarea monospace" rows="20">{{ exercise_details["answer_code"] }}</textarea>
+            </div>
+            <div id="test_code" class="invisible">
+                <textarea id="test_code_editor" class="textarea monospace" rows="20">{{ exercise_details["test_code"] }}</textarea>
+            </div>
+            {% if help_request["text_output"] %}
+                <h6>Text output:</h6>
+                <pre class="instructor-content">{{ help_request["text_output"] }}</pre>
+            {% end %}
+            {% if help_request["image_output"] %}
+                <h6>Image output:</h6>
+                <pre class="instructor-content">{{ help_request["image_output"] }}</pre>
+            {% end %}
+            <div class="suggestion-div">
+                <h6>Suggestion:</h6>
+                {% if help_request["suggestion"] %}
+                    <!--<p class="light-heading">Suggester: <br />
+                    {% if help_request["approved"] %}
+                        Approver: </p>
+                    {% else %}
+                        Approver: Not yet approved</p>
+                    {% end %}-->
+                {% end %}
+                <textarea name="suggestion" id="suggestion" class="textarea is-fullwidth" rows="3" placeholder="Write a suggestion for this student.">{% if help_request["suggestion"] %}{{ help_request["suggestion"] }}{% end %}</textarea>
+                <input type="checkbox" id="more_info" name="more_info_needed" value="More info needed" {% if help_request['more_info_needed'] %} checked {% end %}>
+                <label for="more_info">More info needed</label>
+            </div>
+            <div class="buttons space-buttons">
+                {% if help_request["suggestion"] and not help_request["approved"] and not is_assistant %}
+                    <input type="submit" id="approve_button" class="button is-primary" value="Approve suggestion"/>
+                {% end %}
+                <input type="submit" id="submit_button" class="button is-dark invisible" value="Submit suggestion"/>
+            </div>
+        </div><br />
+
+        </form>
+
+        {% if exercise_help_requests %}
+            {% if len(exercise_help_requests) == 1 %}
+                <p><strong>There is 1 other help request for this exercise</strong></p>
+            {% else %}
+                <p><strong>There are {{ len(exercise_help_requests) }} other help requests for this exercise</strong></p>
+            {% end %}
+        {% end %}
+        <div class="buttons">
+            <a class="button is-light" href="/help_requests/{{ course_basics['id'] }}">Back to all requests</a>
+            {% if exercise_help_requests %}
+                <a id="other_button" class="button is-dark" onclick="showOtherRequests()">Show other requests</a>
+            {% end %}
+        </div>
+
+        <div id="other_requests" class="invisible">
+            {% for request in exercise_help_requests %}
+                <div class="help_request_div">
+                    <div class="spread-div">
+                        <h4>Help request for {{ request["name"] }}</h4>
+                        <p><strong>Percent similarity: {{ round(request["psim"] * 100, 2) }}%</strong></p>
+                    </div>
+                    <p><strong>Comment:</strong></p>
+                    <pre class="comment">{{ request["student_comment"] }}</pre>
+                    <p><strong>Code:</strong></p>
+                    <pre class="student-content">{{ request["code"] }}</pre>
+                    {% if request["text_output"] %}
+                        <p><strong>Text output:</strong></p>
+                        <pre class="instructor-content">{{ request["text_output"] }}</pre>
+                    {% end %}
+                    {% if request["image_output"] %}
+                        <p><strong>Image output:</strong></p>
+                        <pre class="instructor-content">{{ request["image_output"] }}</pre>
+                    {% end %}
+                    <div class="buttons space-buttons">
+                        <a class="button is-dark" href="/view_request/{{ course_basics['id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}/{{ request['user_id'] }}">View request</a>
+                    </div>
+                </div>
+            {% end %}
+        </div><br /><br />
+    </div>
+</div>
+
+<script>
+    ace.require("ace/ext/language_tools");
+    var editor = ace.edit("editor", {
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        maxLines: 40,
+        fontSize: "12pt",
+        mode: "ace/mode/r"
+    });
+
+    var answer_editor = ace.edit("answer_editor", {
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        maxLines: 40,
+        fontSize: "12pt",
+        mode: "ace/mode/r"
+    });
+
+    var test_code_editor = ace.edit("test_code_editor", {
+        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+        autoScrollEditorIntoView: true,
+        minLines: 20,
+        maxLines: 40,
+        fontSize: "12pt",
+        mode: "ace/mode/r"
+    });
+
+    function showOtherRequests() {
+        var other_div = document.getElementById("other_requests");
+        if (other_div.style.display == "inline") {
+            other_div.style.display = "none";
+        }
+        else {
+            other_div.style.display = "inline";
+        }
+    }
+
+    function showAnswerCode() {
+        var answer_code = document.getElementById("answer_code");
+        var answer_button = document.getElementById("show_answer_button");
+        var test_code = document.getElementById("test_code");
+        var test_code_button = document.getElementById("show_test_code_button");
+
+        if (answer_code.style.display == "inline") {
+            answer_code.style.display = "none";
+            answer_button.innerHTML = "View solution";
+        }
+        else {
+            answer_code.style.display = "inline";
+            test_code.style.display = "none";
+            answer_button.innerHTML = "Hide solution";
+            test_code_button.innerHTML = "View test code";
+        }
+    }
+
+    function showTestCode() {
+        var answer_code = document.getElementById("answer_code");
+        var answer_button = document.getElementById("show_answer_button");
+        var test_code = document.getElementById("test_code");
+        var test_code_button = document.getElementById("show_test_code_button");
+
+        if (test_code.style.display == "inline") {
+            test_code.style.display = "none";
+            test_code_button.innerHTML = "View test code";
+        }
+        else {
+            test_code.style.display = "inline";
+            answer_code.style.display = "none";
+            test_code_button.innerHTML = "Hide test code";
+            answer_button.innerHTML = "View solution";
+        }
+    }
+
+    $("#other_button").click(function() {
+        $('html,body').animate({
+            scrollTop: $("#other_requests").offset().top},
+            'slow');
+    });
+
+    $('#suggestion').on('keyup', function() {
+        if (this.value.length) {
+            $('#submit_button').show();
+            $('#approve_button').hide();
+        }else{
+            $('#submit_button').hide();
+        }
+    });
+
+    var coll = document.getElementsByClassName("clickable");
+    var content = document.getElementsByClassName("c-content");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        });
+    }
+
+    function useSuggestion(suggestion) {
+        $('#moving-div').animate({'marginLeft':1600}, 1000);
+        document.getElementById("suggestion").innerHTML = suggestion;
+        document.getElementById("suggestion").scrollIntoView();
+        $('#submit_button').show();
+    }
+
+    function showMovingDiv() {
+        $('#moving-div').show();
+        $('#moving-div').animate({'marginLeft':450}, 1000);
+    }
+
+    function hideMovingDiv() {
+        $('#moving-div').animate({'marginLeft':1600}, 1000);
+    }
+</script>

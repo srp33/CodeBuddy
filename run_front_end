@@ -1,15 +1,15 @@
 #! /bin/bash
 
-mkdir -p database logs/summarized logs/archive
+mkdir -p front_end/database front_end/logs/summarized front_end/logs/archive
 
-mode=$(grep "^mode: " Settings.yaml | sed "1s/mode: //")
-f_port=$(grep "^f_port: " Settings.yaml | sed "1s/f_port: //")
-m_port=$(grep "^m_port: " Settings.yaml | sed "1s/m_port: //")
-f_num_processes=$(grep "^f_num_processes: " Settings.yaml | sed "1s/f_num_processes: //")
-f_memory_gb=$(grep "^f_memory_gb: " Settings.yaml | sed "1s/f_memory_gb: //")
-f_run_in_background=$(grep "^f_run_in_background: " Settings.yaml | sed "1s/f_run_in_background: //")
+mode=$(grep "^mode: " front_end/Settings.yaml | sed "1s/mode: //")
+f_port=$(grep "^f_port: " front_end/Settings.yaml | sed "1s/f_port: //")
+m_port=$(grep "^m_port: " front_end/Settings.yaml | sed "1s/m_port: //")
+f_num_processes=$(grep "^f_num_processes: " front_end/Settings.yaml | sed "1s/f_num_processes: //")
+f_memory_gb=$(grep "^f_memory_gb: " front_end/Settings.yaml | sed "1s/f_memory_gb: //")
+f_run_in_background=$(grep "^f_run_in_background: " front_end/Settings.yaml | sed "1s/f_run_in_background: //")
 
-args="-e NUM_PROCESSES=${f_num_processes} -e PORT=${f_port} -e MPORT=${m_port} -v $(pwd)/database:/database -v $(pwd)/logs:/logs -v $(pwd)/secrets:/secrets"
+args="-e NUM_PROCESSES=${f_num_processes} -e PORT=${f_port} -e MPORT=${m_port} -v $(pwd)/front_end/database:/app/database -v $(pwd)/front_end/logs:/app/logs -v $(pwd)/front_end/secrets:/app/secrets"
 
 # If MacOS, set the MHOST environment variable and bind the port
 if [[ $(uname) == "Darwin" ]]
@@ -31,12 +31,12 @@ set -o errexit
 
 image_name=codebuddy/front_end_${mode}
 
-docker build -t ${image_name}:version$(cat VERSION) \
+docker build -t ${image_name}:version$(cat front_end/VERSION) \
              -t ${image_name}:latest \
              -f front_end/Containerfile \
              --build-arg USER_ID=$(id -u ${USER}) \
              --build-arg GROUP_ID=$(id -g ${USER}) \
-             .
+             ./front_end
 mkdir -p /tmp/cache
 
 if [[ "${f_run_in_background}" = "yes" ]]

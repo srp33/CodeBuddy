@@ -1,7 +1,20 @@
+FROM node:18-buster-slim as builder
+
+WORKDIR /front_end
+ADD package*.json .
+ADD build.js .
+ADD build_html.sh .
+ADD ui ./ui
+ADD templates ./templates
+
+RUN npm install
+RUN npm run build:prod
+RUN ./build_html.sh ./html
+
 FROM python:3.9.6-slim-buster
 
 RUN apt-get update \
- && apt-get install -y bzip2 zip nodejs npm wget curl git vim \
+ && apt-get install -y bzip2 zip wget curl git vim build-essential \
                        sqlite3 libmariadb3 libmariadb-dev openssl \
  && apt-get -y autoremove \
  && apt-get clean
@@ -27,11 +40,6 @@ RUN groupadd -f -g ${GROUP_ID} ${USER} && \
           ${USER_ID}:${GROUP_ID} \
           /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
 
-ADD VERSION /
-ADD front_end/aux/*.py /tmp/
-ADD front_end/html/footer.html /tmp/footer_version.html
-RUN python /tmp/modify_version.py
-
 USER $USER
 
 ENV PATH="/home/codebuddy/.local/bin:${PATH}"
@@ -42,40 +50,14 @@ RUN python -m pip install tornado==6.0.4 requests==2.24.0 Pillow==8.3.1 \
 
 RUN python -m spacy download en_core_web_sm
 
-RUN cd /static \
- && mkdir bulma \
- && npm init -y \
- && sed -i 's/index\.js/sass\/mystyles\.scss/g' package.json \
- && npm install node-sass --save-dev \
- && npm install bulma --save-dev \
- && mkdir sass \
- && echo "@charset \"utf-8\";" > sass/mystyles.scss \
- && echo "@import \"../node_modules/bulma/bulma.sass\";" >> sass/mystyles.scss \
- && python /tmp/modify_package.py
+WORKDIR /app
+ADD VERSION .
+ADD Settings.yaml .
+ADD startup.sh .
+ADD server ./server
+ADD migration_scripts ./migration_scripts
+ADD scheduled_scripts ./scheduled_scripts
+COPY --from=builder /front_end/static ./static
+COPY --from=builder /front_end/html ./server/html
 
-ADD front_end/css/*.scss /static/sass/
-
-RUN cd /static \
- && npm run css-build \
- && wget https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
- && curl https://raw.githubusercontent.com/CreativeBulma/bulma-tooltip/master/dist/bulma-tooltip.min.css > bulma-tooltip.min.css \
- && git clone https://github.com/ajaxorg/ace-builds.git \
- && cp -r ace-builds/src-min-noconflict/* . \
- && rm -rf ace-builds \
- && wget -O /static/fontawesome.js https://use.fontawesome.com/releases/v5.3.1/js/all.js
-
-ADD Settings.yaml /
-ADD front_end/css/*.css /static/
-ADD front_end/images/* /static/
-ADD front_end/js/* /static/
-ADD front_end/build_html.sh /app/
-ADD front_end/startup.sh /app/
-ADD front_end/scheduled_scripts/* /scheduled_scripts/
-ADD front_end/migration_scripts/* /migration_scripts/
-ADD front_end/handlers/*.py /app/
-ADD front_end/*.py /app/
-ADD front_end/html/* /tmp/
-RUN bash /app/build_html.sh
-
-#ENTRYPOINT ["bash"]
 ENTRYPOINT ["bash", "/app/startup.sh"]

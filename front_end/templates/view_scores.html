@@ -1,0 +1,110 @@
+{% if course_basics["exists"] %}
+{% if assignment_basics["exists"] %}
+<h4>{{ assignment_basics["title"] }}</h4>
+
+<link rel="stylesheet" href="/static/css/modal.css">
+<link rel="stylesheet" href="/static/css/styles.css">
+
+<script>
+    function showResetModal(student_id) {
+        var modal = document.getElementById("reset_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("cancel_button");
+        var resetButton = document.getElementById("reset_button");
+
+        resetButton.onclick = async function() {
+            await $.post("/reset_timer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + student_id);
+            modal.style.display = "none";
+
+            location.reload();
+        }
+
+        cancelButton.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
+</script>
+
+<div id="reset_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Are you sure you want to reset this timer?</p>
+        <p class="buttons">
+            <button id="cancel_button" class="modal-button button is-light">Cancel</button>
+            <button id="reset_button" class="modal-button button is-dark">Reset</button>
+        </p>
+    </div>
+</div>
+
+{% if len(scores) == 0 %}
+<p><strong>No submissions have been made for this assignment.</strong></p>
+{% else %}
+<p>Click on the View button to view a student's score and past submissions for each exercise in this assignment.</p>
+
+<div class="table-container">
+    <table class="table is-striped" id="scores_table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Student ID</th>
+                <th>Score</th>
+                <th>Last Submission Time</th>
+                {% if assignment_details["has_timer"] %}
+                <th>Timer</th>
+                {% end %}
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in scores %}
+            <tr>
+                <td class="has-text-left">{{ score[1]["name"] }}</td>
+                <td class="has-text-left">{{ score[0] }}</td>
+                <td class="has-text-left">{{ round(score[1]["percent_passed"]) }}%</td>
+                <td class="has-text-left">
+                    <script>
+                        // Adjust date to use local time zone.
+                        var the_date = new Date("{{ score[1]['last_submission_time'] }}");
+                        var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
+                        the_date.setTime(the_date_mod);
+                        document.write(the_date.toLocaleString());
+                    </script>
+                </td>
+                {% if assignment_details["has_timer"] %}
+                {% if score[0] in start_times %}
+                {% if start_times[score[0]]["timer_ended"] %}
+                <td class="has-text-left">Timer ended <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
+                {% else %}
+                <td class="has-text-left">In progress <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
+                {% end %}
+                {% else %}
+                <td class="has-text-left">Not started</td>
+                {% end %}
+                {% end %}
+                <td class="has-text-left"><a
+                        href="/student_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">View</a>
+                </td>
+            </tr>
+            {% end %}
+        </tbody>
+    </table>
+</div>
+{% end %}
+<a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment</a> |
+<a href="/download_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}"
+    download="{{ download_file_name }}">Download scores</a>
+
+{% end %}
+{% end %}
+<br /><br /><br /><br />
