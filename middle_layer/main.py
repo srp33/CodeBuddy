@@ -51,7 +51,7 @@ def exec(info: ExecInfo):
 
         # Save information for each test under a subdirectory under 'tests'.
         for test_title in info.tests:
-            info.tests[test_title]["dir_path"] = f"{tmp_dir_path}/tests/{info.tests[test_title]['test_id']}"
+            info.tests[test_title]["dir_path"] = f"{tmp_dir_path}/tests/{test_title}"
             os.makedirs(info.tests[test_title]["dir_path"], exist_ok=True)
 
             with open(f"{info.tests[test_title]['dir_path']}/before_code", "w") as code_file:

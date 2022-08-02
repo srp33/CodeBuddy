@@ -700,7 +700,6 @@
                     var json_data = JSON.parse(data);
 
                     if (json_data["message"] == "") {
-                        // Success
                         exercise_basics_obj["id"] = json_data["exercise_id"];
                         exercise_details_obj = json_data["exercise_details"];
 
@@ -739,8 +738,9 @@
                 return showTestMessage("The maximum title length is 30 characters.", true, false);
             if (test_title.trim() == "")
                 return showTestMessage("Please specify a title.", true, false);
-            if (test_title.includes("'") || test_title.includes("\""))
-                return showTestMessage("The title cannot include quotation marks or apostrophes.", true, false);
+            for (let unallowed_char of ["'", "\"", "\\", "/", ">", "<", "|", ":", ";", "&", "?", "*"])
+                if (test_title.includes(unallowed_char))
+                    return showTestMessage(`The title cannot include the following character: ${unallowed_char}`, true, false);
 
             // Make sure other inputs are valid
             if (!can_see_test_code && test_instructions.trim() == "")
@@ -771,6 +771,7 @@
         });
 
         $("#add_test_button").click(function() {
+            document.getElementById("add_test_id").value = "";
             document.getElementById("add_test_title").value = "";
             document.getElementById("add_test_instructions").value = "";
             before_test_code_editor.setValue("", -1);

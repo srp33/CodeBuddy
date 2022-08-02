@@ -1719,6 +1719,16 @@ class Content:
 
                 cursor.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["show_instructor_solution"], exercise_details["show_peer_solution"], exercise_details["starter_code"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 
+                sql = '''DELETE FROM test_outputs
+                         WHERE test_id IN (
+                           SELECT test_id
+                           FROM tests
+                           WHERE course_id = ?
+                             AND assignment_id = ?
+                             AND exercise_id = ?)'''
+
+                cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
+
                 sql = '''DELETE FROM tests
                          WHERE course_id = ?
                            AND assignment_id = ?
@@ -1746,11 +1756,6 @@ class Content:
 
                 exercise_basics["id"] = cursor.lastrowid
                 exercise_basics["exists"] = True
-
-                sql = '''DELETE FROM tests
-                         WHERE course_id = ?
-                           AND assignment_id = ?
-                           AND exercise_id = ?'''
 
                 cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 

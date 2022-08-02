@@ -169,7 +169,9 @@ function showTestOutputs(test_outputs, scroll) {
         var test_header = "<h6>Tests:</h6>";
         var tests_output = "";
 
-        const test_titles = Object.keys(test_outputs);
+        var test_titles = Object.keys(test_outputs);
+        test_titles.sort();
+
         for (let test_title of test_titles)
             tests_output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
     }

@@ -6,9 +6,9 @@ done_with_verification=False
 
 cd tests
 
-for test_id in *
+for test_title in *
 do
-  cd ${base_dir}/tests/${test_id}
+  cd "${base_dir}/tests/${test_title}"
 
   if [[ "${do_verification}" == "True" ]]
   then
