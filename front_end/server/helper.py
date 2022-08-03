@@ -121,7 +121,7 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
         response = {"message": "", "test_outputs": {}}
 
         for test_title in exercise_details["tests"]:
-            response["test_outputs"][test_title]["txt_output"] = code.strip()
+            response["test_outputs"][test_title] = {"txt_output": code.strip(), "jpg_output": "", "txt_output_formatted": format_output_as_html(code.strip()), "diff_output": ""}
 
         return response
 
