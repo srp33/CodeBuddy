@@ -285,7 +285,7 @@ function buildTestOutput(test_outputs, test_title, show_title, is_last) {
                 }
             }
 
-            if (test_outputs[test_title]["diff_output"] != "") {
+            if (test_outputs[test_title]["diff_output"] != "" && tests[test_title].can_see_expected_output) {
                 output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</div>`;
 
                 {% if exercise_details["output_type"] == "txt" %}
