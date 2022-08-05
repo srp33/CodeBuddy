@@ -416,7 +416,8 @@
                 if (getValue("allow_any_response") == "No") {
                     var html = `<h3>Test output:</h3><div class='shadow-box'>`;
 
-                    for (let test_title of Object.keys(exercise_details_obj["tests"])) {
+                    for (const test_title in sortObj(exercise_details_obj["tests"])) {
+                        console.log(test_title);
                         if (Object.keys(exercise_details_obj["tests"]).length > 1)
                             html += `<div class="space-div"><p><strong>${test_title}:</strong></p>`;
 
