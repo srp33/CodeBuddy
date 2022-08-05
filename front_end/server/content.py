@@ -576,6 +576,7 @@ class Content:
         for exercise in exercises:
             assignment_basics = self.get_assignment_basics(course_id, assignment_id)
             exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
+
             exercises2.append([exercise["exercise_id"], exercise_basics, course_id, assignment_id])
 
         return exercises2
@@ -1674,9 +1675,10 @@ class Content:
 
     def save_assignment(self, assignment_basics, assignment_details):
         # Cleans and joins allowed_ip_addresses.
-        assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
-        if assignment_details["allowed_ip_addresses"] == "":
-            assignment_details["allowed_ip_addresses"] = None
+        if assignment_details["allowed_ip_addresses"]:
+            assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
+            if assignment_details["allowed_ip_addresses"] == "":
+                assignment_details["allowed_ip_addresses"] = None
 
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
@@ -1691,7 +1693,6 @@ class Content:
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["allowed_ip_addresses"]])
-
             assignment_basics["exists"] = True
 
         # Returns allowed_ip_addresses to list.
@@ -1756,8 +1757,6 @@ class Content:
 
                 exercise_basics["id"] = cursor.lastrowid
                 exercise_basics["exists"] = True
-
-                cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 
                 for title in exercise_details["tests"]:
                     sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
@@ -2253,54 +2252,54 @@ class Content:
 
         return out_file_text
 
-    def export_data(self, course_basics, table_name, output_tsv_file_path):
-        if table_name == "submissions":
-            sql = '''SELECT c.title, a.title, e.title, s.user_id, s.submission_id, s.code, s.txt_output, s.jpg_output, s.passed, s.date
-                    FROM submissions s
-                    INNER JOIN courses c
-                      ON c.course_id = s.course_id
-                    INNER JOIN assignments a
-                      ON a.assignment_id = s.assignment_id
-                    INNER JOIN exercises e
-                      ON e.exercise_id = s.exercise_id
-                    WHERE s.course_id = ?'''
+#    def export_data(self, course_basics, table_name, output_tsv_file_path):
+#        if table_name == "submissions":
+#            sql = '''SELECT c.title, a.title, e.title, s.user_id, s.submission_id, s.code, s.txt_output, s.jpg_output, s.passed, s.date
+#                    FROM submissions s
+#                    INNER JOIN courses c
+#                      ON c.course_id = s.course_id
+#                    INNER JOIN assignments a
+#                      ON a.assignment_id = s.assignment_id
+#                    INNER JOIN exercises e
+#                      ON e.exercise_id = s.exercise_id
+#                    WHERE s.course_id = ?'''
+#
+#        else:
+#            sql = f"SELECT * FROM {table_name} WHERE course_id = ?"
+#
+#        rows = []
+#        for row in self.fetchall(sql, (course_basics["id"],)):
+#            row_values = []
+#            for x in row:
+#                if type(x) is datetime:
+#                    x = str(x)
+#                row_values.append(x)
+#
+#            rows.append(row_values)
+#
+#        with open(output_tsv_file_path, "w") as out_file:
+#            out_file.write(json.dumps(rows))
 
-        else:
-            sql = f"SELECT * FROM {table_name} WHERE course_id = ?"
-
-        rows = []
-        for row in self.fetchall(sql, (course_basics["id"],)):
-            row_values = []
-            for x in row:
-                if type(x) is datetime:
-                    x = str(x)
-                row_values.append(x)
-
-            rows.append(row_values)
-
-        with open(output_tsv_file_path, "w") as out_file:
-            out_file.write(json.dumps(rows))
-
-    def create_zip_file_path(self, descriptor):
-        temp_dir_path = "/database/tmp/{}".format(create_id())
-        zip_file_name = f"{descriptor}.zip"
-        zip_file_path = f"{temp_dir_path}/{zip_file_name}"
-        return temp_dir_path, zip_file_name, zip_file_path
-
-    def zip_export_files(self, temp_dir_path, zip_file_name, zip_file_path, descriptor):
-        os.system(f"cp ../VERSION {temp_dir_path}/{descriptor}/")
-        os.system(f"cd {temp_dir_path}; zip -r -qq {zip_file_path} .")
-
-    def create_export_paths(self, temp_dir_path, descriptor):
-        os.makedirs(temp_dir_path)
-        os.makedirs(f"{temp_dir_path}/{descriptor}")
-
-    def remove_export_paths(self, zip_file_path, tmp_dir_path):
-        if os.path.exists(zip_file_path):
-            os.remove(zip_file_path)
-
-        if os.path.exists(tmp_dir_path):
-            shutil.rmtree(tmp_dir_path, ignore_errors=True)
+#    def create_zip_file_path(self, descriptor):
+#        temp_dir_path = "/database/tmp/{}".format(create_id())
+#        zip_file_name = f"{descriptor}.zip"
+#        zip_file_path = f"{temp_dir_path}/{zip_file_name}"
+#        return temp_dir_path, zip_file_name, zip_file_path
+#
+#    def zip_export_files(self, temp_dir_path, zip_file_name, zip_file_path, descriptor):
+#        os.system(f"cp ../VERSION {temp_dir_path}/{descriptor}/")
+#        os.system(f"cd {temp_dir_path}; zip -r -qq {zip_file_path} .")
+#
+#    def create_export_paths(self, temp_dir_path, descriptor):
+#        os.makedirs(temp_dir_path)
+#        os.makedirs(f"{temp_dir_path}/{descriptor}")
+#
+#    def remove_export_paths(self, zip_file_path, tmp_dir_path):
+#        if os.path.exists(zip_file_path):
+#            os.remove(zip_file_path)
+#
+#        if os.path.exists(tmp_dir_path):
+#            shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
     def course_has_pair_programming(self, course_id):
         sql = '''SELECT MAX(enable_pair_programming) as enable_pair_programming

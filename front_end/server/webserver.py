@@ -29,7 +29,6 @@ from sqlite3 import Error
 import zipfile
 import ui_methods
 
-
 def make_app():
     app = Application([
         url(r"/", HomeHandler),
@@ -58,12 +57,12 @@ def make_app():
         url(r"/exercise/([^/]+)/([^/]+)/([^/]+)", ExerciseHandler, name="exercise"),
         url(r"/exercise_scores/([^/]+)/([^/]+)/([^/]+)", ExerciseScoresHandler, name="exercise_scores"),
         url(r"/exercise_submissions/([^/]+)/([^/]+)/([^/]+)", ExerciseSubmissionsHandler, name="exercise_submissions"),
-        url(r"/export_course/([^/]+)?", ExportCourseHandler, name="export_course"),
-        url(r"/export_submissions/([^/]+)?", ExportSubmissionsHandler, name="export_submissions"),
+        url(r"/export_assignment/([^/]+)/([^/]+)", ExportAssignmentHandler, name="export_assignment"),
         url(r"/get_partner_id/([^/]+)/([^/]+)", GetPartnerIDHandler, name="get_partner_id"),
         url(r"/get_presubmission/([^/]+)/([^/]+)/([^/]+)/([^/]+)", GetPresubmissionHandler, name="get_presubmission"),
         url(r"/googlelogin", GoogleLoginHandler, name="googlelogin"),
         url(r"/help_requests/([^/]+)", HelpRequestsHandler, name="help_requests"),
+        url(r"/import_assignment/([^/]+)", ImportAssignmentHandler, name="import_assignment"),
         url(r"/login", CASLoginHandler, name="caslogin"),
         url(r"/logout", LogoutHandler, name="logout"),
         url(r"/move_exercise/([^/]+)/([^/]+)/([^/]+)?", MoveExerciseHandler, name="move_exercise"),
@@ -96,10 +95,10 @@ def make_app():
         url(r"/view_pp/([^/]+)", ViewPairProgrammingAssignmentsHandler, name="view_pp"),
         url(r"/view_request/([^/]+)/([^/]+)/([^/]+)/([^/]+)", ViewHelpRequestsHandler, name="view_request"),
         url(r"/view_scores/([^/]+)/([^/]+)", ViewScoresHandler, name="view_scores"),
-    ],
-    autoescape=None,
-    debug=('DEBUG' in os.environ),
-    ui_methods=ui_methods,
+        ],
+        autoescape=None,
+        debug=('DEBUG' in os.environ),
+        ui_methods=ui_methods,
     )
 
     app.settings['template_path'] = os.path.join(os.path.dirname(__file__), "html")

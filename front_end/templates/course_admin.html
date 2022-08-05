@@ -129,6 +129,7 @@
         {% if is_administrator or is_instructor %}
             <a href="/edit_course/{{ course_basics['id'] }}">Edit course</a> |
             <a onclick="showCopyCourseModal()">Copy course</a> |
+            <a href="/import_assignment/{{ course_basics['id'] }}">Import assignment</a> |
             <a href="/delete_course/{{ course_basics['id'] }}">Delete course</a> |
             <a onclick="showDeleteSubmissionsModal()">Delete course submissions</a>
         {% end %}

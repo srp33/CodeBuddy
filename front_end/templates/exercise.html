@@ -102,6 +102,14 @@
                     <a class="button is-outlined" onclick="showCopyExerciseModal()">Copy exercise</a>
 
                     <a class="button is-outlined" onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
+
+                    {% if prev_exercise %}
+                        <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+                    {% end %}
+
+                    {% if next_exercise %}
+                        <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+                    {% end %}
                 </div>
             {% end %}
 

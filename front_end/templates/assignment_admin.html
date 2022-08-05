@@ -345,6 +345,7 @@
 
             {% if is_administrator or is_instructor %}
                 <a onclick="showCopyAssignmentModal()">Copy assignment</a>
+                | <a href="/export_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ course_basics['title'] }}__{{ assignment_basics['title'] }}.json">Export assignment</a>
                 | <a onclick="showDeleteSubmissionsModal()">Delete assignment submissions</a>
             {% end %}
         </div>
