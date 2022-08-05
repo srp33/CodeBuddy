@@ -41,6 +41,8 @@ docker build -t ${image_name}:version$(cat VERSION) \
              --build-arg GROUP_ID=$(id -g ${USER}) \
              ./front_end
 
+docker system prune -f
+
 rm -f front_end/Settings.yaml front_end/VERSION
 
 mkdir -p /tmp/cache
