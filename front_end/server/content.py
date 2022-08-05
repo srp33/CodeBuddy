@@ -1679,6 +1679,8 @@ class Content:
             assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
             if assignment_details["allowed_ip_addresses"] == "":
                 assignment_details["allowed_ip_addresses"] = None
+        else:
+            assignment_details["allowed_ip_addresses"] = None
 
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
