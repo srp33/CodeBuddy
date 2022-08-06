@@ -28,7 +28,7 @@ import sqlite3
 
 def run_command(command):
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    return "".join(result.stdout.decode().split("\n"))
+    return result.stdout.decode()
 
 def make_dir(dir_path):
     if not os.path.exists(dir_path):

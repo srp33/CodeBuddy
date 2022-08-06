@@ -203,6 +203,7 @@ if __name__ == "__main__":
             options.log_file_prefix = os.path.join("logs/codebuddy.log")
             options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
             options.log_file_num_backups = 10
+
         parse_command_line()
         my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s %(user_id)s')
         logging_filter = LoggingFilter()
