@@ -41,7 +41,7 @@ class ExerciseHandler(BaseUserHandler):
                 self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, error="not_registered_for_course", assignment_basics=assignment_basics, user_info=user_info)
             else:
                 # Fetches all users enrolled in a course excluding the current user as options to pair program with.
-                user_list = list(self.content.get_partner_info(course, self.get_user_info()["user_id"]).keys())
+                user_list = list(self.content.get_partner_info(course, user_info["user_id"]).keys())
                 exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_id())
                 start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_id())
 
@@ -50,6 +50,7 @@ class ExerciseHandler(BaseUserHandler):
                 submissions_json = escape_json_string(json.dumps(submissions))
 
                 format_exercise_details(exercise_details)
+                add_what_students_see(exercise_details, user_info["name"])
 
                 self.render("exercise.html",
                     users=user_list,
@@ -73,7 +74,7 @@ class ExerciseHandler(BaseUserHandler):
                     back_end_description=back_end["description"],
                     domain=self.settings_dict['domain'],
                     start_time=start_time,
-                    user_info=self.get_user_info(),
+                    user_info=user_info,
                     user_id=self.get_user_id(),
                     student_id=self.get_user_id(),
                     is_administrator=self.is_administrator(),
