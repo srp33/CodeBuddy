@@ -49,7 +49,7 @@ class ExerciseHandler(BaseUserHandler):
                 submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
                 submissions_json = escape_json_string(json.dumps(submissions))
 
-                format_exercise_details(exercise_details)
+                format_exercise_details(exercise_details, exercise_basics, next_prev_exercises)
                 add_what_students_see(exercise_details, user_info["name"])
 
                 self.render("exercise.html",

@@ -319,8 +319,15 @@ def get_client_ip_address(request):
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
 
-def format_exercise_details(exercise_details):
+def format_exercise_details(exercise_details, exercise_basics=None, next_prev_exercises=None):
+    if exercise_basics != None and next_prev_exercises != None:
+        if next_prev_exercises["previous"]:
+            link_html = f"<a href='/exercise/{exercise_basics['assignment']['course']['id']}/{exercise_basics['assignment']['id']}/{next_prev_exercises['previous']['id']}'>previous exercise</a>"
+            exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", link_html)
+    exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "") # This is just in case they added it when it is the first exercise.
+
     exercise_details["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_details["instructions"])) # Removes html markup from instructions before converting markdown to html
+
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
