@@ -206,10 +206,6 @@ def compare_outputs(exercise_details, test_outputs, test_title):
         if num_differences > 20:
             diff_output = ""
 
-        # Sometimes it's difficult for students to differentiate between spaces
-        #  and tabs. This is intended to help.
-        #diff_output = format_output_as_html(diff_output.replace("\t", "{tab}"))
-
         return diff_output, False
     else:
         if expected_jpg == actual_jpg:
