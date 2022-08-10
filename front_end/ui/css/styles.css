@@ -577,3 +577,11 @@ module {
   border-radius: 20px;
   padding: 1em 2em;
 }
+monored {
+  font-family: Consolas,"courier new";
+  font-weight: bold;
+  color: crimson;
+  background-color: #f1f1f1;
+  padding: 2px;
+  font-size: 90%;
+}
