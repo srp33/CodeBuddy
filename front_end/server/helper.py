@@ -340,6 +340,9 @@ def add_what_students_see(exercise_details, user_name):
     exercise_details["show_instructor_solution"] = False
     exercise_details["show_peer_solution"] = False
 
+    if exercise_details["back_end"] == "not_code":
+        return
+
     what_students_see = exercise_details["what_students_see_after_success"]
     if what_students_see in (1, 3) or (what_students_see == 4 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 6 and re.search(r"^[BDFHJLNPRTVXZ]", user_info["name"], flags=re.IGNORECASE)):
         exercise_details["show_instructor_solution"] = True
