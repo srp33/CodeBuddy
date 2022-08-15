@@ -329,22 +329,22 @@ def format_exercise_details(exercise_details, exercise_basics=None, next_prev_ex
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
 
     for test_title in exercise_details["tests"]:
+        print(exercise_details["tests"][test_title]["txt_output"])
         exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
+        print(exercise_details["tests"][test_title]["txt_output"])
         exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
 
-def add_what_students_see(exercise_details, user_name):
+def modify_what_students_see(exercise_details, user_name):
     exercise_details["show_instructor_solution"] = False
     exercise_details["show_peer_solution"] = False
 
-    if exercise_details["back_end"] == "not_code":
-        return
+    if exercise_details["back_end"] != "not_code":
+        what_students_see = exercise_details["what_students_see_after_success"]
+        if what_students_see in (1, 3) or (what_students_see == 4 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 6 and re.search(r"^[BDFHJLNPRTVXZ]", user_info["name"], flags=re.IGNORECASE)):
+            exercise_details["show_instructor_solution"] = True
 
-    what_students_see = exercise_details["what_students_see_after_success"]
-    if what_students_see in (1, 3) or (what_students_see == 4 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 6 and re.search(r"^[BDFHJLNPRTVXZ]", user_info["name"], flags=re.IGNORECASE)):
-        exercise_details["show_instructor_solution"] = True
-
-    if what_students_see in (2, 3) or (what_students_see == 5 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 7 and re.search(r"^[BDFHJLNPRTVXZ]", user_info["name"], flags=re.IGNORECASE)):
-        exercise_details["show_peer_solution"] = True
+        if what_students_see in (2, 3) or (what_students_see == 5 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 7 and re.search(r"^[BDFHJLNPRTVXZ]", user_info["name"], flags=re.IGNORECASE)):
+            exercise_details["show_peer_solution"] = True
 
 def open_db(db_name):
     db_file = f"database/{db_name}"

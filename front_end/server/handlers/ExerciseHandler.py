@@ -45,12 +45,13 @@ class ExerciseHandler(BaseUserHandler):
                 exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_id())
                 start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_id())
 
-                tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
                 submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
                 submissions_json = escape_json_string(json.dumps(submissions))
 
                 format_exercise_details(exercise_details, exercise_basics, next_prev_exercises)
-                add_what_students_see(exercise_details, user_info["name"])
+                modify_what_students_see(exercise_details, user_info["name"])
+
+                tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
 
                 self.render("exercise.html",
                     users=user_list,

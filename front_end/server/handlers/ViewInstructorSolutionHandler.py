@@ -23,7 +23,7 @@ class ViewInstructorSolutionHandler(BaseUserHandler):
                 self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, error="restricted_ip", user_info=user_info)
             else:
                 format_exercise_details(exercise_details)
-                add_what_students_see(exercise_details, user_info["name"])
+                modify_what_students_see(exercise_details, user_info["name"])
 
                 self.render("view_instructor_solution.html", courses=courses, assignments=assignments, exercises=exercises, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, exercise_basics=exercise_basics, exercise_details=exercise_details, exercise_statuses=exercise_statuses, user_code=user_code, user_info=user_info, is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
         except Exception as inst:

@@ -252,6 +252,8 @@ function buildTestOutput(test_outputs, test_title, show_title, is_last) {
 
     if (test_outputs[test_title]["passed"] == null || !test_outputs[test_title]["passed"]) {
         if (tests[test_title].can_see_expected_output) {
+//TODO
+console.log(tests[test_title]["txt_output"]);
             var expected_output = "";
 
             if (tests[test_title]["txt_output"] != null && tests[test_title]["txt_output"] != "") {
