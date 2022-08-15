@@ -329,9 +329,7 @@ def format_exercise_details(exercise_details, exercise_basics=None, next_prev_ex
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
 
     for test_title in exercise_details["tests"]:
-        print(exercise_details["tests"][test_title]["txt_output"])
         exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
-        print(exercise_details["tests"][test_title]["txt_output"])
         exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
 
 def modify_what_students_see(exercise_details, user_name):
