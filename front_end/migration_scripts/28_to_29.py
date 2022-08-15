@@ -23,7 +23,7 @@ if content.fetchone(check_sql)["count"] > 0:
 else:
     sql = '''SELECT course_id, assignment_id, exercise_id
              FROM exercises
-             WHERE back_end = 'r' '''
+             WHERE back_end = 'r' AND assignment_id = 612 AND solution_code LIKE '%read_%' '''
 
     for row in content.fetchall(sql):
         course_id = row["course_id"]
