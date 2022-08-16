@@ -32,9 +32,10 @@ class Content:
         self.conn.row_factory = sqlite3.Row
 
         self.execute("PRAGMA foreign_keys=OFF")
-        self.execute("PRAGMA cache_size = 1000000")
-        self.execute("PRAGMA mmap_size = 1000000")
-        self.execute("PRAGMA temp_store = MEMORY")
+        self.execute("PRAGMA cache_size=1000000")
+        self.execute("PRAGMA mmap_size=1000000")
+        self.execute("PRAGMA temp_store=MEMORY")
+        self.execute("PRAGMA journal_mode=OFF")
 
         atexit.register(self.close)
 
