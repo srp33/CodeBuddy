@@ -41,10 +41,6 @@ class Content:
     def close(self):
         self.conn.close()
 
-        # TODO: Temporary hack to remove WAL file
-        temp_conn = open_db(self.__settings_dict['db_name'])
-        temp_conn.close()
-
     def execute(self, sql, params=()):
         cursor = self.conn.cursor()
         cursor.execute(sql, params)
