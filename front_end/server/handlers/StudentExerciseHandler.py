@@ -22,8 +22,7 @@ class StudentExerciseHandler(BaseUserHandler):
                 back_end = self.settings_dict["back_ends"][exercise_details["back_end"]]
                 student_info = self.content.get_user_info(student_id)
 
-                format_exercise_details(exercise_details)
-                modify_what_students_see(exercise_details, student_info["name"])
+                format_exercise_details(exercise_details, exercise_basics, student_info["name"], self.content)
 
                 tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
 

@@ -315,15 +315,7 @@ def get_client_ip_address(request):
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
 
-def format_exercise_details(exercise_details, exercise_basics=None, next_prev_exercises=None):
-    if exercise_basics != None and next_prev_exercises != None:
-        if next_prev_exercises["previous"]:
-            link_html = f"<a href='/exercise/{exercise_basics['assignment']['course']['id']}/{exercise_basics['assignment']['id']}/{next_prev_exercises['previous']['id']}'>previous exercise</a>"
-            exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", link_html)
-    exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "") # This is just in case they added it when it is the first exercise.
-
-    exercise_details["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_details["instructions"])) # Removes html markup from instructions before converting markdown to html
-
+def format_exercise_details(exercise_details, exercise_basics, user_name, content, next_prev_exercises=None):
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
@@ -332,16 +324,52 @@ def format_exercise_details(exercise_details, exercise_basics=None, next_prev_ex
         exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
         exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
 
+    modify_what_students_see(exercise_details, user_name)
+
+    if "[reflection_prompt]" in exercise_details["instructions"]:
+        if not next_prev_exercises or not next_prev_exercises["previous"]:
+            prompt = "Error: [reflection_prompt] can only be used in the instructions when an exercise is *not* the first in an assignment."
+        else:
+            course_id = exercise_basics["assignment"]["course"]["id"]
+            assignment_id = exercise_basics["assignment"]["id"]
+            prev_exercise_details = content.get_exercise_details(course_id, assignment_id, next_prev_exercises["previous"]["id"])
+            modify_what_students_see(prev_exercise_details, user_name)
+
+            # https://dl.acm.org/doi/pdf/10.1145/3313831.3376857
+            blurb1 = "If you have not already done so, complete the [previous_exercise_link]. "
+            #blurb2 = "Then, for the current exercise, provide an essay response (1-3 medium-sized paragraphs) that answers any or all of the following:\n\n* What did you learn from reviewing the other solutions?\n* How does your strategy compare to the others'?\n* How did the code formatting or variable naming compare among the solutions?"
+            blurb2 = "Then, for the current exercise, provide an essay response that describes what you learned from comparing the solutions. What programming strategies were used? How are they similar to or different from each other? "
+            blurb3 = "Then, for the current exercise, provide an essay response that describes your programming strategy. What was your approach? What other approaches might have been used? "
+            blurb4 = "Your response should be at least a medium-sized paragraph in length."
+
+            if prev_exercise_details["show_instructor_solution"]:
+                if prev_exercise_details["show_peer_solution"]:
+                    exercise_details["instructions"] = exercise_details["instructions"].replace("[reflection_prompt]", blurb1 + "On that page, you should see links that allow you to see the instructor's solution and an anonymized solution from a peer. Click on those links and compare your solution against theirs. " + blurb2 + blurb4)
+                else:
+                    exercise_details["instructions"] = exercise_details["instructions"].replace("[reflection_prompt]", blurb1 + "On that page, you should see a link that allows you to see the instructor's solution. Click on that link and compare your solution against the instructor's. " + blurb2 + blurb4)
+            elif prev_exercise_details["show_peer_solution"]:
+                exercise_details["instructions"] = exercise_details["instructions"].replace("[reflection_prompt]", blurb1 + "On that page, you should see links that allow you to see an anonymized solution from a peer. Click on that link and compare your solution against theirs. " + blurb2 + blurb4)
+            else:
+                exercise_details["instructions"] = exercise_details["instructions"].replace("[reflection_prompt]", blurb1 + blurb3 + blurb4)
+
+    if exercise_basics != None and next_prev_exercises != None:
+        if next_prev_exercises["previous"]:
+            link_html = f"<a href='/exercise/{exercise_basics['assignment']['course']['id']}/{exercise_basics['assignment']['id']}/{next_prev_exercises['previous']['id']}'>previous exercise</a>"
+            exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", link_html)
+    exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "") # This is just in case they added it when it is the first exercise.
+
+    exercise_details["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_details["instructions"])) # Removes html markup from instructions before converting markdown to html
+
 def modify_what_students_see(exercise_details, user_name):
     exercise_details["show_instructor_solution"] = False
     exercise_details["show_peer_solution"] = False
 
     if exercise_details["back_end"] != "not_code":
         what_students_see = exercise_details["what_students_see_after_success"]
-        if what_students_see in (1, 3) or (what_students_see == 4 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 6 and re.search(r"^[BDFHJLNPRTVXZ]", user_info["name"], flags=re.IGNORECASE)):
+        if what_students_see in (1, 3) or (what_students_see == 4 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 6 and re.search(r"^[BDFHJLNPRTVXZ]", user_name, flags=re.IGNORECASE)):
             exercise_details["show_instructor_solution"] = True
 
-        if what_students_see in (2, 3) or (what_students_see == 5 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 7 and re.search(r"^[BDFHJLNPRTVXZ]", user_info["name"], flags=re.IGNORECASE)):
+        if what_students_see in (2, 3) or (what_students_see == 5 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 7 and re.search(r"^[BDFHJLNPRTVXZ]", user_name, flags=re.IGNORECASE)):
             exercise_details["show_peer_solution"] = True
 
 def open_db(db_name):

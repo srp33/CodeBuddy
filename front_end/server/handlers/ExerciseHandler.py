@@ -48,8 +48,7 @@ class ExerciseHandler(BaseUserHandler):
                 submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
                 submissions_json = escape_json_string(json.dumps(submissions))
 
-                format_exercise_details(exercise_details, exercise_basics, next_prev_exercises)
-                modify_what_students_see(exercise_details, user_info["name"])
+                format_exercise_details(exercise_details, exercise_basics, user_info["name"], self.content, next_prev_exercises)
 
                 tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
 
