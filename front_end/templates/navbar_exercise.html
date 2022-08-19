@@ -1,13 +1,25 @@
             <div class="navbar-item has-dropdown is-hoverable">
-                {% if len(exercises) > 0 and "exercise_basics" in globals() and exercise_basics["exists"] %}
-                    <div class="navbar-link is-arrowless">
+                <div class="navbar-item is-arrowless">
+                    {% if len(exercises) > 0 and "exercise_basics" in globals() and exercise_basics["exists"] %}
                         {{ exercise_basics["title"] }}
-                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
-                    </div>
+                    {% else %}
+                        New exercise
+                    {% end %}
 
+                    <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                </div>
+
+                {% if len(exercise_statuses) > 0 %}
                     <div id="moreDropdown" class="navbar-dropdown">
                         {% for exercise in exercise_statuses %}
-                            <a class="navbar-item" style="white-space: nowrap;" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">
+                            <a class="navbar-item"
+                               style="white-space: nowrap;"
+                               {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                   href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                               {% else %}
+                                   href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                               {% end %}
+                             >
                                 {% if exercise[1]["passed"] %}
                                     <img src="/static/greencheck.png" alt="Completed" class="navbar-img"/>
                                 {% elif exercise[1]["in_progress"] %}
