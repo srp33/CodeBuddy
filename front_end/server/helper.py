@@ -225,6 +225,15 @@ def compare_outputs(exercise_details, test_outputs, test_title):
 
         return diff_output, diff_percent < 0.01 # Pass if they are similar.
 
+# This prevents students from seeing information they should not be able to see.
+def sanitize_test_outputs(exercise_details, test_outputs):
+    for test_title in exercise_details["tests"]:
+        if not exercise_details["tests"][test_title]["can_see_code_output"]:
+            test_outputs[test_title]["txt_output"] = ""
+            test_outputs[test_title]["txt_output_formatted"] = ""
+            test_outputs[test_title]["jpg_output"] = ""
+            test_outputs[test_title]["diff_output"] = ""
+
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
 
@@ -320,11 +329,12 @@ def format_exercise_details(exercise_details, exercise_basics, user_name, conten
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
 
+    modify_what_students_see(exercise_details, user_name)
+
+    # Do formatting
     for test_title in exercise_details["tests"]:
         exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
         exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
-
-    modify_what_students_see(exercise_details, user_name)
 
     if "[reflection_prompt]" in exercise_details["instructions"]:
         if not next_prev_exercises or not next_prev_exercises["previous"]:
@@ -371,6 +381,15 @@ def modify_what_students_see(exercise_details, user_name):
 
         if what_students_see in (2, 3) or (what_students_see == 5 and re.search(r"^[ACEGIKMOQSUWY]", user_name, flags=re.IGNORECASE)) or (what_students_see == 7 and re.search(r"^[BDFHJLNPRTVXZ]", user_name, flags=re.IGNORECASE)):
             exercise_details["show_peer_solution"] = True
+
+    for test_title in exercise_details["tests"]:
+        if not exercise_details["tests"][test_title]["can_see_test_code"]:
+            exercise_details["tests"][test_title]["before_code"] = ""
+            exercise_details["tests"][test_title]["after_code"] = ""
+
+        if not exercise_details["tests"][test_title]["can_see_expected_output"]:
+            exercise_details["tests"][test_title]["txt_output"] = ""
+            exercise_details["tests"][test_title]["jpg_output"] = ""
 
 def open_db(db_name):
     db_file = f"database/{db_name}"

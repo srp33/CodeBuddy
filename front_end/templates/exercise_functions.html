@@ -319,15 +319,16 @@ function get_submission(submission_id, scroll, change_border) {
     var this_submission;
 
     for (let submission of submissions) {
+        if ($(`#submission_button_${submission.id}`).length > 0) {
+            $(`#submission_button_${submission.id}`)[0].style.border = "none";
+        }
+
         if (submission.id == submission_id) {
             this_submission = submission;
 
             if ($(`#submission_button_${submission.id}`).length > 0) {
                 if (change_border) {
                     $(`#submission_button_${submission.id}`)[0].style.border = "solid #000000";
-                }
-                else {
-                    $(`#submission_button_${submission.id}`)[0].style.border = "none";
                 }
             }
         }

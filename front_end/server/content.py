@@ -1098,6 +1098,7 @@ class Content:
             if row["submission_id"] in test_outputs:
                 submission_test_outputs = test_outputs[row["submission_id"]]
                 check_test_outputs(exercise_details, submission_test_outputs)
+                sanitize_test_outputs(exercise_details, submission_test_outputs)
 
             submissions.append({"id": row["submission_id"], "code": row["code"], "passed": row["passed"], "date": row["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
 

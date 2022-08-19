@@ -49,6 +49,8 @@ class SubmitHandler(BaseUserHandler):
                     self.content.save_exercise_score(course, assignment, exercise, partner_id, new_score)
 
                 out_dict["partner_name"] = self.content.get_user_info(partner_id)["name"]
+
+            sanitize_test_outputs(exercise_details, out_dict["test_outputs"])
         except ConnectionError as inst:
             out_dict["message"] = "The front-end server was unable to contact the back-end server."
             out_dict["all_passed"] = False
