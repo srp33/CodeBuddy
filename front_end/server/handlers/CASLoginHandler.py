@@ -29,6 +29,9 @@ class CASLoginHandler(RequestHandler):
 
             user_id, attributes, pgtiou = cas_client.verify_ticket(ticket)
 
+            if not user_id:
+                return
+
             user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": attributes["emailAddress"]}
 
             if self.content.user_exists(user_id):
