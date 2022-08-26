@@ -147,9 +147,9 @@
             <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
         </div>
 
-        <div class="button is-light space-div" id="example_solution_button" onclick="toggleExample('solution')">
+        <!--<div class="button is-light space-div" id="example_solution_button" onclick="toggleExample('solution')">
           Show example code
-        </div>
+        </div>-->
     </div>
 
     <div class="shadow-box">
@@ -274,9 +274,9 @@
                       <textarea id="after_test_code" placeholder="Please specify any code that will be executed after the student's code." class="textarea is-fullwidth monospace"></textarea>
                     </div>
 
-                    <div class="button is-light bottom-space" id="example_after_test_button" onclick="toggleExample('after_test')">
+                    <!--<div class="button is-light bottom-space" id="example_after_test_button" onclick="toggleExample('after_test')">
                         Show example code
-                    </div>
+                    </div>-->
 
                     <div class="has-text-weight-medium mb-2">Do you want students to see the test code?</div>
                     <div class="select is-primary">
@@ -473,9 +473,9 @@
             examples_obj["verification"] = back_ends_obj[back_end]["verification_example"];
             examples_obj["after_test"] = back_ends_obj[back_end]["after_test_example"];
 
-            showHideExampleButton("solution");
+            //showHideExampleButton("solution");
             showHideExampleButton("verification");
-            showHideExampleButton("after_test");
+            //showHideExampleButton("after_test");
         }
 
         function showHideExampleButton(example_type) {
