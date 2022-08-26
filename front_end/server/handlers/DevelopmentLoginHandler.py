@@ -1,7 +1,8 @@
-from tornado.web import *
+from BaseOtherHandler import *
 from content import *
+from tornado.web import *
 
-class DevelopmentLoginHandler(RequestHandler):
+class DevelopmentLoginHandler(BaseOtherHandler):
     def prepare(self):
         self.settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
         self.content = Content(self.settings_dict)

@@ -46,7 +46,8 @@ ENV PATH="/home/codebuddy/.local/bin:${PATH}"
 
 RUN python -m pip install tornado==6.0.4 requests==2.24.0 Pillow==8.3.1 \
                           PyYAML==5.3.1 markdown2==2.3.8 spacy==3.1.1 \
-                          python-cas==1.5.0 mariadb==1.0.7 python-dateutil==2.8.2
+                          python-cas==1.5.0 mariadb==1.0.7 python-dateutil==2.8.2 \
+                          concurrent-log-handler==0.9.20
 
 RUN python -m spacy download en_core_web_sm
 

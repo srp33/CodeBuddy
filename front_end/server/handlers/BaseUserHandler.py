@@ -1,7 +1,7 @@
 from content import *
+import contextvars
 from tornado.web import RequestHandler
 import traceback
-import contextvars
 
 class BaseUserHandler(RequestHandler):
     def prepare(self):
@@ -16,6 +16,7 @@ class BaseUserHandler(RequestHandler):
             user_id = self.get_secure_cookie("user_id")
 
             # Set context variables depending on whether the user is logged in.
+            #TODO: Can we simplify this?
             if user_id:
                 self.user_info_var.set(self.content.get_user_info(user_id.decode()))
                 self.user_is_administrator_var.set(self.content.is_administrator(user_id.decode()))
@@ -31,6 +32,19 @@ class BaseUserHandler(RequestHandler):
                     self.redirect("/devlogin")
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+    def on_finish(self):
+        try:
+            user_id = self.get_secure_cookie("user_id")
+
+            additional_message = None
+            if user_id:
+                additional_message = user_id.decode()
+
+            log_page_access(self, additional_message)
+        except:
+            print(f"Error occurred when attempting to log. {traceback.format_exc()}")
+            pass
 
     def get_user_info(self):
         return self.user_info_var.get()

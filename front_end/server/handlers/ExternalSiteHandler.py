@@ -1,9 +1,9 @@
-from BaseUserHandler import *
+from BaseOtherHandler import *
 import hashlib
 import os
 import urllib.request
 
-class ExternalSiteHandler(RequestHandler):
+class ExternalSiteHandler(BaseOtherHandler):
     async def get(self, url):
         try:
             # For some reason, the web server strips off the second forward slash

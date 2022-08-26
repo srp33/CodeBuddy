@@ -3,6 +3,7 @@ import sys, os
 
 from handlers import *
 
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 from content import *
 import contextvars
 from datetime import datetime
@@ -15,10 +16,6 @@ import logging
 import re
 from tornado.auth import GoogleOAuth2Mixin
 import tornado.ioloop
-from tornado.log import enable_pretty_logging
-from tornado.log import LogFormatter
-from tornado.options import options
-from tornado.options import parse_command_line
 from tornado.web import *
 import traceback
 from urllib.parse import urlencode
@@ -199,21 +196,26 @@ if __name__ == "__main__":
         user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
 
         # Set up logging
-        if 'DEBUG' not in os.environ:
-            options.log_file_prefix = os.path.join("logs/codebuddy.log")
-            options.log_file_max_size = 1024**2 * 1000 # 1 gigabyte per file
-            options.log_file_num_backups = 10
+        log_level = logging.INFO
+        if settings_dict["mode"] == "development":
+            log_level = logging.DEBUG
 
-        parse_command_line()
-        my_log_formatter = LogFormatter(fmt='%(levelname)s %(asctime)s %(module)s %(message)s %(user_id)s')
-        logging_filter = LoggingFilter()
-        for handler in logging.getLogger().handlers:
-            handler.addFilter(logging_filter)
-        root_logger = logging.getLogger()
-        root_streamhandler = root_logger.handlers[0]
-        root_streamhandler.setFormatter(my_log_formatter)
+        log_file_handler = ConcurrentRotatingFileHandler("logs/codebuddy.log", maxBytes=100*1024*1024, backupCount=10, encoding="utf-8", mode="a")
 
-        logging.info("Starting on port {}...".format(os.environ['PORT']))
+        logging.basicConfig(
+            handlers=[log_file_handler],
+            level=log_level,
+            format="[%(asctime)s] %(message)s",
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+
+        logger = logging.getLogger('codebuddy_logger')
+        logger.addHandler(log_file_handler)
+
+        logging.getLogger('tornado.access').disabled = True
+        logging.getLogger("requests").setLevel(logging.DEBUG)
+
+        logging.debug(f"Starting on port {os.environ['PORT']}")
         tornado.ioloop.IOLoop.instance().start()
     else:
         logging.error("Values must be specified for the PORT and MPORT environment variables.")

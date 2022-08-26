@@ -6,6 +6,7 @@ import hashlib
 import html
 from imgcompare import *
 import json
+import logging
 from markdown2 import Markdown
 import os
 from pathlib import Path
@@ -403,3 +404,12 @@ def open_db(db_name):
         detect_types = sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES,
         timeout = 30,
     )
+
+def log_page_access(handler, additional_message=None):
+    # The request time is in seconds
+    logging_message = f"{handler.get_browser_locale().code}\t{handler.request.uri}\t{handler.request.method}\t{handler.request.remote_ip}\t{round(handler.request.request_time(), 3)}"
+
+    if additional_message:
+        logging_message = f"{logging_message}\t{additional_message}"
+
+    logging.info(logging_message)

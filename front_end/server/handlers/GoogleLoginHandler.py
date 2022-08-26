@@ -1,7 +1,9 @@
+#from BaseOtherHandler import *
 from tornado.web import *
 from tornado.auth import GoogleOAuth2Mixin
 from content import *
 
+#class GoogleLoginHandler(BaseOtherHandler, GoogleOAuth2Mixin):
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     def prepare(self):
         self.settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
