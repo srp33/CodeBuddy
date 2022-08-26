@@ -1,0 +1,172 @@
+@import '@creativebulma/bulma-collapsible/src/sass/index.sass';
+
+tests-pane {
+	display: block;
+    position: relative;
+    overflow-y: scroll;
+    height: 100%;
+	
+	.tests-pane {
+		.tests-header {
+			display: flex;
+			padding: 10px;
+
+			p {
+				flex: 1;
+				line-height: 40px;
+				font-size: 1.2rem;
+				font-weight: bold;
+			}
+
+			button {
+				margin-left: 8px;
+			}
+		}
+
+		.test-details {
+			&:hover {
+				background-color: transparent !important;
+			}
+			
+			td {
+				column-span: all;
+			}
+		}
+
+		.test-status {
+			i {
+				display: block;
+				width: 100%;
+				height: 100%;
+			}
+		}
+	}
+}
+
+test-results-modal {
+	display: flex;
+
+	>button:first-child {
+		margin-right: 8px;
+	}
+
+	>button {
+		i {
+			margin-left: 6px;
+		}
+	}
+
+	.modal-card {
+		width: 85%;
+		height: 85%;
+	}
+
+	.modal-card-body {
+		display: flex;
+		flex-direction: column;
+
+		#accordion {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow-y: scroll;
+
+			.message {
+				margin-bottom: 4px;
+				background-color: transparent;
+
+				&.grow {
+					flex: 1;
+					display: flex;
+					flex-direction: column;
+
+					.message-body.is-active {
+						flex: 1;
+					}
+				}
+				.message-header {
+					display: flex;
+					>* {
+						flex: 1;
+					}
+					a {
+						text-decoration: none;
+					}
+					[disabled] {
+						cursor: not-allowed;
+					}
+				}
+
+				.message-body {
+					background-color: hsl(0deg, 0%, 96%);
+
+					.message-body-content {
+						height: 100%;
+
+
+					}
+				}
+			}
+
+			.tabs {
+				height: 41px;
+	
+				a {
+					text-decoration: none;
+				}
+			}
+		}
+
+
+		.plain-output-section {
+			h2 {
+				margin: 16px 0;
+				font-weight: bold;
+				font-size: 1.2rem;
+			}
+			h3 {
+				font-size: 1.1rem;
+				padding: 8px 16px;
+			}
+
+			pre {
+				background-color: white;
+				border-radius: 4px;
+			}
+		}
+
+		.instructions-section {
+			h2 {
+				font-size: 1.2rem;
+				font-weight: bold;
+				margin-bottom: 0;
+			}
+			margin-bottom: 8px;
+		}
+
+		.diff-section {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			height: calc(100% - 50px);
+			font-size: 1.1rem;
+
+			.diff-section-header {
+				display: flex;
+				height: 50px;
+
+				span {
+					line-height: 50px;
+				}
+			}
+
+			diff-viewer {
+				flex: 1;
+				display: flex;
+				>div {
+					flex: 1;
+				}
+			}
+		}
+	}
+}
