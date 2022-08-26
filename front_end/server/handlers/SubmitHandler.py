@@ -9,7 +9,7 @@ class SubmitHandler(BaseUserHandler):
             user_id = self.get_user_id()
             code = self.get_body_argument("code").replace("\r", "")
             date = parser.parse(self.get_body_argument("date"))
-            partner_id = self.get_body_argument("partner_id") if self.get_body_argument("partner_id") else None
+            partner_id = self.get_body_argument("partner_id", default=None)
 
             exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.content.get_exercise_details(course, assignment, exercise)

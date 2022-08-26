@@ -52,9 +52,10 @@ function submit() {
     showWaitMessage();
 
     let partner_id = $("#partner_id")[0].value == "" ? null : $("#partner_id")[0].value;
+
     let submission_date = new Date();
 
-    post_data = { "code": user_code, "date": submission_date.toLocaleString("en-US", {timeZone: "UTC"})};
+    post_data = {"partner_id": partner_id, "code": user_code, "date": submission_date.toLocaleString("en-US", {timeZone: "UTC"})};
 
     $.ajax({
         type: 'POST',

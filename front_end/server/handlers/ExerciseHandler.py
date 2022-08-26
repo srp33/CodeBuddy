@@ -49,7 +49,6 @@ class ExerciseHandler(BaseUserHandler):
 
                 tests = exercise_details["tests"]
                 submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
-                
 
                 is_new_ui = self.get_query_argument('new', None) is not None
 
@@ -84,7 +83,7 @@ class ExerciseHandler(BaseUserHandler):
                         "is_instructor": self.is_instructor_for_course(course),
                         "is_assistant": self.is_assistant_for_course(course),
                         "help_request": help_request,
-                        "same_suggestion": same_suggestion,                    
+                        "same_suggestion": same_suggestion,
                 }
 
                 if is_new_ui:

@@ -15,6 +15,7 @@ html:
 
 .PHONY: build-watch
 build-watch:
+	npm install
 	npm start
 
 .PHONY: docker
