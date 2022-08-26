@@ -1,0 +1,19 @@
+code-editor {
+	display: block;
+    flex: 1;
+    width: 100%;
+	
+	.editor-container {
+		height: 100%;
+		width: 100%;
+		position: relative;
+	}
+
+	.editor {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+	}
+}

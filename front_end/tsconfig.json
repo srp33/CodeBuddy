@@ -1,0 +1,46 @@
+{
+	"compilerOptions": {
+	  "sourceMap": false,
+	  "noImplicitAny": true,
+	  "noImplicitReturns": true,
+	  "noImplicitThis": true,
+	  "module": "es2020",
+	  "target": "es5",
+	  "lib": [
+		"es2020",
+		"es2017",
+		"es2015",
+		"dom",
+		"WebWorker"
+	  ],
+	  "removeComments": true,
+	  "allowSyntheticDefaultImports": true,
+	  "experimentalDecorators": true,
+	  "esModuleInterop": true,
+	  "jsx": "preserve",
+	  "allowJs": true,
+	  "baseUrl": "./ui",
+	  "moduleResolution": "node",
+	  "downlevelIteration": true,
+	  "paths": {
+		"@/*": [
+			"./*"
+		  ],
+	  },
+	  "skipLibCheck": true,
+	  "strict": true,
+	  "strictNullChecks": true,
+	  "forceConsistentCasingInFileNames": true,
+	  "noEmit": true,
+	  "resolveJsonModule": true,
+	  "isolatedModules": true,
+	  "useDefineForClassFields": false,
+	  "incremental": true,
+	},
+	"include": [
+	  "@types/*",
+	  "**/*.ts",
+	  "**/*.tsx",
+  	],
+  }
+  

@@ -20,8 +20,8 @@ function run_code(show_submit_warning) {
         type: 'POST',
         url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
         data: {"user_code": user_code},
-        async: true})
-        .done(function(result) {
+        async: true,
+    }).done(function(result) {
             var response_dict = JSON.parse(result);
 
             if (response_dict["message"] == "") {
@@ -54,7 +54,7 @@ function submit() {
     let partner_id = $("#partner_id")[0].value == "" ? null : $("#partner_id")[0].value;
     let submission_date = new Date();
 
-    post_data = { "partner_id": partner_id, "code": user_code, "date": submission_date.toLocaleString("en-US", {timeZone: "UTC"})};
+    post_data = { "code": user_code, "date": submission_date.toLocaleString("en-US", {timeZone: "UTC"})};
 
     $.ajax({
         type: 'POST',

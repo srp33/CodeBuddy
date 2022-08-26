@@ -6,8 +6,11 @@ class RunCodeHandler(BaseUserHandler):
 
         try:
             code = self.get_body_argument("user_code").replace("\r", "")
-            exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.content.get_exercise_details(course, assignment, exercise)
+
+            single_test = self.get_query_argument('test', None)
+            if single_test is not None and single_test in exercise_details["tests"]:
+                exercise_details["tests"] = {single_test: exercise_details["tests"][single_test]}
 
             out_dict = exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 

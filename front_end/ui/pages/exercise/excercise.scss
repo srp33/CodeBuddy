@@ -1,0 +1,121 @@
+@import '../../css/mystyles.scss';
+
+.left-panel {
+	display: flex;
+	height: 100%;
+
+	.tab-bar {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		width: 52px;
+		padding: 8px 2px;
+
+		.icon-button {
+			width: 48px;
+			height: 48px;
+			font-size: 32px;
+			padding: 0;
+			border: none;
+			background: none;
+			cursor: pointer;
+
+			&:hover, &.active {
+				color: $primary;
+			}
+
+			&:hover {
+				border: 2px solid $primary;
+				border-radius: 4px;
+			}
+		}
+	}
+	
+	.info-panel {
+		padding: 16px;
+		overflow-wrap: break-word;
+		display: flex;
+		flex-direction: column;
+		// height: 100%;
+		flex: 1;
+		overflow-y: scroll;
+		max-height: calc(100vh - ($header-height + $footer-height));
+
+		.dropdown {
+			.dropdown-trigger {
+				width: 100%;
+				.button {
+					width: 100%;
+				}
+			}
+		}
+
+		.file-list {
+			display: flex;
+			flex-direction: column;
+
+			.file-list-item {
+				font-size: 18px;
+				line-height: 20px;
+				padding: 8px;
+				border-radius: 4px;
+				cursor: pointer;
+				margin-bottom: 8px;
+				border: 1px solid transparent;
+				
+				&.active {
+					border: 1px solid $primary;
+					background-color: #eee;
+				}
+
+				&:hover {
+					background-color: #dadada;
+				}
+			}
+		}
+
+		.submission-list {
+			display: flex;
+			flex-direction: column;
+
+			.submission {
+				padding: 4px 6px;
+				margin-bottom: 12px;
+				border-radius: 4px;
+				cursor: pointer;
+				border: solid 2px transparent;
+
+				&.selected {
+					border-color: black;
+				}
+
+				&.passed {
+					background-color: $primary;
+				}
+				
+				&.failed {
+					background-color: $failing;
+				}
+			}
+		}
+	}
+}
+
+.edit-section {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	
+	.save-indicator {
+		position: absolute;
+		bottom: 0;
+		right: 0;
+		padding: 0 8px 8px 0;
+	}
+}
+
+.spacer {
+	flex: 1;
+}
+

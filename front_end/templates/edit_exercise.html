@@ -783,6 +783,9 @@
                     const fileText = await $("#upload_file_control")[0].files[i].text();
 
                     //exercise_details_obj["data_files"][fileName] = {"contents": fileText, "size": $("#upload_file_control")[0].files[i]["size"]};
+                    if (Array.isArray(exercise_details_obj["data_files"])) {
+                        exercise_details_obj["data_files"] = {}
+                    }
                     exercise_details_obj["data_files"][fileName] = fileText;
                 }
 
