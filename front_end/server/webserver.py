@@ -121,6 +121,9 @@ class StaticFileHandler(RequestHandler):
             elif file_name.endswith(".ico"):
                 content_type = "image/x-icon"
                 read_mode = "rb"
+            elif file_name.endswith(".ttf"):
+                content_type = "font/ttf"
+                read_mode = "rb"
             elif file_name.endswith(".webmanifest"):
                 content_type = "application/json"
 

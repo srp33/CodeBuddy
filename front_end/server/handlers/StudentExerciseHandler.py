@@ -16,17 +16,15 @@ class StudentExerciseHandler(BaseUserHandler):
                 assignment_options = [x[1] for x in self.content.get_assignments(course) if str(x[0]) != assignment]
 
                 submissions = self.content.get_submissions(course, assignment, exercise, student_id, exercise_details)
-                submissions_json = escape_json_string(json.dumps(submissions))
                 num_submissions = len(submissions)
 
                 back_end = self.settings_dict["back_ends"][exercise_details["back_end"]]
                 student_info = self.content.get_user_info(student_id)
 
+                tests = exercise_details["tests"]
                 format_exercise_details(exercise_details, exercise_basics, student_info["name"], self.content)
 
-                tests_json = escape_json_string(json.dumps(exercise_details["tests"], default=str))
-
-                self.render("student_exercise.html", student_info=student_info, student_id=student_id, courses=courses, course_basics=course_basics, assignments=assignments, assignment_basics=assignment_basics, exercises=exercises, exercise_basics=exercise_basics, assignment_details=assignment_details, exercise_details=exercise_details, tests_json=tests_json, exercise_statuses=exercise_statuses, assignment_options=assignment_options, code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], submissions_json=submissions_json, num_submissions=num_submissions, user_info=self.get_user_info(), user_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
+                self.render("student_exercise.html", student_info=student_info, student_id=student_id, courses=courses, course_basics=course_basics, assignments=assignments, assignment_basics=assignment_basics, exercises=exercises, exercise_basics=exercise_basics, assignment_details=assignment_details, exercise_details=exercise_details, tests=tests, exercise_statuses=exercise_statuses, assignment_options=assignment_options, code_completion_path=back_end["code_completion_path"], back_end_description=back_end["description"], submissions=submissions, num_submissions=num_submissions, user_info=self.get_user_info(), user_id=self.get_user_id(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
             else:
                 self.render("permissions.html")
         except Exception as inst:

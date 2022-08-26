@@ -325,7 +325,7 @@ def get_client_ip_address(request):
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
 
-def format_exercise_details(exercise_details, exercise_basics, user_name, content, next_prev_exercises=None):
+def format_exercise_details(exercise_details, exercise_basics, user_name, content, next_prev_exercises=None, format_tests = True):
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
@@ -334,7 +334,8 @@ def format_exercise_details(exercise_details, exercise_basics, user_name, conten
 
     # Do formatting
     for test_title in exercise_details["tests"]:
-        exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
+        if format_tests:
+            exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
         exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
 
     if "[reflection_prompt]" in exercise_details["instructions"]:

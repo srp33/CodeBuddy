@@ -73,9 +73,9 @@
                 editor.focus();
                 editor.getSession().setMode("{{ code_completion_path }}");
 
-                const tests = JSON.parse("{{ tests_json }}");
+                const tests = {{ jsonify(tests) }};
 
-                var submissions = JSON.parse("{{ submissions_json }}");
+                var submissions = {{ jsonify(submissions) }};
                 show_past_submissions();
 
                 if (submissions.length > 0)

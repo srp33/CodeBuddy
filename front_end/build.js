@@ -14,6 +14,7 @@ esbuild.build({
 	// entryNames: isProdBuild ? '[dir]/[name]-[hash]' : '[dir]/[name]',
     entryPoints: {
 		shared: 'ui/shared/index.js',
+		exercise: 'ui/pages/exercise/index.ts',
 
 		'css/mystyles': 'ui/css/mystyles.scss',
 		'css/styles': 'ui/css/styles.css',
@@ -37,10 +38,12 @@ esbuild.build({
 			}
 		},
 	},
+	loader: {
+		".ttf": 'dataurl',
+	},
     plugins: [
 		assetsManifest({
 			filename: 'manifest.json',
-			path: './static',
 			metadata: { timestamp: new Date() },
 		}),
 		sassPlugin(),
@@ -54,6 +57,20 @@ esbuild.build({
 				{
 					from: ['./node_modules/ace-builds/src-noconflict/**/*.js'],
 					to: './ace/',
+					keepStructure: true,
+				},
+				{
+					from: [
+						'./node_modules/monaco-editor/min/**/*',
+					],
+					to: './monaco/min/',
+					keepStructure: true,
+				},
+				{
+					from: [
+						'./node_modules/monaco-editor/min-maps/**/*',
+					],
+					to: './monaco/min-maps/',
 					keepStructure: true,
 				},
 			],
