@@ -1,40 +1,42 @@
-            <div class="navbar-item has-dropdown is-hoverable">
-                <div class="navbar-item is-arrowless">
-                    {% if len(exercises) > 0 and "exercise_basics" in globals() and exercise_basics["exists"] %}
-                        {{ exercise_basics["title"] }}
-                    {% else %}
-                        Exercises
-                    {% end %}
-
-                    <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
-                </div>
-
-                {% if len(exercise_statuses) > 0 %}
-                    <div id="moreDropdown" class="navbar-dropdown">
-                        {% for exercise in exercise_statuses %}
-                            <a class="navbar-item"
-                               style="white-space: nowrap;"
-                               {% if "is_edit_page" in globals() and is_edit_page == True %}
-                                   href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
-                               {% else %}
-                                   href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
-                               {% end %}
-                             >
-                                {% if exercise[1]["passed"] %}
-                                    <img src="/static/greencheck.png" alt="Completed" class="navbar-img"/>
-                                {% elif exercise[1]["in_progress"] %}
-                                    <img src="/static/inprogress.png" alt="In progress" class="navbar-img"/>
-                                {% else %}
-                                    <img src="/static/unchecked.png" alt="Not completed" class="navbar-img"/>
-                                {% end %}
-
-                                {{ exercise[1]["title"] }}
-
-                                {% if exercise[1]["enable_pair_programming"] %}
-                                    <label class="has-tooltip-multiline has-tooltip-right" style="margin-left: 7px;" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
-                                {% end %}
-                            </a>
+            {% if len(exercises) > 1 %}
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <div class="navbar-item is-arrowless">
+                        {% if "exercise_basics" in globals() and exercise_basics["exists"] %}
+                            {{ exercise_basics["title"] }}
+                        {% else %}
+                            Exercises
                         {% end %}
+
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
                     </div>
-                {% end %}
-            </div>
+
+                    {% if len(exercise_statuses) > 0 %}
+                        <div id="moreDropdown" class="navbar-dropdown">
+                            {% for exercise in exercise_statuses %}
+                                <a class="navbar-item"
+                                   style="white-space: nowrap;"
+                                   {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                       href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                                   {% else %}
+                                       href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                                   {% end %}
+                                 >
+                                    {% if exercise[1]["passed"] %}
+                                        <img src="/static/greencheck.png" alt="Completed" class="navbar-img"/>
+                                    {% elif exercise[1]["in_progress"] %}
+                                        <img src="/static/inprogress.png" alt="In progress" class="navbar-img"/>
+                                    {% else %}
+                                        <img src="/static/unchecked.png" alt="Not completed" class="navbar-img"/>
+                                    {% end %}
+
+                                    {{ exercise[1]["title"] }}
+
+                                    {% if exercise[1]["enable_pair_programming"] %}
+                                        <label class="has-tooltip-multiline has-tooltip-right" style="margin-left: 7px;" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
+                                    {% end %}
+                                </a>
+                            {% end %}
+                        </div>
+                    {% end %}
+                </div>
+            {% end %}
