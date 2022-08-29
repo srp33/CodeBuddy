@@ -938,48 +938,60 @@ class Content:
     def get_assignment_scores(self, course_id, assignment_id):
         scores = []
 
-        sql = '''SELECT u.name,
-                        s.user_id,
-                        (SUM(s.score) / b.num_exercises) AS percent_passed,
-                        sub.last_submission_time
-                 FROM scores s
-                 INNER JOIN users u
-                   ON s.user_id = u.user_id
-                 INNER JOIN (
-                   SELECT COUNT(DISTINCT exercise_id) AS num_exercises
-                   FROM exercises
-                   WHERE course_id = ?
-                     AND assignment_id = ?
-                     AND visible = 1
-                  ) b
-                 INNER JOIN (
-                   SELECT user_id, strftime('%Y-%m-%d %H:%M:%S', MAX(date)) AS last_submission_time
-                   FROM submissions
-                   WHERE course_id = ?
-                     AND assignment_id = ?
-                   GROUP BY user_id
-                 ) sub
-                   ON s.user_id = sub.user_id
-                 WHERE s.course_id = ?
-                   AND s.assignment_id = ?
-                   AND s.user_id NOT IN
-                   (
-                    SELECT user_id
-                    FROM permissions
-                    WHERE course_id = 0 OR course_id = ?
-                   )
-                   AND s.exercise_id NOT IN
-                   (
-                     SELECT exercise_id
+        sql = '''WITH assignment_scores AS (
+                   SELECT u.name,
+                          s.user_id,
+                          (SUM(s.score) / b.num_exercises) AS percent_passed,
+                          sub.last_submission_time
+                   FROM scores s
+                   INNER JOIN users u
+                     ON s.user_id = u.user_id
+                   INNER JOIN (
+                     SELECT COUNT(DISTINCT exercise_id) AS num_exercises
                      FROM exercises
                      WHERE course_id = ?
                        AND assignment_id = ?
-                       AND visible = 0
-                   )
-                 GROUP BY s.course_id, s.assignment_id, s.user_id
-                 ORDER BY u.family_name, u.given_name'''
+                       AND visible = 1
+                    ) b
+                   INNER JOIN (
+                     SELECT user_id, strftime('%Y-%m-%d %H:%M:%S', MAX(date)) AS last_submission_time
+                     FROM submissions
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                     GROUP BY user_id
+                   ) sub
+                     ON s.user_id = sub.user_id
+                   WHERE s.course_id = ?
+                     AND s.assignment_id = ?
+                     AND s.user_id NOT IN
+                     (
+                      SELECT user_id
+                      FROM permissions
+                      WHERE course_id = 0 OR course_id = ?
+                     )
+                     AND s.exercise_id NOT IN
+                     (
+                       SELECT exercise_id
+                       FROM exercises
+                       WHERE course_id = ?
+                         AND assignment_id = ?
+                         AND visible = 0
+                     )
+                   GROUP BY s.course_id, s.assignment_id, s.user_id
+                 )
 
-        for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id),)):
+                 SELECT *
+                 FROM assignment_scores
+
+                 UNION
+
+                 SELECT name, user_id, 0, ''
+                 FROM users
+                 WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
+                   AND user_id NOT IN (SELECT user_id FROM assignment_scores)
+                 '''
+
+        for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id), int(course_id))):
             scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"], "last_submission_time": user["last_submission_time"]}
             scores.append([user["user_id"], scores_dict])
 

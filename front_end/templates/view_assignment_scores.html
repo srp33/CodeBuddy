@@ -34,6 +34,17 @@
             }
         }
     }
+
+    function parseDateText(text) {
+        if (text == "")
+            return "Not applicable";
+
+        var the_date = new Date(text);
+        var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
+        the_date.setTime(the_date_mod);
+                        
+        return the_date.toLocaleString();
+    }
 </script>
 
 <div id="reset_modal" class="modal">
@@ -74,11 +85,7 @@
                 <td class="has-text-left">{{ round(score[1]["percent_passed"]) }}%</td>
                 <td class="has-text-left">
                     <script>
-                        // Adjust date to use local time zone.
-                        var the_date = new Date("{{ score[1]['last_submission_time'] }}");
-                        var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
-                        the_date.setTime(the_date_mod);
-                        document.write(the_date.toLocaleString());
+                        document.write(parseDateText("{{ score[1]['last_submission_time'] }}"));
                     </script>
                 </td>
                 {% if assignment_details["has_timer"] %}
