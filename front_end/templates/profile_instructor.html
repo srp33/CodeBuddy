@@ -184,7 +184,7 @@
                 <h2>Select an assignment to view its scores:</h2>
                 <ul>
                 {% for assignment in assignments %}
-                    <li><a href="/view_scores/{{ course['id'] }}/{{ assignment[1]['id'] }}">{{ assignment[1]['title'] }}</a></li>
+                    <li><a href="/view_assignment_scores/{{ course['id'] }}/{{ assignment[1]['id'] }}">{{ assignment[1]['title'] }}</a></li>
                 {% end %}
                 </ul>
                 <p><a href="/download_course_scores/{{ course['id'] }}">Download scores</a></p>

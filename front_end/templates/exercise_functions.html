@@ -622,30 +622,53 @@ function showHideData(dataPanelID, dataButtonID) {
     }
 }
 
+function showCopyExerciseModal() {
+    var modal = document.getElementById("copy_exercise_modal");
+    var message = document.getElementById("move_exercise_message");
+    var cancelButton = document.getElementById("copy_cancel_button");
+
+    modal.style.display = "block";
+    message.style.display = "none";
+    message.innerHTML = "";
+
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
 function copyExercise(course, assignment, exercise) {
     var new_title = document.getElementById("new_title").value;
-    var message = document.getElementById("copy_exercise_message")
+    var message = document.getElementById("copy_exercise_message");
     var modal = document.getElementById("copy_exercise_modal");
 
     $.post(`/copy_exercise/${course}/${assignment}/${exercise}`, {"new_title": new_title},
         function(data) {
             var json_data = JSON.parse(data);
-            if (json_data.result != "") {
-              message.innerHTML = json_data.result;
-              message.style.display = "block";
-            }
-            else {
+            if (json_data.result == "") {
                 modal.style.display = "none";
                 location.reload();
+            }
+            else {
+                message.innerHTML = json_data.result;
+                message.style.display = "block";
             }
     });
 }
 
-function showCopyExerciseModal() {
-    var modal = document.getElementById("copy_exercise_modal");
-    modal.style.display = "block";
+function showMoveExerciseModal() {
+    var modal = document.getElementById("move_exercise_modal");
+    var message = document.getElementById("move_exercise_message");
+    var cancelButton = document.getElementById("move_cancel_button");
 
-    var cancelButton = document.getElementById("copy_cancel_button");
+    modal.style.display = "block";
+    message.style.display = "none";
+    message.innerHTML = "";
 
     cancelButton.onclick = function() {
         modal.style.display = "none";
@@ -658,26 +681,23 @@ function showCopyExerciseModal() {
     }
 }
 
-function showMoveExerciseModal() {
+function moveExercise(course, assignment, exercise) {
+    var new_assignment_id = document.getElementById("new_assignment_id").value;
+    var message = document.getElementById("move_exercise_message");
     var modal = document.getElementById("move_exercise_modal");
-    //var span = document.getElementsByClassName("close")[4];
-    modal.style.display = "block";
 
-    var cancelButton = document.getElementById("move_cancel_button");
-
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    /*span.onclick = function() {
-        modal.style.display = "none";
-    }*/
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
+    $.post(`/move_exercise/${course}/${assignment}/${exercise}`, {"new_assignment_id": new_assignment_id},
+        function(data) {
+            var json_data = JSON.parse(data);
+            if (json_data.result == "") {
+                modal.style.display = "none";
+                window.location.href = `/assignment/${course}/${assignment}`;
+            }
+            else {
+                message.innerHTML = json_data.result;
+                message.style.display = "block";
+            }
+    });
 }
 
 function showDeleteSubmissionsModal() {

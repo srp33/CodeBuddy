@@ -91,7 +91,7 @@ def make_app():
         url(r"/view_peer_solution/([^/]+)/([^/]+)/([^/]+)", ViewPeerSolutionHandler, name="view_peer_solution"),
         url(r"/view_pp/([^/]+)", ViewPairProgrammingAssignmentsHandler, name="view_pp"),
         url(r"/view_request/([^/]+)/([^/]+)/([^/]+)/([^/]+)", ViewHelpRequestsHandler, name="view_request"),
-        url(r"/view_scores/([^/]+)/([^/]+)", ViewScoresHandler, name="view_scores"),
+        url(r"/view_assignment_scores/([^/]+)/([^/]+)", ViewAssignmentScoresHandler, name="view_assignment_scores"),
         ],
         autoescape=None,
         debug=('DEBUG' in os.environ),

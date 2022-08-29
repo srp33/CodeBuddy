@@ -60,7 +60,7 @@
                             {% end %}
 
                             <td>{{ course_summary_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_summary_scores[assignment[1]["id"]]["num_students"] }}</td>
-                            <td>{{ course_summary_scores[assignment[1]["id"]]["avg_score"] }}%</td>
+                            <td><a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">{{ course_summary_scores[assignment[1]["id"]]["avg_score"] }}%</a></td>
                         {% end %}
                         <td>
                             <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">
