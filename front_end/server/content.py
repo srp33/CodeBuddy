@@ -1018,9 +1018,16 @@ class Content:
 
                  SELECT *
                  FROM exercise_scores
+
+                 UNION
+
+                 SELECT name, user_id, 0, 0
+                 FROM users
+                 WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
+                   AND user_id NOT IN (SELECT user_id FROM exercise_scores)
               '''
 
-        for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id),)):
+        for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), int(course_id), )):
             scores_dict = {"name": user["name"], "user_id": user["user_id"], "num_submissions": user["num_submissions"], "score": user["score"]}
             scores.append([user["user_id"], scores_dict])
 
