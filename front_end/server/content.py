@@ -1378,30 +1378,42 @@ class Content:
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = '''SELECT MAX(s.date), s.code, u.user_id, u.name, sc.score, s.passed, p.name AS partner_name
-                 FROM submissions s
-                 LEFT JOIN users p
-                   ON s.partner_id = p.user_id
-                 INNER JOIN users u
-                   ON s.user_id = u.user_id
-                 INNER JOIN scores sc
-                   ON s.user_id = sc.user_id
-                   AND s.course_id = sc.course_id
-                   AND s.assignment_id = sc.assignment_id
-                   AND s.exercise_id = sc.exercise_id
-                 WHERE s.course_id = ?
-                   AND s.assignment_id = ?
-                   AND s.exercise_id = ?
-                   AND s.user_id IN
-                   (
-                      SELECT user_id
-                      FROM course_registrations
-                      WHERE course_id = ?
-                   )
-                GROUP BY s.user_id
-                ORDER BY u.family_name, u.given_name'''
+        sql = '''WITH exercise_submissions AS (
+                   SELECT MAX(s.date), s.code, u.user_id, u.name, sc.score, s.passed, p.name AS partner_name
+                   FROM submissions s
+                   LEFT JOIN users p
+                     ON s.partner_id = p.user_id
+                   INNER JOIN users u
+                     ON s.user_id = u.user_id
+                   INNER JOIN scores sc
+                     ON s.user_id = sc.user_id
+                     AND s.course_id = sc.course_id
+                     AND s.assignment_id = sc.assignment_id
+                     AND s.exercise_id = sc.exercise_id
+                   WHERE s.course_id = ?
+                     AND s.assignment_id = ?
+                     AND s.exercise_id = ?
+                     AND s.user_id IN
+                     (
+                        SELECT user_id
+                        FROM course_registrations
+                        WHERE course_id = ?
+                     )
+                   GROUP BY s.user_id
+                 )
 
-        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id,)):
+                 SELECT *
+                 FROM exercise_submissions
+
+                 UNION
+
+                 SELECT NULL, NULL, user_id, name, 0, 0, NULL
+                 FROM users
+                 WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
+                   AND user_id NOT IN (SELECT user_id FROM exercise_submissions)
+                 ORDER BY name'''
+
+        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id, course_id, )):
             submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": submission["partner_name"]}
             exercise_submissions.append([submission["user_id"], submission_info])
 

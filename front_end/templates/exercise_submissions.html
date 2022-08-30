@@ -9,62 +9,67 @@
 
     {% for student in exercise_submissions %}
         {% if student[1]["passed"] %}
-          {% if student[1]["partner_name"] %}
-            <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
-          {% else %}
-            <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
-          {% end %}
+            {% if student[1]["partner_name"] %}
+                <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
+            {% else %}
+                <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
+            {% end %}
+
             <div class="c-content">
-                <p>Exercise score: <strong>{{ student[1]["score"] }}%</strong></p>
+                <p style="margin-top: 9px; margin-bottom: 3px;">Exercise score: <strong>{{ student[1]["score"] }}%</strong></p>
                 <p>Most recent submission:</p>
-                <pre>{{ student[1]["code"] }}</pre>
+                <pre style="margin-bottom: 7px;">{{ student[1]["code"] }}</pre>
             </div>
         {% else %}
             {% if student[1]["partner_name"] %}
-              <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
+                <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
             {% else %}
-              <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
+                <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
             {% end %}
+
             <div class="c-content">
-                <p>No passing score yet.</p>
-                <p>Most recent submission:</p>
-                <pre>{{ student[1]["code"] }}</pre>
+                {% if student[1]["code"] %}
+                    <p style="margin-top: 9px; margin-bottom: 3px;">No passing score yet.</p>
+                    <p>Most recent submission:</p>
+                    <pre style="margin-bottom: 3px;">{{ student[1]["code"] }}</pre>
+                {% else %}
+                    <p style="margin-top: 9px; margin-bottom: 3px;">This student has not made any submissions yet.</p>
+                {% end %}
             </div>
         {% end %}
     {% end %}
 
+    <script>
+        var coll = document.getElementsByClassName("clickable");
+        var content = document.getElementsByClassName("c-content");
+        var i;
+
+        for (i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.display === "block") {
+                    content.style.display = "none";
+                } else {
+                    content.style.display = "block";
+                }
+            });
+        }
+
+        function showAllSubmissions() {
+            for (i = 0; i < content.length; i++) {
+                content[i].style.display = "block";
+                coll[i].classList.add("active");
+            }
+        }
+
+        function hideAllSubmissions() {
+            for (i = 0; i < content.length; i++) {
+                content[i].style.display = "none";
+                coll[i].classList.remove("active");
+            }
+        }
+    </script>
 {% else %}
     <h2>No submissions have been made for this exercise.</h2>
 {% end %}
-
-<script>
-    var coll = document.getElementsByClassName("clickable");
-    var content = document.getElementsByClassName("c-content");
-    var i;
-
-    for (i = 0; i < coll.length; i++) {
-        coll[i].addEventListener("click", function() {
-            this.classList.toggle("active");
-            var content = this.nextElementSibling;
-            if (content.style.display === "block") {
-                content.style.display = "none";
-            } else {
-                content.style.display = "block";
-            }
-        });
-    }
-
-    function showAllSubmissions() {
-        for (i = 0; i < content.length; i++) {
-            content[i].style.display = "block";
-            coll[i].classList.add("active");
-        }
-    }
-
-    function hideAllSubmissions() {
-        for (i = 0; i < content.length; i++) {
-            content[i].style.display = "none";
-            coll[i].classList.remove("active");
-        }
-    }
-</script>
