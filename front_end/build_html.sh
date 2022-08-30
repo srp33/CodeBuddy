@@ -8,6 +8,7 @@ if [[ $1 != "" ]]; then
 fi
 
 mkdir -p $OUTPUT
+rm -f $OUTPUT/*
 
 cd templates
 
@@ -47,7 +48,7 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html edit_scores.html container_bottom.html footer.html > "$OUTPUT/edit_scores.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html student_scores.html container_bottom.html footer.html > "$OUTPUT/student_scores.html"
 cat header.html javascript_container.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html exercise_functions.html student_exercise.html container_bottom.html footer.html > "$OUTPUT/student_exercise.html"
-cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html exercise_scores.html container_bottom.html footer.html > "$OUTPUT/exercise_scores.html"
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html view_exercise_scores.html container_bottom.html footer.html > "$OUTPUT/view_exercise_scores.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html help_requests.html container_bottom.html footer.html > "$OUTPUT/help_requests.html"
 cat header.html javascript_container.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html view_request.html container_bottom.html footer.html > "$OUTPUT/view_request.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html exercise_submissions.html container_bottom.html footer.html > "$OUTPUT/exercise_submissions.html"

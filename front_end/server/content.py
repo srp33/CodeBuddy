@@ -1000,20 +1000,25 @@ class Content:
     def get_exercise_scores(self, course_id, assignment_id, exercise_id):
         scores = []
 
-        sql = '''SELECT u.name, s.user_id, sc.score, COUNT(s.submission_id) AS num_submissions
-                 FROM submissions s
-                 INNER JOIN users u
-                   ON u.user_id = s.user_id
-                 INNER JOIN scores sc
-                 ON sc.course_id = s.course_id
-                   AND sc.assignment_id = s.assignment_id
-                   AND sc.exercise_id = s.exercise_id
-                   AND sc.user_id = s.user_id
-                 WHERE s.course_id = ?
-                   AND s.assignment_id = ?
-                   AND s.exercise_id = ?
-                 GROUP BY s.user_id
-                 ORDER BY u.family_name, u.given_name'''
+        sql = '''WITH exercise_scores AS (
+                   SELECT u.name, s.user_id, sc.score, COUNT(s.submission_id) AS num_submissions
+                   FROM submissions s
+                   INNER JOIN users u
+                     ON u.user_id = s.user_id
+                   INNER JOIN scores sc
+                   ON sc.course_id = s.course_id
+                     AND sc.assignment_id = s.assignment_id
+                     AND sc.exercise_id = s.exercise_id
+                     AND sc.user_id = s.user_id
+                   WHERE s.course_id = ?
+                     AND s.assignment_id = ?
+                     AND s.exercise_id = ?
+                   GROUP BY s.user_id
+                 )
+
+                 SELECT *
+                 FROM exercise_scores
+              '''
 
         for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id),)):
             scores_dict = {"name": user["name"], "user_id": user["user_id"], "num_submissions": user["num_submissions"], "score": user["score"]}

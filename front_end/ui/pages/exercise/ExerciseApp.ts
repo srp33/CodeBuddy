@@ -331,7 +331,7 @@ class InformationPane extends LitElement {
 										Copy exercise
 									</a >
 									<a href="javascript:void(0);" class="dropdown-item">
-										Delete exercise submittions
+										Delete exercise submissions
 									</a >
 								</div>
 							</div>
