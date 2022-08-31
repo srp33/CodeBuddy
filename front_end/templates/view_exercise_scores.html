@@ -9,23 +9,29 @@
                     <th>Student ID</th>
                     <th># Submissions</th>
                     <th>Score</th>
-                    <th>View</th>
                 </tr>
             </thead>
             <tbody>
-            {% for student in exercise_scores %}
-                <tr>
-                    <td>{{ student[1]["name"] }}</td>
-                    <td>{{ student[1]["user_id"] }}</td>
-                    <td>{{ student[1]["num_submissions"] }}</td>
-                    <td>{{ student[1]["score"] }}%</td>
-                    <td>
-                    {% if student[1]["num_submissions"] != 0 %}
-                        <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student[1]['user_id'] }}">View</a>
-                    {% end %}
-                    </td>
-                </tr>
-            {% end %}  
+                {% for student in exercise_scores %}
+                    <tr>
+                        <td>{{ student[1]["name"] }}</td>
+                        <td>{{ student[1]["user_id"] }}</td>
+                        <td>
+                            {% if student[1]["num_submissions"] == 0 %}
+                                {{ student[1]["num_submissions"] }}
+                            {% else %}
+                                <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student[1]['user_id'] }}">{{ student[1]["num_submissions"] }}</a>
+                            {% end %}
+                        </td>
+                        <td>
+                            {% if student[1]["num_submissions"] == 0 %}
+                                {{ student[1]["score"] }}%
+                            {% else %}
+                                <a href="/edit_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ student[1]['user_id'] }}">{{ student[1]["score"] }}%</a>
+                            {% end %}
+                        </td>
+                    </tr>
+                {% end %}  
             </tbody>
         </table>
     </div>

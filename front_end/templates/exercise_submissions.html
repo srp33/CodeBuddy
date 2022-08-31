@@ -17,7 +17,7 @@
 
             <div class="c-content">
                 <p style="margin-top: 9px; margin-bottom: 3px;">Exercise score: <strong>{{ student[1]["score"] }}%</strong></p>
-                <p>Most recent submission:</p>
+                <p>Most recent submission (<a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}" target="_blank">more</a>):</p>
                 <pre style="margin-bottom: 7px;">{{ student[1]["code"] }}</pre>
             </div>
         {% else %}

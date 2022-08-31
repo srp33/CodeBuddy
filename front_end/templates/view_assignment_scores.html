@@ -74,7 +74,6 @@
                             {% if assignment_details["has_timer"] %}
                                 <th>Timer</th>
                             {% end %}
-                            <th>View</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -82,7 +81,13 @@
                             <tr>
                                 <td class="has-text-left">{{ score[1]["name"] }}</td>
                                 <td class="has-text-left">{{ score[0] }}</td>
-                                <td class="has-text-left">{{ round(score[1]["percent_passed"]) }}%</td>
+                                <td class="has-text-left">
+                                    {% if score[1]["percent_passed"] == 0 %}
+                                        0%
+                                    {% else %}
+                                        <a href="/edit_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(score[1]["percent_passed"]) }}%</a>
+                                    {% end %}
+                                </td>
                                 <td class="has-text-left">
                                     <script>
                                         document.write(parseDateText("{{ score[1]['last_submission_time'] }}"));
@@ -99,11 +104,6 @@
                                         <td class="has-text-left">Not started</td>
                                     {% end %}
                                 {% end %}
-                                    <td class="has-text-left">
-                                        {% if round(score[1]["percent_passed"]) != 0 %}
-                                            <a href="/student_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">View</a>
-                                        {% end %}
-                                    </td>
                             </tr>
                         {% end %}
                     </tbody>
