@@ -331,15 +331,13 @@
             </div>
         </div>
 
-        <div style="display: inline;">
-            <div class="buttons">
-                <button class="button is-dark" onclick="window.location.href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">New exercise</button>
-                <button class="button" onclick="showVideoModal()">New video exercise</button>
-            </div>
+        <div class="buttons">
+            <button class="button is-dark" onclick="window.location.href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/';">New exercise</button>
+            <button class="button" onclick="showVideoModal()">New video exercise</button>
         </div>
-        <div>
-            <a href="/course/{{ course_basics['id'] }}">Back to course</a>
-            | <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a>
+
+        <p>
+            <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Edit assignment</a>
             | <a href="/download_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ download_file_name }}">Download scores</a><br />
 
             {% if is_administrator or is_instructor %}
@@ -347,7 +345,7 @@
                 | <a href="/export_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ course_basics['title'] }}__{{ assignment_basics['title'] }}.json">Export assignment</a>
                 | <a onclick="showDeleteSubmissionsModal()">Delete assignment submissions</a>
             {% end %}
-        </div>
+        </p>
     {% else %}
         <p>This assignment does not exist.</p>
     {% end %}
