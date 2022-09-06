@@ -75,7 +75,7 @@ export default class ExerciseApp extends LitElement {
 									<article class="message is-warning" style="margin-bottom: 0px;">
 										<div class="message-header">
 											<p>This is the code from submission ${this.selectedFile.replace('submission-', '')}</p>
-											<button class="button is-small outlined" @click=${this.copySubmissionCode}>Copy to current file</button>
+											<button class="button is-small outlined" @click=${this.copySubmissionCode}>Restore</button>
 										</div>
 									</article>
 									` : null}
@@ -244,6 +244,12 @@ class InformationPane extends LitElement {
 		[Tab.Information]: () => html`
 			<div class="content is-medium" style="flex: 1;">
 				<h6>Instructions</h6>
+				${exercise_details.enable_pair_programming ? html`
+					<div style="margin-bottom: 16px;">
+						<i class="fab fa-product-hunt"></i>
+						<em>Pair programming is enabled for this exercise.</em>
+					</div>
+				` : null}
 				${unsafeHTML(window.templateData.exercise_details.instructions)}
 			</div>
 			${exercise_details.hint ? html`
@@ -267,10 +273,12 @@ class InformationPane extends LitElement {
 				${this.files?.filter((file) => file.type === 'user-code').map(file => html`
 				<span class="file-list-item${this.selectedFile === file.name ? ' active' : ''}" @click=${() => this.onFileSelected?.(file.name)}>${file.name}</span>
 				`)}
-				<strong>Data files:</strong>
-				${this.files?.filter((file) => file.type === 'data-file').map(file => html`
-					<span class="file-list-item${this.selectedFile === file.name ? ' active' : ''}" @click=${() => this.onFileSelected?.(file.name)}>${file.name}</span>
-				`)}
+				${this.hasDataFiles ? html`
+					<strong class="file-header">Data files:</strong>
+					${this.files?.filter((file) => file.type === 'data-file').map(file => html`
+						<span class="file-list-item${this.selectedFile === file.name ? ' active' : ''}" @click=${() => this.onFileSelected?.(file.name)}>${file.name}</span>
+					`)}
+				` : null}
 			</div>
 		`,
 		[Tab.Submissions]: () => html`
@@ -290,8 +298,14 @@ class InformationPane extends LitElement {
 
 	private tabIcons: {[key in Tab]: string} = {
 		[Tab.Information]: 'fas fa-info-circle',
-		[Tab.Code]: 'far fa-copy',
-		[Tab.Submissions]: 'far fa-paper-plane',
+		[Tab.Code]: 'fas fa-folder',
+		[Tab.Submissions]: 'fas fa-history',
+	}
+
+	private tabTitles: {[key in Tab]: string} = {
+		[Tab.Information]: 'Instructions',
+		[Tab.Code]: 'Files',
+		[Tab.Submissions]: 'Submissions',
 	}
 
 	panelOrder: Tab[] = [Tab.Information, Tab.Code, Tab.Submissions];
@@ -305,7 +319,7 @@ class InformationPane extends LitElement {
 			<div class="left-panel">
 				<div class="tab-bar">
 					${this.panelOrder.map((tab) => html`
-						<button class="icon-button${this.selectedTab === tab ? ' active' : ''}" @click=${() => this.selectTab(tab)}>
+						<button class="icon-button${this.selectedTab === tab ? ' active' : ''} has-tooltip-right" data-tooltip="${this.tabTitles[tab]}" @click=${() => this.selectTab(tab)}>
 							<i class="${this.tabIcons[tab]}"></i>
 						</button>
 					`)}
@@ -353,6 +367,10 @@ class InformationPane extends LitElement {
 	selectTab(tab: Tab) {
 		this.selectedTab = tab;
 		localStorage.setItem(`selected-tab-${exercise_details.id}`, tab);
+	}
+
+	get hasDataFiles(): boolean {
+		return this.files?.filter((file) => file.type === 'data-file')?.length as number > 0;
 	}
 }
 

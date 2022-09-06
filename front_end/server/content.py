@@ -1743,6 +1743,8 @@ class Content:
     def save_exercise(self, exercise_basics, exercise_details):
         cursor = self.conn.cursor()
         cursor.execute("BEGIN")
+        if "what_students_see_after_success" not in exercise_details:
+            exercise_details["what_students_see_after_success"] = 1
 
         try:
             if exercise_basics["exists"]:
@@ -1791,6 +1793,8 @@ class Content:
             else:
                 sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, allow_any_response, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+
+
 
                 cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["what_students_see_after_success"], exercise_details["starter_code"], exercise_details["date_created"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"]])
 

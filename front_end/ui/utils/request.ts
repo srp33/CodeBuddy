@@ -12,3 +12,13 @@ export async function postFormData<T>(url: string, data: any): Promise<T> {
 	}
 	return null as any;
 }
+
+export async function get<T>(url: string): Promise<T> {
+	const response = await fetch(url, {
+		method: "GET",
+	});
+	if (Number(response.headers.get('Content-Length')) > 0) {
+		return await response.json();
+	}
+	return null as any;
+}

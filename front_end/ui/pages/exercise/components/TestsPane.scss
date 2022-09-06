@@ -17,10 +17,6 @@ tests-pane {
 				font-size: 1.2rem;
 				font-weight: bold;
 			}
-
-			button {
-				margin-left: 8px;
-			}
 		}
 
 		.test-details {
@@ -38,6 +34,39 @@ tests-pane {
 				display: block;
 				width: 100%;
 				height: 100%;
+
+				&.passed {
+					color: #06b100;
+				}
+				&.failed {
+					color: #bb0000;
+				}
+			}
+		}
+
+		tbody {
+			tr {
+				cursor: pointer;
+
+				&.passed {
+					background-color: #bfdebea7 !important;
+					&:hover {
+						background-color: #abd9a9a7 !important;
+					}
+					td {
+						border-bottom-color: rgb(134, 134, 134);
+					}
+				}
+				
+				&.failed {
+					background-color: #d9b4b499 !important;
+					&:hover {
+						background-color: #d89f9f99 !important;
+					}
+					td {
+						border-bottom-color: rgb(134, 134, 134);
+					}
+				}
 			}
 		}
 	}

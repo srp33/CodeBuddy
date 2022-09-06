@@ -3,15 +3,15 @@ import {LitElement, html, TemplateResult} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import bind from '@/utils/bind';
-import { runCode, RunCodeResponse, submitCode } from '@/utils/exercise-service';
+import { getPartnerID, runCode, submitCode } from '@/utils/exercise-service';
 import bulmaCollapsible from '@creativebulma/bulma-collapsible';
 
 
 enum TestStatus {
-	Unknown = 'Unknown',
-	Running = 'Running',
-	Passed = 'Passed',
-	Failed = 'Failed',
+	Unknown = 'unknown',
+	Running = 'running',
+	Passed = 'passed',
+	Failed = 'failed',
 }
 
 interface Test {
@@ -28,6 +28,10 @@ interface Test {
 	status: TestStatus;
 }
 
+const { exercise_details, exercise_basics, course_basics, assignment_basics, users } = window.templateData;
+
+users?.sort();
+
 @customElement('tests-pane')
 export class TestsPane extends LitElement {
 	@property()
@@ -42,15 +46,19 @@ export class TestsPane extends LitElement {
 	testOutputs: {[key: string]: {
 		txt_output: string;
 		jpg_output: string;
+		diff_output: string;
 	}} = {};
 
 	@state()
 	private errorMessage: string = '';
 
+	@state()
+	private peerProgrammingModalOpen: boolean = false;
+
 	constructor() {
 		super();
 		this.tests = [];
-		const testMap = window.templateData.exercise_details.tests;
+		const testMap = exercise_details.tests;
 		for (const testName in testMap) {
 			if (testMap.hasOwnProperty(testName)) {
 				const test = testMap[testName];
@@ -63,12 +71,29 @@ export class TestsPane extends LitElement {
 	}
 
 	render() {
+		let testsRunning = this.tests.some(test => test.status === TestStatus.Running);
 		return html`
 			<div class="tests-pane">
 				<div class="tests-header">
 					<p>Tests</p>
-					<button class="button is-primary is-outlined" @click=${() => this.runCode()}>Run all tests</button>
-					<button class="button is-dark" @click=${() => this.submitCode()}>Submit exercise</button>
+					<div class="field is-grouped">
+						<p class="control">
+							<button ?disabled=${testsRunning} class="button is-primary is-outlined" @click=${() => this.runCode()}>Run all</button>
+						</p>
+						<div class="field has-addons">
+							<!-- <p class="control">
+								<button class="button">
+									<i class="fab fa-product-hunt"></i>
+									<span style="margin: 0 6px;">Select partner</span>
+									<i class="fas fa-caret-down"></i>
+								</button>
+							</p> -->
+							<p class="control">
+								<button ?disabled=${testsRunning} class="button is-dark" @click=${() => this.handleSubmit()}>Submit</button>
+							</p>
+						</div>
+					</div>
+
 				</div>
 				${this.errorMessage?.length > 0 ? html`
 					<article class="message is-danger">
@@ -91,7 +116,7 @@ export class TestsPane extends LitElement {
 					</thead>
 					<tbody>
 						${this.tests.map((test) => html`
-							<tr>
+							<tr class=${test.status} @click=${this.clickRow}>
 								<td class="test-status">${this.getStatusIcon(test.status)}</td>
 								<td>${test.name}</td>
 								<td>
@@ -100,7 +125,10 @@ export class TestsPane extends LitElement {
 										.runTest=${this.runCode}
 										.testStatus=${test.status}
 										.expectedOutput=${test.txt_output}
+										.expectedImageOutput=${test.jpg_output}
+										.imageDiff=${this.testOutputs[test.name]?.diff_output ?? ''}
 										.userOutput=${this.testOutputs[test.name]?.txt_output ?? ''}
+										.userImageOutput=${this.testOutputs[test.name]?.jpg_output ?? ''}
 									></test-results-modal>
 								</td>
 							</tr>
@@ -109,7 +137,26 @@ export class TestsPane extends LitElement {
 
 				</table>
 			</div>
+			<peer-programming-modal
+				.open=${this.peerProgrammingModalOpen}
+				.onClose=${() => this.peerProgrammingModalOpen = false}
+				.onSubmit=${this.submitCode}
+			></peer-programming-modal>
 		`;
+	}
+
+
+	@bind
+	private clickRow(e: MouseEvent) {
+		if (e.target instanceof Element) {
+			if (e.target.nodeName === 'BUTTON') {
+				return;
+			}
+			const modal: TestResultsModal | null = e.target.closest('tr')?.querySelector('test-results-modal') ?? null;
+			if (modal) {
+				modal.openModal();
+			}
+		}
 	}
 
 	private getStatusIcon(status: TestStatus): TemplateResult {
@@ -135,20 +182,31 @@ export class TestsPane extends LitElement {
 
 		this.requestUpdate();
 		
-		const result = await runCode(window.templateData.course_basics.id, window.templateData.assignment_basics.id, window.templateData.exercise_basics.id, this.getCode!(), testName);
+		const result = await runCode(course_basics.id, assignment_basics.id, exercise_basics.id, this.getCode!(), testName);
 		this.processResult(result);
 		this.requestUpdate();
 	}
 
 	@bind
-	private async submitCode() {
+	private async handleSubmit() {
+		if (!exercise_details.enable_pair_programming) {
+			await this.submitCode();
+		}
+		this.peerProgrammingModalOpen = true;
+	}
+
+	@bind
+	private async submitCode(partnerID = '') {
+		if (this.peerProgrammingModalOpen) {
+			this.peerProgrammingModalOpen = false;
+		}
 		for (const test of this.tests) {
 			test.status = TestStatus.Running;
 		}
 
 		this.requestUpdate();
 		const code = this.getCode!();
-		const result = await submitCode(window.templateData.course_basics.id, window.templateData.assignment_basics.id, window.templateData.exercise_basics.id, code);
+		const result = await submitCode(course_basics.id, assignment_basics.id, exercise_basics.id, code, partnerID);
 		this.processResult(result);
 
 		this.requestUpdate();
@@ -179,15 +237,84 @@ export class TestsPane extends LitElement {
 	}
 }
 
+@customElement('peer-programming-modal')
+export class PeerProgrammingModal extends LitElement {
+	@property()
+	private open: boolean = false;
+
+	@property()
+	private onClose?: () => void;
+
+	@property()
+	private onSubmit?: (partnerName: string) => void;
+
+	@state()
+	private partner: string = '';
+
+	render() {
+		if (!this.open) {
+			return null;
+		}
+		return html`
+			<div class="modal is-active">
+				<div class="modal-background" @click=${this.onClose}></div>
+					<div class="modal-card">
+						<header class="modal-card-head">
+							<p class="modal-card-title">Peer programming</p>
+							<button class="delete" aria-label="close" @click=${this.onClose}></button>
+						</header>
+						<section class="modal-card-body">
+							<p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
+							<div class="select" style="margin: 16px 0px;">
+								<select value=${this.partner} @change=${this.handleChange}>
+									<option value="">Select partner...</option>
+									${users?.map((user: string) => html`<option value=${user}>${user}</option>`)}
+								</select>
+							</div>
+
+							<div class="field is-grouped">
+								<p class="control">
+									<button class="button is-primary is-outlined" @click=${this.submit}>Submit</button>
+								</p>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		`;
+	}
+
+	@bind
+	handleChange(e: Event) {
+		console.log(e);
+		if (e.target instanceof HTMLSelectElement) {
+			this.partner = e.target.value;
+		}
+	}
+
+	@bind
+	async submit() {
+		let partnerID = '';
+		if (this.partner) {
+			partnerID = await getPartnerID(course_basics.id, this.partner);
+			if (typeof partnerID !== 'string') {
+				partnerID = '';
+			}
+		}
+		this.onSubmit?.(partnerID);
+	}
+}
+
 enum OutputTab {
 	Plain = 'Plain Output',
-	Diff = 'Diff Output',
+	TextDiff = 'Text Diff',
+	ImageDiff = 'Image Diff',
 }
 
 @customElement('test-results-modal')
 export class TestResultsModal extends LitElement {
 	@state()
-	open = false;
+	private open = false;
 
 	@property()
 	testStatus?: TestStatus;
@@ -202,33 +329,45 @@ export class TestResultsModal extends LitElement {
 	expectedOutput?: string;
 
 	@property()
+	userImageOutput?: string;
+
+	@property()
+	expectedImageOutput?: string;
+
+	@property()
+	imageDiff?: string;
+
+	@property()
 	runTest?: (testName: string) => Promise<void>;
 
 	
 	@state()
 	currentTab = OutputTab.Plain;
 	
-	tabs = [OutputTab.Plain, OutputTab.Diff];
-	tabOutputs = {
+	tabOutputs: {[key in OutputTab]: () => TemplateResult} = {
 		[OutputTab.Plain]: () => html`
 			<div class="plain-output-section">
 				<div>
-					<h3>Your output:</h3>
-					<pre>${this.userOutput}</pre>
+					${this.testStatus === TestStatus.Passed ? html`<h2>Test passed 🎉!!!</h2>` : null}
+					${this.getUserOutput()}
 				</div>
 				<div>
-					<h3>Correct output:</h3>
-					<pre>${this.expectedOutput}</pre>
+					${this.getExpectedOutput()}
 				</div>
 			</div>
 		`,
-		[OutputTab.Diff]: () => html`
+		[OutputTab.TextDiff]: () => html`
 			<div class="diff-section">
 				<div class="diff-section-header">
-					<span style="flex: 1;">Correct output:</span>
-					<span style="flex: 1;">Your output:</span>
+					<span style="flex: 1;">Correct text output:</span>
+					<span style="flex: 1;">Your text output:</span>
 				</div>
 				<diff-viewer .left=${this.expectedOutput} .right=${this.userOutput}></diff-viewer>
+			</div>
+		`,
+		[OutputTab.ImageDiff]: () => html`
+			<div class="image-diff-section">
+				<img src='data:image/jpg;base64,${this.imageDiff}' width="100%" />
 			</div>
 		`,
 	}
@@ -253,7 +392,7 @@ export class TestResultsModal extends LitElement {
 										<div class="message-header">
 											<a href="#instruction-section" data-action="collapse">Instructions</a>
 										</div>
-										<div id="instruction-section" class="message-body is-collapsible" data-parent="accordion">
+										<div id="instruction-section" class="message-body is-collapsible is-active" data-parent="accordion">
 											<div class="message-body-content">
 												${unsafeHTML(this.test?.instructions)}
 											</div>
@@ -266,7 +405,7 @@ export class TestResultsModal extends LitElement {
 									<div class="message-header">
 										<a href="#test-code-section" data-action="collapse">Test code</a>
 									</div>
-									<div id="test-code-section" class="message-body is-collapsible" data-parent="accordion">
+									<div id="test-code-section" class="message-body is-collapsible is-active" data-parent="accordion">
 										<div class="message-body-content">
 											${this.test?.before_code ? html`
 												<p>Code run before your code:</p>
@@ -294,7 +433,7 @@ export class TestResultsModal extends LitElement {
 										<div class="message-header">
 											<a href="#output-section" data-action="collapse">Code output</a>
 										</div>
-										<div id="output-section" class="message-body is-collapsible" data-parent="accordion">
+										<div id="output-section" class="message-body is-collapsible is-active" data-parent="accordion">
 											<div class="message-body-content">
 												${this.getTestOutput()}
 											</div>
@@ -316,13 +455,10 @@ export class TestResultsModal extends LitElement {
 	}
 
 	@bind
-	async openModal() {
+	public async openModal() {
 		this.open = true;
 		await this.updateComplete;
-		const collapsibles = bulmaCollapsible.attach('.is-collapsible');
-		for (const collapsible of collapsibles) {
-			collapsible.open();
-		}
+		bulmaCollapsible.attach('.is-collapsible');
 	}
 
 	@bind
@@ -346,66 +482,77 @@ export class TestResultsModal extends LitElement {
 
 	@bind
 	private getTestOutput(): TemplateResult {
-		switch (this.testStatus) {
-			case TestStatus.Passed:
-				return html`
-					<div class="plain-output-section">
-						<div>
-							<h3>Your output:</h3>
-							<pre>${this.userOutput}</pre>
-						</div>
-						<h2>Test passed 🎉!!!</h2>
-					</div>
-				`;
-			case TestStatus.Failed:
-				if (this.test?.can_see_code_output && this.test?.can_see_expected_output) {
-					return html`
-						<div>
-							<div class="tabs">
-								<ul>
-									${this.tabs.map(tab => html`
-										<li class=${tab === this.currentTab ? 'is-active' : ''} @click=${() => this.currentTab = tab}><a>${tab}</a></li>
-									`)}
-								</ul>
-							</div>
-						</div>
-						${this.tabOutputs[this.currentTab]()}				
-					`;
-				} else if (this.test?.can_see_code_output) {
-					return html`
-					<div class="plain-output-section">
-						<div>
-							<h3>Your output:</h3>
-							<pre>${this.userOutput}</pre>
-						</div>
-						<div>
-							<h3>You cannot see the expected output for this test.</h3>
-						</div>
-					</div>
-				`
-				} else if (this.test?.can_see_expected_output) {
-					return html`
-					<div class="plain-output-section">
-						<div>
-							<h3>You cannot see your output for this test.</h3>
-						</div>
-						<div>
-							<h3>Correct output:</h3>
-							<pre>${this.expectedOutput}</pre>
-						</div>
-					</div>
-					`
-				}
-				// should be unreachable
-				return html``;
-			default:
-				return html`
-					<div class="no-output-section">
-						This test has not been run yet.
-					</div>
-				`;
+		const tabs: OutputTab[] = [OutputTab.Plain];
+		if (this.test?.can_see_code_output && this.test?.can_see_expected_output) {
+			switch (this.testStatus) {
+				case TestStatus.Failed:
+					tabs.push(OutputTab.TextDiff);
+					if (this.imageDiff) {
+						tabs.push(OutputTab.ImageDiff);
+					}
+					break;
+				case TestStatus.Running:
+					return html`<h3>Currently running.</h3>`;
+				default:
+					break;
+			}
 		}
+
+		if (tabs.length === 1) {
+			return this.tabOutputs[tabs[0]]();
+		}
+
+		if (!tabs.includes(this.currentTab)) {
+			this.currentTab = tabs[0];
+		}
+
+		return html`
+			<div>
+				<div class="tabs">
+					<ul>
+						${tabs.map(tab => html`
+							<li class=${tab === this.currentTab ? 'is-active' : ''} @click=${() => this.currentTab = tab}><a>${tab}</a></li>
+						`)}
+					</ul>
+				</div>
+			</div>
+			${this.tabOutputs[this.currentTab]()}				
+		`;
 	}
 
+	private getUserOutput(): TemplateResult {
+		if (this.testStatus === TestStatus.Unknown) {
+			return html`<h3>This test has not been run yet, so you have no output.</h3>`;
+		}
+		if (!this.test?.can_see_code_output) {
+			return html`<h3>You cannot see your output for this test.</h3>`;
+		}
+		return html`
+			<h3>Your output:</h3>
+			${this.userOutput ? html`
+				<pre>${this.userOutput}</pre>
+			` : null}
+			${this.userImageOutput ? html`
+				<img src='data:image/jpg;base64,${this.userImageOutput}' width="100%" />
+			` : null}		
+		`;
+	}
 
+	private getExpectedOutput(): TemplateResult {
+		if (this.testStatus === TestStatus.Passed) {
+			return html``;
+		}
+		if (!this.test?.can_see_expected_output) {
+			return html`<h3>You cannot see the expected output for this test.</h3>`;
+		}
+		return html`
+			<h3>Correct output:</h3>
+			${this.expectedOutput ? html`
+				<pre>${this.expectedOutput}</pre>
+			` : null}
+			${this.expectedImageOutput ? html`
+				<img src='data:image/jpg;base64,${this.expectedImageOutput}' width="100%" />
+			` : null}		
+		`;		
+	}
 }

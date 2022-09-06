@@ -54,6 +54,12 @@
 			display: flex;
 			flex-direction: column;
 
+			.file-header {
+				&:empty {
+					display: none;
+				}
+			}
+
 			.file-list-item {
 				font-size: 18px;
 				line-height: 20px;
@@ -84,6 +90,7 @@
 				border-radius: 4px;
 				cursor: pointer;
 				border: solid 2px transparent;
+				max-width: 320px;
 
 				&.selected {
 					border-color: black;
