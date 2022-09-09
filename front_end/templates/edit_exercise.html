@@ -2,13 +2,14 @@
     <h2>Edit exercise</h2>
 
     <p>
-        <a href="#output_header" class="right-space" onclick="showOutput(false, true)">View output</a>
-
         {% if not is_assistant %}
             <button class="button is-dark" onclick="save()">Save</button>
         {% end %}
 
-        <button class="button is-white" id="done_button">Done</button>
+        <a class="button is-white" onclick="showOutput(false, true)">View output</a>
+
+        <a class="button is-white" id="done_button">Done</a>
+
         {% if prev_exercise %}
             <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
         {% end %}

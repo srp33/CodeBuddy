@@ -7,46 +7,188 @@
         <link rel="stylesheet" href="/static/css/modal.css">
 
         <script>
-            function showDeleteModal(exercise_id) {
-                var modal = document.getElementById("delete_exercise_modal");
-                var span = document.getElementsByClassName("close")[0];
-                var confirm_text = document.getElementById("confirm_delete");
+            function showPostModal(action, title, data_obj, reload) {
+                // Build the modal
+                var modalElement = document.createElement("div");
+                modalElement.setAttribute("class", "modal");
+                modalElement.style.display = "block";
 
-                modal.style.display = "block";
-                confirm_text.innerHTML = 'Are you sure you want to delete this exercise?';
+                var backgroundElement = document.createElement("div");
+                backgroundElement.setAttribute("class", "modal-background");
 
-                var cancelButton = document.getElementById("delete_cancel_button");
-                var deleteButton = document.getElementById("delete_button");
+                var cardElement = document.createElement("div");
+                cardElement.setAttribute("class", "modal-card");
 
-                deleteButton.onclick = function() {
+                var headerElement = document.createElement("header");
+                headerElement.setAttribute("class", "modal-card-head");
+
+                var titleElement = document.createElement("p");
+                titleElement.setAttribute("class", "modal-card-title");
+                titleElement.innerHTML = `<strong>${title}</strong>`;
+
+                var sectionElement = document.createElement("section");
+                sectionElement.setAttribute("class", "modal-card-body is-large");
+                messageElement = document.createElement("div");
+                messageElement.setAttribute("style", "font-size: 24px;");
+
+                var errorElement = document.createElement("div");
+
+                function updateErrorMessage(message) {
+                    if (message == "")
+                        errorElement.innerHTML = message;
+                    else
+                        errorElement.innerHTML = `<hr /><p><font color='red'>${message}</p>`;
+                }
+
+                var footerElement = document.createElement("footer");
+                footerElement.setAttribute("class", "modal-card-foot");
+
+                var actionButton = document.createElement("a");
+                actionButton.setAttribute("class", "modal-button button is-dark");
+                actionButton.innerHTML = "Continue";
+
+                var cancelButton = document.createElement("a");
+                cancelButton.setAttribute("class", "modal-button button");
+                cancelButton.innerHTML = "Cancel";
+
+                // Nest everything within the modal
+                modalElement.appendChild(backgroundElement);
+
+                headerElement.appendChild(titleElement);
+                sectionElement.appendChild(messageElement);
+                sectionElement.appendChild(errorElement);
+                footerElement.appendChild(actionButton);
+                footerElement.appendChild(cancelButton);
+
+                cardElement.appendChild(headerElement);
+                cardElement.appendChild(sectionElement);
+                cardElement.appendChild(footerElement);
+
+                modalElement.appendChild(cardElement);
+                document.body.appendChild(modalElement);
+
+                var build_body_function = window[`${action}_build_body`];
+                if (build_body_function)
+                    build_body_function(data_obj, messageElement);
+
+                actionButton.onclick = function() {
+                    // This sets it back to the original value if they get an error and then click the action button again.
+                    updateErrorMessage("");
+
+                    var postData = {};
+                    var get_post_data_function = window[`${action}_get_post_data`];
+                    if (get_post_data_function)
+                        postData = get_post_data_function();
+
                     $.ajax({
                         type: 'POST',
-                        url: "/delete_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_id,
+                        url: window[`${action}_get_post_url`](data_obj),
+                        data: postData,
+                        async: false,
                         success: function(result) {
-                            modal.style.display = "none";
-                            location.reload();
+                            if (result == "") {
+                                modalElement.style.display = "none";
+
+                                if (reload)
+                                    location.reload();
+                            }
+                            else {
+                                updateErrorMessage(result);
+                            }
                         },
                         error: function (jqXHR, textStatus, errorThrown)
                         {
-                            console.log(textStatus);
-                        },
-                        async: false
+                            updateErrorMessage(`Error: ${errorThrown}`);
+                        }
                     });
                 }
 
                 cancelButton.onclick = function() {
-                    modal.style.display = "none";
+                    modalElement.style.display = "none";
                 }
 
-                span.onclick = function() {
-                    modal.style.display = "none";
-                }
+                // window.onclick = function(event) {
+                //     if (event.target == modalElement)
+                //         modalElement.style.display = "none";
+                // }
+            }
 
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                    modal.style.display = "none";
+            function delete_exercise_submissions_build_body(data_obj, messageElement) {
+                pElement = document.createElement("p");
+                pElement.innerHTML = "Are you sure you want to purge submissions for this exercise?";
+                messageElement.appendChild(pElement);
+            }
+
+            function copy_exercise_build_body(data_obj, messageElement) {
+                var previous_title = "";
+                for (let exercise of {{ jsonify(exercises) }}) {
+                    if (exercise[0] == data_obj.exercise_id) {
+                        previous_title = exercise[1]["title"];
+                        break;
                     }
                 }
+
+                pElement = document.createElement("p");
+                pElement.innerHTML = "New title:";
+
+                inputElement = document.createElement("input");
+                inputElement.setAttribute("class", "input is-medium is-primary");
+                inputElement.setAttribute("type", "text");
+                inputElement.setAttribute("id", "copy_exercise_new_title");
+                inputElement.setAttribute("value", `${previous_title} - 2`);
+
+                messageElement.appendChild(pElement);
+                messageElement.appendChild(document.createElement("br"));
+                messageElement.appendChild(inputElement);
+                inputElement.focus();
+                inputElement.selectionStart = inputElement.selectionEnd = inputElement.value.length;
+            }
+
+            function move_exercise_build_body(data_obj, messageElement) {
+                var html = "<p>New assignment:</p><br />";
+                html += `<div class="select is-light">`;
+                html += `<select id="exercise_new_assignment_id">`;
+                {% for assignment in assignments %}
+                    {% if assignment[0] != assignment_basics["id"] %}
+                        html += `<option value="{{ assignment[0] }}">{{ assignment[1]["title"] }}</option>`;
+                    {% end %}
+                {% end %}
+                html += `</select>`;
+                html += `</div>`;
+
+                divElement = document.createElement("div");
+                divElement.innerHTML = html;
+                messageElement.appendChild(divElement);
+            }
+
+            function delete_exercise_build_body(data_obj, messageElement) {
+                pElement = document.createElement("p");
+                pElement.innerHTML = "Are you sure you want to delete this exercise?";
+                messageElement.appendChild(pElement);
+            }
+
+            function delete_exercise_submissions_get_post_url(data_obj) {
+                return `/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${data_obj.exercise_id}`;
+            }
+
+            function copy_exercise_get_post_url(data_obj) {
+                return `/copy_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${data_obj.exercise_id}`;
+            }
+
+            function move_exercise_get_post_url(data_obj) {
+                return `/move_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${data_obj.exercise_id}`;
+            }
+
+            function delete_exercise_get_post_url(data_obj) {
+                return `/delete_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${data_obj.exercise_id}`;
+            }
+
+            function copy_exercise_get_post_data() {
+                return {"new_title": document.getElementById("copy_exercise_new_title").value};
+            }
+
+            function move_exercise_get_post_data() {
+                return {"new_assignment_id": document.getElementById("exercise_new_assignment_id").value};
             }
 
             function showCopyAssignmentModal() {
@@ -108,7 +250,7 @@
                 }
             }
 
-            function showDeleteSubmissionsModal() {
+            function showDeleteAssignmentSubmissionsModal() {
                 var modal = document.getElementById("delete_submissions_modal");
                 var span = document.getElementsByClassName("close")[2];
                 modal.style.display = "block";
@@ -213,11 +355,13 @@
                 <thead>
                     <tr>
                         <th>Exercise</th>
-                        <th>Visibility</th>
-                        <th>Avg. Score</th>
-                        <th>Submissions</th>
-                        <th>Edit</th>
-                        <th>Delete</th>
+                        <th style="text-align: center;">Visibility</th>
+                        <th style="text-align: center;">Avg. Score</th>
+                        <th style="text-align: center;">Submissions</th>
+                        <th style="text-align: center;">Edit</th>
+                        <th style="text-align: center;">Copy</th>
+                        <th style="text-align: center;">Move</th>
+                        <th style="text-align: center;">Delete</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -226,27 +370,37 @@
                     <tr>
                         <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a>
                           {% if exercise[1]["enable_pair_programming"] %}
-                          <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
+                              <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
                           {% end %}
                         </td>
 
                         {% if exercise[1]["visible"] == 0 %}
-                            <td>Hidden</td>
+                            <td style="text-align: center;">Hidden</td>
                             <td> </td>
                             <td> </td>
                         {% else %}
-                            <td>Visible</td>
-                            <td><a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a></td>
-                            <td><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a></td>
+                            <td style="text-align: center;">Visible</td>
+                            <td style="text-align: center;"><a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a></td>
+                            <td style="text-align: center;"><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a> / <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[1]['id'] }}'}, true)">Purge</a></td>
                         {% end %}
-                        <td>
+                        <td style="text-align: center;">
                             <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}">
-                                <i class="fas fa-edit"></i>
+                                <i class="far fa-edit"></i>
                             </a>
                         </td>
-                        <td>
-                            <a onclick="showDeleteModal({{ exercise[1]['id'] }})">
-                                <i class="fas fa-trash-alt"></i>
+                        <td style="text-align: center;">
+                            <a onclick="showPostModal('copy_exercise', 'Copy exercise within the same assignment:', {'exercise_id': '{{ exercise[1]['id'] }}'}, true)">
+                                <i class="far fa-copy"></i>
+                            </a>
+                        </td>
+                        <td style="text-align: center;">
+                            <a onclick="showPostModal('move_exercise', 'Move this exercise to a different assignment:', {'exercise_id': '{{ exercise[1]['id'] }}'}, true)">
+                                <i class="far fa-arrow-alt-circle-right"></i>
+                            </a>
+                        </td>
+                        <td style="text-align: center;">
+                            <a onclick="showPostModal('delete_exercise', 'Delete exercise', {'exercise_id': '{{ exercise[1]['id'] }}'}, true)">
+                                <i class="far fa-trash-alt"></i>
                             </a> 
                         </td>
                     </tr>
@@ -257,17 +411,6 @@
         {% else %}
             <p><strong>No exercises have been created for this assignment.</strong></p>
         {% end %}
-
-        <div id="delete_exercise_modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <p id="confirm_delete"></p>
-                <p class="buttons">
-                    <a id="delete_cancel_button" class="modal-button button is-light">Cancel</a>
-                    <a id="delete_button" class="modal-button button is-dark">Delete</a>
-                </p>
-            </div>
-        </div>
 
         <div id="copy_assignment_modal" class="modal">
             <div class="modal-content">
@@ -343,7 +486,7 @@
             {% if is_administrator or is_instructor %}
                 <a onclick="showCopyAssignmentModal()">Copy assignment</a>
                 | <a href="/export_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ course_basics['title'] }}__{{ assignment_basics['title'] }}.json">Export assignment</a>
-                | <a onclick="showDeleteSubmissionsModal()">Delete assignment submissions</a>
+                | <a onclick="showDeleteAssignmentSubmissionsModal()">Delete assignment submissions</a>
             {% end %}
         </p>
     {% else %}

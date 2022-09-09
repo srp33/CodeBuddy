@@ -2,7 +2,7 @@ from BaseUserHandler import *
 
 class MoveExerciseHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
-        out_dict = {"result": ""}
+        result = ""
 
         try:
             if self.is_administrator() or self.is_instructor_for_course(course):
@@ -12,12 +12,12 @@ class MoveExerciseHandler(BaseUserHandler):
                 current_exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
 
                 if self.content.has_duplicate_title(new_assignment_exercises, None, current_exercise_basics["title"]):
-                    out_dict["result"] = f"Error: An exercise with the title <b>{current_exercise_basics['title']}</b> already exists in the <b>{new_assignment_basics['title']}</b> assignment."
+                    result = f"Error: An exercise with the title <b>{current_exercise_basics['title']}</b> already exists in the <b>{new_assignment_basics['title']}</b> assignment."
                 else:
                     self.content.move_exercise(course, assignment, exercise, new_assignment_id)
             else:
-                out_dict["result"] = "You do not have permission to move this exercise."
+                result = "You do not have permission to move this exercise."
         except Exception as inst:
-            out_dict["result"] = traceback.format_exc()
+            result = traceback.format_exc()
 
-        self.write(json.dumps(out_dict))
+        self.write(result)

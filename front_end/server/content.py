@@ -2054,11 +2054,7 @@ class Content:
             print(traceback.format_exc())
 
     #TODO: Clean up all of these delete functions.
-    def delete_exercise(self, exercise_basics):
-        course_id = exercise_basics["assignment"]["course"]["id"]
-        assignment_id = exercise_basics["assignment"]["id"]
-        exercise_id = exercise_basics["id"]
-
+    def delete_exercise(self, course_id, assignment_id, exercise_id):
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?
                           AND assignment_id = ?
@@ -2237,11 +2233,7 @@ class Content:
                           WHERE course_id = ?
                           AND assignment_id = ?)''', (course_id, assignment_id, ))
 
-    def delete_exercise_submissions(self, exercise_basics):
-        course_id = exercise_basics["assignment"]["course"]["id"]
-        assignment_id = exercise_basics["assignment"]["id"]
-        exercise_id = exercise_basics["id"]
-
+    def delete_exercise_submissions(self, course_id, assignment_id, exercise_id):
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?
                           AND assignment_id = ?

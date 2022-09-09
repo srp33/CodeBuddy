@@ -93,14 +93,6 @@
                 <div class="buttons">
                     <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
 
-                    {% if len(assignments) > 1 %}
-                        <a class="button is-outlined" onclick="showMoveExerciseModal()">Move exercise</a>
-                    {% end %}
-
-                    <a class="button is-outlined" onclick="showCopyExerciseModal()">Copy exercise</a>
-
-                    <a class="button is-outlined" onclick="showDeleteSubmissionsModal()">Delete exercise submissions</a>
-
                     {% if prev_exercise %}
                         <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
                     {% end %}
@@ -274,53 +266,6 @@
                     <p class="buttons">
                         <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
                         <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
-                    </p>
-                </div>
-            </div>
-
-            <div id="move_exercise_modal" class="modal">
-                <div class="modal-content">
-                    <h4>Move this exercise to a different assignment:</h4>
-                    <div class="notification is-danger" id="move_exercise_message" style="display:none"></div>
-
-                    <p>New assignment:</p>
-                    <div class="select is-light">
-                        <select name="new_assignment_id" id="new_assignment_id">
-                            {% for assignment in assignment_options %}
-                                <option value="{{ assignment['id'] }}">{{ assignment["title"] }}</option>
-                            {% end %}
-                        </select>
-                    </div>
-                    <p class="buttons">
-                        <a id="move_cancel_button" class="modal-button button is-light">Cancel</a>
-                        <button onclick="moveExercise({{ course_basics['id'] }}, {{assignment_basics['id']}}, {{ exercise_basics['id'] }})" id="move_button" class="modal-button button is-dark">Move</button>
-                    </p>
-                </div>
-            </div>
-
-            <div id="copy_exercise_modal" class="modal">
-                <div class="modal-content">
-                    <h4>Copy exercise within the same assignment:</h4>
-                    <div class="notification is-danger" id="copy_exercise_message" style="display:none"></div>
-
-                    <p>New title:</p>
-                    <input class="input is-medium is-primary" type="text" id="new_title" name="new_title" placeholder="{{exercise_basics['title']}}" value="{{exercise_basics['title']}}"/>
-
-                    <p class="buttons">
-                        <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
-                        <button onclick="copyExercise({{ course_basics['id'] }}, {{assignment_basics['id']}}, {{ exercise_basics['id'] }})" id="copy_button" class="modal-button button is-dark">Copy</button>
-                    </p>
-                </div>
-            </div>
-
-            <div id="delete_submissions_modal" class="modal">
-                <div class="modal-content">
-                    <!--<span class="close">&times;</span>-->
-                    <p>Are you sure you want to delete all submissions for this exercise?</p>
-                    <p><font color="red">This will also delete all scores for this exercise.</font></p>
-                    <p class="buttons">
-                        <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
-                        <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
                     </p>
                 </div>
             </div>
