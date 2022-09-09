@@ -27,8 +27,9 @@
   {% if assignment_basics["exists"] %}
     <script>
         // https://www.w3docs.com/snippets/javascript/how-to-sort-javascript-object-by-key.html
+        // https://fuzzytolerance.info/blog/2019/07/19/The-better-way-to-do-natural-sort-in-JavaScript/
         function sortObj(obj) {
-            return Object.keys(obj).sort().reduce(function (result, key) {
+            return Object.keys(obj).sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true})).reduce(function (result, key) {
                 result[key] = obj[key];
                 return result;
             }, {});
@@ -339,7 +340,7 @@
             var html = "<table class='table is-striped'>";
             html += "<thead><tr><th>Title</th><th>See test code</th><th>See expected output</th><th>See code output</th><th>Edit</th><th>Delete</th></thead>";
             html += "<tbody>";
-
+            
             for (const test_title in sortObj(exercise_details_obj["tests"])) {
                 html += "<tr>";
                 html += `  <td>${test_title}</td>`;
