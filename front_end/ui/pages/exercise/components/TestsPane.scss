@@ -47,25 +47,9 @@ tests-pane {
 		tbody {
 			tr {
 				cursor: pointer;
-
-				&.passed {
-					background-color: #bfdebea7 !important;
-					&:hover {
-						background-color: #abd9a9a7 !important;
-					}
-					td {
-						border-bottom-color: rgb(134, 134, 134);
-					}
-				}
 				
-				&.failed {
-					background-color: #d9b4b499 !important;
-					&:hover {
-						background-color: #d89f9f99 !important;
-					}
-					td {
-						border-bottom-color: rgb(134, 134, 134);
-					}
+				.modal {
+					cursor: default;
 				}
 			}
 		}
@@ -74,6 +58,10 @@ tests-pane {
 
 test-results-modal {
 	display: flex;
+
+	pre {
+		font-size: 16px;
+	}
 
 	>button:first-child {
 		margin-right: 8px;
@@ -94,7 +82,7 @@ test-results-modal {
 		display: flex;
 		flex-direction: column;
 
-		#accordion {
+		.collapsible-section {
 			flex: 1;
 			display: flex;
 			flex-direction: column;
@@ -141,7 +129,7 @@ test-results-modal {
 				height: 41px;
 	
 				a {
-					text-decoration: none;
+					text-decoration: none !important;
 				}
 			}
 		}
