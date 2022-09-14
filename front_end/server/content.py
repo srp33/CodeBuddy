@@ -1889,40 +1889,77 @@ class Content:
 
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
 
-    def copy_course(self, existing_course_id, new_course_title):
+    def copy_course(self, course_id, new_course_title):
         sql = '''INSERT INTO courses (title, introduction, visible, passcode, date_created, date_updated, consent_text, consent_alternative_text)
                  SELECT ?, introduction, visible, passcode, date_created, date_updated, consent_text, consent_alternative_text
                  FROM courses
                  WHERE course_id = ?'''
 
-        new_course_id = self.execute(sql, (new_course_title, existing_course_id,))
+        new_course_id = self.execute(sql, (new_course_title, course_id,))
 
-        for assignment_id in self.get_assignment_ids(existing_course_id):
-            self.copy_assignment(existing_course_id, assignment_id, new_course_id)
+        for assignment_id in self.get_assignment_ids(course_id):
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses)
+                     SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses
+                     FROM assignments
+                     WHERE course_id = ?
+                       AND assignment_id = ?'''
+
+            new_assignment_id = self.execute(sql, (new_course_id, course_id, assignment_id,))
+
+            sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, allow_any_response)
+                     SELECT ?, ?, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, allow_any_response
+                     FROM exercises
+                     WHERE course_id = ?
+                       AND assignment_id = ?'''
+
+            self.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id,))
+
+            sql = '''SELECT exercise_id, title
+                     FROM exercises
+                     WHERE course_id = ?
+                       AND assignment_id = ?'''
+
+            for row in self.fetchall(sql, (course_id, assignment_id,)):
+                sql = '''SELECT exercise_id
+                         FROM exercises
+                         WHERE course_id = ?
+                           AND assignment_id = ?
+                           AND title = ?'''
+
+                new_exercise_id = self.fetchone(sql, (new_course_id, new_assignment_id, row["title"]))["exercise_id"]
+
+                sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
+                         SELECT ?, ?, ?, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output
+                         FROM tests
+                         WHERE course_id = ?
+                           AND assignment_id = ?
+                           AND exercise_id = ?'''
+
+                self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, course_id, assignment_id, row["exercise_id"]))
 
         sql = '''INSERT INTO permissions (user_id, role, course_id)
                  SELECT user_id, role, ?
                  FROM permissions
                  WHERE course_id = ?'''
 
-        self.execute(sql, (new_course_id, existing_course_id,))
+        self.execute(sql, (new_course_id, course_id,))
 
-    def copy_assignment(self, course_id, assignment_id, new_course_id):
+    def copy_assignment(self, course_id, assignment_id, new_title):
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses)
-                 SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses
+                 SELECT course_id, ?, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, allowed_ip_addresses
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        new_assignment_id = self.execute(sql, (new_course_id, course_id, assignment_id,))
+        new_assignment_id = self.execute(sql, (new_title, course_id, assignment_id,))
 
         sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, allow_any_response)
-                 SELECT ?, ?, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, allow_any_response
+                 SELECT course_id, ?, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, allow_any_response
                  FROM exercises
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        self.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id,))
+        self.execute(sql, (new_assignment_id, course_id, assignment_id,))
 
         sql = '''SELECT exercise_id, title
                  FROM exercises
@@ -1936,16 +1973,16 @@ class Content:
                        AND assignment_id = ?
                        AND title = ?'''
 
-            new_exercise_id = self.fetchone(sql, (new_course_id, new_assignment_id, row["title"]))["exercise_id"]
+            new_exercise_id = self.fetchone(sql, (course_id, new_assignment_id, row["title"]))["exercise_id"]
 
             sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
-                     SELECT ?, ?, ?, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output
+                     SELECT course_id, ?, ?, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output
                      FROM tests
                      WHERE course_id = ?
                        AND assignment_id = ?
                        AND exercise_id = ?'''
 
-            self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, course_id, assignment_id, row["exercise_id"]))
+            self.execute(sql, (new_assignment_id, new_exercise_id, course_id, assignment_id, row["exercise_id"]))
 
     def update_user(self, user_id, user_dict):
         self.set_user_dict_defaults(user_dict)
@@ -1987,6 +2024,19 @@ class Content:
 
         self.execute(sql, (user_id,))
 
+    def move_assignment(self, course_id, assignment_id, new_course_id):
+        for table in ["assignments", "exercises", "tests"]:
+            self.execute(f'''UPDATE {table}
+                             SET course_id = ?
+                             WHERE course_id = ?
+                               AND assignment_id = ?''', (new_course_id, course_id, assignment_id))
+
+        for table in ["help_requests", "presubmissions", "scores", "submissions", "user_assignment_starts"]:
+            self.execute(f'''DELETE FROM {table}
+                             WHERE course_id = ?
+                               AND assignment_id = ?''', (course_id, assignment_id))
+
+    #TODO: Make this like move_assignment
     def move_exercise(self, course_id, assignment_id, exercise_id, new_assignment_id):
         self.execute('''UPDATE exercises
                         SET assignment_id = ?
@@ -2029,11 +2079,6 @@ class Content:
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
-
-        self.execute('''UPDATE user_assignment_starts
-                        SET assignment_id = ?
-                        WHERE course_id = ?
-                          AND assignment_id = ?''', (new_assignment_id, course_id, assignment_id, ))
 
     def copy_exercise(self, course_id, assignment_id, exercise_id, new_title):
         try:

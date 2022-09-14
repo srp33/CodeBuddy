@@ -61,6 +61,7 @@ def make_app():
         url(r"/import_assignment/([^/]+)", ImportAssignmentHandler, name="import_assignment"),
         url(r"/login", CASLoginHandler, name="caslogin"),
         url(r"/logout", LogoutHandler, name="logout"),
+        url(r"/move_assignment/([^/]+)/([^/]+)", MoveAssignmentHandler, name="move_assignment"),
         url(r"/move_exercise/([^/]+)/([^/]+)/([^/]+)?", MoveExerciseHandler, name="move_exercise"),
         url(r"/profile/admin/([^/]+)", ProfileAdminHandler, name="profile_admin"),
         url(r"/profile/courses/([^/]+)", ProfileCoursesHandler, name="profile_courses"),

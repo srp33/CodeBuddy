@@ -2,22 +2,23 @@ from BaseUserHandler import *
 
 class CopyAssignmentHandler(BaseUserHandler):
     def post(self, course, assignment):
+        result = ""
+
         try:
-            out_dict = {}
-            if not self.is_administrator() and not self.is_instructor_for_course(course):
-                out_dict["result"] = "You do not have permission to perform that task."
-            else:
-                new_course_id = self.get_body_argument("new_course_id")
+            if self.is_administrator() or self.is_instructor_for_course(course):
+                new_title = self.get_body_argument("new_title").strip()
 
-                assignment_title = self.content.get_assignment_basics(course, assignment)["title"]
-                new_course_titles = list(map(lambda x: x[1]["title"], self.content.get_assignments(new_course_id)))
-
-                if assignment_title in new_course_titles:
-                    out_dict["result"] = "Error: An assignment with this title already exists in the specified course."
+                if new_title == "":
+                    result = "The title cannot be blank."
                 else:
-                    self.content.copy_assignment(course, assignment, new_course_id)
-                    out_dict["result"] = ""
+                    existing_titles = list(map(lambda x: x[1]["title"], self.content.get_assignments(course)))
+                    if new_title in existing_titles:
+                        result = "An assignment with that title already exists in this course."
+                    else:
+                        self.content.copy_assignment(course, assignment, new_title)
+            else:
+                result = "You do not have permission to copy this assignment."
         except Exception as inst:
-            out_dict["result"] = traceback.format_exc()
+            result = traceback.format_exc()
 
-        self.write(json.dumps(out_dict))
+        self.write(result)

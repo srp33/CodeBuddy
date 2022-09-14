@@ -2,6 +2,7 @@ cp before_code code
 
 echo "options(warn=-1)" >> code
 echo "options(tidyverse.quiet = TRUE)" >> code
+echo "options(dplyr.summarise.inform = FALSE)" >> code
 
 echo "library(ggplot2)" >> code
 
