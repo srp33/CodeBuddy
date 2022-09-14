@@ -96,6 +96,7 @@ export default class ExerciseApp extends LitElement {
 								<tests-pane 
 									.getCode=${this.getUserCode} 
 									.addSubmission=${this.addSubmission}
+									.hasPassingSubmission=${this.hasPassingSubmission}
 								></tests-pane>
 							`}
 						>
@@ -205,6 +206,11 @@ export default class ExerciseApp extends LitElement {
 		const newSession = this.sessions[this.userCodeFileName];
 		newSession.setValue(oldSession.getValue());
 		this.onFileSelected(this.userCodeFileName);
+	}
+
+
+	get hasPassingSubmission(): boolean {
+		return !!this.submissions?.find((submission) => !!submission.passed);
 	}
 }
 

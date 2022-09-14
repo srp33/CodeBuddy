@@ -88,6 +88,12 @@ class ExerciseHandler(BaseUserHandler):
 
                 if is_new_ui:
                     args['presubmission'] = self.content.get_presubmission(course, assignment, exercise, self.get_user_id())
+
+                    exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))
+                    del exercise_details['solution_code']
+                    del exercise_details['solution_description']
+
+                    args['exercise_details'] = exercise_details
                     self.render("spa.html", template_variables=args, **args)
                 else:
                     self.render("exercise.html", **args)
