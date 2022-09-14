@@ -16,6 +16,10 @@ import { oneAtATime } from '@/utils/oneAtATime';
 
 const { code_completion_path, submissions, exercise_details, presubmission } = window.templateData;
 
+const courseID = window.templateData.course_basics.id;
+const assignmentID = window.templateData.assignment_basics.id;
+const exerciseID = window.templateData.exercise_basics.id;
+
 const SAVE_DEBOUNCE_TIME = 2000;
 
 interface File {
@@ -129,7 +133,7 @@ export default class ExerciseApp extends LitElement {
 				session.setMode(code_completion_path);
 				// setup the auto save
 				const saveCode = debounce(oneAtATime(async () => {
-					await savePresubmission(window.templateData.course_basics.id, window.templateData.assignment_basics.id, window.templateData.exercise_basics.id, session.getValue());
+					await savePresubmission(courseID, assignmentID, exerciseID, session.getValue());
 					this.saved = true;
 				}), SAVE_DEBOUNCE_TIME);
 				session.on('change', () => {
@@ -244,7 +248,7 @@ class InformationPane extends LitElement {
 	private deleteModalOpen = false;
 
 	@state()
-	private selectedTab: Tab = window.localStorage.getItem(`selected-tab-${exercise_details.id}`) as Tab ?? Tab.Information;
+	private selectedTab: Tab = window.localStorage.getItem(`selected-tab-${exerciseID}`) as Tab ?? Tab.Information;
 
 	private tabPanels: {[key in Tab]: () => TemplateResult} = {
 		[Tab.Information]: () => html`
@@ -317,10 +321,6 @@ class InformationPane extends LitElement {
 	panelOrder: Tab[] = [Tab.Information, Tab.Code, Tab.Submissions];
 
 	render() {
-		const courseID = window.templateData.course_basics.id;
-		const assignmentID = window.templateData.assignment_basics.id;
-		const exerciseID = window.templateData.exercise_basics.id;
-
 		return html`
 			<div class="left-panel">
 				<div class="tab-bar">
@@ -333,29 +333,11 @@ class InformationPane extends LitElement {
 					${window.templateData.is_administrator || window.templateData.is_instructor ? html`
 
 						<span class="spacer"></span>
-						<div class="dropdown is-hoverable is-up">
-							<div class="dropdown-trigger">
-								<button class="icon-button" aria-controls="dropdown-menu">
-									<i class="fas fa-cog"></i>
-								</button>
-							</div>
-							<div class="dropdown-menu" id="dropdown-menu" role="menu">
-								<div class="dropdown-content">
-									<a href=${`/edit_exercise/${courseID}/${assignmentID}/${exerciseID}`} class="dropdown-item">
-										Edit exercise
-									</a>
-									<a href=${`/exercise_scores/${courseID}/${assignmentID}/${exerciseID}`}  class="dropdown-item">
-										View scores
-									</a>
-									<a href="javascript:void(0);" class="dropdown-item" @click=${() => this.copyModalOpen = true}>
-										Copy exercise
-									</a >
-									<a href="javascript:void(0);" class="dropdown-item">
-										Delete exercise submissions
-									</a >
-								</div>
-							</div>
-						</div>
+						<button class="icon-button">
+							<a href="/edit_exercise/${courseID}/${assignmentID}/${exerciseID}">
+								<i class="fas fa-cog"></i>
+							</a>
+						</button>
 
 						${this.copyModalOpen ? html`<copy-exercise-modal .onClose=${() => this.copyModalOpen = false}></copy-exercise-modal>` : null}
 						<!-- TODO: create the delete modal -->
@@ -372,7 +354,7 @@ class InformationPane extends LitElement {
 	@bind
 	selectTab(tab: Tab) {
 		this.selectedTab = tab;
-		localStorage.setItem(`selected-tab-${exercise_details.id}`, tab);
+		localStorage.setItem(`selected-tab-${exerciseID}`, tab);
 	}
 
 	get hasDataFiles(): boolean {
@@ -417,9 +399,6 @@ class CopyExerciseModal extends LitElement {
 
 	@bind
 	async onSave() {
-		const courseID = window.templateData.course_basics.id;
-		const assignmentID = window.templateData.assignment_basics.id;
-		const exerciseID = window.templateData.exercise_basics.id;
 		const input: HTMLInputElement = this.renderRoot.querySelector('#new_title')!;
 		if (!input.value) {
 			this.errorMessage = 'New title is required';
