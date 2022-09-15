@@ -50,8 +50,6 @@ class ExerciseHandler(BaseUserHandler):
                 tests = exercise_details["tests"]
                 submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
 
-                #use_studio_mode = self.get_query_argument('new', None) is not None
-
                 format_exercise_details(exercise_details, exercise_basics, user_info["name"], self.content, next_prev_exercises, format_tests=(not user_info["use_studio_mode"]))
 
                 args = {
