@@ -50,9 +50,9 @@ class ExerciseHandler(BaseUserHandler):
                 tests = exercise_details["tests"]
                 submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
 
-                is_new_ui = self.get_query_argument('new', None) is not None
+                #use_studio_mode = self.get_query_argument('new', None) is not None
 
-                format_exercise_details(exercise_details, exercise_basics, user_info["name"], self.content, next_prev_exercises, format_tests=(not is_new_ui))
+                format_exercise_details(exercise_details, exercise_basics, user_info["name"], self.content, next_prev_exercises, format_tests=(not user_info["use_studio_mode"]))
 
                 args = {
                         "users": user_list,
@@ -76,7 +76,7 @@ class ExerciseHandler(BaseUserHandler):
                         "back_end_description": back_end["description"],
                         "domain": self.settings_dict['domain'],
                         "start_time": start_time,
-                        "user_info": self.get_user_info(),
+                        "user_info": user_info,
                         "user_id": self.get_user_id(),
                         "student_id": self.get_user_id(),
                         "is_administrator": self.is_administrator(),
@@ -86,7 +86,7 @@ class ExerciseHandler(BaseUserHandler):
                         "same_suggestion": same_suggestion,
                 }
 
-                if is_new_ui:
+                if user_info["use_studio_mode"]:
                     args['presubmission'] = self.content.get_presubmission(course, assignment, exercise, self.get_user_id())
 
                     exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))

@@ -408,7 +408,7 @@ class Content:
         return False
 
     def get_user_info(self, user_id):
-        null_user_info = {"enable_vim": False, "user_id": None, "name": None, "given_name": None, "family_name": None, "locale": None, "ace_theme": None, "use_auto_complete": True, "email_address": None}
+        null_user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "locale": None, "email_address": None, "ace_theme": None, "use_auto_complete": True, "use_studio_mode": True, "enable_vim": False}
 
         sql = '''SELECT *
                  FROM users
@@ -419,7 +419,7 @@ class Content:
         if not user:
             return null_user_info
 
-        return {"enable_vim": user["enable_vim"], "user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "email_address": user["email_address"]}
+        return {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "email_address": user["email_address"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "use_studio_mode": user["use_studio_mode"], "enable_vim": user["enable_vim"]}
 
     def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role
@@ -1993,11 +1993,11 @@ class Content:
 
         self.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], user_dict["email_address"], user_id,))
 
-    def update_user_settings(self, user_id, theme, use_auto_complete, enable_vim):
+    def update_user_settings(self, user_id, theme, use_auto_complete, use_studio_mode, enable_vim):
         sql = '''UPDATE users
-                 SET ace_theme = ?, use_auto_complete = ?, enable_vim = ?
+                 SET ace_theme = ?, use_auto_complete = ?, use_studio_mode = ?, enable_vim = ?
                  WHERE user_id = ?'''
-        self.execute(sql, (theme, use_auto_complete, enable_vim, user_id))
+        self.execute(sql, (theme, use_auto_complete, use_studio_mode, enable_vim, user_id))
 
     def remove_user_submissions(self, user_id):
         sql = '''SELECT submission_id

@@ -73,18 +73,10 @@
                 }
             </script>
 
-            <!--<div>
-              <h4 style="display: inline-block;">Assignment: {{ exercise_basics["assignment"]["title"] }}</h4>
-              <div class="row-container">
-                  <div>
-                      <h5 style="display: inline-block;">Exercise: {{ exercise_basics["title"] }}</h5>
-                  </div>
-              </div>
-            </div>-->
-
             {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
                 <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
             {% end %}
+
             {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
                 <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
             {% end %}
