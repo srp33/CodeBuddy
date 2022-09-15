@@ -44,9 +44,10 @@ export default class CodeEditor extends LitElement {
 				editor.session.getUndoManager().redo(editor.session);
 			}
 	  	},
-  ]);
+  	]);
 
 	this.resizeObserver.observe(this);
+	this.editor.focus();
   }
 
   disconnectedCallback(): void {
