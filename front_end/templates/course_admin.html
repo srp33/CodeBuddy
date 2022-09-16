@@ -300,7 +300,7 @@
             <p>
                 <div class="file has-name is-fullwidth">
                     <label class="file-label">
-                        <input class="file-input" type="file" id="upload_file_control" accept="application/json" onchange="import_assignment_set_file_name()">
+                        <input class="file-input" type="file" id="upload_file_control" accept="application/json" onchange="import_assignment_set_file_info()">
                         <span class="file-cta">
                             <span class="file-icon">
                                 <i class="fas fa-upload"></i>
@@ -321,7 +321,7 @@
             messageElement.appendChild(divElement);
         }
 
-        async function import_assignment_set_file_name() {
+        async function import_assignment_set_file_info() {
             if ($("#upload_file_control")[0].files.length > 0) {
                 $("#upload_file_name")[0].innerHTML = $("#upload_file_control")[0].files[0].name;
                 $("#upload_file_name").removeClass("is-hidden");
