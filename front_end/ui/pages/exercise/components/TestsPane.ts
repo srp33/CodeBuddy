@@ -35,10 +35,16 @@ users?.sort();
 @customElement('tests-pane')
 export class TestsPane extends LitElement {
 	@property()
+	activeSubmission?: Submission;
+
+	@property()
 	addSubmission?: (submission: Submission) => void;
 
 	@property()
 	hasPassingSubmission: boolean = false;
+
+	@property()
+	selectPassingSubmission?: () => void;
 
 	private getCode?: () => string;
 
@@ -81,7 +87,7 @@ export class TestsPane extends LitElement {
 					<p>Tests</p>
 					<div class="field is-grouped">
 						<p class="control">
-							<button ?disabled=${testsRunning} class="button is-primary is-outlined" @click=${() => this.runCode()}>Run all</button>
+							<button ?disabled=${testsRunning || this.activeSubmission} class="button is-primary is-outlined" @click=${() => this.runCode()}>Run all</button>
 						</p>
 						<div class="field has-addons">
 							<!-- <p class="control">
@@ -92,67 +98,64 @@ export class TestsPane extends LitElement {
 								</button>
 							</p> -->
 							<p class="control">
-								<button ?disabled=${testsRunning} class="button is-dark" @click=${() => this.handleSubmit()}>Submit</button>
+								<button ?disabled=${testsRunning || this.activeSubmission} class="button is-dark" @click=${() => this.handleSubmit()}>Submit</button>
 							</p>
 						</div>
 					</div>
-
 				</div>
-				${this.errorMessage?.length > 0 ? html`
-					<article class="message is-danger">
+				${this.activeSubmission ? html`
+					<article class="message ${this.activeSubmission.passed ? 'is-success' : 'is-danger'}">
 						<div class="message-header">
-							<p>An error occurred while your code was being processed.</p>
-							<button class="delete" aria-label="delete" @click=${() => this.errorMessage = ''}></button>
+							<p>
+								${this.activeSubmission.passed ? 'This submission passed all tests!' : 'This submission did not pass all tests.'}	
+							</p>
 						</div>
-						<div class="message-body">
-							${unsafeHTML(this.errorMessage)}
-						</div>
-					</article>
-				` : null}
-				${this.hasPassingSubmission || this.allPassing ? html`
-					<article class="message is-success">
-						<div class="message-header">
-							${this.hasPassingSubmission ? html`<p>Passing solution submitted</p>` : html`<p>All test passed!</p>`}
-						</div>
-						<div class="message-body">
-							${this.hasPassingSubmission ? null : html`
-								<p>Be sure to click on Submit so your solution and score will be saved.</p>
-							`}
-							${this.hasPassingSubmission && exercise_details.show_instructor_solution ? html`
-								<a href="/view_instructor_solution/${course_basics.id}/${assignment_basics.id}/${exercise_basics.id}">View</a> the instructor's solution.
-							`: null}
-						</div>
-					</article>
-				` : null}
-				<table class="table is-fullwidth is-hoverable" style="margin-bottom: 20px;">
-					<thead>
-						<tr>
-							<th>Status</th>
-							<th style="width: 100%;">Test</th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody>
-						${this.tests.map((test) => html`
-							<tr class=${test.status} @click=${this.clickRow}>
-								<td class="test-status">${this.getStatusIcon(test.status)}</td>
-								<td>${test.name}</td>
-								<td>
-									<test-results-modal
-									.test=${test}
-									.runTest=${this.runCode}
-									.testStatus=${test.status}
-									.expectedOutput=${test.txt_output}
-									.expectedImageOutput=${test.jpg_output}
-									.imageDiff=${this.testOutputs[test.name]?.diff_output ?? ''}
-									.userOutput=${this.testOutputs[test.name]?.txt_output ?? ''}
-									.userImageOutput=${this.testOutputs[test.name]?.jpg_output ?? ''}
-									></test-results-modal>
-								</td>
+					</article>					
+				` : html`
+					${this.errorMessage?.length > 0 ? html`
+						<article class="message is-danger">
+							<div class="message-header">
+								<p>An error occurred while your code was being processed.</p>
+								<button class="delete" aria-label="delete" @click=${() => this.errorMessage = ''}></button>
+							</div>
+							<div class="message-body">
+								${unsafeHTML(this.errorMessage)}
+							</div>
+						</article>
+					` : null}
+					${this.hasPassingSubmission || this.allPassing ? html`
+						<article class="message is-success">
+							<div class="message-header">
+								${this.hasPassingSubmission ? html`<p>Passing solution submitted</p>` : html`<p>All test passed!</p>`}
+							</div>
+							<div class="message-body">
+								${this.hasPassingSubmission ? null : html`
+									<p>Be sure to click on Submit so your solution and score will be saved.</p>
+								`}
+								${this.hasPassingSubmission && this.selectPassingSubmission ? html`
+									<p><a href="javascript:void(0);" @click=${this.selectPassingSubmission}>View</a> your latest passing solution.</p>
+								`: null}
+								${this.hasPassingSubmission && exercise_details.show_instructor_solution ? html`
+									<p><a href="/view_instructor_solution/${course_basics.id}/${assignment_basics.id}/${exercise_basics.id}">View</a> the instructor's solution.</p>
+								`: null}
+							</div>
+						</article>
+					` : null}
+				`}
+				${!this.activeSubmission || Object.keys(this.activeSubmission.test_outputs).length > 0 ? html`
+					<table class="table is-fullwidth is-hoverable" style="margin-bottom: 20px;">
+						<thead>
+							<tr>
+								<th>Status</th>
+								<th style="width: 100%;">Test</th>
+								<th></th>
 							</tr>
-						`)}
-					</tbody>
-				</table>
+						</thead>
+						<tbody>
+							${this.renderTestTable()}
+						</tbody>
+					</table>
+				` : null}
 			</div>
 			<peer-programming-modal
 				.open=${this.peerProgrammingModalOpen}
@@ -160,6 +163,40 @@ export class TestsPane extends LitElement {
 				.onSubmit=${this.submitCode}
 			></peer-programming-modal>
 		`;
+	}
+
+	renderTestTable(): TemplateResult | TemplateResult[] {
+		return this.tests.map((test) => {
+			let txt_output = this.testOutputs[test.name]?.txt_output ?? '';
+			let jpg_output = this.testOutputs[test.name]?.jpg_output ?? '';
+			let image_diff = this.testOutputs[test.name]?.diff_output ?? '';
+			let status = test.status;
+			if (this.activeSubmission?.test_outputs[test.name]) {
+				const output = this.activeSubmission?.test_outputs[test.name];
+				txt_output = output.txt_output;
+				jpg_output = output.jpg_output;
+				status = output.passed ? TestStatus.Passed : TestStatus.Failed;
+				image_diff = '';
+			}
+			return html`
+				<tr class=${test.status} @click=${this.clickRow}>
+					<td class="test-status">${this.getStatusIcon(status)}</td>
+					<td>${test.name}</td>
+					<td>
+						<test-results-modal
+							.test=${test}
+							.runTest=${!this.activeSubmission ? this.runCode : null}
+							.testStatus=${status}
+							.expectedOutput=${test.txt_output}
+							.expectedImageOutput=${test.jpg_output}
+							.imageDiff=${image_diff}
+							.userOutput=${txt_output}
+							.userImageOutput=${jpg_output}
+						></test-results-modal>
+					</td>
+				</tr>
+			`
+		});
 	}
 
 
@@ -185,7 +222,7 @@ export class TestsPane extends LitElement {
 			case TestStatus.Running:
 				return html`<i class="fas fa-spinner fa-spin running has-tooltip-right" data-tooltip="Running"></i>`;
 			default:
-				return html`<i class="fas fa-question unknown has-tooltip-right" data-tooltip="Run code to see result"></i>`;
+				return html``;
 		}
 	}
 
@@ -234,6 +271,7 @@ export class TestsPane extends LitElement {
 				date: new Date(),
 				code,
 				passed: !!result.all_passed,
+				test_outputs: JSON.parse(JSON.stringify(result.test_outputs)),
 			});
 		}
 	}
@@ -405,7 +443,9 @@ export class TestResultsModal extends LitElement {
 
 	render() {
 		return html`
-			<button class="button is-small" ?disabled=${this.testStatus === TestStatus.Running} @click=${() => this.runTest?.(this.test!.name)}>${this.getRunButtonText()}</button>
+			${this.runTest ? html`
+				<button class="button is-small" ?disabled=${this.testStatus === TestStatus.Running} @click=${() => this.runTest?.(this.test!.name)}>${this.getRunButtonText()}</button>
+			` : null}
 			<button class="button is-small" @click=${this.openModal}>View details</button>
 			
 			<div class="modal${this.open ? ' is-active': ''}">
@@ -496,7 +536,6 @@ export class TestResultsModal extends LitElement {
 				this.opened = true;
 				for (const collapsible of this.collapsibles) {
 					collapsible.expand();
-					console.log('EXPANDING');
 				}
 			}
 		})

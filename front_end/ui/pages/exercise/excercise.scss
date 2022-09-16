@@ -20,8 +20,15 @@
 			background: none;
 			cursor: pointer;
 
+			a {
+				color: #000000 !important;
+			}
+
 			&:hover, &.active {
-				color: $primary;
+				color: $primary !important;
+				a {
+					color: $primary !important;
+				}
 			}
 
 			&:hover {

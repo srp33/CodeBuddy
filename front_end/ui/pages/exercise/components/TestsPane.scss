@@ -167,6 +167,7 @@ test-results-modal {
 			flex-direction: column;
 			height: calc(100% - 50px);
 			font-size: 1.1rem;
+			min-height: 500px;
 
 			.diff-section-header {
 				display: flex;
