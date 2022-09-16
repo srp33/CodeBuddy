@@ -337,14 +337,6 @@
         function import_assignment_get_post_data() {
             return {"file_text": $("#upload_file_text")[0].innerHTML};
         }
-
-//         async function import_assignment_get_post_data() {
-//             if ($("#upload_file_control")[0].files.length > 0) {
-//                 var file_text = await $("#upload_file_control")[0].files[0].text();
-// console.log(file_text);
-//                 return {"file_text": file_text};
-//             }
-//         }
     </script>
 {% else %}
     <h2>This course does not exist.</h2>
