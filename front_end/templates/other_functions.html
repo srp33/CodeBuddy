@@ -1,114 +1,114 @@
 
 <script>
-function showPostModal(action, title, data_obj, reload) {
-    // Build the modal
-    var modalElement = document.createElement("div");
-    modalElement.setAttribute("class", "modal");
-    modalElement.style.display = "block";
+    function showPostModal(action, title, data_obj, reload) {
+        // Build the modal
+        var modalElement = document.createElement("div");
+        modalElement.setAttribute("class", "modal");
+        modalElement.style.display = "block";
 
-    var backgroundElement = document.createElement("div");
-    backgroundElement.setAttribute("class", "modal-background");
+        var backgroundElement = document.createElement("div");
+        backgroundElement.setAttribute("class", "modal-background");
 
-    var cardElement = document.createElement("div");
-    cardElement.setAttribute("class", "modal-card");
+        var cardElement = document.createElement("div");
+        cardElement.setAttribute("class", "modal-card");
 
-    var headerElement = document.createElement("header");
-    headerElement.setAttribute("class", "modal-card-head");
+        var headerElement = document.createElement("header");
+        headerElement.setAttribute("class", "modal-card-head");
 
-    var titleElement = document.createElement("p");
-    titleElement.setAttribute("class", "modal-card-title");
-    titleElement.innerHTML = `<strong>${title}</strong>`;
+        var titleElement = document.createElement("p");
+        titleElement.setAttribute("class", "modal-card-title");
+        titleElement.innerHTML = `<strong>${title}</strong>`;
 
-    var sectionElement = document.createElement("section");
-    sectionElement.setAttribute("class", "modal-card-body is-large");
-    messageElement = document.createElement("div");
-    messageElement.setAttribute("style", "font-size: 24px;");
+        var sectionElement = document.createElement("section");
+        sectionElement.setAttribute("class", "modal-card-body is-large");
+        messageElement = document.createElement("div");
+        messageElement.setAttribute("style", "font-size: 24px;");
 
-    var errorElement = document.createElement("div");
+        var errorElement = document.createElement("div");
 
-    function updateErrorMessage(message) {
-        if (message == "")
-            errorElement.innerHTML = message;
-        else
-            errorElement.innerHTML = `<hr /><p><font color='red'>${message}</p>`;
-            errorElement.scrollIntoView();
-    }
-
-    var footerElement = document.createElement("footer");
-    footerElement.setAttribute("class", "modal-card-foot");
-
-    var actionButton = document.createElement("a");
-    actionButton.setAttribute("class", "modal-button button is-dark");
-    actionButton.innerHTML = "Continue";
-
-    var cancelButton = document.createElement("a");
-    cancelButton.setAttribute("class", "modal-button button");
-    cancelButton.innerHTML = "Cancel";
-
-    // Nest everything within the modal
-    modalElement.appendChild(backgroundElement);
-
-    headerElement.appendChild(titleElement);
-    sectionElement.appendChild(messageElement);
-    sectionElement.appendChild(errorElement);
-    footerElement.appendChild(actionButton);
-    footerElement.appendChild(cancelButton);
-
-    cardElement.appendChild(headerElement);
-    cardElement.appendChild(sectionElement);
-    cardElement.appendChild(footerElement);
-
-    modalElement.appendChild(cardElement);
-    document.body.appendChild(modalElement);
-
-    var build_body_function = window[`${action}_build_body`];
-    if (build_body_function)
-        build_body_function(data_obj, messageElement);
-
-    actionButton.onclick = function() {
-        // This sets it back to the original value if they get an error and then click the action button again.
-        updateErrorMessage("");
-
-        var postData = {};
-        var get_post_data_function = window[`${action}_get_post_data`];
-        if (get_post_data_function)
-            postData = get_post_data_function();
-
-        if ("error" in postData && postData.error != "") {
-            updateErrorMessage(postData.error);
-            return;
+        function updateErrorMessage(message) {
+            if (message == "")
+                errorElement.innerHTML = message;
+            else
+                errorElement.innerHTML = `<hr /><p><font color='red'>${message}</p>`;
+                errorElement.scrollIntoView();
         }
 
-        $.ajax({
-            type: 'POST',
-            url: window[`${action}_get_post_url`](data_obj),
-            data: postData,
-            async: false,
-            success: function(result) {
-                if (result == "") {
-                    modalElement.style.display = "none";
+        var footerElement = document.createElement("footer");
+        footerElement.setAttribute("class", "modal-card-foot");
 
-                    if (reload)
-                        location.reload();
-                }
-                else {
-                    updateErrorMessage(result);
-                }
-            },
-            error: function (jqXHR, textStatus, errorThrown)
-            {
-                updateErrorMessage(`Error: ${errorThrown}`);
+        var actionButton = document.createElement("a");
+        actionButton.setAttribute("class", "modal-button button is-dark");
+        actionButton.innerHTML = "Continue";
+
+        var cancelButton = document.createElement("a");
+        cancelButton.setAttribute("class", "modal-button button");
+        cancelButton.innerHTML = "Cancel";
+
+        // Nest everything within the modal
+        modalElement.appendChild(backgroundElement);
+
+        headerElement.appendChild(titleElement);
+        sectionElement.appendChild(messageElement);
+        sectionElement.appendChild(errorElement);
+        footerElement.appendChild(actionButton);
+        footerElement.appendChild(cancelButton);
+
+        cardElement.appendChild(headerElement);
+        cardElement.appendChild(sectionElement);
+        cardElement.appendChild(footerElement);
+
+        modalElement.appendChild(cardElement);
+        document.body.appendChild(modalElement);
+
+        var build_body_function = window[`${action}_build_body`];
+        if (build_body_function)
+            build_body_function(data_obj, messageElement);
+
+        actionButton.onclick = function() {
+            // This sets it back to the original value if they get an error and then click the action button again.
+            updateErrorMessage("");
+
+            var postData = {};
+            var get_post_data_function = window[`${action}_get_post_data`];
+            if (get_post_data_function)
+                postData = get_post_data_function();
+
+            if ("error" in postData && postData.error != "") {
+                updateErrorMessage(postData.error);
+                return;
             }
-        });
-    }
 
-    cancelButton.onclick = function() {
-        modalElement.style.display = "none";
-    }
+            $.ajax({
+                type: 'POST',
+                url: window[`${action}_get_post_url`](data_obj),
+                data: postData,
+                async: false,
+                success: function(result) {
+                    if (result == "") {
+                        modalElement.style.display = "none";
 
-    // window.onclick = function(event) {
-    //     if (event.target == modalElement)
-    //         modalElement.style.display = "none";
-    // }
-}
+                        if (reload)
+                            location.reload();
+                    }
+                    else {
+                        updateErrorMessage(result);
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown)
+                {
+                    updateErrorMessage(`Error: ${errorThrown}`);
+                }
+            });
+        }
+
+        cancelButton.onclick = function() {
+            modalElement.style.display = "none";
+        }
+
+        // window.onclick = function(event) {
+        //     if (event.target == modalElement)
+        //         modalElement.style.display = "none";
+        // }
+    }
 </script>

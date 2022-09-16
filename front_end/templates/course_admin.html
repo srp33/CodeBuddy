@@ -130,7 +130,8 @@
         <div class="buttons">
             <a class="button is-dark" href="/edit_assignment/{{ course_basics['id'] }}/">Create assignment</a>
 
-            <a class="button" href="/import_assignment/{{ course_basics['id'] }}">Import assignment</a>
+            <a class="button" onclick="showPostModal('import_assignment', 'Import an assignment from a JSON file', {}, true)">Import assignment</a>
+            <!--<a class="button" href="/import_assignment/{{ course_basics['id'] }}">Import assignment</a>-->
 
             <a class="button" href="/edit_course/{{ course_basics['id'] }}">Edit course</a>
 
@@ -293,6 +294,57 @@
         function delete_assignment_get_post_url(data_obj) {
                 return `/delete_assignment/{{ course_basics['id'] }}/${data_obj.assignment_id}`;
         }
+
+        function import_assignment_build_body(data_obj, messageElement) {
+            var html = `<p>Please upload a JSON file that was exported from this application and that contains details about an assignment.</p><br />
+            <p>
+                <div class="file has-name is-fullwidth">
+                    <label class="file-label">
+                        <input class="file-input" type="file" id="upload_file_control" accept="application/json" onchange="import_assignment_set_file_name()">
+                        <span class="file-cta">
+                            <span class="file-icon">
+                                <i class="fas fa-upload"></i>
+                            </span>
+                            <span class="file-label">
+                                Choose a file...
+                            </span>
+                        </span>
+                        <span class="file-name is-hidden" id="upload_file_name" />
+                    </label>
+                </div>
+            </p>
+            
+            <div class="is-hidden" id="upload_file_text" />`;
+
+            divElement = document.createElement("div");
+            divElement.innerHTML = html;
+            messageElement.appendChild(divElement);
+        }
+
+        async function import_assignment_set_file_name() {
+            if ($("#upload_file_control")[0].files.length > 0) {
+                $("#upload_file_name")[0].innerHTML = $("#upload_file_control")[0].files[0].name;
+                $("#upload_file_name").removeClass("is-hidden");
+
+                $("#upload_file_text")[0].innerHTML = await $("#upload_file_control")[0].files[0].text();
+            }
+        }
+
+        function import_assignment_get_post_url(data_obj) {
+            return `/import_assignment/{{ course_basics['id'] }}`;
+        }
+
+        function import_assignment_get_post_data() {
+            return {"file_text": $("#upload_file_text")[0].innerHTML};
+        }
+
+//         async function import_assignment_get_post_data() {
+//             if ($("#upload_file_control")[0].files.length > 0) {
+//                 var file_text = await $("#upload_file_control")[0].files[0].text();
+// console.log(file_text);
+//                 return {"file_text": file_text};
+//             }
+//         }
     </script>
 {% else %}
     <h2>This course does not exist.</h2>
