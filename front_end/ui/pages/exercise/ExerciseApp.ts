@@ -44,6 +44,7 @@ export default class ExerciseApp extends LitElement {
 		date: new Date(s.date),
 		code: s.code,
 		passed: !!s.passed,
+		test_outputs: s.test_outputs,
 	})) ?? [];
 
 	private editor?: CodeEditor;
@@ -51,6 +52,7 @@ export default class ExerciseApp extends LitElement {
 	private userCodeFileName = 'code';
 
 	render() {
+		const activeSubmission = this.activeSubmission;
 		return html`
 			<div style="height: 100%;">
 				<split-pane
@@ -75,11 +77,13 @@ export default class ExerciseApp extends LitElement {
 							.first=${html`
 								<div class="edit-section">
 									<code-editor ${ref(this.setEditor)}></code-editor>
-									${this.selectedFile?.startsWith('submission-') ? html`
+									${activeSubmission ? html`
 									<article class="message is-warning" style="margin-bottom: 0px;">
 										<div class="message-header">
-											<p>This is the code from submission ${this.selectedFile.replace('submission-', '')}</p>
-											<button class="button is-small outlined" @click=${this.copySubmissionCode}>Restore</button>
+											<p>You are viewing submission ${activeSubmission.id + 1} from ${activeSubmission.date.toLocaleString()}</p>
+											<span style="flex: 1;"></span>
+											<button class="button is-small outlined" @click=${this.copySubmissionCode}>Restore this version</button>
+											<button style="margin-left: 8px;" class="button is-small outlined" @click=${() => this.onFileSelected(this.userCodeFileName)}>Return to latest version</button>
 										</div>
 									</article>
 									` : null}
@@ -98,9 +102,19 @@ export default class ExerciseApp extends LitElement {
 							`}
 							.second=${html`
 								<tests-pane 
-									.getCode=${this.getUserCode} 
+									.getCode=${this.getUserCode}
+									.activeSubmission=${this.activeSubmission}
 									.addSubmission=${this.addSubmission}
 									.hasPassingSubmission=${this.hasPassingSubmission}
+									.selectPassingSubmission=${() => {
+										for (let i = this.submissions.length - 1; i >= 0; i--) {
+											const submission = this.submissions[i];
+											if (submission.passed) {
+												this.onFileSelected(`submission-${submission.id}`);
+												break;
+											}
+										}
+									}}
 								></tests-pane>
 							`}
 						>
@@ -215,6 +229,14 @@ export default class ExerciseApp extends LitElement {
 
 	get hasPassingSubmission(): boolean {
 		return !!this.submissions?.find((submission) => !!submission.passed);
+	}
+
+	get activeSubmission(): Submission | undefined {
+		if (this.selectedFile?.startsWith('submission-')) {
+			const id = Number(this.selectedFile.replace('submission-', ''));
+			return this.submissions.find((s) => s.id === id);
+		}
+		return undefined;
 	}
 }
 
