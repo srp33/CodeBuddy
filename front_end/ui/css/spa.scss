@@ -1,3 +1,7 @@
+@import './variables.scss';
+
+
 #app {
 	flex: 1;
+	max-height: calc(100vh - ($header-height + $footer-height));
 }

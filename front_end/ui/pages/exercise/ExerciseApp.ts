@@ -74,6 +74,7 @@ export default class ExerciseApp extends LitElement {
 							cacheID="exercise-horizontal"
 							.defaultSplit=${0.7}
 							.minSizes=${[100, 100]}
+							.fixedSide='second'
 							.first=${html`
 								<div class="edit-section">
 									<code-editor ${ref(this.setEditor)}></code-editor>
