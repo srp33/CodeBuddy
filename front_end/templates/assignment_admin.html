@@ -9,7 +9,7 @@
         <script>
             function delete_exercise_submissions_build_body(data_obj, messageElement) {
                 pElement = document.createElement("p");
-                pElement.innerHTML = "Are you sure you want to purge submissions for this exercise?";
+                pElement.innerHTML = "Are you sure you want to purge submissions (and scores) for this exercise?";
                 messageElement.appendChild(pElement);
             }
 
@@ -162,7 +162,7 @@
                             {% else %}
                                 <td style="text-align: center;">Visible</td>
                                 <td style="text-align: center;"><a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a></td>
-                                <td style="text-align: center;"><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a> / <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[1]['id'] }}'}, true)">Purge</a></td>
+                                <td style="text-align: center;"><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a> / <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">Purge</a></td>
                             {% end %}
                             <td style="text-align: center;">
                                 <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}">
@@ -170,17 +170,17 @@
                                 </a>
                             </td>
                             <td style="text-align: center;">
-                                <a onclick="showPostModal('copy_exercise', 'Copy exercise within the same assignment:', {'exercise_id': '{{ exercise[1]['id'] }}'}, true)">
+                                <a onclick="showPostModal('copy_exercise', 'Copy exercise within the same assignment:', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">
                                     <i class="far fa-copy"></i>
                                 </a>
                             </td>
                             <td style="text-align: center;">
-                                <a onclick="showPostModal('move_exercise', 'Move this exercise to a different assignment:', {'exercise_id': '{{ exercise[1]['id'] }}'}, true)">
+                                <a onclick="showPostModal('move_exercise', 'Move this exercise to a different assignment:', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">
                                     <i class="far fa-arrow-alt-circle-right"></i>
                                 </a>
                             </td>
                             <td style="text-align: center;">
-                                <a onclick="showPostModal('delete_exercise', 'Delete exercise', {'exercise_id': '{{ exercise[1]['id'] }}'}, true)">
+                                <a onclick="showPostModal('delete_exercise', 'Delete exercise', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">
                                     <i class="far fa-trash-alt"></i>
                                 </a> 
                             </td>
@@ -197,7 +197,7 @@
             <div class="buttons">
                 <a class="button is-dark" href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/'>New exercise</a>
                 
-                <button class="button" onclick="showPostModal('new_video', 'Create video exercise', {}, true)">New video exercise</button>
+                <button class="button" onclick="showPostModal('new_video', 'Create video exercise', {}, '')">New video exercise</button>
 
                 <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Edit assignment</a>
 

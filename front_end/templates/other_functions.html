@@ -1,6 +1,6 @@
 
 <script>
-    function showPostModal(action, title, data_obj, reload) {
+    function showPostModal(action, title, data_obj, reload_url) {
         // Build the modal
         var modalElement = document.createElement("div");
         modalElement.setAttribute("class", "modal");
@@ -88,8 +88,13 @@
                     if (result == "") {
                         modalElement.style.display = "none";
 
-                        if (reload)
+                        if (reload_url == "") {
+                            //window.scrollTo(0, 0);
                             location.reload();
+                        }
+                        else {
+                            location.href = reload_url;
+                        }
                     }
                     else {
                         updateErrorMessage(result);

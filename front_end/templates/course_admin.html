@@ -71,23 +71,23 @@
                             </a>
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('copy_assignment', 'Copy this assignment within this course', {'assignment_id': {{ assignment[1]['id'] }}}, true)">
+                            <a onclick="showPostModal('copy_assignment', 'Copy this assignment within this course', {'assignment_id': {{ assignment[1]['id'] }}}, '')">
                                 <i class="far fa-copy"></i>
                             </a>
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('move_assignment', 'Move assignment to another course', {'assignment_id': {{ assignment[1]['id'] }}}, true)">
+                            <a onclick="showPostModal('move_assignment', 'Move assignment to another course', {'assignment_id': {{ assignment[1]['id'] }}}, '')">
                                 <i class="far fa-arrow-alt-circle-right"></i>
                             </a>
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('delete_assignment_submissions', 'Purge assignment submissions', {'assignment_id': {{ assignment[1]['id'] }}}, true)">
+                            <a onclick="showPostModal('delete_assignment_submissions', 'Purge assignment submissions', {'assignment_id': {{ assignment[1]['id'] }}}, '')">
                                 <i class="far fa-times-circle"></i>
                             </a>
                             <!--https://fontawesome.com/v5/search?o=r&m=free&s=regular-->
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('delete_assignment', 'Delete assignment', {'assignment_id': {{ assignment[1]['id'] }}}, true)">
+                            <a onclick="showPostModal('delete_assignment', 'Delete assignment', {'assignment_id': {{ assignment[1]['id'] }}}, '')">
                                 <i class="far fa-trash-alt"></i>
                             </a>
                         </td>
@@ -100,122 +100,23 @@
         <p><strong>No assignments have been created for this course.</strong></p>
     {% end %}
 
-    <div id="copy_course_modal" class="modal">
-        <div class="modal-content">
-            <h4>Make a copy of this course</h4>
-            <div class="notification is-danger" id="copy_course_message" style="display:none"></div>
-            <p>New title:</p>
-
-            <input class="input is-medium is-primary" type="text" id="new_title" name="new_title" placeholder="{{course_basics['title']}}" value="{{course_basics['title']}}"/>
-            <p class="buttons">
-                <a id="copy_cancel_button" class="modal-button button is-light">Cancel</a>
-                <button onclick="copyCourse({{ course_basics['id'] }})" id="copy_button" class="modal-button button is-dark">Copy</button>
-            </p>
-        </div>
-    </div>
-
-    <div id="delete_submissions_modal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p>Are you sure you want to delete all submissions for this course?</p>
-            <p><font color="red">This will also delete all scores for this course.</font></p>
-            <p class="buttons">
-                <a id="delete_submissions_cancel_button" class="modal-button button is-light">Cancel</a>
-                <input type="submit" id="delete_submissions_button" class="modal-button button is-dark" value="Delete"/>
-            </p>
-        </div>
-    </div>
-
     {% if is_administrator or is_instructor %}
         <div class="buttons">
             <a class="button is-dark" href="/edit_assignment/{{ course_basics['id'] }}/">Create assignment</a>
 
-            <a class="button" onclick="showPostModal('import_assignment', 'Import an assignment from a JSON file', {}, true)">Import assignment</a>
-            <!--<a class="button" href="/import_assignment/{{ course_basics['id'] }}">Import assignment</a>-->
+            <a class="button" onclick="showPostModal('import_assignment', 'Import an assignment from a JSON file', {}, '')">Import assignment</a>
 
             <a class="button" href="/edit_course/{{ course_basics['id'] }}">Edit course</a>
 
-            <a class="button" onclick="showCopyCourseModal()">Copy course</a>
+            <a class="button" onclick="showPostModal('copy_course', 'Copy course', {}, '')">Copy course</a>
 
-            <a class="button" href="/delete_course/{{ course_basics['id'] }}">Delete course</a>
+            <a class="button" onclick="showPostModal('delete_course', 'Delete course', {}, '/')">Delete course</a>
 
-            <a class="button" onclick="showDeleteSubmissionsModal()">Delete course submissions</a>
+            <a class="button" onclick="showPostModal('delete_course_submissions', 'Purge course submissions', {}, '')">Purge course submissions</a>
         </div>
     {% end %}
 
     <script>
-        function showCopyCourseModal() {
-            var modal = document.getElementById("copy_course_modal");
-            modal.style.display = "block";
-
-            var cancelButton = document.getElementById("copy_cancel_button");
-
-            cancelButton.onclick = function() {
-                modal.style.display = "none";
-            }
-
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-        }
-
-        function showDeleteSubmissionsModal() {
-            var modal = document.getElementById("delete_submissions_modal");
-            var span = document.getElementsByClassName("close")[1];
-            modal.style.display = "block";
-
-            var deleteButton = document.getElementById("delete_submissions_button");
-            var cancelButton = document.getElementById("delete_submissions_cancel_button");
-
-            deleteButton.onclick = async function() {
-                $.ajax({
-                    type: 'POST',
-                    url: "/delete_course_submissions/{{ course_basics['id'] }}",
-                    success: function(result) {
-                        modal.style.display = "none";
-                        location.reload();
-                    },
-                    async: false
-                });
-            }
-
-            cancelButton.onclick = function() {
-                modal.style.display = "none";
-            }
-
-            span.onclick = function() {
-                modal.style.display = "none";
-            }
-
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-        }
-
-        function copyCourse(course) {
-            var new_title = document.getElementById("new_title").value;
-            var message = document.getElementById("copy_course_message")
-            var modal = document.getElementById("copy_course_modal");
-
-            $.post(`/copy_course/${course}`, {"new_title": new_title},
-                function(data) {
-                    var json_data = JSON.parse(data);
-
-                    if (json_data.result == "") {
-                        modal.style.display = "none";
-                        location.reload();
-                    }
-                    else {
-                        message.innerHTML = json_data.result;
-                        message.style.display = "block";
-                    }
-            });
-        }
-
         function copy_assignment_build_body(data_obj, messageElement) {
             var previous_title = "";
             for (let assignment of {{ jsonify(assignments) }}) {
@@ -277,7 +178,7 @@
 
         function delete_assignment_submissions_build_body(data_obj, messageElement) {
             pElement = document.createElement("p");
-            pElement.innerHTML = "Are you sure you want to purge submissions for this assignment?";
+            pElement.innerHTML = "Are you sure you want to purge submissions (and scores) for this assignment?";
             messageElement.appendChild(pElement);
         }
 
@@ -336,6 +237,53 @@
 
         function import_assignment_get_post_data() {
             return {"file_text": $("#upload_file_text")[0].innerHTML};
+        }
+
+        function copy_course_build_body(data_obj, messageElement) {
+            var previous_title = "{{ course_basics['title'] }}";
+
+            pElement = document.createElement("p");
+            pElement.innerHTML = "New title:";
+
+            inputElement = document.createElement("input");
+            inputElement.setAttribute("class", "input is-medium is-primary");
+            inputElement.setAttribute("type", "text");
+            inputElement.setAttribute("id", "copy_course_new_title");
+            inputElement.setAttribute("value", `${previous_title} - 2`);
+
+            messageElement.appendChild(pElement);
+            messageElement.appendChild(document.createElement("br"));
+            messageElement.appendChild(inputElement);
+            inputElement.focus();
+            inputElement.selectionStart = inputElement.selectionEnd = inputElement.value.length;
+        }
+
+        function copy_course_get_post_url(data_obj) {
+            return `/copy_course/{{ course_basics['id'] }}`;
+        }
+
+        function copy_course_get_post_data() {
+            return {"new_title": $("#copy_course_new_title")[0].value};
+        }
+
+        function delete_course_submissions_build_body(data_obj, messageElement) {
+            pElement = document.createElement("p");
+            pElement.innerHTML = "Are you sure you want to purge submissions (and scores) for this course?";
+            messageElement.appendChild(pElement);
+        }
+
+        function delete_course_submissions_get_post_url(data_obj) {
+                return `/delete_course_submissions/{{ course_basics['id'] }}`;
+        }
+
+        function delete_course_build_body(data_obj, messageElement) {
+            pElement = document.createElement("p");
+            pElement.innerHTML = "Are you sure you want to delete this course?";
+            messageElement.appendChild(pElement);
+        }
+
+        function delete_course_get_post_url(data_obj) {
+                return `/delete_course/{{ course_basics['id'] }}`;
         }
     </script>
 {% else %}

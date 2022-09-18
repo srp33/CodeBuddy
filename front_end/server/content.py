@@ -2185,9 +2185,7 @@ class Content:
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
-    def delete_course(self, course_basics):
-        course_id = course_basics["id"]
-
+    def delete_course(self, course_id):
         self.execute('''DELETE FROM presubmissions
                         WHERE course_id = ?''', (course_id, ))
 
@@ -2227,9 +2225,7 @@ class Content:
         self.execute('''DELETE FROM user_assignment_starts
                         WHERE course_id = ?''', (course_id, ))
 
-    def delete_course_submissions(self, course_basics):
-        course_id = course_basics["id"]
-
+    def delete_course_submissions(self, course_id):
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?''', (course_id, ))
 
