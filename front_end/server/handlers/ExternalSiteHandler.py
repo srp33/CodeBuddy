@@ -14,7 +14,7 @@ class ExternalSiteHandler(BaseOtherHandler):
 
             if url in settings_dict["allowed_external_urls"]:
                 url_hash = hashlib.md5(url.encode()).hexdigest()
-                cache_file_path = f"/tmp/cache/{url_hash}"
+                cache_file_path = f"/tmp/{url_hash}"
 
                 if os.path.exists(cache_file_path):
                     with open(cache_file_path, "rb") as cache_file:

@@ -56,7 +56,7 @@ then
     --log-driver=none \
     --name ${container_name} \
     --read-only \
-    -v /tmp/cache:/tmp/cache \
+    -v /tmp/cache:/tmp \
     ${args} \
     ${image_name}
 else
@@ -67,7 +67,7 @@ else
     --log-driver=none \
     --name ${container_name} \
     --read-only \
-    -v /tmp/cache:/tmp/cache \
+    -v /tmp/cache:/tmp \
     ${args} \
     ${image_name}
 fi
