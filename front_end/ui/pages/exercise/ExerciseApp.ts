@@ -292,7 +292,7 @@ class InformationPane extends LitElement {
 						${unsafeHTML(exercise_details.hint)}
 					</div>
 				` : null}
-				<div style="display: flex; justify-content: center;">
+				<div>
 					<button class="button is-warning" @click=${() => this.showHint = !this.showHint}>
 						${this.showHint ? 'Hide hint' : 'Show hint'}
 					</button>
