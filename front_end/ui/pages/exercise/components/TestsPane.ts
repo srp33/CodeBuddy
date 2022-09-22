@@ -130,7 +130,7 @@ export class TestsPane extends LitElement {
 							</div>
 							<div class="message-body">
 								${this.hasPassingSubmission ? html`
-									<p>One or more of your previous submissions has passed all of the tests.</p>
+									<p>One or more of your submissions has passed all of the tests.</p>
 									<p>You may continue to modify and submit your code if you wish to change your solution.</p>
 									<br>
 								` : html`
