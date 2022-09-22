@@ -325,7 +325,7 @@ def get_client_ip_address(request):
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
 
-def format_exercise_details(exercise_details, exercise_basics, user_name, content, next_prev_exercises=None, format_tests = True):
+def format_exercise_details(exercise_details, exercise_basics, user_name, content, next_prev_exercises=None, format_tests=True):
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
@@ -371,6 +371,10 @@ def format_exercise_details(exercise_details, exercise_basics, user_name, conten
     exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "") # This is just in case they added it when it is the first exercise.
 
     exercise_details["instructions"] = convert_markdown_to_html(convert_html_to_markdown(exercise_details["instructions"])) # Removes html markup from instructions before converting markdown to html
+
+    for file_name in exercise_details["data_files"]:
+        if file_name.endswith(".hide"):
+            exercise_details["data_files"][file_name] = "The contents of this file are hidden."
 
 def modify_what_students_see(exercise_details, user_name):
     exercise_details["show_instructor_solution"] = False
