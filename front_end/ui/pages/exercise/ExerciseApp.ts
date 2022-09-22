@@ -275,7 +275,7 @@ class InformationPane extends LitElement {
 
 	private tabPanels: {[key in Tab]: () => TemplateResult} = {
 		[Tab.Information]: () => html`
-			<div class="content is-medium" style="flex: 1;">
+			<div class="content is-medium">
 				<h6>Instructions</h6>
 				${exercise_details.enable_pair_programming ? html`
 					<div style="margin-bottom: 16px;">
@@ -293,7 +293,7 @@ class InformationPane extends LitElement {
 					</div>
 				` : null}
 				<div style="display: flex; justify-content: center;">
-					<button class="button is-small is-warning is-light" @click=${() => this.showHint = !this.showHint}>
+					<button class="button is-warning" @click=${() => this.showHint = !this.showHint}>
 						${this.showHint ? 'Hide hint' : 'Show hint'}
 					</button>
 				</div>
