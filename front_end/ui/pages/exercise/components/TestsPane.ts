@@ -126,10 +126,14 @@ export class TestsPane extends LitElement {
 					${this.hasPassingSubmission || this.allPassing ? html`
 						<article class="message is-success">
 							<div class="message-header">
-								${this.hasPassingSubmission ? html`<p>Passing solution submitted</p>` : html`<p>All test passed!</p>`}
+								${this.hasPassingSubmission ? html`<p>Exercise complete</p>` : html`<p>All test passed!</p>`}
 							</div>
 							<div class="message-body">
-								${this.hasPassingSubmission ? null : html`
+								${this.hasPassingSubmission ? html`
+									<p>One or more of your previous submissions has passed all of the tests.</p>
+									<p>You may continue to modify and submit your code if you wish to change your solution.</p>
+									<br>
+								` : html`
 									<p>Be sure to click on Submit so your solution and score will be saved.</p>
 								`}
 								${this.hasPassingSubmission && this.selectPassingSubmission ? html`
@@ -293,6 +297,9 @@ export class TestsPane extends LitElement {
 	}
 
 	private get allPassing(): boolean {
+		if (!this.tests?.length) {
+			return false;
+		}
 		for (const test of this.tests) {
 			if (test.status !== TestStatus.Passed) {
 				return false;
