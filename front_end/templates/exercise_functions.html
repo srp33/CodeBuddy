@@ -74,7 +74,7 @@ function submit() {
                     "partner_name": response_dict["partner_name"],
                     "test_outputs": response_dict["test_outputs"]});
 
-                show_past_submissions();
+                show_past_submissions(2);
                 get_submission(response_dict["submission_id"], false, true);
             }
             else {
@@ -358,14 +358,14 @@ function get_submission(submission_id, scroll, change_border) {
     {% end %}
 }
 
-function show_past_submissions() {
+function show_past_submissions(min_to_show) {
     var submissions_div = document.getElementById("submissions");
 
     var submission_html = "";
     var revert_html = "";
     var current_code = editor.getValue()
 
-    if (submissions.length > 1) {
+    if (submissions.length >= min_to_show) {
         submission_html += "<h6>Past submissions:</h6>";
         submission_html += "<div class='buttons'>";
 

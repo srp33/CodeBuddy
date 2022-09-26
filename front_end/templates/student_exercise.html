@@ -76,7 +76,7 @@
                 const tests = {{ jsonify(tests) }};
 
                 var submissions = {{ jsonify(submissions) }};
-                show_past_submissions();
+                show_past_submissions(1);
 
                 if (submissions.length > 0)
                     get_submission(submissions[submissions.length - 1].id, false, true);
