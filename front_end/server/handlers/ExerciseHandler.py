@@ -84,7 +84,9 @@ class ExerciseHandler(BaseUserHandler):
                         "same_suggestion": same_suggestion,
                 }
 
-                if user_info["use_studio_mode"]:
+                mode = self.get_query_argument("mode", default=None)
+                
+                if user_info["use_studio_mode"] or mode == "studio":
                     args['presubmission'] = self.content.get_presubmission(course, assignment, exercise, self.get_user_id())
 
                     exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))
