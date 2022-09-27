@@ -370,7 +370,7 @@ class InformationPane extends LitElement {
 				</div>
 				<div class="info-panel">
 					<div style="margin-bottom: 16px;">
-						<a class="button" href="?mode=classic">Return to classic mode</a>
+						<a class="button" href="?mode=classic">Use classic mode</a>
 					</div>
 					<exercise-timer></exercise-timer>
 					${this.tabPanels[this.selectedTab]?.()}
