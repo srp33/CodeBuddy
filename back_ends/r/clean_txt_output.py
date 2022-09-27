@@ -8,6 +8,8 @@ if os.path.exists("txt_output"):
         for line in output_file:
             if line.startswith("Calls: "):
                 continue
+            if line.startswith("Joining, by ="):
+                continue
             if line == "Execution halted\n":
                 continue
 
