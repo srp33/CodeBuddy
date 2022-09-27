@@ -2413,3 +2413,25 @@ class Content:
         pairs = [{'is_user': True, 'pair': pair} if user_name in pair else {'is_user': False, 'pair': pair} for pair in pairs]
 
         return pairs
+
+    def get_next_prev_student_ids(self, course_id, student_id):
+        sql = '''SELECT u.user_id
+                 FROM users u
+                 INNER JOIN course_registrations cr
+                   ON u.user_id = cr.user_id
+                 WHERE cr.course_id = ?
+                 ORDER BY u.name'''
+
+        user_ids = [row["user_id"] for row in self.fetchall(sql, (course_id, ))]
+
+        student_index = user_ids.index(student_id)
+
+        prev_student_id = None
+        next_student_id = None
+
+        if student_index > 0:
+          prev_student_id = user_ids[student_index - 1]
+        if student_index < len(user_ids) - 1:
+          next_student_id = user_ids[student_index + 1]
+
+        return prev_student_id, next_student_id

@@ -1,12 +1,33 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
-            <div class="student-exercise-notification" id="student_header"><span class="has-text-weight-bold">{{ student_info["name"] }}</span> - Last submission date: </div>
+            <div class="student-exercise-notification">
+                <p>
+                    <span class="has-text-weight-bold">{{ student_info["name"] }}</span>
+                    
+                    {% if len(submissions) == 0 %}
+                        - Has not submitted yet
+                    {% else %}
+                        - Last submission date: <span id="last_submission_date"></span>
+                    {% end %}
+                </p>
+                <p>
+                    {% if next_prev_student_ids[0] != None %}
+                        <a class="button is-outlined" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ next_prev_student_ids[0] }}">Previous student</a>
+                    {% end %}
 
-            <script>
-                var last_submission_date = new Date("{{ submissions[-1]["date"] }}").toLocaleString();
-                document.getElementById("student_header").innerHTML += last_submission_date;
-            </script>
+                    {% if next_prev_student_ids[1] != None %}
+                        <a class="button is-outlined" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ next_prev_student_ids[1] }}">Next student</a>
+                    {% end %}
+                </p>
+            </div>
+
+            {% if len(submissions) > 0 %}
+                <script>
+
+                        document.getElementById("last_submission_date").innerHTML = new Date("{{ submissions[-1]["date"] }}").toLocaleString();
+                </script>
+            {% end %}
 
             <div>
                 <h4 style="display: inline-block;">Assignment: {{ exercise_basics["assignment"]["title"] }}</h4>

@@ -16,9 +16,11 @@
             {% end %}
 
             <div class="c-content">
-                <p style="margin-top: 9px; margin-bottom: 3px;">Exercise score: <strong>{{ student[1]["score"] }}%</strong></p>
-                <p>Most recent submission (<a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}" target="_blank">more</a>):</p>
-                <pre style="margin-bottom: 7px;">{{ student[1]["code"] }}</pre>
+                <p style="margin-top: 9px; margin-bottom: 3px;">Exercise score: <strong>{{ student[1]["score"] }}%</strong>:</p>
+
+                <p><pre style="margin-bottom: 7px;">{{ student[1]["code"] }}</pre></p>
+
+                <p><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}" target="_blank">More details</a></p>
             </div>
         {% else %}
             {% if student[1]["partner_name"] %}
@@ -31,7 +33,10 @@
                 {% if student[1]["code"] %}
                     <p style="margin-top: 9px; margin-bottom: 3px;">No passing score yet.</p>
                     <p>Most recent submission:</p>
-                    <pre style="margin-bottom: 3px;">{{ student[1]["code"] }}</pre>
+                    
+                    <p><pre style="margin-bottom: 3px;">{{ student[1]["code"] }}</pre></p>
+
+                    <p><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}" target="_blank">More details</a></p>
                 {% else %}
                     <p style="margin-top: 9px; margin-bottom: 3px;">This student has not made a submission yet.</p>
                 {% end %}
