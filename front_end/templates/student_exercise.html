@@ -1,7 +1,12 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
-            <div class="student-exercise-notification">{{ student_info["name"] }}</div>
+            <div class="student-exercise-notification" id="student_header"><span class="has-text-weight-bold">{{ student_info["name"] }}</span> - Last submission date: </div>
+
+            <script>
+                var last_submission_date = new Date("{{ submissions[-1]["date"] }}").toLocaleString();
+                document.getElementById("student_header").innerHTML += last_submission_date;
+            </script>
 
             <div>
                 <h4 style="display: inline-block;">Assignment: {{ exercise_basics["assignment"]["title"] }}</h4>
@@ -76,7 +81,7 @@
                 const tests = {{ jsonify(tests) }};
 
                 var submissions = {{ jsonify(submissions) }};
-                show_past_submissions(1);
+                show_past_submissions();
 
                 if (submissions.length > 0)
                     get_submission(submissions[submissions.length - 1].id, false, true);
