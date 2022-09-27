@@ -1,0 +1,27 @@
+exercise-timer {
+	width: 275px;
+
+	h4 {
+		font-size: 20px;
+		font-weight: 900;	
+	}
+
+	.timer-container {
+		display: flex;
+		justify-content: center;
+		border: 1px solid black;
+		margin-bottom: 16px;
+
+
+		.time-group {
+			padding: 16px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			text-align: center;
+			font-weight: 700;
+    		font-size: 18px;
+		}
+	}
+
+}

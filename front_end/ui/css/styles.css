@@ -49,6 +49,11 @@ pre {
     color: #1AB28C; /* light teal */
 }
 
+.navbar-dropdown {
+    max-height: 80vh;
+    overflow-y: scroll;
+}
+
 .navbar-dropdown .navbar-item {
   display: flex;
   align-items: center;
