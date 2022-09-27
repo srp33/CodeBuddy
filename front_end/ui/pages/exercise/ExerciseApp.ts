@@ -1,6 +1,7 @@
 import '@/components/CodeEditor';
 import '@/components/DiffViewer';
 import '@/components/SplitPane';
+import './components/Timer';
 import './components/TestsPane';
 
 import {LitElement, html, TemplateResult} from 'lit';
@@ -106,6 +107,7 @@ export default class ExerciseApp extends LitElement {
 									.getCode=${this.getUserCode}
 									.activeSubmission=${this.activeSubmission}
 									.addSubmission=${this.addSubmission}
+									.numSubmissions=${this.submissions.length}
 									.hasPassingSubmission=${this.hasPassingSubmission}
 									.selectPassingSubmission=${() => {
 										for (let i = this.submissions.length - 1; i >= 0; i--) {
@@ -286,17 +288,16 @@ class InformationPane extends LitElement {
 				${unsafeHTML(window.templateData.exercise_details.instructions)}
 			</div>
 			${exercise_details.hint ? html`
-				${this.showHint ? html`
-					<div class="content is-medium">
-						<h6>Hint</h6>
-						${unsafeHTML(exercise_details.hint)}
-					</div>
-				` : null}
 				<div>
 					<button class="button is-warning" @click=${() => this.showHint = !this.showHint}>
 						${this.showHint ? 'Hide hint' : 'Show hint'}
 					</button>
 				</div>
+				${this.showHint ? html`
+					<div class="content is-medium">
+						${unsafeHTML(exercise_details.hint)}
+					</div>
+				` : null}
 			` : null}
 		`,
 		[Tab.Code]: () => html`
@@ -368,6 +369,10 @@ class InformationPane extends LitElement {
 					` : null}
 				</div>
 				<div class="info-panel">
+					<div style="margin-bottom: 16px;">
+						<a class="button" href="?mode=classic">Return to classic mode</a>
+					</div>
+					<exercise-timer></exercise-timer>
 					${this.tabPanels[this.selectedTab]?.()}
 				</div>
 			</div>

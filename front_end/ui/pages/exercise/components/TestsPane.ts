@@ -38,6 +38,9 @@ export class TestsPane extends LitElement {
 	activeSubmission?: Submission;
 
 	@property()
+	numSubmissions: number = 0;
+
+	@property()
 	addSubmission?: (submission: Submission) => void;
 
 	@property()
@@ -81,30 +84,36 @@ export class TestsPane extends LitElement {
 
 	render() {
 		let testsRunning = this.tests.some(test => test.status === TestStatus.Running);
+		const madeAllSubmissions = exercise_details.max_submissions > 0 && exercise_details.max_submissions === this.numSubmissions;
 		return html`
 			<div class="tests-pane">
 				<div class="tests-header">
 					<p>Tests</p>
-					<div class="field is-grouped">
-						<p class="control">
-							<button ?disabled=${testsRunning || this.activeSubmission} class="button is-primary is-outlined" @click=${() => this.runCode()}>Run all</button>
-						</p>
-						<div class="field has-addons">
-							<!-- <p class="control">
-								<button class="button">
-									<i class="fab fa-product-hunt"></i>
-									<span style="margin: 0 6px;">Select partner</span>
-									<i class="fas fa-caret-down"></i>
-								</button>
-							</p> -->
-							<p class="control">
-								<button ?disabled=${testsRunning || this.activeSubmission} class="button is-dark" @click=${() => this.handleSubmit()}>Submit</button>
-							</p>
+					<div style="display: flex; flex-direction: column;">
+						<div class="field is-grouped" style="justify-content: flex-end;">
+							<div class="control">
+								<button ?disabled=${testsRunning || this.activeSubmission} class="button is-primary is-outlined" @click=${() => this.runCode()}>Run all</button>
+							</div>
+							<div class="field has-addons">
+								<!-- <p class="control">
+									<button class="button">
+										<i class="fab fa-product-hunt"></i>
+										<span style="margin: 0 6px;">Select partner</span>
+										<i class="fas fa-caret-down"></i>
+									</button>
+								</p> -->
+								<p class="control">
+									<button ?disabled=${testsRunning || this.activeSubmission || madeAllSubmissions} class="button is-dark" @click=${() => this.handleSubmit()}>Submit</button>
+								</p>
+							</div>
 						</div>
+						${exercise_details.max_submissions > 0 ? html`
+							<span>You have made ${this.numSubmissions} of ${exercise_details.max_submissions} allowed submission(s).</span>
+						` : null }
 					</div>
 				</div>
 				${this.activeSubmission ? html`
-					<article class="message ${this.activeSubmission.passed ? 'is-success' : 'is-danger'}">
+					<article class="message ${this.activeSubmission.passed ? 'is-success' : 'is-orange'}">
 						<div class="message-header">
 							<p>
 								${this.activeSubmission.passed ? 'This submission passed all tests!' : 'This submission did not pass all tests.'}	

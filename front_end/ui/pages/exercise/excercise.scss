@@ -39,6 +39,7 @@
 	}
 	
 	.info-panel {
+		position: relative;
 		padding: 16px;
 		overflow-wrap: break-word;
 		display: flex;
@@ -115,6 +116,13 @@
 				}
 			}
 		}
+	}
+}
+
+.is-orange {
+	background-color: $failing;
+	* {
+		background-color: $failing;
 	}
 }
 
