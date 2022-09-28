@@ -249,7 +249,11 @@ export class TestsPane extends LitElement {
 
 		this.requestUpdate();
 		
-		const result = await runCode(course_basics.id, assignment_basics.id, exercise_basics.id, this.getCode!(), testName);
+		const code = this.getCode!();
+		if (!code.trim().length) {
+			return;
+		}
+		const result = await runCode(course_basics.id, assignment_basics.id, exercise_basics.id, code, testName);
 		this.processResult(result);
 		this.requestUpdate();
 	}
@@ -274,6 +278,9 @@ export class TestsPane extends LitElement {
 
 		this.requestUpdate();
 		const code = this.getCode!();
+		if (!code.trim().length) {
+			return;
+		}
 		const result = await submitCode(course_basics.id, assignment_basics.id, exercise_basics.id, code, partnerID);
 		this.processResult(result);
 

@@ -2,7 +2,7 @@ import { LitElement, html, TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import './Timer.scss';
 
-const { start_time, assignment_details } = window.templateData;
+const { start_time, assignment_details, course_basics, assignment_basics } = window.templateData;
 
 @customElement('exercise-timer')
 export class Timer extends LitElement {
@@ -35,15 +35,15 @@ export class Timer extends LitElement {
 			<h4>Time remaining</h4>
 			<div class="timer-container">
 				<span class="time-group">
-					<span>${hours}</span>
+					<span>${hours >= 0 ? hours : 0}</span>
 					<span>Hours</span>
 				</span>
 				<span class="time-group">
-					<span>${minutes}</span>
+					<span>${minutes >= 0 ? minutes : 0}</span>
 					<span>Minutes</span>
 				</span>
 				<span class="time-group">
-					<span>${seconds}</span>
+					<span>${seconds >= 0 ? seconds : 0}</span>
 					<span>Seconds</span>
 				</span>
 			</div>
@@ -58,9 +58,18 @@ export class Timer extends LitElement {
 
 		if (hours <= 0 && minutes <= 0 && seconds <= 0) {
 			clearInterval(this.intervalID);
-			setTimeout(() => {
-				window.location.reload();
-			}, 1000);
+			let redirect = true;
+			if (assignment_details.due_date) {
+				const due_date = new Date(assignment_details.due_date);
+				if (due_date.getTime() < Date.now()) {
+					redirect = false;
+				}
+			}
+			if (redirect) {
+				setTimeout(() => {
+					window.location.replace(`/assignment/${course_basics['id']}/${assignment_basics['id']}`);
+				}, 1000);
+			}
 		}
 
 		return {
