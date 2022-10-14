@@ -36,6 +36,6 @@ class AssignmentHandler(BaseUserHandler):
         assignment_status = get_assignment_status(self, course, assignment_details, user_start_time)
 
         if assignment_status == "render":
-            return self.render("assignment.html", courses=courses, assignments=assignments, exercises=self.content.get_exercises(course, assignment, False), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, start_time=user_start_time, user_info=self.get_user_info())
+            return self.render("assignment.html", courses=courses, assignments=assignments, exercises=self.content.get_exercises(course, assignment, False), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, start_time=user_start_time, user_start_time=user_start_time, user_info=self.get_user_info())
         else:
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.get_user_info())

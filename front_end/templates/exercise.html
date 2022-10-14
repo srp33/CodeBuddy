@@ -68,9 +68,9 @@
 
                             if (t.total <= 0) {
                                 clearInterval(timeinterval);
-                                hoursSpan.innerHTML = "0";
-                                minutesSpan.innerHTML = "00";
-                                secondsSpan.innerHTML = "00";
+                                hoursSpan.innerHTML = '00';
+                                minutesSpan.innerHTML = '00';
+                                secondsSpan.innerHTML = '00';
 
                                 window.location.replace("/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
                             }

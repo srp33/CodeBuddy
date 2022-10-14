@@ -49,15 +49,15 @@
 
                         function updateClock(){
                             const t = getTimeRemaining(deadline);
-                            hoursSpan.innerHTML = t.hours;
-                            minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
-                            secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+                            hoursSpan.innerHTML = ('00' + t.hours).slice(-2);
+                            minutesSpan.innerHTML = ('00' + t.minutes).slice(-2);
+                            secondsSpan.innerHTML = ('00' + t.seconds).slice(-2);
 
                             if (t.total <= 0) {
                                 clearInterval(timeinterval);
-                                hoursSpan.innerHTML = 0;
-                                minutesSpan.innerHTML = 0;
-                                secondsSpan.innerHTML = 0;
+                                hoursSpan.innerHTML = '00';
+                                minutesSpan.innerHTML = '00';
+                                secondsSpan.innerHTML = '00';
                             }
                         }
 
@@ -122,7 +122,13 @@
                         {% for exercise in exercise_statuses %}
                             <tr>
                                 <td>
-                                    <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a>
+                                    {% if not assignment_details["has_timer"] or user_start_time %}
+                                        <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">
+                                    {% end %}
+                                            {{ exercise[1]["title"] }}
+                                    {% if not assignment_details["has_timer"] or user_start_time %}
+                                        </a>
+                                    {% end %}
                                     
                                     {% if exercise[1]["enable_pair_programming"] %}
                                     <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>

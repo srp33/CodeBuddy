@@ -86,13 +86,17 @@ class EditAssignmentHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 100 characters."
                     else:
                         if assignment_details["start_date"] and assignment_details["due_date"] and assignment_details["start_date"] > assignment_details["due_date"]:
-                            result = "Error: The start date must be earlier than the due date."
+                            reslt = "Error: The start date must be earlier than the due date."
                         else:
-                            #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
-                            #else:
-                            #self.content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
-                            self.content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, dt.datetime.utcnow(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["allowed_ip_addresses"])
-                            assignment = self.content.save_assignment(assignment_basics, assignment_details)
+                            if assignment_details["has_timer"] and assignment_details["hour_timer"] == 0 and assignment_details["minute_timer"] == 0:
+                                result = "Error: A timer must be longer than zero minutes."
+                            else:
+                                self.content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, dt.datetime.utcnow(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["allowed_ip_addresses"])
+                                assignment = self.content.save_assignment(assignment_basics, assignment_details)
+
+                                #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
+                                #else:
+                                #self.content.specify_assignment_basics(assignment_basics, assignment_basics["title"], assignment_basics["visible"])
 
             percentage_options = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
             hour_options = list(range(13))
