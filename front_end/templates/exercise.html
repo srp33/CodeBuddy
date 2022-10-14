@@ -357,12 +357,16 @@
                    editor.setKeyboardHandler("ace/keyboard/vim");
                 {% end %}
 
-                {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
-                    editor.setOptions({
-                        enableBasicAutocompletion: false,
-                        enableSnippets: true,
-                        enableLiveAutocompletion: true
-                    });
+                {% if exercise_details["back_end"] == "not_code" %}
+                    editor.session.setUseWrapMode(true);
+                {% else %}
+                    {% if user_info["use_auto_complete"] %}
+                        editor.setOptions({
+                            enableBasicAutocompletion: false,
+                            enableSnippets: true,
+                            enableLiveAutocompletion: true
+                        });
+                    {% end %}
                 {% end %}
 
                 editor.focus();
