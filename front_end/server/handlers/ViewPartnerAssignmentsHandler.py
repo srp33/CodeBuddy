@@ -13,6 +13,6 @@ class ViewPairProgrammingAssignmentsHandler(BaseUserHandler):
                         user_info=user_info)
         else:
             try:
-                self.render("view_pp.html", student_pairs=self.content.get_student_pairs(course, user_info['name']), courses=self.get_courses(), assignments=self.content.get_assignments(course, False), course_basics=self.content.get_course_basics(course), course_details=self.content.get_course_details(course, True), curr_datetime=dt.datetime.now(), user_info=self.get_user_info(),)
+                self.render("view_pp.html", student_pairs=self.content.get_student_pairs(course, user_info['name']), courses=self.get_courses(), assignments=self.content.get_assignments(course, False), course_basics=self.content.get_course_basics(course), course_details=self.content.get_course_details(course, True), curr_datetime=dt.datetime.utcnow(), user_info=self.get_user_info(),)
             except Exception as inst:
                 render_error(self, traceback.format_exc())

@@ -19,7 +19,7 @@ class SubmitHelpRequestHandler(BaseUserHandler):
                 text_output, jpg_output, tests = exec_code(self.settings_dict, code, exercise_details, request=None)
                 text_output = format_output_as_html(text_output)
 
-                self.content.save_help_request(course, assignment, exercise, user_id, code, text_output, jpg_output, student_comment, dt.datetime.now())
+                self.content.save_help_request(course, assignment, exercise, user_id, code, text_output, jpg_output, student_comment, dt.datetime.utcnow())
 
         except Exception as inst:
             render_error(self, traceback.format_exc())

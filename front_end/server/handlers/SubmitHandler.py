@@ -11,7 +11,6 @@ class SubmitHandler(BaseUserHandler):
             date = parser.parse(self.get_body_argument("date"))
             partner_id = self.get_body_argument("partner_id", default=None)
 
-            exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.content.get_exercise_details(course, assignment, exercise)
             assignment_details = self.content.get_assignment_details(course, assignment)
             num_submissions = self.content.get_num_submissions(course, assignment, exercise, user_id)
@@ -29,9 +28,6 @@ class SubmitHandler(BaseUserHandler):
 
                 if partner_id:
                     self.content.save_submission(course, assignment, exercise, partner_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], user_id)
-
-#TODO: Reenable this?
-#            self.content.delete_presubmission(course, assignment, exercise, user_id)
 
             #TODO: Combine these into fewer database calls.
             exercise_score = self.content.get_exercise_score(course, assignment, exercise, user_id)

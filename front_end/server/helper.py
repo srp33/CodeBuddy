@@ -1,8 +1,7 @@
 import base64
 from datetime import datetime
+from datetime import timedelta
 import difflib
-import glob
-import hashlib
 import html
 from imgcompare import *
 import json
@@ -14,14 +13,11 @@ import random
 import re
 import requests
 from requests.exceptions import *
-import shutil
 import stat
 import string
 import subprocess
-import sys
 import time
 from tornado.web import RequestHandler
-import uuid
 import yaml
 from yaml import load
 from yaml import Loader
@@ -309,16 +305,13 @@ def get_list_of_dates():
     for i in range(1, 32):
         days.append("{0:02d}".format(i))
 
-    dateTimeObj = datetime.now()
+    dateTimeObj = datetime.utcnow()
     currYear = str(dateTimeObj.year)
     yearAbrev = int(currYear)
     for i in range(2018, yearAbrev+1):
         years.append(str(i))
 
     return years, months, days
-
-def convert_string_to_date(s):
-    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f")
 
 def get_client_ip_address(request):
     return request.headers.get("X-Real-IP") or \
@@ -418,3 +411,24 @@ def log_page_access(handler, additional_message=None):
         logging_message = f"{logging_message}\t{additional_message}"
 
     logging.info(logging_message)
+
+def get_assignment_status(handler, course, assignment_details, user_start_time):
+    client_ip = get_client_ip_address(handler.request)
+    curr_datetime = datetime.utcnow()
+
+    if assignment_details["has_timer"] and user_start_time != None:
+        deadline = user_start_time + timedelta(hours = assignment_details["hour_timer"], minutes = assignment_details["minute_timer"])
+
+        if deadline < curr_datetime:
+            return "timer_has_expired"
+
+    if assignment_details["allowed_ip_addresses"] and client_ip not in assignment_details["allowed_ip_addresses"]:
+        return "restricted_ip"
+    elif assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
+        return "start_date"
+    elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
+        return "due_date"
+    elif handler.get_user_info()["user_id"] not in list(map(lambda x: x[0], handler.content.get_registered_students(course))):
+        return "not_registered_for_course"
+
+    return "render"

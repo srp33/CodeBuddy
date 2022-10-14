@@ -3,25 +3,32 @@
         <h2>{{ assignment_basics["title"] }}</h2>
 
         {% if assignment_basics["exists"] %}
+            {% if error == "timer_has_expired" %}
+                <p>This is a timed assignment. Either you have not started the assignment or your time has expired.</p>
+            {% elif error == "start_date" %}
+                <p>This assignment opens on <span id="start_date"></span>.</p>
 
-            {% if error == "start" %}
-                <p>This assignment will open on {{ start_date }}.</p>
-            {% elif error == "due" %}
-                <p>This assignment closed on {{ due_date }}.</p>
+                <script>
+                    var start_date = new Date("{{ assignment_details['start_date'] }}");
+                    start_date.setMinutes(start_date.getMinutes() - start_date.getTimezoneOffset());
+                    document.getElementById("start_date").innerHTML = start_date.toLocaleString();
+                </script>
+            {% elif error == "due_date" %}
+                <p>This assignment closed on <span id="due_date"></span>.</p>
+
+                <script>
+                    var due_date = new Date("{{ assignment_details['due_date'] }}");
+                    due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+                    document.getElementById("due_date").innerHTML = due_date.toLocaleString();
+                </script>
             {% elif error == "restricted_ip" %}
                 <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses; please consult the instructor for additional instructions.</p>
             {% elif error == "not_registered_for_course" %}
-                <p>This assignment can only be viewed by students enrolled in the class.</p>
+                <p>This assignment can only be viewed by students enrolled in the course.</p>
             {% end %}
-
         {% else %}
-            {% if error == "not_registered_for_course" %}
-            <p>This course can only be viewed by students enrolled in the class.</p>
-            {% else %}
             <p>This assignment does not exist.</p>
-            {% end %}
         {% end %}
-
     {% else %}
         <p>This course does not exist.</p>
     {% end %}

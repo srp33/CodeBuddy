@@ -122,11 +122,12 @@
         </div>
 
         <div id="allow_late"
-        {% if assignment_details["due_date"] %}
-            class="visible"
-        {% else %}
-            class="invisible"
-        {% end %}>
+            {% if assignment_details["due_date"] %}
+                class="visible"
+            {% else %}
+                class="invisible"
+            {% end %}
+        >
             <p class="top-space"><strong>Allow late submissions: </strong>
                 <div class="select is-grey">
                     <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" class="edit-select">
@@ -143,12 +144,13 @@
         </div>
 
         <div id="late_percent"
-        {% if assignment_details["allow_late"] %}
-            class="visible"
-        {% else %}
-            class="invisible"
-        {% end %}>
-            <p><strong>Select percentage of points students can earn back with late submissions: </strong>
+            {% if assignment_details["allow_late"] %}
+                class="visible"
+            {% else %}
+                class="invisible"
+            {% end %}
+        >
+            <p class="top-space"><strong>Select percentage of points students can earn back with late submissions: </strong>
                 <div class="select is-grey">
                     <select id="late_percent_select" name="late_percent_select" class="edit-select">
                     {% for percent in percentage_options %}
@@ -164,12 +166,13 @@
         </div>
 
         <div id="view_answer_late"
-        {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
-            class="invisible"
-        {% else %}
-            class="visible"
-        {% end %}>
-            <p><strong>Allow students to view the answer after the due date has passed: </strong>
+            {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
+                class="invisible"
+            {% else %}
+                class="visible"
+            {% end %}
+        >
+            <p class="top-space"><strong>Allow students to view the answer after the due date has passed: </strong>
                 <div class="select is-grey">
                     <select id="view_late_select" name="view_late_select" class="edit-select">
                     {% if assignment_details["view_answer_late"] %}

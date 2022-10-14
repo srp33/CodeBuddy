@@ -33,7 +33,7 @@ class EditExerciseHandler(BaseUserHandler):
                 exercise_basics["title"] = exercise_details.pop("title")
                 exercise_basics["visible"] = exercise_details.pop("visible")
 
-                current_time = dt.datetime.now()
+                current_time = dt.datetime.utcnow()
                 if exercise_basics["exists"]:
                     exercise_details["date_created"] = self.content.get_exercise_details(course, assignment, exercise)["date_created"]
                 else:

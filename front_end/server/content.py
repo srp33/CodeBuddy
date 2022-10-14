@@ -225,8 +225,6 @@ class Content:
         print(f"Done updating database to version {version}")
 
     def set_user_assignment_start_time(self, course_id, assignment_id, user_id, start_time):
-        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S %Z")
-
         sql = '''INSERT INTO user_assignment_starts (course_id, assignment_id, user_id, start_time)
                  VALUES (?, ?, ?, ?)'''
 
@@ -241,10 +239,10 @@ class Content:
 
         row = self.fetchone(sql, (course_id, assignment_id, user_id,))
         if row:
-            return row["start_time"].strftime("%a, %d %b %Y %H:%M:%S %Z")
+            return row["start_time"]
 
-    def get_all_user_assignment_start_times(self, course_id, assignment_id):
-        start_times = {}
+    def get_all_user_assignment_expired(self, course_id, assignment_id):
+        user_dict = {}
 
         sql = '''SELECT user_id, start_time
                  FROM user_assignment_starts
@@ -252,24 +250,25 @@ class Content:
                    AND assignment_id = ?'''
 
         for row in self.fetchall(sql, (course_id, assignment_id,)):
-            start_time = datetime.strftime(row["start_time"], "%a, %d %b %Y %H:%M:%S ")
+            #TODO: It is not efficient to hit the database each time through this loop.
+            start_time = datetime.strftime(row["start_time"], "%a, %d %b %Y %H:%M:%S %Z")
             timer_ended = self.has_user_assignment_start_timer_ended(course_id, assignment_id, start_time)
-            time_info = {"start_time": row["start_time"], "timer_ended": timer_ended}
-            start_times[row["user_id"]] = time_info
+            user_dict[row["user_id"]] = timer_ended
 
-        return start_times
+        return user_dict
 
     def has_user_assignment_start_timer_ended(self, course_id, assignment_id, start_time):
         if not start_time:
             return False
 
-        curr_time = datetime.now()
+        curr_time = datetime.utcnow()
         start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ")
 
         sql = '''SELECT hour_timer, minute_timer
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
+
         row = self.fetchone(sql, (course_id, assignment_id,))
 
         if row:
@@ -1047,8 +1046,9 @@ class Content:
 
     def calc_exercise_score(self, assignment_details, passed):
         score = 0
+
         if passed:
-            if assignment_details["due_date"] and assignment_details["due_date"] < datetime.now():
+            if assignment_details["due_date"] and assignment_details["due_date"] < datetime.utcnow():
                 if assignment_details["allow_late"]:
                     score = 100 * assignment_details["late_percent"]
             else:
@@ -1572,7 +1572,7 @@ class Content:
         return course_dict
 
     def get_assignment_details(self, course, assignment, format_output=False):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "allowed_ip_addresses": None}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "allowed_ip_addresses": None, "due_date_passed": None}
 
         if not assignment:
             return null_assignment
@@ -1587,7 +1587,11 @@ class Content:
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "due_date_passed": None}
+
+        curr_datetime = datetime.utcnow()
+        if assignment_dict["due_date"]:
+            assignment_dict["due_date_passed"] = curr_datetime > assignment_dict["due_date"]
 
         if format_output:
             assignment_dict["introduction"] = convert_markdown_to_html(convert_html_to_markdown(assignment_dict["introduction"])) # Removes html markup from instructions before converting markdown to html
@@ -2387,7 +2391,7 @@ class Content:
 
     def get_student_pairs(self, course_id, user_name):
         # Uses the week of the year as a seed.
-        seed = datetime.now().isocalendar().week
+        seed = datetime.utcnow().isocalendar().week
 
         # Gets student names registered in a course (will add obscured emails to the end of the name in the case of duplicate names)
         students = list(self.get_partner_info(course_id, '', True).keys())

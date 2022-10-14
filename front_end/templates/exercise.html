@@ -2,82 +2,111 @@
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
             <link rel="stylesheet" href="/static/css/modal.css">
-            <link rel="stylesheet" href="/static/css/timer.css">
 
-            <script>
-                function startTimer() {
-                    start_time_js = new Date("{{ start_time }}");
-                    start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
+            {% if assignment_details["has_timer"] %}
+                <link rel="stylesheet" href="/static/css/timer.css">
 
-                    var deadline = start_time_js;
-                    deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
-                    deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
+                <script>
+                    function startTimer() {
+                        start_time_js = new Date("{{ start_time }}");
+                        start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
 
-                    initializeClock('clockdiv', deadline);
-                }
+                        var deadline = start_time_js;
+                        deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
+                        deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
 
-                function getTimeRemaining(endtime){
-                    const total = Date.parse(endtime) - Date.parse(new Date());
-                    const seconds = Math.floor( (total/1000) % 60 );
-                    const minutes = Math.floor( (total/1000/60) % 60 );
-                    const hours = Math.floor( (total/(1000*60*60)) % 24 );
-
-                    return {
-                        total,
-                        hours,
-                        minutes,
-                        seconds
-                    };
-                }
-
-                function initializeClock(id, endtime) {
-                    const clock = document.getElementById(id);
-                    const hoursSpan = clock.querySelector('.hours');
-                    const minutesSpan = clock.querySelector('.minutes');
-                    const secondsSpan = clock.querySelector('.seconds');
-
-                    function updateClock(){
-                        const t = getTimeRemaining(endtime);
-                        hoursSpan.innerHTML = t.hours;
-                        minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
-                        secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
-
-                        if (t.total == 120000) {
-                            var modal = document.getElementById("time_modal");
-                            var span = document.getElementsByClassName("close")[0];
-                            modal.style.display = "block";
-                            span.onclick = function() {
-                                modal.style.display = "none";
-                            }
-                            window.onclick = function(event) {
-                                if (event.target == modal) {
-                                    modal.style.display = "none";
-                                }
-                            }
-                        }
-
-                        if (t.total <= 0) {
-                            clearInterval(timeinterval);
-                            hoursSpan.innerHTML = 0;
-                            minutesSpan.innerHTML = 0;
-                            secondsSpan.innerHTML = 0;
-
-                            {% if not (assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime) %}
-                                window.location.replace("/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
-                            {% end %}
-                        }
+                        initializeClock('clockdiv', deadline);
                     }
 
-                    updateClock(); // run function once at first to avoid delay
-                    var timeinterval = setInterval(updateClock,1000);
-                }
-            </script>
+                    function getTimeRemaining(endtime){
+                        const total = Date.parse(endtime) - Date.parse(new Date());
+                        const seconds = Math.floor( (total/1000) % 60 );
+                        const minutes = Math.floor( (total/1000/60) % 60 );
+                        const hours = Math.floor( (total/(1000*60*60)) % 24 );
 
-            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
+                        return {
+                            total,
+                            hours,
+                            minutes,
+                            seconds
+                        };
+                    }
+
+                    function initializeClock(id, endtime) {
+                        const clock = document.getElementById(id);
+                        const hoursSpan = clock.querySelector('.hours');
+                        const minutesSpan = clock.querySelector('.minutes');
+                        const secondsSpan = clock.querySelector('.seconds');
+
+                        function updateClock(){
+                            const t = getTimeRemaining(endtime);
+                            hoursSpan.innerHTML = ('00' + t.hours).slice(-2);
+                            minutesSpan.innerHTML = ('00' + t.minutes).slice(-2);
+                            secondsSpan.innerHTML = ('00' + t.seconds).slice(-2);
+
+                            if (t.total == 120000) {
+                                var modal = document.getElementById("time_modal");
+                                var span = document.getElementsByClassName("close")[0];
+                                var okay_modal = document.getElementById("time_modal_okay_button");
+
+                                modal.style.display = "block";
+
+                                okay_modal.onclick = function() {
+                                    modal.style.display = "none";
+                                }
+
+                                span.onclick = function() {
+                                    modal.style.display = "none";
+                                }
+
+                                window.onclick = function(event) {
+                                    if (event.target == modal) {
+                                        modal.style.display = "none";
+                                    }
+                                }
+                            }
+
+                            if (t.total <= 0) {
+                                clearInterval(timeinterval);
+                                hoursSpan.innerHTML = "0";
+                                minutesSpan.innerHTML = "00";
+                                secondsSpan.innerHTML = "00";
+
+                                window.location.replace("/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
+                            }
+                        }
+
+                        updateClock(); // run function once at first to avoid delay
+                        var timeinterval = setInterval(updateClock, 1000);
+                    }
+                </script>
+            {% end %}
+
+            {% if assignment_details["has_timer"] %}
+                <div id="clockdiv">
+                    <div>
+                        <span class="hours"></span>
+                        <div class="smalltext">Hours</div>
+                    </div>
+                    <div>
+                        <span class="minutes"></span>
+                        <div class="smalltext">Minutes</div>
+                    </div>
+                    <div>
+                        <span class="seconds"></span>
+                        <div class="smalltext">Seconds</div>
+                    </div>
+                </div>
+                <br /><br />
+
+                <script>startTimer();</script>
+            {% end %}
+
+            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
                 <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
             {% end %}
 
-            {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
+            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
                 <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
             {% end %}
 
@@ -96,7 +125,6 @@
             {% end %}
 
             <div class="instructions">
-                <!--<h6>Instructions:</h6>-->
                 <div id="instructions">{{ exercise_details["instructions"] }}</div>
                 {% if exercise_basics["enable_pair_programming"] %}
                     <hr>
@@ -126,28 +154,6 @@
                 </div>
 
                 <div id="hint_text" class="is-hidden hint-text"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
-            {% end %}
-
-            <!--Here's the assignment timer.-->
-
-            {% if assignment_details["has_timer"] %}
-                {% if start_time %}
-                    <div id="clockdiv">
-                    <div>
-                        <span class="hours"></span>
-                        <div class="smalltext">Hours</div>
-                    </div>
-                    <div>
-                        <span class="minutes"></span>
-                        <div class="smalltext">Minutes</div>
-                    </div>
-                    <div>
-                        <span class="seconds"></span>
-                        <div class="smalltext">Seconds</div>
-                    </div>
-                    </div>
-                    <script>startTimer();</script>
-                {% end %}
             {% end %}
 
             <p class="top-space" id="user_code_area">
@@ -194,9 +200,19 @@
 
             <div id="max_submissions_message"></div>
 
-            {% if assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and assignment_details["allow_late"] == 0 and assignment_details["view_answer_late"] == 1 %}
-                <script>document.getElementById("submit_button").disabled = true;</script>
-                <div class='notification is-warning'><p>Click <a style='color:#2166ac' href="/view_answer/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.</p></div>
+            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] %}
+                {% if not assignment_details["allow_late"] %}
+                    <script>
+                        document.getElementById("submit_button").disabled = true;
+                    </script>
+                {% end %}
+
+                {% if assignment_details["view_answer_late"] %}
+                    <div class='notification is-warning'>
+                        <p>Click <a style='color:#2166ac' href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
+                        </p>
+                    </div>
+                {% end %}
             {% end %}
 
             <p id="test_outputs"></p>
@@ -265,6 +281,7 @@
                 <div class="modal-content">
                     <span class="close">&times;</span>
                     <p>You have less than 2 minutes remaining. If you are still working, submit a solution to avoid losing your work.</p>
+                    <p><button class="button is-dark" id="time_modal_okay_button">Okay</button></p>
                 </div>
             </div>
 
@@ -369,7 +386,7 @@
                     if (submitButton != null) {
                         submitButton.onclick = function() {
                             if (submitButton.disabled)
-                                showErrorMessage("You are not allowed to make a submission.");
+                                showErrorMessage("You are not allowed to make a submission because the due date has passed.");
                             else
                                 submit()
                         }

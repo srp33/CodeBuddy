@@ -26,11 +26,7 @@
                 <tbody>
                 {% for assignment in assignment_statuses %}
                     <tr>
-                        {% if assignment[1]["start_date"] and assignment[1]["start_date"] > curr_datetime %}
-                            <td>{{ assignment[1]["title"] }}</td>
-                        {% else %}
-                            <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
-                        {% end %}
+                        <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
                         {% if assignment[1]["start_date"] %}
                             <td>
                                 <script>

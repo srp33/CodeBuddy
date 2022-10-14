@@ -7,7 +7,7 @@ class DownloadCourseScoresHandler(BaseUserHandler):
 
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
-                the_date = datetime.now().strftime("%Yy_%mM_%dd_%Hh_%Mm_%Ss")
+                the_date = datetime.utcnow().strftime("%Yy_%mM_%dd_%Hh_%Mm_%Ss")
                 out_file_prefix = re.sub(r"\W", "_", course_basics['title'])
                 csv_text = self.content.create_course_scores_text(course)
 

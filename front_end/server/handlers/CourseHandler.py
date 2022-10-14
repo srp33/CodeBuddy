@@ -19,6 +19,6 @@ class CourseHandler(BaseUserHandler):
                         user_info=user_info)
         else:
             try:
-                self.render("course.html", courses=self.get_courses(False), assignments=self.content.get_assignments(course, False), assignment_statuses=self.content.get_assignment_statuses(course, self.get_user_id()), course_basics=self.content.get_course_basics(course), course_details=self.content.get_course_details(course, True), curr_datetime=dt.datetime.now(), user_info=self.get_user_info(), has_pair_programming=self.content.course_has_pair_programming(course))
+                self.render("course.html", courses=self.get_courses(False), assignments=self.content.get_assignments(course, False), assignment_statuses=self.content.get_assignment_statuses(course, self.get_user_id()), course_basics=self.content.get_course_basics(course), course_details=self.content.get_course_details(course, True), curr_datetime=dt.datetime.utcnow(), user_info=self.get_user_info(), has_pair_programming=self.content.course_has_pair_programming(course))
             except Exception as inst:
                 render_error(self, traceback.format_exc())

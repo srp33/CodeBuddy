@@ -4,152 +4,152 @@
     {% if assignment_basics["exists"] %}
         <p>{{ assignment_details["introduction"] }}</p>
 
-        {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["view_answer_late"] %}
+        {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
             <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
         {% end %}
-        {% if assignment_details["due_date"] and curr_datetime > assignment_details["due_date"] and assignment_details["allow_late"] %}
+
+        {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
             <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
-            <br />
         {% end %}
 
         {% if len(exercise_statuses) > 0 %}
+            {% if assignment_details["has_timer"] %}
+                <link rel="stylesheet" href="/static/css/timer.css">
 
-            <link rel="stylesheet" href="/static/css/timer.css">
+                <script>
+                    const start_time = new Date('{{ start_time }}');
+                    start_time.setMinutes(start_time.getMinutes() - start_time.getTimezoneOffset());
 
-            <script>
-                function showTimer() {
-                    var timer_div = document.getElementById("clockdiv");
-                    timer_div.style.display = "inline";
-                }
-
-                function startTimer() {
-                    var start_time_js = new Date();
-                    {% if start_time %}
-                        start_time_js = new Date("{{ start_time }}");
-                    {% end %}
-
-                    document.getElementById("start_time").innerHTML = start_time_js.toUTCString();
-                    start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
-                    var deadline = start_time_js;
+                    const deadline = new Date('{{ start_time }}');
+                    deadline.setMinutes(start_time.getMinutes() - start_time.getTimezoneOffset());
                     deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
                     deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
-                    showTimer();
-                    initializeClock('clockdiv', deadline);
-                }
 
-                function getTimeRemaining(endtime){
-                    const total = Date.parse(endtime) - Date.parse(new Date());
-                    const seconds = Math.floor( (total/1000) % 60 );
-                    const minutes = Math.floor( (total/1000/60) % 60 );
-                    const hours = Math.floor( (total/(1000*60*60)) % 24 );
+                    function isTimerExpired() {
+                        return new Date() > deadline;
+                    }
 
-                    return {
-                        total,
-                        hours,
-                        minutes,
-                        seconds
-                    };
-                }
+                    function startTimerIfNotExpired() {
+                        if (isTimerExpired()) {
+                            document.getElementById("timer_expired_message").innerHTML = "<font color='red'><b>This assignment is timed, and the time has expired.</font></b>";
+                        }
+                        else {
+                            var timer_div = document.getElementById("clockdiv");
+                            timer_div.style.display = "inline";
 
-                function initializeClock(id, endtime) {
-                    const clock = document.getElementById(id);
-                    const hoursSpan = clock.querySelector('.hours');
-                    const minutesSpan = clock.querySelector('.minutes');
-                    const secondsSpan = clock.querySelector('.seconds');
-
-                    function updateClock(){
-                        const t = getTimeRemaining(endtime);
-                        hoursSpan.innerHTML = t.hours;
-                        minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
-                        secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
-
-                        if (t.total <= 0) {
-                            clearInterval(timeinterval);
-                            hoursSpan.innerHTML = 0;
-                            minutesSpan.innerHTML = 0;
-                            secondsSpan.innerHTML = 0;
+                            initializeClock(deadline);
                         }
                     }
 
-                    updateClock(); // run function once at first to avoid delay
-                    var timeinterval = setInterval(updateClock,1000);
-                }
-            </script>
+                    function initializeClock(deadline) {
+                        const clock = document.getElementById('clockdiv');
+                        const hoursSpan = clock.querySelector('.hours');
+                        const minutesSpan = clock.querySelector('.minutes');
+                        const secondsSpan = clock.querySelector('.seconds');
 
-            <form method="post" action="/assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
-            <div id="clockdiv" style="display: none;">
-                <div>
-                    <span class="hours"></span>
-                    <div class="smalltext">Hours</div>
-                </div>
-                <div>
-                    <span class="minutes"></span>
-                    <div class="smalltext">Minutes</div>
-                </div>
-                <div>
-                    <span class="seconds"></span>
-                    <div class="smalltext">Seconds</div>
-                </div>
-            </div>
+                        function updateClock(){
+                            const t = getTimeRemaining(deadline);
+                            hoursSpan.innerHTML = t.hours;
+                            minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+                            secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
 
-            <textarea name="start_time" id="start_time" class="invisible"></textarea>
+                            if (t.total <= 0) {
+                                clearInterval(timeinterval);
+                                hoursSpan.innerHTML = 0;
+                                minutesSpan.innerHTML = 0;
+                                secondsSpan.innerHTML = 0;
+                            }
+                        }
 
-            {% if assignment_details["has_timer"] %}
-                {% if not start_time %}
-                    <button class="button is-primary is-medium is-rounded" onclick="startTimer()" style="margin-bottom: 20px;" type="submit">Begin Assignment</button>
-                {% else %}
-                    <script>startTimer();</script>
-                {% end %}
+                        updateClock(); // run function once at first to avoid delay
+                        var timeinterval = setInterval(updateClock, 1000);
+                    }
+
+                    function getTimeRemaining(deadline){
+                        const total = deadline - new Date();
+                        const seconds = Math.floor( (total/1000) % 60 );
+                        const minutes = Math.floor( (total/1000/60) % 60 );
+                        const hours = Math.floor( (total/(1000*60*60)) % 24 );
+
+                        return {
+                            total,
+                            hours,
+                            minutes,
+                            seconds
+                        };
+                    }
+                </script>
             {% end %}
 
-            <div class="table-container">
-                <table class="table is-striped" id="assignment_table">
-                    <thead>
-                        <tr>
-                            <th>Exercise</th>
-                            <th># Submissions</th>
-                            <th>Score</th>
-                            <th>Completed</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for exercise in exercise_statuses %}
-                        <tr>
-                            {% if assignment_details["has_timer"] and not start_time and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
-                                <td>{{ exercise[1]["title"] }}
-                                {% if exercise[1]["enable_pair_programming"] %}
-                                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
-                                {% end %}
-                                </td>
-                            {% else %}
-                                <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a>
-                                {% if exercise[1]["enable_pair_programming"] %}
-                                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
-                                {% end %}
-                                </td>
-                            {% end %}
-                            <td>{{ exercise[1]["num_submissions"] }}</td>
-                            <td>{{ exercise[1]["score"] }}%</td>
-                            {% if exercise[1]["passed"] %}
-                                <td><label>
-                                    <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
-                                </label>Completed</td>
-                            {% else %}
-                                {% if exercise[1]["in_progress"] %}
-                                    <td><label>
-                                        <img src="/static/inprogress.png" alt="In progress" class="table-icon"/>
-                                    </label>In progress</td>
-                                {% else %}
-                                    <td><label>
-                                        <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
-                                    </label>Not started</td>
-                                {% end %}
-                            {% end %}
-                        </tr>
+            <form method="post" action="/assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
+                <div id="clockdiv" style="display: none;">
+                    <div>
+                        <span class="hours"></span>
+                        <div class="smalltext">Hours</div>
+                    </div>
+                    <div>
+                        <span class="minutes"></span>
+                        <div class="smalltext">Minutes</div>
+                    </div>
+                    <div>
+                        <span class="seconds"></span>
+                        <div class="smalltext">Seconds</div>
+                    </div>
+                </div>
+
+                {% if assignment_details["has_timer"] %}
+                    {% if start_time %}
+                        <p id="timer_expired_message"></p>
+                        <script>
+                            startTimerIfNotExpired();
+                        </script>
+                    {% else %}
+                        <button class="button is-primary is-medium is-rounded" style="margin-bottom: 20px;" type="submit">Begin Assignment</button>
                     {% end %}
-                    </tbody>
-                </table>
-            </div>
+                {% end %}
+
+                <div class="table-container">
+                    <table class="table is-striped" id="assignment_table">
+                        <thead>
+                            <tr>
+                                <th>Exercise</th>
+                                <th># Submissions</th>
+                                <th>Score</th>
+                                <th>Completed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for exercise in exercise_statuses %}
+                            <tr>
+                                <td>
+                                    <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a>
+                                    
+                                    {% if exercise[1]["enable_pair_programming"] %}
+                                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
+                                    {% end %}
+                                </td>
+                                <td>{{ exercise[1]["num_submissions"] }}</td>
+                                <td>{{ exercise[1]["score"] }}%</td>
+                                {% if exercise[1]["passed"] %}
+                                    <td><label>
+                                        <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
+                                    </label>Completed</td>
+                                {% else %}
+                                    {% if exercise[1]["in_progress"] %}
+                                        <td><label>
+                                            <img src="/static/inprogress.png" alt="In progress" class="table-icon"/>
+                                        </label>In progress</td>
+                                    {% else %}
+                                        <td><label>
+                                            <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
+                                        </label>Not started</td>
+                                    {% end %}
+                                {% end %}
+                            </tr>
+                        {% end %}
+                        </tbody>
+                    </table>
+                </div>
             </form>
         {% end %}
     {% else %}

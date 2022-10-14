@@ -94,8 +94,8 @@
                                     </script>
                                 </td>
                                 {% if assignment_details["has_timer"] %}
-                                    {% if score[0] in start_times %}
-                                        {% if start_times[score[0]]["timer_ended"] %}
+                                    {% if score[0] in have_timers_expired %}
+                                        {% if have_timers_expired[score[0]] %}
                                             <td class="has-text-left">Timer ended <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
                                         {% else %}
                                             <td class="has-text-left">In progress <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>

@@ -54,7 +54,6 @@ cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_co
 cat header.html navbar_top.html navbar_bottom.html container_color.html error.html container_bottom.html footer.html > "$OUTPUT/error.html"
 cat header.html navbar_top.html navbar_bottom.html container_color.html permissions.html container_bottom.html footer.html > "$OUTPUT/permissions.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html unavailable_assignment.html container_bottom.html footer.html > "$OUTPUT/unavailable_assignment.html"
-cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html timer_error.html container_bottom.html footer.html > "$OUTPUT/timer_error.html"
 
 cat spa_header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html spa.html footer.html > "$OUTPUT/spa.html"
 
