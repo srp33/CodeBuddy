@@ -17,11 +17,13 @@ class ExerciseHandler(BaseUserHandler):
             user_start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_info()["user_id"])
 
             if not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
+                if assignment_details["has_timer"] and user_start_time == None:
+                    self.redirect(f"/assignment/{course}/{assignment}")
+
                 assignment_status = get_assignment_status(self, course, assignment_details, user_start_time)
 
                 if assignment_status != "render":
                     return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.get_user_info())
-                    #self.redirect(f"/assignment/{course}/{assignment}")
 
             exercises = self.content.get_exercises(course, assignment, show)
             exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
