@@ -141,8 +141,8 @@ export default class ExerciseApp extends LitElement {
 					value = presubmission
 				} else if (submissions?.length > 0) {
 					value = submissions[submissions.length - 1].code;
-				} else if (exercise_details?.initial_code) {
-					value = exercise_details.initial_code;
+				} else if (exercise_details?.starter_code) {
+					value = exercise_details.starter_code;
 				}
 				
 				const session = new ace.EditSession(value);

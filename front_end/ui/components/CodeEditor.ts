@@ -81,7 +81,10 @@ export default class CodeEditor extends LitElement {
 
 	public async setSession(session: ace.Ace.EditSession) {
 		if (!this.editor) {
-		await this.updateComplete;
+			await this.updateComplete;
+		}
+		if (exercise_details["back_end"] === "not_code") {
+			session.setUseWrapMode(true);
 		}
 		this.editor?.setSession(session);
 	}
