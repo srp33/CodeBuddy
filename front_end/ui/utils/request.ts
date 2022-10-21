@@ -7,18 +7,22 @@ export async function postFormData<T>(url: string, data: any): Promise<T> {
 		method: "POST",
 		body: formData,
 	});
-	if (Number(response.headers.get('Content-Length')) > 0) {
+	try {
 		return await response.json();
+	} catch (e) {
+		console.error(e);
+		return null as any;
 	}
-	return null as any;
 }
 
 export async function get<T>(url: string): Promise<T> {
 	const response = await fetch(url, {
 		method: "GET",
 	});
-	if (Number(response.headers.get('Content-Length')) > 0) {
+	try {
 		return await response.json();
+	} catch (e) {
+		console.error(e);
+		return null as any;
 	}
-	return null as any;
 }
