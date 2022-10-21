@@ -27,7 +27,7 @@ export async function submitCode(courseID: number, assignmentID: number, exercis
 
 export async function savePresubmission(courseID: number, assignmentID: number, exerciseID: number, userCode: string): Promise<void> {
 	let url = `/save_presubmission/${courseID}/${assignmentID}/${exerciseID}`;
-	await postFormData(url, {"user_code": userCode});
+	await postFormData(url, {"user_code": userCode}, false);
 }
 
 export async function getPartnerID(courseID: number, name: string): Promise<string> {
