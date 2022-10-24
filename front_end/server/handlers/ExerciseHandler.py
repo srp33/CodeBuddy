@@ -45,7 +45,15 @@ class ExerciseHandler(BaseUserHandler):
             tests = exercise_details["tests"]
             submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
 
-            format_exercise_details(exercise_details, exercise_basics, self.get_user_info()["name"], self.content, next_prev_exercises, format_tests=(not self.get_user_info()["use_studio_mode"]))
+            mode = self.get_query_argument("mode", default=None)
+
+            studio_mode = self.get_user_info()["use_studio_mode"]
+            if mode == "studio":
+                studio_mode = True
+            elif mode == "classic":
+                studio_mode = False
+
+            format_exercise_details(exercise_details, exercise_basics, self.get_user_info()["name"], self.content, next_prev_exercises, format_tests=(not studio_mode))
 
             args = {
                     "users": user_list,
@@ -79,14 +87,6 @@ class ExerciseHandler(BaseUserHandler):
             }
                     # "help_request": help_request,
                     # "same_suggestion": same_suggestion,
-
-            mode = self.get_query_argument("mode", default=None)
-
-            studio_mode = self.get_user_info()["use_studio_mode"]
-            if mode == "studio":
-                studio_mode = True
-            elif mode == "classic":
-                studio_mode = False
 
             if studio_mode:
                 args['presubmission'] = self.content.get_presubmission(course, assignment, exercise, self.get_user_id())
