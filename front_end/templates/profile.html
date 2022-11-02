@@ -8,24 +8,13 @@
                     class="is-active"
                 {% end %}
                 >Courses</a></li>
-                {% if is_administrator or is_instructor %}
-                <li><a href="/profile/consent_forms/{{ user_info['user_id'] }}"
-                {% if page == "consent_forms" %}
-                    class="is-active"
-                {% end %}
-                >Student consent forms</a></li>
-                {% elif any(list(filter(lambda x: x[1]["consent_text"] != "", registered_courses))) %}
-                <li><a href="/profile/consent_forms/{{ user_info['user_id'] }}"
-                {% if page == "consent_forms" %}
-                    class="is-active"
-                {% end %}
-                >My consent forms</a></li>
-                {% end %}
+
                 <li><a href="/profile/personal_info/{{ user_info['user_id'] }}"
                 {% if page == "personal_info" %}
                     class="is-active"
                 {% end %}
                 >Personal info</a></li>
+
                 {% if is_administrator %}
                     <li><a href="/profile/admin/{{ user_info['user_id'] }}"
                     {% if page == "admin" %}
@@ -33,6 +22,7 @@
                     {% end %}
                 >Admin menu</a></li>
                 {% end %}
+
                 {% if is_instructor or is_administrator %}
                     <li><a href="/profile/instructor_select_course/{{ user_info['user_id'] }}"
                     {% if page == "instructor" %}
@@ -41,31 +31,16 @@
                 >Instructor menu</a></li>
                 {% end %}
             </ul>
-            <p class="menu-label">Tools</p>
-            <ul class="menu-list">
             {% if is_administrator or is_instructor %}
-                <li><a href="/profile/manage_users"
-                {% if page == "manage_users" %}
-                    class="is-active"
-                {% end %}
-                >Manage users</a></li>
+                <p class="menu-label">Tools</p>
+                <ul class="menu-list">
+                    <li><a href="/profile/manage_users"
+                    {% if page == "manage_users" %}
+                        class="is-active"
+                    {% end %}
+                    >Manage users</a></li>
+                </ul>
             {% end %}
-<!--
-            {% if is_administrator or is_instructor or is_assistant %}
-                <li><a href="/profile/help_requests"
-                {% if page == "help_requests" %}
-                    class="is-active"
-                {% end %}
-                >Help requests</a></li>
-            {% else %}
-                <li><a href="/profile/student_help_requests"
-                {% if page == "help_requests" %}
-                    class="is-active"
-                {% end %}
-                >Help requests</a></li>
-            {% end %}
--->
-            </ul>
             <p class="menu-label">Settings</p>
             <ul class="menu-list">
                 <li><a href="/profile/preferences/{{ user_info['user_id'] }}"

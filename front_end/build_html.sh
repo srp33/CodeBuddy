@@ -22,7 +22,6 @@ done
 cat test.html > "$OUTPUT/test.html"
 cat header.html navbar_top.html navbar_bottom.html home.html footer.html > "$OUTPUT/home.html"
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_courses.html profile_bottom.html footer.html > "$OUTPUT/profile_courses.html"
-cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html consent_forms.html profile_bottom.html footer.html > "$OUTPUT/consent_forms.html"
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_personal_info.html profile_bottom.html footer.html > "$OUTPUT/profile_personal_info.html"
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_admin.html profile_bottom.html footer.html > "$OUTPUT/profile_admin.html"
 cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_instructor_select_course.html profile_bottom.html footer.html > "$OUTPUT/profile_instructor_select_course.html"
@@ -54,6 +53,7 @@ cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_co
 cat header.html navbar_top.html navbar_bottom.html container_color.html error.html container_bottom.html footer.html > "$OUTPUT/error.html"
 cat header.html navbar_top.html navbar_bottom.html container_color.html permissions.html container_bottom.html footer.html > "$OUTPUT/permissions.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html unavailable_assignment.html container_bottom.html footer.html > "$OUTPUT/unavailable_assignment.html"
+cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html unavailable_course.html container_bottom.html footer.html > "$OUTPUT/unavailable_course.html"
 
 cat spa_header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html spa.html footer.html > "$OUTPUT/spa.html"
 

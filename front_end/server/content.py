@@ -477,14 +477,14 @@ class Content:
 
     def get_courses_for_user(self, user_id):
         courses = []
-        sql = '''SELECT p.course_id, c.title, c.consent_text
+        sql = '''SELECT p.course_id, c.title
                  FROM permissions p
                  INNER JOIN courses c
                    ON p.course_id = c.course_id
                  WHERE user_id = ?'''
 
         for course in self.fetchall(sql, (user_id,)):
-            course_basics = {"id": course["course_id"], "title": course["title"], "consent_text": course["consent_text"]}
+            course_basics = {"id": course["course_id"], "title": course["title"]}
             courses.append([course["course_id"], course_basics])
 
         return courses
@@ -519,14 +519,13 @@ class Content:
     def get_courses(self, show_hidden=True):
         courses = []
 
-        sql = '''SELECT course_id, title, visible, introduction, consent_text
+        sql = '''SELECT course_id, title, visible, introduction
                  FROM courses
                  ORDER BY title'''
 
         for course in self.fetchall(sql):
             if course["visible"] or show_hidden:
-                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": course["introduction"], "exists": True, "consent_text": course["consent_text"]}
-                course_basics["consent_text"] = convert_markdown_to_html(course_basics["consent_text"])
+                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": course["introduction"], "exists": True}
                 courses.append([course["course_id"], course_basics])
 
         return courses
@@ -583,7 +582,7 @@ class Content:
     def get_available_courses(self, user_id):
         available_courses = []
 
-        sql = '''SELECT course_id, title, introduction, passcode, consent_text, consent_alternative_text
+        sql = '''SELECT course_id, title, introduction, passcode
                  FROM courses
                  WHERE course_id NOT IN
                  (
@@ -602,9 +601,7 @@ class Content:
                  ORDER BY title'''
 
         for course in self.fetchall(sql, (user_id, user_id, )):
-            course_basics = {"id": course["course_id"], "title": course["title"], "introduction": course["introduction"], "passcode": course["passcode"], "consent_text": course["consent_text"], "consent_alternative_text": course["consent_alternative_text"]}
-            course_basics["consent_text"] = convert_markdown_to_html(course_basics["consent_text"])
-            course_basics["consent_alternative_text"] = convert_markdown_to_html(course_basics["consent_alternative_text"])
+            course_basics = {"id": course["course_id"], "title": course["title"], "introduction": course["introduction"], "passcode": course["passcode"]}
             available_courses.append([course["course_id"], course_basics])
 
         return available_courses
@@ -612,7 +609,7 @@ class Content:
     def get_registered_courses(self, user_id):
         registered_courses = []
 
-        sql = '''SELECT r.course_id, c.title, c.consent_text
+        sql = '''SELECT r.course_id, c.title
                  FROM course_registrations r
                  INNER JOIN courses c
                    ON r.course_id = c.course_id
@@ -621,15 +618,14 @@ class Content:
 
                  UNION
 
-                 SELECT p.course_id, c.title, c.consent_text
+                 SELECT p.course_id, c.title
                  FROM permissions p
                  INNER JOIN courses c
                    ON p.course_id = c.course_id
                  WHERE p.user_id = ?'''
 
         for course in self.fetchall(sql, (user_id, user_id, )):
-            course_basics = {"id": course["course_id"], "title": course["title"], "consent_text": course["consent_text"]}
-            course_basics["consent_text"] = convert_markdown_to_html(course_basics["consent_text"])
+            course_basics = {"id": course["course_id"], "title": course["title"]}
             registered_courses.append([course["course_id"], course_basics])
 
         return registered_courses
@@ -1423,12 +1419,10 @@ class Content:
         course_basics["title"] = title
         course_basics["visible"] = visible
 
-    def specify_course_details(self, course_details, introduction, passcode, consent_text, consent_alternative_text, date_created, date_updated):
+    def specify_course_details(self, course_details, introduction, passcode, date_created, date_updated):
         course_details["introduction"] = introduction
         course_details["passcode"] = passcode
         course_details["date_updated"] = date_updated
-        course_details["consent_text"] = consent_text
-        course_details["consent_alternative_text"] = consent_alternative_text
 
         if course_details["date_created"]:
             course_details["date_created"] = date_created
@@ -1549,12 +1543,12 @@ class Content:
         return row["code"] if row else None
 
     def get_course_details(self, course, format_output=False):
-        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "consent_text": "", "consent_alternative_text": ""}
+        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None}
 
         if not course:
             return null_course
 
-        sql = '''SELECT introduction, passcode, date_created, date_updated, consent_text, consent_alternative_text
+        sql = '''SELECT introduction, passcode, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 
@@ -1563,11 +1557,9 @@ class Content:
         if not row:
             return null_course
 
-        course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "consent_text": row["consent_text"], "consent_alternative_text": row["consent_alternative_text"]}
+        course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
         if format_output:
             course_dict["introduction"] = convert_markdown_to_html(convert_html_to_markdown(course_dict["introduction"])) # Removes html markup from instructions before converting markdown to html
-            course_dict["consent_text"] = convert_markdown_to_html(course_dict["consent_text"])
-            course_dict["consent_alternative_text"] = convert_markdown_to_html(course_dict["consent_alternative_text"])
 
         return course_dict
 
@@ -1701,15 +1693,15 @@ class Content:
     def save_course(self, course_basics, course_details):
         if course_basics["exists"]:
             sql = '''UPDATE courses
-                     SET title = ?, visible = ?, introduction = ?, passcode = ?, date_updated = ?, consent_text = ?, consent_alternative_text = ?
+                     SET title = ?, visible = ?, introduction = ?, passcode = ?, date_updated = ?
                      WHERE course_id = ?'''
 
-            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_updated"], course_details["consent_text"], course_details["consent_alternative_text"], course_basics["id"]])
+            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_updated"], course_basics["id"]])
         else:
-            sql = '''INSERT INTO courses (title, visible, introduction, passcode, date_created, date_updated, consent_text, consent_alternative_text)
+            sql = '''INSERT INTO courses (title, visible, introduction, passcode, date_created, date_updated)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            course_basics["id"] = self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_created"], course_details["date_updated"], course_details["consent_text"], course_details["consent_alternative_text"]])
+            course_basics["id"] = self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_created"], course_details["date_updated"]])
             course_basics["exists"] = True
 
         return course_basics["id"]
@@ -1894,8 +1886,8 @@ class Content:
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
 
     def copy_course(self, course_id, new_course_title):
-        sql = '''INSERT INTO courses (title, introduction, visible, passcode, date_created, date_updated, consent_text, consent_alternative_text)
-                 SELECT ?, introduction, visible, passcode, date_created, date_updated, consent_text, consent_alternative_text
+        sql = '''INSERT INTO courses (title, introduction, visible, passcode, date_created, date_updated)
+                 SELECT ?, introduction, visible, passcode, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 

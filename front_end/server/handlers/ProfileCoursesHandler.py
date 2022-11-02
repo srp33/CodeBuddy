@@ -18,7 +18,6 @@ class ProfileCoursesHandler(BaseUserHandler):
         try:
             course_id = self.get_body_argument("course_id")
             passcode = self.get_body_argument("passcode")
-            consent_given = self.get_body_argument("consent_given") == "Yes"
 
             course_basics = self.content.get_course_basics(course_id)
             course_details = self.content.get_course_details(course_id)
@@ -26,15 +25,13 @@ class ProfileCoursesHandler(BaseUserHandler):
             course_passcode = course_details["passcode"]
             result = ""
 
-            if not consent_given:
-                result = "Error: You may not register for this course without providing consent to participate in the research study. Please review the instructions on what you should do if you decline to participate in the study."
-            elif (course_passcode == None or course_passcode == passcode):
+            if (course_passcode == None or course_passcode == passcode):
                 if (self.content.course_exists(course_id)):
                     if (self.content.check_user_registered(course_id, user_id)):
                         result = f"Error: You are already registered for {course_title}."
                     else:
                         self.content.register_user_for_course(course_id, user_id)
-                        result = f"Success: You're now registered for {course_title}."
+                        result = f"Success: You are now registered for {course_title}."
                 else:
                     result = "Error: A course with that ID was not found."
             elif passcode == "":

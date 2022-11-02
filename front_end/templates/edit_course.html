@@ -55,30 +55,6 @@
     <p><textarea name="passcode" class="textarea is-grey is-medium is-fullwidth monospace" rows="1">{% if course_details["passcode"] %}{{ course_details["passcode"] }}{% end %}</textarea></p>
 </div>
 
-<div class="shadow-box">
-    <div>
-        <p><strong>Enable research consent process:</strong></p>
-            <div class="select is-grey">
-                <select name="enable_research" id="enable_research" class="edit-select" onchange="showConsentForm()">
-                {% if course_details["consent_text"] and course_details["consent_text"] != "" %}
-                    <option value="Yes" selected>Yes</option>
-                    <option value="No">No</option>
-                {% else %}
-                    <option value="Yes">Yes</option>
-                    <option value="No" selected>No</option>
-                {% end %}
-                </select>
-            </div>
-
-            <div id="consent_form_div" class="top-space" {% if course_details['consent_text'] is None or course_details['consent_text'] == '' %} style="display:none" {% end %}>
-                <p><strong>Research consent form*: </strong><br />Students will review this form and indicate whether they consent to participate in the research. Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write a consent form for this exercise.</p>
-                <textarea name="consent_form" class="textarea is-grey is-fullwidth monospace" id="consent_form" placeholder="Please provide a consent form." style="min-height: 400px">{% if course_details["consent_text"] %}{{ course_details["consent_text"] }}{% end %}</textarea>
-                <p class="top-space"><strong>Instructions for students who decline to participate in the study (must be specified if a consent form has been specified)*: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to specify text that indicates what students should do if they do not consent to participate in the study.</p>
-                <textarea name="consent_alternative" class="textarea is-grey is-fullwidth monospace" id="consent_alternative" placeholder="Please provide an explanation for students who do not consent to the above form." style="min-height: 400px">{% if course_details["consent_alternative_text"] %}{{ course_details["consent_alternative_text"] }}{% end %}</textarea>
-            </div>
-    </div>
-</div>
-
 <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
 
 <p>
@@ -88,15 +64,3 @@
 </p>
 
 </form>
-
-<script>
-
-  function showConsentForm() {
-      document.getElementById("consent_form_div").style.display = (document.getElementById("enable_research").value == "Yes") ? "block" : "none";
-  }
-
-  document.getElementById("courseForm").onsubmit = function(evt) {
-      if (document.getElementById("enable_research").value == "No")
-          document.getElementById("consent_form").value = document.getElementById("consent_alternative").value = "";
-  }
-</script>
