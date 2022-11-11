@@ -24,8 +24,10 @@ class AssignmentHandler(BaseUserHandler):
         if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
             assignment_basics = self.content.get_assignment_basics(course, assignment)
             courses = courses = self.get_courses(True)
+            exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"], show_hidden=True)
+            has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
 
-            return self.render("assignment_admin.html", courses=courses, assignments=self.content.get_assignments(course, True), exercises=self.content.get_exercises(course, assignment, True), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=self.content.get_assignment_details(course, assignment, True), course_options=[x[1] for x in courses if str(x[0]) != course], assignment_summary_scores=self.content.get_assignment_summary_scores(course, assignment), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course), download_file_name=get_scores_download_file_name(assignment_basics))
+            return self.render("assignment_admin.html", courses=courses, assignments=self.content.get_assignments(course, True), exercises=self.content.get_exercises(course, assignment, show_hidden=True), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=self.content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=self.content.get_assignment_details(course, assignment, True), course_options=[x[1] for x in courses if str(x[0]) != course], assignment_summary_scores=self.content.get_assignment_summary_scores(course, assignment), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course), download_file_name=get_scores_download_file_name(assignment_basics))
 
         courses = self.get_courses(False)
         assignments = self.content.get_assignments(course, False)
@@ -36,6 +38,9 @@ class AssignmentHandler(BaseUserHandler):
         assignment_status = get_assignment_status(self, course, assignment_details, user_start_time)
 
         if assignment_status == "render":
-            return self.render("assignment.html", courses=courses, assignments=assignments, exercises=self.content.get_exercises(course, assignment, False), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, start_time=user_start_time, user_start_time=user_start_time, user_info=self.get_user_info())
+            exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"], show_hidden=False)
+            has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
+
+            return self.render("assignment.html", courses=courses, assignments=assignments, exercises=self.content.get_exercises(course, assignment, show_hidden=False), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, start_time=user_start_time, user_start_time=user_start_time, user_info=self.get_user_info())
         else:
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.get_user_info())

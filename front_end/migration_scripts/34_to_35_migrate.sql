@@ -1,0 +1,1 @@
+ALTER TABLE exercises ADD COLUMN weight real NOT NULL DEFAULT 1.0

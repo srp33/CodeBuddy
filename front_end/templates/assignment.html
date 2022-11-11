@@ -114,8 +114,11 @@
                             <tr>
                                 <th>Exercise</th>
                                 <th># Submissions</th>
-                                <th>Score</th>
                                 <th>Completed</th>
+                                <th>Score</th>
+                                {% if has_non_default_weight %}
+                                    <th>Weight*</th>
+                                {% end %}
                             </tr>
                         </thead>
                         <tbody>
@@ -131,11 +134,10 @@
                                     {% end %}
                                     
                                     {% if exercise[1]["enable_pair_programming"] %}
-                                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
+                                        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
                                     {% end %}
                                 </td>
                                 <td>{{ exercise[1]["num_submissions"] }}</td>
-                                <td>{{ exercise[1]["score"] }}%</td>
                                 {% if exercise[1]["passed"] %}
                                     <td><label>
                                         <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
@@ -151,11 +153,19 @@
                                         </label>Not started</td>
                                     {% end %}
                                 {% end %}
+                                <td>{{ exercise[1]["score"] }}%</td>
+                                {% if has_non_default_weight %}
+                                    <td>{{ exercise[1]["weight"] }}</td>
+                                {% end %}
                             </tr>
                         {% end %}
                         </tbody>
                     </table>
                 </div>
+
+                {% if has_non_default_weight %}
+                    <p>* Exercises with relatively high weights count more toward the overall assignment score than exercises with relatively low weights.</p>
+                {% end %}
             </form>
         {% end %}
     {% else %}

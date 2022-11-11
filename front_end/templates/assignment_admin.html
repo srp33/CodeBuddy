@@ -137,8 +137,11 @@
                         <tr>
                             <th>Exercise</th>
                             <th style="text-align: center;">Visibility</th>
-                            <th style="text-align: center;">Avg. Score</th>
                             <th style="text-align: center;">Submissions</th>
+                            <th style="text-align: center;">Avg. Score</th>
+                            {% if has_non_default_weight %}
+                                <th style="text-align: center;">Weight*</th>
+                            {% end %}
                             <th style="text-align: center;">Edit</th>
                             <th style="text-align: center;">Copy</th>
                             <th style="text-align: center;">Move</th>
@@ -147,7 +150,7 @@
                     </thead>
                     <tbody>
 
-                    {% for exercise in exercises %}
+                    {% for exercise in exercise_statuses %}
                         <tr>
                             <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a>
                             {% if exercise[1]["enable_pair_programming"] %}
@@ -161,8 +164,11 @@
                                 <td> </td>
                             {% else %}
                                 <td style="text-align: center;">Visible</td>
-                                <td style="text-align: center;"><a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a></td>
                                 <td style="text-align: center;"><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a> / <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">Purge</a></td>
+                                <td style="text-align: center;"><a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a></td>
+                                {% if has_non_default_weight %}
+                                    <td style="text-align: center;">{{ exercise[1]['weight'] }}</td>
+                                {% end %}
                             {% end %}
                             <td style="text-align: center;">
                                 <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}">
@@ -188,6 +194,10 @@
                     {% end %}  
                     </tbody>
                 </table>
+
+                {% if has_non_default_weight %}
+                    <p>* Exercises with relatively high weights count more toward the overall assignment score than exercises with relatively low weights.</p>
+                {% end %}
             </div>
         {% else %}
             <p><strong>No exercises have been created for this assignment.</strong></p>

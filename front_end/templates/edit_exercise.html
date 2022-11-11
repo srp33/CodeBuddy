@@ -109,6 +109,26 @@
                 </p>
             </div>
         </div>
+
+        <div class="row-container top-space">
+            <div>
+                <strong>Weight: </strong>
+
+                <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="By default, each exercise has a weight of 1.0. You can modify these weights so that some exercises are counted more (or less) toward the assignment score than other exercises.">
+                    <i class="far fa-question-circle"></i>
+                </label>
+
+                <div style="margin-top:1em;">
+                    <input class="input"
+                           type="text"
+                           id="weight"
+                           style="width: 70px;"
+                           value="1.0"
+                           placeholder="Please enter a positive number."
+                           oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" />
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="shadow-box">
@@ -614,6 +634,11 @@
             for (let id of ["allow_any_response", "enable_pair_programming"])
                 setValue(id, exercise_details_obj[id] ? "Yes" : "No");
 
+            if (String(exercise_details_obj["weight"]) == String(parseInt(exercise_details_obj["weight"])))
+                setValue("weight", `${exercise_details_obj["weight"]}.0`);
+            else
+                setValue("weight", exercise_details_obj["weight"]);
+
             setValue("visible", exercise_basics_obj["visible"] ? "Yes" : "No");
 
             solution_code_editor.setValue(exercise_details_obj["solution_code"], -1);
@@ -627,9 +652,10 @@
 
         function save() {
             const title = getValue("title").trim();
-            const instructions = getValue("instructions").trim().replace("\r", "");
+            const instructions = getValue("instructions").replace("\r", "");
             const allow_any_response = getValue("allow_any_response") == "Yes";
-            const solution_code = solution_code_editor.getValue().trim().replace("\r", "");
+            const solution_code = solution_code_editor.getValue().replace("\r", "");
+            const weight = getValue("weight");
 
             // Check submission details
             if (title == "")
@@ -640,6 +666,8 @@
                 return(showResultMessage("Please provide instructions.", "danger"));
             if (!allow_any_response && solution_code == "")
                 return(showResultMessage("Except when any response is allowed, you must provide a solution.", "danger"));
+            if(isNaN(weight))
+                return(showResultMessage("The specified weight is not a number.", "danger"));
 
             // Make sure we have at least one test.
             if (Object.keys(exercise_details_obj["tests"]).length == 0 && !allow_any_response)
@@ -662,12 +690,13 @@
                 "allow_any_response": allow_any_response,
                 "instructions": instructions,
                 "enable_pair_programming": getValue("enable_pair_programming") == "Yes",
-                "credit": getValue("credit").trim().replace("\r", ""),
+                "weight": weight,
+                "credit": getValue("credit").replace("\r", ""),
                 "solution_code": solution_code,
-                "verification_code": verification_code_editor.getValue().trim().replace("\r", ""),
-                "starter_code": starter_code_editor.getValue().trim().replace("\r", ""),
-                "hint": getValue("hint").trim().replace("\r", ""),
-                "solution_description": getValue("solution_description").trim().replace("\r", ""),
+                "verification_code": verification_code_editor.getValue().replace("\r", ""),
+                "starter_code": starter_code_editor.getValue().replace("\r", ""),
+                "hint": getValue("hint").replace("\r", ""),
+                "solution_description": getValue("solution_description").replace("\r", ""),
                 "what_students_see_after_success": getValue("what_students_see_after_success"),
                 "max_submissions": getValue("max_submissions"),
                 "data_files": exercise_details_obj["data_files"],
