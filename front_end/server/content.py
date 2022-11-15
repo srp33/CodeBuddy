@@ -996,6 +996,55 @@ class Content:
 
         return scores
 
+    # Get score for each assignment for a particular student.
+    def get_student_assignment_scores(self, course_id, user_id):
+        scores = []
+
+        sql = '''SELECT assignment_totals.assignment_id, assignment_totals.title, round(assignment_totals.total_score / max_possible.sum_weights, 2) AS score
+                 FROM (
+                   SELECT a.assignment_id, a.title, SUM(s.score * e.weight) AS total_score
+                   FROM exercises e
+                   INNER JOIN scores s
+                     ON e.course_id = s.course_id
+                    AND e.assignment_id = s.assignment_id
+                    AND e.exercise_id = s.exercise_id
+                   INNER JOIN assignments a
+                     ON e.course_id = a.course_id
+                    AND e.assignment_id = a.assignment_id
+                   WHERE e.course_id = ?
+                    AND s.user_id = ?
+                    AND e.visible = 1
+                    AND a.visible = 1
+                   GROUP BY e.assignment_id
+                 ) assignment_totals
+                 INNER JOIN (
+                   SELECT assignment_id, SUM(weight) AS sum_weights
+                   FROM exercises
+                   WHERE course_id = ?
+                   GROUP BY assignment_id
+                 ) max_possible
+                   ON assignment_totals.assignment_id = max_possible.assignment_id
+
+                 UNION
+
+                 SELECT assignment_id, title, 0.0 as score
+                 FROM assignments
+                 WHERE course_id = ?
+                   AND visible = 1
+                   AND assignment_id NOT IN (
+                     SELECT DISTINCT assignment_id
+                     FROM scores
+                     WHERE course_id = ?
+                       AND user_id = ?
+                     )
+                 ORDER BY assignment_totals.title
+                 '''
+
+        for row in self.fetchall(sql, (course_id, user_id, course_id, course_id, course_id, user_id, )):
+            scores.append([row["assignment_id"], row["title"], row["score"]])
+
+        return scores
+
     def get_exercise_scores(self, course_id, assignment_id, exercise_id):
         scores = []
 

@@ -1,0 +1,24 @@
+{% if course_basics["exists"] %}
+    <h4>Assignment scores for {{ user_info["name"] }} ({{ user_info["user_id"] }})</h4>
+
+    <link rel="stylesheet" href="/static/css/styles.css">
+
+    <div class="table-container">
+        <table class="table is-striped" id="scores_table">
+            <thead>
+                <tr>
+                    <th>Assignment</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for x in assignment_scores %}
+                    <tr>
+                        <td class="has-text-left">{{ x[1] }}</td>
+                        <td class="has-text-left"><a href="/edit_assignment_scores/{{ course_basics['id'] }}/{{ x[0] }}/{{ user_info['user_id'] }}">{{ x[2] }}%</a></td>
+                    </tr>
+                {% end %}
+            </tbody>
+        </table>
+    </div>
+{% end %}
