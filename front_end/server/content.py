@@ -2370,11 +2370,11 @@ class Content:
         return out_file_text
 
     def create_assignment_scores_text(self, course_id, assignment_id):
-        out_file_text = "Course_ID,Assignment_ID,Student_ID,Score\n"
+        out_file_text = "Course_ID,Assignment_ID,Student_ID,Score,Last_Submission_Time\n"
         scores = self.get_assignment_scores(course_id, assignment_id)
 
         for student in scores:
-            out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']}\n"
+            out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']},{student[1]['last_submission_time']}\n"
 
         return out_file_text
 
