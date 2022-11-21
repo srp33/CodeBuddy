@@ -10,6 +10,6 @@ class DownloadAssignmentScoresHandler(BaseUserHandler):
             else:
                 self.render("permissions.html")
         except Exception as inst:
-            #self.write(traceback.format_exc())
-            render_error(self, traceback.format_exc())
+            print(traceback.format_exc())
+            self.write(traceback.format_exc())
 

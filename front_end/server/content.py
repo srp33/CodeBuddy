@@ -849,7 +849,7 @@ class Content:
               LEFT JOIN assignment_score_info asi
                  ON ai.assignment_id = asi.assignment_id
                 AND si.user_id = asi.user_id
-              )
+            )
 
             SELECT assignment_id, sum(completed) AS num_students_completed, ROUND(avg(score), 1) AS avg_score
             FROM student_scores
@@ -935,63 +935,107 @@ class Content:
     def get_assignment_scores(self, course_id, assignment_id):
         scores = []
 
-        sql = '''WITH assignment_scores AS (
-                   SELECT u.name,
-                          s.user_id,
-                          SUM(s.score * e.weight) / b.total_weight AS percent_passed,
-                          sub.last_submission_time
-                   FROM scores s
-                   INNER JOIN users u
-                     ON s.user_id = u.user_id
-                   INNER JOIN (
-                     SELECT SUM(weight) AS total_weight
-                     FROM exercises
-                     WHERE course_id = ?
-                       AND assignment_id = ?
-                       AND visible = 1
-                   ) b
-                   INNER JOIN exercises e
-                     ON s.exercise_id = e.exercise_id
-                   INNER JOIN (
-                     SELECT user_id, strftime('%Y-%m-%d %H:%M:%S', MAX(date)) AS last_submission_time
-                     FROM submissions
-                     WHERE course_id = ?
-                       AND assignment_id = ?
-                     GROUP BY user_id
-                   ) sub
-                     ON s.user_id = sub.user_id
-                   WHERE s.course_id = ?
-                     AND s.assignment_id = ?
-                     AND s.user_id NOT IN
-                     (
-                      SELECT user_id
-                      FROM permissions
-                      WHERE course_id = 0 OR course_id = ?
-                     )
-                     AND s.exercise_id NOT IN
-                     (
-                       SELECT exercise_id
+        sql = '''WITH
+                   assignment_scores AS (
+                     SELECT u.name,
+                            s.user_id,
+                            SUM(s.score * e.weight) / b.total_weight AS percent_passed,
+                            sub.last_submission_time
+                     FROM scores s
+                     INNER JOIN users u
+                       ON s.user_id = u.user_id
+                     INNER JOIN (
+                       SELECT SUM(weight) AS total_weight
                        FROM exercises
                        WHERE course_id = ?
                          AND assignment_id = ?
-                         AND visible = 0
+                         AND visible = 1
+                     ) b
+                     INNER JOIN exercises e
+                       ON s.exercise_id = e.exercise_id
+                     INNER JOIN (
+                       SELECT user_id, strftime('%Y-%m-%d %H:%M:%S', MAX(date)) AS last_submission_time
+                       FROM submissions
+                       WHERE course_id = ?
+                         AND assignment_id = ?
+                       GROUP BY user_id
+                     ) sub
+                       ON s.user_id = sub.user_id
+                     WHERE s.course_id = ?
+                       AND s.assignment_id = ?
+                       AND s.user_id NOT IN
+                       (
+                        SELECT user_id
+                        FROM permissions
+                      WHERE course_id = 0 OR course_id = ?
+                       )
+                       AND s.exercise_id NOT IN
+                       (
+                         SELECT exercise_id
+                         FROM exercises
+                         WHERE course_id = ?
+                           AND assignment_id = ?
+                           AND visible = 0
+                       )
+                     GROUP BY s.course_id, s.assignment_id, s.user_id
+                   ),
+
+                   exercise_pass_dates AS (
+                     SELECT exercise_id, user_id, min(date) AS earliest_pass_date
+                     FROM submissions s
+                     WHERE course_id = ?
+                       AND assignment_id = ?
+                       AND passed = 1
+                       AND user_id NOT IN (
+                          SELECT user_id
+                          FROM permissions
+                          WHERE course_id = ?
+                       )
+                     GROUP BY exercise_id, user_id
+                   ),
+
+                   when_users_passed AS (
+                     SELECT user_id, max(earliest_pass_date) AS when_passed
+                     FROM exercise_pass_dates
+                     GROUP BY user_id
+                     HAVING COUNT(*) >= (
+                        SELECT COUNT(*) as num
+                        FROM exercises
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND visible = 1
+                        )
+
+                     UNION
+
+                     SELECT user_id, ''
+                     FROM exercise_pass_dates
+                     GROUP BY user_id
+                     HAVING COUNT(*) < (
+                       SELECT COUNT(*) as num
+                       FROM exercises
+                       WHERE course_id = ?
+                         AND assignment_id = ?
+                         AND visible = 1
                      )
-                   GROUP BY s.course_id, s.assignment_id, s.user_id
+                     ORDER BY user_id
                  )
 
-                 SELECT *
+                 SELECT assignment_scores.*, when_users_passed.when_passed
                  FROM assignment_scores
+                 INNER JOIN when_users_passed
+                   ON assignment_scores.user_id = when_users_passed.user_id
 
                  UNION
 
-                 SELECT name, user_id, 0, ''
+                 SELECT name, user_id, 0, '', ''
                  FROM users
                  WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
                    AND user_id NOT IN (SELECT user_id FROM assignment_scores)
                  '''
 
-        for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(assignment_id), int(course_id), int(course_id), int(assignment_id), int(course_id))):
-            scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"], "last_submission_time": user["last_submission_time"]}
+        for user in self.fetchall(sql, (course_id, assignment_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, )):
+            scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"], "when_passed": user["when_passed"], "last_submission_time": user["last_submission_time"]}
             scores.append([user["user_id"], scores_dict])
 
         return scores
@@ -2370,11 +2414,11 @@ class Content:
         return out_file_text
 
     def create_assignment_scores_text(self, course_id, assignment_id):
-        out_file_text = "Course_ID,Assignment_ID,Student_ID,Score,Last_Submission_Time\n"
+        out_file_text = "Course_ID,Assignment_ID,Student_ID,Score,When_Passed,Last_Submission\n"
         scores = self.get_assignment_scores(course_id, assignment_id)
 
         for student in scores:
-            out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']},{student[1]['last_submission_time']}\n"
+            out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']},{student[1]['when_passed']},{student[1]['last_submission_time']}\n"
 
         return out_file_text
 

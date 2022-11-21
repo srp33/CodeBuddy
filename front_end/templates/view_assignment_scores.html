@@ -70,7 +70,8 @@
                             <th>Name</th>
                             <th>Student ID</th>
                             <th>Score</th>
-                            <th>Last Submission Time</th>
+                            <th>When completed</th>
+                            <th>Last submission</th>
                             {% if assignment_details["has_timer"] %}
                                 <th>Timer</th>
                             {% end %}
@@ -87,6 +88,11 @@
                                     {% else %}
                                         <a href="/edit_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(score[1]["percent_passed"]) }}%</a>
                                     {% end %}
+                                </td>
+                                <td class="has-text-left">
+                                    <script>
+                                        document.write(parseDateText("{{ score[1]['when_passed'] }}"));
+                                    </script>
                                 </td>
                                 <td class="has-text-left">
                                     <script>

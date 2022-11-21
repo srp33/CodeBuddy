@@ -1,7 +1,6 @@
 from BaseOtherHandler import *
 from tornado.web import *
 from tornado.auth import GoogleOAuth2Mixin
-from cas import CASClient
 from content import *
 
 # https://github.com/apereo/cas-sample-python-webapp/blob/master/app.py
@@ -21,6 +20,8 @@ class CASLoginHandler(BaseOtherHandler):
 
             server_url="https://cas.byu.edu/cas/"
 
+            # Moved this here so we can run it locally without having CAS installed.
+            from cas import CASClient
             cas_client = CASClient(version=3, service_url=service_url, server_url=server_url)
 
             ticket = self.get_argument('ticket', False)
