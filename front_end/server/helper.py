@@ -293,7 +293,7 @@ def get_scores_download_file_name(assignment_basics):
     for char in special_chars:
         assignment_title = assignment_title.replace(char, "")
 
-    return f"Scores__{assignment_title}.csv"
+    return f"Scores__{assignment_title}.tsv"
 
 def get_list_of_dates():
     years = []

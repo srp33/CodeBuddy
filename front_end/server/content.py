@@ -2402,23 +2402,23 @@ class Content:
                           AND exercise_id = ?)''', (course_id, assignment_id, exercise_id, ))
 
     def create_course_scores_text(self, course_id):
-        out_file_text = "Assignment_ID,Assignment_Title,Student_ID,Score\n"
+        out_file_text = "Assignment_ID\tAssignment_Title\tStudent_ID\tScore\n"
 
         for assignment_id in self.get_assignment_ids(course_id):
             assignment_title = self.get_assignment_basics(course_id, assignment_id)["title"]
             assignment_scores = self.get_assignment_scores(course_id, assignment_id)
 
             for score_dict in assignment_scores:
-                out_file_text += f"{assignment_id},{assignment_title},{score_dict[0]},{score_dict[1]['percent_passed']}\n"
+                out_file_text += f"{assignment_id}\t{assignment_title}\t{score_dict[0]}\t{score_dict[1]['percent_passed']}\n"
 
         return out_file_text
 
     def create_assignment_scores_text(self, course_id, assignment_id):
-        out_file_text = "Course_ID,Assignment_ID,Student_ID,Score,When_Passed,Last_Submission\n"
+        out_file_text = "Course_ID\tAssignment_ID\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\n"
         scores = self.get_assignment_scores(course_id, assignment_id)
 
         for student in scores:
-            out_file_text += f"{course_id},{assignment_id},{student[0]},{student[1]['percent_passed']},{student[1]['when_passed']},{student[1]['last_submission_time']}\n"
+            out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['percent_passed']}\t{student[1]['when_passed']}\t{student[1]['last_submission_time']}\n"
 
         return out_file_text
 
