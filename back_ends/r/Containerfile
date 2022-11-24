@@ -5,7 +5,8 @@ RUN apt-get update -qq && apt-get install -y \
   libssl-dev \
   libcurl4-gnutls-dev \
   libjemalloc-dev \
-  libmagick++-dev
+  libmagick++-dev \
+  libglpk-dev
 
 RUN R -e "install.packages(c('car', 'conflicted', 'igraph', 'magick', 'mapproj', 'maps', 'ranger', 'tidymodels', 'workflows', 'tune', 'XML'))"
 
