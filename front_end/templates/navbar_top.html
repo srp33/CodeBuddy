@@ -5,6 +5,27 @@
         burgerIcon.classList.toggle('is-active');
         dropMenu.classList.toggle('is-active');
     };
+
+    function toggleDropdown(div_id) {
+        var element = $("#" + div_id);
+
+        if (element.hasClass("is-active"))
+            element.removeClass("is-active");
+        else
+            element.addClass("is-active");
+    }
+
+    window.addEventListener('click', function(e) {
+        for (menu of ["course", "assignment", "exercise", "menu"]) {
+            var dropdown = $(`#${menu}_dropdown`);
+
+            if (dropdown.length == 0)
+                continue;
+
+            if (!dropdown[0].contains(e.target) && dropdown.hasClass("is-active"))
+                dropdown.removeClass("is-active");
+        }
+    });
 </script>
 
 <nav id="navbar" class="navbar is-spaced has-shadow" role="navigation" aria-label="main navigation" style="border-radius: 0px; padding: 5px; box-shadow: 3px 3px 6px lightgray;">

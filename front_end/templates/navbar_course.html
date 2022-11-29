@@ -1,10 +1,12 @@
-            <div class="navbar-item has-dropdown is-hoverable">
+            <!--<div class="navbar-item has-dropdown is-hoverable">-->
+            <div id="course_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('course_dropdown')">
                 {% if len(courses) > 1 and "course_basics" in globals() and course_basics["exists"] %}
-                    <a class="navbar-link is-arrowless" href="/course/{{ course_basics['id'] }}">
+                    <!--<a class="navbar-link is-arrowless" href="/course/{{ course_basics['id'] }}">-->
+                    <div class="navbar-item is-arrowless" style="cursor: default;">
                         {{ course_basics["title"] }}
-
-                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
-                    </a>
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
+                    </div>
+                    <!--</a>-->
 
                     <div id="moreDropdown" class="navbar-dropdown">
                         {% for course in courses %}

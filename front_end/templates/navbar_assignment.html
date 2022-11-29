@@ -1,14 +1,17 @@
-            <div class="navbar-item has-dropdown is-hoverable">
+<!--<div id="assignment_dropdown" class="navbar-item has-dropdown is-hoverable" onclick="toggleDropdown('assignment_dropdown')">-->
+            <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
                 {% if len(assignments) > 0 and "assignment_basics" in globals() and assignment_basics["exists"] %}
-                    <a class="navbar-link is-arrowless" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
+                    <!--<a class="navbar-link is-arrowless" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">-->
+                    <div class="navbar-item is-arrowless" style="cursor: default;">
                         {{ assignment_basics["title"] }}
-                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
-                    </a>
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
+                    </div>
+                    <!--</a>-->
 
                     <div id="moreDropdown" class="navbar-dropdown">
-                    {% for assignment in assignments %}
-                        <a class="navbar-item" href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
-                    {% end %}
+                        {% for assignment in assignments %}
+                            <a class="navbar-item" href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
+                        {% end %}
                     </div>
                 {% end %}
             </div>

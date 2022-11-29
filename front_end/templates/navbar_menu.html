@@ -1,7 +1,11 @@
             </div>
             <div class="navbar-end">
-                <div class="navbar-item has-dropdown is-hoverable">
-                    <a class="navbar-link is-arrowless">{{ user_info["given_name"] }}</a>
+                <div id="menu_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('menu_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: default;">
+                        {{ user_info["given_name"] }}
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </div>
+
                     <div class="navbar-dropdown is-size-5 is-right">
                         <a class="navbar-item" href="/profile/courses/{{ user_info['user_id'] }}">Courses</a>
                         <a class="navbar-item" href="/profile/personal_info/{{ user_info['user_id'] }}">View profile</a>

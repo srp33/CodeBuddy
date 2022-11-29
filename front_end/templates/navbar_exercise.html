@@ -1,13 +1,13 @@
             {% if len(exercises) > 1 %}
-                <div class="navbar-item has-dropdown is-hoverable">
-                    <div class="navbar-item is-arrowless">
+                <div id="exercise_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('exercise_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: default;">
                         {% if "exercise_basics" in globals() and exercise_basics["exists"] %}
                             {{ exercise_basics["title"] }}
                         {% else %}
                             Exercises
                         {% end %}
 
-                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
                     </div>
 
                     {% if len(exercise_statuses) > 0 %}
