@@ -465,6 +465,8 @@ export class TestResultsModal extends LitElement {
 	}
 
 	render() {
+		const hasTestCode = this.test?.before_code || this.test?.after_code;
+
 		return html`
 			${this.runTest ? html`
 				<button class="button is-small" ?disabled=${this.testStatus === TestStatus.Running} @click=${() => this.runTest?.(this.test!.name)}>${this.getRunButtonText()}</button>
@@ -494,34 +496,36 @@ export class TestResultsModal extends LitElement {
 								</article>
 							` : null}
 							
-							<article class="message">
-								<div class="message-header">
-									<a href="#test-code-section-${this.instanceID}" data-action="collapse">Test code</a>
-								</div>
-								<div id="test-code-section-${this.instanceID}" class="message-body is-collapsible">
-									<div class="message-body-content">
-										${this.test?.can_see_test_code ? html`
+							${hasTestCode ? html`							
+								<article class="message">
+									<div class="message-header">
+										<a href="#test-code-section-${this.instanceID}" data-action="collapse">Test code</a>
+									</div>
+									<div id="test-code-section-${this.instanceID}" class="message-body is-collapsible">
+										<div class="message-body-content">
+											${this.test?.can_see_test_code ? html`
 
-											${this.test?.before_code ? html`
-												<p>Code run before your code:</p>
-												<pre>${this.test?.before_code}</pre>
-											` : null}
-
-											${this.test?.after_code ? html`
-												<p>Code run after your code:</p>
-												<pre>${this.test?.after_code}</pre>
+												${this.test?.before_code ? html`
+													<p>Code run before your code:</p>
+													<pre>${this.test?.before_code}</pre>
 												` : null}
 
-											${!!this.test?.before_code && !!this.test?.after_code ? html`
-												<p>No additional code is run before or after your code.</p>
-											` : null}
+												${this.test?.after_code ? html`
+													<p>Code run after your code:</p>
+													<pre>${this.test?.after_code}</pre>
+													` : null}
 
-										` : html`
-											<p disabled>The test code will not be shown for this test.</p>
-										`}
+												${!!this.test?.before_code && !!this.test?.after_code ? html`
+													<p>No additional code is run before or after your code.</p>
+												` : null}
+
+											` : html`
+												<p disabled>The test code will not be shown for this test.</p>
+											`}
+										</div>
 									</div>
-								</div>
-							</article>
+								</article>
+							` : null}
 							<article class="message">
 								<div class="message-header">
 									<a href="#expected-output-section-${this.instanceID}" data-action="collapse">Expected output</a>
@@ -646,7 +650,6 @@ export class TestResultsModal extends LitElement {
 			return html`<h3>The expected output will not be shown for this test.</h3>`;
 		}
 		return html`
-			<h3>Correct output:</h3>
 			${this.expectedOutput ? html`
 				<pre>${this.expectedOutput}</pre>
 			` : null}
