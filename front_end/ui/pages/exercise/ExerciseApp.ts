@@ -85,7 +85,11 @@ export default class ExerciseApp extends LitElement {
 											<p>You are viewing submission ${activeSubmission.id + 1} from ${activeSubmission.date.toLocaleString()}</p>
 											<span style="flex: 1;"></span>
 											<button class="button is-small outlined" @click=${this.copySubmissionCode}>Restore this version</button>
-											<button style="margin-left: 8px;" class="button is-small outlined" @click=${() => this.onFileSelected(this.userCodeFileName)}>Return to latest version</button>
+											<button
+												style="margin-left: 8px;"
+												class="button is-small outlined"
+												@click=${() => this.onFileSelected(this.userCodeFileName)}
+											>Return to latest version</button>
 										</div>
 									</article>
 									` : null}
@@ -294,7 +298,7 @@ class InformationPane extends LitElement {
 					</button>
 				</div>
 				${this.showHint ? html`
-					<div class="content is-medium">
+					<div class="content is-medium" style="margin-top: 8px;">
 						${unsafeHTML(exercise_details.hint)}
 					</div>
 				` : null}
@@ -305,12 +309,18 @@ class InformationPane extends LitElement {
 				<h6>Files</h6>
 				<strong>User code:</strong>
 				${this.files?.filter((file) => file.type === 'user-code').map(file => html`
-				<span class="file-list-item${this.selectedFile === file.name ? ' active' : ''}" @click=${() => this.onFileSelected?.(file.name)}>${file.name}</span>
+					<span
+						class="file-list-item${this.selectedFile === file.name ? ' active' : ''}"
+						@click=${() => this.onFileSelected?.(file.name)}
+					>${file.name}</span>
 				`)}
 				${this.hasDataFiles ? html`
 					<strong class="file-header">Data files:</strong>
 					${this.files?.filter((file) => file.type === 'data-file').map(file => html`
-						<span class="file-list-item${this.selectedFile === file.name ? ' active' : ''}" @click=${() => this.onFileSelected?.(file.name)}>${file.name}</span>
+						<span
+							class="file-list-item${this.selectedFile === file.name ? ' active' : ''}"
+							@click=${() => this.onFileSelected?.(file.name)}
+						>${file.name}</span>
 					`)}
 				` : null}
 			</div>
@@ -349,7 +359,11 @@ class InformationPane extends LitElement {
 			<div class="left-panel">
 				<div class="tab-bar">
 					${this.panelOrder.map((tab) => html`
-						<button class="icon-button${this.selectedTab === tab ? ' active' : ''} has-tooltip-right" data-tooltip="${this.tabTitles[tab]}" @click=${() => this.selectTab(tab)}>
+						<button
+							class="icon-button${this.selectedTab === tab ? ' active' : ''} has-tooltip-right"
+							data-tooltip="${this.tabTitles[tab]}"
+							@click=${() => this.selectTab(tab)}
+						>
 							<i class="${this.tabIcons[tab]}"></i>
 						</button>
 					`)}
