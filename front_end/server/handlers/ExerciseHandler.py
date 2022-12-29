@@ -39,7 +39,7 @@ class ExerciseHandler(BaseUserHandler):
 
             # Fetches all users enrolled in a course excluding the current user as options to pair program with.
             user_list = list(self.content.get_partner_info(course, self.get_user_info()["user_id"]).keys())
-            exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_id())
+            exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_id(), current_exercise_id=exercise)
             start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_id())
 
             tests = exercise_details["tests"]

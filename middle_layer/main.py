@@ -34,6 +34,10 @@ def exec(info: ExecInfo):
     cpus = 1
     tmp_dir_path = None
 
+    # We specify the maximum characters to read. This avoids people bogging
+    # down the server with really long outputs.
+    MAX_OUTPUT_LENGTH = 100 * 1024
+
     try:
         # This is meant to identify any old temp directories that inadvertently were not deleted.
         # This is not the best design, but it is simple.
@@ -94,17 +98,26 @@ def exec(info: ExecInfo):
             txt_output = ""
             txt_output_file_path = f"{info.tests[test_title]['dir_path']}/txt_output"
 
-            if os.path.exists(txt_output_file_path) and os.path.getsize(txt_output_file_path) > 0:
-                with open(txt_output_file_path) as output_file:
-                    txt_output = output_file.read().strip()
+            if os.path.exists(txt_output_file_path):
+                txt_output_file_size = os.path.getsize(txt_output_file_path)
+
+                if txt_output_file_size > 0:
+                    with open(txt_output_file_path) as output_file:
+                        txt_output = output_file.read(MAX_OUTPUT_LENGTH).strip()
+
+                        if txt_output_file_size > MAX_OUTPUT_LENGTH:
+                            txt_output += "\n[The output was truncated...]"
 
             jpg_output = ""
             if info.output_type == "jpg":
                 jpg_output_file_path = f"{info.tests[test_title]['dir_path']}/jpg_output"
 
                 if os.path.exists(jpg_output_file_path) and os.path.getsize(jpg_output_file_path) > 0:
-                    with open(jpg_output_file_path, "rb") as output_file:
-                        jpg_output = encode_image_bytes(output_file.read())
+                    if os.path.getsize(jpg_output_file_path) > MAX_OUTPUT_LENGTH:
+                        txt_output += "\n[The image was truncated...]"
+                    else:
+                        with open(jpg_output_file_path, "rb") as output_file:
+                            jpg_output = encode_image_bytes(output_file.read())
 
             test_outputs[test_title] = {"txt_output": txt_output, "jpg_output": jpg_output}
     except Exception as inst:

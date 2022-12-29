@@ -164,29 +164,29 @@
                                 <td> </td>
                             {% else %}
                                 <td style="text-align: center;">Visible</td>
-                                <td style="text-align: center;"><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a> / <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">Purge</a></td>
+                                <td style="text-align: center;"><a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a> / <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[0] }}'}, '')">Purge</a></td>
                                 <td style="text-align: center;"><a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a></td>
                                 {% if has_non_default_weight %}
                                     <td style="text-align: center;">{{ exercise[1]['weight'] }}</td>
                                 {% end %}
                             {% end %}
                             <td style="text-align: center;">
-                                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[1]['id'] }}">
+                                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">
                                     <i class="far fa-edit"></i>
                                 </a>
                             </td>
                             <td style="text-align: center;">
-                                <a onclick="showPostModal('copy_exercise', 'Copy exercise within the same assignment:', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">
+                                <a onclick="showPostModal('copy_exercise', 'Copy exercise within the same assignment:', {'exercise_id': '{{ exercise[0] }}'}, '')">
                                     <i class="far fa-copy"></i>
                                 </a>
                             </td>
                             <td style="text-align: center;">
-                                <a onclick="showPostModal('move_exercise', 'Move this exercise to a different assignment:', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">
+                                <a onclick="showPostModal('move_exercise', 'Move this exercise to a different assignment:', {'exercise_id': '{{ exercise[0] }}'}, '')">
                                     <i class="far fa-arrow-alt-circle-right"></i>
                                 </a>
                             </td>
                             <td style="text-align: center;">
-                                <a onclick="showPostModal('delete_exercise', 'Delete exercise', {'exercise_id': '{{ exercise[1]['id'] }}'}, '')">
+                                <a onclick="showPostModal('delete_exercise', 'Delete exercise', {'exercise_id': '{{ exercise[0] }}'}, '')">
                                     <i class="far fa-trash-alt"></i>
                                 </a> 
                             </td>

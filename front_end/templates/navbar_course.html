@@ -1,17 +1,31 @@
-            <!--<div class="navbar-item has-dropdown is-hoverable">-->
-            <div id="course_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('course_dropdown')">
-                {% if len(courses) > 1 and "course_basics" in globals() and course_basics["exists"] %}
-                    <!--<a class="navbar-link is-arrowless" href="/course/{{ course_basics['id'] }}">-->
-                    <div class="navbar-item is-arrowless" style="cursor: default;">
-                        {{ course_basics["title"] }}
-                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
-                    </div>
-                    <!--</a>-->
+            {% if "course_basics" in globals() and course_basics["exists"] %}
+                <div id="course_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('course_dropdown')">
+                    {% if len(courses) == 1 %}
+                        <a class="navbar-link is-arrowless" style="cursor: default;" href="/course/{{ course_basics['id'] }}">
+                            {{ course_basics["title"] }}
+                        </a>
+                    {% else %}
+                        <div class="navbar-item is-arrowless" style="cursor: default;">
+                            {{ course_basics["title"] }}
+                            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
+                        </div>
 
-                    <div id="moreDropdown" class="navbar-dropdown">
-                        {% for course in courses %}
-                            <a class="navbar-item" href="/course/{{ course[0] }}">{{ course[1]["title"] }}</a>
-                        {% end %}
-                    </div>
-                {% end %}
-            </div>
+                        <div id="moreDropdown" class="navbar-dropdown">
+                            {% for course in courses %}
+                                {% if course[0] == course_basics['id'] %}
+                                    <a class="navbar-item is-active"
+                                {% else %}
+                                    <a class="navbar-item"
+                                {% end %}
+
+                                href="/course/{{ course[0] }}">{{ course[1]["title"] }}</a>
+                            {% end %}
+                        </div>
+                    {% end %}
+                </div>
+            {% end %}
+
+
+
+
+

@@ -5,7 +5,7 @@ class StudentExerciseHandler(BaseUserHandler):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 courses = self.get_courses(True)
-                assignments = self.content.get_assignments(course, True)
+                assignments = self.content.get_assignments(course)
                 exercises = self.content.get_exercises(course, assignment, True)
                 course_basics = self.content.get_course_basics(course)
                 assignment_basics = self.content.get_assignment_basics(course, assignment)
@@ -13,7 +13,7 @@ class StudentExerciseHandler(BaseUserHandler):
                 assignment_details = self.content.get_assignment_details(course, assignment)
                 exercise_details = self.content.get_exercise_details(course, assignment, exercise)
                 exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"])
-                assignment_options = [x[1] for x in self.content.get_assignments(course) if str(x[0]) != assignment]
+                assignment_options = [x[1] for x in assignments if str(x[0]) != assignment]
 
                 submissions = self.content.get_submissions(course, assignment, exercise, student_id, exercise_details)
                 num_submissions = len(submissions)

@@ -1,26 +1,29 @@
-            {% if len(exercises) > 1 %}
+            {% if len(exercise_statuses) > 0 and "exercise_basics" in globals() and exercise_basics["exists"] %}
                 <div id="exercise_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('exercise_dropdown')">
-                    <div class="navbar-item is-arrowless" style="cursor: default;">
-                        {% if "exercise_basics" in globals() and exercise_basics["exists"] %}
+                    {% if len(exercise_statuses) == 1 %}
+                        <a class="navbar-link is-arrowless" style="cursor: default;" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
                             {{ exercise_basics["title"] }}
-                        {% else %}
-                            Exercises
-                        {% end %}
+                        </a>
+                    {% else %}
+                        <div class="navbar-item is-arrowless" style="cursor: default;">
+                            {{ exercise_basics["title"] }}
+                            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
+                        </div>
 
-                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
-                    </div>
-
-                    {% if len(exercise_statuses) > 0 %}
                         <div id="moreDropdown" class="navbar-dropdown">
                             {% for exercise in exercise_statuses %}
-                                <a class="navbar-item"
-                                   style="white-space: nowrap;"
-                                   {% if "is_edit_page" in globals() and is_edit_page == True %}
-                                       href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
-                                   {% else %}
-                                       href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
-                                   {% end %}
-                                 >
+                                {% if exercise[0] == exercise_basics['id'] %}
+                                    <a class="navbar-item is-active"
+                                {% else %}
+                                    <a class="navbar-item"
+                                {% end %}
+                                    style="white-space: nowrap;"
+                                    {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                        href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                                    {% else %}
+                                        href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                                    {% end %}
+                                    >
                                     {% if exercise[1]["passed"] %}
                                         <img src="/static/greencheck.png" alt="Completed" class="navbar-img"/>
                                     {% elif exercise[1]["in_progress"] %}

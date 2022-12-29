@@ -1,17 +1,26 @@
-<!--<div id="assignment_dropdown" class="navbar-item has-dropdown is-hoverable" onclick="toggleDropdown('assignment_dropdown')">-->
-            <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
-                {% if len(assignments) > 0 and "assignment_basics" in globals() and assignment_basics["exists"] %}
-                    <!--<a class="navbar-link is-arrowless" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">-->
-                    <div class="navbar-item is-arrowless" style="cursor: default;">
-                        {{ assignment_basics["title"] }}
-                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
-                    </div>
-                    <!--</a>-->
+            {% if len(assignments) > 0 and "assignment_basics" in globals() and assignment_basics["exists"] %}
+                <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
+                    {% if len(assignments) == 1 %}
+                        <a class="navbar-link is-arrowless" style="cursor: default;" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
+                            {{ assignment_basics["title"] }}
+                        </a>
+                    {% else %}
+                        <div class="navbar-item is-arrowless" style="cursor: default;">
+                            {{ assignment_basics["title"] }}
+                            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
+                        </div>
 
-                    <div id="moreDropdown" class="navbar-dropdown">
-                        {% for assignment in assignments %}
-                            <a class="navbar-item" href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
-                        {% end %}
-                    </div>
-                {% end %}
-            </div>
+                        <div id="moreDropdown" class="navbar-dropdown">
+                            {% for assignment in assignments %}
+                                {% if assignment[0] == assignment_basics['id'] %}
+                                    <a class="navbar-item is-active"
+                                {% else %}
+                                    <a class="navbar-item"
+                                {% end %}
+
+                                href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
+                            {% end %}
+                        </div>
+                    {% end %}
+                </div>
+            {% end %}
