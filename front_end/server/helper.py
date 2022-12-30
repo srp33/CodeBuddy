@@ -432,3 +432,27 @@ def get_assignment_status(handler, course, assignment_details, user_start_time):
         return "not_registered_for_course"
 
     return "render"
+
+def execute_and_save_exercise(settings_dict, content, exercise_basics, exercise_details):
+    exec_response = exec_code(settings_dict, exercise_details["solution_code"], "", exercise_details, True)
+
+    if exec_response["message"] == "":
+        has_non_empty_output = False
+
+        for test_title in exec_response["test_outputs"]:
+            txt_output = exec_response["test_outputs"][test_title]["txt_output"]
+            jpg_output = exec_response["test_outputs"][test_title]["jpg_output"]
+
+            exercise_details["tests"][test_title]["txt_output"] = txt_output
+            exercise_details["tests"][test_title]["txt_output_formatted"] = exec_response["test_outputs"][test_title]["txt_output_formatted"]
+            exercise_details["tests"][test_title]["jpg_output"] = jpg_output
+
+            if txt_output != "" or jpg_output != "":
+                has_non_empty_output = True
+
+        if has_non_empty_output or exercise_details["allow_any_response"]:
+            return content.save_exercise(exercise_basics, exercise_details), True
+        else:
+            return "No output was produced for any test.", False
+    else:
+        return exec_response["message"], False

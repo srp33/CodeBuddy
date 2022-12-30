@@ -40,29 +40,13 @@ class EditExerciseHandler(BaseUserHandler):
                     exercise_details["date_created"] = current_time
                 exercise_details["date_updated"] = current_time
 
-                exec_response = exec_code(self.settings_dict, exercise_details["solution_code"], "", exercise_details, True)
+                result, success = execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
 
-                if exec_response["message"] == "":
-                    has_non_empty_output = False
-
-                    for test_title in exec_response["test_outputs"]:
-                        txt_output = exec_response["test_outputs"][test_title]["txt_output"]
-                        jpg_output = exec_response["test_outputs"][test_title]["jpg_output"]
-
-                        exercise_details["tests"][test_title]["txt_output"] = txt_output
-                        exercise_details["tests"][test_title]["txt_output_formatted"] = exec_response["test_outputs"][test_title]["txt_output_formatted"]
-                        exercise_details["tests"][test_title]["jpg_output"] = jpg_output
-
-                        if txt_output != "" or jpg_output != "":
-                            has_non_empty_output = True
-
-                    if has_non_empty_output or exercise_details["allow_any_response"]:
-                        results["exercise_id"] = self.content.save_exercise(exercise_basics, exercise_details)
-                        results["exercise_details"] = exercise_details
-                    else:
-                        results["message"] = "No output was produced for any test."
+                if success:
+                    results["exercise_id"] = result
+                    results["exercise_details"] = exercise_details
                 else:
-                    results["message"] = exec_response["message"]
+                    results["message"] = result
             else:
                 results["message"] = "You must be an administrator or an instructor for this course to edit exercises."
         except ConnectionError as inst:
