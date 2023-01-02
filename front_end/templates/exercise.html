@@ -3,7 +3,7 @@
         {% if exercise_basics["exists"] %}
             <link rel="stylesheet" href="/static/css/modal.css">
 
-            {% if assignment_details["has_timer"] %}
+            {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
                 <link rel="stylesheet" href="/static/css/timer.css">
 
                 <script>
@@ -82,7 +82,7 @@
                 </script>
             {% end %}
 
-            {% if assignment_details["has_timer"] %}
+            {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
                 <div id="clockdiv">
                     <div>
                         <span class="hours"></span>
