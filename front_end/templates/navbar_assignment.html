@@ -1,13 +1,13 @@
             {% if len(assignments) > 0 and "assignment_basics" in globals() and assignment_basics["exists"] %}
                 <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
                     {% if len(assignments) == 1 %}
-                        <a class="navbar-link is-arrowless" style="cursor: default;" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
+                        <a class="navbar-link is-arrowless" style="cursor: pointer;" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
                             {{ assignment_basics["title"] }}
                         </a>
                     {% else %}
-                        <div class="navbar-item is-arrowless" style="cursor: default;">
+                        <div class="navbar-item is-arrowless" style="cursor: pointer;">
                             {{ assignment_basics["title"] }}
-                            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 20px;"></i>
+                            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
                         </div>
 
                         <div id="moreDropdown" class="navbar-dropdown">
