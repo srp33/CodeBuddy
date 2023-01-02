@@ -5,25 +5,21 @@
         burgerIcon.classList.toggle('is-active');
         dropMenu.classList.toggle('is-active');
     };
-
+    
     function toggleDropdown(div_id) {
-        var element = $("#" + div_id);
-
-        if (element.hasClass("is-active"))
-            element.removeClass("is-active");
-        else
-            element.addClass("is-active");
+        var element = document.getElementById(div_id);
+        element.classList.toggle('is-active');
     }
 
     window.addEventListener('click', function(e) {
         for (menu of ["course", "assignment", "exercise", "menu"]) {
-            var dropdown = $(`#${menu}_dropdown`);
+            var dropdown = document.getElementById(`#${menu}_dropdown`);
 
-            if (dropdown.length == 0)
+            if (dropdown == null)
                 continue;
 
-            if (!dropdown[0].contains(e.target) && dropdown.hasClass("is-active"))
-                dropdown.removeClass("is-active");
+            if (!dropdown.contains(e.target) && dropdown.classList.contains("is-active"))
+                dropdown.classList.remove("is-active");
         }
     });
 </script>

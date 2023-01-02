@@ -45,7 +45,12 @@ pre {
     border-radius: 5px;
 }
 
-.navbar-link:hover {
+.navbar-link:hover{
+    color: #1AB28C; /* light teal */
+}
+
+.navbar-item:hover {
+    background-color: hsl(0deg, 0%, 98%);
     color: #1AB28C; /* light teal */
 }
 
