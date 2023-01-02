@@ -83,11 +83,7 @@
                                 <td class="has-text-left"><a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ score[1]['user_id'] }}">{{ score[1]["name"] }}</a></td>
                                 <td class="has-text-left">{{ score[0] }}</td>
                                 <td class="has-text-left">
-                                    {% if score[1]["percent_passed"] == 0 %}
-                                        0%
-                                    {% else %}
-                                        <a href="/edit_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(score[1]["percent_passed"]) }}%</a>
-                                    {% end %}
+                                    <a href="/edit_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(score[1]["percent_passed"]) }}%</a>
                                 </td>
                                 <td class="has-text-left">
                                     <script>
