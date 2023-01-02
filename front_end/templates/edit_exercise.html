@@ -475,8 +475,16 @@
                 opt.value = output_type_option;
                 opt.innerHTML = back_ends_obj[back_end]["output_types"][output_type_option];
 
-                if (output_type_option == output_type)
-                    opt.selected = true;
+                if (output_type == null) {
+                    if (output_type_option == "txt") {
+                        opt.selected = true;
+                    }
+                }
+                else {
+                    if (output_type_option == output_type) {
+                        opt.selected = true;
+                    }
+                }
 
                 ot_select.appendChild(opt);
             }
@@ -624,7 +632,7 @@
                 $("#output").addClass("is-hidden");
             }
 
-            updateBackEndOptions(exercise_details_obj["back_end"]);
+            updateBackEndOptions(exercise_details_obj["back_end"], exercise_details_obj["output_type"]);
 
             setValue("title", exercise_basics_obj["title"]);
 
