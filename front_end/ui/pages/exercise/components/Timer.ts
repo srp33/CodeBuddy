@@ -11,7 +11,7 @@ export class Timer extends LitElement {
 
 	constructor() {
 		super();
-		const isAdmin = window.templateData.is_administrator || window.templateData.is_instructor;
+		const isAdmin = window.templateData.is_administrator || window.templateData.is_instructor || window.templateData.is_assistant;
 		if (!isAdmin && assignment_details.has_timer) {
 			const start_time_js = new Date(start_time);
 			start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
