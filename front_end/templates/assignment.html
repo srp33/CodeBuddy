@@ -4,6 +4,10 @@
     {% if assignment_basics["exists"] %}
         <p>{{ assignment_details["introduction"] }}</p>
 
+        {% if assignment_details["has_timer"] %}
+            <p><i>This assignment is timed. The time limit is {{ assignment_details["hour_timer"] }} hours, {{ assignment_details["minute_timer"] }} minutes.</i></p>
+        {% end %}
+
         {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
             <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
         {% end %}
