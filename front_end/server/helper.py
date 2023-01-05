@@ -95,10 +95,11 @@ def sort_nicely(l):
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key = alphanum_key)
 
-def sort_list_of_dicts_nicely(lst, key):
+def sort_list_of_dicts_nicely(lst, keys):
     sort_dict = {}
     for item in lst:
-        sort_dict[item[key]] = item
+        sort_key = "__".join([str(item[key]) for key in keys])
+        sort_dict[sort_key] = item
 
     sorted_list = []
     for dict_key in sort_nicely(sort_dict.keys()):
