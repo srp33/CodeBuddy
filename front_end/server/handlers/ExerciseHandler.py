@@ -69,7 +69,6 @@ class ExerciseHandler(BaseUserHandler):
                     "submissions": submissions,
                     "num_submissions": len(submissions),
                     "exercise_statuses": exercise_statuses,
-                    "assignment_options": [x[1] for x in self.content.get_assignments(course) if str(x[0]) != assignment],
                     "next_exercise": next_prev_exercises["next"],
                     "prev_exercise": next_prev_exercises["previous"],
                     "code_completion_path": back_end["code_completion_path"],
