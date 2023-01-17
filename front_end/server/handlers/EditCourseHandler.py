@@ -30,6 +30,8 @@ class EditCourseHandler(BaseUserHandler):
             if course_details["passcode"] == "":
                 course_details["passcode"] = None
 
+            course_details["allow_students_download_submissions"] = self.get_body_argument("allow_students_download_submissions") == "Yes"
+
             result = "Success: Course information saved!"
 
             if course_basics["title"] == "" or course_details["introduction"] == "":
@@ -45,7 +47,7 @@ class EditCourseHandler(BaseUserHandler):
                         result = "Error: The title cannot exceed 100 characters."
                     else:
                         #self.content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
-                        self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], None, dt.datetime.utcnow())
+                        self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], None, dt.datetime.utcnow())
                         course = self.content.save_course(course_basics, course_details)
 
             self.render("edit_course.html", courses=courses, assignments=self.content.get_assignments(course), course_basics=course_basics, course_details=course_details, result=result, user_info=self.get_user_info())

@@ -47,6 +47,7 @@ def make_app():
             url(r"/download_assignment_scores/([^/]+)/([^/]+)", DownloadAssignmentScoresHandler, name="download_assignment_scores"),
             url(r"/download_course_scores/([^/]+)", DownloadCourseScoresHandler, name="download_course_scores"),
             url(r"/download_file/([^/]+)/([^/]+)/([^/]+)/([^/]+)", DownloadFileHandler, name="download_file"),
+            url(r"/download_submissions_student/([^/]+)", DownloadSubmissionsStudentHandler, name="download_submissions_student"),
             url(r"/external/(.+)", ExternalSiteHandler, name="external_site"),
             url(r"/edit_assignment/([^/]+)/([^/]+)?", EditAssignmentHandler, name="edit_assignment"),
             url(r"/edit_assignment_scores/([^/]+)/([^/]+)/([^/]+)", EditAssignmentScoresHandler, name="edit_assignment_scores"),

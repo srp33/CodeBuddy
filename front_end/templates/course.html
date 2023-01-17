@@ -78,10 +78,15 @@
                 </tbody>
             </table>
         </div>
+
+        {% if course_details["allow_students_download_submissions"] %}
+            <div class="buttons">
+                <a class="button" href='/download_submissions_student/{{ course_basics['id'] }}' download="{{ course_basics['title'] }}__{{ user_info['user_id'] }}.html">Download submissions</a>
+            </div>
+        {% end %}
     {% else %}
         <p>No assignments have been created.</p>
     {% end %}
-
 {% else %}
     <h2>This course does not exist.</h2>
 {% end %}

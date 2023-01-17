@@ -1532,9 +1532,11 @@ class Content:
         course_basics["title"] = title
         course_basics["visible"] = visible
 
-    def specify_course_details(self, course_details, introduction, passcode, date_created, date_updated):
+    def specify_course_details(self, course_details, introduction, passcode, allow_students_download_submissions, date_created, date_updated):
         course_details["introduction"] = introduction
         course_details["passcode"] = passcode
+        course_details["allow_students_download_submissions"] = allow_students_download_submissions
+
         course_details["date_updated"] = date_updated
 
         if course_details["date_created"]:
@@ -1656,12 +1658,12 @@ class Content:
         return row["code"] if row else None
 
     def get_course_details(self, course, format_output=False):
-        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None}
+        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "allow_students_download_submissions": False}
 
         if not course:
             return null_course
 
-        sql = '''SELECT introduction, passcode, date_created, date_updated
+        sql = '''SELECT introduction, passcode, date_created, date_updated, allow_students_download_submissions
                  FROM courses
                  WHERE course_id = ?'''
 
@@ -1670,7 +1672,7 @@ class Content:
         if not row:
             return null_course
 
-        course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"]}
+        course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "allow_students_download_submissions": row["allow_students_download_submissions"]}
         if format_output:
             course_dict["introduction"] = convert_markdown_to_html(convert_html_to_markdown(course_dict["introduction"])) # Removes html markup from instructions before converting markdown to html
 
@@ -1806,15 +1808,15 @@ class Content:
     def save_course(self, course_basics, course_details):
         if course_basics["exists"]:
             sql = '''UPDATE courses
-                     SET title = ?, visible = ?, introduction = ?, passcode = ?, date_updated = ?
+                     SET title = ?, visible = ?, introduction = ?, passcode = ?, allow_students_download_submissions = ?, date_updated = ?
                      WHERE course_id = ?'''
 
-            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_updated"], course_basics["id"]])
+            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_updated"], course_basics["id"]])
         else:
-            sql = '''INSERT INTO courses (title, visible, introduction, passcode, date_created, date_updated)
+            sql = '''INSERT INTO courses (title, visible, introduction, passcode, allow_students_download_submissions, date_created, date_updated)
                      VALUES (?, ?, ?, ?, ?, ?)'''
 
-            course_basics["id"] = self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["date_created"], course_details["date_updated"]])
+            course_basics["id"] = self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_created"], course_details["date_updated"]])
             course_basics["exists"] = True
 
         return course_basics["id"]
@@ -2000,8 +2002,8 @@ class Content:
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
 
     def copy_course(self, course_id, new_course_title):
-        sql = '''INSERT INTO courses (title, introduction, visible, passcode, date_created, date_updated)
-                 SELECT ?, introduction, visible, passcode, date_created, date_updated
+        sql = '''INSERT INTO courses (title, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated)
+                 SELECT ?, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 
@@ -2535,3 +2537,34 @@ class Content:
           next_student_id = user_ids[student_index + 1]
 
         return prev_student_id, next_student_id
+
+    def get_submissions_student(self, course_id, student_id):
+        sql = '''SELECT a.title AS assignment_title,
+                        a.introduction AS assignment_introduction,
+                        e.title AS exercise_title,
+                        e.instructions AS exercise_instructions,
+                        s.code,
+                        max(s.date)
+                 FROM submissions s
+                 INNER JOIN exercises e
+                   ON s.exercise_id = e.exercise_id
+                 INNER JOIN assignments a
+                   ON s.assignment_id = a.assignment_id
+                 WHERE s.course_id = ?
+                   AND s.user_id = ?
+                   AND s.passed = 1
+                   AND e.visible = 1
+                   AND a.visible = 1
+                   AND a.has_timer = 0
+                   AND e.back_end != "not_code"
+                 GROUP BY a.assignment_id, e.exercise_id'''
+
+        submissions = []
+        for row in self.fetchall(sql, (course_id, student_id,)):
+            submission = {}
+            for x in ["assignment_title", "assignment_introduction", "exercise_title", "exercise_instructions", "code"]:
+                submission[x] = row[x]
+
+            submissions.append(submission)
+
+        return sort_list_of_dicts_nicely(submissions, ["assignment_title", "exercise_title"])
