@@ -1,30 +1,19 @@
-from distutils.log import debug
-import sys, os
-
-from handlers import *
-
 from concurrent_log_handler import ConcurrentRotatingFileHandler
+from distutils.log import debug
 from content import *
 import contextvars
 from datetime import datetime
-import glob
+from handlers import *
 from helper import *
-import html
-import io
-import json
 import logging
-import re
+import os
+import sys
 from tornado.auth import GoogleOAuth2Mixin
 import tornado.ioloop
 from tornado.web import *
 import traceback
-from urllib.parse import urlencode
-import urllib.request
-import uuid
-import sqlite3
-from sqlite3 import Error
-import zipfile
 import ui_methods
+from urllib.parse import urlencode
 
 def make_app():
     app = Application(
@@ -61,6 +50,7 @@ def make_app():
             url(r"/googlelogin", GoogleLoginHandler, name="googlelogin"),
             url(r"/help_requests/([^/]+)", HelpRequestsHandler, name="help_requests"),
             url(r"/import_assignment/([^/]+)", ImportAssignmentHandler, name="import_assignment"),
+            url(r"/is_taking_restricted_assignment/([^/]+)/([^/]+)", IsTakingRestrictedAssignmentHandler, name="is_taking_restricted_assignment"),
             url(r"/login", CASLoginHandler, name="caslogin"),
             url(r"/logout", LogoutHandler, name="logout"),
             url(r"/move_assignment/([^/]+)/([^/]+)", MoveAssignmentHandler, name="move_assignment"),
@@ -89,6 +79,7 @@ def make_app():
             url(r"/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
             url(r"/test", TestHandler, name="test"),
             url(r"/unregister/([^/]+)/([^/]+)", UnregisterHandler, name="unregister"),
+            url(r"/unavailable_exercise/([^/]+)/([^/]+)", UnavailableExerciseHandler, name="unavailable_exercise"),
             url(r"/view_instructor_solution/([^/]+)/([^/]+)/([^/]+)", ViewInstructorSolutionHandler, name="view_instructor_solution"),
             url(r"/view_peer_solution/([^/]+)/([^/]+)/([^/]+)", ViewPeerSolutionHandler, name="view_peer_solution"),
             url(r"/view_pp/([^/]+)", ViewPairProgrammingAssignmentsHandler, name="view_pp"),
@@ -152,6 +143,10 @@ if __name__ == "__main__":
         settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
 
         content = Content(settings_dict)
+
+        #content.temp_export_bio165()
+        #import sys
+        #sys.exit()
 
         database_version = content.get_database_version()
         code_version = int(read_file("../VERSION").rstrip())

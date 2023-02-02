@@ -75,3 +75,31 @@ class BaseUserHandler(RequestHandler):
             return self.content.get_courses(show_hidden)
         else:
             return self.content.get_registered_courses(self.get_user_id())
+
+    def check_whether_should_show_exercise(self, course, assignment, assignment_details, assignments, courses, assignment_basics, course_basics):
+        if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
+            return True
+
+        curr_datetime = datetime.utcnow()
+
+        if assignment_details["has_timer"]:
+            user_start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_info()["user_id"])
+
+            if user_start_time == None:
+                # This means the student hasn't started the timed assignment.
+                self.redirect(f"/assignment/{course}/{assignment}")
+            else:
+                deadline = user_start_time + timedelta(hours = assignment_details["hour_timer"], minutes = assignment_details["minute_timer"])
+
+                if deadline < curr_datetime:
+                    return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="timer_has_expired", user_info=self.get_user_info())
+
+        assignment_status = get_assignment_status(self, course, assignment_details, curr_datetime)
+
+        if assignment_status != "render":
+            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.get_user_info())
+
+        if self.content.is_taking_restricted_assignment(self.get_user_id(), assignment):
+            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="restrict_other_assignments", user_info=self.get_user_info())
+        
+        return True

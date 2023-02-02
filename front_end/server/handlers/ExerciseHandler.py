@@ -8,22 +8,14 @@ class ExerciseHandler(BaseUserHandler):
         try:
             show = self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
             courses = self.get_courses(show)
-            assignments = self.content.get_assignments(course, show)
+            assignments = self.content.get_assignments_basics(course, show)
 
             course_basics = self.content.get_course_basics(course)
             assignment_basics = self.content.get_assignment_basics(course, assignment)
             assignment_details = self.content.get_assignment_details(course, assignment, True)
 
-            user_start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_info()["user_id"])
-
-            if not self.is_administrator() and not self.is_instructor_for_course(course) and not self.is_assistant_for_course(course):
-                if assignment_details["has_timer"] and user_start_time == None:
-                    self.redirect(f"/assignment/{course}/{assignment}")
-
-                assignment_status = get_assignment_status(self, course, assignment_details, user_start_time)
-
-                if assignment_status != "render":
-                    return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.get_user_info())
+            if not self.check_whether_should_show_exercise(course, assignment, assignment_details, assignments, courses, assignment_basics, course_basics):
+                return
 
             exercises = self.content.get_exercises(course, assignment, show)
             exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
@@ -77,13 +69,14 @@ class ExerciseHandler(BaseUserHandler):
                     "start_time": start_time,
                     "user_info": self.get_user_info(),
                     "user_id": self.get_user_id(),
-                    "student_id": self.get_user_id(),
                     "is_administrator": self.is_administrator(),
                     "is_instructor": self.is_instructor_for_course(course),
                     "is_assistant": self.is_assistant_for_course(course),
+                    "check_for_restrict_other_assignments": self.content.check_for_restrict_other_assignments(course),
                     "help_request": None,
                     "same_suggestion": None,
             }
+
                     # "help_request": help_request,
                     # "same_suggestion": same_suggestion,
 

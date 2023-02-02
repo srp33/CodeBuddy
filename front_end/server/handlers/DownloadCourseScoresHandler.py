@@ -31,7 +31,7 @@ class DownloadCourseScoresHandler(BaseUserHandler):
 #
 #                self.content.create_export_paths(temp_dir_path, descriptor)
 #
-#                assignments = self.content.get_assignments(course)
+#                assignments = self.content.get_assignments_basic(course)
 #                for assignment in assignments:
 #                    file_contents = self.content.create_scores_text(course, assignment[0])
 #                    with open(f"{temp_dir_path}/{assignment[0]}.csv", "w") as score_file:

@@ -27,7 +27,7 @@ class ResaveExercisesHandler(BaseUserHandler):
 
                 output += "<h4>All done.</h4>"
 
-                self.render("resave_exercises.html", courses=self.get_courses(), assignments=self.content.get_assignments(course), course_basics=course_basics, assignment_basics=assignment_basics, output=output, user_info=self.get_user_info())
+                self.render("resave_exercises.html", courses=self.get_courses(), assignments=self.content.get_assignments_basics(course), course_basics=course_basics, assignment_basics=assignment_basics, output=output, user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
         except Exception as inst:

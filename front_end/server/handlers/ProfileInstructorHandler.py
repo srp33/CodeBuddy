@@ -4,7 +4,7 @@ class ProfileInstructorHandler(BaseUserHandler):
     def get (self, course_id, user_id):
         try:
             if self.is_administrator() or self.is_instructor_for_course(course_id):
-                self.render("profile_instructor.html", page="instructor", tab=None, course=self.content.get_course_basics(course_id), assignments=self.content.get_assignments(course_id), instructors=self.content.get_users_from_role(course_id, "instructor"), assistants=self.content.get_users_from_role(course_id, "assistant"), registered_students=self.content.get_registered_students(course_id), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id), is_assistant=self.is_assistant_for_course(course_id), registered_courses=self.content.get_registered_courses(user_id))
+                self.render("profile_instructor.html", page="instructor", tab=None, course=self.content.get_course_basics(course_id), assignments=self.content.get_assignments_basics(course_id), instructors=self.content.get_users_from_role(course_id, "instructor"), assistants=self.content.get_users_from_role(course_id, "assistant"), registered_students=self.content.get_registered_students(course_id), result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id), is_assistant=self.is_assistant_for_course(course_id), registered_courses=self.content.get_registered_courses(user_id))
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -45,7 +45,7 @@ class ProfileInstructorHandler(BaseUserHandler):
                 else:
                     self.render("permissions.html")
 
-            self.render("profile_instructor.html", page="instructor", tab=tab, course=self.content.get_course_basics(course_id), assignments=self.content.get_assignments(course_id), instructors=self.content.get_users_from_role(course_id, "instructor"), assistants=self.content.get_users_from_role(course_id, "assistant"), registered_students=self.content.get_registered_students(course_id), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id), is_assistant=self.is_assistant_for_course(course_id), registered_courses=self.content.get_registered_courses(user_id))
+            self.render("profile_instructor.html", page="instructor", tab=tab, course=self.content.get_course_basics(course_id), assignments=self.content.get_assignments_basics(course_id), instructors=self.content.get_users_from_role(course_id, "instructor"), assistants=self.content.get_users_from_role(course_id, "assistant"), registered_students=self.content.get_registered_students(course_id), result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course_id), is_assistant=self.is_assistant_for_course(course_id), registered_courses=self.content.get_registered_courses(user_id))
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

@@ -5,6 +5,8 @@
         {% if assignment_basics["exists"] %}
             {% if error == "timer_has_expired" %}
                 <p>This is a timed assignment. Either you have not started the assignment or your time has expired.</p>
+            {% elif error == "restrict_other_assignments" %}
+                <p>You are currently taking a timed assignment, and the instructor has restricted access to all other assignments while you are taking it.</p>
             {% elif error == "start_date" %}
                 <p>This assignment opens on <span id="start_date"></span>.</p>
 

@@ -11,7 +11,7 @@ class CopyAssignmentHandler(BaseUserHandler):
                 if new_title == "":
                     result = "The title cannot be blank."
                 else:
-                    existing_titles = list(map(lambda x: x[1]["title"], self.content.get_assignments(course)))
+                    existing_titles = list(map(lambda x: x[1]["title"], self.content.get_assignments_basics(course)))
                     if new_title in existing_titles:
                         result = "An assignment with that title already exists in this course."
                     else:

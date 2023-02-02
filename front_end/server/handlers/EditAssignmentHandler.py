@@ -9,7 +9,7 @@ class EditAssignmentHandler(BaseUserHandler):
                 hour_options = list(range(13))
                 minute_options = list(range(61))
 
-                self.render("edit_assignment.html", courses=self.get_courses(), assignments=self.content.get_assignments(course), exercises=self.content.get_exercises(course, assignment), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), assignment_details=self.content.get_assignment_details(course, assignment), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_info=self.get_user_info())
+                self.render("edit_assignment.html", courses=self.get_courses(), assignments=self.content.get_assignments_basics(course), exercises=self.content.get_exercises(course, assignment), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), assignment_details=self.content.get_assignment_details(course, assignment), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_info=self.get_user_info())
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -36,17 +36,20 @@ class EditAssignmentHandler(BaseUserHandler):
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
+
                 if start_date == "None":
                     start_date = None
                 else:
                     start_date = dt.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
             else:
                 start_date = None
+
             if assignment_details["has_due_date"]:
                 due_date = self.get_body_argument("due_date_picker").strip()
                 allow_late = self.get_body_argument("allow_late_select") == "Yes"
                 late_percent = int(self.get_body_argument("late_percent_select")[:-1]) / 100
                 view_answer_late = self.get_body_argument("view_late_select") == "Yes"
+
                 if not allow_late:
                     late_percent = None
                 if due_date == "None":
@@ -62,9 +65,11 @@ class EditAssignmentHandler(BaseUserHandler):
             if assignment_details["has_timer"]:
                 hour_timer = int(self.get_body_argument("hour_select"))
                 minute_timer = int(self.get_body_argument("minute_select"))
+                restrict_other_assignments = self.get_body_argument("restrict_other_assignments_select") == "Yes"
             else:
                 hour_timer = None
                 minute_timer = None
+                restrict_other_assignments = False
 
             assignment_details["start_date"] = start_date
             assignment_details["due_date"] = due_date
@@ -73,13 +78,14 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["view_answer_late"] = view_answer_late
             assignment_details["hour_timer"] = hour_timer
             assignment_details["minute_timer"] = minute_timer
+            assignment_details["restrict_other_assignments"] = restrict_other_assignments
 
             result = "Success: Assignment information saved!"
 
             if assignment_basics["title"] == "" or assignment_details["introduction"] == "":
                 result = "Error: Missing title or introduction."
             else:
-                if self.content.has_duplicate_title(self.content.get_assignments(course), assignment_basics["id"], assignment_basics["title"]):
+                if self.content.has_duplicate_title(self.content.get_assignments_basics(course), assignment_basics["id"], assignment_basics["title"]):
                     result = "Error: An assignment with that title already exists."
                 else:
                     if len(assignment_basics["title"]) > 100:
@@ -91,7 +97,8 @@ class EditAssignmentHandler(BaseUserHandler):
                             if assignment_details["has_timer"] and assignment_details["hour_timer"] == 0 and assignment_details["minute_timer"] == 0:
                                 result = "Error: A timer must be longer than zero minutes."
                             else:
-                                self.content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, dt.datetime.utcnow(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["allowed_ip_addresses"])
+                                self.content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, dt.datetime.utcnow(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"])
+
                                 assignment = self.content.save_assignment(assignment_basics, assignment_details)
 
                                 #    result = "Error: The title can only contain alphanumeric characters, spaces, hyphens, and parentheses."
@@ -102,8 +109,6 @@ class EditAssignmentHandler(BaseUserHandler):
             hour_options = list(range(13))
             minute_options = list(range(61))
 
-            self.render("edit_assignment.html", courses=self.get_courses(), assignments=self.content.get_assignments(course), exercises=self.content.get_exercises(course, assignment), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_info=self.get_user_info())
-
+            self.render("edit_assignment.html", courses=self.get_courses(), assignments=self.content.get_assignments_basics(course), exercises=self.content.get_exercises(course, assignment), exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_info=self.get_user_info())
         except Exception as inst:
             render_error(self, traceback.format_exc())
-

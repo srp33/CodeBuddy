@@ -14,8 +14,9 @@ class ExportAssignmentHandler(BaseUserHandler):
                 assignment_details = self.content.get_assignment_details(course, assignment)
 
                 exercises = {}
-                for exercise_id in self.content.get_exercise_ids(course, assignment):
-                    exercise_basics = self.content.get_exercise_basics(course, assignment, exercise_id)
+                for exercise in self.content.get_exercises(course, assignment):
+                    exercise_basics = self.content.get_exercise_basics(course, assignment, exercise["exercise_id"])
+
                     del exercise_basics["id"]
                     del exercise_basics["exists"]
                     del exercise_basics["assignment"]

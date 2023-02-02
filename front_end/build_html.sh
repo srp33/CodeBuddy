@@ -39,8 +39,8 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html resave_exercises.html container_bottom.html footer.html > "$OUTPUT/resave_exercises.html"
 cat header.html javascript_container.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html exercise_functions.html exercise.html container_bottom.html footer.html > "$OUTPUT/exercise.html"
 cat header.html javascript_container.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html edit_exercise.html container_bottom.html footer.html > "$OUTPUT/edit_exercise.html"
-cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html view_instructor_solution.html container_bottom.html footer.html > "$OUTPUT/view_instructor_solution.html"
-cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html view_peer_solution.html container_bottom.html footer.html > "$OUTPUT/view_peer_solution.html"
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html exercise_functions.html view_instructor_solution.html container_bottom.html footer.html > "$OUTPUT/view_instructor_solution.html"
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html exercise_functions.html view_peer_solution.html container_bottom.html footer.html > "$OUTPUT/view_peer_solution.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html view_assignment_scores.html container_bottom.html footer.html > "$OUTPUT/view_assignment_scores.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html view_student_assignment_scores.html container_bottom.html footer.html > "$OUTPUT/view_student_assignment_scores.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html container_color.html edit_assignment_scores.html container_bottom.html footer.html > "$OUTPUT/edit_assignment_scores.html"
@@ -54,6 +54,7 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 
 cat header.html navbar_top.html navbar_bottom.html container_color.html error.html container_bottom.html footer.html > "$OUTPUT/error.html"
 cat header.html navbar_top.html navbar_bottom.html container_color.html permissions.html container_bottom.html footer.html > "$OUTPUT/permissions.html"
+cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html unavailable_exercise.html container_bottom.html footer.html > "$OUTPUT/unavailable_exercise.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html unavailable_assignment.html container_bottom.html footer.html > "$OUTPUT/unavailable_assignment.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html unavailable_course.html container_bottom.html footer.html > "$OUTPUT/unavailable_course.html"
 

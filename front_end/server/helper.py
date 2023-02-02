@@ -413,15 +413,8 @@ def log_page_access(handler, additional_message=None):
 
     logging.info(logging_message)
 
-def get_assignment_status(handler, course, assignment_details, user_start_time):
+def get_assignment_status(handler, course, assignment_details, curr_datetime):
     client_ip = get_client_ip_address(handler.request)
-    curr_datetime = datetime.utcnow()
-
-    if assignment_details["has_timer"] and user_start_time != None:
-        deadline = user_start_time + timedelta(hours = assignment_details["hour_timer"], minutes = assignment_details["minute_timer"])
-
-        if deadline < curr_datetime:
-            return "timer_has_expired"
 
     if assignment_details["allowed_ip_addresses"] and client_ip not in assignment_details["allowed_ip_addresses"]:
         return "restricted_ip"

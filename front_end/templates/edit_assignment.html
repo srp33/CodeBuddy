@@ -18,7 +18,7 @@
 
 {% if result %}
     {% if result.startswith("Error:") %}
-        <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+        <p><div class="notification not-passing"><strong>{{ result }}</strong></div></p>
     {% else %}
         <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
     {% end %}
@@ -189,48 +189,80 @@
     </div>
 
     <div class="shadow-box">
-        <p><strong>Timer: </strong><br />Here you can specify the time a student has to complete this assignment. Once a students begins this assignment, they cannot pause the timer.</p>
-        <div class="select is-grey">
-            <select name="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
-                <option
-                {% if assignment_details["has_timer"] %}
-                    selected
-                {% end %}
-                >Off</option>
-                <option
-                {% if assignment_details["has_timer"] %}
-                    selected
-                {% end %}
-                >On</option>
-            </select>
+        <div>
+            <p><strong>Timer: </strong></p>
+            <p>You can specify a time limit for students to complete the assignment. Once a student begins the assignment, they cannot pause the timer, but you do have an option to reset the timer, if they request it.</p>
         </div>
 
-        <div id="timer_div" class="select is-grey"
-        {% if assignment_details["has_timer"] %}
-            style="display: inline;"
-        {% else %}
-            style="display: none;"
-        {% end %}>
-            <label for="hour_select">Hours:</label>
-            <select id="hour_select" name="hour_select" style="display: inline;">
-            {% for hour in hour_options %}
-                <option
-                {% if hour == assignment_details["hour_timer"] %}
-                    selected
-                {% end %}
-                >{{ hour }}</option>
+        <p>
+            <div class="select is-grey">
+                <select name="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
+                    <option
+                    {% if assignment_details["has_timer"] %}
+                        selected
+                    {% end %}
+                    >Off</option>
+                    <option
+                    {% if assignment_details["has_timer"] %}
+                        selected
+                    {% end %}
+                    >On</option>
+                </select>
+            </div>
+        </p>
+
+        <div id="timer_subsection"
+            {% if assignment_details["has_timer"] %}
+                style="display: inline;"
+            {% else %}
+                style="display: none;"
             {% end %}
-            </select>
-            <label for="minute_select">Minutes:</label>
-            <select id="minute_select" name="minute_select" style="display: inline;">
-            {% for minute in minute_options %}
-                <option
-                {% if minute == assignment_details["minute_timer"] %}
-                    selected
-                {% end %}
-                >{{ minute }}</option>
-            {% end %}
-            </select>
+        >
+            <p>
+                <label for="hour_select">Hours:</label>
+                <div class="select is-grey">
+                    <select id="hour_select" name="hour_select" class="edit-select">
+                    {% for hour in hour_options %}
+                        <option
+                        {% if hour == assignment_details["hour_timer"] %}
+                            selected
+                        {% end %}
+                        >{{ hour }}</option>
+                    {% end %}
+                    </select>
+                </div>
+            </p>
+
+            <p>
+                <label for="minute_select">Minutes:</label>
+                <div class="select is-grey">
+                    <select id="minute_select" name="minute_select" class="edit-select">
+                    {% for minute in minute_options %}
+                        <option
+                        {% if minute == assignment_details["minute_timer"] %}
+                            selected
+                        {% end %}
+                        >{{ minute }}</option>
+                    {% end %}
+                    </select>
+                </div>
+            </p>
+
+            <p>
+                <label for="restrict_other_assignments_select">You can treat this timed assignment as an exam. When this option is selected, students will not be able to access any other assignment while they are completing this assignment. Would you like to restrict access?</label>
+
+                <div class="select is-grey">
+                    <select id="restrict_other_assignments_select" name="restrict_other_assignments_select" class="edit-select">
+                    {% if assignment_details["has_timer"] and assignment_details["restrict_other_assignments"] %}
+                        <option value="Yes" selected>Yes</option>
+                        <option value="No">No</option>
+                    {% else %}
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    {% end %}
+                    </select>
+                </div>
+            </p>
         </div>
     </div>
 
@@ -251,7 +283,7 @@
     </div>-->
 
     <div class="shadow-box">
-        <p><strong>Restrict assignment access to the following IP addresses: </strong><br />Separate valid addresses by a comma. If left blank, the assignment will not be restricted by IP address.</p>
+        <p><strong>Restrict access to the following IP addresses: </strong><br />Separate valid addresses by a comma. If left blank, the assignment will not be restricted by IP address.</p>
         <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if assignment_details["allowed_ip_addresses"] %}{{ ",".join(assignment_details["allowed_ip_addresses"]) }},{% end %}</textarea>
     </div>
 
@@ -365,12 +397,13 @@
     }
 
     function showTimerOptions(on) {
-        var timer_div = document.getElementById("timer_div");
+        var timer_subsection = document.getElementById("timer_subsection");
+
         if (on == "On") {
-            timer_div.style.display = "inline";
+            timer_subsection.style.display = "inline";
         }
         else {
-            timer_div.style.display = "none";
+            timer_subsection.style.display = "none";
         }
     }
 </script>

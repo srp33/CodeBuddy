@@ -27,15 +27,15 @@ class AssignmentHandler(BaseUserHandler):
             exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"], show_hidden=True)
             has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
 
-            return self.render("assignment_admin.html", courses=courses, assignments=self.content.get_assignments(course), exercises=self.content.get_exercises(course, assignment, show_hidden=True), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=self.content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=self.content.get_assignment_details(course, assignment, True), course_options=[x[1] for x in courses if str(x[0]) != course], assignment_summary_scores=self.content.get_assignment_summary_scores(course, assignment), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course), download_file_name=get_scores_download_file_name(assignment_basics))
+            return self.render("assignment_admin.html", courses=courses, assignments=self.content.get_assignments_basics(course), exercises=self.content.get_exercises(course, assignment, show_hidden=True), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=self.content.get_course_basics(course), assignment_basics=assignment_basics, assignment_details=self.content.get_assignment_details(course, assignment, True), course_options=[x[1] for x in courses if str(x[0]) != course], assignment_summary_scores=self.content.get_assignment_summary_scores(course, assignment), user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course), download_file_name=get_scores_download_file_name(assignment_basics))
 
         courses = self.get_courses(False)
-        assignments = self.content.get_assignments(course, show_hidden=False)
+        assignments = self.content.get_assignments_basics(course, show_hidden=False)
         course_basics = self.content.get_course_basics(course)
         assignment_basics = self.content.get_assignment_basics(course, assignment)
         assignment_details = self.content.get_assignment_details(course, assignment, True)
 
-        assignment_status = get_assignment_status(self, course, assignment_details, user_start_time)
+        assignment_status = get_assignment_status(self, course, assignment_details, datetime.utcnow())
 
         if assignment_status == "render":
             exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"], show_hidden=False)

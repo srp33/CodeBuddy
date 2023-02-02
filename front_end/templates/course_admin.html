@@ -8,7 +8,7 @@
         </div>-->
     {% end %}
 
-    {% if len(assignments) > 0 %}
+    {% if len(assignment_statuses) > 0 %}
         <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
         <link rel="stylesheet" href="/static/css/modal.css">
 
@@ -30,9 +30,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for assignment in assignments %}
+                {% for assignment in assignment_statuses %}
                     <tr>
-                        <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
+                        <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]['title'] }}</a></td>
                         {% if assignment[1]["visible"] == 0 %}
                             <td style="text-align: center;">Hidden</td>
                             <td> </td>
@@ -62,32 +62,32 @@
                                 <td> </td>
                             {% end %}
 
-                            <td style="text-align: center;">{{ course_summary_scores[assignment[1]["id"]]["num_students_completed"] }} / {{ course_summary_scores[assignment[1]["id"]]["num_students"] }}</td>
-                            <td style="text-align: center;"><a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">{{ course_summary_scores[assignment[1]["id"]]["avg_score"] }}%</a></td>
+                            <td style="text-align: center;">{{ course_summary_scores[assignment[0]]["num_students_completed"] }} / {{ course_summary_scores[assignment[0]]["num_students"] }}</td>
+                            <td style="text-align: center;"><a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ course_summary_scores[assignment[0]]["avg_score"] }}%</a></td>
                         {% end %}
                         <td style="text-align: center;">
-                            <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[1]['id'] }}">
+                            <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">
                                 <i class="far fa-edit"></i>
                             </a>
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('copy_assignment', 'Copy this assignment within this course', {'assignment_id': {{ assignment[1]['id'] }}}, '')">
+                            <a onclick="showPostModal('copy_assignment', 'Copy this assignment within this course', {'assignment_id': {{ assignment[0] }}}, '')">
                                 <i class="far fa-copy"></i>
                             </a>
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('move_assignment', 'Move assignment to another course', {'assignment_id': {{ assignment[1]['id'] }}}, '')">
+                            <a onclick="showPostModal('move_assignment', 'Move assignment to another course', {'assignment_id': {{ assignment[0] }}}, '')">
                                 <i class="far fa-arrow-alt-circle-right"></i>
                             </a>
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('delete_assignment_submissions', 'Purge assignment submissions', {'assignment_id': {{ assignment[1]['id'] }}}, '')">
+                            <a onclick="showPostModal('delete_assignment_submissions', 'Purge assignment submissions', {'assignment_id': {{ assignment[0] }}}, '')">
                                 <i class="far fa-times-circle"></i>
                             </a>
                             <!--https://fontawesome.com/v5/search?o=r&m=free&s=regular-->
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('delete_assignment', 'Delete assignment', {'assignment_id': {{ assignment[1]['id'] }}}, '')">
+                            <a onclick="showPostModal('delete_assignment', 'Delete assignment', {'assignment_id': {{ assignment[0] }}}, '')">
                                 <i class="far fa-trash-alt"></i>
                             </a>
                         </td>

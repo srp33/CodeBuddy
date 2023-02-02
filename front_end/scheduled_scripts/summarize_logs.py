@@ -25,7 +25,6 @@ def update_summary_dict(summary_dict, statistic, timestamp, key, value):
     summary_dict[statistic][timestamp][key] = summary_dict[statistic][timestamp].setdefault(key, 0) + value
 
 def get_titles_from_ids(file_path):
-
     new_dict = {}
     new_dict[0] = ""
     new_dict[1] = ""
@@ -41,20 +40,25 @@ def get_titles_from_ids(file_path):
         exercise_title = ""
 
         if (id_dict["course_id"] != ''):
-            for course_id in content.get_course_ids():
+            for course in content.get_courses():
+                course_id = course["course_id"]
                 course_basics = content.get_course_basics(course_id)
                 if int(id_dict["course_id"]) == course_id:
                     course_title = course_basics["title"]
 
                 if (id_dict["assignment_id"] != ''):
-                    for assignment_id in content.get_assignment_ids(course_id):
+                    for assignment in content.get_assignments_basic(course_id):
+                        assignment_id = assignment["assignment_id"]
                         assignment_basics = content.get_assignment_basics(course_id, assignment_id)
+
                         if int(id_dict["assignment_id"]) == assignment_id:
                             assignment_title = assignment_basics["title"]
 
                         if (id_dict["exercise_id"] != ''):
-                            for exercise_id in content.get_exercise_ids(course_id, assignment_id):
+                            for exercise in content.get_exercises(course_id, assignment_id):
+                                exercise_id = exercise["exercise_id"]
                                 exercise_basics = content.get_exercise_basics(course_id, assignment_id, exercise_id)
+
                                 if int(id_dict["exercise_id"]) == exercise_id:
                                     exercise_title = exercise_basics["title"]
 
@@ -72,7 +76,6 @@ def create_timestamp(year, month, day="", hour=""):
     return int(f"{year}{month}{day}{hour}")
 
 def create_id_dict_from_url(file_path):
-
     id_dict = {}
     id_dict["name"] = ""
     id_dict["course_id"] = ""
@@ -126,8 +129,6 @@ def save_summaries(summary_dict, out_dir_path):
                             names = get_titles_from_ids(key)
                             id_dict = create_id_dict_from_url(key)
                             out_file.write(f"{timestamp}\t{id_dict['course_id']}\t{id_dict['assignment_id']}\t{id_dict['exercise_id']}\t{float(value):.1f}\t{names[0]}\t{names[1]}\t{names[2]}\t{names[3]}\n".encode())
-
-
         else:
             # Write header for output file
             with gzip.open(out_file_path, 'w') as out_file:

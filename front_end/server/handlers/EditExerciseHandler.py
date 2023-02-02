@@ -16,7 +16,7 @@ class EditExerciseHandler(BaseUserHandler):
 
                 next_prev_exercises = self.content.get_next_prev_exercises(course, assignment, exercise, exercises)
 
-                self.render("edit_exercise.html", courses=self.get_courses(), assignments=self.content.get_assignments(course), exercises=exercises, exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_basics_json=escape_json_string(json.dumps(exercise_basics, default=str)), exercise_details_json=escape_json_string(json.dumps(exercise_details, default=str)), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], back_ends_json=escape_json_string(json.dumps(self.settings_dict["back_ends"])), user_info=self.get_user_info(), is_assistant=self.is_assistant_for_course(course), is_edit_page=True)
+                self.render("edit_exercise.html", courses=self.get_courses(), assignments=self.content.get_assignments_basics(course), exercises=exercises, exercise_statuses=self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"]), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), exercise_basics=exercise_basics, exercise_basics_json=escape_json_string(json.dumps(exercise_basics, default=str)), exercise_details_json=escape_json_string(json.dumps(exercise_details, default=str)), next_exercise=next_prev_exercises["next"], prev_exercise=next_prev_exercises["previous"], back_ends_json=escape_json_string(json.dumps(self.settings_dict["back_ends"])), user_info=self.get_user_info(), is_assistant=self.is_assistant_for_course(course), is_edit_page=True)
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -26,7 +26,7 @@ class EditExerciseHandler(BaseUserHandler):
         results = {"exercise_id": None, "message": "", "exercise_details": None}
 
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
+            if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 exercise_details = json.loads(self.request.body)
 
                 exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)

@@ -167,7 +167,7 @@ function showTestOutputs(test_outputs, scroll) {
         var tests_output = ""
 
         var test_output = test_outputs[Object.keys(test_outputs)[0]];
-        if (test_output.passed != null) {
+        if (test_output != null && test_output.passed != null) {
             tests_output = buildStudentOutput(test_output);
         }
     }
@@ -479,7 +479,7 @@ function showSubmitModal() {
 }
 
 //function get_presubmission() {
-//    $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+//    $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}",
 //        function (data, status) {
 //            if (data.length > 0) {
 //                editor.setValue(data, -1);
@@ -559,85 +559,85 @@ function showHideHint() {
     }
 }
 
-function showHelpRequestModal() {
-    var modal = document.getElementById("help_request_modal");
-    var span = document.getElementsByClassName("close")[1];
-    modal.style.display = "block";
+// function showHelpRequestModal() {
+//     var modal = document.getElementById("help_request_modal");
+//     var span = document.getElementsByClassName("close")[1];
+//     modal.style.display = "block";
 
-    document.getElementById("student_comment").focus();
+//     document.getElementById("student_comment").focus();
 
-    var submitButton = document.getElementById("submit_request_button");
-    submitButton.onclick = async function() {
-        var user_code = editor.getValue();
-        var student_comment = document.getElementById("student_comment").value;
-        var post_data = { "user_code": user_code, "student_comment": student_comment };
+//     var submitButton = document.getElementById("submit_request_button");
+//     submitButton.onclick = async function() {
+//         var user_code = editor.getValue();
+//         var student_comment = document.getElementById("student_comment").value;
+//         var post_data = { "user_code": user_code, "student_comment": student_comment };
 
-        await $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", post_data);
-        modal.style.display = "none";
+//         await $.post("/submit_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}", post_data);
+//         modal.style.display = "none";
 
-        location.reload();
-    }
+//         location.reload();
+//     }
 
-    var cancelButton = document.getElementById("cancel_request_button");
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
-    }
+//     var cancelButton = document.getElementById("cancel_request_button");
+//     cancelButton.onclick = function() {
+//         modal.style.display = "none";
+//     }
 
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
+//     span.onclick = function() {
+//         modal.style.display = "none";
+//     }
 
-    window.onclick = function(event) {
-        if (event.target == modal) {
-          modal.style.display = "none";
-        }
-    }
-}
+//     window.onclick = function(event) {
+//         if (event.target == modal) {
+//           modal.style.display = "none";
+//         }
+//     }
+// }
 
-function showMatchingModal() {
-    var modal = document.getElementById("matching_modal");
-    var span = document.getElementsByClassName("close")[2];
-    modal.style.display = "block";
+// function showMatchingModal() {
+//     var modal = document.getElementById("matching_modal");
+//     var span = document.getElementsByClassName("close")[2];
+//     modal.style.display = "block";
 
-    var deleteButton = document.getElementById("delete_request_button");
-    deleteButton.onclick = async function() {
-        await $.post("/delete_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}");
-        modal.style.display = "none";
+//     var deleteButton = document.getElementById("delete_request_button");
+//     deleteButton.onclick = async function() {
+//         await $.post("/delete_request/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}");
+//         modal.style.display = "none";
 
-        location.reload();
-    }
+//         location.reload();
+//     }
 
-    var keepButton = document.getElementById("keep_request_button");
-    keepButton.onclick = function() {
-        modal.style.display = "none";
-    }
+//     var keepButton = document.getElementById("keep_request_button");
+//     keepButton.onclick = function() {
+//         modal.style.display = "none";
+//     }
 
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
+//     span.onclick = function() {
+//         modal.style.display = "none";
+//     }
 
-    window.onclick = function(event) {
-        if (event.target == modal) {
-          modal.style.display = "none";
-        }
-    }
-}
+//     window.onclick = function(event) {
+//         if (event.target == modal) {
+//           modal.style.display = "none";
+//         }
+//     }
+// }
 
-function showSuggestionModal() {
-    var modal = document.getElementById("suggestion_modal");
-    var span = document.getElementsByClassName("close")[3];
-    modal.style.display = "block";
+// function showSuggestionModal() {
+//     var modal = document.getElementById("suggestion_modal");
+//     var span = document.getElementsByClassName("close")[3];
+//     modal.style.display = "block";
 
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
+//     span.onclick = function() {
+//         modal.style.display = "none";
+//     }
 
-    window.onclick = function(event) {
-        if (event.target == modal) {
-          modal.style.display = "none";
-        }
-    }
-}
+//     window.onclick = function(event) {
+//         if (event.target == modal) {
+//           modal.style.display = "none";
+//         }
+//     }
+// }
 
 function showHideData(dataPanelID, dataButtonID) {
     var data_panel = document.getElementById(dataPanelID);
@@ -651,5 +651,20 @@ function showHideData(dataPanelID, dataButtonID) {
         data_panel.hidden = true;
         data_button.innerHTML = "Show";
     }
+}
+
+function isTakingRestrictedAssignment() {
+    $.ajax({
+        type: 'GET',
+        url: "/is_taking_restricted_assignment/{{ user_info['user_id'] }}/{{ assignment_basics['id'] }}",
+        async: true
+        })
+    .done(function(data) {
+        if (JSON.parse(data))
+            window.location.replace("/unavailable_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
+    })
+    .fail(function(data) {
+        console.log(data);
+    });
 }
 </script>
