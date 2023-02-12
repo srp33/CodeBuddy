@@ -45,13 +45,13 @@ pre {
     border-radius: 5px;
 }
 
-.navbar-link:hover{
-    color: #1AB28C; /* light teal */
+.navbar-link:hover {
+   color: #1AB28C;
 }
 
 .navbar-item:hover {
     background-color: hsl(0deg, 0%, 98%);
-    color: #1AB28C; /* light teal */
+    color: #1AB28C;
 }
 
 .navbar-dropdown {
@@ -181,10 +181,6 @@ pre {
 .edit-select {
     padding: 2px;
 }
-
-/*.graytable {
-    background-color: #f5f5f5 !important;
-}*/
 
 /* Sets sizing for icons in tables (ie checkmarks, circles, etc) */
 .table-icon {
@@ -365,19 +361,6 @@ td > button {
     margin-top: 10px;
 }
 
-/* .collapsible-f {
-    background-color: white;
-    font-size: 20px;
-    text-align: left;
-    cursor: pointer;
-    border: 2px solid  #f4a582;
-    width: 100%;
-    border-left: 12px solid  #f4a582;
-    border-radius: 5px;
-    padding: 14px;
-    margin-top: 10px;
-}
- */
 .active, .collapsible:hover {
     background-color: #f8f8f8; /* light grey */
 }
@@ -499,10 +482,21 @@ td > button {
     transition: .2s;
 }
 
-/*.passing-bd-color:hover, .failing-bd-color:hover {
-    transition: .3s;
-    background-color: #fafafa;
-}*/
+.fa-clock {
+    color: #363636
+}
+
+.fa-circle {
+    color: #363636
+}
+
+.fa-check-circle {
+    color: #1AB28C
+}
+
+.fa-hourglass {
+    color: #FF9138
+}
 
 .grey-text {
     color: #363636; /* dark grey */
@@ -525,17 +519,6 @@ td > button {
     justify-content: center;
     align-items: center;
 }
-
-/* Styles textareas that allow images to be pasted directly into them.
-div[contenteditable] {
-  overflow-y: scroll;
-  font-size: 1.25rem;
-} */
-
-/* Styles said images inside textareas.
-div[contenteditable] img {
-  max-height: 20em;
-} */
 
 /* Sets error messages to monospace. */
 module {
@@ -587,6 +570,7 @@ module {
   border-radius: 20px;
   padding: 1em 2em;
 }
+
 monored {
   font-family: Consolas,"courier new";
   font-weight: bold;

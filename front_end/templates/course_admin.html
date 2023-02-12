@@ -41,21 +41,21 @@
                             <td> </td>
                         {% else %}
                             <td style="text-align: center;">Visible</td>
-                            {% if assignment[1]["start_date"] %}
+                            {% if "start_date" in assignment[1] and assignment[1]["start_date"] %}
                                 <td style="text-align: center;">
                                     <script>
-                                        var s = new Date("{{ assignment[1]['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-                                        document.write(convertDate(s));
+                                        var d = new Date("{{ assignment[1]['start_date'] }}");
+                                        document.write(d.toLocaleString());
                                     </script>
                                 </td>
                             {% else %}
                                 <td></td>
                             {% end %}
-                            {% if assignment[1]["due_date"] %} 
+                            {% if "due_date" in assignment[1] and assignment[1]["due_date"] %}
                                 <td style="text-align: center;">
                                     <script>
-                                        var d = new Date("{{ assignment[1]['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-                                        document.write(convertDate(d));
+                                        var d = new Date("{{ assignment[1]['due_date'] }}");
+                                        document.write(d.toLocaleString());
                                     </script>
                                 </td>
                             {% else %}

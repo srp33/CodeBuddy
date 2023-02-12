@@ -144,10 +144,6 @@ if __name__ == "__main__":
 
         content = Content(settings_dict)
 
-        #content.temp_export_bio165()
-        #import sys
-        #sys.exit()
-
         database_version = content.get_database_version()
         code_version = int(read_file("../VERSION").rstrip())
 

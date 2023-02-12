@@ -18,9 +18,9 @@
                         <th>Assignment</th>
                         <th>Start date</th>
                         <th>Due date</th>
+                        <th>Timed</th>
                         <th>Status</th>
                         <th>Exercises completed</th>
-                        <th>Timed</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,51 +28,59 @@
                     <tr>
                         <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a></td>
 
-                        {% if assignment[1]["start_date"] %}
+                        {% if "start_date" in assignment[1] and assignment[1]["start_date"] %}
                             <td>
                                 <script>
-                                    var s = new Date("{{ assignment[1]["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-                                    document.write(convertDate(s));
+                                    var d = new Date("{{ assignment[1]["start_date"] }}");
+                                    document.write(d.toLocaleString());
                                 </script>
                             </td>
                         {% else %}
                             <td> </td>
                         {% end %}
 
-                        {% if assignment[1]["due_date"] %}
+                        {% if "due_date" in assignment[1] and assignment[1]["due_date"] %}
                             <td>
                                 <script>
-                                    var d = new Date("{{ assignment[1]["due_date"].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-                                    document.write(convertDate(d));
+                                    var d = new Date("{{ assignment[1]["due_date"] }}");
+                                    document.write(d.toLocaleString());
                                 </script>
                             </td>
                         {% else %}
                             <td> </td>
                         {% end %}
 
-                        {% if assignment[1]["passed"] %}
-                            <td><label>
-                                <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
-                            </label>Completed</td>
-                        {% else %}
-                            {% if assignment[1]["in_progress"] %}
-                                <td><label>
-                                    <img src="/static/inprogress.png" alt="In progress" class="table-icon"/>
-                                </label>In progress</td>
-                            {% else %}
-                                <td><label>
-                                    <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
-                                Not started</label></td>
-                            {% end %}
-                        {% end %}
-
-                        <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_passed'] }}" max="{{ assignment[1]['num_exercises'] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_exercises"] }}</td>
-
-                        {% if assignment[1]["has_timer"] %}
+                        {% if "has_timer" in assignment[1] and assignment[1]["has_timer"] %}
                             <td>Yes </td>
                         {% else %}
                             <td>No</td>
                         {% end %}
+
+                        {% if assignment[1]["passed"] %}
+                            <td>
+                                <i class="far fa-check-circle"></i>
+                                Completed
+                            </td>
+                        {% else %}
+                            {% if assignment[1]["time_has_expired"] %}
+                                <td>
+                                    <i class="far fa-clock"></i>
+                                    Timer expired
+                                </td>
+                            {% elif assignment[1]["in_progress"] %}
+                                <td>
+                                    <i class="far fa-hourglass"></i>
+                                    In progress
+                                </td>
+                            {% else %}
+                                <td>
+                                    <i class="far fa-circle"></i>
+                                    Not started
+                                </td>
+                            {% end %}
+                        {% end %}
+
+                        <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_passed'] }}" max="{{ assignment[1]['num_exercises'] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_exercises"] }}</td>
                     </tr>
                 {% end %}
                 </tbody>
@@ -90,4 +98,3 @@
 {% else %}
     <h2>This course does not exist.</h2>
 {% end %}
-<br /><br />

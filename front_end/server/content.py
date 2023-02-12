@@ -293,6 +293,7 @@ class Content:
         row = self.fetchone(sql, (course_id, assignment_id,))
 
         if row:
+            #TODO: This logic could be much simpler using datetime module.
             elapsed_time = curr_time - start_time
             seconds = elapsed_time.total_seconds()
             e_hours = math.floor(seconds/3600)
@@ -692,6 +693,7 @@ class Content:
                         COUNT(assignment_id) AS num_exercises,
                         SUM(passed) = COUNT(assignment_id) AS passed,
                         (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress,
+                        minutes_since_start,
                         has_timer,
                         hour_timer,
                         minute_timer,
@@ -707,7 +709,8 @@ class Content:
                           a.has_timer,
                           a.hour_timer,
                           a.minute_timer,
-                          a.restrict_other_assignments
+                          a.restrict_other_assignments,
+													(JulianDay(DATETIME('now')) - JulianDay(uas.start_time)) * 24 * 60 AS minutes_since_start
                    FROM exercises e
                    LEFT JOIN submissions s
                      ON e.course_id = s.course_id
@@ -717,6 +720,11 @@ class Content:
                    INNER JOIN assignments a
                      ON e.course_id = a.course_id
                      AND e.assignment_id = a.assignment_id
+                   LEFT JOIN user_assignment_starts uas
+                     ON a.course_id = uas.course_id
+										 AND a.assignment_id = uas.assignment_id
+                     AND a.has_timer = 1
+										 AND (uas.user_id = ? OR uas.user_id IS NULL)
                    WHERE e.course_id = ?
                      AND e.visible = 1
                    GROUP BY e.assignment_id, e.exercise_id
@@ -725,7 +733,7 @@ class Content:
                  ORDER BY title'''
 
         statuses = []
-        for row in self.fetchall(sql, (user_id, int(course_id),)):
+        for row in self.fetchall(sql, (user_id, user_id, course_id,)):
             assignment = dict(row)
 
             if assignment["visible"] or show_hidden:
@@ -733,8 +741,7 @@ class Content:
 
         statuses2 = []
 
-        # We have to check for this because otherwise the instructor has to make a submission
-        # before students will see the assignments.
+        # We have to check for this because otherwise the instructor has to make a submission before students will see the assignments.
         if len(statuses) == 0:
             for assignment in self.get_assignments_basics(course_id, show_hidden):
                 assignment_basics = self.get_assignment_basics(course_id, assignment[0])
@@ -743,10 +750,17 @@ class Content:
                 assignment_basics["num_exercises"] = 0
                 assignment_basics["passed"] = 0
                 assignment_basics["in_progress"] = 0
+                assignment_basics["time_has_expired"] = False
                 statuses2.append([assignment[0], assignment_basics])
         else:
             for status in sort_list_of_dicts_nicely(statuses, ["title", "assignment_id"]):
-                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "passed": status["passed"], "in_progress": status["in_progress"], "num_passed": status["num_passed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "hour_timer": status["hour_timer"], "minute_timer": status["minute_timer"], "restrict_other_assignments": status["restrict_other_assignments"]}
+                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "passed": status["passed"], "in_progress": status["in_progress"], "num_passed": status["num_passed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "time_has_expired": status["minutes_since_start"] > status["hour_timer"] * 60 + status["minute_timer"] if status["minutes_since_start"] else False, "restrict_other_assignments": status["restrict_other_assignments"]}
+
+                if assignment_dict["start_date"]:
+                    assignment_dict["start_date"] = assignment_dict["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ')
+                if assignment_dict["due_date"]:
+                    assignment_dict["due_date"] = assignment_dict["due_date"].strftime('%Y-%m-%dT%H:%M:%SZ')
+
                 statuses2.append([status["assignment_id"], assignment_dict])
 
         return statuses2
@@ -939,8 +953,8 @@ class Content:
           assignment_scores[row["exercise_id"]] = row["avg_score"]
 
         if len(assignment_scores) == 0:
-            for exercise_id in self.get_exercise_ids(course_id, assignment_id):
-                assignment_scores[exercise_id] = 0.0
+            for exercise in self.get_exercises(course_id, assignment_id, show_hidden=False, nice_sort=False):
+                assignment_scores[exercise[0]] = 0.0
 
         return assignment_scores
 

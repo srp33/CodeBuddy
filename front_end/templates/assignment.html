@@ -142,21 +142,26 @@
                                     {% end %}
                                 </td>
                                 <td>{{ exercise[1]["num_submissions"] }}</td>
+
                                 {% if exercise[1]["passed"] %}
-                                    <td><label>
-                                        <img src="/static/greencheck.png" alt="Completed" class="table-icon"/>
-                                    </label>Completed</td>
+                                    <td>
+                                        <i class="far fa-check-circle"></i>
+                                        Completed
+                                    </td>
                                 {% else %}
                                     {% if exercise[1]["in_progress"] %}
-                                        <td><label>
-                                            <img src="/static/inprogress.png" alt="In progress" class="table-icon"/>
-                                        </label>In progress</td>
+                                        <td>
+                                            <i class="far fa-hourglass"></i>
+                                            In progress
+                                        </td>
                                     {% else %}
-                                        <td><label>
-                                            <img src="/static/unchecked.png" alt="Not completed" class="table-icon"/>
-                                        </label>Not started</td>
+                                        <td>
+                                            <i class="far fa-circle"></i>
+                                            Not started
+                                        </td>
                                     {% end %}
                                 {% end %}
+
                                 <td>{{ exercise[1]["score"] }}%</td>
                                 {% if has_non_default_weight %}
                                     <td>{{ exercise[1]["weight"] }}</td>

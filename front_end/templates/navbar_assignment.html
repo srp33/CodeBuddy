@@ -13,9 +13,9 @@
                         <div id="moreDropdown" class="navbar-dropdown">
                             {% for assignment in assignments %}
                                 {% if assignment[0] == assignment_basics['id'] %}
-                                    <a class="navbar-item is-active"
+                                    <a class="navbar-item" style="background-color: lightgray; white-space: nowrap;"
                                 {% else %}
-                                    <a class="navbar-item"
+                                    <a class="navbar-item" style="white-space: nowrap;"
                                 {% end %}
 
                                 href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
