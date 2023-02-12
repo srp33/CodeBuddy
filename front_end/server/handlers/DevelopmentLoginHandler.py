@@ -8,32 +8,41 @@ class DevelopmentLoginHandler(BaseOtherHandler):
         self.content = Content(self.settings_dict)
 
     def get(self):
-        self.render("devlogin.html")
+        if os.path.exists("DEV_PASSWORD"):
+            self.render("devlogin.html")
+        else:
+            self.write("No DEV_PASSWORD file exists. This must be created by the administrator before you can use this site.")
 
     def post(self):
         try:
             user_id = self.get_body_argument("user_id")
+            dev_password = self.get_body_argument("dev_password")
 
             if user_id == "":
                 self.write("Invalid user ID.")
             else:
-                # Add static information for test user.
-                user_dict = {'name': f'{user_id} TestUser', 'given_name': user_id, 'family_name': 'TestUser', 'locale': 'en', 'email_address': f'{user_id}@nospam.edu'}
+                master_dev_password = read_file("DEV_PASSWORD").rstrip("\n")
 
-                if self.content.user_exists(user_id):
-                    # Update user with current information when they already exist.
-                    self.content.update_user(user_id, user_dict)
+                if dev_password == master_dev_password:
+                    # Add static information for test user.
+                    user_dict = {'name': f'{user_id} TestUser', 'given_name': user_id, 'family_name': 'TestUser', 'locale': 'en', 'email_address': f'{user_id}@nospam.edu'}
+
+                    if self.content.user_exists(user_id):
+                        # Update user with current information when they already exist.
+                        self.content.update_user(user_id, user_dict)
+                    else:
+                        # Store current user information when they do not already exist.
+                        self.content.add_user(user_id, user_dict)
+
+                    self.set_secure_cookie("user_id", user_id, expires_days=30)
+
+                    redirect_path = self.get_secure_cookie("redirect_path")
+                    self.clear_cookie("redirect_path")
+                    if not redirect_path:
+                        redirect_path = "/"
+                    self.redirect(redirect_path)
                 else:
-                    # Store current user information when they do not already exist.
-                    self.content.add_user(user_id, user_dict)
-
-                self.set_secure_cookie("user_id", user_id, expires_days=30)
-
-                redirect_path = self.get_secure_cookie("redirect_path")
-                self.clear_cookie("redirect_path")
-                if not redirect_path:
-                    redirect_path = "/"
-                self.redirect(redirect_path)
+                    self.write("Invalid password")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
