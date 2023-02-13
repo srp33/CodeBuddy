@@ -8,10 +8,7 @@ class DevelopmentLoginHandler(BaseOtherHandler):
         self.content = Content(self.settings_dict)
 
     def get(self):
-        if os.path.exists("DEV_PASSWORD"):
-            self.render("devlogin.html")
-        else:
-            self.write("No DEV_PASSWORD file exists. This must be created by the administrator before you can use this site.")
+        self.render("devlogin.html")
 
     def post(self):
         try:
@@ -21,9 +18,7 @@ class DevelopmentLoginHandler(BaseOtherHandler):
             if user_id == "":
                 self.write("Invalid user ID.")
             else:
-                master_dev_password = read_file("DEV_PASSWORD").rstrip("\n")
-
-                if dev_password == master_dev_password:
+                if dev_password == self.settings_dict["dev_password"]:
                     # Add static information for test user.
                     user_dict = {'name': f'{user_id} TestUser', 'given_name': user_id, 'family_name': 'TestUser', 'locale': 'en', 'email_address': f'{user_id}@nospam.edu'}
 
@@ -45,4 +40,3 @@ class DevelopmentLoginHandler(BaseOtherHandler):
                     self.write("Invalid password")
         except Exception as inst:
             render_error(self, traceback.format_exc())
-
