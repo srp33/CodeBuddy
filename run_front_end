@@ -45,7 +45,7 @@ docker build -t ${image_name}:version$(cat VERSION) \
 
 rm -f front_end/Settings.yaml front_end/VERSION
 
-mkdir -p /tmp/cache
+mkdir -p tmp
 
 if [[ "${f_run_in_background}" = "yes" ]]
 then
@@ -56,7 +56,7 @@ then
     --log-driver=none \
     --name ${container_name} \
     --read-only \
-    -v /tmp/cache:/tmp \
+    -v "$(pwd)"/tmp:/tmp \
     ${args} \
     ${image_name}
 else
@@ -67,7 +67,7 @@ else
     --log-driver=none \
     --name ${container_name} \
     --read-only \
-    -v /tmp/cache:/tmp \
+    -v "$(pwd)"/tmp:/tmp \
     ${args} \
     ${image_name}
 fi
