@@ -46,7 +46,6 @@ def make_app():
             url(r"/exercise_submissions/([^/]+)/([^/]+)/([^/]+)", ExerciseSubmissionsHandler, name="exercise_submissions"),
             url(r"/export_assignment/([^/]+)/([^/]+)", ExportAssignmentHandler, name="export_assignment"),
             url(r"/get_partner_id/([^/]+)/([^/]+)", GetPartnerIDHandler, name="get_partner_id"),
-            url(r"/get_presubmission/([^/]+)/([^/]+)/([^/]+)/([^/]+)", GetPresubmissionHandler, name="get_presubmission"),
             url(r"/googlelogin", GoogleLoginHandler, name="googlelogin"),
             url(r"/help_requests/([^/]+)", HelpRequestsHandler, name="help_requests"),
             url(r"/import_assignment/([^/]+)", ImportAssignmentHandler, name="import_assignment"),

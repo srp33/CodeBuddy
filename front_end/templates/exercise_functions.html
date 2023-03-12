@@ -346,6 +346,8 @@ function buildStudentOutput(test_output) {
 }
 
 function get_submission(submission_id, scroll, change_border) {
+    window.wasUserChange = false;
+
     hideMessages();
 
     var this_submission;
@@ -387,6 +389,8 @@ function get_submission(submission_id, scroll, change_border) {
     {% if exercise_details["max_submissions"] > 0 %}
         $("#max_submissions_message")[0].innerHTML = `<div style="padding: 0em 0.5em 1.25em 0em;margin:0"><em>You have made ${submissions.length} of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></div>`;
     {% end %}
+
+    window.wasUserChange = true;
 }
 
 function show_past_submissions() {
@@ -478,50 +482,41 @@ function showSubmitModal() {
     }
 }
 
-//function get_presubmission() {
-//    $.get("/get_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}",
-//        function (data, status) {
-//            if (data.length > 0) {
-//                editor.setValue(data, -1);
-//            }
-//        });
-//}
+function save_presubmission() {
+   user_code = editor.getValue();
+   if (user_code.trim() == "")
+       return false;
 
-//function save_presubmission(autosave) {
-//    user_code = editor.getValue();
-//    if (user_code.trim() == "")
-//        return false;
+   $.ajax({
+        type: 'POST',
+        url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+        data: {"user_code": user_code},
+        async: true
+        })
+    .done(function(result) {
+        if (result == "") {
+            codeChanged = false;
 
-//    saved_div = document.getElementById("saved_div");
-//    saved_div.innerHTML = "Please wait while your code is being saved...";
+            last_saved_at = new Intl.DateTimeFormat('default', {
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+            }).format(Date.now());
 
-//    $.ajax({
-//        type: 'POST',
-//        url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-//        data: {"user_code": user_code},
-//        success: function(result) {
-//            if (result == "") {
-//                codeChanged = false;
-//
-//            last_saved_at = new Intl.DateTimeFormat('default', {
-//                hour: 'numeric',
-//                minute: 'numeric',
-//            }).format(Date.now());
-//
-//            if (autosave)
-//                saved_div.innerHTML = `Auto-saved at ${last_saved_at}.`;
-//            else
-//                saved_div.innerHTML = `Saved at ${last_saved_at}.`;
-//           }
-//           else {
-//               console.log("An error occurred when the user attempted to save their code. The error message is below.");
-//               console.log(result);
-//               saved_div.innerHTML = "An error occurred, so your code may not have saved. If this error persists, please contact the instructor.";
-//           }
-//        },
-//        async: false
-//    });
-//}
+            saved_div.innerHTML = `Saved at ${last_saved_at}`;
+        }
+        else {
+            console.log("An error occurred when the user attempted to save their code.");
+            console.log(result);
+            saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
+        }
+    })
+    .fail(function(result) {
+        console.log("An error occurred when the user attempted to save their code.");
+        console.log(result);
+        saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
+    });
+}
 
 /*function showLinkModal() {
     var modal = document.getElementById("share_modal");

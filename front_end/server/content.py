@@ -794,13 +794,13 @@ class Content:
                    AND (sc.user_id = ? OR sc.user_id IS NULL)
                  WHERE e.course_id = ?
                    AND e.assignment_id = ?
-                   AND e.visible = 1
                  GROUP BY e.assignment_id, e.exercise_id
                  ORDER BY e.title'''
 
         statuses = []
         for row in self.fetchall(sql, (user_id, user_id, int(course_id), int(assignment_id),)):
-            statuses.append(dict(row))
+            if row["visible"] or show_hidden:
+                statuses.append(dict(row))
 
         if nice_sort:
             statuses = sort_list_of_dicts_nicely(statuses, ["title", "exercise_id"])
@@ -1234,21 +1234,35 @@ class Content:
                    AND s.assignment_id = ?
                    AND s.exercise_id = ?
                    AND s.user_id = ?
+                 
+                 UNION
+
+                 SELECT -1, code, FALSE, NULL, NULL
+                 FROM presubmissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?
+
                  ORDER BY s.submission_id'''
 
+        presubmission = None
         submissions = []
 
-        for row in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id,)):
             submission_test_outputs = {}
 
-            if row["submission_id"] in test_outputs:
-                submission_test_outputs = test_outputs[row["submission_id"]]
-                check_test_outputs(exercise_details, submission_test_outputs)
-                sanitize_test_outputs(exercise_details, submission_test_outputs)
+            if row["submission_id"] == -1:
+                presubmission = row["code"]
+            else:
+              if row["submission_id"] in test_outputs:
+                  submission_test_outputs = test_outputs[row["submission_id"]]
+                  check_test_outputs(exercise_details, submission_test_outputs)
+                  sanitize_test_outputs(exercise_details, submission_test_outputs)
 
-            submissions.append({"id": row["submission_id"], "code": row["code"], "passed": row["passed"], "date": row["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
+              submissions.append({"id": row["submission_id"], "code": row["code"], "passed": row["passed"], "date": row["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
 
-        return submissions
+        return presubmission, submissions
 
     def get_num_submissions(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''SELECT COUNT(submission_id) AS num
@@ -1978,6 +1992,8 @@ class Content:
                         test_dict["jpg_output"] = ""
 
                 self.execute(test_sql, [exercise_details["tests"][test_title]["test_id"], submission_id, test_dict["txt_output"], test_dict["jpg_output"]])
+
+        self.save_presubmission(course, assignment, exercise, user, code)
 
         return submission_id
 

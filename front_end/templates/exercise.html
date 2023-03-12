@@ -157,7 +157,7 @@
             {% end %}
 
             <p class="top-space" id="user_code_area">
-                <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and num_submissions == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+                <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and len(submissions) == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
                 <!--
                 {% if assignment_details["enable_help_requests"] %}
                     <div class="buttons is-pulled-right">
@@ -182,7 +182,6 @@
             <div id="saved_div" style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"></div>
 
             <div class="buttons">
-                <!--<a class="button is-medium is-primary" onclick='save_presubmission(false)'>Save</a>-->
                 {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
                     <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
                 {% end %}
@@ -341,16 +340,12 @@
 
             <script>
                 ace.require("ace/ext/language_tools");
+
                 var editor = ace.edit("user_code", {
                     theme: "ace/theme/{{ user_info['ace_theme'] }}",
                     autoScrollEditorIntoView: false,
                     minLines: 20,
                     fontSize: "12pt"
-                });
-                let codeChanged = false
-
-                editor.session.on('change', function(delta) {
-                  codeChanged = true
                 });
 
                 {% if user_info['enable_vim'] %}
@@ -371,13 +366,6 @@
 
                 editor.focus();
                 editor.getSession().setMode("{{ code_completion_path }}");
-
-                // Autosave if code has changed
-//                setInterval(function() {
-//                    if (codeChanged) {
-//                        save_presubmission(true);
-//                    }
-//                }, 60 * 1000);
 
                 submitButton = document.getElementById("submit_button");
 
@@ -402,10 +390,38 @@
                 var submissions = {{ jsonify(submissions) }};
                 show_past_submissions();
 
-                if (submissions.length > 0)
-                    get_submission(submissions[submissions.length - 1].id, false, true);
-                else
+                if (submissions.length > 0) {
+                    var latest_submission = submissions[submissions.length - 1];
+                    var presubmission = {{ jsonify(presubmission) }};
+
+                    // Set editor value to presubmission if the presubmission is different than the latest submission code.
+                    if (presubmission && presubmission != latest_submission.code) {
+                        editor.focus();
+                        editor.setValue(presubmission, -1);
+                    }
+                    else {
+                        get_submission(latest_submission.id, false, true);
+                    }
+                }
+                else {
                     showTestOutputs(null, false);
+                }
+
+                let codeChanged = false;
+                window.wasUserChange = true;
+
+                // editor.session.on('change', function(delta) {
+                editor.on('change', function() {
+                    if (window.wasUserChange)
+                       codeChanged = true
+                });
+
+                // Autosave if code has changed
+                setInterval(function() {
+                    if (codeChanged) {
+                        save_presubmission();
+                    }
+                }, 10000);
 
                 {% if check_for_restrict_other_assignments %}
                     setInterval(isTakingRestrictedAssignment, 60000);

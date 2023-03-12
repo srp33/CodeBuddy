@@ -17,7 +17,7 @@ class ExerciseHandler(BaseUserHandler):
             if not self.check_whether_should_show_exercise(course, assignment, assignment_details, assignments, courses, assignment_basics, course_basics):
                 return
 
-            exercises = self.content.get_exercises(course, assignment, show)
+            exercises = self.content.get_exercises(course, assignment, show_hidden=show)
             exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
             exercise_details = self.content.get_exercise_details(course, assignment, exercise)
 
@@ -31,11 +31,11 @@ class ExerciseHandler(BaseUserHandler):
 
             # Fetches all users enrolled in a course excluding the current user as options to pair program with.
             user_list = list(self.content.get_partner_info(course, self.get_user_info()["user_id"]).keys())
-            exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_id(), current_exercise_id=exercise)
+            exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_id(), current_exercise_id=exercise, show_hidden=show)
             start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_id())
 
             tests = exercise_details["tests"]
-            submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
+            presubmission, submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
 
             mode = self.get_query_argument("mode", default=None)
 
@@ -58,8 +58,8 @@ class ExerciseHandler(BaseUserHandler):
                     "exercise_basics": exercise_basics,
                     "exercise_details": exercise_details,
                     "tests": tests,
+                    "presubmission": presubmission,
                     "submissions": submissions,
-                    "num_submissions": len(submissions),
                     "exercise_statuses": exercise_statuses,
                     "next_exercise": next_prev_exercises["next"],
                     "prev_exercise": next_prev_exercises["previous"],
@@ -77,11 +77,13 @@ class ExerciseHandler(BaseUserHandler):
                     "same_suggestion": None,
             }
 
+#                    "num_submissions": len(submissions),
                     # "help_request": help_request,
                     # "same_suggestion": same_suggestion,
 
             if studio_mode:
-                args['presubmission'] = self.content.get_presubmission(course, assignment, exercise, self.get_user_id())
+                #TODO: Remove when we know it is working the other way
+                #args['presubmission'] = self.content.get_presubmission(course, assignment, exercise, self.get_user_id())
 
                 exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))
                 del exercise_details['solution_code']

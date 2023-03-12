@@ -14,7 +14,7 @@ class StudentExerciseHandler(BaseUserHandler):
                 exercise_details = self.content.get_exercise_details(course, assignment, exercise)
                 exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_info()["user_id"])
 
-                submissions = self.content.get_submissions(course, assignment, exercise, student_id, exercise_details)
+                ignore_presubmission, submissions = self.content.get_submissions(course, assignment, exercise, student_id, exercise_details)
                 num_submissions = len(submissions)
 
                 back_end = self.settings_dict["back_ends"][exercise_details["back_end"]]
