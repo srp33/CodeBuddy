@@ -28,4 +28,3 @@ class StudentExerciseHandler(BaseUserHandler):
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
-
