@@ -12,7 +12,7 @@ class ExerciseHandler(BaseUserHandler):
 
             course_basics = self.content.get_course_basics(course)
             assignment_basics = self.content.get_assignment_basics(course, assignment)
-            assignment_details = self.content.get_assignment_details(course, assignment, True)
+            assignment_details = self.content.get_assignment_details(course, assignment)
 
             if not self.check_whether_should_show_exercise(course, assignment, assignment_details, assignments, courses, assignment_basics, course_basics):
                 return

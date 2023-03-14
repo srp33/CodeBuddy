@@ -1701,8 +1701,9 @@ class Content:
             return null_course
 
         course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "allow_students_download_submissions": row["allow_students_download_submissions"]}
+
         if format_output:
-            course_dict["introduction"] = convert_markdown_to_html(convert_html_to_markdown(course_dict["introduction"])) # Removes html markup from instructions before converting markdown to html
+            course_dict["introduction"] = convert_markdown_to_html(course_dict["introduction"]) # Removes html markup from instructions before converting markdown to html
 
         return course_dict
 
@@ -1729,7 +1730,7 @@ class Content:
             assignment_dict["due_date_passed"] = curr_datetime > assignment_dict["due_date"]
 
         if format_output:
-            assignment_dict["introduction"] = convert_markdown_to_html(convert_html_to_markdown(assignment_dict["introduction"])) # Removes html markup from instructions before converting markdown to html
+            assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"]) # Removes html markup from instructions before converting markdown to html
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].split(",")
