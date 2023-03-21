@@ -353,6 +353,8 @@
                     fontSize: "12pt"
                 });
 
+                editor.setHighlightActiveLine(false);
+
                 {% if user_info['enable_vim'] %}
                    editor.setKeyboardHandler("ace/keyboard/vim");
                 {% end %}
