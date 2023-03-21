@@ -590,12 +590,15 @@
         }
 
         function getEditor(textAreaID, minLines, maxLines) {
-            return ace.edit(textAreaID, {
+            var editor = ace.edit(textAreaID, {
                 theme: "ace/theme/{{ user_info['ace_theme'] }}",
                 minLines: minLines,
                 maxLines: maxLines,
                 fontSize: "12pt"
             });
+
+            editor.setHighlightActiveLine(false);
+            return(editor);
         }
 
         function getValue(id) {
