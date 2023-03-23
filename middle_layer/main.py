@@ -76,10 +76,11 @@ def exec(info: ExecInfo):
                         data_file.write(contents)
 
         if info.timeout_seconds <= 0:
+            # This is used for debugging in development mode.
             docker_command = f"docker run --rm --user $(id -u):$(id -g) --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
         else:
             # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-            docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
+            docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --network=none --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
 
         result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
@@ -90,7 +91,7 @@ def exec(info: ExecInfo):
             raise Exception(f"The time to execute your code exceeded the timeout ({info.timeout_seconds} seconds) or was unable to complete for some other reason.")
 
         if result.returncode != 0:
-            raise Exception(f"The following error occurred on the back end: {stdout}")
+            raise Exception(f"The following error occurred on the back end: {stdout}.")
 
         test_outputs = {}
 
