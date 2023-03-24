@@ -91,6 +91,9 @@ def exec(info: ExecInfo):
             raise Exception(f"The time to execute your code exceeded the timeout ({info.timeout_seconds} seconds) or was unable to complete for some other reason.")
 
         if result.returncode != 0:
+            if stdout.strip() == "":
+                stdout = "[No output was detected.]"
+
             raise Exception(f"The following error occurred on the back end: {stdout}.")
 
         test_outputs = {}

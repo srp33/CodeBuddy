@@ -16,5 +16,3 @@ echo "ggsave('jpg_output', dpi = 150, device = 'jpeg')" >> code
 cat after_code >> code
 
 Rscript code
-
-python3 /clean_txt_output.py > /dev/null 2>&1

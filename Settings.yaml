@@ -97,3 +97,17 @@ back_ends:
         verification_example: "connection <- file('code')\nopen(connection)\nline <- readLines(connection, n=1)\nsearch <- 'len'\n\nwhile(length(line) > 0) {\n\tif (grepl(tolower(search), tolower(line))) {\n\t\tprint('Error: len() function not allowed in this exercise')\n\t\tbreak\n\t}\n\n\tline <- readLines(connection, n=1)\n}\n\nclose(connection)"
         test_instructions: ""
         after_test_example: "print(add_numbers(2, 3))"
+    rust:
+        description: Please write Rust code based on the instructions provided.
+        memory_allowed_mb: 500
+        timeout_seconds: 60
+        code_completion_path: ace/mode/rust
+        output_types:
+            txt: |-
+                Text
+        solution_instructions: ""
+        solution_example: "fn add_numbers(number1: f32, number2: f32) -> f32 {\n  number1 + number2\n}"
+        verification_instructions: "Write your verification code in Python (not Rust)."
+        verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
+        test_instructions: ""
+        after_test_example: "println!(\"{}\", add_numbers(2.0, 2.0));"

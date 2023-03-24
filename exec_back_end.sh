@@ -35,4 +35,9 @@ do
   else
     bash /exec_code_txt_output.sh &>> txt_output
   fi
+
+  if [ -f /clean_txt_output.py ]
+  then
+    python3 /clean_txt_output.py > /dev/null 2>&1
+  fi
 done

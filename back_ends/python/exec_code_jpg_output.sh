@@ -9,5 +9,3 @@ echo "my_plt_saver.close()" >> code
 cat after_code >> code
 
 python code
-
-python /clean_txt_output.py > /dev/null 2>&1

@@ -8,5 +8,3 @@ cat main_code >> code
 cat after_code >> code
 
 Rscript code
-
-python3 /clean_txt_output.py > /dev/null 2>&1
