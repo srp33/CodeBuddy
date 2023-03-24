@@ -395,11 +395,20 @@
                 const tests = {{ jsonify(tests) }};
 
                 var submissions = {{ jsonify(submissions) }};
+                var presubmission = {{ jsonify(presubmission) }};
+
                 show_past_submissions();
 
-                if (submissions.length > 0) {
+                if (submissions.length == 0) {
+                    showTestOutputs(null, false);
+
+                    if (presubmission) {
+                        editor.focus();
+                        editor.setValue(presubmission, -1);
+                    }
+                }
+                else {
                     var latest_submission = submissions[submissions.length - 1];
-                    var presubmission = {{ jsonify(presubmission) }};
 
                     // Set editor value to presubmission if the presubmission is different than the latest submission code.
                     if (presubmission && presubmission != latest_submission.code) {
@@ -409,9 +418,6 @@
                     else {
                         get_submission(latest_submission.id, false, true);
                     }
-                }
-                else {
-                    showTestOutputs(null, false);
                 }
 
                 let codeChanged = false;
