@@ -417,7 +417,11 @@ td > button {
     font-size: 16px;
 }
 
-/* Sets hover on fas icons. */
+/* Sets hover on icons. */
+.far:hover {
+    cursor: pointer;
+}
+
 .fas:hover {
     cursor: pointer;
 }

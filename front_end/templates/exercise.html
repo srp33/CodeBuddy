@@ -184,7 +184,7 @@
                 -->
             </p>
 
-            <div id="saved_div" style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"></div>
+            <div id="saved_div" style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"></i></div>
 
             <div class="buttons">
                 {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
@@ -405,7 +405,7 @@
 
                     if (presubmission) {
                         editor.focus();
-                        editor.setValue(presubmission, -1);
+                        editor.setValue(presubmission, 1);
                     }
                 }
                 else {
@@ -414,7 +414,7 @@
                     // Set editor value to presubmission if the presubmission is different than the latest submission code.
                     if (presubmission && presubmission != latest_submission.code) {
                         editor.focus();
-                        editor.setValue(presubmission, -1);
+                        editor.setValue(presubmission, 1);
                     }
                     else {
                         get_submission(latest_submission.id, false, true);
@@ -426,8 +426,10 @@
 
                 // editor.session.on('change', function(delta) {
                 editor.on('change', function() {
-                    if (window.wasUserChange)
-                       codeChanged = true
+                    if (window.wasUserChange){
+                        codeChanged = true;
+                        saved_div.innerHTML = `<i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission();editor.focus();">`;
+                    }
                 });
 
                 // Autosave if code has changed

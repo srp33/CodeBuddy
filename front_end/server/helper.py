@@ -147,7 +147,9 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
     if settings_dict["mode"] != "development":
         request_timeout = timeout
 
+    #TODO: Move try/except block here for ReadTimeout?
     response = requests.post(f"http://{host}:{os.environ['MPORT']}/exec/", json.dumps(data_dict), timeout=request_timeout)
+
     response = json.loads(response.content)
 
     if add_formatted_txt:

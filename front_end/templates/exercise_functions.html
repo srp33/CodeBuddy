@@ -78,6 +78,8 @@ function submit() {
 
                 show_past_submissions();
                 get_submission(response_dict["submission_id"], false, true);
+
+                saved_div.innerHTML = ``;
             }
             else {
                 showErrorMessage(response_dict["message"]);

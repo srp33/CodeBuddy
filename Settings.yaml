@@ -4,6 +4,7 @@ domain: codebuddy.ls.byu.edu
 #domain: codebuddy.byu.edu
 f_port: 8008
 m_port: 9798
+authentication_type: cas
 f_num_processes: 2
 m_num_processes: 2
 f_memory_gb: 4
