@@ -33,6 +33,7 @@ def make_app():
             url(r"/delete_exercise_submissions/([^/]+)/([^/]+)/([^/]+)?", DeleteExerciseSubmissionsHandler, name="delete_exercise_submissions"),
             url(r"/delete_request/([^/]+)/([^/]+)/([^/]+)/([^/]+)", DeleteHelpRequestHandler, name="delete_request"),
             url(r"/devlogin", DevelopmentLoginHandler, name="devlogin"),
+            url(r"/diff", DiffHandler, name="diff"),
             url(r"/download_assignment_scores/([^/]+)/([^/]+)", DownloadAssignmentScoresHandler, name="download_assignment_scores"),
             url(r"/download_course_scores/([^/]+)", DownloadCourseScoresHandler, name="download_course_scores"),
             url(r"/download_file/([^/]+)/([^/]+)/([^/]+)/([^/]+)", DownloadFileHandler, name="download_file"),

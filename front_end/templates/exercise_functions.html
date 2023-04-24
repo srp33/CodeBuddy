@@ -289,35 +289,34 @@ function buildTestOutput(test_outputs, test_title, show_title, is_last) {
     if (test_outputs[test_title].passed != null) {
         if (tests[test_title].can_see_code_output) {
             output += buildStudentOutput(test_outputs[test_title]);
-//            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</div>';
 
-//            if ("{{ exercise_details["output_type"] }}" == "txt" || test_outputs[test_title]["txt_output"] != "")
-//                output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + test_outputs[test_title]["txt_output_formatted"] + '</pre>';
-
-//            if ("{{ exercise_details["output_type"] }}" == "jpg") {
-//                if (test_outputs[test_title]["jpg_output"] == "") {
-//                    output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">[No image was generated.]</pre>';
-//                }
-//                else {
-//                    output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_outputs[test_title]["jpg_output"] + '" width="100%" /></p>';
-//                }
-//            }
-
-            if (test_outputs[test_title]["diff_output"] != "" && tests[test_title].can_see_expected_output) {
+            if (tests[test_title].can_see_expected_output && !test_outputs[test_title].passed) {
                 var diff_output = test_outputs[test_title]["diff_output"];
 
-                output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Difference between your output and the expected output:</div>`;
+                if (diff_output != "") {
+                    output += "<div class='mt-4'>";
+                    output += `<form action="/diff" method="POST" target="diff_page">
+                        <input type="hidden" name="course_id" value="{{ course_basics["id"] }}">
+                        <input type="hidden" name="assignment_id" value="{{ assignment_basics["id"] }}">
+                        <input type="hidden" name="exercise_id" value="{{ exercise_basics["id"] }}">`;
 
-                {% if exercise_details["output_type"] == "txt" %}
-                    var clarification = diff_output.includes("\t") ? "Because tab characters (<monored>\\t</monored>) are often confused with spaces, they are shown as <monored>{tab}</monored>." : "";
-                    diff_output = diff_output.replace("\t", "{tab}");
-
-                    output += `<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">` + diff_output + "</pre>";
-                    output += `<p style="padding: 0.5em 0.5em 0.5em 0.66em;margin:0"><em>A <monored>+</monored> in brackets indicates that your output had an extra character.<br />A <monored>-</monored> in brackets indicates that your output was missing the specified character. ${clarification}</em></p>`;
-                {% else %}
-                    output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + diff_output + '" width="100%" /></p>';
-                    output += `<p style="padding: 0.5em 0.5em 0.5em 0em;margin:0"><em>Black indicates parts of the image that are identical to the expected output. White indicates parts of the image that are different from the expected output.</em></p>`;
-                {% end %}
+                    {% if exercise_details["output_type"] == "txt" %}
+                        output += `<input type="hidden" name="expected_output" value="`;
+                        output += encodeURI(tests[test_title]["txt_output"]);
+                        output += `">`;
+                        output += `<input type="hidden" name="actual_output", value="`;
+                        output += encodeURI(test_outputs[test_title]["txt_output"]);
+                        output += `">`;
+                    {% else %}
+                        output += `<input type="hidden" name="diff_output", value="`;
+                        output += diff_output;
+                        output += `">`;
+                    {% end %}
+                    
+                    output += `<input type="submit" value="View differences" class="button">
+                        </form>`;
+                    output += "</div>";
+                }
             }
         }
         else {

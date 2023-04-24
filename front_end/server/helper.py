@@ -194,17 +194,18 @@ def compare_outputs(exercise_details, test_outputs, test_title):
         if expected_txt == actual_txt:
             return "", True
         if actual_txt == "":
-            return "", False
-        if len(expected_txt) > 200:
-            return "", False
+            return "placeholder", False
+        #if len(expected_txt) > 200:
+        #    return "", False
+        return "placeholder", False
 
-        diff_output, num_differences = diff_strings(expected_txt, actual_txt)
+        #diff_output, num_differences = diff_strings(expected_txt, actual_txt)
 
         # Only return diff output if the differences are relatively small.
-        if num_differences > 20:
-            diff_output = ""
+        #if num_differences > 20:
+        #    diff_output = ""
 
-        return diff_output, False
+        #return diff_output, False
     else:
         if expected_jpg == actual_jpg:
             return "", True
@@ -221,7 +222,7 @@ def compare_outputs(exercise_details, test_outputs, test_title):
         else:
             diff_output = ""
 
-        return diff_output, diff_percent < 0.01 # Pass if they are similar.
+        return diff_output, diff_percent < 0.01 # Pass if they are similar enough.
 
 # This prevents students from seeing information they should not be able to see.
 def sanitize_test_outputs(exercise_details, test_outputs):
@@ -330,6 +331,7 @@ def format_exercise_details(exercise_details, exercise_basics, user_name, conten
     for test_title in exercise_details["tests"]:
         if format_tests:
             exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
+
         exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
 
     if "[reflection_prompt]" in exercise_details["instructions"]:

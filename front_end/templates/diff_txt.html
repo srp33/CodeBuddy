@@ -1,0 +1,78 @@
+<link
+    rel="stylesheet"
+    data-name="vs/editor/editor.main"
+    href="/static/monaco/min/vs/editor/editor.main.css"
+/>
+
+<div class="is-size-5 has-text-weight-medium m-4">
+    The expected output is shown on the left. Your output is shown on the right. Colors indicate where the text differs between the expected output and your output.
+</div>
+
+<div id="container" class="m-4 pr-4" style="width: 100%; height: 600px; border: 1px solid grey;">
+</div>
+
+<script>
+    var require = { paths: { vs: '/static/monaco/min/vs' } };
+</script>
+
+<script src="/static/monaco/min/vs/loader.js"></script>
+<script src="/static/monaco/min/vs/editor/editor.main.nls.js"></script>
+<script src="/static/monaco/min/vs/editor/editor.main.js"></script>
+
+<script>
+    //https://github.com/microsoft/monaco-editor/issues/1631
+    // https://microsoft.github.io/monaco-editor/playground.html?source=v0.37.1#example-customizing-the-appearence-exposed-colors
+    // monaco.editor.defineTheme("myCustomTheme", {
+    //     base: "vs",
+    //     inherit: true,
+    //     rules: [],
+    //     colors: {}
+
+    //     // colors: {
+    //     //     "editor.foreground": "#000000",
+    //     //     "editor.background": "#FFFFFE",
+    //     //     "diffEditor.insertedTextBackground": "#a6cee3",
+    //     //     "diffEditor.insertedTextBorder": "#a6cee3",
+    //     //     "diffEditor.removedTextBorder": "#a6cee3",
+    //     //     "diffEditor.removedTextBackground": "#a6cee3",
+    //     // },
+    // });
+
+    //https://microsoft.github.io/monaco-editor/docs.html#interfaces/editor.IStandaloneDiffEditorConstructionOptions.html
+    var diffEditor = monaco.editor.createDiffEditor(document.getElementById('container'), {
+            fontSize: 18,
+//            fontFamily: "monospace",
+            domReadOnly: true,
+            readOnly: true,
+            minimap: { enabled: false },
+            scrollbar: {
+                alwaysConsumeMouseWheel: true,
+                horizontalScrollbarSize: 10,
+                horizontalHasArrows: true,
+                verticalScrollbarSize: 10,
+                verticalHasArrows: true,
+            },
+            enableSplitViewResizing: true,
+            renderValidationDecorations: "off",
+            renderOverviewRuler: false,
+            renderIndicators: false,
+            renderLineHighlight: false,
+            renderMarginRevertIcon: false,
+            renderSideBySide: true,
+            renderWhitespace: 'all',
+            glyphMargin: false,
+            folding: false,
+            lineDecorationsWidth: 5,
+            lineNumbersMinChars: 1,
+            scrollBeyondLastLine: false,
+            ignoreTrimWhitespace: false,
+            automaticLayout: true,
+            occurrencesHighlight: false,
+            theme: "myCustomTheme",
+        });
+
+    diffEditor.setModel({
+        original: monaco.editor.createModel(decodeURI("{{ expected }}"), 'text/plain'),
+        modified: monaco.editor.createModel(decodeURI("{{ actual }}"), 'text/plain')
+    });
+</script>

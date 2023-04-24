@@ -45,7 +45,7 @@ class ExerciseHandler(BaseUserHandler):
             elif mode == "classic":
                 studio_mode = False
 
-            format_exercise_details(exercise_details, exercise_basics, self.get_user_info()["name"], self.content, next_prev_exercises, format_tests=(not studio_mode))
+            format_exercise_details(exercise_details, exercise_basics, self.get_user_info()["name"], self.content, next_prev_exercises, format_tests=False)
 
             args = {
                     "users": user_list,
