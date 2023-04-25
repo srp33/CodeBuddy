@@ -5,8 +5,6 @@ import getpass
 import os
 from pathlib import Path
 from pydantic import BaseModel
-import re
-import json
 import shutil
 import subprocess
 import tempfile
