@@ -241,10 +241,6 @@
                     <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
                 {% end %}
 
-                {% if not user_info["use_studio_mode"] %}
-                    <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}?mode=studio">Try Studio Mode</a>
-                {% end %}
-
                 <!--<button class="button is-light is-pulled-right" onclick="showLinkModal()">Share</button>-->
             </div>
 
