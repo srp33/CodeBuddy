@@ -33,11 +33,7 @@ class HomeHandler(BaseOtherHandler):
                     self.user_is_administrator_var.set(True)
                     self.redirect(f"/profile/courses/{user_id.decode()}")
                 else:
-                    if self.settings_dict["mode"] == "production":
-                        self.set_secure_cookie("redirect_path", "/")
-                        self.redirect("/login")
-                    else:
-                        self.redirect("/devlogin")
+                    redirect_to_login(self, "/")
             else:
                 if user_id:
                     self.redirect(f"/profile/courses/{user_id.decode()}")

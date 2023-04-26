@@ -277,6 +277,20 @@ def diff_strings(expected, actual):
 
     return diff_output, (num_differences / num_chars) * 100
 
+def redirect_to_login(handler, redirect_path):
+    handler.set_secure_cookie("redirect_path", redirect_path)
+
+    if handler.settings_dict["mode"] == "production":
+        if handler.settings_dict["authentication_type"] == "cas":
+            handler.redirect("/caslogin")
+        elif handler.settings_dict["authentication_type"] == "google":
+            handler.redirect("/googlelogin")
+        else:
+            render_error(handler, "Invalid authentication_type value.")
+    else:
+        handler.redirect("/devlogin")
+        #handler.redirect("/googlelogin")
+
 def render_error(handler, exception):
     handler.render("error.html", error_title="An internal error occurred", error_message=format_output_as_html(exception))
 

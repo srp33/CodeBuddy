@@ -20,6 +20,7 @@ def make_app():
         [
             url(r"/", HomeHandler),
             url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
+            url(r"/caslogin", CASLoginHandler, name="caslogin"),
             url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
             url(r"/copy_assignment/([^/]+)/([^/]+)?", CopyAssignmentHandler, name="copy_assignment"),
             url(r"/copy_course/([^/]+)", CopyCourseHandler, name="copy_course"),
@@ -51,7 +52,7 @@ def make_app():
             url(r"/help_requests/([^/]+)", HelpRequestsHandler, name="help_requests"),
             url(r"/import_assignment/([^/]+)", ImportAssignmentHandler, name="import_assignment"),
             url(r"/is_taking_restricted_assignment/([^/]+)/([^/]+)", IsTakingRestrictedAssignmentHandler, name="is_taking_restricted_assignment"),
-            url(r"/login", CASLoginHandler, name="caslogin"),
+            url(r"/login", LoginHandler, name="login"),
             url(r"/logout", LogoutHandler, name="logout"),
             url(r"/move_assignment/([^/]+)/([^/]+)", MoveAssignmentHandler, name="move_assignment"),
             url(r"/move_exercise/([^/]+)/([^/]+)/([^/]+)?", MoveExerciseHandler, name="move_exercise"),
