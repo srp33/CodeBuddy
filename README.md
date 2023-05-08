@@ -12,7 +12,7 @@ If you are using MacOS or Linux, you should already have a terminal.
 
 If you are using a Windows operating system, install [git for windows](https://gitforwindows.org). Then open Git Bash and use that as your terminal.
 
-### Installing CodeBuddy
+### Installing dependencies
 
 CodeBuddy can be installed on any system that supports Docker and Python. Here are the steps to install it. You will need to have basic familiarity with [executing commands through a terminal](https://www.freecodecamp.org/news/command-line-for-beginners).
 
