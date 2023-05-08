@@ -6,7 +6,7 @@ Here are some of CodeBuddy's features:
 
 * TBD...
 
-##### Opening a terminal
+#### Opening a terminal
 
 If you are using MacOS or Linux, you should already have a terminal.
 
