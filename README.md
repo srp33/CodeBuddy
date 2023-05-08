@@ -37,7 +37,7 @@ At the command line, use the `cd` command to change your working directory to wh
 git clone <cloneURL>
 ```
 
-Replace `<cloneURL>` with the GitHub clone address for this project (for example, "https://github.com/srp33/CodeBuddy.git").
+Replace `<cloneURL>` with the GitHub clone address for this project (for example, https://github.com/srp33/CodeBuddy.git).
 
 This will create a directory called CodeBuddy in your current working directory. Use the `cd` command to navigate to that directory.
 
