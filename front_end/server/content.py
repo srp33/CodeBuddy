@@ -1843,7 +1843,7 @@ class Content:
             self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_updated"], course_basics["id"]])
         else:
             sql = '''INSERT INTO courses (title, visible, introduction, passcode, allow_students_download_submissions, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?)'''
+                     VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
             course_basics["id"] = self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_created"], course_details["date_updated"]])
             course_basics["exists"] = True
