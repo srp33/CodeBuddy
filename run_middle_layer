@@ -30,7 +30,7 @@ fi
 start_command="gunicorn main:app -b 127.0.0.1:${m_port} -w ${m_num_processes} -k uvicorn.workers.UvicornWorker"
 if [[ "${server_name}" == "uvicorn" ]]
 then
-  start_command="uvicorn main:app --host 127.0.0.1 --port ${m_port} --workers ${m_num_processes}"
+  start_command="uvicorn main:app --host 127.0.0.1 --port ${m_port} --workers ${m_num_processes} --lifespan on"
 fi
 
 if [[ "${m_run_in_background}" = "yes" ]]
