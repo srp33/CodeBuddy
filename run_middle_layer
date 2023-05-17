@@ -13,17 +13,29 @@ export PATH=$PATH:~/.local/bin
 
 cd middle_layer
 
-pid=`ps ax | grep gunicorn | grep ${m_port} | awk '{split($0,a," "); print a[1]}' | head -n 1`
+server_name=gunicorn
+
+if [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]]; then
+  server_name=uvicorn
+fi
+
+pid=`ps ax | grep ${server_name} | grep ${m_port} | awk '{split($0,a," "); print a[1]}' | head -n 1`
 if [ -z "$pid" ]; then
-  echo "No gunicorn daemon on ${m_port} ${m_port}"
+  echo "No ${server_name} daemon on ${m_port} ${m_port}"
 else
   kill $pid
-  echo "Killed gunicorn daemon on ${m_port} ${m_port} - ($pid)"
+  echo "Killed ${server_name} daemon on ${m_port} ${m_port} - ($pid)"
+fi
+
+start_command="gunicorn main:app -b 127.0.0.1:${m_port} -w ${m_num_processes} -k uvicorn.workers.UvicornWorker"
+if [[ "${server_name}" == "uvicorn" ]]
+then
+  start_command="uvicorn main:app --host 127.0.0.1 --port ${m_port} --workers ${m_num_processes}"
 fi
 
 if [[ "${m_run_in_background}" = "yes" ]]
 then
-  nohup gunicorn main:app -b 127.0.0.1:${m_port} -w ${m_num_processes} -k uvicorn.workers.UvicornWorker &
+  nohup ${start_command} &
 else
-  gunicorn main:app -b 127.0.0.1:${m_port} -w ${m_num_processes} -k uvicorn.workers.UvicornWorker
+  ${start_command}
 fi
