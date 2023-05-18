@@ -28,7 +28,8 @@ def hello():
 
 @app.post("/exec/")
 def exec(info: ExecInfo):
-    base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
+    base_tmp_dir_path = os.path.join(tempfile.gettempdir(), f"codebuddy_backend")
+    #/tmp/codebuddy_backend_{getpass.getuser()}"
     cpus = 1
     tmp_dir_path = None
 
