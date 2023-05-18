@@ -75,7 +75,7 @@ def exec(info: ExecInfo):
 
         if info.timeout_seconds <= 0:
             # This is used for debugging in development mode.
-            docker_command = f"docker run --rm --user $(id -u):$(id -g) --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
+            docker_command = f"docker run --rm --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
         else:
             # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
             docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --network=none --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
