@@ -5,23 +5,24 @@ class ExportAssignmentHandler(BaseUserHandler):
         json_text = "An unknown error occurred."
 
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
-                assignment_basics = self.content.get_assignment_basics(course, assignment)
+            if self.is_administrator or self.is_instructor_for_course(course):
+                course_basics = self.get_course_basics(course)
+                assignment_basics = self.content.get_assignment_basics(course_basics, assignment)
                 del assignment_basics["id"]
                 del assignment_basics["exists"]
                 del assignment_basics["course"]
 
-                assignment_details = self.content.get_assignment_details(course, assignment)
+                assignment_details = self.get_assignment_details(course_basics, assignment)
 
                 exercises = {}
-                for exercise in self.content.get_exercises(course, assignment):
-                    exercise_basics = self.content.get_exercise_basics(course, assignment, exercise["exercise_id"])
+                for exercise in self.content.get_exercises(course_basics, assignment_basics):
+                    exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, exercise["exercise_id"])
 
                     del exercise_basics["id"]
                     del exercise_basics["exists"]
                     del exercise_basics["assignment"]
 
-                    exercise_details = self.content.get_exercise_details(course, assignment, exercise_id)
+                    exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise[0])
                     for test_title in exercise_details["tests"]:
                         del exercise_details["tests"][test_title]["test_id"]
 

@@ -5,13 +5,15 @@ class CopyExerciseHandler(BaseUserHandler):
         result = ""
 
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
+            if self.is_administrator or self.is_instructor_for_course(course):
                 new_title = self.get_body_argument("new_title").strip()
 
                 if new_title == "":
                     result = "The title cannot be blank."
                 else:
-                    existing_titles = list(map(lambda x: x[1]["title"], self.content.get_exercises(course, assignment)))
+                    course_basics = self.get_course_basics(course)
+
+                    existing_titles = list(map(lambda x: x[1]["title"], self.content.get_exercises(course_basics, self.content.get_assignment_basics(course_basics, assignment))))
                     if new_title in existing_titles:
                         result = "An exercise with that title already exists in this assignment."
                     else:

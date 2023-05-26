@@ -4,16 +4,16 @@ import datetime as dt
 class ResaveExercisesHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
-                course_basics = self.content.get_course_basics(course)
-                assignment_basics = self.content.get_assignment_basics(course, assignment)
-                exercises = self.content.get_exercises(course, assignment)
+            if self.is_administrator or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
+                course_basics = self.get_course_basics(course)
+                assignment_basics = self.content.get_assignment_basics(course_basics, assignment)
+                exercises = self.content.get_exercises(course_basics, assignment_basics)
 
                 output = f"<h2>Re-saving exercises for {course_basics['title']} and {assignment_basics['title']}</h2>"
 
                 for exercise in exercises:
-                    exercise_basics = self.content.get_exercise_basics(course, assignment, exercise[0])
-                    exercise_details = self.content.get_exercise_details(course, assignment, exercise[0])
+                    exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, exercise[0])
+                    exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise[0])
                     exercise_details["date_updated"] = dt.datetime.utcnow()
 
                     output += f"<p>Working on {exercise_basics['title']} (ID: {exercise_basics['id']})..."
@@ -27,7 +27,7 @@ class ResaveExercisesHandler(BaseUserHandler):
 
                 output += "<h4>All done.</h4>"
 
-                self.render("resave_exercises.html", courses=self.get_courses(), assignments=self.content.get_assignments_basics(course), course_basics=course_basics, assignment_basics=assignment_basics, output=output, user_info=self.get_user_info())
+                self.render("resave_exercises.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, assignment_basics=assignment_basics, output=output, user_info=self.user_info, is_administrator=self.is_administrator)
             else:
                 self.render("permissions.html")
         except Exception as inst:

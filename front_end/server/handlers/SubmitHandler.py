@@ -6,13 +6,17 @@ class SubmitHandler(BaseUserHandler):
         out_dict = {"message": "", "test_outputs": {}, "all_passed": False, "partner_name": None, "submission_id": ""}
 
         try:
-            user_id = self.get_user_id()
+            user_id = self.get_current_user()
             code = self.get_body_argument("code").replace("\r", "")
             date = parser.parse(self.get_body_argument("date"))
             partner_id = self.get_body_argument("partner_id", default=None)
 
-            exercise_details = self.content.get_exercise_details(course, assignment, exercise)
-            assignment_details = self.content.get_assignment_details(course, assignment)
+            course_basics = self.get_course_basics(course)
+            assignment_basics = self.content.get_assignment_basics(course_basics, assignment)
+
+            assignment_details = self.get_assignment_details(course_basics, assignment)
+            exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise)
+
             num_submissions = self.content.get_num_submissions(course, assignment, exercise, user_id)
 
             if exercise_details["max_submissions"] > 0 and num_submissions >= exercise_details["max_submissions"]:

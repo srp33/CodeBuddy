@@ -4,7 +4,7 @@ import datetime as dt
 class SubmitHelpRequestHandler(BaseUserHandler):
     def post(self, course, assignment, exercise):
         try:
-            user_id = self.get_user_id()
+            user_id = self.get_current_user()
             student_comment = self.get_body_argument("student_comment")
             help_request = self.content.get_help_request(course, assignment, exercise, user_id)
             if help_request:
@@ -13,8 +13,11 @@ class SubmitHelpRequestHandler(BaseUserHandler):
             else:
                 code = self.get_body_argument("user_code").replace("\r", "")
 
-                exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
-                exercise_details = self.content.get_exercise_details(course, assignment, exercise)
+                course_basics = self.get_course_basics(course)
+                assignment_basics = self.get_assignment_basics(course_basics, assignment)
+
+                # exercise_basics = self.get_exercise_basics(course_basics, assignment_basics, exercise)
+                exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise)
 
                 text_output, jpg_output, tests = exec_code(self.settings_dict, code, exercise_details, request=None)
                 text_output = format_output_as_html(text_output)

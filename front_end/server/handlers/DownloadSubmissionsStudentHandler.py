@@ -4,8 +4,8 @@ import datetime
 class DownloadSubmissionsStudentHandler(BaseUserHandler):
     def get(self, course_id):
         try:
-            if self.content.get_course_details(course_id)["allow_students_download_submissions"]:
-                html = self.format(course_id, self.content.get_submissions_student(course_id, self.get_user_id()))
+            if self.get_course_details(course_id)["allow_students_download_submissions"]:
+                html = self.format(course_id, self.content.get_submissions_student(course_id, self.get_current_user()))
 
                 self.write(html)
                 self.set_header('Content-type', "text/html")
@@ -15,7 +15,7 @@ class DownloadSubmissionsStudentHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
     def format(self, course_id, submissions):
-        course_basics = self.content.get_course_basics(course_id)
+        course_basics = self.get_course_basics(course_id)
         html = "<html><body>"
         html += '''<head>
                        <style>
@@ -43,7 +43,7 @@ class DownloadSubmissionsStudentHandler(BaseUserHandler):
         if len(submissions) == 0:
             html += f"<p>You have not yet made any submissions for this course.</p>"
         else:
-            html += f"<h1>Submissions by {self.get_user_id()} for {course_basics['title']}</h1>"
+            html += f"<h1>Submissions by {self.get_current_user()} for {course_basics['title']}</h1>"
             html += f"<p>This document contains the latest <i>passing</i> submission for each exercise. Timed assignments are excluded. In some cases, exercises do <i>not</i> require you to write code; the submissions for these exercises are excluded.</p>"
 
             assignments_started = []

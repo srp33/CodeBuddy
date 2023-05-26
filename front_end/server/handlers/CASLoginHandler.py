@@ -6,13 +6,9 @@ from content import *
 # https://github.com/apereo/cas-sample-python-webapp/blob/master/app.py
 # See https://djangocas.dev/blog/python-cas-flask-example/
 class CASLoginHandler(BaseOtherHandler):
-    def prepare(self):
-        self.settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
-        self.content = Content(self.settings_dict)
-
     async def get(self):
         try:
-            if self.settings_dict["mode"] == "production":
+            if self.in_production_mode():
                 service_url = f"https://{self.settings_dict['domain']}/login?next=%2Flogin"
             else:
                 raise Exception("You cannot authenticate with CAS in development mode")

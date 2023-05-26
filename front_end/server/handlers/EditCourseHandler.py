@@ -4,8 +4,10 @@ import datetime as dt
 class EditCourseHandler(BaseUserHandler):
     def get(self, course):
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
-                self.render("edit_course.html", courses=self.get_courses(), assignments=self.content.get_assignments_basics(course), course_basics=self.content.get_course_basics(course), course_details=self.content.get_course_details(course), result=None, user_info=self.get_user_info())
+            course_basics = self.get_course_basics(course)
+
+            if self.is_administrator or self.is_instructor_for_course(course):
+                self.render("edit_course.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=self.get_course_details(course), result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=self.is_instructor_for_course(course))
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -13,14 +15,14 @@ class EditCourseHandler(BaseUserHandler):
 
     def post(self, course):
         try:
-            if not self.is_administrator() and not self.is_instructor_for_course(course):
+            if not self.is_administrator and not self.is_instructor_for_course(course):
                 self.render("permissions.html")
                 return
 
-            courses=self.get_courses()
+            courses=self.courses
 
-            course_basics = self.content.get_course_basics(course)
-            course_details = self.content.get_course_details(course)
+            course_basics = self.get_course_basics(course)
+            course_details = self.get_course_details(course)
 
             course_basics["title"] = self.get_body_argument("title").strip()
             course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
@@ -50,7 +52,6 @@ class EditCourseHandler(BaseUserHandler):
                         self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], None, dt.datetime.utcnow())
                         course = self.content.save_course(course_basics, course_details)
 
-            self.render("edit_course.html", courses=courses, assignments=self.content.get_assignments_basics(course), course_basics=course_basics, course_details=course_details, result=result, user_info=self.get_user_info())
+            self.render("edit_course.html", courses=courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=course_details, result=result, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
         except Exception as inst:
             render_error(self, traceback.format_exc())
-

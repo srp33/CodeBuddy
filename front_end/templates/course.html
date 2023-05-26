@@ -1,12 +1,7 @@
 {% if course_basics["exists"] %}
-    <h2>{{ course_basics["title"] }}</h2>
-    <p>{{ course_details["introduction"] }}</p>
+    <h3>{{ course_basics["title"] }}</h3>
 
-    {% if has_pair_programming %}
-        <!--<div class="mb-5">
-            <a class="button is-danger is-outlined" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
-        </div>-->
-    {% end %}
+    <p>{{ course_details["introduction"] }}</p>
 
     {% if len(assignment_statuses) > 0 %}
         <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>

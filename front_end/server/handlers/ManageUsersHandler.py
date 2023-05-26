@@ -1,10 +1,10 @@
 from BaseUserHandler import *
 
-class ProfileManageUsersHandler(BaseUserHandler):
+class ManageUsersHandler(BaseUserHandler):
     def get(self):
         try:
-            if self.is_administrator() or self.is_instructor():
-                self.render("profile_manage_users.html", page="manage_users", result=None, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
+            if self.is_administrator:
+                self.render("manage_users.html", result=None, user_info=self.user_info, is_administrator=self.is_administrator)
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -33,7 +33,7 @@ class ProfileManageUsersHandler(BaseUserHandler):
                 if self.content.user_exists(delete_user):
                     if self.content.is_administrator(delete_user):
                         if len(self.content.get_users_from_role(0, "administrator")) > 1:
-                            if delete_user == self.get_user_id():
+                            if delete_user == self.get_current_user():
                                 #Figure out what to do when admins remove themselves
                                 self.content.delete_user(delete_user)
                             else:
@@ -42,7 +42,7 @@ class ProfileManageUsersHandler(BaseUserHandler):
                             result = f"Error: At least one administrator must remain in the system."
                     elif self.content.user_has_role(delete_user, course_id, "instructor"):
                         if len(self.content.get_users_from_role(course_id, "instructor")) > 1:
-                            if self.content.is_administrator(self.get_user_id()):
+                            if self.content.is_administrator(self.get_current_user()):
                                 self.content.delete_user(delete_user)
                                 result = f"Success: The user '{delete_user}' has been deleted."
                             else:
@@ -58,7 +58,7 @@ class ProfileManageUsersHandler(BaseUserHandler):
                 if not remove_user:
                     result = f"Error: Please enter a user."
 
-            self.render("profile_manage_users.html", page="manage_users", result=result, user_info=self.get_user_info(), is_administrator=self.is_administrator(), is_instructor=self.is_instructor(), is_assistant=self.is_assistant())
+            self.render("manage_users.html", result=result, user_info=self.user_info, is_administrator=self.is_administrator)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

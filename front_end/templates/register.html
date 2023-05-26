@@ -1,0 +1,139 @@
+<link rel="stylesheet" href="/static/css/modal.css">
+
+<div class="bottom-spacing" style="padding-left: 15px">
+    <h3 class="title">Available courses</h3>
+</div>
+
+<div class='tab-content'>
+    <div class="columns scrollable">
+        <div class="column">
+        {% for course in available_courses %}
+            <div class="box">
+                <article class="media">
+                    <div class="media-content">
+                        <div class="content">
+                            <p>
+                                <strong>
+                                    {{ course[1]["title"] }}
+                                </strong>
+                                
+                                <p>
+                                    {{ course[1]["introduction"] }}
+                                </p>
+
+                                {% if course[1]["passcode"] %}
+                                    <p><em>This course requires a passcode.</em></p>
+                                {% end %}
+                            </p>
+
+                            <a class="register-button button is-success"
+                            {% if course[1]['passcode'] %}
+                                onclick="showRegisterModal({{ course[1]['id'] }}, true)"
+                            {% else %}
+                                onclick="showRegisterModal({{ course[1]['id'] }})"
+                            {% end %}
+                            >Register</a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        {% end %}
+        </div>
+    </div>
+</div>
+
+<div id="register_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <article  id="register_error_message" class="message is-danger invisible">
+        </article>
+
+        <div class='top-space' id="passcode_block" style="display:none">
+            <p>Please enter the passcode for this course:</p>
+            <input class="input is-medium is-primary" type="text" id="passcode" name="passcode"/>
+
+            <p class="buttons">
+                <button type="button" id="passcode_cancel_button" class="modal-button button is-light">Cancel</button>
+                <button type="button" id="passcode_register_button" class="modal-button button is-dark">Register</button>
+            </p>
+        </div>
+
+        <div id="register_block" style="display:none">
+            <p>Are you sure you want to register for this course?</p>
+            <p class="buttons">
+                <button type="button" id="register_cancel_button" class="modal-button button is-light">Cancel</button>
+                <button type="button" id="register_button" class="modal-button button is-dark">Register</button>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+function showRegisterModal(course_id, has_passcode=false) {
+    var modal = document.getElementById("register_modal");
+    modal.style.display = "block";
+    var span = document.getElementsByClassName("close")[0];
+
+    if (has_passcode) {
+        document.getElementById("register_block").style.display = "none";
+        document.getElementById("passcode_block").style.display = "block";
+
+        var registerButton = document.getElementById("passcode_register_button");
+        var cancelButton = document.getElementById("passcode_cancel_button");
+        var passcodeInput = document.getElementById("passcode");
+        passcodeInput.focus();
+
+        passcodeInput.addEventListener("keyup", function(event) {
+            // Check if Enter key is pressed
+            if (event.keyCode === 13) {
+                registerButton.click();
+            }
+        });
+    } else {
+        document.getElementById("register_block").style.display = "block";
+        document.getElementById("passcode_block").style.display = "none";
+
+        var registerButton = document.getElementById("register_button");
+        var cancelButton = document.getElementById("register_cancel_button");
+    }
+
+    registerButton.onclick = function() {
+        var passcode = document.getElementById("passcode").value;
+        passcode = passcode == "" ? "none": passcode;
+
+        $.ajax({
+            type: 'GET',
+            url: "/register/" + course_id + "/{{ user_info['user_id'] }}/" + passcode,
+            async: false})
+            .done(function(message) {
+                if (message.startsWith("Error:")) {
+                    $("#register_error_message").removeClass("invisible");
+                    $("#register_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                }
+                else {
+                    modal.style.display = "none";
+                    window.location.href = "/courses";
+                }
+            })
+            .fail(function(error) {
+                $("#register_error_message").removeClass("invisible");
+                $("#register_error_message")[0].innerHTML = `<div class="message-body">${error}</div>`;
+            });
+    }
+
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+</script>

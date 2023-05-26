@@ -28,7 +28,8 @@ def hello():
 
 @app.post("/exec/")
 def exec(info: ExecInfo):
-    base_tmp_dir_path = f"/tmp/codebuddy_backend_{getpass.getuser()}"
+    base_tmp_dir_path = os.path.join(tempfile.gettempdir(), f"codebuddy_backend")
+    #/tmp/codebuddy_backend_{getpass.getuser()}"
     cpus = 1
     tmp_dir_path = None
 
@@ -48,34 +49,34 @@ def exec(info: ExecInfo):
         # Save the verification code to a file that will be accessible inside the container.
         do_verification = len(info.verification_code.strip()) > 0
         if do_verification:
-            with open(f"{tmp_dir_path}/verification_code", "w") as verification_file:
+            with open(os.path.join(tmp_dir_path, "verification_code"), "w") as verification_file:
                 verification_file.write(info.verification_code)
 
         # Save information for each test under a subdirectory under 'tests'.
         for test_title in info.tests:
-            info.tests[test_title]["dir_path"] = f"{tmp_dir_path}/tests/{test_title}"
+            info.tests[test_title]["dir_path"] = os.path.join(tmp_dir_path, "tests", test_title)
             os.makedirs(info.tests[test_title]["dir_path"], exist_ok=True)
 
-            with open(f"{info.tests[test_title]['dir_path']}/before_code", "w") as code_file:
+            with open(os.path.join(info.tests[test_title]['dir_path'], "before_code"), "w") as code_file:
                 if info.tests[test_title]["before_code"].strip() != "":
                     code_file.write(info.tests[test_title]["before_code"].strip() + "\n\n")
 
-            with open(f"{info.tests[test_title]['dir_path']}/main_code", "w") as code_file:
+            with open(os.path.join(info.tests[test_title]['dir_path'], "main_code"), "w") as code_file:
                 code_file.write(info.code.strip() + "\n\n")
 
-            with open(f"{info.tests[test_title]['dir_path']}/after_code", "w") as code_file:
+            with open(os.path.join(info.tests[test_title]['dir_path'], "after_code"), "w") as code_file:
                 if info.tests[test_title]["after_code"].strip() != "":
                     code_file.write(info.tests[test_title]["after_code"].strip() + "\n\n")
 
             # Save any data files so they will be accessible inside the container.
             for file_name, contents in info.data_files.items():
                 if not file_name.endswith(".hide") or (info.tests[test_title]["can_see_test_code"] == False and info.tests[test_title]["can_see_expected_output"] == False and info.tests[test_title]["can_see_code_output"] == False):
-                    with open(f"{info.tests[test_title]['dir_path']}/{file_name}", "w") as data_file:
+                    with open(os.path.join(info.tests[test_title]['dir_path'], file_name), "w") as data_file:
                         data_file.write(contents)
 
         if info.timeout_seconds <= 0:
             # This is used for debugging in development mode.
-            docker_command = f"docker run --rm --user $(id -u):$(id -g) --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
+            docker_command = f"docker run --rm --workdir /sandbox -v {tmp_dir_path}:/sandbox {info.image_name}:latest {do_verification} {info.output_type}"
         else:
             # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
             docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --network=none --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
@@ -98,7 +99,7 @@ def exec(info: ExecInfo):
 
         for test_title in info.tests:
             txt_output = ""
-            txt_output_file_path = f"{info.tests[test_title]['dir_path']}/txt_output"
+            txt_output_file_path = os.path.join(info.tests[test_title]['dir_path'], "txt_output")
 
             if os.path.exists(txt_output_file_path):
                 txt_output_file_size = os.path.getsize(txt_output_file_path)
@@ -112,7 +113,7 @@ def exec(info: ExecInfo):
 
             jpg_output = ""
             if info.output_type == "jpg":
-                jpg_output_file_path = f"{info.tests[test_title]['dir_path']}/jpg_output"
+                jpg_output_file_path = os.path.join(info.tests[test_title]['dir_path'], "jpg_output")
 
                 if os.path.exists(jpg_output_file_path) and os.path.getsize(jpg_output_file_path) > 0:
                     if os.path.getsize(jpg_output_file_path) > MAX_OUTPUT_LENGTH:

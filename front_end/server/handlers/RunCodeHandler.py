@@ -6,7 +6,10 @@ class RunCodeHandler(BaseUserHandler):
 
         try:
             code = self.get_body_argument("user_code").replace("\r", "")
-            exercise_details = self.content.get_exercise_details(course, assignment, exercise)
+
+            course_basics = self.get_course_basics(course)
+            assignment_basics = self.get_assignment_basics(course_basics, assignment)
+            exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise)
 
             single_test = self.get_query_argument('test', None)
             if single_test is not None and single_test in exercise_details["tests"]:
@@ -25,4 +28,3 @@ class RunCodeHandler(BaseUserHandler):
             out_dict["message"] = format_output_as_html(traceback.format_exc())
 
         self.write(json.dumps(out_dict))
-

@@ -6,9 +6,12 @@ class CreateVideoExerciseHandler(BaseUserHandler):
         result = ""
 
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
-                exercise_basics = self.content.get_exercise_basics(course, assignment, None)
-                exercise_details = self.content.get_exercise_details(course, assignment, None)
+            if self.is_administrator or self.is_instructor_for_course(course):
+                course_basics = self.get_course_basics(course)
+                assignment_basics = self.content.get_assignment_basics(course_basics, assignment)
+
+                exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, None)
+                exercise_details = self.get_exercise_details(course_basics, assignment_basics, None)
 
                 exercise_basics["title"] = self.get_body_argument("title")
                 exercise_details["instructions"] = self.get_body_argument("instructions")

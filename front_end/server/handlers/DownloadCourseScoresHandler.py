@@ -3,13 +3,13 @@ from datetime import datetime
 
 class DownloadCourseScoresHandler(BaseUserHandler):
     def get(self, course):
-        course_basics = self.content.get_course_basics(course)
+        course_basics = self.get_course_basics(course)
 
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
+            if self.is_administrator or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
                 the_date = datetime.utcnow().strftime("%Yy_%mM_%dd_%Hh_%Mm_%Ss")
                 out_file_prefix = re.sub(r"\W", "_", course_basics['title'])
-                tsv_text = self.content.create_course_scores_text(course)
+                tsv_text = self.content.create_course_scores_text(course_basics)
 
                 self.set_header("Content-Disposition", f"attachment; filename={out_file_prefix}_Scores_{the_date}.tsv")
                 self.set_header('Content-type', "text/tab-separated-values")

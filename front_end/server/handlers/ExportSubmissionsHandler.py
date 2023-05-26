@@ -2,7 +2,7 @@ from BaseUserHandler import *
 
 class ExportSubmissionsHandler(BaseUserHandler):
     def get(self, course):
-        course_basics = self.content.get_course_basics(course)
+        course_basics = self.get_course_basics(course)
 
         descriptor = f"Submissions_{course_basics['title'].replace(' ', '_')}"
         temp_dir_path, zip_file_name, zip_file_path = self.content.create_zip_file_path(descriptor)

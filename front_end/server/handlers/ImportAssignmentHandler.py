@@ -5,7 +5,7 @@ class ImportAssignmentHandler(BaseUserHandler):
         result = ""
 
         try:
-            course_basics = self.content.get_course_basics(course)
+            course_basics = self.get_course_basics(course)
 
             if not course_basics["exists"]:
                 return self.write(f"Error: The specified course ID ({course}) is invalid.")
@@ -21,7 +21,7 @@ class ImportAssignmentHandler(BaseUserHandler):
             assignment_details = assignment_dict["details"]
 
             # Make sure assignment with that title doesn't already exist.
-            if self.content.has_duplicate_title(self.content.get_assignments_basics(course), None, assignment_basics["title"]):
+            if self.content.has_duplicate_title(self.content.get_assignments(course_basics), None, assignment_basics["title"]):
                 return self.write("Error: An assignment with that title already exists.")
 
             for exercise_title in assignment_dict["exercises"]:

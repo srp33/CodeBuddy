@@ -1,12 +1,6 @@
 {% if course_basics["exists"] %}
-    <h2>{{ course_basics["title"] }}</h2>
+    <h3>{{ course_basics["title"] }}</h3>
     <p>{{ course_details["introduction"] }}</p>
-
-    {% if has_pair_programming %}
-        <!--<div class="mb-5">
-            <a class="button is-danger is-outlined" href="/view_pp/{{ course_basics['id'] }}">View pair-programming assignments</a>
-        </div>-->
-    {% end %}
 
     {% if len(assignment_statuses) > 0 %}
         <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
@@ -66,30 +60,40 @@
                             <td style="text-align: center;"><a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ course_summary_scores[assignment[0]]["avg_score"] }}%</a></td>
                         {% end %}
                         <td style="text-align: center;">
-                            <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">
-                                <i class="far fa-edit"></i>
-                            </a>
+                            {% if not is_assistant %}
+                                <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">
+                                    <i class="far fa-edit"></i>
+                                </a>
+                            {% end %}
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('copy_assignment', 'Copy this assignment within this course', {'assignment_id': {{ assignment[0] }}}, '')">
-                                <i class="far fa-copy"></i>
-                            </a>
+                            {% if not is_assistant %}
+                                <a onclick="showPostModal('copy_assignment', 'Copy this assignment within this course', {'assignment_id': {{ assignment[0] }}}, '')">
+                                    <i class="far fa-copy"></i>
+                                </a>
+                            {% end %}
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('move_assignment', 'Move assignment to another course', {'assignment_id': {{ assignment[0] }}}, '')">
-                                <i class="far fa-arrow-alt-circle-right"></i>
-                            </a>
+                            {% if not is_assistant %}
+                                <a onclick="showPostModal('move_assignment', 'Move assignment to another course', {'assignment_id': {{ assignment[0] }}}, '')">
+                                    <i class="far fa-arrow-alt-circle-right"></i>
+                                </a>
+                            {% end %}
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('delete_assignment_submissions', 'Purge assignment submissions', {'assignment_id': {{ assignment[0] }}}, '')">
-                                <i class="far fa-times-circle"></i>
-                            </a>
+                            {% if not is_assistant %}
+                                <a onclick="showPostModal('delete_assignment_submissions', 'Purge assignment submissions', {'assignment_id': {{ assignment[0] }}}, '')">
+                                    <i class="far fa-times-circle"></i>
+                                </a>
+                            {% end %}
                             <!--https://fontawesome.com/v5/search?o=r&m=free&s=regular-->
                         </td>
                         <td style="text-align: center;">
-                            <a onclick="showPostModal('delete_assignment', 'Delete assignment', {'assignment_id': {{ assignment[0] }}}, '')">
-                                <i class="far fa-trash-alt"></i>
-                            </a>
+                            {% if not is_assistant %}
+                                <a onclick="showPostModal('delete_assignment', 'Delete assignment', {'assignment_id': {{ assignment[0] }}}, '')">
+                                    <i class="far fa-trash-alt"></i>
+                                </a>
+                            {% end %}
                         </td>
                     </tr>
                 {% end %}
@@ -113,6 +117,16 @@
             <a class="button" onclick="showPostModal('delete_course', 'Delete course', {}, '/')">Delete course</a>
 
             <a class="button" onclick="showPostModal('delete_course_submissions', 'Purge course submissions', {}, '')">Purge course submissions</a>
+
+            <a class="button" href="/manage_instructors/{{ course_basics['id'] }}">Manage instructors</a>
+    {% end %}
+
+    {% if is_administrator or is_instructor or is_assistant %}    
+            <a class="button" href="/manage_assistants/{{ course_basics['id'] }}">Manage assistants</a>
+    {% end %}
+
+    {% if is_administrator or is_instructor %}
+            <a class="button" href="/manage_students/{{ course_basics['id'] }}">Manage students</a>
         </div>
     {% end %}
 

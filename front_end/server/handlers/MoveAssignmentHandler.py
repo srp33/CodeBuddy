@@ -5,11 +5,12 @@ class MoveAssignmentHandler(BaseUserHandler):
         result = ""
 
         try:
-            if self.is_administrator() or self.is_instructor_for_course(course):
+            if self.is_administrator or self.is_instructor_for_course(course):
                 new_course_id = self.get_body_argument("new_course_id")
-                new_course_basics = self.content.get_course_basics(new_course_id)
-                new_course_assignments = self.content.get_assignments_basics(new_course_id, nice_sort=False)
-                current_assignment_basics = self.content.get_assignment_basics(course, assignment)
+                existing_course_basics = self.get_course_basics(course)
+                new_course_basics = self.get_course_basics(new_course_id)
+                new_course_assignments = self.content.get_assignments(new_course_basics)
+                current_assignment_basics = self.content.get_assignment_basics(existing_course_basics, assignment)
 
                 if self.content.has_duplicate_title(new_course_assignments, None, current_assignment_basics["title"]):
                     result = f"Error: An assignment with the title <b>{current_assignment_basics['title']}</b> already exists in the <b>{new_course_basics['title']}</b> course."

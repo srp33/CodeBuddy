@@ -10,22 +10,19 @@ class DiffHandler(BaseUserHandler):
             actual_output = self.get_body_argument("actual_output", "")
             diff_output = self.get_body_argument("diff_output", "")
 
-            course_basics = self.content.get_course_basics(course_id)
-            assignment_basics = self.content.get_assignment_basics(course_id, assignment_id)
-            exercise_basics = self.content.get_exercise_basics(course_id, assignment_id, exercise_id)
-            exercise_details = self.content.get_exercise_details(course_id, assignment_id, exercise_id)
+            course_basics = self.get_course_basics(course_id)
+            assignment_basics = self.get_assignment_basics(course_basics, assignment_id)
+            exercise_basics = self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
+            exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
             if not course_basics["exists"] or not assignment_basics["exists"] or not exercise_basics["exists"]:
                 render_error(self, "Sorry, the specified course, assignment, or exercise are not available.")
                 return
 
-            show = self.is_administrator() or self.is_instructor_for_course(course_id) or self.is_assistant_for_course(course_id)
+            assignments = self.get_assignments(course_basics)
+            assignment_details = self.get_assignment_details(course_basics, assignment_id)
 
-            courses = self.get_courses(show)
-            assignments = self.content.get_assignments_basics(course_id, show)
-            assignment_details = self.content.get_assignment_details(course_id, assignment_id)
-
-            if not self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, courses, assignment_basics, course_basics):
+            if not self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
                 return
 
             args = {"expected": expected_output, "actual": actual_output, "diff": diff_output}

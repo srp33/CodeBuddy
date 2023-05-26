@@ -9,6 +9,7 @@ import math
 import re
 import spacy
 import sqlite3
+import traceback
 from yaml import load
 #from yaml import Loader
 #import zipfile
@@ -219,6 +220,39 @@ class Content:
 
         print(f"Done updating database to version {version}")
 
+    def find_when_content_updated(self):
+        sql = '''SELECT scope, when_updated
+                 FROM when_content_updated'''
+
+        updated_dict = {}
+
+        try:
+          for row in self.fetchall(sql):
+              updated_dict[row["scope"]] = str(row["when_updated"])
+        except:
+          print(traceback.format_exc())
+
+        return updated_dict
+    
+    def update_when_content_updated(self, scope):
+        sql = '''UPDATE when_content_updated
+                 SET when_updated = datetime('now')
+                 WHERE scope = ?'''
+
+        try:
+          self.execute(sql, (scope, ))
+        except:
+            print(traceback.format_exc())
+
+    def delete_content_updated(self, scope):
+        sql = '''DELETE FROM when_content_updated
+                 WHERE scope = ?'''
+
+        try:
+          self.execute(sql, (scope, ))
+        except:
+            print(traceback.format_exc())
+
     def set_user_assignment_start_time(self, course_id, assignment_id, user_id, start_time):
         sql = '''INSERT INTO user_assignment_starts (course_id, assignment_id, user_id, start_time)
                  VALUES (?, ?, ?, ?)'''
@@ -253,14 +287,6 @@ class Content:
         if row:
             return bool(row["yes"])
         return False
-
-    def check_for_restrict_other_assignments(self, course_id):
-        sql = '''SELECT COUNT(*) > 0 AS yes
-                 FROM assignments
-                 WHERE course_id = ?
-                   AND restrict_other_assignments = 1'''
-
-        return bool(self.fetchone(sql, (course_id, ))["yes"])
 
     def get_all_user_assignment_expired(self, course_id, assignment_id):
         user_dict = {}
@@ -343,18 +369,6 @@ class Content:
 
         return self.fetchone(sql, (role, user_id, course_id, ))["has_role"] > 0
 
-    def get_courses_with_role(self, user_id, role):
-        sql = '''SELECT course_id
-                 FROM permissions
-                 WHERE user_id = ?
-                   AND role = ?'''
-
-        course_ids = set()
-        for row in self.fetchall(sql, (user_id, role, )):
-            course_ids.add(row["course_id"])
-
-        return course_ids
-
     def get_users_from_role(self, course_id, role):
         sql = '''SELECT user_id
                  FROM permissions
@@ -400,6 +414,8 @@ class Content:
 
         self.execute(sql, (course_id, user_id,))
 
+        self.update_when_content_updated("user")
+
     def unregister_user_from_course(self, course_id, user_id):
         self.execute('''DELETE FROM course_registrations
                         WHERE course_id = ?
@@ -416,8 +432,10 @@ class Content:
         self.execute('''DELETE FROM user_assignment_starts
                         WHERE course_id = ?
                           AND user_id = ?''', (course_id, user_id, ))
+        
+        self.update_when_content_updated("user")
 
-    def check_user_registered(self, course_id, user_id):
+    def is_user_registered(self, course_id, user_id):
         sql = '''SELECT 1
                  FROM course_registrations
                  WHERE course_id = ?
@@ -466,6 +484,11 @@ class Content:
 
             self.execute(sql, (user_id, role, course_id,))
 
+        if course_id != 0:
+            self.update_when_content_updated(str(course_id))
+
+        self.update_when_content_updated("user")            
+
     def remove_permissions(self, course_id, user_id, role):
         sql = '''DELETE FROM permissions
                  WHERE user_id = ?
@@ -478,8 +501,14 @@ class Content:
 
         self.execute(sql, (user_id, role, int(course_id),))
 
+        if course_id != "0":
+            self.update_when_content_updated(course_id)
+
+        self.update_when_content_updated("user")
+
     def add_admin_permissions(self, user_id):
         self.add_permissions(None, user_id, "administrator")
+        self.update_when_content_updated("user")
 
     def get_user_count(self):
         sql = '''SELECT COUNT(*) AS count
@@ -487,120 +516,25 @@ class Content:
 
         return self.fetchone(sql)["count"]
 
-    def course_exists(self, course_id):
-        sql = '''SELECT COUNT(*) AS count
-                 FROM courses
-                 WHERE course_id = ?'''
-
-        if self.fetchone(sql, (course_id,)):
-            return True
-        else:
-            return False
-
-    def get_courses_for_user(self, user_id):
-        courses = []
-        sql = '''SELECT p.course_id, c.title
-                 FROM permissions p
-                 INNER JOIN courses c
-                   ON p.course_id = c.course_id
-                 WHERE user_id = ?'''
-
-        for course in self.fetchall(sql, (user_id,)):
-            course_basics = {"id": course["course_id"], "title": course["title"]}
-            courses.append([course["course_id"], course_basics])
-
-        return courses
-
-    def get_courses(self, show_hidden=True):
+    def get_all_courses(self):
         courses = []
 
-        sql = '''SELECT course_id, title, visible, introduction
+        sql = '''SELECT course_id, title, visible, introduction, passcode
                  FROM courses
+                 WHERE visible = 1
                  ORDER BY title'''
 
         for course in self.fetchall(sql):
             if course["visible"] or show_hidden:
-                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": course["introduction"], "exists": True}
+                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": course["introduction"], "passcode": course["passcode"], "exists": True}
                 courses.append([course["course_id"], course_basics])
 
         return courses
 
-    def get_assignments_basics(self, course_id, show_hidden=True, nice_sort=True):
-        sql = '''SELECT assignment_id, title, visible
-                 FROM assignments a
-                 WHERE course_id = ?'''
-
-        # We initially structure it this way to make sorting easier.
-        assignments = []
-        for row in self.fetchall(sql, (course_id,)):
-            if row["visible"] or show_hidden:
-                assignments.append(dict(row))
-
-        if nice_sort:
-            assignments = sort_list_of_dicts_nicely(assignments, ["title", "assignment_id"])
-
-        # We restructure it to be consistent with courses and exercises
-        assignments2 = []
-        for assignment in assignments:
-          assignments2.append([assignment["assignment_id"], assignment])
-
-        return assignments2
-
-    def get_exercises(self, course_id, assignment_id, show_hidden=True, nice_sort=True):
-        sql = '''SELECT exercise_id, title, visible, enable_pair_programming
-                 FROM exercises
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                 ORDER BY title'''
-
-        exercises = []
-        for exercise in self.fetchall(sql, (course_id, assignment_id,)):
-            if exercise["visible"] or show_hidden:
-                exercises.append(dict(exercise))
-
-        if nice_sort:
-            exercises = sort_list_of_dicts_nicely(exercises, ["title", "exercise_id"])
-
-        exercises2 = []
-        for exercise in exercises:
-            assignment_basics = self.get_assignment_basics(course_id, assignment_id)
-            exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
-
-            exercises2.append([exercise["exercise_id"], exercise_basics, course_id, assignment_id])
-
-        return exercises2
-
-    def get_available_courses(self, user_id):
-        available_courses = []
-
-        sql = '''SELECT course_id, title, introduction, passcode
-                 FROM courses
-                 WHERE course_id NOT IN
-                 (
-                    SELECT course_id
-                    FROM course_registrations
-                    WHERE user_id = ?
-
-                    UNION
-
-                    SELECT course_id
-                    FROM permissions
-                    WHERE user_id = ?
-                      AND (role = 'instructor' OR role = 'assistant')
-                 )
-                   AND visible = 1
-                 ORDER BY title'''
-
-        for course in self.fetchall(sql, (user_id, user_id, )):
-            course_basics = {"id": course["course_id"], "title": course["title"], "introduction": course["introduction"], "passcode": course["passcode"]}
-            available_courses.append([course["course_id"], course_basics])
-
-        return available_courses
-
     def get_registered_courses(self, user_id):
         registered_courses = []
 
-        sql = '''SELECT r.course_id, c.title
+        sql = '''SELECT r.course_id, c.title, c.introduction, 'student' AS role
                  FROM course_registrations r
                  INNER JOIN courses c
                    ON r.course_id = c.course_id
@@ -609,24 +543,53 @@ class Content:
 
                  UNION
 
-                 SELECT p.course_id, c.title
+                 SELECT c.course_id, c.title, c.introduction, p.role AS role
                  FROM permissions p
                  INNER JOIN courses c
-                   ON p.course_id = c.course_id
-                 WHERE p.user_id = ?'''
+                   ON p.course_id = 0 OR p.course_id = c.course_id
+                 WHERE p.user_id = ?
+                 ORDER BY c.title'''
 
+        unique_course_ids = set()
+        
         for course in self.fetchall(sql, (user_id, user_id, )):
-            course_basics = {"id": course["course_id"], "title": course["title"]}
-            registered_courses.append([course["course_id"], course_basics])
+            course_id = course["course_id"]
+
+            if course_id not in unique_course_ids:
+              unique_course_ids.add(course_id)
+
+              course_basics = {"id": course_id, "title": course["title"], "introduction": course["introduction"], "role": course["role"]}
+
+              registered_courses.append([course["course_id"], course_basics])
 
         return registered_courses
 
-    def get_partner_info(self, course, user_id, include_self=False):
+    # TODO: This function could probably be removed. get_exercise_statuses could be used in its place.
+    def get_exercises(self, course_basics, assignment_basics, show_hidden=True):
+        sql = '''SELECT exercise_id, title, visible, enable_pair_programming
+                 FROM exercises
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                 ORDER BY title'''
+
+        exercises = []
+        for exercise in self.fetchall(sql, (course_basics['id'], assignment_basics['id'],)):
+            if exercise["visible"] or show_hidden:
+                exercises.append(dict(exercise))
+
+        exercises = sort_list_of_dicts_nicely(exercises, ["title", "exercise_id"])
+
+        exercises2 = []
+        for exercise in exercises:
+            exercise_basics = {"enable_pair_programming": exercise["enable_pair_programming"], "id": exercise["exercise_id"], "title": exercise["title"], "visible": exercise["visible"], "exists": True, "assignment": assignment_basics}
+
+            exercises2.append([exercise["exercise_id"], exercise_basics, course_basics['id'], assignment_basics['id']])
+
+        return exercises2
+
+    def get_partner_info(self, course):
         # Gets list of users.
-        if include_self:
-            users = [x[1] for x in self.get_registered_students(course)]
-        else:
-            users = [x[1] for x in self.get_registered_students(course) if x[0] != user_id]
+        users = [x[1] for x in self.get_registered_students(course)]
 
         # Adds users to dict to find duplicate names.
         user_duplicates_dict = {}
@@ -682,8 +645,10 @@ class Content:
 
         return registered_students
 
-    # Gets whether or not a student has passed each assignment in the course.
+    # Indicates whether or not a student has passed each assignment in the course.
     def get_assignment_statuses(self, course_id, user_id, show_hidden):
+        course_basics = self.get_course_basics(course_id)
+
         sql = '''SELECT assignment_id,
                         title,
                         visible,
@@ -743,9 +708,7 @@ class Content:
 
         # We have to check for this because otherwise the instructor has to make a submission before students will see the assignments.
         if len(statuses) == 0:
-            for assignment in self.get_assignments_basics(course_id, show_hidden):
-                assignment_basics = self.get_assignment_basics(course_id, assignment[0])
-
+            for assignment_basics in self.get_assignments(course_basics, show_hidden):
                 assignment_basics["num_passed"] = 0
                 assignment_basics["num_exercises"] = 0
                 assignment_basics["passed"] = 0
@@ -767,12 +730,13 @@ class Content:
 
     # Gets the number of submissions a student has made for each exercise
     # in an assignment and whether or not they have passed the exercise.
+    # TODO: Pass basics info into this function?
     def get_exercise_statuses(self, course_id, assignment_id, user_id, current_exercise_id=None, show_hidden=True, nice_sort=True):
         # This happens when you are creating a new assignment.
         if not assignment_id:
             return []
 
-        sql = '''SELECT e.exercise_id,
+        sql = '''SELECT e.exercise_id as id,
                         e.title,
                         e.enable_pair_programming,
                         IFNULL(MAX(s.passed), 0) AS passed,
@@ -803,24 +767,23 @@ class Content:
                 statuses.append(dict(row))
 
         if nice_sort:
-            statuses = sort_list_of_dicts_nicely(statuses, ["title", "exercise_id"])
+            statuses = sort_list_of_dicts_nicely(statuses, ["title", "id"])
 
         statuses2 = []
 
         for status in statuses:
-            if current_exercise_id and status["exercise_id"] == current_exercise_id:
-                statuses2.append([status["exercise_id"], status])
+            if current_exercise_id and status["id"] == current_exercise_id:
+                statuses2.append([status["id"], status])
 
         for status in statuses:
-            if current_exercise_id and status["exercise_id"] == current_exercise_id:
+            if current_exercise_id and status["id"] == current_exercise_id:
                 next
 
-            statuses2.append([status["exercise_id"], status])
+            statuses2.append([status["id"], status])
 
         return statuses2
 
-    ## Calculates the average score across all students for each assignment in a course,
-    ## as well as the number of students who have completed each assignment.
+    ## Calculates the average score across all students for each assignment in a course, as well as the number of students who have completed each assignment.
     def get_course_summary_scores(self, course_id, assignments):
         sql = '''SELECT COUNT(*) AS num_students
                  FROM course_registrations
@@ -905,7 +868,7 @@ class Content:
 
     ## Calculates the average score across all students for each exercise in an assignment,
     ## as well as the number of students who have completed each exercise.
-    def get_assignment_summary_scores(self, course_id, assignment_id):
+    def get_assignment_summary_scores(self, course_basics, assignment_basics):
         sql = '''
           WITH
             student_info AS (
@@ -949,18 +912,17 @@ class Content:
 
         assignment_scores = {}
 
-        for row in self.fetchall(sql, (course_id, course_id, assignment_id, course_id, assignment_id, )):
+        for row in self.fetchall(sql, (course_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], assignment_basics["id"], )):
           assignment_scores[row["exercise_id"]] = row["avg_score"]
 
         if len(assignment_scores) == 0:
-            for exercise in self.get_exercises(course_id, assignment_id, show_hidden=False, nice_sort=False):
+            for exercise in self.get_exercises(course_basics, assignment_basics, show_hidden=False):
                 assignment_scores[exercise[0]] = 0.0
 
         return assignment_scores
 
-    # Gets all users who have submitted on a particular assignment
-    # and creates a list of their average scores for the assignment.
-    def get_assignment_scores(self, course_id, assignment_id):
+    # Gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment.
+    def get_assignment_scores(self, course_basics, assignment_basics):
         scores = []
 
         sql = '''WITH
@@ -1062,6 +1024,9 @@ class Content:
                  WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
                    AND user_id NOT IN (SELECT user_id FROM assignment_scores)
                  '''
+
+        course_id = course_basics["id"]
+        assignment_id = assignment_basics["id"]
 
         for user in self.fetchall(sql, (course_id, assignment_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, )):
             scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"], "when_passed": user["when_passed"], "last_submission_time": user["last_submission_time"]}
@@ -1264,6 +1229,7 @@ class Content:
 
         return presubmission, submissions
 
+    #TODO: Is there some way to do this without going to the database?
     def get_num_submissions(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''SELECT COUNT(submission_id) AS num
                  FROM submissions
@@ -1511,6 +1477,7 @@ class Content:
                 if match["text_output"] == help_request["text_output"]:
                     return match["suggestion"]
 
+    # FYI: This is different from the get_submissions() function
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
@@ -1611,10 +1578,28 @@ class Content:
             return null_course
 
         return {"id": row["course_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True}
+    
+    def get_assignments(self, course_basics, show_hidden=True):
+        sql = '''SELECT assignment_id as id, title, visible
+                 FROM assignments a
+                 WHERE course_id = ?'''
 
-    def get_assignment_basics(self, course_id, assignment_id):
-        course_basics = self.get_course_basics(course_id)
+        # We initially structure it this way to make sorting easier.
+        assignments = []
+        for row in self.fetchall(sql, (course_basics["id"],)):
+            if row["visible"] or show_hidden:
+                assignments.append(dict(row))
 
+        assignments = sort_list_of_dicts_nicely(assignments, ["title", "id"])
+
+        # We restructure it to be consistent with courses and exercises
+        assignments2 = []
+        for assignment in assignments:
+          assignments2.append([assignment["id"], assignment])
+
+        return assignments2
+    
+    def get_assignment_basics(self, course_basics, assignment_id):
         if not assignment_id:
             return {"id": "", "title": "", "visible": True, "exists": False, "course": course_basics}
 
@@ -1623,15 +1608,13 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        row = self.fetchone(sql, (int(course_id), int(assignment_id),))
+        row = self.fetchone(sql, (int(course_basics['id']), assignment_id,))
         if row is None:
             return {"id": "", "title": "", "visible": True, "exists": False, "course": course_basics}
         else:
             return {"id": row["assignment_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "course": course_basics}
 
-    def get_exercise_basics(self, course_id, assignment_id, exercise_id):
-        assignment_basics = self.get_assignment_basics(course_id, assignment_id)
-
+    def get_exercise_basics(self, course_basics, assignment_basics, exercise_id):
         if not exercise_id:
             return {"id": "", "title": "", "visible": True, "exists": False, "assignment": assignment_basics}
 
@@ -1641,7 +1624,7 @@ class Content:
                    AND assignment_id = ?
                    AND exercise_id = ?'''
 
-        row = self.fetchone(sql, (int(course_id), int(assignment_id), int(exercise_id),))
+        row = self.fetchone(sql, (course_basics['id'], assignment_basics['id'], exercise_id,))
         if row is None:
             return {"enable_pair_programming": False, "id": "", "title": "", "visible": True, "exists": False, "assignment": assignment_basics}
         else:
@@ -1685,7 +1668,7 @@ class Content:
 
         return row["code"] if row else None
 
-    def get_course_details(self, course, format_output=False):
+    def get_course_details(self, course):
         null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "allow_students_download_submissions": False}
 
         if not course:
@@ -1695,22 +1678,26 @@ class Content:
                  FROM courses
                  WHERE course_id = ?'''
 
-        row = self.fetchone(sql, (int(course),))
+        row = self.fetchone(sql, (course,))
 
         if not row:
             return null_course
 
-        course_dict = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "allow_students_download_submissions": row["allow_students_download_submissions"]}
+        course_details = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "allow_students_download_submissions": row["allow_students_download_submissions"]}
 
-        if format_output:
-            course_dict["introduction"] = convert_markdown_to_html(course_dict["introduction"]) # Removes html markup from instructions before converting markdown to html
+        sql = '''SELECT COUNT(*) > 0 AS yes
+                 FROM assignments
+                 WHERE course_id = ?
+                   AND restrict_other_assignments = 1'''
 
-        return course_dict
+        course_details["check_for_restrict_other_assignments"] = bool(self.fetchone(sql, (course, ))["yes"])
 
-    def get_assignment_details(self, course, assignment, format_output=False):
+        return course_details
+
+    def get_assignment_details(self, course_basics, assignment_id):
         null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "due_date_passed": None}
 
-        if not assignment:
+        if not assignment_id:
             return null_assignment
 
         sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, allowed_ip_addresses, has_timer, hour_timer, minute_timer, restrict_other_assignments
@@ -1718,7 +1705,7 @@ class Content:
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
-        row = self.fetchone(sql, (int(course), int(assignment),))
+        row = self.fetchone(sql, (course_basics['id'], assignment_id,))
 
         if not row:
             return null_assignment
@@ -1729,18 +1716,15 @@ class Content:
         if assignment_dict["due_date"]:
             assignment_dict["due_date_passed"] = curr_datetime > assignment_dict["due_date"]
 
-        if format_output:
-            assignment_dict["introduction"] = convert_markdown_to_html(assignment_dict["introduction"]) # Removes html markup from instructions before converting markdown to html
-
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].split(",")
 
         return assignment_dict
 
-    def get_exercise_details(self, course, assignment, exercise):
+    def get_exercise_details(self, course_basics, assignment_basics, exercise_id):
         null_exercise = {"instructions": "", "back_end": "python", "output_type": "txt", "allow_any_response": False, "solution_code": "", "solution_description": "", "hint": "", "max_submissions": 0, "starter_code": "", "credit": "", "data_files": [], "what_students_see_after_success": 1, "date_created": None, "date_updated": None, "enable_pair_programming": False, "verification_code": "", "weight": 1.0, "tests": {}}
 
-        if not exercise:
+        if not exercise_id:
             return null_exercise
 
         sql = '''SELECT instructions, back_end, output_type, allow_any_response, solution_code, solution_description, hint, max_submissions, starter_code, credit, data_files, what_students_see_after_success, date_created, date_updated, enable_pair_programming, verification_code, weight
@@ -1749,7 +1733,7 @@ class Content:
                    AND assignment_id = ?
                    AND exercise_id = ?'''
 
-        row = self.fetchone(sql, (int(course), int(assignment), int(exercise),))
+        row = self.fetchone(sql, (course_basics['id'], assignment_basics['id'], exercise_id,))
 
         if not row:
             return null_exercise
@@ -1771,7 +1755,7 @@ class Content:
                    AND assignment_id = ?
                    AND exercise_id = ?'''
 
-        tests = self.fetchall(sql, (int(course), int(assignment), int(exercise),))
+        tests = self.fetchall(sql, (course_basics['id'], assignment_basics['id'], exercise_id,))
 
         for test in tests:
             exercise_dict["tests"][test["title"]] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]}
@@ -1843,10 +1827,12 @@ class Content:
             self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_updated"], course_basics["id"]])
         else:
             sql = '''INSERT INTO courses (title, visible, introduction, passcode, allow_students_download_submissions, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?)'''
+                     VALUES (?, ?, ?, ?, ?, ?, ?)'''
 
-            course_basics["id"] = self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_created"], course_details["date_updated"]])
+            course_basics["id"] = self.execute(sql, (course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_created"], course_details["date_updated"], ))
             course_basics["exists"] = True
+
+        self.update_when_content_updated(course_basics["id"])
 
         return course_basics["id"]
 
@@ -1876,6 +1862,8 @@ class Content:
         # Returns allowed_ip_addresses to list.
         if assignment_details["allowed_ip_addresses"]:
             assignment_details["allowed_ip_addresses"] = assignment_details["allowed_ip_addresses"].split(",")
+
+        self.update_when_content_updated(assignment_basics["course"]["id"])
 
         return assignment_basics["id"]
 
@@ -1929,7 +1917,6 @@ class Content:
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
                     test_id = cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"], title, exercise_details["tests"][title]["before_code"], exercise_details["tests"][title]["after_code"], exercise_details["tests"][title]["instructions"], exercise_details["tests"][title]["can_see_test_code"], exercise_details["tests"][title]["can_see_expected_output"], exercise_details["tests"][title]["can_see_code_output"], exercise_details["tests"][title]["txt_output"], jpg_output])
-
             else:
                 sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, allow_any_response, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, weight)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -1964,13 +1951,16 @@ class Content:
             raise
 
         cursor.close()
+
+        self.update_when_content_updated(exercise_basics["assignment"]["course"]["id"])
+
         return exercise_basics["id"]
 
     def save_presubmission(self, course, assignment, exercise, user, code):
         sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, code)
                  VALUES (?, ?, ?, ?, ?)'''
 
-        self.execute(sql, [int(course), int(assignment), int(exercise), user, code])
+        self.execute(sql, [course, assignment, exercise, user, code])
 
     def save_submission(self, course, assignment, exercise, user, code, passed, date, exercise_details, test_outputs, partner_id=None):
         sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
@@ -2029,29 +2019,29 @@ class Content:
 
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
 
-    def copy_course(self, course_id, new_course_title):
+    def copy_course(self, existing_course_basics, new_course_title):
         sql = '''INSERT INTO courses (title, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated)
                  SELECT ?, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 
-        new_course_id = self.execute(sql, (new_course_title, course_id,))
+        new_course_id = self.execute(sql, (new_course_title, existing_course_basics['id'],))
 
-        for assignment_id in self.get_assignment_ids(course_id):
+        for assignment_basics in self.get_assignments(existing_course_basics):
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses)
                      SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses
                      FROM assignments
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            new_assignment_id = self.execute(sql, (new_course_id, course_id, assignment_id,))
+            new_assignment_id = self.execute(sql, (new_course_id, existing_course_basics['id'], assignment_basics["id"],))
 
             sql = '''SELECT exercise_id
                      FROM exercises
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            old_exercise_ids = [row["exercise_id"] for row in self.fetchall(sql, (course_id, assignment_id,))]
+            old_exercise_ids = [row["exercise_id"] for row in self.fetchall(sql, (existing_course_basics['id'], assignment_basics["id"],))]
 
             for exercise_id in old_exercise_ids:
                 sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, weight, allow_any_response)
@@ -2061,7 +2051,7 @@ class Content:
                            AND assignment_id = ?
                            AND exercise_id = ?'''
 
-                new_exercise_id = self.execute(sql, (new_course_id, new_assignment_id, course_id, assignment_id, exercise_id))
+                new_exercise_id = self.execute(sql, (new_course_id, new_assignment_id, existing_course_basics['id'], assignment_basics["id"], exercise_id))
 
                 sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
                          SELECT ?, ?, ?, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output
@@ -2070,14 +2060,16 @@ class Content:
                            AND assignment_id = ?
                            AND exercise_id = ?'''
 
-                self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, course_id, assignment_id, exercise_id))
+                self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, existing_course_basics['id'], assignment_basics["id"], exercise_id))
 
         sql = '''INSERT INTO permissions (user_id, role, course_id)
                  SELECT user_id, role, ?
                  FROM permissions
                  WHERE course_id = ?'''
 
-        self.execute(sql, (new_course_id, course_id,))
+        self.execute(sql, (new_course_id, existing_course_basics['id'],))
+
+        self.update_when_content_updated(new_course_id)
 
     def copy_assignment(self, course_id, assignment_id, new_title):
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses)
@@ -2114,6 +2106,8 @@ class Content:
 
             self.execute(sql, (new_assignment_id, new_exercise_id, course_id, assignment_id, exercise_id))
 
+        self.update_when_content_updated(course_id)
+
     def update_user(self, user_id, user_dict):
         self.set_user_dict_defaults(user_dict)
 
@@ -2123,11 +2117,15 @@ class Content:
 
         self.execute(sql, (user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], user_dict["email_address"], user_id,))
 
+        self.update_when_content_updated("user")
+
     def update_user_settings(self, user_id, theme, use_auto_complete, use_studio_mode, enable_vim):
         sql = '''UPDATE users
                  SET ace_theme = ?, use_auto_complete = ?, use_studio_mode = ?, enable_vim = ?
                  WHERE user_id = ?'''
         self.execute(sql, (theme, use_auto_complete, use_studio_mode, enable_vim, user_id))
+
+        self.update_when_content_updated("user")
 
     def remove_user_submissions(self, user_id):
         sql = '''SELECT submission_id
@@ -2154,6 +2152,8 @@ class Content:
 
         self.execute(sql, (user_id,))
 
+        self.update_when_content_updated("user")
+
     def move_assignment(self, course_id, assignment_id, new_course_id):
         for table in ["assignments", "exercises", "tests"]:
             self.execute(f'''UPDATE {table}
@@ -2165,6 +2165,8 @@ class Content:
             self.execute(f'''DELETE FROM {table}
                              WHERE course_id = ?
                                AND assignment_id = ?''', (course_id, assignment_id))
+            
+        self.update_when_content_updated(course_id)
 
     #TODO: Make this like move_assignment
     def move_exercise(self, course_id, assignment_id, exercise_id, new_assignment_id):
@@ -2209,6 +2211,8 @@ class Content:
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
+        
+        self.update_when_content_updated(course_id)
 
     def copy_exercise(self, course_id, assignment_id, exercise_id, new_title):
         try:
@@ -2231,6 +2235,8 @@ class Content:
             self.execute(sql, (new_exercise_id, course_id, assignment_id, exercise_id, ))
         except:
             print(traceback.format_exc())
+
+        self.update_when_content_updated(course_id)
 
     #TODO: Clean up all of these delete functions.
     def delete_exercise(self, course_id, assignment_id, exercise_id):
@@ -2271,6 +2277,8 @@ class Content:
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+        
+        self.update_when_content_updated(course_id)
 
     def delete_assignment(self, assignment_basics):
         course_id = assignment_basics["course"]["id"]
@@ -2314,6 +2322,8 @@ class Content:
         self.execute('''DELETE FROM assignments
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
+        
+        self.update_when_content_updated(course_id)
 
     def delete_course(self, course_id):
         self.execute('''DELETE FROM presubmissions
@@ -2354,6 +2364,8 @@ class Content:
 
         self.execute('''DELETE FROM user_assignment_starts
                         WHERE course_id = ?''', (course_id, ))
+        
+        self.delete_content_updated(course_id)
 
     def delete_course_submissions(self, course_id):
         self.execute('''DELETE FROM submissions
@@ -2437,21 +2449,23 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?)''', (course_id, assignment_id, exercise_id, ))
 
-    def create_course_scores_text(self, course_id):
+    def create_course_scores_text(self, course_basics):
         out_file_text = "Assignment_ID\tAssignment_Title\tStudent_ID\tScore\n"
 
-        for assignment_id in self.get_assignment_ids(course_id):
-            assignment_title = self.get_assignment_basics(course_id, assignment_id)["title"]
-            assignment_scores = self.get_assignment_scores(course_id, assignment_id)
+        for assignment_basics in self.get_assignments(course_basics):
+            assignment_scores = self.get_assignment_scores(course_basics, assignment_basics)
 
             for score_dict in assignment_scores:
-                out_file_text += f"{assignment_id}\t{assignment_title}\t{score_dict[0]}\t{score_dict[1]['percent_passed']}\n"
+                out_file_text += f"{assignment_basics['assignment_id']}\t{assignment_basics['title']}\t{score_dict[0]}\t{score_dict[1]['percent_passed']}\n"
 
         return out_file_text
 
-    def create_assignment_scores_text(self, course_id, assignment_id):
+    def create_assignment_scores_text(self, course_basics, assignment_basics):
         out_file_text = "Course_ID\tAssignment_ID\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\n"
-        scores = self.get_assignment_scores(course_id, assignment_id)
+        scores = self.get_assignment_scores(course_basics, assignment_basics)
+
+        course_id = course_basics["id"]
+        assignment_id = assignment_basics["id"]
 
         for student in scores:
             out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['percent_passed']}\t{student[1]['when_passed']}\t{student[1]['last_submission_time']}\n"
@@ -2507,20 +2521,12 @@ class Content:
 #        if os.path.exists(tmp_dir_path):
 #            shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
-    def course_has_pair_programming(self, course_id):
-        sql = '''SELECT MAX(enable_pair_programming) as enable_pair_programming
-                 FROM exercises
-                 WHERE course_id = ?'''
-
-        has_pair_programming = self.fetchone(sql, (course_id, ))["enable_pair_programming"]
-        return has_pair_programming
-
     def get_student_pairs(self, course_id, user_name):
         # Uses the week of the year as a seed.
         seed = datetime.utcnow().isocalendar().week
 
         # Gets student names registered in a course (will add obscured emails to the end of the name in the case of duplicate names)
-        students = list(self.get_partner_info(course_id, '', True).keys())
+        students = list(self.get_partner_info(course_id, False).keys())
 
         # Randomizes students using seed
         random.Random(seed).shuffle(students)

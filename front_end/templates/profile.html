@@ -1,3 +1,4 @@
+<!--
 <div class="columns" style="min-height: 100%;">
     <div class="column is-one-quarter profile-menu">
         <aside class="menu">
@@ -23,7 +24,7 @@
                 >Admin menu</a></li>
                 {% end %}
 
-                {% if is_instructor or is_administrator %}
+                {% if is_administrator %}
                     <li><a href="/profile/instructor_select_course/{{ user_info['user_id'] }}"
                     {% if page == "instructor" %}
                         class="is-active"
@@ -31,7 +32,7 @@
                 >Instructor menu</a></li>
                 {% end %}
             </ul>
-            {% if is_administrator or is_instructor %}
+            {% if is_administrator %}
                 <p class="menu-label">Tools</p>
                 <ul class="menu-list">
                     <li><a href="/profile/manage_users"
@@ -41,15 +42,8 @@
                     >Manage users</a></li>
                 </ul>
             {% end %}
-            <p class="menu-label">Settings</p>
-            <ul class="menu-list">
-                <li><a href="/profile/preferences/{{ user_info['user_id'] }}"
-                {% if page == "preferences" %}
-                    class="is-active"
-                {% end %}
-                >Preferences</a></li>
-            </ul>
         </aside>
     </div>
     <div class="column is-three-quarters profile-main">
         <div class="content">
+-->

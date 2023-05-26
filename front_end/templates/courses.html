@@ -1,0 +1,112 @@
+<link rel="stylesheet" href="/static/css/modal.css">
+
+<div id="leave_course_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Are you sure you want to leave this course?</p>
+
+        <article  id="leave_error_message" class="message is-danger invisible">
+        </article>
+
+        <p class="buttons">
+            <button type="button" id="leave_cancel_button" class="modal-button button is-light">Cancel</button>
+            <a id="leave_button" class="modal-button button is-dark">Leave</a>
+        </p>
+    </div>
+</div>
+
+<div>
+    {% if registered_courses %}
+    <div class="bottom-spacing" style="padding-left: 15px">
+        <h3 class="title">My courses</h3>
+        {% if not is_administrator %}
+            <div class="buttons is-pulled-right">
+                <a href="/courses/new" class="button is-primary">Register for a course</a>
+            </div>
+        {% end %}
+    </div>
+
+    <div class='tab-content'>
+        <div class="columns scrollable">
+            <div class="column">
+            {% for course in registered_courses %}
+                <div class="box">
+                    <article class="media">
+                      <div class="media-content">
+                        <div class="content">
+                            {% if not is_administrator and not course[1]["role"] == "instructor" and not course[1]["role"] == "assistant" %}
+                                <div class="is-pulled-right">
+                                    <a onclick="showLeaveCourseModal({{ course[0] }})" title="Leave this course">
+                                        <span class="icon has-text-dark">
+                                            <i class="far fa-trash-alt"></i>
+                                        </span>
+                                    </a>
+                                </div>
+                            {% end %}
+
+                            <p>
+                                <strong>{{ course[1]["title"] }}</strong>
+                                <br>
+                                {{ course[1]["introduction"] }}
+                            </p>
+
+                            <a class="button is-fullwidth is-dark" href="/course/{{ course[0] }}">View course</a>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+            {% end %}
+            </div>
+        </div>
+    {% else %}
+        <p>You have not yet registered for a course.</p>
+    {% end %}
+    </div>
+</div>
+
+<script>
+function showLeaveCourseModal(course_id) {
+    var modal = document.getElementById("leave_course_modal");
+    var span = document.getElementsByClassName("close")[0];
+    modal.style.display = "block";
+
+    var cancelButton = document.getElementById("leave_cancel_button");
+    var leaveButton = document.getElementById("leave_button");
+    $("#leave_error_message").addClass("invisible");
+
+    leaveButton.onclick = function() {
+        $.ajax({
+            type: 'GET',
+            url: "/unregister/" + course_id + "/{{ user_info['user_id'] }}",
+            async: false})
+            .done(function(message) {
+                if (message.startsWith("Error:")) {
+                    $("#leave_error_message").removeClass("invisible");
+                    $("#leave_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                }
+                else {
+                    modal.style.display = "none";
+                    window.location.href = window.location.href;
+                }
+            })
+            .fail(function(error) {
+                $("#leave_error_message").removeClass("invisible");
+                $("#leave_error_message")[0].innerHTML = `<div class="message-body">${error}</div>`;
+            });
+    }
+
+    cancelButton.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+</script>

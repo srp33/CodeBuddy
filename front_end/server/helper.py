@@ -334,7 +334,7 @@ def get_client_ip_address(request):
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
 
-def format_exercise_details(exercise_details, exercise_basics, user_name, content, next_prev_exercises=None, format_tests=True):
+def format_exercise_details(exercise_details, course_id, assignment_id, user_name, content, next_prev_exercises=None, format_tests=True):
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
@@ -352,8 +352,6 @@ def format_exercise_details(exercise_details, exercise_basics, user_name, conten
         if not next_prev_exercises or not next_prev_exercises["previous"]:
             prompt = "Error: [reflection_prompt] can only be used in the instructions when an exercise is *not* the first in an assignment."
         else:
-            course_id = exercise_basics["assignment"]["course"]["id"]
-            assignment_id = exercise_basics["assignment"]["id"]
             prev_exercise_details = content.get_exercise_details(course_id, assignment_id, next_prev_exercises["previous"]["id"])
             modify_what_students_see(prev_exercise_details, user_name)
 
@@ -374,9 +372,9 @@ def format_exercise_details(exercise_details, exercise_basics, user_name, conten
             else:
                 exercise_details["instructions"] = exercise_details["instructions"].replace("[reflection_prompt]", blurb1 + blurb3 + blurb4)
 
-    if exercise_basics != None and next_prev_exercises != None:
+    if next_prev_exercises != None:
         if next_prev_exercises["previous"]:
-            link_html = f"<a href='/exercise/{exercise_basics['assignment']['course']['id']}/{exercise_basics['assignment']['id']}/{next_prev_exercises['previous']['id']}'>previous exercise</a>"
+            link_html = f"<a href='/exercise/{course_id}/{assignment_id}/{next_prev_exercises['previous']['id']}'>previous exercise</a>"
             exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", link_html)
 
     exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "") # This is just in case they added it when it is the first exercise.
@@ -439,7 +437,7 @@ def get_assignment_status(handler, course, assignment_details, curr_datetime):
         return "start_date"
     elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
         return "due_date"
-    elif handler.get_user_info()["user_id"] not in list(map(lambda x: x[0], handler.content.get_registered_students(course))):
+    elif handler.user_info["user_id"] not in list(map(lambda x: x[0], handler.content.get_registered_students(course))):
         return "not_registered_for_course"
 
     return "render"

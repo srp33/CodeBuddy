@@ -6,23 +6,24 @@ class ExerciseHandler(BaseUserHandler):
 
     def get(self, course, assignment, exercise):
         try:
-            show = self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
-            courses = self.get_courses(show)
-            assignments = self.content.get_assignments_basics(course, show)
+            show = self.is_administrator or self.is_instructor_for_course(course) or self.is_assistant_for_course(course)
+            course_basics = self.get_course_basics(course)
+            course_details = self.get_course_details(course)
 
-            course_basics = self.content.get_course_basics(course)
-            assignment_basics = self.content.get_assignment_basics(course, assignment)
-            assignment_details = self.content.get_assignment_details(course, assignment)
+            assignments = self.get_assignments(course_basics)
+            assignment_basics = self.get_assignment_basics(course_basics, assignment)
+            assignment_details = self.get_assignment_details(course_basics, assignment)
 
-            if not self.check_whether_should_show_exercise(course, assignment, assignment_details, assignments, courses, assignment_basics, course_basics):
+            if not self.check_whether_should_show_exercise(course, assignment, assignment_details, assignments, self.courses, assignment_basics, course_basics):
                 return
 
-            exercises = self.content.get_exercises(course, assignment, show_hidden=show)
-            exercise_basics = self.content.get_exercise_basics(course, assignment, exercise)
-            exercise_details = self.content.get_exercise_details(course, assignment, exercise)
+            exercise_basics = self.get_exercise_basics(course_basics, assignment_basics, exercise)
+            exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise)
+            exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_current_user(), current_exercise_id=exercise, show_hidden=show)
 
             back_end = self.settings_dict["back_ends"][exercise_details["back_end"]]
-            next_prev_exercises = self.content.get_next_prev_exercises(course, assignment, exercise, exercises)
+
+            next_prev_exercises = self.content.get_next_prev_exercises(course, assignment, exercise, exercise_statuses)
 
             # help_request = self.content.get_help_request(course, assignment, exercise, self.get_user_id())
             # same_suggestion = None
@@ -30,28 +31,29 @@ class ExerciseHandler(BaseUserHandler):
             #     same_suggestion = self.content.get_same_suggestion(help_request)
 
             # Fetches all users enrolled in a course excluding the current user as options to pair program with.
-            user_list = list(self.content.get_partner_info(course, self.get_user_info()["user_id"]).keys())
-            exercise_statuses = self.content.get_exercise_statuses(course, assignment, self.get_user_id(), current_exercise_id=exercise, show_hidden=show)
-            start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_user_id())
+            user_list = list(self.get_partner_info(course, True).keys())
+            
+            start_time = None
+            if assignment_details["has_timer"]:
+                start_time = self.content.get_user_assignment_start_time(course, assignment, self.get_current_user())
 
             tests = exercise_details["tests"]
-            presubmission, submissions = self.content.get_submissions(course, assignment, exercise, self.get_user_id(), exercise_details)
+            presubmission, submissions = self.content.get_submissions(course, assignment, exercise, self.get_current_user(), exercise_details)
 
             mode = self.get_query_argument("mode", default=None)
 
-            studio_mode = self.get_user_info()["use_studio_mode"]
+            studio_mode = self.user_info["use_studio_mode"]
             if mode == "studio":
                 studio_mode = True
             elif mode == "classic":
                 studio_mode = False
 
-            format_exercise_details(exercise_details, exercise_basics, self.get_user_info()["name"], self.content, next_prev_exercises, format_tests=False)
+            format_exercise_details(exercise_details, course, assignment, self.user_info["name"], self.content, next_prev_exercises, format_tests=False)
 
             args = {
                     "users": user_list,
-                    "courses": courses,
+                    "courses": self.courses,
                     "assignments": assignments,
-                    "exercises": exercises,
                     "course_basics": course_basics,
                     "assignment_basics": assignment_basics,
                     "assignment_details": assignment_details,
@@ -67,12 +69,12 @@ class ExerciseHandler(BaseUserHandler):
                     "back_end_description": back_end["description"],
                     "domain": self.settings_dict['domain'],
                     "start_time": start_time,
-                    "user_info": self.get_user_info(),
-                    "user_id": self.get_user_id(),
-                    "is_administrator": self.is_administrator(),
+                    "user_info": self.user_info,
+                    "user_id": self.get_current_user(),
+                    "is_administrator": self.is_administrator,
                     "is_instructor": self.is_instructor_for_course(course),
                     "is_assistant": self.is_assistant_for_course(course),
-                    "check_for_restrict_other_assignments": self.content.check_for_restrict_other_assignments(course),
+                    "check_for_restrict_other_assignments": course_details["check_for_restrict_other_assignments"],
                     "help_request": None,
                     "same_suggestion": None,
             }

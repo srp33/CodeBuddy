@@ -1,0 +1,157 @@
+<link rel="stylesheet" href="/static/css/modal.css">
+        
+<div id="remove_admin_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <p>Are you sure you want to remove your admin privileges?</p>
+
+        <article  id="remove_error_message" class="message is-danger invisible">
+        </article>
+
+        <p class="buttons">
+            <a id="remove_cancel_button" class="modal-button button is-light">Cancel</a>
+            <button type="button" id="remove_button" class="modal-button button is-dark">Remove</button>
+        </p>
+    </div>
+</div>
+
+<div id="add_admin_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <p>Add an administrator:</p>
+
+        <input class="input is-medium is-primary" type="text" id="new_admin" placeholder="Enter ID of an existing user." />
+        
+        <p class="buttons">
+            <a id="add_cancel_button" class="modal-button button is-light">Cancel</a>
+
+            <button type="button" id="add_button" class="modal-button button is-dark">Add</button>
+        </p>
+    </div>
+</div>
+
+<h3>Current administrator(s):
+    <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Administrators can only be removed by themselves.">
+        <i class="far fa-question-circle"></i>
+    </label>
+</h3>
+
+<ul>
+{% for admin in admins %}
+    <li>
+        {{ admin }}
+        
+        {% if admin == user_info["user_id"] %}
+            (<a onclick="showRemoveModal()">remove access</a>)
+        {% end %}
+    </li>
+{% end %}
+</ul>
+            
+<div class="buttons">
+    <a class="button is-dark" onclick="showAddModal()">Add administrator</a>
+</div>
+
+<script>
+    function showAddModal() {
+        var modal = document.getElementById("add_admin_modal");
+        var span = document.getElementsByClassName("close")[1];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("add_cancel_button");
+        var addButton = document.getElementById("add_button");
+
+        var newIDInput = document.getElementById("new_admin");
+        newIDInput.focus();
+
+        newIDInput.addEventListener("keyup", function(event) {
+            // Check if Enter key is pressed
+            if (event.keyCode === 13) {
+                addButton.click();
+            }
+        });
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        addButton.onclick = function() {
+            var user_id = document.getElementById("new_admin").value;
+
+            $.ajax({
+                type: 'GET',
+                url: "/add_admin/" + user_id,
+                async: false})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        $("#remove_error_message").removeClass("invisible");
+                        $("#remove_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                    }
+                    else {
+                        modal.style.display = "none";
+                        window.location.href = window.location.href;
+                    }
+                })
+                .fail(function(error) {
+                    $("#remove_error_message").removeClass("invisible");
+                    $("#remove_error_message")[0].innerHTML = `<div class="message-body">${error}</div>`;
+                });
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+
+    function showRemoveModal() {
+        var modal = document.getElementById("remove_admin_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("remove_cancel_button");
+        var removeButton = document.getElementById("remove_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        removeButton.onclick = function() {
+            $.ajax({
+                type: 'GET',
+                url: "/remove_admin",
+                async: false})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        $("#remove_error_message").removeClass("invisible");
+                        $("#remove_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                    }
+                    else {
+                        modal.style.display = "none";
+                        window.location.href = "/";
+                    }
+                })
+                .fail(function(error) {
+                    $("#remove_error_message").removeClass("invisible");
+                    $("#remove_error_message")[0].innerHTML = `<div class="message-body">${error}</div>`;
+                });
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+</script>

@@ -7,10 +7,26 @@
                     </div>
 
                     <div class="navbar-dropdown is-size-5 is-right">
-                        <a class="navbar-item" href="/profile/courses/{{ user_info['user_id'] }}">Courses</a>
-                        <a class="navbar-item" href="/profile/personal_info/{{ user_info['user_id'] }}">View profile</a>
-                        <a class="navbar-item" href="/profile/preferences/{{ user_info['user_id'] }}">Settings</a>
+                        <!--<a class="navbar-item" href="/courses/{{ user_info['user_id'] }}">Courses</a>-->
+
+                        <a class="navbar-item" href="/personal_info/{{ user_info['user_id'] }}">My profile</a>
+
+                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+
+                        {% if is_administrator %}
+                            <hr class="navbar-divider">
+
+                            <a class="navbar-item" href="/edit_course/">Create a course</a>
+
+                            <a class="navbar-item" href="/manage_admins">Manage admins</a>
+
+                            <!--<a class="navbar-item" href="/manage_users">Manage users</a>-->
+
+                            <a class="navbar-item" href="/summarize_logs">View logs</a>
+                        {% end %}
+
                         <hr class="navbar-divider">
+
                         <a class="navbar-item" href="/logout">Log out</a>
                     </div>
                 </div>

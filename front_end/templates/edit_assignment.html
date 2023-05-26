@@ -5,14 +5,14 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         <div class="row-container">
-            <h2>Edit assignment</h2>
+            <h3>Edit assignment</h3>
             <p>
                 <input type="submit" class="button is-dark" value="Save" />
                 <button class="button is-white" onclick="location.href='/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}'; return false;">Done</button>
             </p>
         </div>
     {% else %}
-        <h2>Create assignment</h2>
+        <h3>Create assignment</h3>
     {% end %}
 {% end %}
 

@@ -19,6 +19,9 @@ def make_app():
     app = Application(
         [
             url(r"/", HomeHandler),
+            url(r"/add_admin/([^/]+)", AddAdminHandler, name="add_admin"),
+            url(r"/add_assistant/([^/]+)/([^/]+)", AddAssistantHandler, name="add_assistant"),
+            url(r"/add_instructor/([^/]+)/([^/]+)", AddInstructorHandler, name="add_instructor"),
             url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
             url(r"/caslogin", CASLoginHandler, name="caslogin"),
             url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
@@ -26,6 +29,7 @@ def make_app():
             url(r"/copy_course/([^/]+)", CopyCourseHandler, name="copy_course"),
             url(r"/copy_exercise/([^/]+)/([^/]+)/([^/]+)?", CopyExerciseHandler, name="copy_exercise"),
             url(r"/course/([^/]+)", CourseHandler, name="course"),
+            url(r"/courses(/[^/]+)?", CoursesHandler, name="courses"),
             url(r"/delete_assignment/([^/]+)/([^/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
             url(r"/delete_assignment_submissions/([^/]+)/([^/]+)?", DeleteAssignmentSubmissionsHandler, name="delete_assignment_submissions"),
             url(r"/delete_course/([^/]+)?", DeleteCourseHandler, name="delete_course"),
@@ -54,19 +58,19 @@ def make_app():
             url(r"/is_taking_restricted_assignment/([^/]+)/([^/]+)", IsTakingRestrictedAssignmentHandler, name="is_taking_restricted_assignment"),
             url(r"/login", LoginHandler, name="login"),
             url(r"/logout", LogoutHandler, name="logout"),
+            url(r"/manage_admins", ManageAdminsHandler, name="manage_admins"),
+            url(r"/manage_assistants/([^/]+)", ManageAssistantsHandler, name="manage_assistants"),
+            url(r"/manage_instructors/([^/]+)", ManageInstructorsHandler, name="manage_instructors"),
+            url(r"/manage_students/([^/]+)", ManageStudentsHandler, name="manage_students"),
+            url(r"/manage_users", ManageUsersHandler, name="manage_users"),
             url(r"/move_assignment/([^/]+)/([^/]+)", MoveAssignmentHandler, name="move_assignment"),
             url(r"/move_exercise/([^/]+)/([^/]+)/([^/]+)?", MoveExerciseHandler, name="move_exercise"),
-            url(r"/profile/admin/([^/]+)", ProfileAdminHandler, name="profile_admin"),
-            url(r"/profile/courses/([^/]+)", ProfileCoursesHandler, name="profile_courses"),
-            url(r"/profile/consent_forms/([^/]+)", ConsentFormsHandler, name="consent_forms"),
-            url(r"/profile/help_requests", ProfileHelpRequestsHandler, name="profile_help_requests"),
-            url(r"/profile/instructor/([^/]+)/([^/]+)", ProfileInstructorHandler, name="profile_instructor"),
-            url(r"/profile/instructor_select_course/([^/]+)", ProfileInstructorSelectCourseHandler, name="profile_instructor_select_course"),
-            url(r"/profile/manage_users", ProfileManageUsersHandler, name="profile_manage_users"),
-            url(r"/profile/personal_info/([^/]+)", ProfilePersonalInfoHandler, name="profile_personal_info"),
-            url(r"/profile/preferences/([^/]+)", ProfilePreferencesHandler, name="profile_preferences"),
-            url(r"/profile/student_help_requests", ProfileStudentHelpRequestsHandler, name="profile_student_help_requests"),
-            url(r"/remove_admin/([^/]+)", RemoveAdminHandler, name="remove_admin"),
+            # url(r"/profile/help_requests", ProfileHelpRequestsHandler, name="profile_help_requests"),
+            url(r"/personal_info/([^/]+)", PersonalInfoHandler, name="personal_info"),
+            url(r"/preferences/([^/]+)", PreferencesHandler, name="preferences"),
+            # url(r"/profile/student_help_requests", ProfileStudentHelpRequestsHandler, name="profile_student_help_requests"),
+            url(r"/register/([^/]+)/([^/]+)/([^/]+)", RegisterHandler, name="register"),
+            url(r"/remove_admin", RemoveAdminHandler, name="remove_admin"),
             url(r"/remove_assistant/([^/]+)/([^/]+)", RemoveAssistantHandler, name="remove_assistant"),
             url(r"/remove_instructor/([^/]+)/([^/]+)", RemoveInstructorHandler, name="remove_instructor"),
             url(r"/resave_exercises/([^/]+)/([^/]+)", ResaveExercisesHandler, name="resave_exercises"),
@@ -83,7 +87,6 @@ def make_app():
             url(r"/unavailable_exercise/([^/]+)/([^/]+)", UnavailableExerciseHandler, name="unavailable_exercise"),
             url(r"/view_instructor_solution/([^/]+)/([^/]+)/([^/]+)", ViewInstructorSolutionHandler, name="view_instructor_solution"),
             url(r"/view_peer_solution/([^/]+)/([^/]+)/([^/]+)", ViewPeerSolutionHandler, name="view_peer_solution"),
-            url(r"/view_pp/([^/]+)", ViewPairProgrammingAssignmentsHandler, name="view_pp"),
             url(r"/view_request/([^/]+)/([^/]+)/([^/]+)/([^/]+)", ViewHelpRequestsHandler, name="view_request"),
             url(r"/view_assignment_scores/([^/]+)/([^/]+)", ViewAssignmentScoresHandler, name="view_assignment_scores"),
             url(r"/view_exercise_scores/([^/]+)/([^/]+)/([^/]+)", ViewExerciseScoresHandler, name="view_exercise_scores"),
@@ -179,9 +182,9 @@ if __name__ == "__main__":
                 sys.exit(1)
 
         if settings_dict["mode"] == "development":
-            server = tornado.httpserver.HTTPServer(application)
+            server = tornado.httpserver.HTTPServer(application, max_header_size=1048576)
         else:
-            server = tornado.httpserver.HTTPServer(application, ssl_options={
+            server = tornado.httpserver.HTTPServer(application, max_header_size=1048576, ssl_options={
               "certfile": "/certs/cert.crt",
               "keyfile": "/certs/cert.key",
             })

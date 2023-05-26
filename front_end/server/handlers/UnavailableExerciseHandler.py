@@ -3,6 +3,8 @@ from BaseUserHandler import *
 class UnavailableExerciseHandler(BaseUserHandler):
     def get(self, course, assignment):
         try:
-            return self.render("unavailable_exercise.html", courses=self.get_courses(False), assignments=self.content.get_assignments_basics(course, show_hidden=False), course_basics=self.content.get_course_basics(course), assignment_basics=self.content.get_assignment_basics(course, assignment), user_info=self.get_user_info())
+            course_basics = self.get_course_basics(course)
+
+            return self.render("unavailable_exercise.html", courses=self.courses, assignments=self.get_assignments(course_basics), course_basics=course_basics, assignment_basics=self.get_assignment_basics(course_basics, assignment), user_info=self.user_info, is_administrator=self.is_administrator)
         except Exception as inst:
             render_error(self, traceback.format_exc())

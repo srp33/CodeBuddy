@@ -113,14 +113,6 @@
             {% if is_administrator or is_instructor or is_assistant %}
                 <div class="buttons">
                     <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
-
-                    {% if prev_exercise %}
-                        <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
-                    {% end %}
-
-                    {% if next_exercise %}
-                        <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
-                    {% end %}
                 </div>
             {% end %}
 

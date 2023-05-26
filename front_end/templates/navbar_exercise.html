@@ -1,60 +1,60 @@
-            {% if len(exercise_statuses) > 0 and "exercise_basics" in globals() and exercise_basics["exists"] %}
-                <div id="exercise_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('exercise_dropdown')">
-                    {% if len(exercise_statuses) == 1 %}
-                        <a class="navbar-link is-arrowless" style="cursor: pointer;" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
-                            {{ exercise_basics["title"] }}
-                        </a>
+{% if "exercise_statuses" in globals() and len(exercise_statuses) > 0 and "exercise_basics" in globals() and exercise_basics["exists"] %}
+    <div id="exercise_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('exercise_dropdown')">
+        {% if len(exercise_statuses) == 1 %}
+            <a class="navbar-link is-arrowless" style="cursor: pointer;" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
+                {{ exercise_basics["title"] }}
+            </a>
+        {% else %}
+            <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                {{ exercise_basics["title"] }}
+                <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+            </div>
+
+            <div id="moreDropdown" class="navbar-dropdown">
+                {% for exercise in exercise_statuses %}
+                    {% if exercise[0] == exercise_basics['id'] %}
+                        <a class="navbar-item" style="background-color: lightgray; white-space: nowrap;"
                     {% else %}
-                        <div class="navbar-item is-arrowless" style="cursor: pointer;">
-                            {{ exercise_basics["title"] }}
-                            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
-                        </div>
-
-                        <div id="moreDropdown" class="navbar-dropdown">
-                            {% for exercise in exercise_statuses %}
-                                {% if exercise[0] == exercise_basics['id'] %}
-                                    <a class="navbar-item" style="background-color: lightgray; white-space: nowrap;"
-                                {% else %}
-                                    <a class="navbar-item" style="white-space: nowrap;"
-                                {% end %}
-                                    {% if "is_edit_page" in globals() and is_edit_page == True %}
-                                        href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
-                                    {% else %}
-                                        href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
-                                    {% end %}
-                                    >
-                                    {% if exercise[1]["passed"] %}
-                                        <i class="far fa-check-circle"></i>&nbsp;
-                                    {% elif exercise[1]["in_progress"] %}
-                                        <i class="far fa-hourglass"></i>&nbsp;
-                                    {% else %}
-                                        <i class="far fa-circle"></i>&nbsp;
-                                    {% end %}
-
-                                    {{ exercise[1]["title"] }}
-
-                                    {% if exercise[1]["enable_pair_programming"] %}
-                                        <label style="margin-left: 5px;" class="has-tooltip-multiline has-tooltip-left" data-tooltip="Pair programming is enabled for this exercise"><i class="fab fa-product-hunt"></i></label>
-                                    {% end %}
-                                </a>
-                            {% end %}
-                        </div>
+                        <a class="navbar-item" style="white-space: nowrap;"
                     {% end %}
-                </div>
+                        {% if "is_edit_page" in globals() and is_edit_page == True %}
+                            href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                        {% else %}
+                            href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                        {% end %}
+                        >
+                        {% if exercise[1]["passed"] %}
+                            <i class="far fa-check-circle"></i>&nbsp;
+                        {% elif exercise[1]["in_progress"] %}
+                            <i class="far fa-hourglass"></i>&nbsp;
+                        {% else %}
+                            <i class="far fa-circle"></i>&nbsp;
+                        {% end %}
 
-                {% if prev_exercise %}
-                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
-                        <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
-                            <i class="fas fa-arrow-left" style="margin-left: 5px;margin-right: 1px;"></i>
-                        </a>
-                    </div>
-                {% end %}
+                        {{ exercise[1]["title"] }}
 
-                {% if next_exercise %}
-                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
-                        <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
-                            <i class="fas fa-arrow-right" style="margin-left: 1px;margin-right: 5px;"></i>
-                        </a>
-                    </div>
+                        {% if exercise[1]["enable_pair_programming"] %}
+                            <label style="margin-left: 5px;" class="has-tooltip-multiline has-tooltip-left" data-tooltip="Pair programming is enabled for this exercise"><i class="fab fa-product-hunt"></i></label>
+                        {% end %}
+                    </a>
                 {% end %}
-            {% end %}
+            </div>
+        {% end %}
+    </div>
+
+    {% if prev_exercise %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+                <i class="fas fa-arrow-left" style="margin-left: 5px;margin-right: 1px;"></i>
+            </a>
+        </div>
+    {% end %}
+
+    {% if next_exercise %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+                <i class="fas fa-arrow-right" style="margin-left: 1px;margin-right: 5px;"></i>
+            </a>
+        </div>
+    {% end %}
+{% end %}

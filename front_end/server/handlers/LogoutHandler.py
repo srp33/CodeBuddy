@@ -11,7 +11,7 @@ class LogoutHandler(BaseOtherHandler):
         try:
             self.clear_all_cookies()
 
-            #if self.settings_dict["mode"] == "production":
+            #if self.in_production_mode():
                 #self.redirect("https://accounts.google.com/Logout")
             #else:
             self.redirect("/")
