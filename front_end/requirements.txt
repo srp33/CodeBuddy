@@ -5,7 +5,7 @@ pydantic==1.5.1
 uvicorn==0.11.5
 tornado==6.0.4
 requests==2.24.0
-Pillow==8.3.1
+Pillow==9.3.0
 PyYAML==5.3.1
 markdown2[all]==2.4.8
 mariadb==1.0.7
