@@ -26,4 +26,3 @@ class StaticFileHandler(RequestHandler):
 
             self.set_header('Content-type', content_type)
             self.write(file_contents)
-

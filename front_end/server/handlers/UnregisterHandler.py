@@ -1,15 +1,15 @@
 from BaseUserHandler import *
 
 class UnregisterHandler(BaseUserHandler):
-    def get(self, course, user_id):
+    def get(self, course_id, user_id):
         result = "Error: No response"
 
         try:
-            if self.get_current_user() == user_id or self.is_administrator or self.is_instructor_for_course(course):
+            if self.get_current_user() == user_id or self.is_administrator or self.is_instructor_for_course(course_id):
 
-                title = self.get_course_basics(course)["title"]
-                if self.content.is_user_registered(course, user_id):
-                    self.content.unregister_user_from_course(course, user_id)
+                title = self.get_course_basics(course_id)["title"]
+                if self.content.is_user_registered(course_id, user_id):
+                    self.content.unregister_user_from_course(course_id, user_id)
                     #TODO: Clear cookie for courses
 
                     result = f"Success: The user {user_id} has been removed from {title}"

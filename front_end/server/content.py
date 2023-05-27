@@ -415,6 +415,7 @@ class Content:
         self.execute(sql, (course_id, user_id,))
 
         self.update_when_content_updated("user")
+        self.update_when_content_updated(str(course_id))
 
     def unregister_user_from_course(self, course_id, user_id):
         self.execute('''DELETE FROM course_registrations
@@ -434,6 +435,7 @@ class Content:
                           AND user_id = ?''', (course_id, user_id, ))
         
         self.update_when_content_updated("user")
+        self.update_when_content_updated(str(course_id))
 
     def is_user_registered(self, course_id, user_id):
         sql = '''SELECT 1
@@ -587,9 +589,9 @@ class Content:
 
         return exercises2
 
-    def get_partner_info(self, course):
+    def get_partner_info(self, course_id):
         # Gets list of users.
-        users = [x[1] for x in self.get_registered_students(course)]
+        users = [x[1] for x in self.get_registered_students(course_id)]
 
         # Adds users to dict to find duplicate names.
         user_duplicates_dict = {}
@@ -1389,6 +1391,7 @@ class Content:
                    AND r.assignment_id = ?
                    AND r.exercise_id = ?
                    AND r.user_id = ?'''
+
         row = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
 
         #the original output type will be either txt or jpg depending on the output type of the exercise
@@ -1630,7 +1633,7 @@ class Content:
         else:
             return {"enable_pair_programming": row["enable_pair_programming"], "id": row["exercise_id"], "title": row["title"], "visible": bool(row["visible"]), "exists": True, "assignment": assignment_basics}
 
-    def get_next_prev_exercises(self, course, assignment, exercise, exercises):
+    def get_next_prev_exercises(self, course_id, assignment_id, exercise, exercises):
         prev_exercise = None
         next_exercise = None
 
@@ -1647,16 +1650,16 @@ class Content:
 
         return {"previous": prev_exercise, "next": next_exercise}
 
-    def delete_presubmission(self, course, assignment, exercise, user):
+    def delete_presubmission(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''DELETE FROM presubmissions
                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?
                    AND user_id = ?'''
 
-        self.execute(sql, (course, assignment, exercise, user))
+        self.execute(sql, (course_id, assignment_id, exercise_id, user_id))
 
-    def get_presubmission(self, course, assignment, exercise, user):
+    def get_presubmission(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''SELECT code
                  FROM presubmissions
                  WHERE course_id = ?
@@ -1664,21 +1667,21 @@ class Content:
                    AND exercise_id = ?
                    AND user_id = ?'''
 
-        row = self.fetchone(sql, (int(course), int(assignment), int(exercise), user))
+        row = self.fetchone(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id))
 
         return row["code"] if row else None
 
-    def get_course_details(self, course):
+    def get_course_details(self, course_id):
         null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "allow_students_download_submissions": False}
 
-        if not course:
+        if not course_id:
             return null_course
 
         sql = '''SELECT introduction, passcode, date_created, date_updated, allow_students_download_submissions
                  FROM courses
                  WHERE course_id = ?'''
 
-        row = self.fetchone(sql, (course,))
+        row = self.fetchone(sql, (course_id,))
 
         if not row:
             return null_course
@@ -1690,7 +1693,7 @@ class Content:
                  WHERE course_id = ?
                    AND restrict_other_assignments = 1'''
 
-        course_details["check_for_restrict_other_assignments"] = bool(self.fetchone(sql, (course, ))["yes"])
+        course_details["check_for_restrict_other_assignments"] = bool(self.fetchone(sql, (course_id, ))["yes"])
 
         return course_details
 
@@ -1956,17 +1959,17 @@ class Content:
 
         return exercise_basics["id"]
 
-    def save_presubmission(self, course, assignment, exercise, user, code):
+    def save_presubmission(self, course_id, assignment_id, exercise_id, user_id, code):
         sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, code)
                  VALUES (?, ?, ?, ?, ?)'''
 
-        self.execute(sql, [course, assignment, exercise, user, code])
+        self.execute(sql, [course_id, assignment_id, exercise_id, user_id, code])
 
-    def save_submission(self, course, assignment, exercise, user, code, passed, date, exercise_details, test_outputs, partner_id=None):
+    def save_submission(self, course_id, assignment_id, exercise_id, user_id, code, passed, date, exercise_details, test_outputs, partner_id=None):
         sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        submission_id = self.execute(sql, [int(course), int(assignment), int(exercise), user, code, passed, date, partner_id])
+        submission_id = self.execute(sql, [int(course_id), int(assignment_id), int(exercise_id), user_id, code, passed, date, partner_id])
 
         #TODO: Execute this all in one transaction
         #      https://stackoverflow.com/questions/54289555/how-do-i-execute-an-sqlite-script-from-within-python
@@ -1982,34 +1985,34 @@ class Content:
 
                 self.execute(test_sql, [exercise_details["tests"][test_title]["test_id"], submission_id, test_dict["txt_output"], test_dict["jpg_output"]])
 
-        self.save_presubmission(course, assignment, exercise, user, code)
+        self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
 
         return submission_id
 
-    def save_help_request(self, course, assignment, exercise, user_id, code, txt_output, jpg_output, student_comment, date):
+    def save_help_request(self, course_id, assignment_id, exercise_id, user_id, code, txt_output, jpg_output, student_comment, date):
         sql = '''INSERT INTO help_requests (course_id, assignment_id, exercise_id, user_id, code, txt_output, jpg_output, student_comment, approved, date, more_info_needed)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, (course, assignment, exercise, user_id, code, txt_output, jpg_output, student_comment, 0, date, 0,))
+        self.execute(sql, (course_id, assignment_id, exercise_id, user_id, code, txt_output, jpg_output, student_comment, 0, date, 0,))
 
-    def update_help_request(self, course, assignment, exercise, user_id, student_comment):
+    def update_help_request(self, course_id, assignment_id, exercise_id, user_id, student_comment):
         sql = '''UPDATE help_requests
                  SET student_comment = ?, more_info_needed = ?, suggestion = ?, approved = ?
                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?
                    AND user_id = ?'''
-        self.execute(sql, (student_comment, 0, None, 0, course, assignment, exercise, user_id,))
+        self.execute(sql, (student_comment, 0, None, 0, course_id, assignment_id, exercise_id, user_id,))
 
-    def delete_help_request(self, course, assignment, exercise, user_id):
+    def delete_help_request(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''DELETE FROM help_requests
                  WHERE course_id = ?
                    AND assignment_id = ?
                    AND exercise_id = ?
                    AND user_id = ?'''
-        self.execute(sql, (course, assignment, exercise, user_id,))
+        self.execute(sql, (course_id, assignment_id, exercise_id, user_id,))
 
-    def save_help_request_suggestion(self, course, assignment, exercise, user_id, suggestion, approved, suggester_id, approver_id, more_info_needed):
+    def save_help_request_suggestion(self, course_id, assignment_id, exercise_id, user_id, suggestion, approved, suggester_id, approver_id, more_info_needed):
         sql = '''UPDATE help_requests
                  SET suggestion = ?, approved = ?, suggester_id = ?, approver_id = ?, more_info_needed = ?
                  WHERE course_id = ?
@@ -2017,7 +2020,7 @@ class Content:
                    AND exercise_id = ?
                    AND user_id = ?'''
 
-        self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course, assignment, exercise, user_id,))
+        self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course_id, assignment_id, exercise_id, user_id,))
 
     def copy_course(self, existing_course_basics, new_course_title):
         sql = '''INSERT INTO courses (title, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated)

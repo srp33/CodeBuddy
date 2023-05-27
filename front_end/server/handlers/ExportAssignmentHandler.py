@@ -1,18 +1,18 @@
 from BaseUserHandler import *
 
 class ExportAssignmentHandler(BaseUserHandler):
-    def get(self, course, assignment):
+    def get(self, course_id, assignment_id):
         json_text = "An unknown error occurred."
 
         try:
-            if self.is_administrator or self.is_instructor_for_course(course):
-                course_basics = self.get_course_basics(course)
-                assignment_basics = self.content.get_assignment_basics(course_basics, assignment)
+            if self.is_administrator or self.is_instructor_for_course(course_id):
+                course_basics = self.get_course_basics(course_id)
+                assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
                 del assignment_basics["id"]
                 del assignment_basics["exists"]
                 del assignment_basics["course"]
 
-                assignment_details = self.get_assignment_details(course_basics, assignment)
+                assignment_details = self.get_assignment_details(course_basics, assignment_id)
 
                 exercises = {}
                 for exercise in self.content.get_exercises(course_basics, assignment_basics):

@@ -1,14 +1,14 @@
 from BaseUserHandler import *
 
 class ImportAssignmentHandler(BaseUserHandler):
-    def post(self, course):
+    def post(self, course_id):
         result = ""
 
         try:
-            course_basics = self.get_course_basics(course)
+            course_basics = self.get_course_basics(course_id)
 
             if not course_basics["exists"]:
-                return self.write(f"Error: The specified course ID ({course}) is invalid.")
+                return self.write(f"Error: The specified course ID ({course_id}) is invalid.")
 
             file_text = self.get_body_argument("file_text")
             assignment_dict = json.loads(file_text)
@@ -30,7 +30,7 @@ class ImportAssignmentHandler(BaseUserHandler):
                         return self.write(f"Error: The contents of the uploaded file are invalid ({x} is missing at level 2).")
 
             assignment_basics["exists"] = False
-            assignment_basics["course"] = {"id": course}
+            assignment_basics["course"] = {"id": course_id}
             assignment_id = self.content.save_assignment(assignment_basics, assignment_details)
             assignment_basics["id"] = assignment_id
 

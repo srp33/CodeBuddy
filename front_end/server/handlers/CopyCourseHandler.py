@@ -1,11 +1,11 @@
 from BaseUserHandler import *
 
 class CopyCourseHandler(BaseUserHandler):
-    def post(self, course):
+    def post(self, course_id):
         result = ""
 
         try:
-            if self.is_administrator or self.is_instructor_for_course(course):
+            if self.is_administrator or self.is_instructor_for_course(course_id):
                 new_title = self.get_body_argument("new_title").strip()
                 existing_titles = list(map(lambda x: x[1]["title"], self.courses))
 

@@ -2,11 +2,11 @@ from BaseUserHandler import *
 import datetime as dt
 
 class ResaveExercisesHandler(BaseUserHandler):
-    def get(self, course, assignment):
+    def get(self, course_id, assignment_id):
         try:
-            if self.is_administrator or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
-                course_basics = self.get_course_basics(course)
-                assignment_basics = self.content.get_assignment_basics(course_basics, assignment)
+            if self.is_administrator or self.is_instructor_for_course(course_id) or self.is_assistant_for_course(course_id):
+                course_basics = self.get_course_basics(course_id)
+                assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
                 exercises = self.content.get_exercises(course_basics, assignment_basics)
 
                 output = f"<h2>Re-saving exercises for {course_basics['title']} and {assignment_basics['title']}</h2>"

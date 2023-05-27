@@ -1,11 +1,11 @@
 from BaseUserHandler import *
 
 class DownloadAssignmentScoresHandler(BaseUserHandler):
-    def get(self, course, assignment):
+    def get(self, course_id, assignment_id):
         try:
-            if self.is_administrator or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
-                course_basics = self.get_course_basics(course)
-                assignment_basics = self.content.get_assignment_basics(course_basics, assignment)
+            if self.is_administrator or self.is_instructor_for_course(course_id) or self.is_assistant_for_course(course_id):
+                course_basics = self.get_course_basics(course_id)
+                assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
                 tsv_text = self.content.create_assignment_scores_text(course_basics, assignment_basics)
                 
@@ -15,4 +15,3 @@ class DownloadAssignmentScoresHandler(BaseUserHandler):
                 self.write("Permission denied")
         except Exception as inst:
             self.write(traceback.format_exc())
-

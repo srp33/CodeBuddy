@@ -99,21 +99,6 @@ class BaseUserHandler(BaseRequestHandler):
 
         return assignment_details
     
-    # def get_exercises(self, course_basics, assignment_basics, show_hidden=True):
-    #     course_id = course_basics["id"]
-    #     assignment_id = assignment_basics["id"]
-
-    #     exercises_raw = self.update_cached_variable(str(course_id), f"exercises_{course_id}_{assignment_id}", self.content.get_exercises, course_basics, assignment_basics)
-
-    #     exercises = []
-    #     for exercise in exercises_raw:
-    #         if exercise[1]["visible"] or show_hidden:
-    #             del exercise[1]["exists"]
-    #             del exercise[1]["assignment"]
-    #             exercises.append(exercise)
-
-    #     return exercises
-    
     def get_exercise_basics(self, course_basics, assignment_basics, exercise_id):
         course_id = course_basics["id"]
         assignment_id = assignment_basics["id"]

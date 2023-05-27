@@ -61,4 +61,3 @@ class ManageUsersHandler(BaseUserHandler):
             self.render("manage_users.html", result=result, user_info=self.user_info, is_administrator=self.is_administrator)
         except Exception as inst:
             render_error(self, traceback.format_exc())
-

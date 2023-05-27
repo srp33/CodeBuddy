@@ -1,8 +1,8 @@
 from BaseUserHandler import *
 
 class ExportSubmissionsHandler(BaseUserHandler):
-    def get(self, course):
-        course_basics = self.get_course_basics(course)
+    def get(self, course_id):
+        course_basics = self.get_course_basics(course_id)
 
         descriptor = f"Submissions_{course_basics['title'].replace(' ', '_')}"
         temp_dir_path, zip_file_name, zip_file_path = self.content.create_zip_file_path(descriptor)
@@ -23,5 +23,4 @@ class ExportSubmissionsHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
         finally:
-            self.content.remove_export_paths(zip_file_path, tmp_dir_path)
-
+            self.content.remove_export_paths(zip_file_path, temp_dir_path)

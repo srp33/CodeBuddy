@@ -2,27 +2,25 @@ from BaseUserHandler import *
 import datetime as dt
 
 class EditCourseHandler(BaseUserHandler):
-    def get(self, course):
+    def get(self, course_id):
         try:
-            course_basics = self.get_course_basics(course)
+            course_basics = self.get_course_basics(course_id)
 
-            if self.is_administrator or self.is_instructor_for_course(course):
-                self.render("edit_course.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=self.get_course_details(course), result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=self.is_instructor_for_course(course))
+            if self.is_administrator or self.is_instructor_for_course(course_id):
+                self.render("edit_course.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=self.get_course_details(course_id), result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=self.is_instructor_for_course(course_id))
             else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def post(self, course):
+    def post(self, course_id):
         try:
-            if not self.is_administrator and not self.is_instructor_for_course(course):
+            if not self.is_administrator and not self.is_instructor_for_course(course_id):
                 self.render("permissions.html")
                 return
 
-            courses=self.courses
-
-            course_basics = self.get_course_basics(course)
-            course_details = self.get_course_details(course)
+            course_basics = self.get_course_basics(course_id)
+            course_details = self.get_course_details(course_id)
 
             course_basics["title"] = self.get_body_argument("title").strip()
             course_basics["visible"] = self.get_body_argument("is_visible") == "Yes"
@@ -39,7 +37,7 @@ class EditCourseHandler(BaseUserHandler):
             if course_basics["title"] == "" or course_details["introduction"] == "":
                 result = "Error: Missing title or introduction."
             else:
-                if self.content.has_duplicate_title(courses, course_basics["id"], course_basics["title"]):
+                if self.content.has_duplicate_title(self.courses, course_basics["id"], course_basics["title"]):
                     result = "Error: A course with that title already exists."
                 else:
                     #if re.search(r"[^\w ]", title):
@@ -50,8 +48,8 @@ class EditCourseHandler(BaseUserHandler):
                     else:
                         #self.content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
                         self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], None, dt.datetime.utcnow())
-                        course = self.content.save_course(course_basics, course_details)
+                        course_id = self.content.save_course(course_basics, course_details)
 
-            self.render("edit_course.html", courses=courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=course_details, result=result, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=self.is_instructor_for_course(course), is_assistant=self.is_assistant_for_course(course))
+            self.render("edit_course.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=course_details, result=result, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=self.is_instructor_for_course(course_id), is_assistant=self.is_assistant_for_course(course_id))
         except Exception as inst:
             render_error(self, traceback.format_exc())

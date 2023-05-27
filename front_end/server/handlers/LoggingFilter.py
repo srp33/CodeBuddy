@@ -19,4 +19,3 @@ class LoggingFilter(logging.Filter):
         record.user_id = user_id
 
         return True
-
