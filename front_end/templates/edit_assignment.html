@@ -287,12 +287,12 @@
         <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if assignment_details["allowed_ip_addresses"] %}{{ ",".join(assignment_details["allowed_ip_addresses"]) }},{% end %}</textarea>
     </div>
 
-    <p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
+    <p class="buttons">
+        <input type="submit" class="button is-dark" value="Save" />
 
-    <p>
-    {% if assignment_basics["exists"] %}
-        <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done</a>
-    {% end %}
+        {% if assignment_basics["exists"] %}
+            <a class="button is-white" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done</a>
+        {% end %}
     </p>
 
     </form>

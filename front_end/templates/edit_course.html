@@ -25,7 +25,7 @@
     <div class="row-container">
         <div class="a-title-container">
             <p><strong>Title*: </strong></p>
-            <p><textarea name="title" class="textarea is-grey is-medium monospace" placeholder="Please specify a descriptive title for this course." rows="1" autofocus>{{ course_basics["title"] }}</textarea>
+            <p><textarea name="title" class="textarea is-grey is-medium monospace" placeholder="Please specify a descriptive title for this course." rows="1" autofocus>{{ course_basics["title"] }}</textarea></p>
         </div>
 
         <div class="a-visible top-space">
@@ -46,7 +46,8 @@
     </div>
 
     <div class="top-space">
-        <textarea class="textarea" name="introduction" rows=10 placeholder="Please provide an introduction for this course.">{{ course_details["introduction"] }}</textarea>
+        <p><strong>Introduction*: </strong></p>
+        <p><textarea class="textarea" name="introduction" rows=10 placeholder="Please provide an introduction for this course.">{{ course_details["introduction"] }}</textarea></p>
     </div>
 </div>
 
@@ -74,12 +75,12 @@
     <p><textarea name="passcode" class="textarea is-grey is-medium is-fullwidth monospace" rows="1">{% if course_details["passcode"] %}{{ course_details["passcode"] }}{% end %}</textarea></p>
 </div>
 
-<p><input type="submit" class="button is-dark is-medium is-fullwidth" value="Save" /></p>
+<p class="buttons">
+    <input type="submit" class="button is-dark is-half-width" value="Save" />
 
-<p>
-{% if course_basics["exists"] %}
-    <a href="/course/{{ course_basics['id'] }}">Done</a>
-{% end %}
+    {% if course_basics["exists"] %}
+        <a class="button is-white" href="/course/{{ course_basics['id'] }}">Done</a>
+    {% end %}
 </p>
 
 </form>

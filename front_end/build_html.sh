@@ -22,7 +22,7 @@ done
 cat test.html > "$OUTPUT/test.html"
 cat header.html navbar_top.html navbar_bottom.html home.html footer.html > "$OUTPUT/home.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html courses.html container_bottom.html footer.html > "$OUTPUT/courses.html"
-cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html register.html container_bottom.html footer.html > "$OUTPUT/register.html"
+cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html available.html container_bottom.html footer.html > "$OUTPUT/available.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_admins.html container_bottom.html footer.html > "$OUTPUT/manage_admins.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_instructors.html container_bottom.html footer.html > "$OUTPUT/manage_instructors.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_assistants.html container_bottom.html footer.html > "$OUTPUT/manage_assistants.html"

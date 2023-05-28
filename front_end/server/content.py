@@ -709,12 +709,12 @@ class Content:
         # We have to check for this because otherwise the instructor has to make a submission before students will see the assignments.
         if len(statuses) == 0:
             for assignment_basics in self.get_assignments(course_basics, show_hidden):
-                assignment_basics["num_passed"] = 0
-                assignment_basics["num_exercises"] = 0
-                assignment_basics["passed"] = 0
-                assignment_basics["in_progress"] = 0
-                assignment_basics["time_has_expired"] = False
-                statuses2.append([assignment[0], assignment_basics])
+                assignment_basics[1]["num_passed"] = 0
+                assignment_basics[1]["num_exercises"] = 0
+                assignment_basics[1]["passed"] = 0
+                assignment_basics[1]["in_progress"] = 0
+                assignment_basics[1]["time_has_expired"] = False
+                statuses2.append([assignment_basics[0], assignment_basics[1]])
         else:
             for status in sort_list_of_dicts_nicely(statuses, ["title", "assignment_id"]):
                 assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "passed": status["passed"], "in_progress": status["in_progress"], "num_passed": status["num_passed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "time_has_expired": status["minutes_since_start"] > status["hour_timer"] * 60 + status["minute_timer"] if status["minutes_since_start"] else False, "restrict_other_assignments": status["restrict_other_assignments"]}

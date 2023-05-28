@@ -23,6 +23,7 @@ def make_app():
             url(r"/add_assistant/([^/]+)/([^/]+)", AddAssistantHandler, name="add_assistant"),
             url(r"/add_instructor/([^/]+)/([^/]+)", AddInstructorHandler, name="add_instructor"),
             url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
+            url(r"/available", AvailableCoursesHandler, name="available"),
             url(r"/caslogin", CASLoginHandler, name="caslogin"),
             url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
             url(r"/copy_assignment/([^/]+)/([^/]+)?", CopyAssignmentHandler, name="copy_assignment"),
