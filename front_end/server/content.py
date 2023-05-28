@@ -1827,7 +1827,7 @@ class Content:
 
             self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_updated"], course_basics["id"]])
 
-            self.update_when_content_updated("user")
+            self.update_when_content_updated(course_basics["id"])
         else:
             sql = '''INSERT INTO courses (title, visible, introduction, passcode, allow_students_download_submissions, date_created, date_updated)
                      VALUES (?, ?, ?, ?, ?, ?, ?)'''
@@ -1835,7 +1835,7 @@ class Content:
             course_basics["id"] = self.execute(sql, (course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_created"], course_details["date_updated"], ))
             course_basics["exists"] = True
 
-            self.update_when_content_updated(course_basics["id"])
+            self.update_when_content_updated("user")
 
         return course_basics["id"]
 
