@@ -14,7 +14,7 @@ class CASLoginHandler(BaseOtherHandler):
                 raise Exception("You cannot authenticate with CAS in development mode")
                 #service_url="http://codebuddy.ls.byu.edu:8008/login?next=%2Flogin"
 
-            server_url="https://cas.byu.edu/cas/"
+            server_url = "https://cas.byu.edu/cas/"
 
             # Moved this here so we can run it locally without having CAS installed.
             from cas import CASClient

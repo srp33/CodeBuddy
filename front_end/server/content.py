@@ -7,11 +7,9 @@ from imgcompare import *
 import json
 import math
 import re
-import spacy
 import sqlite3
 import traceback
 from yaml import load
-#from yaml import Loader
 #import zipfile
 
 # IMPORTANT: When creating/modifying queries that include any user input,

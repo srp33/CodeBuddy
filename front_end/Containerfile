@@ -12,7 +12,8 @@ RUN npm install
 RUN npm run build:prod
 RUN ./build_html.sh ./html
 
-FROM python:3.9.6-slim-buster
+#FROM python:3.9.6-slim-buster
+FROM python:3.11.3-slim-buster
 
 RUN apt-get update \
  && apt-get install -y bzip2 zip wget curl git vim build-essential \
@@ -45,12 +46,14 @@ USER $USER
 
 ENV PATH="/home/codebuddy/.local/bin:${PATH}"
 
-RUN python -m pip install tornado==6.0.4 requests==2.24.0 Pillow==8.3.1 \
-                          PyYAML==5.3.1 markdown2[all]==2.4.8 spacy==3.1.1 \
-                          python-cas==1.5.0 mariadb==1.0.7 python-dateutil==2.8.2 \
-                          concurrent-log-handler==0.9.20
+ADD requirements.txt .
+RUN python -m pip install -r requirements.txt
+##RUN python -m pip install tornado==6.0.4 requests==2.24.0 Pillow==8.3.1 \
+##                          PyYAML==5.3.1 markdown2[all]==2.4.8 spacy==3.1.1 \
+##                          python-cas==1.5.0 mariadb==1.0.7 python-dateutil==2.8.2 \
+##                          concurrent-log-handler==0.9.20
 
-RUN python -m spacy download en_core_web_sm
+##RUN python -m spacy download en_core_web_sm
 
 WORKDIR /app
 ADD VERSION /
