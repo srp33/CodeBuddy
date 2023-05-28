@@ -1,27 +1,30 @@
 # CodeBuddy
 
-CodeBuddy is a learning management system that instructors can use to deliver programming exercises. It was developed by the [Piccolo Lab](https://piccolo.byu.edu) and has been used since 2019 in programming-oriented courses at [BYU](https://www.byu.edu). It uses HTML/CSS/JavaScript on the client side, Python on the front-end servers, and executes code securely within [Docker](https://www.docker.com) containers on the back end. Currently, it supports programming tasks in [bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), [Python](https://www.python.org), [R](https://www.r-project.org), and [Rust](https://www.rust-lang.org/). CodeBuddy's design makes it easy to support additional programming languages. Send us [a request](https://github.com/srp33/CodeBuddy/issues) if you would have a need for another language. We also use CodeBuddy to deliver text- and video-based content to students. Instructors can require that students post a code- or text-based response to this content and receive a score for providing a response.
+CodeBuddy is a learning management system that instructors can use to deliver programming exercises. It was developed by the [Piccolo Lab](https://piccolo.byu.edu) and has been used since 2019 in programming-oriented courses at [BYU](https://www.byu.edu). It uses HTML/CSS/JavaScript on the client side, Python on the server side, and executes code securely within [Docker](https://www.docker.com containers) on the back end. Currently, it supports programming tasks in [bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), [C](https://en.wikipedia.org/wiki/C_(programming_language)), [Python](https://www.python.org), [R](https://www.r-project.org), and [Rust](https://www.rust-lang.org/). CodeBuddy's design makes it easy to support additional programming languages; send us [a request](https://github.com/srp33/CodeBuddy/issues) if you would like to see another language supported. We also use CodeBuddy to deliver text- and video-based content to students. Instructors can require that students post a code- or text-based response to content and receive a score for providing a response.
 
 Here are some of CodeBuddy's features:
 
-* TBD...
+* 
 
-#### Opening a terminal
+### How to run a CodeBuddy instance
 
-If you are using MacOS or Linux, you should already have a terminal.
+We have a live server running CodeBuddy [here](https://codebuddy.byu.edu). If you would like to run your own instance, follow the instructions below.
+
+##### Open a terminal
+
+If you are using MacOS or Linux, you should already have a terminal. Go to the Applications menu, and open it. Then make sure you have installed the [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) command-line tool.
 
 If you are using a Windows operating system, install [git for windows](https://gitforwindows.org). Then open Git Bash and use that as your terminal.
 
-### Installing dependencies
+##### Install dependencies
 
 CodeBuddy can be installed on any system that supports Docker and Python. Here are the steps to install it. You will need to have basic familiarity with [executing commands through a terminal](https://www.freecodecamp.org/news/command-line-for-beginners).
 
 1. Install [Docker Desktop](https://docs.docker.com/engine/install). Make sure it is up and running.
 2. Install [Python](https://www.python.org/downloads) (version 3.9+) and the [pip package manager](https://pip.pypa.io/en/stable/installation).
 3. In the terminal, execute the following command to install the Python packages: `pip install -r requirements.txt`.
-4. Install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
-5. Modify Settings.yaml according to your preferences. The default settings should work in most cases.
-6. Create a text file in `front_end/secrets/front_end.yaml` that contains a password that you wish to use for encrypting cookies, as well as Google authentication tokens. (Google authenatication is not supported currently, so you can just use the placeholder values shown below for now.)
+4. Modify Settings.yaml according to your preferences. The default settings should work in most cases.
+5. Create a text file in `front_end/secrets/front_end.yaml` that contains a password that you wish to use for encrypting cookies, as well as Google authentication tokens. (Google authentication is not supported currently, so you can just use the placeholder values shown below for now.)
 
 ```
 cookie: "abcdefg"
@@ -29,9 +32,14 @@ google_oauth_key: "111111111111-vsig111a11aa11aaaa1aaaaa1aaaa1aa.apps.googleuser
 google_oauth_secret: "A11AAAAaAAAAaAAAaa1aAAaa"
 ```
 
-### Clone the repository
+If you would like to contribute to developing CodeBuddy, complete these additional steps.
 
-At the command line, use the `cd` command to change your working directory to where you wish to download the CodeBuddy code base.
+6. Install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
+7. Install Make. (Try [these instructions](https://stackoverflow.com/questions/66525016/how-to-run-make-command-in-gitbash-in-windows) for Windows.)
+
+##### Clone the repository
+
+From a terminal window, use the `cd` command to change your working directory to where you wish to store the CodeBuddy code.
 
 ```
 git clone <cloneURL>
@@ -41,34 +49,22 @@ Replace `<cloneURL>` with the GitHub clone address for this project (for example
 
 This will create a directory called CodeBuddy in your current working directory. Use the `cd` command to navigate to that directory.
 
-### Running the front end
+##### Running the front end
 
-One option is to run the front end within Docker. To do this, run the `run_front_end` script at the terminal. However, that will require rebuilding the image each time you make a change, which slows down the development process. Instead, you can follow the process described below.
+For most users, the preferred option is to run the front end within Docker. To do this, execute the `run_front_end` script at the terminal. If you want to contribute to developing CodeBuddy, it might be helpful to run CodeBuddy outside of Docker so that you do not need to rebuild the Docker image each time you make a change. To do so, follow the steps described below.
 
-There are three commands you'll need to run the front_end app locally. You will run the following steps from the `front_end` directory:
+1. Use the `cd` command to change your current working directory to `front_end`.
+2. Build the HTML files. Execute the following command. `make html`
+3. Build the `static` directory. Execute the following command. When it is done, hit Ctrl-C to move on. `make build-watch`
+4. Start the development server. Execute the following command. `make dev-server`
 
-1. First, you need to build the HTML files into single HTML templates. (If you make a change to the HTML files inside of the `templates` directory, you will need to run `make html` again.) Use the `cd` command to change your current working directory to `front_end` and then execute the following.
+When you modify files in the `front_end/templates` directory, you will need to re-run `make html`. When you change any of the Python code, you will need to hit Ctrl-C to stop the development server and then re-execute `make dev-server`.
 
-	```
-	make html
-	```
-
-2. Build the `static` directory using `esbuild`. This command will continue running and rebuild the application whenever you make changes inside the `ui` directory. (Or you can run it and then cancel the command after it has rebuilt the application.)
-
-	```
-	make build-watch
-	```
-3. Lastly, you need to start the server! This will start the server in DEBUG mode, which will enable auto-reload, disable template caching, print logs to the terminal, and other helpful things for development.
-
-	```
-	make dev-server
-	```
-
-### Running the middle layer
+##### Running the middle layer
 
 Use the `cd` command to change your current working directory to `middle_layer`. Then execute the `run_middle_layer` script.
 
-### Ignore this for now...
+##### Ignore this for now...
 
 If you have a proxy, create a self-signed certificate and specify path in Settings.yaml. See https://wiki.debian.org/Self-Signed_Certificate.
 
