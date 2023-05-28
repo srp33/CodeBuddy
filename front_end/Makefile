@@ -1,13 +1,13 @@
 .PHONY: dev-server
-dev-server: database
+dev-server: make-dirs
 	NUM_PROCESSES=1 \
 	PORT=8008 \
 	MPORT=9798 \
 	DEBUG=true \
 	python3 server/webserver.py
 
-database:
-	mkdir -p database
+make-dirs:
+	mkdir -p database logs
 
 .PHONY: html
 html:
