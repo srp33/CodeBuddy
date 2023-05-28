@@ -38,6 +38,20 @@ back_ends:
         verification_example: "FIND='#'\nwhile read -r line;\n\tdo\n\tif grep -q \"$FIND\" <<< \"$line\"; then\n\t\techo \"Error: $FIND operator not allowed in this exercise\"\n\t\tbreak\"\n\tfi\ndone < code"
         test_instructions: ""
         after_test_example: ""
+    c:
+        description: Please write C code based on the instructions provided.
+        memory_allowed_mb: 500
+        timeout_seconds: 60
+        code_completion_path: ace/mode/C_Cpp
+        output_types:
+            txt: |-
+                Text
+        solution_instructions: ""
+        solution_example: "#include <stdio.h>\n\nint add(int a, int b) {\n    int sum = a + b;\n    return sum;\n}"
+        verification_instructions: "Write your verification code in Python (not C)."
+        verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
+        test_instructions: ""
+        after_test_example: "int main() {\n    int num1 = 10;\n    int num2 = 20;\n    int result = add(num1, num2);\n    printf('The sum is: %d\n', result);\n    return 0;\n};"
     not_code:
         description: Please write an answer based on the instructions provided.
         code_completion_path: ace/mode/text
@@ -82,6 +96,20 @@ back_ends:
         verification_example: "FIND='#'\nwhile read -r line;\n\tdo\n\tif grep -q \"$FIND\" <<< \"$line\"; then\n\t\techo \"Error: $FIND operator not allowed in this exercise\"\n\t\tbreak\"\tfi\ndone < code"
         test_instructions: "Each test will consist of a bash script that will invoke the student's solution code (saved as 'code.py')."
         after_test_example: "python code.py \"Hello world!\""
+    python_testing_only:
+        description: Please write Python code based on the instructions provided.
+        memory_allowed_mb: 500
+        timeout_seconds: 60
+        code_completion_path: ace/mode/python
+        output_types:
+            txt: |-
+                Text
+        solution_instructions: ""
+        solution_example: "def add_numbers(x, y):\n\treturn(x + y)"
+        verification_instructions: "Write your verification code in Python."
+        verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
+        test_instructions: ""
+        after_test_example: "print(add_numbers(2, 3))"
     r:
         description: Please write R code based on the instructions provided.
         memory_allowed_mb: 500

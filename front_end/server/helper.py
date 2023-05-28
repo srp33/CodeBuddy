@@ -1,9 +1,11 @@
 import base64
+from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime
 from datetime import timedelta
 import difflib
 import html
 from imgcompare import *
+from io import StringIO
 import json
 import logging
 import markdown2
@@ -18,6 +20,7 @@ import string
 import subprocess
 import time
 from tornado.web import RequestHandler
+import traceback
 import yaml
 from yaml import load
 from yaml import Loader
@@ -113,11 +116,26 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
 
 def exec_code(settings_dict, code, verification_code, exercise_details, add_formatted_txt = False):
     # In this case, the code is the answer that the student provided.
-    if exercise_details["back_end"] == 'not_code':
+    if exercise_details["back_end"] == "not_code":
         response = {"message": "", "test_outputs": {}}
 
         for test_title in exercise_details["tests"]:
             response["test_outputs"][test_title] = {"txt_output": code.strip(), "jpg_output": "", "txt_output_formatted": format_output_as_html(code.strip()), "diff_output": ""}
+
+        return response
+    
+    if exercise_details["back_end"] == "python_testing_only":
+        if settings_dict["mode"] != "development":
+            return {"message": "The python_testing_only back end can only be executed in development mode.", "test_outputs": {}}
+
+        response = {"message": "", "test_outputs": {}}
+
+        for test_title in exercise_details["tests"]:
+            code_to_execute = exercise_details["tests"][test_title]["before_code"].strip() + "\n\n" + code + "\n\n" + exercise_details["tests"][test_title]["before_code"].strip()
+
+            output = execute_python_string_for_testing(code_to_execute)
+
+            response["test_outputs"][test_title] = {"txt_output": output.strip(), "jpg_output": "", "txt_output_formatted": format_output_as_html(output.strip()), "diff_output": ""}
 
         return response
 
@@ -232,6 +250,21 @@ def sanitize_test_outputs(exercise_details, test_outputs):
             test_outputs[test_title]["txt_output_formatted"] = ""
             test_outputs[test_title]["jpg_output"] = ""
             test_outputs[test_title]["diff_output"] = ""
+
+def execute_python_string_for_testing(python_code):
+    # Create StringIO objects to capture the output and error
+    output = StringIO()
+    error = StringIO()
+
+    # Redirect stdout and stderr to the StringIO objects
+    with redirect_stdout(output), redirect_stderr(error):
+        try:
+            exec(python_code)
+        except Exception as e:
+            print(traceback.format_exc(), file=error)
+
+    # Concatenate the output and error into a single string
+    return output.getvalue() + error.getvalue()
 
 def encode_image_bytes(b):
     return str(base64.b64encode(b), "utf-8")
