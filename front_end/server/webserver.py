@@ -29,7 +29,7 @@ def make_app():
             url(r"/copy_course/([^/]+)", CopyCourseHandler, name="copy_course"),
             url(r"/copy_exercise/([^/]+)/([^/]+)/([^/]+)?", CopyExerciseHandler, name="copy_exercise"),
             url(r"/course/([^/]+)", CourseHandler, name="course"),
-            url(r"/courses(/[^/]+)?", CoursesHandler, name="courses"),
+            url(r"/courses", CoursesHandler, name="courses"),
             url(r"/delete_assignment/([^/]+)/([^/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
             url(r"/delete_assignment_submissions/([^/]+)/([^/]+)?", DeleteAssignmentSubmissionsHandler, name="delete_assignment_submissions"),
             url(r"/delete_course/([^/]+)?", DeleteCourseHandler, name="delete_course"),
