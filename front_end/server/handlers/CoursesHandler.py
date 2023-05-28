@@ -12,7 +12,7 @@ class CoursesHandler(BaseUserHandler):
                 user_count = self.set_content_cookie("user_count", self.content.get_user_count(), 30)
 
             if user_count <= 1 and not self.content.administrator_exists():
-                self.content.add_admin_permissions(self.get_current_user().decode())
+                self.content.add_admin_permissions(self.get_current_user())
                 self.redirect(f"/courses")
 
             is_admin = self.is_administrator
