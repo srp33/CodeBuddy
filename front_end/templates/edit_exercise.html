@@ -6,7 +6,7 @@
 
         <a class="button is-white" onclick="showOutput(false, true)">View output</a>
 
-        <a class="button is-white" id="done_button">Done</a>
+        <a class="button is-white" id="done_button1">Done</a>
 
         {% if prev_exercise %}
             <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
@@ -265,7 +265,20 @@
         </div>
     </div>
 
-    <p><button class="button is-dark is-fullwidth" onclick="save()">Save</button></p>
+    <p class="buttons">
+        <button class="button is-dark" onclick="save()">Save</button>
+
+        <span id="bottom_buttons" class="is-hidden">
+            <a class="button is-white" id="done_button2">Done</a>
+
+            {% if prev_exercise %}
+                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+            {% end %}
+            {% if next_exercise %}
+                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+            {% end %}
+        </span>
+    </p>
 
     <div class="is-hidden" id="output">
     </div>
@@ -623,20 +636,24 @@
             window.scrollTo(0, 0);
         }
 
-        function load() {
-            if (exercise_basics_obj["exists"]) {
+        function showTopBottomButtons(exists) {
+            if (exists) {
                 $("#edit_header").removeClass("is-hidden");
                 $("#create_header").addClass("is-hidden");
+                $("#bottom_buttons").removeClass("is-hidden");
                 $("#output").removeClass("is-hidden");
             }
             else {
                 $("#edit_header").addClass("is-hidden");
                 $("#create_header").removeClass("is-hidden");
+                $("#bottom_buttons").addClass("is-hidden");
                 $("#output").addClass("is-hidden");
             }
+        }
 
+        function load() {
+            showTopBottomButtons(exercise_basics_obj["exists"]);
             updateBackEndOptions(exercise_details_obj["back_end"], exercise_details_obj["output_type"]);
-
             setValue("title", exercise_basics_obj["title"]);
 
             for (let id of ["back_end", "output_type", "instructions", "credit", "hint", "solution_description", "max_submissions", "what_students_see_after_success"])
@@ -739,11 +756,13 @@
                         exercise_basics_obj["id"] = json_data["exercise_id"];
                         exercise_details_obj = json_data["exercise_details"];
 
+                        showTopBottomButtons(true);
                         showTests();
                         showOutput(true, false);
                         showResultMessage("<b>The exercise was saved successfully.</b>", "primary");
                     }
                     else {
+                        showTopBottomButtons(true | exercise_basics_obj["exists"]);
                         showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, "danger");
                     }
                 })
@@ -752,7 +771,11 @@
                 });
         }
 
-        $("#done_button").click(function() {
+        $("#done_button1").click(function() {
+            location.href = `/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/${exercise_basics_obj["id"]}`;
+        });
+
+        $("#done_button2").click(function() {
             location.href = `/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/${exercise_basics_obj["id"]}`;
         });
 
