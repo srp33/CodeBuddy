@@ -1,7 +1,6 @@
 mode: development
 #mode: production
-domain: codebuddy.ls.byu.edu
-#domain: codebuddy.byu.edu
+domain: codebuddy.mydomain.com
 f_port: 8008
 m_port: 9798
 authentication_type: google

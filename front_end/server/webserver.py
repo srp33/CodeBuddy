@@ -142,9 +142,10 @@ if __name__ == "__main__":
 
         secrets_dict = load_yaml_dict(read_file("secrets/front_end.yaml"))
         application.settings["cookie_secret"] = secrets_dict["cookie"]
-        #application.settings["google_oauth"] = {
-        #    "key": secrets_dict["google_oauth_key"],
-        #    "secret": secrets_dict["google_oauth_secret"]}
+        application.settings["google_oauth"] = {
+           "key": secrets_dict["google_oauth_key"],
+           "secret": secrets_dict["google_oauth_secret"]
+        }
         settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
 
         content = Content(settings_dict)
