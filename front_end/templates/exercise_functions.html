@@ -79,7 +79,7 @@ function submit() {
                 show_past_submissions();
                 get_submission(response_dict["submission_id"], false, true);
 
-                saved_div.innerHTML = ``;
+                saved_div.innerHTML = "";
             }
             else {
                 showErrorMessage(response_dict["message"]);
@@ -506,18 +506,18 @@ function save_presubmission() {
                 second: 'numeric',
             }).format(Date.now());
 
-            saved_div.innerHTML = `[Saved at ${last_saved_at}]`;
+            saved_div.innerHTML = `<em>(saved at ${last_saved_at})</em>`;
         }
         else {
             console.log("An error occurred when the user attempted to save their code.");
             console.log(result);
-            saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
+            saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
         }
     })
     .fail(function(result) {
         console.log("An error occurred when the user attempted to save their code.");
         console.log(result);
-        saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
+        saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
     });
 }
 

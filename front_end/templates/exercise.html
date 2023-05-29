@@ -176,14 +176,16 @@
                 -->
             </p>
 
-            <div id="exercise_title"  style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"><em>{{ exercise_basics["title"] }}</em></div>
+            <div id="saved_div" class="ml-0 mt-0 mr-2 is-pulled-right mt-0 smaller-font"></div>
+
+            <div class="smaller-font is-pulled-right mt-0 mr-1"><em>{{ exercise_basics["title"] }}</em></div>
 
             <div class="buttons">
+                <a class="button is-medium is-dark" id='submit_button'>Submit</a>
+
                 {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
                     <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
                 {% end %}
-
-                <a class="button is-medium is-dark" id='submit_button'>Submit</a>
 
                 {% if exercise_details["allow_any_response"] %}
                     <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
@@ -191,9 +193,9 @@
                     <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. If you highlight a section of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation. There is also an option for commenting sections of code. To do this, highlight the code you wish to comment; then enter Command + / (Mac) or Control + / (Windows) to comment the code. If it is already commented, this will uncomment the code." />
                 {% end %}
 
-                <i class="far fa-question-circle"></i>
-
-                <div id="saved_div" style="margin:0px 25px;"></div>
+                <span class="icon mt-0">
+                    <i class="far fa-question-circle fa-1x"></i>
+                </span>
             </div>
 
             <div id="max_submissions_message"></div>
@@ -418,7 +420,9 @@
                 editor.on('change', function() {
                     if (window.wasUserChange){
                         codeChanged = true;
-                        saved_div.innerHTML = `<i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission();editor.focus();"></i>`;
+                        saved_div.innerHTML = `<span class="icon mt-0 ml-1">
+                            <i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission();editor.focus();"></i>
+                        </span>`;
                     }
                 });
 
