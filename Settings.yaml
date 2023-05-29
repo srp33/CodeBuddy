@@ -24,7 +24,7 @@ allowed_external_urls:
   - https://github.com/rstudio/cheatsheets/raw/main/factors.pdf
   - https://github.com/rstudio/cheatsheets/raw/main/lubridate.pdf
 back_ends:
-    bash:
+    bash_script:
         description: bash commands
         memory_allowed_mb: 500
         timeout_seconds: 60
