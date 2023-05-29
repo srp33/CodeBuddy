@@ -506,7 +506,7 @@ function save_presubmission() {
                 second: 'numeric',
             }).format(Date.now());
 
-            saved_div.innerHTML = `Saved at ${last_saved_at}`;
+            saved_div.innerHTML = `[Saved at ${last_saved_at}]`;
         }
         else {
             console.log("An error occurred when the user attempted to save their code.");

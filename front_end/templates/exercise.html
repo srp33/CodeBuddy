@@ -176,7 +176,7 @@
                 -->
             </p>
 
-            <div id="saved_div" style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"></i></div>
+            <div id="exercise_title"  style="margin:7px 15px;" class="space-div smaller-font is-pulled-right"><em>{{ exercise_basics["title"] }}</em></div>
 
             <div class="buttons">
                 {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
@@ -192,6 +192,8 @@
                 {% end %}
 
                 <i class="far fa-question-circle"></i>
+
+                <div id="saved_div" style="margin:0px 25px;"></div>
             </div>
 
             <div id="max_submissions_message"></div>
@@ -416,7 +418,7 @@
                 editor.on('change', function() {
                     if (window.wasUserChange){
                         codeChanged = true;
-                        saved_div.innerHTML = `<i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission();editor.focus();">`;
+                        saved_div.innerHTML = `<i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission();editor.focus();"></i>`;
                     }
                 });
 
