@@ -28,8 +28,8 @@ CodeBuddy can be installed on any system that supports Docker and Python. Here a
 
 ```
 cookie: "abcdefg"
-google_oauth_key: "111111111111-vsig111a11aa11aaaa1aaaaa1aaaa1aa.apps.googleusercontent.com"
-google_oauth_secret: "A11AAAAaAAAAaAAAaa1aAAaa"
+google_oauth_key: "123456789012-abc123a12aa12aaaa1aaaaa1aaaa1aa.apps.googleusercontent.com"
+google_oauth_secret: "ABCDEFGHIJKLMNOP"
 ```
 
 If you would like to contribute to developing CodeBuddy, complete these additional steps.
