@@ -20,7 +20,7 @@ class CoursesHandler(BaseUserHandler):
                 if self.is_administrator:
                     self.redirect("/edit_course/")
                 else:
-                    self.redirect("/register")
+                    self.redirect("/available")
             else:
                 self.render("courses.html", registered_courses=self.courses, user_info=self.user_info, is_administrator=self.is_administrator)
         except Exception as inst:
