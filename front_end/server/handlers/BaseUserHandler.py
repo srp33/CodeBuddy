@@ -145,7 +145,7 @@ class BaseUserHandler(BaseRequestHandler):
                         # print(f"got here1 - {variable_name}")
                     else:
                         setattr(self, variable_name, variable_cookie)
-                        # print(f"got here2 - {variable_name}")
+                        # print(f"got here2 - {variable_name} - {variable_cookie}")
                 else:
                     setattr(self, variable_name, self.set_content_cookie(variable_name, function_name(*args, **kwargs), cookie_expiration_days))
                     # print(f"got here3 - {variable_name}")
