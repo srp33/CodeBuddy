@@ -1253,7 +1253,7 @@ class Content:
                  ORDER BY date DESC
                  LIMIT 1'''
 
-        result = self.fetchone(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,))
+        result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
 
         if result:
             return result["code"]

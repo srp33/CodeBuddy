@@ -117,7 +117,14 @@
             {% end %}
 
             <div class="instructions">
-                <div id="instructions">{{ exercise_details["instructions"] }}</div>
+                <div id="instructions">
+                    {{ exercise_details["instructions"] }}
+                    
+                    {% if "previous_submission_code" in exercise_details %}
+                        <p><a class="button is-primary is-outlined" onclick="copy_code_from_previous_exercise()">Copy code from previous exercise</a></p>
+                    {% end %}
+                </div>
+
                 {% if exercise_basics["enable_pair_programming"] %}
                     <hr>
                     <p><i style='margin: 0 .5em;' class="fab fa-product-hunt"></i><em>Pair programming is enabled for this exercise.</em></p>

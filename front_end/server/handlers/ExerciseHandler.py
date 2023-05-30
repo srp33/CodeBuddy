@@ -48,7 +48,7 @@ class ExerciseHandler(BaseUserHandler):
             elif mode == "classic":
                 studio_mode = False
 
-            format_exercise_details(exercise_details, course_id, assignment_id, self.user_info["name"], self.content, next_prev_exercises, format_tests=False)
+            format_exercise_details(exercise_details, course_id, assignment_id, self.user_info, self.content, next_prev_exercises, format_tests=True)
 
             args = {
                     "users": user_list,

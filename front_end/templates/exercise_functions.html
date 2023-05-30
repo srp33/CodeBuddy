@@ -10,6 +10,27 @@ function get_user_code() {
     return user_code;
 }
 
+{% if "previous_submission_code" in exercise_details %}
+    function copy_code_from_previous_exercise() {
+        let previous_code = `{{ exercise_details["previous_submission_code"] }}`;
+
+        let cursor_index = editor.session.doc.positionToIndex(editor.getCursorPosition());
+
+        if (editor.getValue().trim() == "") {
+            var new_code = previous_code;
+        }
+        else {
+            let current_code = editor.getValue();
+
+            var new_code = current_code.substring(0, cursor_index) + previous_code + current_code.substring(cursor_index, current_code.length);
+        }
+
+        editor.setValue(new_code, cursor_index);
+        editor.clearSelection();
+        editor.focus();
+    }
+{% end %}
+
 function run_code(show_submit_warning) {
     user_code = get_user_code();
     if (user_code == "")
@@ -271,8 +292,8 @@ function buildTestOutput(test_outputs, test_title, show_title, is_last) {
         if (tests[test_title].can_see_expected_output) {
             var expected_output = "";
 
-            if (tests[test_title]["txt_output"] != null && tests[test_title]["txt_output"] != "") {
-                expected_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title]["txt_output"] + '</pre>';
+            if (tests[test_title]["txt_output_formatted"] != null && tests[test_title]["txt_output_formatted"] != "") {
+                expected_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title]["txt_output_formatted"] + '</pre>';
             }
 
             if (tests[test_title]["jpg_output"] != null && tests[test_title]["jpg_output"] != "") {

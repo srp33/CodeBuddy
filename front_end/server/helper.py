@@ -367,17 +367,17 @@ def get_client_ip_address(request):
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
 
-def format_exercise_details(exercise_details, course_id, assignment_id, user_name, content, next_prev_exercises=None, format_tests=True):
+def format_exercise_details(exercise_details, course_id, assignment_id, user_info, content, next_prev_exercises=None, format_tests=True):
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
 
-    modify_what_students_see(exercise_details, user_name)
+    modify_what_students_see(exercise_details, user_info["name"])
 
     # Do formatting
     for test_title in exercise_details["tests"]:
         if format_tests:
-            exercise_details["tests"][test_title]["txt_output"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
+            exercise_details["tests"][test_title]["txt_output_formatted"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
 
         exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
 
@@ -410,7 +410,15 @@ def format_exercise_details(exercise_details, course_id, assignment_id, user_nam
             link_html = f"<a href='/exercise/{course_id}/{assignment_id}/{next_prev_exercises['previous']['id']}'>previous exercise</a>"
             exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", link_html)
 
-    exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "") # This is just in case they added it when it is the first exercise.
+            if "[copy_previous]" in exercise_details["instructions"]:
+                previous_submission_code = content.get_most_recent_submission_code(course_id, assignment_id, next_prev_exercises["previous"]["id"], user_info["user_id"])
+
+                if previous_submission_code == "":
+                    exercise_details["instructions"] = exercise_details["instructions"].replace("[copy_previous]", "")
+                else:
+                    exercise_details["previous_submission_code"] = previous_submission_code
+
+    exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "").replace("[copy_previous]", "") # This is just in case they added it when it is the first exercise.
 
     exercise_details["instructions"] = convert_markdown_to_html(exercise_details["instructions"])
 

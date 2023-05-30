@@ -19,6 +19,7 @@ class RunCodeHandler(BaseUserHandler):
 
             if out_dict["message"] == "":
                 out_dict["all_passed"] = check_test_outputs(exercise_details, out_dict["test_outputs"])
+
                 sanitize_test_outputs(exercise_details, out_dict["test_outputs"])
         except ConnectionError as inst:
             out_dict["message"] = "The front-end server was unable to contact the back-end server."
