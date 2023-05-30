@@ -17,51 +17,52 @@
 
 <div>
     {% if registered_courses %}
-    <div class="bottom-spacing" style="padding-left: 15px">
-        <h3 class="title">My courses</h3>
-        {% if not is_administrator %}
-            <div class="buttons is-pulled-right">
-                <a href="/available" class="button is-primary">Register for a course</a>
-            </div>
-        {% end %}
-    </div>
+        <div class="bottom-spacing" style="padding-left: 15px">
+            <h3 class="title">My courses</h3>
 
-    <div class='tab-content'>
-        <div class="columns scrollable">
-            <div class="column">
-            {% for course in registered_courses %}
-                <div class="box">
-                    <article class="media">
-                      <div class="media-content">
-                        <div class="content">
-                            {% if not is_administrator and not course[1]["role"] == "instructor" and not course[1]["role"] == "assistant" %}
-                                <div class="is-pulled-right">
-                                    <a onclick="showLeaveCourseModal({{ course[0] }})" title="Leave this course">
-                                        <span class="icon has-text-dark">
-                                            <i class="far fa-trash-alt"></i>
-                                        </span>
-                                    </a>
-                                </div>
-                            {% end %}
-
-                            <p>
-                                <strong>{{ course[1]["title"] }}</strong>
-                                <br>
-                                {{ course[1]["introduction"] }}
-                            </p>
-
-                            <a class="button is-fullwidth is-dark" href="/course/{{ course[0] }}">View course</a>
-                        </div>
-                      </div>
-                    </article>
-                  </div>
+            {% if not is_administrator %}
+                <div class="buttons is-pulled-right">
+                    <a href="/available" class="button is-primary">Register for a course</a>
+                </div>
             {% end %}
+        </div>
+
+        <div class='tab-content'>
+            <div class="columns scrollable">
+                <div class="column">
+                    {% for course in registered_courses %}
+                        <div class="box">
+                            <article class="media">
+                                <div class="media-content">
+                                    <div class="content">
+                                        {% if not is_administrator and not course[1]["role"] == "instructor" and not course[1]["role"] == "assistant" %}
+                                            <div class="is-pulled-right">
+                                                <a onclick="showLeaveCourseModal({{ course[0] }})" title="Leave this course">
+                                                    <span class="icon has-text-dark">
+                                                        <i class="far fa-trash-alt"></i>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        {% end %}
+
+                                        <p>
+                                            <strong>{{ course[1]["title"] }}</strong>
+                                            <br>
+                                            {{ course[1]["introduction"] }}
+                                        </p>
+
+                                        <a class="button is-fullwidth is-dark" href="/course/{{ course[0] }}">View course</a>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    {% end %}
+                </div>
             </div>
         </div>
     {% else %}
         <p>You have not yet registered for a course.</p>
     {% end %}
-    </div>
 </div>
 
 <script>
