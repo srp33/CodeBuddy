@@ -18,6 +18,7 @@ class CoursesHandler(BaseUserHandler):
             if len(self.courses) == 0 and self.is_administrator:
                 self.redirect(f"/edit_course/")
             else:
+                print(self.courses)
                 self.render("courses.html", registered_courses=self.courses, user_info=self.user_info, is_administrator=self.is_administrator)
         except Exception as inst:
             render_error(self, traceback.format_exc())

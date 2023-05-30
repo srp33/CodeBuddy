@@ -406,6 +406,8 @@ class Content:
 
         self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow", user_dict["email_address"]))
 
+        self.update_when_content_updated("user")
+
     def register_user_for_course(self, course_id, user_id):
         sql = '''INSERT INTO course_registrations (course_id, user_id)
                  VALUES (?, ?)'''
