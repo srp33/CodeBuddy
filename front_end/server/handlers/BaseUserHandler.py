@@ -203,9 +203,9 @@ class BaseUserHandler(BaseRequestHandler):
         assignment_status = get_assignment_status(self, course, assignment_details, curr_datetime)
 
         if assignment_status != "render":
-            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info)
+            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info, is_administrator=self.is_administrator)
 
         if self.content.is_taking_restricted_assignment(self.get_current_user(), assignment):
-            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="restrict_other_assignments", user_info=self.user_info)
-        
+            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="restrict_other_assignments", user_info=self.user_info, is_administrator=self.is_administrator)
+
         return True

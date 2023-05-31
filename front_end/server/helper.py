@@ -3,6 +3,7 @@ from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime
 from datetime import timedelta
 import difflib
+import hashlib
 import html
 from imgcompare import *
 from io import StringIO
@@ -25,6 +26,7 @@ import yaml
 from yaml import load
 from yaml import Loader
 import sqlite3
+import urllib.parse
 
 def run_command(command):
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -506,3 +508,6 @@ def execute_and_save_exercise(settings_dict, content, exercise_basics, exercise_
             return "No output was produced for any test.", False
     else:
         return exec_response["message"], False
+    
+def md5_hash_string(string):
+    return hashlib.md5(string.encode()).hexdigest()

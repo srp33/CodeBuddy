@@ -13,15 +13,6 @@ m_run_in_background: no
 #m_run_in_background: yes
 db_name: CodeBuddy.db
 dev_password: ""
-allowed_external_urls:
-  - https://github.com/rstudio/cheatsheets/raw/main/base-r.pdf
-  - https://github.com/rstudio/cheatsheets/raw/main/data-import.pdf
-  - https://github.com/rstudio/cheatsheets/raw/main/data-visualization.pdf
-  - https://github.com/rstudio/cheatsheets/raw/main/data-transformation.pdf
-  - https://github.com/rstudio/cheatsheets/raw/main/tidyr.pdf 
-  - https://github.com/rstudio/cheatsheets/raw/main/strings.pdf
-  - https://github.com/rstudio/cheatsheets/raw/main/factors.pdf
-  - https://github.com/rstudio/cheatsheets/raw/main/lubridate.pdf
 back_ends:
     bash_script:
         description: bash commands

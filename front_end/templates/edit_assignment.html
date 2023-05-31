@@ -286,11 +286,11 @@
     <div class="shadow-box">
         <p><strong>Restrict access to the following IP addresses: </strong><br />Separate valid addresses by a comma. If left blank, the assignment will not be restricted by IP address.</p>
 
-        <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if assignment_details["allowed_ip_addresses"] %}{{ ",".join(assignment_details["allowed_ip_addresses"]) }},{% end %}</textarea>
+        <p><textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="None" rows="1" style="display:inline">{% if assignment_details["allowed_ip_addresses"] %}{{ ",".join(assignment_details["allowed_ip_addresses"]) }},{% end %}</textarea></p>
 
-        <p><strong>Allowed external URL(s):</strong><br />In some cases, instructors deliver assignments (often exams) in a controlled environment where they do not want students to access external websites.</p>
+        <p><strong>Allowed external URL(s):</strong><br />In some cases, instructors deliver assignments (often exams) in a controlled environment where they do not want students to access external websites. You can list URLs here that should be allowed (one per line). These URLs are currently limited to those that end in <code>.html</code> or <code>.pdf</code>.</p>
 
-        <p><textarea class="textarea" name="allowed_external_urls" rows=5 placeholder="Please provide an introduction for this assignment.">{{ assignment_details["introduction"] }}</textarea></p>
+        <p><textarea class="textarea" name="allowed_external_urls" rows=5 placeholder="Please specify any allowed external URLs (one per line).">{{ assignment_details["allowed_external_urls"] }}</textarea></p>
     </div>
 
     <p class="buttons">

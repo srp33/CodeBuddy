@@ -2,7 +2,21 @@
     <h3>{{ assignment_basics["title"] }}</h3>
 
     {% if assignment_basics["exists"] %}
-        <p>{{ assignment_details["introduction"] }}</p>
+        <p>
+            {{ assignment_details["introduction"] }}
+        </p>
+
+        {% if assignment_details["allowed_external_urls"] != "" %}
+            <p>
+                Students can access these external pages while completing this assignment:
+            </p>
+
+            <ul>
+                {% for url, encoded_url in assignment_details["allowed_external_urls_dict"].items() %}
+                    <li><a href="/external/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ encoded_url }}" target="_blank">{{ url }}</a></li>
+                {% end %}
+            </ul>
+        {% end %}
 
         <link rel="stylesheet" href="/static/css/modal.css">
 

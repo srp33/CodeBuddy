@@ -13,7 +13,6 @@ import tornado.ioloop
 from tornado.web import *
 import traceback
 import ui_methods
-from urllib.parse import urlencode
 
 def make_app():
     app = Application(
@@ -44,7 +43,6 @@ def make_app():
             url(r"/download_course_scores/([^/]+)", DownloadCourseScoresHandler, name="download_course_scores"),
             url(r"/download_file/([^/]+)/([^/]+)/([^/]+)/([^/]+)", DownloadFileHandler, name="download_file"),
             url(r"/download_submissions_student/([^/]+)", DownloadSubmissionsStudentHandler, name="download_submissions_student"),
-            url(r"/external/(.+)", ExternalSiteHandler, name="external_site"),
             url(r"/edit_assignment/([^/]+)/([^/]+)?", EditAssignmentHandler, name="edit_assignment"),
             url(r"/edit_assignment_scores/([^/]+)/([^/]+)/([^/]+)", EditAssignmentScoresHandler, name="edit_assignment_scores"),
             url(r"/edit_course/([^/]+)?", EditCourseHandler, name="edit_course"),
@@ -52,6 +50,7 @@ def make_app():
             url(r"/exercise/([^/]+)/([^/]+)/([^/]+)", ExerciseHandler, name="exercise"),
             url(r"/exercise_submissions/([^/]+)/([^/]+)/([^/]+)", ExerciseSubmissionsHandler, name="exercise_submissions"),
             url(r"/export_assignment/([^/]+)/([^/]+)", ExportAssignmentHandler, name="export_assignment"),
+            url(r"/external/([^/]+)/([^/]+)/(.+)", ExternalSiteHandler, name="external"),
             url(r"/get_partner_id/([^/]+)/([^/]+)", GetPartnerIDHandler, name="get_partner_id"),
             url(r"/googlelogin", GoogleLoginHandler, name="googlelogin"),
             url(r"/help_requests/([^/]+)", HelpRequestsHandler, name="help_requests"),
