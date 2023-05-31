@@ -474,7 +474,7 @@ def log_page_access(handler, additional_message=None):
 def get_assignment_status(handler, course_id, assignment_details, curr_datetime):
     client_ip = get_client_ip_address(handler.request)
 
-    if assignment_details["allowed_ip_addresses"] and client_ip not in assignment_details["allowed_ip_addresses"]:
+    if assignment_details["allowed_ip_addresses"] and assignment_details["allowed_ip_addresses"] != "" and client_ip not in assignment_details["allowed_ip_addresses_list"]:
         return "restricted_ip"
     elif assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
         return "start_date"

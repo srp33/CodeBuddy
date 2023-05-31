@@ -1721,7 +1721,7 @@ class Content:
             assignment_dict["due_date_passed"] = curr_datetime > assignment_dict["due_date"]
 
         if assignment_dict["allowed_ip_addresses"]:
-            assignment_dict["allowed_ip_addresses"] = assignment_dict["allowed_ip_addresses"].split(",")
+            assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")
 
         if assignment_dict["allowed_external_urls"] != "":
             assignment_dict["allowed_external_urls_dict"] = {}
@@ -1849,14 +1849,6 @@ class Content:
         return course_basics["id"]
 
     def save_assignment(self, assignment_basics, assignment_details):
-        # Cleans and joins allowed_ip_addresses.
-        if assignment_details["allowed_ip_addresses"]:
-            assignment_details["allowed_ip_addresses"] = ",".join(assignment_details["allowed_ip_addresses"])
-            if assignment_details["allowed_ip_addresses"] == "":
-                assignment_details["allowed_ip_addresses"] = None
-        else:
-            assignment_details["allowed_ip_addresses"] = None
-
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
                      SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, enable_help_requests = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, restrict_other_assignments = ?, allowed_ip_addresses = ?, allowed_external_urls = ?
@@ -1866,14 +1858,10 @@ class Content:
             self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"]])
             assignment_basics["exists"] = True
-
-        # Returns allowed_ip_addresses to list.
-        if assignment_details["allowed_ip_addresses"]:
-            assignment_details["allowed_ip_addresses"] = assignment_details["allowed_ip_addresses"].split(",")
 
         self.update_when_content_updated(assignment_basics["course"]["id"])
 

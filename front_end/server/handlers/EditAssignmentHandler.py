@@ -36,7 +36,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["has_timer"] = self.get_body_argument("has_timer") == "On"
             #assignment_details["enable_help_requests"] = self.get_body_argument("enable_help_requests") == "Yes"
             assignment_details["enable_help_requests"] = False
-            assignment_details["allowed_ip_addresses"] = [x.strip() for x in self.get_body_argument("allowed_ip_addresses").split(",") if x != "" and x != ","]
+            assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").strip()
             assignment_details["allowed_external_urls"] = self.get_body_argument("allowed_external_urls")
 
             if assignment_details["has_start_date"]:
