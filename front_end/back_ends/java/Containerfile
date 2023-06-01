@@ -1,0 +1,11 @@
+FROM ibmjava:8-sdk
+
+#RUN apk update \
+# && apk add python3 -y
+RUN apt-get update \
+ && apt-get install python3 -y
+
+ADD *.py /
+ADD *.sh /
+
+ENTRYPOINT ["bash", "/exec.sh"]

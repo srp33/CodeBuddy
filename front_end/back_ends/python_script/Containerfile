@@ -1,0 +1,16 @@
+FROM python:3.9.1-slim-buster
+
+RUN apt-get update \
+ && apt-get install build-essential git -y \
+ && pip install --upgrade pip \
+ && pip install seaborn==0.10.1 \
+ && git clone https://github.com/mwaskom/seaborn-data.git \
+ && chmod 777 /seaborn-data -R \
+ && pip install biopython==1.78
+
+ENV MPLCONFIGDIR /tmp
+
+ADD *.sh /
+ADD *.py /
+
+ENTRYPOINT ["bash", "/exec.sh"]

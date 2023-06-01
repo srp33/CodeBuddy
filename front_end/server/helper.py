@@ -3,6 +3,7 @@ from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime
 from datetime import timedelta
 import difflib
+import glob
 import hashlib
 import html
 from imgcompare import *
@@ -46,8 +47,8 @@ def write_file(x, file_path, mode="w"):
         the_file.write(x)
 
 def read_file(file_path, mode="r"):
-    if 'ROOT' in os.environ:
-        file_path = os.path.join(os.environ['ROOT'], file_path)
+    # if 'ROOT' in os.environ:
+    #     file_path = os.path.join(os.environ['ROOT'], file_path)
 
     with open(file_path, mode) as the_file:
         return the_file.read()
@@ -141,12 +142,12 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
 
         return response
 
-    this_settings_dict = settings_dict["back_ends"][exercise_details["back_end"]]
+    back_end_config = get_back_end_config(exercise_details["back_end"])
 
     if settings_dict["mode"] == "development":
         timeout = -1
     else:
-        timeout = this_settings_dict["timeout_seconds"]
+        timeout = back_end_config["timeout_seconds"]
 
     data_dict = {"image_name": f"codebuddy/{exercise_details['back_end']}_{settings_dict['mode']}",
                  "code": code.strip(),
@@ -154,21 +155,16 @@ def exec_code(settings_dict, code, verification_code, exercise_details, add_form
                  "verification_code": verification_code,
                  "data_files": exercise_details["data_files"],
                  "output_type": exercise_details["output_type"],
-                 "memory_allowed_mb": this_settings_dict["memory_allowed_mb"],
+                 "memory_allowed_mb": back_end_config["memory_allowed_mb"],
                  "timeout_seconds": timeout
                  }
-
-    if 'MHOST' in os.environ:
-        host = os.environ['MHOST']
-    else:
-        host = '127.0.0.1'
 
     request_timeout = 30
     if settings_dict["mode"] != "development":
         request_timeout = timeout
 
     #TODO: Move try/except block here for ReadTimeout?
-    response = requests.post(f"http://{host}:{os.environ['MPORT']}/exec/", json.dumps(data_dict), timeout=request_timeout)
+    response = requests.post(f"http://{settings_dict['m_host']}:{settings_dict['m_port']}/exec/", json.dumps(data_dict), timeout=request_timeout)
 
     response = json.loads(response.content)
 
@@ -450,13 +446,14 @@ def modify_what_students_see(exercise_details, user_name):
             exercise_details["tests"][test_title]["jpg_output"] = ""
 
 def open_db(db_name):
-    db_file = f"database/{db_name}"
-    if 'ROOT' in os.environ:
-        db_file = os.path.join(os.environ['ROOT'], db_file)
+    db_file_path = f"database/{db_name}"
+
+    # if 'ROOT' in os.environ:
+    #     db_file_path = os.path.join(os.environ['ROOT'], db_file_path)
 
     # This enables auto-commit.
     return sqlite3.connect(
-        db_file,
+        db_file_path,
         isolation_level = None,
         detect_types = sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES,
         timeout = 30,
@@ -511,3 +508,20 @@ def execute_and_save_exercise(settings_dict, content, exercise_basics, exercise_
     
 def md5_hash_string(string):
     return hashlib.md5(string.encode()).hexdigest()
+
+def get_back_ends_dict(production_mode):
+    back_ends_dict = {}
+
+    for back_end_dir_path in glob.glob("../back_ends/*"):
+        back_end_name = os.path.basename(back_end_dir_path)
+        back_end_config = load_yaml_dict(read_file(f"{back_end_dir_path}/config.yaml"))
+
+        if production_mode and back_end_name == "python_testing_only":
+            continue
+
+        back_ends_dict[back_end_name] = back_end_config
+
+    return back_ends_dict
+
+def get_back_end_config(name):
+    return load_yaml_dict(read_file(f"../back_ends/{name}/config.yaml"))

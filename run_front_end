@@ -5,11 +5,12 @@ mkdir -p front_end/database front_end/logs/summarized front_end/logs/archive
 mode=$(grep "^mode: " Settings.yaml | sed "1s/mode: //")
 f_port=$(grep "^f_port: " Settings.yaml | sed "1s/f_port: //")
 m_port=$(grep "^m_port: " Settings.yaml | sed "1s/m_port: //")
-f_num_processes=$(grep "^f_num_processes: " Settings.yaml | sed "1s/f_num_processes: //")
+#f_num_processes=$(grep "^f_num_processes: " Settings.yaml | sed "1s/f_num_processes: //")
 f_memory_gb=$(grep "^f_memory_gb: " Settings.yaml | sed "1s/f_memory_gb: //")
 f_run_in_background=$(grep "^f_run_in_background: " Settings.yaml | sed "1s/f_run_in_background: //")
 
-args="-e NUM_PROCESSES=${f_num_processes} -e PORT=${f_port} -e MPORT=${m_port} -v $(pwd)/front_end/database:/app/database -v $(pwd)/front_end/logs:/app/logs -v $(pwd)/front_end/secrets:/app/secrets"
+#args="-e NUM_PROCESSES=${f_num_processes} -e PORT=${f_port} -e MPORT=${m_port} -v $(pwd)/front_end/database:/app/database -v $(pwd)/front_end/logs:/app/logs -v $(pwd)/front_end/secrets:/app/secrets"
+args="-v $(pwd)/front_end/database:/app/database -v $(pwd)/front_end/logs:/app/logs -v $(pwd)/front_end/secrets:/app/secrets"
 
 # If MacOS, set the MHOST environment variable and bind the port
 if [[ $(uname) == "Darwin" ]]
@@ -34,6 +35,7 @@ image_name=codebuddy/front_end_${mode}
 cp Settings.yaml front_end/
 cp VERSION front_end/
 cp requirements.txt front_end/
+cp -r back_ends front_end/
 
 docker build -t ${image_name}:version$(cat VERSION) \
              -t ${image_name}:latest \
@@ -70,5 +72,5 @@ else
     --read-only \
     -v "$(pwd)"/tmp:/tmp \
     ${args} \
-    ${image_name}
+    ${image_name} /bin/bash
 fi

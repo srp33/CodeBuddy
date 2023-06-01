@@ -1,132 +1,24 @@
+# Indicate development or production
 mode: development
-#mode: production
-domain: codebuddy.mydomain.com
-f_port: 8008
-m_port: 9798
+# Indicate the authenatication type. For now, google is the only supported option. In development mode, this is not used.
 authentication_type: google
+# Indicate the HTTP-accessible domain where the server is hosted
+domain: codebuddy.mydomain.com
+# Indicate the address of the server where the middle layer is hosted
+m_host: 127.0.0.1
+# Indicate the number of the port where the front-end web server is hosted
+f_port: 8008
+# Indicate the number of the port where the middle-layer web server is hosted
+m_port: 9798
+# Indicate the number of parallel processes that should be used for the front-end server.
 f_num_processes: 2
+# Indicate the number of parallel processes that should be used for the middle-layer server.
 m_num_processes: 2
+# Indicate the amount of memory that the front-end server should be allowed to use.
 f_memory_gb: 4
+# Indicate whether the front-end server should run in the background (yes) and thus continue running when you log out of the server. Otherwise, put no.
 f_run_in_background: no
-#f_run_in_background: yes
+# Indicate whether the middle-layer server should run in the background (yes) and thus continue running when you log out of the server. Otherwise, put no.
 m_run_in_background: no
-#m_run_in_background: yes
-db_name: CodeBuddy.db
+# Indicate a password to be used in development mode. When running the server locally, it's easiest to use a blank password. However, if you deploy a development server for others to test, it is a good idea to require a password when users log in to the server.
 dev_password: ""
-back_ends:
-    bash_script:
-        description: bash commands
-        memory_allowed_mb: 500
-        timeout_seconds: 60
-        code_completion_path: ace/mode/plain_text
-        output_types:
-            txt: |-
-                Text (standard out)
-        solution_instructions: ""
-        solution_example: "mkdir Assignment1\ncd Assignment1\ntouch newfile\nls"
-        verification_instructions: "Write your verification code in bash."
-        verification_example: "FIND='#'\nwhile read -r line;\n\tdo\n\tif grep -q \"$FIND\" <<< \"$line\"; then\n\t\techo \"Error: $FIND operator not allowed in this exercise\"\n\t\tbreak\"\n\tfi\ndone < code"
-        test_instructions: ""
-        after_test_example: ""
-    c:
-        description: Please write C code based on the instructions provided.
-        memory_allowed_mb: 500
-        timeout_seconds: 60
-        code_completion_path: ace/mode/C_Cpp
-        output_types:
-            txt: |-
-                Text
-        solution_instructions: ""
-        solution_example: "#include <stdio.h>\n\nint add(int a, int b) {\n    int sum = a + b;\n    return sum;\n}"
-        verification_instructions: "Write your verification code in Python (not C)."
-        verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
-        test_instructions: ""
-        after_test_example: "int main() {\n    int num1 = 10;\n    int num2 = 20;\n    int result = add(num1, num2);\n    printf('The sum is: %d\n', result);\n    return 0;\n};"
-    not_code:
-        description: Please write an answer based on the instructions provided.
-        code_completion_path: ace/mode/text
-        output_types:
-            txt: |-
-                Text
-        solution_instructions: "For this type of exercise, your solution itself will be used as the expected output."
-        solution_example: ""
-        verification_instructions: ""
-        verification_example: ""
-        test_instructions: ""
-        after_test_example: ""
-    python:
-        description: Please write Python code based on the instructions provided.
-        memory_allowed_mb: 500
-        timeout_seconds: 60
-        code_completion_path: ace/mode/python
-        output_types:
-            jpg: |-
-                Image (matplotlib or seaborn)
-            txt: |-
-                Text
-        solution_instructions: ""
-        solution_example: "def add_numbers(x, y):\n\treturn(x + y)"
-        verification_instructions: "Write your verification code in Python."
-        verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
-        test_instructions: ""
-        after_test_example: "print(add_numbers(2, 3))"
-    python_script:
-        description: Please write Python code based on the instructions provided. Your code will be stored in a script called code.py.
-        memory_allowed_mb: 500
-        timeout_seconds: 60
-        code_completion_path: ace/mode/python
-        output_types:
-            jpg: |-
-                Image (matplotlib or seaborn)
-            txt: |-
-                Text
-        solution_instructions: "For this type of exercise, write your solution in Python. You will write bash commands that execute your Python script under the Tests section."
-        solution_example: "import sys\n\nprint(sys.argv[1])"
-        verification_instructions: "Write your verification code in bash."
-        verification_example: "FIND='#'\nwhile read -r line;\n\tdo\n\tif grep -q \"$FIND\" <<< \"$line\"; then\n\t\techo \"Error: $FIND operator not allowed in this exercise\"\n\t\tbreak\"\tfi\ndone < code"
-        test_instructions: "Each test will consist of a bash script that will invoke the student's solution code (saved as 'code.py')."
-        after_test_example: "python code.py \"Hello world!\""
-    python_testing_only:
-        description: Please write Python code based on the instructions provided.
-        memory_allowed_mb: 500
-        timeout_seconds: 60
-        code_completion_path: ace/mode/python
-        output_types:
-            txt: |-
-                Text
-        solution_instructions: ""
-        solution_example: "def add_numbers(x, y):\n\treturn(x + y)"
-        verification_instructions: "Write your verification code in Python."
-        verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
-        test_instructions: ""
-        after_test_example: "print(add_numbers(2, 3))"
-    r:
-        description: Please write R code based on the instructions provided.
-        memory_allowed_mb: 500
-        timeout_seconds: 60
-        code_completion_path: ace/mode/r
-        output_types:
-            jpg: |-
-                Image (ggplot2)
-            txt: |-
-                Text
-        solution_instructions: ""
-        solution_example: "# R example code\nadd_numbers <- function(x, y) {\n\treturn(x + y)\n}"
-        verification_instructions: "Write your verification code in R."
-        verification_example: "connection <- file('code')\nopen(connection)\nline <- readLines(connection, n=1)\nsearch <- 'len'\n\nwhile(length(line) > 0) {\n\tif (grepl(tolower(search), tolower(line))) {\n\t\tprint('Error: len() function not allowed in this exercise')\n\t\tbreak\n\t}\n\n\tline <- readLines(connection, n=1)\n}\n\nclose(connection)"
-        test_instructions: ""
-        after_test_example: "print(add_numbers(2, 3))"
-    rust:
-        description: Please write Rust code based on the instructions provided.
-        memory_allowed_mb: 500
-        timeout_seconds: 60
-        code_completion_path: ace/mode/rust
-        output_types:
-            txt: |-
-                Text
-        solution_instructions: ""
-        solution_example: "fn add_numbers(number1: f32, number2: f32) -> f32 {\n  number1 + number2\n}"
-        verification_instructions: "Write your verification code in Python (not Rust)."
-        verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
-        test_instructions: ""
-        after_test_example: "println!(\"{}\", add_numbers(2.0, 2.0));"

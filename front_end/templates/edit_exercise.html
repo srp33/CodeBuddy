@@ -170,16 +170,15 @@
             <!-- https://stackoverflow.com/questions/50662513/ace-editor-how-to-move-changed-data-to-post-or-get -->
         </div>
 
-        <!--<div class="button is-light space-div" id="example_solution_button" onclick="toggleExample('solution')">
+        <div class="button is-light space-div" id="example_solution_button" onclick="toggleExample('solution')">
           Show example code
-        </div>-->
+        </div>
     </div>
 
     <div class="shadow-box">
         <div>
             <p><strong>Verification logic:</strong></p>
             <p>In some cases, instructors wish to check certain aspects of a student's code before it is executed. For example, they may wish to verify that the student has not used certain functions, variable names, etc. If you wish to use this functionality, enter code in the box below. The code must be in the same programming language as the student's. The student's code will be saved in a file called "code" in the current working directory. Your code must read this file and then check the student's code. If a problem is found, print a message to standard output. Otherwise, print nothing to standard output.</p>
-            <p>
             <p id="verification_additional_instructions"></p>
                 <textarea class="textarea is-fullwidth monospace" placeholder="Please provide verification code." rows="10" id="verification_code" id="verification_code"></textarea>
             </p>
@@ -312,9 +311,9 @@
                       <textarea id="after_test_code" placeholder="Please specify any code that will be executed after the student's code." class="textarea is-fullwidth monospace"></textarea>
                     </div>
 
-                    <!--<div class="button is-light bottom-space" id="example_after_test_button" onclick="toggleExample('after_test')">
+                    <div class="button is-light bottom-space" id="example_after_test_button" onclick="toggleExample('after_test')">
                         Show example code
-                    </div>-->
+                    </div>
 
                     <div class="has-text-weight-medium mb-2">Do you want students to see the test code?</div>
                     <div class="select is-primary">
@@ -471,7 +470,8 @@
             be_select.options.length = 0;
 
             // Set the back end options
-            for (let back_end_option of Object.keys(back_ends_obj)) {
+            const sorted_keys = Object.keys(back_ends_obj).sort();
+            for (let back_end_option of sorted_keys) {
                 var opt = document.createElement('option');
                 opt.value = back_end_option;
                 opt.innerHTML = back_end_option;
@@ -515,13 +515,13 @@
             document.getElementById("verification_additional_instructions").innerHTML = `<em>${back_ends_obj[back_end].verification_instructions}</em>`;
             document.getElementById("test_additional_instructions").innerHTML = `<em>${back_ends_obj[back_end].test_instructions}</em>`;
 
-            examples_obj["solution"] = back_ends_obj[back_end]["solution_example"];
-            examples_obj["verification"] = back_ends_obj[back_end]["verification_example"];
-            examples_obj["after_test"] = back_ends_obj[back_end]["after_test_example"];
+            examples_obj["solution"] = back_ends_obj[back_end]["solution_example"].trim();
+            examples_obj["verification"] = back_ends_obj[back_end]["verification_example"].trim();
+            examples_obj["after_test"] = back_ends_obj[back_end]["after_test_example"].trim();
 
-            //showHideExampleButton("solution");
+            showHideExampleButton("solution");
             showHideExampleButton("verification");
-            //showHideExampleButton("after_test");
+            showHideExampleButton("after_test");
         }
 
         function showHideExampleButton(example_type) {
@@ -536,10 +536,12 @@
             var toggleButton = document.getElementById(`example_${example_type}_button`);
 
             if (editor.getValue() == examples_obj[example_type]) {
-                editor.setValue(cache_obj[example_type], -1);
-                toggleButton.classList.remove("is-primary");
-                toggleButton.classList.add("is-light");
-                toggleButton.innerHTML = "Show example code";
+                if (example_type in cache_obj) {
+                    editor.setValue(cache_obj[example_type], -1);
+                    toggleButton.classList.remove("is-primary");
+                    toggleButton.classList.add("is-light");
+                    toggleButton.innerHTML = "Show example code";
+                }
             }
             else {
                 cache_obj[example_type] = editor.getValue();

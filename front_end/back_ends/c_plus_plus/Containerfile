@@ -1,0 +1,11 @@
+FROM debian:buster-slim
+
+RUN apt-get update \
+ && apt-get install python3 -y \
+ && apt-get install build-essential -y \
+ && apt-get install g++ -y
+
+ADD *.py /
+ADD *.sh /
+
+ENTRYPOINT ["bash", "/exec.sh"]

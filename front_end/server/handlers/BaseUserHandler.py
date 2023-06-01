@@ -99,7 +99,7 @@ class BaseUserHandler(BaseRequestHandler):
 
         return assignment_details
     
-    def get_exercise_basics(self, course_basics, assignment_basics, exercise_id):
+    async def get_exercise_basics(self, course_basics, assignment_basics, exercise_id):
         course_id = course_basics["id"]
         assignment_id = assignment_basics["id"]
 

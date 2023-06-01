@@ -13,10 +13,11 @@
             <div id="moreDropdown" class="navbar-dropdown">
                 {% for exercise in exercise_statuses %}
                     {% if exercise[0] == exercise_basics['id'] %}
-                        <a class="navbar-item" style="background-color: lightgray; white-space: nowrap;"
+                        <a class="navbar-item" style="background-color: #1AB28C; color: white; white-space: nowrap;"
                     {% else %}
                         <a class="navbar-item" style="white-space: nowrap;"
                     {% end %}
+                    
                         {% if "is_edit_page" in globals() and is_edit_page == True %}
                             href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
                         {% else %}
@@ -24,11 +25,29 @@
                         {% end %}
                         >
                         {% if exercise[1]["passed"] %}
-                            <i class="far fa-check-circle"></i>&nbsp;
+                            <i class="far fa-check-circle"
+                            
+                            {% if exercise[0] == exercise_basics['id'] %}
+                                style="color: white;"
+                            {% end %}
+
+                            ></i>&nbsp;
                         {% elif exercise[1]["in_progress"] %}
-                            <i class="far fa-hourglass"></i>&nbsp;
+                            <i class="far fa-hourglass"
+                            
+                            {% if exercise[0] == exercise_basics['id'] %}
+                                style="color: white;"
+                            {% end %}
+
+                            ></i>&nbsp;
                         {% else %}
-                            <i class="far fa-circle"></i>&nbsp;
+                            <i class="far fa-circle"
+                            
+                            {% if exercise[0] == exercise_basics['id'] %}
+                                style="color: white;"
+                            {% end %}
+
+                            ></i>&nbsp;
                         {% end %}
 
                         {{ exercise[1]["title"] }}

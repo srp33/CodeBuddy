@@ -7,11 +7,9 @@ import sys, os
 sys.path.append('./server')
 from helper import *
 
-print(os.environ)
-
 settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
 
-conn = open_db(settings_dict['db_name'])
+conn = open_db("CodeBuddy.db")
 conn.row_factory = sqlite3.Row
 cursor = conn.cursor()
 cursor.execute("PRAGMA foreign_keys=ON")

@@ -48,6 +48,7 @@ def exec(info: ExecInfo):
 
         # Save the verification code to a file that will be accessible inside the container.
         do_verification = len(info.verification_code.strip()) > 0
+
         if do_verification:
             with open(os.path.join(tmp_dir_path, "verification_code"), "w") as verification_file:
                 verification_file.write(info.verification_code)

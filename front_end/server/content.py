@@ -22,7 +22,7 @@ class Content:
     def __init__(self, settings_dict):
         self.__settings_dict = settings_dict
 
-        self.conn = open_db(settings_dict['db_name'])
+        self.conn = open_db("CodeBuddy.db")
         self.conn.row_factory = sqlite3.Row
 
         self.execute("PRAGMA foreign_keys=OFF")

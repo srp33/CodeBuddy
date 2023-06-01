@@ -1,0 +1,60 @@
+description: Please write C code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/c_cpp
+output_types:
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    #include <stdio.h>
+
+    int add_numbers(int a, int b) {
+        int sum = a + b;
+        return sum;
+    }
+verification_instructions: "Write your verification code in C."
+verification_example: |
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+
+    #define MAX_LINE_LENGTH 256
+
+    int main() {
+        FILE *file;
+        char line[MAX_LINE_LENGTH];
+        char pattern[] = "xyz"; // Change this to the desired pattern
+
+        // Open the file for reading
+        file = fopen("code", "r");
+        if (file == NULL) {
+            fprintf(stderr, "Failed to open the code file to verify it.\n");
+            return 1;
+        }
+
+        // Read the file line by line
+        while (fgets(line, MAX_LINE_LENGTH, file) != NULL) {
+            // Check if the pattern is present in the line
+            if (strstr(line, pattern) != NULL) {
+                printf("Error: You are not allowed to use '%s' in your solution.", pattern);
+                return 1;
+            }
+        }
+
+        // Close the file
+        fclose(file);
+
+        return 0;
+    }
+test_instructions: ""
+after_test_example: |
+    int main() {
+        int num1 = 2;
+        int num2 = 3;
+
+        int result = add_numbers(num1, num2);
+        printf("The sum of %d and %d is %d.", num1, num2, result);
+
+        return 0;
+    }

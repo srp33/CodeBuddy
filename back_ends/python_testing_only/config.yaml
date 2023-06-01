@@ -1,0 +1,14 @@
+description: Please write Python code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/python
+output_types:
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    print("hello")
+verification_instructions: "Write your verification code in Python."
+verification_example: ""
+test_instructions: ""
+after_test_example: ""

@@ -1,0 +1,50 @@
+description: Please write Java code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/java
+output_types:
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    public class student_code {
+
+        public static int addNumbers(int a, int b) {
+            return a + b;
+        }
+
+        public static void main(String[] args) {
+            int num1 = 2;
+            int num2 = 3;
+            int result = addNumbers(num1, num2);
+
+            System.out.println("The sum is: " + result);
+        }
+    }
+verification_instructions: "Write your verification code in Java."
+verification_example: |
+    import java.io.BufferedReader;
+    import java.io.FileReader;
+    import java.io.IOException;
+
+    public class verification_code {
+        public static void main(String[] args) {
+            String filePath = "code";
+            String pattern = "xyz"; // Change this to the desired pattern
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains(pattern)) {
+                        System.out.println("You may not use '" + pattern + "' in your solution.");
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("Failed to read the code file for verification: " + e.getMessage());
+            }
+        }
+    }
+test_instructions: ""
+after_test_example: ""

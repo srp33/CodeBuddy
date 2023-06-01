@@ -1,8 +1,5 @@
 .PHONY: dev-server
 dev-server: make-dirs
-	NUM_PROCESSES=1 \
-	PORT=8008 \
-	MPORT=9798 \
 	DEBUG=true \
 	python3 server/webserver.py
 
@@ -20,4 +17,3 @@ build-watch:
 
 .PHONY: docker
 docker:
-	

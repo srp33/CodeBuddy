@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class DiffHandler(BaseUserHandler):
-    def post(self):
+    async def post(self):
         try:
             course_id = self.get_body_argument("course_id")
             assignment_id = self.get_body_argument("assignment_id")
@@ -12,7 +12,7 @@ class DiffHandler(BaseUserHandler):
 
             course_basics = self.get_course_basics(course_id)
             assignment_basics = self.get_assignment_basics(course_basics, assignment_id)
-            exercise_basics = self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
+            exercise_basics = await self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
             exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
             if not course_basics["exists"] or not assignment_basics["exists"] or not exercise_basics["exists"]:

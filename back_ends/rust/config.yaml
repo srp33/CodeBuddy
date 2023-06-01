@@ -1,0 +1,25 @@
+description: Please write Rust code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/rust
+output_types:
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    fn add_numbers(num1: i32, num2: i32) -> i32 {
+        num1 + num2
+    }
+verification_instructions: "Write your verification code in Python (not Rust)."
+verification_example: |
+    pattern = "xyz"
+
+    with open('code') as code_file:
+        if pattern in code_file.read():
+            print(f"Error: You may not use '{pattern}' in your solution.")
+test_instructions: ""
+after_test_example: |
+    fn main() {
+        let result = add_numbers(2, 3);
+        println!("The sum is: {}", result);
+    }

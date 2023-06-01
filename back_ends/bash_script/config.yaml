@@ -1,0 +1,26 @@
+description: Please write a bash script based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/sh
+output_types:
+    txt: |-
+        Text (standard out)
+solution_instructions: ""
+solution_example: |
+    mkdir Assignment1
+    cd Assignment1
+    touch newfile
+    ls
+verification_instructions: "Write your verification code in bash."
+verification_example: |
+    #!/bin/bash
+
+    # Set the pattern to search for
+    pattern="xyz"
+
+    # Check if the pattern exists in the file
+    if grep -q "$pattern" "code"; then
+        echo "Error: You are not allowed to use '$pattern' in your solution."
+    fi
+test_instructions: ""
+after_test_example: ""

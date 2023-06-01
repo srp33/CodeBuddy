@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 class ExerciseHandler(BaseUserHandler):
     entrypoint = 'exercise'
 
-    def get(self, course_id, assignment_id, exercise_id):
+    async def get(self, course_id, assignment_id, exercise_id):
         try:
             show = self.is_administrator or self.is_instructor_for_course(course_id) or self.is_assistant_for_course(course_id)
             course_basics = self.get_course_basics(course_id)
@@ -17,11 +17,11 @@ class ExerciseHandler(BaseUserHandler):
             if not self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
                 return
 
-            exercise_basics = self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
+            exercise_basics = await self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
             exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), current_exercise_id=exercise_id, show_hidden=show)
 
-            back_end = self.settings_dict["back_ends"][exercise_details["back_end"]]
+            back_end_config = get_back_end_config(exercise_details["back_end"])
 
             next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)
 
@@ -65,8 +65,8 @@ class ExerciseHandler(BaseUserHandler):
                     "exercise_statuses": exercise_statuses,
                     "next_exercise": next_prev_exercises["next"],
                     "prev_exercise": next_prev_exercises["previous"],
-                    "code_completion_path": back_end["code_completion_path"],
-                    "back_end_description": back_end["description"],
+                    "code_completion_path": back_end_config["code_completion_path"],
+                    "back_end_description": back_end_config["description"],
                     "domain": self.settings_dict['domain'],
                     "start_time": start_time,
                     "user_info": self.user_info,

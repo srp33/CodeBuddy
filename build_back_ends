@@ -19,6 +19,15 @@ do
     image_name=codebuddy/${dir_name}_${mode}
     dir_path=${tmp_dir}/${dir_name}
 
+    if [[ "${dir_name}" == "python_testing_only" ]]
+    then
+        continue
+    fi
+    if [[ "${dir_name}" == "not_code" ]]
+    then
+        continue
+    fi
+
     rm -rf ${dir_path}
     mkdir -p ${dir_path}
 
@@ -27,6 +36,8 @@ do
     cp ${current_dir}/VERSION ${dir_path}/
 
     cd ${dir_path}
+
+    echo "Building ${image_name}"
 
     docker build \
         -t ${image_name}:version$(cat VERSION) \

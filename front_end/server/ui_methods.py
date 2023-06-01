@@ -17,8 +17,9 @@ manifest = None
 
 def _load_manifest():
 	global manifest
-	if manifest is None or 'DEBUG' in os.environ:
+	if manifest is None or ('DEBUG' in os.environ and os.environ['DEBUG'] == 'true'):
 		manifest = json.loads(read_file('static/manifest.json'))
+
 	return manifest
 
 def get_assets(handler):
@@ -36,7 +37,7 @@ def get_assets(handler):
 		css = [css]
 	return (js, css)
 
-# shamelessly stoken from https://pynative.com/python-serialize-datetime-into-json/
+# shamelessly stolen from https://pynative.com/python-serialize-datetime-into-json/
 class DateTimeEncoder(json.JSONEncoder):
         #Override the default method
         def default(self, obj):

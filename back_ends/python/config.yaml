@@ -1,0 +1,23 @@
+description: Please write Python code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/python
+output_types:
+    jpg: |-
+        Image (matplotlib or seaborn)
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    def add_numbers(x, y):
+        return(x + y)
+verification_instructions: "Write your verification code in Python."
+verification_example: |
+    pattern = "xyz"
+
+    with open('code') as code_file:
+        if pattern in code_file.read():
+            print(f"Error: You may not use '{pattern}' in your solution.")
+test_instructions: ""
+after_test_example: |
+    print(add_numbers(2, 3))

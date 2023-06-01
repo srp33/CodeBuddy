@@ -1,0 +1,13 @@
+description: Please write C++ code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/C_Cpp
+output_types:
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: "#include <iostream>\n\nint sum(int a, int b) {\n    return a + b;\n}"
+verification_instructions: "Write your verification code in Python (not C++)."
+verification_example: "with open('code') as student_code:\n\tfor line in student_code:\n\t\tif 'len(' in line:\n\t\t\tprint('Error: len() function not permitted in this exercise')\n\t\t\tbreak"
+test_instructions: ""
+after_test_example: "int main() {\n    int result = sum(2, 3);\n    std::cout << \"The sum is: \" << result << std::endl;\n    return 0;\n}"

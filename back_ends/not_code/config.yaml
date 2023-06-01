@@ -1,0 +1,11 @@
+description: Please write an answer based on the instructions provided.
+code_completion_path: ace/mode/text
+output_types:
+    txt: |-
+        Text
+solution_instructions: "For this type of exercise, your solution itself will be used as the expected output."
+solution_example: ""
+verification_instructions: ""
+verification_example: ""
+test_instructions: ""
+after_test_example: ""

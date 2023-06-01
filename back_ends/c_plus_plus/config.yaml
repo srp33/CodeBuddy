@@ -1,0 +1,52 @@
+description: Please write C++ code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/c_cpp
+output_types:
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    #include <iostream>
+
+    int add_numbers(int a, int b) {
+        return a + b;
+    }
+verification_instructions: "Write your verification code in C++."
+verification_example: |
+    #include <iostream>
+    #include <fstream>
+    #include <string>
+
+    int main() {
+        std::ifstream file("code");
+        std::string line;
+        std::string pattern = "xyz"; // Change this to the desired pattern
+
+        if (!file.is_open()) {
+            std::cerr << "Failed to open the code file to verify it." << std::endl;
+            return 1;
+        }
+
+        while (getline(file, line)) {
+            if (line.find(pattern) != std::string::npos) {
+                std::cout << "You are not allowed to use '" + pattern + "' in your solution." << line << std::endl;
+                break; // Stop executing further if pattern is found
+            }
+        }
+
+        file.close();
+
+        return 0;
+    }
+test_instructions: ""
+after_test_example: |
+    int main() {
+        int num1 = 2;
+        int num2 = 3;
+        int result = add_numbers(num1, num2);
+        
+        std::cout << "The sum is: " << result << std::endl;
+        
+        return 0;
+    }

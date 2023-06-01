@@ -4,9 +4,6 @@ import logging
 from helper import *
 
 class LogoutHandler(BaseOtherHandler):
-    def prepare(self):
-        self.settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
-
     def get(self):
         try:
             self.clear_all_cookies()

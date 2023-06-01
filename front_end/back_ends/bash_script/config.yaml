@@ -1,0 +1,13 @@
+description: bash scripting
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/plain_text
+output_types:
+    txt: |-
+        Text (standard out)
+solution_instructions: ""
+solution_example: "mkdir Assignment1\ncd Assignment1\ntouch newfile\nls"
+verification_instructions: "Write your verification code in bash."
+verification_example: "FIND='#'\nwhile read -r line;\n\tdo\n\tif grep -q \"$FIND\" <<< \"$line\"; then\n\t\techo \"Error: $FIND operator not allowed in this exercise\"\n\t\tbreak\"\n\tfi\ndone < code"
+test_instructions: ""
+after_test_example: ""

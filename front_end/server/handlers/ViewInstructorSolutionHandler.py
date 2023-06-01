@@ -2,7 +2,7 @@ from BaseUserHandler import *
 import datetime as dt
 
 class ViewInstructorSolutionHandler(BaseUserHandler):
-    def get(self, course_id, assignment_id, exercise_id):
+    async def get(self, course_id, assignment_id, exercise_id):
         try:
             #client_ip = get_client_ip_address(self.request)
             user_info = self.user_info
@@ -12,7 +12,7 @@ class ViewInstructorSolutionHandler(BaseUserHandler):
             course_details = self.get_course_details(course_id)
 
             assignment_basics = self.get_assignment_basics(course_basics, assignment_id)
-            exercise_basics = self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
+            exercise_basics = await self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
 
             assignment_details = self.get_assignment_details(course_basics, assignment_id)
             exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)

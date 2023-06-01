@@ -14,7 +14,7 @@ from tornado.web import *
 import traceback
 import ui_methods
 
-def make_app():
+def make_app(settings_dict):
     app = Application(
         [
             url(r"/", HomeHandler),
@@ -93,9 +93,10 @@ def make_app():
             url(r"/view_student_assignment_scores/([^/]+)/([^/]+)", ViewStudentAssignmentScoresHandler, name="view_student_assignment_scores")
         ],
         autoescape=None,
-        debug=('DEBUG' in os.environ),
-        ui_methods=ui_methods,
+        debug=(int(settings_dict["f_num_processes"]) == 1 and 'DEBUG' in os.environ and os.environ['DEBUG'] == 'true'),
+        ui_methods=ui_methods
     )
+    # Debugging doesn't seem to work on MacOS when running with two processes (https://github.com/tornadoweb/tornado/issues/2426)
 
     app.settings['template_path'] = os.path.join(os.path.dirname(__file__), "html")
 
@@ -132,19 +133,7 @@ class StaticFileHandler(RequestHandler):
             self.write(file_contents)
 
 if __name__ == "__main__":
-    if "PORT" in os.environ and "MPORT" in os.environ:
-        application = make_app()
-
-        # root_dir = '/'
-        # if 'ROOT' in os.environ:
-        #     root_dir = os.environ['ROOT']
-
-        secrets_dict = load_yaml_dict(read_file("secrets/front_end.yaml"))
-        application.settings["cookie_secret"] = secrets_dict["cookie"]
-        application.settings["google_oauth"] = {
-           "key": secrets_dict["google_oauth_key"],
-           "secret": secrets_dict["google_oauth_secret"]
-        }
+    try:
         settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
 
         content = Content(settings_dict)
@@ -182,6 +171,8 @@ if __name__ == "__main__":
                 print(result)
                 sys.exit(1)
 
+        application = make_app(settings_dict)
+
         if settings_dict["mode"] == "development":
             server = tornado.httpserver.HTTPServer(application, max_header_size=1048576)
         else:
@@ -190,13 +181,15 @@ if __name__ == "__main__":
               "keyfile": "/certs/cert.key",
             })
 
-        server.bind(int(os.environ['PORT']))
-        server.start(int(os.environ['NUM_PROCESSES']))
+        secrets_dict = load_yaml_dict(read_file("secrets/front_end.yaml"))
+        application.settings["cookie_secret"] = secrets_dict["cookie"]
+        application.settings["google_oauth"] = {
+           "key": secrets_dict["google_oauth_key"],
+           "secret": secrets_dict["google_oauth_secret"]
+        }
 
-        user_info_var = contextvars.ContextVar("user_info")
-        user_is_administrator_var = contextvars.ContextVar("user_is_administrator")
-        user_instructor_courses_var = contextvars.ContextVar("user_instructor_courses")
-        user_assistant_courses_var = contextvars.ContextVar("user_assistant_courses")
+        server.bind(int(settings_dict["f_port"]))
+        server.start(int(settings_dict["f_num_processes"]))
 
         # Set up logging
         log_level = logging.INFO
@@ -218,8 +211,9 @@ if __name__ == "__main__":
         logging.getLogger('tornado.access').disabled = True
         logging.getLogger("requests").setLevel(logging.DEBUG)
 
-        logging.debug(f"Starting on port {os.environ['PORT']}")
+        logging.debug(f"Starting on port {settings_dict['f_port']} using {settings_dict['f_num_processes']} processes")
         tornado.ioloop.IOLoop.instance().start()
-    else:
-        logging.error("Values must be specified for the PORT and MPORT environment variables.")
+    except Exception as inst:
+        print(traceback.format_exc())
+        logging.error(traceback.format_exc())
         sys.exit(1)

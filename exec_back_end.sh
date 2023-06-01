@@ -15,7 +15,7 @@ do
     if [[ "${done_with_verification}" == "False" ]]
     then
       cp main_code code
-      value="$(bash /verify_code.sh ${base_dir}/verification_code)"
+      value="$(bash /verify_code.sh ${base_dir}/verification_code 2>&1)"
       rm -f code
 
       if [[ "$value" ]]

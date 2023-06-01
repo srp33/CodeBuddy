@@ -1,0 +1,25 @@
+description: Please write R code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/r
+output_types:
+    jpg: |-
+        Image (ggplot2)
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    add_numbers <- function(x, y) {
+        return(x + y)
+    }
+verification_instructions: "Write your verification code in R."
+verification_example: |
+    pattern <- "xyz"
+
+    fileContent <- readLines("code")
+
+    if (any(grepl(pattern, fileContent))) {
+      message(paste0("You may not use ", pattern, " in your solution."))
+    }
+test_instructions: ""
+after_test_example: "print(add_numbers(2, 3))"

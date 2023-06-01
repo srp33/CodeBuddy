@@ -1,0 +1,50 @@
+description: Please write Go code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/golang
+output_types:
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    package main
+
+    import "fmt"
+
+    func addNumbers(a, b int) int {
+      return a + b
+    }
+verification_instructions: "Write your verification code in Go."
+verification_example: |
+    package main
+
+    import (
+      "fmt"
+      "io/ioutil"
+      "log"
+      "strings"
+    )
+
+    func main() {
+      content, err := ioutil.ReadFile("code")
+      if err != nil {
+        log.Fatal("Failed to read the file:", err)
+      }
+
+      fileContent := string(content)
+      pattern := "xyz" // Change this to the desired pattern
+
+      if strings.Contains(fileContent, pattern) {
+        fmt.Printf("You may not use '%s' in your solution.\n", pattern)
+        return // Stop executing further if pattern is found
+      }
+    }
+test_instructions: ""
+after_test_example: |
+    func main() {
+      num1 := 2
+      num2 := 3
+      result := addNumbers(num1, num2)
+
+      fmt.Println("The sum is:", result)
+    }

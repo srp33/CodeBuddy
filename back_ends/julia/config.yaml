@@ -1,0 +1,35 @@
+description: Please write Julia code based on the instructions provided.
+memory_allowed_mb: 500
+timeout_seconds: 60
+code_completion_path: ace/mode/julia
+output_types:
+    txt: |-
+        Text
+solution_instructions: ""
+solution_example: |
+    function add_numbers(a::Int, b::Int)
+        return a + b
+    end
+verification_instructions: "Write your verification code in Julia."
+verification_example: |
+    function find_pattern_in_file(file_path::AbstractString, pattern::AbstractString)
+        file = open(file_path, "r")
+
+        for line in eachline(file)
+            if occursin(pattern, line)
+                println("You may not use '$pattern' in your solution.")
+            end
+        end
+
+        close(file)
+    end
+
+    # Usage
+    file_path = "code"
+    pattern = "xyz"  # Change this to the desired pattern
+
+    find_pattern_in_file(file_path, pattern)
+test_instructions: ""
+after_test_example: |
+    result = add_numbers(2, 3)
+    println("The sum is: ", result)
