@@ -1651,14 +1651,12 @@ class Content:
 
         return {"previous": prev_exercise, "next": next_exercise}
 
-    def delete_presubmission(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''DELETE FROM presubmissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?'''
+    def delete_old_presubmissions(self):
+        sql = '''DELETE
+                 FROM presubmissions
+                 WHERE date_updated < datetime('now', '-12 months')'''
 
-        self.execute(sql, (course_id, assignment_id, exercise_id, user_id))
+        self.execute(sql)
 
     def get_presubmission(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''SELECT code

@@ -171,6 +171,9 @@ if __name__ == "__main__":
                 print(result)
                 sys.exit(1)
 
+        # Clean some stuff in the database
+        content.delete_old_presubmissions()
+
         application = make_app(settings_dict)
 
         if settings_dict["mode"] == "development":
