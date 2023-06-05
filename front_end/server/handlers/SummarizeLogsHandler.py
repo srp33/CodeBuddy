@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class SummarizeLogsHandler(BaseUserHandler):
-    def get(self):
+    async def get(self):
         try:
             if self.is_administrator:
                 years, months, days = get_list_of_dates()
@@ -11,7 +11,7 @@ class SummarizeLogsHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def post(self):
+    async def post(self):
         try:
             if not self.is_administrator:
                 self.render("permissions.html")

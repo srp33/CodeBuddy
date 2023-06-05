@@ -1,11 +1,11 @@
 from BaseUserHandler import *
 
 class AddInstructorHandler(BaseUserHandler):
-    def get(self, course_id, user_id):
+    async def get(self, course_id, user_id):
         message = "Error: You do not have permission to perform that task."
 
         try:
-            if self.is_administrator or self.is_instructor_for_course(course_id):
+            if self.is_administrator or await self.is_instructor_for_course(course_id):
                 if self.content.user_exists(user_id):
                     if self.content.is_administrator(user_id):
                         message = f"Error: The user '{user_id}' is already an administrator."

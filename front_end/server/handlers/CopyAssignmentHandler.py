@@ -1,12 +1,12 @@
 from BaseUserHandler import *
 
 class CopyAssignmentHandler(BaseUserHandler):
-    def post(self, course_id, assignment_id):
-        course_basics = self.get_course_basics(course_id)
+    async def post(self, course_id, assignment_id):
+        course_basics = await self.get_course_basics(course_id)
         result = ""
 
         try:
-            if self.is_administrator or self.is_instructor_for_course(course_id):
+            if self.is_administrator or await self.is_instructor_for_course(course_id):
                 new_title = self.get_body_argument("new_title").strip()
 
                 if new_title == "":

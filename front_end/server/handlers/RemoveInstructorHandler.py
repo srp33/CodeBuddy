@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class RemoveInstructorHandler(BaseUserHandler):
-    def get(self, course_id, user_id):
+    async def get(self, course_id, user_id):
         message = "Error: You do not have permission to perform that task."
 
         try:

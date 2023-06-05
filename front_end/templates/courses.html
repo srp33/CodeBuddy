@@ -79,7 +79,7 @@ function showLeaveCourseModal(course_id) {
         $.ajax({
             type: 'GET',
             url: "/unregister/" + course_id + "/{{ user_info['user_id'] }}",
-            async: false})
+            async: true})
             .done(function(message) {
                 if (message.startsWith("Error:")) {
                     $("#leave_error_message").removeClass("invisible");

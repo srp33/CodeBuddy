@@ -3,7 +3,7 @@ from tornado.web import *
 from helper import *
 
 class LoginHandler(BaseOtherHandler):
-    def get(self):
+    async def get(self):
         try:
             redirect_to_login(self, "/")
         except Exception as inst:

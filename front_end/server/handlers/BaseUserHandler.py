@@ -43,10 +43,10 @@ class BaseUserHandler(BaseRequestHandler):
     # for user-related data.
     ####################################################
 
-    def is_instructor_for_course(self, course_id):
+    async def is_instructor_for_course(self, course_id):
         return self.update_cached_variable(str(course_id), f"is_instructor_{course_id}", self.content.user_has_role, self.get_current_user(), course_id, "instructor")
 
-    def is_assistant_for_course(self, course_id):
+    async def is_assistant_for_course(self, course_id):
         return self.update_cached_variable(str(course_id), f"is_assistant_{course_id}", self.content.user_has_role, self.get_current_user(), course_id, "assistant")
 
     ####################################################
@@ -54,10 +54,10 @@ class BaseUserHandler(BaseRequestHandler):
     # for course-related data.
     ####################################################
 
-    def get_course_basics(self, course_id):
+    async def get_course_basics(self, course_id):
         return self.update_cached_variable(str(course_id), f"course_basics_{course_id}", self.content.get_course_basics, course_id)
     
-    def get_course_details(self, course_id, format_output=False):
+    async def get_course_details(self, course_id, format_output=False):
         course_details = self.update_cached_variable(str(course_id), f"course_details_{course_id}", self.content.get_course_details, course_id)
 
         if format_output:
@@ -65,7 +65,7 @@ class BaseUserHandler(BaseRequestHandler):
 
         return course_details
 
-    def get_assignments(self, course_basics):
+    async def get_assignments(self, course_basics):
         course_id = course_basics["id"]
 
         assignments_raw = self.update_cached_variable(str(course_id), f"assignments_{course_id}", self.content.get_assignments, course_basics)
@@ -77,7 +77,7 @@ class BaseUserHandler(BaseRequestHandler):
 
         return assignments
     
-    def get_assignment_basics(self, course_basics, assignment_id):
+    async def get_assignment_basics(self, course_basics, assignment_id):
         course_id = course_basics["id"]
 
         assignment_basics = self.update_cached_variable(str(course_id), f"assignment_basics_{course_id}_{assignment_id}", self.content.get_assignment_basics, course_basics, assignment_id)
@@ -87,7 +87,7 @@ class BaseUserHandler(BaseRequestHandler):
 
         return assignment_basics
     
-    def get_assignment_details(self, course_basics, assignment_id, format_output=False):
+    async def get_assignment_details(self, course_basics, assignment_id, format_output=False):
         # course_id = course_basics["id"]
 
         # assignment_details = self.update_cached_variable(str(course_id), f"assignment_details_{course_id}_{assignment_id}", self.content.get_assignment_details, course_basics, assignment_id)
@@ -110,7 +110,7 @@ class BaseUserHandler(BaseRequestHandler):
 
         return exercise_basics
     
-    def get_exercise_details(self, course_basics, assignment_basics, exercise_id):
+    async def get_exercise_details(self, course_basics, assignment_basics, exercise_id):
         # course_id = course_basics["id"]
         # assignment_id = assignment_basics["id"]
 
@@ -118,7 +118,7 @@ class BaseUserHandler(BaseRequestHandler):
 
         return self.content.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
-    def get_partner_info(self, course_id, exclude_self):
+    async def get_partner_info(self, course_id, exclude_self):
         partner_info = self.update_cached_variable(str(course_id), f"partner_info_{course_id}", self.content.get_partner_info, course_id)
 
         if exclude_self and self.user_info["name"] in partner_info:
@@ -182,8 +182,8 @@ class BaseUserHandler(BaseRequestHandler):
     # Functions that do not use cookie caching
     ###############################################
 
-    def check_whether_should_show_exercise(self, course, assignment, assignment_details, assignments, courses, assignment_basics, course_basics):
-        if self.is_administrator or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
+    async def check_whether_should_show_exercise(self, course, assignment, assignment_details, assignments, courses, assignment_basics, course_basics):
+        if self.is_administrator or await self.is_instructor_for_course(course) or await self.is_assistant_for_course(course):
             return True
 
         curr_datetime = datetime.utcnow()

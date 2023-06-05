@@ -2,11 +2,11 @@ from BaseUserHandler import *
 from datetime import datetime
 
 class DownloadCourseScoresHandler(BaseUserHandler):
-    def get(self, course_id):
-        course_basics = self.get_course_basics(course_id)
+    async def get(self, course_id):
+        course_basics = await self.get_course_basics(course_id)
 
         try:
-            if self.is_administrator or self.is_instructor_for_course(course_id) or self.is_assistant_for_course(course_id):
+            if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
                 the_date = datetime.utcnow().strftime("%Yy_%mM_%dd_%Hh_%Mm_%Ss")
                 out_file_prefix = re.sub(r"\W", "_", course_basics['title'])
                 tsv_text = self.content.create_course_scores_text(course_basics)
@@ -27,7 +27,7 @@ class DownloadCourseScoresHandler(BaseUserHandler):
 #        temp_dir_path, zip_file_name, zip_file_path = self.content.create_zip_file_path(descriptor)
 #
 #        try:
-#            if self.is_administrator() or self.is_instructor_for_course(course) or self.is_assistant_for_course(course):
+#            if self.is_administrator() or await self.is_instructor_for_course(course) or await self.is_assistant_for_course(course):
 #
 #                self.content.create_export_paths(temp_dir_path, descriptor)
 #

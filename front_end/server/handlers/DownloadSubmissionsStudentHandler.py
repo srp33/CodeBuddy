@@ -2,9 +2,9 @@ from BaseUserHandler import *
 import datetime
 
 class DownloadSubmissionsStudentHandler(BaseUserHandler):
-    def get(self, course_id):
+    async def get(self, course_id):
         try:
-            if self.get_course_details(course_id)["allow_students_download_submissions"]:
+            if await self.get_course_details(course_id)["allow_students_download_submissions"]:
                 html = self.format(course_id, self.content.get_submissions_student(course_id, self.get_current_user()))
 
                 self.write(html)
@@ -14,8 +14,8 @@ class DownloadSubmissionsStudentHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def format(self, course_id, submissions):
-        course_basics = self.get_course_basics(course_id)
+    async def format(self, course_id, submissions):
+        course_basics = await self.get_course_basics(course_id)
         html = "<html><body>"
         html += '''<head>
                        <style>

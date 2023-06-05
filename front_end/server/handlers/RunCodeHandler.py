@@ -7,9 +7,9 @@ class RunCodeHandler(BaseUserHandler):
         try:
             code = self.get_body_argument("user_code").replace("\r", "")
 
-            course_basics = self.get_course_basics(course_id)
-            assignment_basics = self.get_assignment_basics(course_basics, assignment_id)
-            exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
+            course_basics = await self.get_course_basics(course_id)
+            assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
+            exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
             single_test = self.get_query_argument('test', None)
             if single_test is not None and single_test in exercise_details["tests"]:

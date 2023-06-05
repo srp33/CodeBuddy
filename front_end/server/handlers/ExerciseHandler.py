@@ -6,19 +6,19 @@ class ExerciseHandler(BaseUserHandler):
 
     async def get(self, course_id, assignment_id, exercise_id):
         try:
-            show = self.is_administrator or self.is_instructor_for_course(course_id) or self.is_assistant_for_course(course_id)
-            course_basics = self.get_course_basics(course_id)
-            course_details = self.get_course_details(course_id)
+            show = self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id)
+            course_basics = await self.get_course_basics(course_id)
+            course_details = await self.get_course_details(course_id)
 
-            assignments = self.get_assignments(course_basics)
-            assignment_basics = self.get_assignment_basics(course_basics, assignment_id)
-            assignment_details = self.get_assignment_details(course_basics, assignment_id)
+            assignments = await self.get_assignments(course_basics)
+            assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
+            assignment_details = await self.get_assignment_details(course_basics, assignment_id)
 
-            if not self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
+            if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
                 return
 
             exercise_basics = await self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
-            exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
+            exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), current_exercise_id=exercise_id, show_hidden=show)
 
             back_end_config = get_back_end_config(exercise_details["back_end"])
@@ -31,7 +31,8 @@ class ExerciseHandler(BaseUserHandler):
             #     same_suggestion = self.content.get_same_suggestion(help_request)
 
             # Fetches all users enrolled in a course excluding the current user as options to pair program with.
-            user_list = list(self.get_partner_info(course_id, True).keys())
+            partner_info = await self.get_partner_info(course_id, True)
+            user_list = list(partner_info.keys())
             
             start_time = None
             if assignment_details["has_timer"]:
@@ -72,8 +73,8 @@ class ExerciseHandler(BaseUserHandler):
                     "user_info": self.user_info,
                     "user_id": self.get_current_user(),
                     "is_administrator": self.is_administrator,
-                    "is_instructor": self.is_instructor_for_course(course_id),
-                    "is_assistant": self.is_assistant_for_course(course_id),
+                    "is_instructor": await self.is_instructor_for_course(course_id),
+                    "is_assistant": await self.is_assistant_for_course(course_id),
                     "check_for_restrict_other_assignments": course_details["check_for_restrict_other_assignments"],
                     "help_request": None,
                     "same_suggestion": None,

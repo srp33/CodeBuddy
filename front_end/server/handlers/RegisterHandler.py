@@ -1,12 +1,12 @@
 from BaseUserHandler import *
 
 class RegisterHandler(BaseUserHandler):
-    def get(self, course_id, user_id, passcode):
+    async def get(self, course_id, user_id, passcode):
         result = "Error: No response"
 
         try:
-            course_basics = self.get_course_basics(course_id)
-            course_details = self.get_course_details(course_id)
+            course_basics = await self.get_course_basics(course_id)
+            course_details = await self.get_course_details(course_id)
             course_title = course_basics["title"]
             course_passcode = course_details["passcode"]
 

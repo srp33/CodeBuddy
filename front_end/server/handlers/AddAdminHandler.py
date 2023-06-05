@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class AddAdminHandler(BaseUserHandler):
-    def get(self, user_id):
+    async def get(self, user_id):
         message = "Error: You do not have permission to perform that task."
 
         try:

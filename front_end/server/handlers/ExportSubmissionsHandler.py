@@ -1,8 +1,8 @@
 from BaseUserHandler import *
 
 class ExportSubmissionsHandler(BaseUserHandler):
-    def get(self, course_id):
-        course_basics = self.get_course_basics(course_id)
+    async def get(self, course_id):
+        course_basics = await self.get_course_basics(course_id)
 
         descriptor = f"Submissions_{course_basics['title'].replace(' ', '_')}"
         temp_dir_path, zip_file_name, zip_file_path = self.content.create_zip_file_path(descriptor)

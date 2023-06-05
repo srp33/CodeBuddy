@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class RemoveAdminHandler(BaseUserHandler):
-    def get(self):
+    async def get(self):
         message = "Error: You do not have permission to perform that task."
 
         try:

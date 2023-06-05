@@ -91,7 +91,7 @@ Instructors can add other instructors. Instructors can remove their own access.
             $.ajax({
                 type: 'GET',
                 url: "/add_instructor/{{ course_basics['id'] }}/" + user_id,
-                async: false})
+                async: true})
                 .done(function(message) {
                     if (message.startsWith("Error:")) {
                         $("#add_error_message").removeClass("invisible");
@@ -135,7 +135,7 @@ Instructors can add other instructors. Instructors can remove their own access.
             $.ajax({
                 type: 'GET',
                 url: "/remove_instructor/{{ course_basics['id'] }}/" + user_id,
-                async: false})
+                async: true})
                 .done(function(message) {
                     if (message.startsWith("Error:")) {
                         $("#remove_error_message").removeClass("invisible");

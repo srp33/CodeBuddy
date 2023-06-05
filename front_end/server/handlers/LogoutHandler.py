@@ -4,7 +4,7 @@ import logging
 from helper import *
 
 class LogoutHandler(BaseOtherHandler):
-    def get(self):
+    async def get(self):
         try:
             self.clear_all_cookies()
 

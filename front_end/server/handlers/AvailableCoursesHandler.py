@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class AvailableCoursesHandler(BaseUserHandler):
-    def get(self):
+    async def get(self):
         try:
             if self.is_administrator:
                 self.redirect(f"/courses")

@@ -4,7 +4,7 @@ from content import *
 from helper import *
 
 class HomeHandler(BaseOtherHandler):
-    def get(self):
+    async def get(self):
         try:
             user_id = self.get_secure_cookie("user_id")
 

@@ -1,12 +1,12 @@
 from BaseUserHandler import *
 
 class MoveExerciseHandler(BaseUserHandler):
-    def post(self, course_id, assignment_id, exercise_id):
+    async def post(self, course_id, assignment_id, exercise_id):
         result = ""
 
         try:
-            if self.is_administrator or self.is_instructor_for_course(course_id):
-                existing_course_basics = self.get_course_basics(course_id)
+            if self.is_administrator or await self.is_instructor_for_course(course_id):
+                existing_course_basics = await self.get_course_basics(course_id)
                 existing_assignment_basics = self.content.get_assignment_basics(existing_course_basics, assignment_id)
                 existing_exercise_basics = self.content.get_exercise_basics(existing_course_basics, existing_assignment_basics, exercise_id)
 

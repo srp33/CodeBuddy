@@ -2,31 +2,31 @@ from BaseUserHandler import *
 import datetime as dt
 
 class EditAssignmentHandler(BaseUserHandler):
-    def get(self, course_id, assignment_id):
+    async def get(self, course_id, assignment_id):
         try:
-            course_basics = self.get_course_basics(course_id)
+            course_basics = await self.get_course_basics(course_id)
             assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
-            if self.is_administrator or self.is_instructor_for_course(course_id):
+            if self.is_administrator or await self.is_instructor_for_course(course_id):
                 percentage_options = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
                 hour_options = list(range(13))
                 minute_options = list(range(61))
 
-                self.render("edit_assignment.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=self.get_assignment_details(course_basics, assignment_id), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=self.is_instructor_for_course(course_id), is_assistant=self.is_assistant_for_course(course_id))
+                self.render("edit_assignment.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=await self.get_assignment_details(course_basics, assignment_id), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             else:
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def post(self, course_id, assignment_id):
+    async def post(self, course_id, assignment_id):
         try:
-            if not self.is_administrator and not self.is_instructor_for_course(course_id):
+            if not self.is_administrator and not await self.is_instructor_for_course(course_id):
                 self.render("permissions.html")
                 return
 
-            course_basics = self.get_course_basics(course_id)
+            course_basics = await self.get_course_basics(course_id)
             assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
-            assignment_details = self.get_assignment_details(course_basics, assignment_id)
+            assignment_details = await self.get_assignment_details(course_basics, assignment_id)
 
             assignment_basics["title"] = self.get_body_argument("title").strip()
             assignment_details["introduction"] = remove_html_tags(self.get_body_argument("introduction").strip())

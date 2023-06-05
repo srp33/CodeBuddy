@@ -11,11 +11,11 @@ class SubmitHandler(BaseUserHandler):
             date = parser.parse(self.get_body_argument("date"))
             partner_id = self.get_body_argument("partner_id", default=None)
 
-            course_basics = self.get_course_basics(course_id)
+            course_basics = await self.get_course_basics(course_id)
             assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
-            assignment_details = self.get_assignment_details(course_basics, assignment_id)
-            exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
+            assignment_details = await self.get_assignment_details(course_basics, assignment_id)
+            exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
             num_submissions = self.content.get_num_submissions(course_id, assignment_id, exercise_id, user_id)
 

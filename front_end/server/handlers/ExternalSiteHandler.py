@@ -7,7 +7,7 @@ class ExternalSiteHandler(BaseUserHandler):
         try:
             url = urllib.parse.unquote(encoded_url)
 
-            assignment_details = self.get_assignment_details(self.get_course_basics(course_id), assignment_id)
+            assignment_details = await self.get_assignment_details(await self.get_course_basics(course_id), assignment_id)
 
             if url not in assignment_details["allowed_external_urls"]:
                 return self.write("Access to {url} is not allowed for this course")

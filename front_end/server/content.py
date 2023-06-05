@@ -575,7 +575,7 @@ class Content:
                  ORDER BY title'''
 
         exercises = []
-        for exercise in self.fetchall(sql, (course_basics['id'], assignment_basics['id'],)):
+        for exercise in self.fetchall(sql, (course_basics["id"], assignment_basics["id"],)):
             if exercise["visible"] or show_hidden:
                 exercises.append(dict(exercise))
 
@@ -648,7 +648,7 @@ class Content:
         return registered_students
 
     # Indicates whether or not a student has passed each assignment in the course.
-    def get_assignment_statuses(self, course_id, user_id, show_hidden):
+    async def get_assignment_statuses(self, course_id, user_id, show_hidden):
         course_basics = self.get_course_basics(course_id)
 
         sql = '''SELECT assignment_id,
@@ -2019,7 +2019,7 @@ class Content:
 
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course_id, assignment_id, exercise_id, user_id,))
 
-    def copy_course(self, existing_course_basics, new_course_title):
+    async def copy_course(self, existing_course_basics, new_course_title):
         sql = '''INSERT INTO courses (title, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated)
                  SELECT ?, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated
                  FROM courses
@@ -2034,14 +2034,14 @@ class Content:
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            new_assignment_id = self.execute(sql, (new_course_id, existing_course_basics['id'], assignment_basics["id"],))
+            new_assignment_id = self.execute(sql, (new_course_id, existing_course_basics['id'], assignment_basics[0],))
 
             sql = '''SELECT exercise_id
                      FROM exercises
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            old_exercise_ids = [row["exercise_id"] for row in self.fetchall(sql, (existing_course_basics['id'], assignment_basics["id"],))]
+            old_exercise_ids = [row["exercise_id"] for row in self.fetchall(sql, (existing_course_basics['id'], assignment_basics[0],))]
 
             for exercise_id in old_exercise_ids:
                 sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, weight, allow_any_response)
@@ -2051,7 +2051,7 @@ class Content:
                            AND assignment_id = ?
                            AND exercise_id = ?'''
 
-                new_exercise_id = self.execute(sql, (new_course_id, new_assignment_id, existing_course_basics['id'], assignment_basics["id"], exercise_id))
+                new_exercise_id = self.execute(sql, (new_course_id, new_assignment_id, existing_course_basics['id'], assignment_basics[0], exercise_id))
 
                 sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
                          SELECT ?, ?, ?, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output
@@ -2060,7 +2060,7 @@ class Content:
                            AND assignment_id = ?
                            AND exercise_id = ?'''
 
-                self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, existing_course_basics['id'], assignment_basics["id"], exercise_id))
+                self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, existing_course_basics['id'], assignment_basics[0], exercise_id))
 
         sql = '''INSERT INTO permissions (user_id, role, course_id)
                  SELECT user_id, role, ?
@@ -2420,7 +2420,7 @@ class Content:
                           WHERE course_id = ?
                           AND assignment_id = ?)''', (course_id, assignment_id, ))
 
-    def delete_exercise_submissions(self, course_id, assignment_id, exercise_id):
+    async def delete_exercise_submissions(self, course_id, assignment_id, exercise_id):
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?
                           AND assignment_id = ?
@@ -2449,7 +2449,7 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?)''', (course_id, assignment_id, exercise_id, ))
 
-    def create_course_scores_text(self, course_basics):
+    async def create_course_scores_text(self, course_basics):
         out_file_text = "Assignment_ID\tAssignment_Title\tStudent_ID\tScore\n"
 
         for assignment_basics in self.get_assignments(course_basics):
@@ -2521,7 +2521,7 @@ class Content:
 #        if os.path.exists(tmp_dir_path):
 #            shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
-    def get_student_pairs(self, course_id, user_name):
+    async def get_student_pairs(self, course_id, user_name):
         # Uses the week of the year as a seed.
         seed = datetime.utcnow().isocalendar().week
 

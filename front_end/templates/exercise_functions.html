@@ -480,7 +480,7 @@ function showSubmitModal() {
             $.ajax({
                 type: 'GET',
                 url: "/get_partner_id/{{ course_basics['id'] }}/" + partner_name,
-                async: false
+                async: true
                 })
                 .done(function(data) {
                     response = JSON.parse(data);

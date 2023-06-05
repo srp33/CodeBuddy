@@ -2,7 +2,7 @@ from BaseUserHandler import *
 import datetime as dt
 
 class SubmitHelpRequestHandler(BaseUserHandler):
-    def post(self, course_id, assignment_id, exercise_id):
+    async def post(self, course_id, assignment_id, exercise_id):
         try:
             user_id = self.get_current_user()
             student_comment = self.get_body_argument("student_comment")
@@ -13,11 +13,11 @@ class SubmitHelpRequestHandler(BaseUserHandler):
             else:
                 code = self.get_body_argument("user_code").replace("\r", "")
 
-                course_basics = self.get_course_basics(course_id)
-                assignment_basics = self.get_assignment_basics(course_basics, assignment_id)
+                course_basics = await self.get_course_basics(course_id)
+                assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
 
                 # exercise_basics = self.get_exercise_basics(course_basics, assignment_basics, exercise)
-                exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
+                exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
                 text_output, jpg_output, tests = exec_code(self.settings_dict, code, exercise_details, request=None)
                 text_output = format_output_as_html(text_output)

@@ -1,10 +1,10 @@
 from BaseUserHandler import *
 
 class DownloadAssignmentScoresHandler(BaseUserHandler):
-    def get(self, course_id, assignment_id):
+    async def get(self, course_id, assignment_id):
         try:
-            if self.is_administrator or self.is_instructor_for_course(course_id) or self.is_assistant_for_course(course_id):
-                course_basics = self.get_course_basics(course_id)
+            if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
+                course_basics = await self.get_course_basics(course_id)
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
                 tsv_text = self.content.create_assignment_scores_text(course_basics, assignment_basics)

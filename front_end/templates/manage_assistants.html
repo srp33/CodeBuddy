@@ -93,7 +93,7 @@
             $.ajax({
                 type: 'GET',
                 url: "/add_assistant/{{ course_basics['id'] }}/" + user_id,
-                async: false})
+                async: true})
                 .done(function(message) {
                     if (message.startsWith("Error:")) {
                         $("#add_error_message").removeClass("invisible");
@@ -137,7 +137,7 @@
             $.ajax({
                 type: 'GET',
                 url: "/remove_assistant/{{ course_basics['id'] }}/" + user_id,
-                async: false})
+                async: true})
                 .done(function(message) {
                     if (message.startsWith("Error:")) {
                         $("#remove_error_message").removeClass("invisible");

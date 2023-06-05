@@ -396,7 +396,7 @@
         var late_percent = document.getElementById("late_percent");
 
         allow_late.style.display = "inline";
-            if ({{ assignment_details["allow_late"] }}) {
+        if ("{{ assignment_details["allow_late"] }}" == "True") {
             late_percent.style.display = "inline";
             view_answer_late.style.display = "none";
         }

@@ -1,11 +1,11 @@
 from BaseUserHandler import *
 
 class ImportAssignmentHandler(BaseUserHandler):
-    def post(self, course_id):
+    async def post(self, course_id):
         result = ""
 
         try:
-            course_basics = self.get_course_basics(course_id)
+            course_basics = await self.get_course_basics(course_id)
 
             if not course_basics["exists"]:
                 return self.write(f"Error: The specified course ID ({course_id}) is invalid.")

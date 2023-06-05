@@ -83,7 +83,7 @@
                 type: 'POST',
                 url: window[`${action}_get_post_url`](data_obj),
                 data: postData,
-                async: false,
+                async: true,
                 success: function(result) {
                     if (result == "") {
                         modalElement.style.display = "none";

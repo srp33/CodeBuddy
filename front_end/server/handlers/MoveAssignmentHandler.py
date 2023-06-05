@@ -1,14 +1,14 @@
 from BaseUserHandler import *
 
 class MoveAssignmentHandler(BaseUserHandler):
-    def post(self, course_id, assignment_id):
+    async def post(self, course_id, assignment_id):
         result = ""
 
         try:
-            if self.is_administrator or self.is_instructor_for_course(course_id):
+            if self.is_administrator or await self.is_instructor_for_course(course_id):
                 new_course_id = self.get_body_argument("new_course_id")
-                existing_course_basics = self.get_course_basics(course_id)
-                new_course_basics = self.get_course_basics(new_course_id)
+                existing_course_basics = await self.get_course_basics(course_id)
+                new_course_basics = await self.get_course_basics(new_course_id)
                 new_course_assignments = self.content.get_assignments(new_course_basics)
                 current_assignment_basics = self.content.get_assignment_basics(existing_course_basics, assignment_id)
 

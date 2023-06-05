@@ -2,10 +2,10 @@ from BaseUserHandler import *
 import datetime as dt
 
 class ResaveExercisesHandler(BaseUserHandler):
-    def get(self, course_id, assignment_id):
+    async def get(self, course_id, assignment_id):
         try:
-            if self.is_administrator or self.is_instructor_for_course(course_id) or self.is_assistant_for_course(course_id):
-                course_basics = self.get_course_basics(course_id)
+            if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
+                course_basics = await self.get_course_basics(course_id)
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
                 exercises = self.content.get_exercises(course_basics, assignment_basics)
 
@@ -13,7 +13,7 @@ class ResaveExercisesHandler(BaseUserHandler):
 
                 for exercise in exercises:
                     exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, exercise[0])
-                    exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise[0])
+                    exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise[0])
                     exercise_details["date_updated"] = dt.datetime.utcnow()
 
                     output += f"<p>Working on {exercise_basics['title']} (ID: {exercise_basics['id']})..."

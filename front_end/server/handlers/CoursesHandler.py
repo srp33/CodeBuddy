@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class CoursesHandler(BaseUserHandler):
-    def get(self):
+    async def get(self):
         try:
             # First, we check whether this is the first time the app
             # is being accessed. If so, make this user an admin.

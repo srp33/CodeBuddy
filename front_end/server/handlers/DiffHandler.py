@@ -10,17 +10,17 @@ class DiffHandler(BaseUserHandler):
             actual_output = self.get_body_argument("actual_output", "")
             diff_output = self.get_body_argument("diff_output", "")
 
-            course_basics = self.get_course_basics(course_id)
-            assignment_basics = self.get_assignment_basics(course_basics, assignment_id)
+            course_basics = await self.get_course_basics(course_id)
+            assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
             exercise_basics = await self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
-            exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
+            exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
             if not course_basics["exists"] or not assignment_basics["exists"] or not exercise_basics["exists"]:
                 render_error(self, "Sorry, the specified course, assignment, or exercise are not available.")
                 return
 
-            assignments = self.get_assignments(course_basics)
-            assignment_details = self.get_assignment_details(course_basics, assignment_id)
+            assignments = await self.get_assignments(course_basics)
+            assignment_details = await self.get_assignment_details(course_basics, assignment_id)
 
             if not self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
                 return

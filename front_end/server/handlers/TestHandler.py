@@ -1,5 +1,5 @@
 from tornado.web import *
 
 class TestHandler(RequestHandler):
-    def get(self):
+    async def get(self):
         self.render("test.html")

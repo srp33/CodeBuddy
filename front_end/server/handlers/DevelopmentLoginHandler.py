@@ -3,10 +3,10 @@ from content import *
 from tornado.web import *
 
 class DevelopmentLoginHandler(BaseOtherHandler):
-    def get(self):
+    async def get(self):
         self.render("devlogin.html")
 
-    def post(self):
+    async def post(self):
         try:
             user_id = self.get_body_argument("user_id")
             dev_password = self.get_body_argument("dev_password")

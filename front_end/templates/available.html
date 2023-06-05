@@ -105,7 +105,7 @@ function showRegisterModal(course_id, has_passcode=false) {
         $.ajax({
             type: 'GET',
             url: "/register/" + course_id + "/{{ user_info['user_id'] }}/" + passcode,
-            async: false})
+            async: true})
             .done(function(message) {
                 if (message.startsWith("Error:")) {
                     $("#register_error_message").removeClass("invisible");

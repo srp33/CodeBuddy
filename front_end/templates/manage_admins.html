@@ -83,7 +83,7 @@
             $.ajax({
                 type: 'GET',
                 url: "/add_admin/" + user_id,
-                async: false})
+                async: true})
                 .done(function(message) {
                     if (message.startsWith("Error:")) {
                         $("#remove_error_message").removeClass("invisible");
@@ -127,7 +127,7 @@
             $.ajax({
                 type: 'GET',
                 url: "/remove_admin",
-                async: false})
+                async: true})
                 .done(function(message) {
                     if (message.startsWith("Error:")) {
                         $("#remove_error_message").removeClass("invisible");

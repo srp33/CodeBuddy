@@ -1,7 +1,7 @@
 from BaseUserHandler import *
 
 class ManageUsersHandler(BaseUserHandler):
-    def get(self):
+    async def get(self):
         try:
             if self.is_administrator:
                 self.render("manage_users.html", result=None, user_info=self.user_info, is_administrator=self.is_administrator)
@@ -10,7 +10,7 @@ class ManageUsersHandler(BaseUserHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def post(self):
+    async def post(self):
         try:
             remove_user = self.get_body_argument("remove_user")
             delete_user = self.get_body_argument("delete_user")
