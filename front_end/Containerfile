@@ -22,6 +22,10 @@ RUN apt-get update \
 
 RUN mkdir -p /app /certs /conda /course /migration_scripts /scheduled_scripts /static
 
+# We create a self-signed certificate, which is used when connecting
+# between the front end and middle layer.
+# https://wiki.debian.org/Self-Signed_Certificate
+# An alternative would be to get one from digicert, etc.
 RUN openssl req -new -newkey rsa:2048 -days 30650 -nodes -x509 -keyout /certs/cert.key -out /certs/cert.crt -subj "/  C=GB/ST=London/L=London/O=Global Security/OU=IT Department/CN=example.com" \
  && chmod 644 /certs/cert.key \
  && chmod 644 /certs/cert.crt

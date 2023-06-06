@@ -63,9 +63,3 @@ When you modify files in the `front_end/templates` directory, you will need to r
 ##### Running the middle layer
 
 Use the `cd` command to change your current working directory to `middle_layer`. Then execute the `run_middle_layer` script.
-
-##### Ignore this for now...
-
-If you have a proxy, create a self-signed certificate and specify path in Settings.yaml. See https://wiki.debian.org/Self-Signed_Certificate.
-
-If you don't, you need to get a certificate from digicert, etc....
