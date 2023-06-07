@@ -43,6 +43,25 @@ class Content:
         cursor.close()
 
         return lastrowid
+    
+    def execute_multiple(self, sql_statements, params_list, lastrowid_index=-1):
+        if len(sql_statements) != len(params_list):
+            raise Exception(f"The size of sql_statements ({len(sql_statements)}) must be identical to the size of param_tuples ({len(params_list)}).")
+
+        cursor = self.conn.cursor()
+        cursor.execute("BEGIN")
+
+        lastrowid = -1
+        for i, sql in enumerate(sql_statements):
+            cursor.execute(sql, params_list[i])
+
+            if i == lastrowid_index:
+                lastrowid = cursor.lastrowid
+
+        self.conn.commit()
+        cursor.close()
+
+        return lastrowid
 
     def fetchone(self, sql, params=()):
         cursor = self.conn.cursor()
@@ -225,10 +244,10 @@ class Content:
         updated_dict = {}
 
         try:
-          for row in self.fetchall(sql):
-              updated_dict[row["scope"]] = str(row["when_updated"])
+            for row in self.fetchall(sql):
+                updated_dict[row["scope"]] = str(row["when_updated"])
         except:
-          print(traceback.format_exc())
+            print(traceback.format_exc())
 
         return updated_dict
     
@@ -238,7 +257,7 @@ class Content:
                  WHERE scope = ?'''
 
         try:
-          self.execute(sql, (scope, ))
+            self.execute(sql, (scope, ))
         except:
             print(traceback.format_exc())
 
@@ -247,7 +266,7 @@ class Content:
                  WHERE scope = ?'''
 
         try:
-          self.execute(sql, (scope, ))
+            self.execute(sql, (scope, ))
         except:
             print(traceback.format_exc())
 
@@ -558,11 +577,11 @@ class Content:
             course_id = course["course_id"]
 
             if course_id not in unique_course_ids:
-              unique_course_ids.add(course_id)
+                unique_course_ids.add(course_id)
 
-              course_basics = {"id": course_id, "title": course["title"], "introduction": course["introduction"], "role": course["role"]}
+                course_basics = {"id": course_id, "title": course["title"], "introduction": course["introduction"], "role": course["role"]}
 
-              registered_courses.append([course["course_id"], course_basics])
+                registered_courses.append([course["course_id"], course_basics])
 
         return registered_courses
 
@@ -915,7 +934,7 @@ class Content:
         assignment_scores = {}
 
         for row in self.fetchall(sql, (course_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], assignment_basics["id"], )):
-          assignment_scores[row["exercise_id"]] = row["avg_score"]
+            assignment_scores[row["exercise_id"]] = row["avg_score"]
 
         if len(assignment_scores) == 0:
             for exercise in self.get_exercises(course_basics, assignment_basics, show_hidden=False):
@@ -1121,48 +1140,26 @@ class Content:
 
         return scores
 
-    def get_exercise_score(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''SELECT score
-                 FROM scores
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?'''
+    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, score):
+        # We only update the score if it's higher than what was there previously. We also account for the scenario where it is their first submission.
+        sql = '''WITH user_scores AS (
+                   SELECT score
+		               FROM scores
+		               WHERE course_id = ?
+		                 AND assignment_id = ?
+				             AND exercise_id = ?
+				             AND user_id = ?
 
-        row = self.fetchone(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,))
-        if row:
-            return row["score"]
+		               UNION
+		
+		               SELECT 0
+                 )
 
-    def calc_exercise_score(self, assignment_details, passed):
-        score = 0
+                 INSERT OR REPLACE INTO scores (course_id, assignment_id, exercise_id, user_id, score)
+                 SELECT ?, ?, ?, ?, ?
+                 WHERE ? > (SELECT MAX(score) FROM user_scores)'''
 
-        if passed:
-            if assignment_details["due_date"] and assignment_details["due_date"] < datetime.utcnow():
-                if assignment_details["allow_late"]:
-                    score = 100 * assignment_details["late_percent"]
-            else:
-                score = 100
-
-        return score
-
-    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, new_score):
-        score = self.get_exercise_score(course_id, assignment_id, exercise_id, user_id)
-
-        if score != None:
-            sql = '''UPDATE scores
-                     SET score = ?
-                     WHERE course_id = ?
-                       AND assignment_id = ?
-                       AND exercise_id = ?
-                       AND user_id = ?'''
-
-            self.execute(sql, (new_score, course_id, assignment_id, exercise_id, user_id))
-
-        else:
-            sql = '''INSERT INTO scores (course_id, assignment_id, exercise_id, user_id, score)
-                     VALUES (?, ?, ?, ?, ?)'''
-
-            self.execute(sql, (course_id, assignment_id, exercise_id, user_id, new_score))
+        self.execute(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id, score, score))
 
     def get_submissions(self, course_id, assignment_id, exercise_id, user_id, exercise_details):
         sql = '''SELECT o.submission_id, t.title, o.txt_output, o.jpg_output
@@ -1220,7 +1217,7 @@ class Content:
             submission_test_outputs = {}
 
             if row["submission_id"] == -1:
-                presubmission = row["code"]
+                  presubmission = row["code"]
             else:
               if row["submission_id"] in test_outputs:
                   submission_test_outputs = test_outputs[row["submission_id"]]
@@ -1232,7 +1229,7 @@ class Content:
         return presubmission, submissions
 
     #TODO: Is there some way to do this without going to the database?
-    def get_num_submissions(self, course_id, assignment_id, exercise_id, user_id):
+    async def get_num_submissions(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''SELECT COUNT(submission_id) AS num
                  FROM submissions
                  WHERE course_id = ?
@@ -1302,6 +1299,7 @@ class Content:
 
         for request in self.fetchall(sql, (course_id,)):
             help_requests.append({"course_id": request["course_id"], "assignment_id": request["assignment_id"], "exercise_id": request["exercise_id"], "course_title": request["course_title"], "assignment_title": request["assignment_title"], "exercise_title": request["exercise_title"], "user_id": request["user_id"], "name": request["name"], "code": request["code"], "text_output": request["text_output"], "image_output": request["image_output"], "student_comment": request["student_comment"], "suggestion": request["suggestion"], "approved": request["approved"], "suggester_id": request["suggester_id"], "approver_id": request["approver_id"], "date": request["date"], "more_info_needed": request["more_info_needed"]})
+
         return help_requests
 
     def get_student_help_requests(self, user_id):
@@ -1599,7 +1597,7 @@ class Content:
         # We restructure it to be consistent with courses and exercises
         assignments2 = []
         for assignment in assignments:
-          assignments2.append([assignment["id"], assignment])
+            assignments2.append([assignment["id"], assignment])
 
         return assignments2
     
@@ -1824,6 +1822,7 @@ class Content:
         for entry in entries:
             if entry[0] != this_entry and entry[1]["title"] == proposed_title:
                 return True
+
         return False
 
     def save_course(self, course_basics, course_details):
@@ -1960,29 +1959,54 @@ class Content:
 
         self.execute(sql, [course_id, assignment_id, exercise_id, user_id, code])
 
-    def save_submission(self, course_id, assignment_id, exercise_id, user_id, code, passed, date, exercise_details, test_outputs, partner_id=None):
+    async def save_submission(self, course_id, assignment_id, exercise_id, user_id, code, passed, date, exercise_details, test_outputs, score, partner_id):
         sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+        submission_id = self.execute(sql, (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id,))
 
-        submission_id = self.execute(sql, [int(course_id), int(assignment_id), int(exercise_id), user_id, code, passed, date, partner_id])
+        sql_statements = []
+        params_list = []
 
-        #TODO: Execute this all in one transaction
-        #      https://stackoverflow.com/questions/54289555/how-do-i-execute-an-sqlite-script-from-within-python
-        if len(test_outputs) > 0:
-            test_sql = '''INSERT INTO test_outputs (test_id, submission_id, txt_output, jpg_output)
-                          VALUES (?, ?, ?, ?)'''
+        for test_title, test_dict in test_outputs.items():
+            if test_dict["jpg_output"] != "":
+                #if test_dict["jpg_output"].strip() == BLANK_IMAGE.strip():
+                if test_dict["jpg_output"].strip() == BLANK_IMAGE:
+                    test_dict["jpg_output"] = ""
 
-            for test_title, test_dict in test_outputs.items():
-                if test_dict["jpg_output"] != "":
-                    #if test_dict["jpg_output"].strip() == BLANK_IMAGE.strip():
-                    if test_dict["jpg_output"].strip() == BLANK_IMAGE:
-                        test_dict["jpg_output"] = ""
+            sql_statements.append('''INSERT INTO test_outputs (test_id, submission_id, txt_output, jpg_output)
+                      VALUES (?, ?, ?, ?)''')
 
-                self.execute(test_sql, [exercise_details["tests"][test_title]["test_id"], submission_id, test_dict["txt_output"], test_dict["jpg_output"]])
+            params_list.append((exercise_details["tests"][test_title]["test_id"], submission_id, test_dict["txt_output"], test_dict["jpg_output"],))
 
+        self.execute_multiple(sql_statements, params_list)
+
+        self.save_exercise_score(course_id, assignment_id, exercise_id, user_id, score)
         self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
 
         return submission_id
+    
+        # sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
+        #          VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+
+        # submission_id = self.execute(sql, [int(course_id), int(assignment_id), int(exercise_id), user_id, code, passed, date, partner_id])
+
+        # #TODO: Execute this all in one transaction
+        # #      https://stackoverflow.com/questions/54289555/how-do-i-execute-an-sqlite-script-from-within-python
+        # if len(test_outputs) > 0:
+        #     test_sql = '''INSERT INTO test_outputs (test_id, submission_id, txt_output, jpg_output)
+        #                   VALUES (?, ?, ?, ?)'''
+
+        #     for test_title, test_dict in test_outputs.items():
+        #         if test_dict["jpg_output"] != "":
+        #             #if test_dict["jpg_output"].strip() == BLANK_IMAGE.strip():
+        #             if test_dict["jpg_output"].strip() == BLANK_IMAGE:
+        #                 test_dict["jpg_output"] = ""
+
+        #         self.execute(test_sql, [exercise_details["tests"][test_title]["test_id"], submission_id, test_dict["txt_output"], test_dict["jpg_output"]])
+
+        # self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
+
+        # return submission_id
 
     def save_help_request(self, course_id, assignment_id, exercise_id, user_id, code, txt_output, jpg_output, student_comment, date):
         sql = '''INSERT INTO help_requests (course_id, assignment_id, exercise_id, user_id, code, txt_output, jpg_output, student_comment, approved, date, more_info_needed)
@@ -2131,6 +2155,7 @@ class Content:
                  WHERE user_id = ?'''
 
         submissions = self.fetchall(sql, (user_id,))
+
         if submissions:
             sql = '''DELETE FROM scores
                      WHERE user_id = ?'''
@@ -2564,9 +2589,9 @@ class Content:
         next_student_id = None
 
         if student_index > 0:
-          prev_student_id = user_ids[student_index - 1]
+            prev_student_id = user_ids[student_index - 1]
         if student_index < len(user_ids) - 1:
-          next_student_id = user_ids[student_index + 1]
+            next_student_id = user_ids[student_index + 1]
 
         return prev_student_id, next_student_id
 

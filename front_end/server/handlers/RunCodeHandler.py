@@ -15,7 +15,7 @@ class RunCodeHandler(BaseUserHandler):
             if single_test is not None and single_test in exercise_details["tests"]:
                 exercise_details["tests"] = {single_test: exercise_details["tests"][single_test]}
 
-            out_dict = exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
+            out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 
             if out_dict["message"] == "":
                 out_dict["all_passed"] = check_test_outputs(exercise_details, out_dict["test_outputs"])

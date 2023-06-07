@@ -117,7 +117,7 @@ def get_columns_dict(nested_list, key_col_index, value_col_index):
         columns_dict[row[key_col_index]] = row[value_col_index]
     return columns_dict
 
-def exec_code(settings_dict, code, verification_code, exercise_details, add_formatted_txt = False):
+async def exec_code(settings_dict, code, verification_code, exercise_details, add_formatted_txt = False):
     # In this case, the code is the answer that the student provided.
     if exercise_details["back_end"] == "not_code":
         response = {"message": "", "test_outputs": {}}
