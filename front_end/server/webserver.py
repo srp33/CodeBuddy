@@ -40,7 +40,6 @@ def make_app(settings_dict):
             url(r"/devlogin", DevelopmentLoginHandler, name="devlogin"),
             url(r"/diff", DiffHandler, name="diff"),
             url(r"/download_assignment_scores/([^/]+)/([^/]+)", DownloadAssignmentScoresHandler, name="download_assignment_scores"),
-            url(r"/download_course_scores/([^/]+)", DownloadCourseScoresHandler, name="download_course_scores"),
             url(r"/download_file/([^/]+)/([^/]+)/([^/]+)/([^/]+)", DownloadFileHandler, name="download_file"),
             url(r"/download_submissions_student/([^/]+)", DownloadSubmissionsStudentHandler, name="download_submissions_student"),
             url(r"/edit_assignment/([^/]+)/([^/]+)?", EditAssignmentHandler, name="edit_assignment"),

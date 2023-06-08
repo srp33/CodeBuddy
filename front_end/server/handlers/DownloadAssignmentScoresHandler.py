@@ -7,7 +7,7 @@ class DownloadAssignmentScoresHandler(BaseUserHandler):
                 course_basics = await self.get_course_basics(course_id)
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
-                tsv_text = self.content.create_assignment_scores_text(course_basics, assignment_basics)
+                tsv_text = await self.content.create_assignment_scores_text(course_basics, assignment_basics)
                 
                 self.set_header('Content-type', "text/tab-separated-values")
                 self.write(tsv_text)

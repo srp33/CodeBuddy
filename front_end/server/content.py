@@ -2472,23 +2472,24 @@ class Content:
                           AND assignment_id = ?
                           AND exercise_id = ?)''', (course_id, assignment_id, exercise_id, ))
 
-    async def create_course_scores_text(self, course_basics):
-        out_file_text = "Assignment_ID\tAssignment_Title\tStudent_ID\tScore\n"
+    # async def create_course_scores_text(self, course_basics):
+    #     out_file_text = "Assignment_ID\tAssignment_Title\tStudent_ID\tScore\n"
 
-        for assignment_basics in self.get_assignments(course_basics):
-            assignment_scores = self.get_assignment_scores(course_basics, assignment_basics)
+    #     for assignment_basics in self.get_assignments(course_basics):
+    #         assignment_scores = self.get_assignment_scores(course_basics, assignment_basics)
 
-            for score_dict in assignment_scores:
-                out_file_text += f"{assignment_basics['assignment_id']}\t{assignment_basics['title']}\t{score_dict[0]}\t{score_dict[1]['percent_passed']}\n"
+    #         for score_dict in assignment_scores:
+    #             out_file_text += f"{assignment_basics['assignment_id']}\t{assignment_basics['title']}\t{score_dict[0]}\t{score_dict[1]['percent_passed']}\n"
 
-        return out_file_text
+    #     return out_file_text
 
-    def create_assignment_scores_text(self, course_basics, assignment_basics):
-        out_file_text = "Course_ID\tAssignment_ID\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\n"
+    async def create_assignment_scores_text(self, course_basics, assignment_basics):
+        #TODO: Save the title(s) rather than ID(s).
+        out_file_text = "Course\tAssignment\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\n"
         scores = self.get_assignment_scores(course_basics, assignment_basics)
 
-        course_id = course_basics["id"]
-        assignment_id = assignment_basics["id"]
+        course_id = course_basics["title"]
+        assignment_id = assignment_basics["title"]
 
         for student in scores:
             out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['percent_passed']}\t{student[1]['when_passed']}\t{student[1]['last_submission_time']}\n"
