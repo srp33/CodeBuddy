@@ -22,9 +22,9 @@ class ViewPeerSolutionHandler(BaseUserHandler):
             user_code = self.content.get_most_recent_submission_code(course_id, assignment_id, exercise_id, user_info["user_id"])
             peer_code = self.content.get_peer_code(course_id, assignment_id, exercise_id, user_info["user_id"])
 
-            if not self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
-                return
-            else:
+            should_show = await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics)
+
+            if should_show:
                 next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)
 
                 format_exercise_details(exercise_details, course_id, assignment_id, user_info, self.content)

@@ -11,7 +11,8 @@ class ImportAssignmentHandler(BaseUserHandler):
                 return self.write(f"Error: The specified course ID ({course_id}) is invalid.")
 
             file_text = self.get_body_argument("file_text")
-            assignment_dict = json.loads(file_text)
+            # This package is needed because the base json package does not escape HTML characters.
+            assignment_dict = ujson.loads(file_text)
 
             for x in ["basics", "details", "exercises"]:
                 if x not in assignment_dict:
@@ -37,9 +38,9 @@ class ImportAssignmentHandler(BaseUserHandler):
             for exercise_title in assignment_dict["exercises"]:
                 exercise_basics = assignment_dict["exercises"][exercise_title]["basics"]
                 exercise_details = assignment_dict["exercises"][exercise_title]["details"]
-
                 exercise_basics["exists"] = False
                 exercise_basics["assignment"] = assignment_basics
+
                 self.content.save_exercise(exercise_basics, exercise_details)
         except Exception as inst:
             self.write(f"Error: {traceback.format_exc()}")

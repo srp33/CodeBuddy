@@ -9,7 +9,6 @@ class ExportAssignmentHandler(BaseUserHandler):
                 course_basics = await self.get_course_basics(course_id)
 
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
-
                 assignment_details = await self.get_assignment_details(course_basics, assignment_id)
 
                 exercises = {}
@@ -21,6 +20,7 @@ class ExportAssignmentHandler(BaseUserHandler):
                     del exercise_basics["assignment"]
 
                     exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise[0])
+
                     for test_title in exercise_details["tests"]:
                         del exercise_details["tests"][test_title]["test_id"]
 
@@ -37,7 +37,8 @@ class ExportAssignmentHandler(BaseUserHandler):
                     "exercises": exercises
                 }
 
-                json_text = json.dumps(assignment_dict, default=str)
+                # This package is needed because the base json package does not escape HTML characters.
+                json_text = ujson.dumps(assignment_dict, default=str, encode_html_chars=True)
             else:
                 json_text += " You do not have permission to perform this operation."
         except Exception as inst:

@@ -27,6 +27,7 @@ import yaml
 from yaml import load
 from yaml import Loader
 import sqlite3
+import ujson
 import urllib.parse
 
 def run_command(command):
@@ -83,12 +84,12 @@ def convert_markdown_to_html(text):
     return html
 
 # This function addresses a temporary problem and may be removed when it is no longer needed.
-def remove_html_tags(text):
-    #text = text.replace("<div><br></div>", "\n\n")
-    text = text.replace("<div>", "\n")
-    text = re.sub(r"<[^>]*>", "", text)
+# def remove_html_tags(text):
+#     #text = text.replace("<div><br></div>", "\n\n")
+#     text = text.replace("<div>", "\n")
+#     text = re.sub(r"<[^>]*>", "", text)
 
-    return text
+#     return text
 
 def format_output_as_html(output):
     return html.escape(output).replace(" ", "&nbsp;").replace("\t", "&emsp;").replace("\n", "<br />").replace("`", "&#96;")
@@ -482,8 +483,8 @@ def get_assignment_status(handler, course_id, assignment_details, curr_datetime)
 
     return "render"
 
-def execute_and_save_exercise(settings_dict, content, exercise_basics, exercise_details):
-    exec_response = exec_code(settings_dict, exercise_details["solution_code"], "", exercise_details, True)
+async def execute_and_save_exercise(settings_dict, content, exercise_basics, exercise_details):
+    exec_response = await exec_code(settings_dict, exercise_details["solution_code"], "", exercise_details, True)
 
     if exec_response["message"] == "":
         has_non_empty_output = False

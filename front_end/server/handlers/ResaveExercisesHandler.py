@@ -18,7 +18,7 @@ class ResaveExercisesHandler(BaseUserHandler):
 
                     output += f"<p>Working on {exercise_basics['title']} (ID: {exercise_basics['id']})..."
 
-                    result, success = execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
+                    result, success = await execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
 
                     if success:
                         output += f"success!</p>"

@@ -48,7 +48,7 @@ class EditExerciseHandler(BaseUserHandler):
                     exercise_details["date_created"] = current_time
                 exercise_details["date_updated"] = current_time
 
-                result, success = execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
+                result, success = await execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
 
                 if success:
                     results["exercise_id"] = result
