@@ -18,12 +18,13 @@ class SubmitHandler(BaseUserHandler):
             assignment_details = await self.get_assignment_details(course_basics, assignment_id)
             exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
-            num_submissions = await self.content.get_num_submissions(course_id, assignment_id, exercise_id, user_id)
-
-            if exercise_details["max_submissions"] > 0 and num_submissions >= exercise_details["max_submissions"]:
-                out_dict["message"] = "You have exceeded the maximum number of allowed submissions for this exercise."
-                self.write(json.dumps(out_dict))
-                return
+            if exercise_details["max_submissions"] > 0:
+                num_submissions = await self.content.get_num_submissions(course_id, assignment_id, exercise_id, user_id)
+            
+                if num_submissions >= exercise_details["max_submissions"]:
+                    out_dict["message"] = "You have exceeded the maximum number of allowed submissions for this exercise."
+                    self.write(json.dumps(out_dict))
+                    return
 
             out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 
