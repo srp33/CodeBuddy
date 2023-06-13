@@ -1,5 +1,0 @@
-FROM debian:buster-slim
-
-ADD *.sh /
-
-ENTRYPOINT ["bash", "/exec.sh"]

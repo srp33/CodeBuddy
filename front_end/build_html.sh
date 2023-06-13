@@ -12,7 +12,7 @@ rm -f $OUTPUT/*
 
 cd templates
 
-for page_name in about contact_us devlogin
+for page_name in about choose_login_option contact_us devlogin
 do
   cat header.html navbar_top.html navbar_bottom.html container_color.html ${page_name}.html container_bottom.html footer.html > "$OUTPUT/${page_name}.html"
 done

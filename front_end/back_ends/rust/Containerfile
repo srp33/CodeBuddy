@@ -1,9 +1,0 @@
-FROM rust:1.68.1-slim-buster
-
-RUN apt-get update \
- && apt-get install python3 -y
-
-ADD *.py /
-ADD *.sh /
-
-ENTRYPOINT ["bash", "/exec.sh"]

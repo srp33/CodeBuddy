@@ -17,10 +17,8 @@ import random
 import re
 import requests
 from requests.exceptions import *
-import stat
 import string
 import subprocess
-import time
 from tornado.web import RequestHandler
 import traceback
 import yaml
@@ -53,11 +51,6 @@ def read_file(file_path, mode="r"):
 
     with open(file_path, mode) as the_file:
         return the_file.read()
-
-def is_old_file(file_path, days=30):
-    age_in_seconds = time.time() - os.stat(file_path)[stat.ST_MTIME]
-    age_in_days = age_in_seconds / 60 / 60 / 24
-    return age_in_days > days
 
 # def convert_html_to_markdown(text):
 #     text = text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace('&nbsp;', '')
@@ -313,15 +306,9 @@ def redirect_to_login(handler, redirect_path):
     handler.set_secure_cookie("redirect_path", redirect_path)
 
     if handler.settings_dict["mode"] == "production":
-        if handler.settings_dict["authentication_type"] == "cas":
-            handler.redirect("/caslogin")
-        elif handler.settings_dict["authentication_type"] == "google":
-            handler.redirect("/googlelogin")
-        else:
-            render_error(handler, "Invalid authentication_type value.")
+        handler.redirect("/choose_login_option")
     else:
         handler.redirect("/devlogin")
-        # handler.redirect("/googlelogin")
 
 def render_error(handler, exception):
     handler.render("error.html", error_title="An internal error occurred", error_message=format_output_as_html(exception))

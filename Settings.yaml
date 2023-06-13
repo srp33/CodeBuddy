@@ -1,7 +1,5 @@
 # Indicate development or production
 mode: development
-# Indicate the authenatication type. For now, google is the only supported option. In development mode, this is not used.
-authentication_type: google
 # Indicate the HTTP-accessible domain where the server is hosted
 domain: codebuddy.mydomain.com
 # Indicate the address of the server where the middle layer is hosted

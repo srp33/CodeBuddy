@@ -1,21 +1,19 @@
 import glob
 import gzip
-import json
 import os
 import shutil
 import sys
-sys.path.append('/app')
+
+sys.path.append('/app/server')
 from content import *
-
-settings_dict = load_yaml_dict(read_file("Settings.yaml"))
-content = Content(settings_dict)
-
-#print("Debugging:")
-#print(sys.argv)
+from helper import *
 
 in_file_prefix = sys.argv[1]
 out_dir_path = sys.argv[2]
 temp_file_path = sys.argv[3]
+
+settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
+content = Content(settings_dict)
 
 def update_summary_dict(summary_dict, statistic, timestamp, key, value):
     if statistic not in summary_dict:
@@ -141,7 +139,7 @@ def save_summaries(summary_dict, out_dir_path):
                     id_dict = create_id_dict_from_url(key)
                     out_file.write(f"{timestamp}\t{id_dict['course_id']}\t{id_dict['assignment_id']}\t{id_dict['exercise_id']}\t{value:.1f}\t{names[0]}\t{names[1]}\t{names[2]}\t{names[3]}\n".encode())
 
-# We want the newest file (with no number at the end) to come list in the list.
+# We want the newest file (with no number at the end) to come first in the list.
 in_file_paths = glob.glob(in_file_prefix + ".*") + [in_file_prefix]
 
 # This indicates the directory names of hits we want to log.
@@ -158,6 +156,8 @@ for in_file_path in in_file_paths:
     with open(in_file_path) as in_file:
         for line in in_file:
             line_items = line.rstrip("\n").split(" ")
+            print(line)
+            print(line_items)
 
             if line_items[3] != "web":
                 continue

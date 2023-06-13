@@ -6,7 +6,7 @@ this_dir="$(dirname $0)"
 while :
 do
   # We sleep a little while to avoid conflicting with hourly tasks.
-  sleep 5m
+  sleep 10m
 
   bash ${this_dir}/summarize_logs.sh
   bash ${this_dir}/vacuum_database.sh
