@@ -1,6 +1,6 @@
 #! /bin/bash
 
-mkdir -p front_end/database front_end/logs/summarized front_end/logs/archive
+mkdir -p front_end/database front_end/logs
 
 mode=$(grep "^mode: " Settings.yaml | sed "1s/mode: //")
 f_port=$(grep "^f_port: " Settings.yaml | sed "1s/f_port: //")
@@ -48,6 +48,7 @@ docker build -t ${image_name}:version$(cat VERSION) \
 rm -f front_end/Settings.yaml front_end/VERSION
 
 mkdir -p tmp
+rm -rf tmp/*
 
 if [[ "${f_run_in_background}" = "yes" ]]
 then

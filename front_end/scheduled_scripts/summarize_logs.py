@@ -1,192 +1,87 @@
 import glob
 import gzip
 import os
-import shutil
+import re
 import sys
+import ujson
 
 sys.path.append('/app/server')
 from content import *
 from helper import *
 
 in_file_prefix = sys.argv[1]
-out_dir_path = sys.argv[2]
-temp_file_path = sys.argv[3]
+summary_file_path = sys.argv[2]
+archive_file_path = sys.argv[3]
 
-settings_dict = load_yaml_dict(read_file("/Settings.yaml"))
-content = Content(settings_dict)
+content = Content()
 
-def update_summary_dict(summary_dict, statistic, timestamp, key, value):
-    if statistic not in summary_dict:
-        summary_dict[statistic] = {}
-
-    summary_dict[statistic][timestamp] = summary_dict[statistic].setdefault(timestamp, {})
-    summary_dict[statistic][timestamp][key] = summary_dict[statistic][timestamp].setdefault(key, 0) + value
-
-def get_titles_from_ids(file_path):
-    new_dict = {}
-    new_dict[0] = ""
-    new_dict[1] = ""
-    new_dict[2] = ""
-    new_dict[3] = ""
-
-    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<exercise_id>[^\/]*)", file_path)
-    if re_match:
-        id_dict = re_match.groupdict()
-
-        course_title = ""
-        assignment_title = ""
-        exercise_title = ""
-
-        if (id_dict["course_id"] != ''):
-            for course in content.get_courses():
-                course_id = course["course_id"]
-                course_basics = content.get_course_basics(course_id)
-                if int(id_dict["course_id"]) == course_id:
-                    course_title = course_basics["title"]
-
-                if (id_dict["assignment_id"] != ''):
-                    for assignment in content.get_assignments_basic(course_id):
-                        assignment_id = assignment["assignment_id"]
-                        assignment_basics = content.get_assignment_basics(course_id, assignment_id)
-
-                        if int(id_dict["assignment_id"]) == assignment_id:
-                            assignment_title = assignment_basics["title"]
-
-                        if (id_dict["exercise_id"] != ''):
-                            for exercise in content.get_exercises(course_id, assignment_id):
-                                exercise_id = exercise["exercise_id"]
-                                exercise_basics = content.get_exercise_basics(course_id, assignment_id, exercise_id)
-
-                                if int(id_dict["exercise_id"]) == exercise_id:
-                                    exercise_title = exercise_basics["title"]
-
-        new_dict[0] = id_dict["name"]
-        new_dict[1] = course_title
-        new_dict[2] = assignment_title
-        new_dict[3] = exercise_title
-
-    if new_dict[0] == "":
-        new_dict[0] = "home"
-
-    return new_dict
-
-def create_timestamp(year, month, day="", hour=""):
-    return int(f"{year}{month}{day}{hour}")
-
-def create_id_dict_from_url(file_path):
-    id_dict = {}
-    id_dict["name"] = ""
-    id_dict["course_id"] = ""
-    id_dict["assignment_id"] = ""
-    id_dict["exercise_id"] = ""
-    re_match = re.match(r"^\/(?P<name>[^\/]*)\/(?P<course_id>[^\/]*)\/?(?P<assignment_id>[^\/]*)\/?(?P<exercise_id>[^\/]*)", file_path)
-    if re_match:
-        id_dict = re_match.groupdict()
-        for key, value in id_dict.items():
-            if value == None:
-                id_dict[key] = ""
-    return id_dict
-
-def save_summaries(summary_dict, out_dir_path):
-    for statistic, statistic_dict in summary_dict.items():
-        out_file_path = f"{out_dir_path}/{statistic}.tsv.gz"
-        recent_timestamps = set(statistic_dict.keys())
-
-        # Find any previously summarized values that overlaps with what we just observed.
-        if os.path.exists(out_file_path):
-            shutil.copy(out_file_path, temp_file_path)
-
-            with gzip.open(temp_file_path) as temp_file:
-                with gzip.open(out_file_path, 'w') as out_file:
-                    out_file.write("Timestamp\tCourse_ID\tAssignment_ID\texercise_ID\tValue\tName\tCourse_Name\tAssignment_Name\tExercise_Name\n".encode())
-                    temp_file.readline()
-
-                    line_dict = {}
-
-                    for line in temp_file:
-                        line_items = line.decode().rstrip("\n").split("\t")
-                        url_key = "/"
-                        if line_items[1]!= "":
-                            url_key += line_items[5] + "/" + line_items[1]
-                            if line_items[2] != "":
-                                url_key += "/" + line_items[2]
-                                if line_items[3] != "":
-                                    url_key += "/" + line_items[3]
-
-                        timestamp = int(line_items[0])
-                        if timestamp in recent_timestamps:
-                            update_summary_dict(summary_dict, statistic, timestamp, url_key, float(line_items[4]))
-                        else:
-                            # Save all existing values except for names in case they've changed
-                            value_dict = {}
-                            value_dict[url_key] = line_items[4]
-                            line_dict[line_items[0]] = value_dict
-
-                    for timestamp, value_dict in line_dict.items():
-                        for key, value in value_dict.items():
-                            names = get_titles_from_ids(key)
-                            id_dict = create_id_dict_from_url(key)
-                            out_file.write(f"{timestamp}\t{id_dict['course_id']}\t{id_dict['assignment_id']}\t{id_dict['exercise_id']}\t{float(value):.1f}\t{names[0]}\t{names[1]}\t{names[2]}\t{names[3]}\n".encode())
-        else:
-            # Write header for output file
-            with gzip.open(out_file_path, 'w') as out_file:
-                out_file.write("Timestamp\tCourse_ID\tAssignment_ID\tExercise_ID\tValue\tName\tCourse_Title\tAssignment_Title\tExercise_Title\n".encode())
-
-        with gzip.open(out_file_path, 'a') as out_file:
-            for timestamp, value_dict in sorted(statistic_dict.items()):
-                for key, value in sorted(value_dict.items()):
-                    names = get_titles_from_ids(key)
-                    id_dict = create_id_dict_from_url(key)
-                    out_file.write(f"{timestamp}\t{id_dict['course_id']}\t{id_dict['assignment_id']}\t{id_dict['exercise_id']}\t{value:.1f}\t{names[0]}\t{names[1]}\t{names[2]}\t{names[3]}\n".encode())
+# Read the existing summary if it exists.
+summary_dict = {}
+if os.path.exists(summary_file_path):
+    with open(summary_file_path) as summary_file:
+        summary_dict = ujson.loads(summary_file.read())
 
 # We want the newest file (with no number at the end) to come first in the list.
 in_file_paths = glob.glob(in_file_prefix + ".*") + [in_file_prefix]
 
-# This indicates the directory names of hits we want to log.
-# We use a set rather than a list because it's much faster.
-root_dirs_to_log = set(["/", "course", "assignment", "exercise", "check_exercise", "edit_course", "edit_assignment", "edit_exercise", "delete_course", "delete_assignment", "delete_exercise", "view_answer", "import_course", "export_course"])
-
-summary_dict = {}
+# in_file_paths could still have a value even if the file doesn't exist
+in_file_paths = [x for x in in_file_paths if os.path.exists(x)]
 
 for in_file_path in in_file_paths:
-    # in_file_paths could still have a value even if the file doesn't exist
-    if not os.path.exists(in_file_path):
-        continue
-
     with open(in_file_path) as in_file:
         for line in in_file:
-            line_items = line.rstrip("\n").split(" ")
-            print(line)
-            print(line_items)
+            timestamp_match = re.search(r"\[([\d\- \:]+)\]", line)
 
-            if line_items[3] != "web":
+            if not timestamp_match:
                 continue
 
-            file_path = line_items[6]
-            root_dir = file_path.split("/")[1]
-            if root_dir == "":
-                root_dir = "/"
+            timestamp = timestamp_match.group(1)
+            line_items = line.replace(f"[{timestamp}] ", "").rstrip("\n").split("\t")
 
-            if root_dir in root_dirs_to_log:
-                #status = line_items[0]
-                year = line_items[1][:2]
-                month = line_items[1][2:4]
-                day = line_items[1][4:]
-                hour = line_items[2].split(":")[0]
-                day_timestamp = create_timestamp(year, month, day)
-                hour_timestamp = create_timestamp(year, month, day, hour)
-                #ip_address = line_items[7].replace("(", "").replace(")", "")
-                processing_milliseconds = float(line_items[8].replace("ms", ""))
-                user_id = line_items[9] # Will be IP address if user not logged in.
+            if len(line_items) < 5 or not line_items[1].startswith("/"):
+                continue
 
-                # Aggregated by hour:
-                #   Total number of hits per specific page from *any* user.
-                #   Load duration per specific page from *any* user.
-                # Aggregated by day:
-                #   Total number of hits to *any* page per user.
+            # Check for valid IP address
+            ip_address = line_items[3]
+            if not re.search(r"^(?:\d{1,3}\.){3}\d{1,3}$", ip_address):
+                continue
 
-                update_summary_dict(summary_dict, "HitsAnyUser", hour_timestamp, file_path, 1)
-                update_summary_dict(summary_dict, "LoadDuration", hour_timestamp, file_path, processing_milliseconds)
-                update_summary_dict(summary_dict, "HitsPerUser", day_timestamp, user_id, 1)
+            # Check for valid float pattern
+            duration = line_items[4]
+            if not re.search(r"^\d+\.\d+$", duration):
+                continue
 
-save_summaries(summary_dict, out_dir_path)
+            user = ip_address if len(line_items) == 5 else line_items[5]
+
+            # Change timestamp to reflect the day and hour
+            timestamp = timestamp[:13].replace(" ", "-")
+
+            path = line_items[1]
+            path_root = re.search(r"/[^/]*", path).group()
+            path_root = f"{path_root} ({line_items[2]})"
+
+            if path_root not in summary_dict:
+                summary_dict[path_root] = {}
+
+            if timestamp not in summary_dict[path_root]:
+                summary_dict[path_root][timestamp] = {"hits": 0, "duration": 0.0, "user_hits": {}}
+
+            summary_dict[path_root][timestamp]["hits"] += 1
+            summary_dict[path_root][timestamp]["duration"] += float(duration)
+
+            if user in summary_dict[path_root][timestamp]["user_hits"]:
+                summary_dict[path_root][timestamp]["user_hits"][user] += 1
+            else:
+                summary_dict[path_root][timestamp]["user_hits"][user] = 1
+
+if len(summary_dict) > 0:
+    with open(summary_file_path, "w") as summary_file:
+        summary_file.write(ujson.dumps(summary_dict))
+
+with gzip.open(archive_file_path, "a") as archive_file:
+    for in_file_path in in_file_paths:
+        with open(in_file_path) as in_file:
+            for line in in_file:
+                archive_file.write(line.encode())
+
+        os.remove(in_file_path)

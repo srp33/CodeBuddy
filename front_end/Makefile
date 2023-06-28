@@ -1,19 +1,11 @@
-.PHONY: dev-server
-dev-server: make-dirs
-	DEBUG=true \
-	python3 server/webserver.py
-
-make-dirs:
-	mkdir -p database logs
-
-.PHONY: html
-html:
-	./build_html.sh server/html
+.PHONY: dev
+dev: 
+	mkdir -p database logs \
+    && ./build_html.sh server/html \
+    && DEBUG=true \
+    && python3 server/webserver.py
 
 .PHONY: build-watch
 build-watch:
 	npm install
 	npm start
-
-.PHONY: docker
-docker:

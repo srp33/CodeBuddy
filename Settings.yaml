@@ -20,3 +20,5 @@ f_run_in_background: no
 m_run_in_background: no
 # Indicate a password to be used in development mode. When running the server locally, it's easiest to use a blank password. However, if you deploy a development server for others to test, it is a good idea to require a password when users log in to the server.
 dev_password: ""
+# Indicate the hour of the day in 24-hour time (examples: 00 or 01 or 02 ... or 23) when the database should be backed up.
+backup_hour: 10

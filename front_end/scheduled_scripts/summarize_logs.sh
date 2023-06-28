@@ -1,23 +1,20 @@
 #! /bin/bash
 
+set -e
+
 echo "Summarizing log files [$(date)]..."
 
-in_file_prefix="/logs/codebuddy.log"
-out_dir=/logs/summarized
-temp_file=~/temp_summarize_logs
+in_file_prefix="/app/logs/codebuddy.log"
+summary_file=/app/logs/summarized.json
+archive_file=/app/logs/archive.log.gz
 
 if [ ! -f ${in_file_prefix} ]
 then
   touch ${in_file_prefix}
 fi
 
-python /app/scheduled_scripts/summarize_logs.py ${in_file_prefix} ${out_dir} ${temp_file}
-exit
-rm -f ${temp_file}
+python /app/scheduled_scripts/summarize_logs.py ${in_file_prefix} ${summary_file} ${archive_file}
 
-cat ${in_file_prefix}* | gzip > /logs/archive/$(date +"%y-%m-%d-%H").log.gz
-rm -f ${in_file_prefix}*
-
-python /app/scheduled_scripts/delete_old_logs.py /logs/archive
+#python /app/scheduled_scripts/delete_old_logs.py /logs/archive
 
 echo "Done summarizing log files [$(date)]..."

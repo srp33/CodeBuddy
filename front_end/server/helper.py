@@ -157,8 +157,13 @@ async def exec_code(settings_dict, code, verification_code, exercise_details, ad
     if settings_dict["mode"] != "development":
         request_timeout = timeout
 
+    # This environment variable is used when Docker is executed on a Mac.
+    m_host = os.getenv("MHOST")
+    if not m_host:
+        m_host = settings_dict["m_host"]
+    
     #TODO: Move try/except block here for ReadTimeout?
-    response = requests.post(f"http://{settings_dict['m_host']}:{settings_dict['m_port']}/exec/", json.dumps(data_dict), timeout=request_timeout)
+    response = requests.post(f"http://{m_host}:{settings_dict['m_port']}/exec/", json.dumps(data_dict), timeout=request_timeout)
 
     response = json.loads(response.content)
 
@@ -329,24 +334,6 @@ def get_scores_download_file_name(assignment_basics):
         assignment_title = assignment_title.replace(char, "")
 
     return f"Scores__{assignment_title}.tsv"
-
-def get_list_of_dates():
-    years = []
-    months = []
-    days = []
-
-    for i in range(1, 13):
-        months.append("{0:02d}".format(i))
-    for i in range(1, 32):
-        days.append("{0:02d}".format(i))
-
-    dateTimeObj = datetime.utcnow()
-    currYear = str(dateTimeObj.year)
-    yearAbrev = int(currYear)
-    for i in range(2018, yearAbrev+1):
-        years.append(str(i))
-
-    return years, months, days
 
 def get_client_ip_address(request):
     return request.headers.get("X-Real-IP") or \

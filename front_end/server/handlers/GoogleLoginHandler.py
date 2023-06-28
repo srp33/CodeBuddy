@@ -7,7 +7,7 @@ from content import *
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     def prepare(self):
         self.settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
-        self.content = Content(self.settings_dict)
+        self.content = Content()
 
     async def get(self):
         try:
@@ -46,7 +46,8 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
                     self.clear_all_cookies()
                     render_error(self, "Google authentication failed. Your account could not be authenticated.")
             else:
-                await self.authorize_redirect(
+                # await self.authorize_redirect(
+                self.authorize_redirect(
                     redirect_uri = redirect_uri,
                     client_id = self.settings['google_oauth']['key'],
                     scope = ['profile', 'email'],

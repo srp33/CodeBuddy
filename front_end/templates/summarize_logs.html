@@ -1,185 +1,199 @@
+<link rel="stylesheet" href="/static/css/modal.css">
 
-<form method="post" action="/summarize_logs">
+<h3>View logs</h3>
 
-<div class="columns">
-    <div class="column is-half">
-        <h3>Summarized logs</h3>
-        <div class="field is-grouped">
-            <div class="control">
-                <label class="label">Select file</label>
-                <div class="select is-primary is-medium">
-                    <select id="file_select" name="file_select">
-                        <option selected disabled>Select file</option>
-                        <option value="logs/summarized/HitsAnyUser.tsv.gz">HitsAnyUser</option>
-                        <option value="logs/summarized/HitsPerUser.tsv.gz">HitsPerUser</option>
-                        <option value="logs/summarized/LoadDuration.tsv.gz">LoadDuration</option>
-                    </select>
-                </div>
-            </div>
-            <div class="control">
-                <label class="label">Filter by page</label>
-                <div class="select is-primary is-medium">
-                    <select id="filter_select" name="filter_select">
-                        <option selected>No filter</option>
-                        {% for item in filter_list %}
-                            <option>{{ item }}</option>
-                        {% end %}
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="control">
-            <label class="label">Filter by date</label>
-            <div class="field is-grouped">
-                <div class="control">
-                    <label class="label">Year</label>
-                    <div class="select is-primary is-medium">
-                        <select id="year_select" name="year_select">
-                            <option selected>No filter</option>
-                            {% for year in years %}
-                                <option>{{ year }}</option>
-                            {% end %}
-                        </select>
-                    </div>
-                </div>
-                <div class="control">
-                    <label class="label">Month</label>
-                    <div class="select is-primary is-medium">
-                        <select id="month_select" name="month_select">
-                            <option selected>No filter</option>
-                            {% for month in months %}
-                                <option>{{ month }}</option>
-                            {% end %}
-                        </select>
-                    </div>
-                </div>
-                <div class="control">
-                    <label class="label">Day</label>
-                    <div class="select is-primary is-medium">
-                        <select id="day_select" name="day_select">
-                            <option selected>No filter</option>
-                            {% for day in days %}
-                                <option>{{ day }}</option>
-                            {% end %}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="buttons top-space">
-            <a href="/profile/admin/{{ user_info['user_id'] }}" class="button is-light">Return to admin menu</a>
-            <input type="submit" class="button is-primary" value="Submit"/>
+<p>The following table shows a summary of the log files that are generated as users access pages on this site. The summaries are aggregated once per day, so they will not always up to date. If you would like, select from the dropdown menus to refine your search.</p>
+
+<div class="field is-grouped">
+    <div class="control">
+        <label class="label is-medium">Page (and request type):</label>
+        <div class="select is-medium">
+            <select id="page_select" onchange="getTableData()">
+                {% for page in pages %}
+                    <option>{{ page }}</option>
+                {% end %}
+            </select>
         </div>
     </div>
-    <div class="column is-half">
-        <h4>Download log files</h4>
-        <div class="table-container">
-            <table class="table is-striped">
-                <thead>
-                    <tr>
-                        <th>File Name</th>
-                        <th>Download Link</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Hits Any User</td>
-                        <td><a href="/logs/summarized/HitsAnyUser.tsv.gz" download="HitsAnyUser.tsv.gz">Download</a></td>
-                    </tr>
-                    <tr>
-                        <td>Hits Per User</td>
-                        <td><a href="/logs/summarized/HitsPerUser.tsv.gz" download="HitsPerUser.tsv.gz">Download</a></td>
-                    </tr>
-                    <tr>
-                        <td>Load Duration</td>
-                        <td><a href="/logs/summarized/LoadDuration.tsv.gz" download="LoadDuration.tsv.gz">Download</a></td>
-                    </tr>
-                </tbody>
-            </table>
+
+    <div class="control">
+        <label class="label is-medium">Year:</label>
+        <div class="select is-medium">
+            <select id="year_select" onchange="getTableData()">
+                <option selected value="no_filter">No filter</option>
+                {% for year in years %}
+                    <option>{{ year }}</option>
+                {% end %}
+            </select>
+        </div>
+    </div>
+
+    <div class="control">
+        <label class="label is-medium">Month:</label>
+        <div class="select is-medium">
+            <select id="month_select" onchange="getTableData()">
+                <option selected value="no_filter">No filter</option>
+                {% for month in months %}
+                    <option>{{ month }}</option>
+                {% end %}
+            </select>
+        </div>
+    </div>
+
+    <div class="control">
+        <label class="label is-medium">Day:</label>
+        <div class="select is-medium" onchange="getTableData()">
+            <select id="day_select">
+                <option selected value="no_filter">No filter</option>
+                {% for day in days %}
+                    <option>{{ day }}</option>
+                {% end %}
+            </select>
         </div>
     </div>
 </div>
 
+<div class="table-container is-hidden" id="the_table"></div>
 
-<script type="text/javascript">
-    window.onload = function() {
-        var selItem = sessionStorage.getItem("file_item");  
-        $('#file_select').val(selItem);
-        var filItem = sessionStorage.getItem("filter_item");  
-        $('#filter_select').val(filItem);
-        var yrItem = sessionStorage.getItem("year_item");  
-        $('#year_select').val(yrItem);
-        var mnItem = sessionStorage.getItem("month_item");  
-        $('#month_select').val(mnItem);
-        var dyItem = sessionStorage.getItem("day_item");  
-        $('#day_select').val(dyItem);
+<div class="notification is-hidden" id="result_message"></div>
+
+<div id="user_modal" class="modal">
+    <div class="modal-content">
+        <div id="user_modal_text"></div>
+
+        <button type="button" id="close_button" class="modal-button button is-dark">Close</button>
+    </div>
+</div>
+
+<script>
+    function showResultMessage(messageHTML, messageType) {
+        $("#the_table").addClass("is-hidden");
+
+        $("#result_message").removeClass("is-primary");
+        $("#result_message").removeClass("is-warning");
+        $("#result_message").removeClass("is-danger");
+
+        $("#result_message").addClass(`is-${messageType}`);
+
+        $("#result_message").removeClass("is-hidden");
+        $("#result_message")[0].innerHTML = messageHTML;
+        window.scrollTo(0, 0);
     }
 
-    $('#file_select').change(function() { 
-        var selVal = $(this).val();
-        sessionStorage.setItem("file_item", selVal);
-    });
+    function hideResultMessage() {
+        $("#result_message").addClass("is-hidden");
+        $("#result_message")[0].innerHTML = "";
+    }
 
-    $('#filter_select').change(function() { 
-        var filVal = $(this).val();
-        sessionStorage.setItem("filter_item", filVal);
-    });
+    function getTableData() {
+        showResultMessage("<b>Please wait...</b>", "warning");
 
-    $('#year_select').change(function() { 
-        var yrVal = $(this).val();
-        sessionStorage.setItem("year_item", yrVal);
-    });
+        let page = $('#page_select').val();
+        let year = $('#year_select').val();
+        let month = $('#month_select').val();
+        let day = $('#day_select').val();
 
-    $('#month_select').change(function() { 
-        var mnVal = $(this).val();
-        sessionStorage.setItem("month_item", mnVal);
-    });
+        let query_details = {"page": page, "year": year, "month": month, "day": day};
 
-    $('#day_select').change(function() { 
-        var dyVal = $(this).val();
-        sessionStorage.setItem("day_item", dyVal);
-    });
+        $.ajax({
+            type: 'POST',
+            url: `/summarize_logs`,
+            data: JSON.stringify(query_details),
+            async: true
+            })
+            .done(function(data) {
+                response = JSON.parse(data);
+
+                if (response["message"] == "") {
+                    renderTable(response["table_rows"]);
+                }
+                else {
+                    showResultMessage(`<p>An error occurred.</p><pre>${response["message"]}</pre>`, "danger");
+                }
+            })
+            .fail(function(data) {
+                showResultMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
+                console.log(data);
+            });
+    }
+
+    function renderTable(table_rows) {
+        if (table_rows.length > 0) {
+            const table_container = document.getElementById('the_table');
+            table_container.innerHTML = "";
+
+            const table = document.createElement('table');
+
+            const header_row = document.createElement('tr');
+            const header_items = ["Hour of day", "Hits", "Average load time (seconds)", "Unique users"]
+            header_items.forEach((text) => {
+                    const cell = document.createElement('th');
+                    cell.textContent = text;
+                    header_row.appendChild(cell);
+                });
+
+            table.appendChild(header_row);
+
+            table_rows.forEach((table_row) => {
+                const row = document.createElement('tr');
+
+                // Hour
+                var cell = document.createElement('td');
+                cell.textContent = table_row[0];
+                row.appendChild(cell);
+
+                // Hits
+                cell = document.createElement('td');
+                cell.textContent = table_row[1];
+                row.appendChild(cell);
+
+                // Average duration
+                cell = document.createElement('td');
+                cell.textContent = table_row[2];
+                row.appendChild(cell);
+
+                // Users
+                cell = document.createElement('td');
+                cell.innerHTML = `<a onclick="showUserModal('${table_row[4]}')">${table_row[3]}</a>`;
+                row.appendChild(cell);
+                
+                table.appendChild(row);
+            });
+
+            table.classList.add("table");
+            // This doesn't seem to work
+            table.classList.add("is-striped");
+            table.classList.add("is-hoverable");
+
+            table_container.appendChild(table);
+
+            $("#the_table").removeClass("is-hidden");
+
+            hideResultMessage();
+        }
+        else {
+            showResultMessage("There are no results to show.", "warning");
+        }
+    }
+
+    function showUserModal(text) {
+        var modal = document.getElementById("user_modal");
+        var modal_text = document.getElementById("user_modal_text");
+        var closeButton = document.getElementById("close_button");
+
+        modal_text.innerHTML = text;
+        modal.style.display = "block";
+
+        closeButton.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
+
+    getTableData();
 </script>
-
-</form>
-
-{% if show_table %}
-    <div class="table-container">
-        <table class="table is-striped" id="Table1">
-            <thead>
-                <tr>
-                    <th>Line</th>
-                    <th>Year</th>
-                    <th>Month</th>
-                    <th>Day</th>
-                    <th>Hour</th>
-                    <th>Value</th>
-                    <th>Page</th>
-                    <th>Course Title</th>
-                    <th>Assignment Title</th>
-                    <th>Exercise Title</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for line_num, line in log_dict.items() %}
-                {% if line[8] == filter %}
-                    <tr>
-                        <th>{{ line_num }}</th>
-                        {% for item in line %}
-                            <td class="has-text-centered">{{ item }}</td> 
-                        {% end %}     
-                    </tr>
-                {% elif filter == "No filter" %}
-                    <tr>
-                        <th>{{ line_num }}</th>
-                        {% for item in line %}
-                            <td class="has-text-centered">{{ item }}</td> 
-                        {% end %}     
-                    </tr>
-                {% end %}
-            {% end %}    
-            </tbody>
-        </table>
-    </div>
-{% end %}  
-<br /><br />

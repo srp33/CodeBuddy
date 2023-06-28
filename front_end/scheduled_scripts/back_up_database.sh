@@ -1,9 +1,12 @@
 #! /bin/bash
 
-dump_file=/database/CodeBuddy.dump.gz
+in_file=/app/database/CodeBuddy.db
+out_file=/app/database/CodeBuddy_backup.db
 
-echo "Backing up database to ${dump_file} [$(date)]..."
+rm -f ${out_file}
 
-sqlite3 /database/CodeBuddy.db .dump | gzip -c > ${dump_file}
+echo "Backing up ${in_file} to ${out_file} [$(date)]..."
 
-echo "Done backing up database to ${dump_file} [$(date)]..."
+python3 /app/scheduled_scripts/back_up_database.py ${in_file} ${out_file}
+
+echo "Done backing up ${in_file} to ${out_file} [$(date)]."

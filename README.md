@@ -65,14 +65,15 @@ This will create a directory called CodeBuddy in your current working directory.
 
 ##### Running the front end
 
-For most users, the preferred option is to run the front end within Docker. To do this, execute the `run_front_end` script at the terminal. If you want to contribute to developing CodeBuddy, it might be helpful to run CodeBuddy outside of Docker so that you do not need to rebuild the Docker image each time you make a change. To do so, follow the steps described below.
+For most users, the preferred option is to run the front end within Docker. To do this, execute the `run_front_end` script at the terminal.
+
+If you want to contribute to developing CodeBuddy, it might be helpful to run CodeBuddy outside of Docker so that you do not need to rebuild the Docker image each time you make a change. To do so, follow these steps.
 
 1. Use the `cd` command to change your current working directory to `front_end`.
-2. Build the HTML files. Execute the following command. `make html`
-3. Build the `static` directory. Execute the following command. When it is done, hit Ctrl-C to move on. `make build-watch`
-4. Start the development server. Execute the following command. `make dev-server`
+2. Execute the following command: `make build-watch`. After waiting about 60 seconds, hit Ctrl-C.
+3. Execute the following command: `make dev`. This will rebuild the HTML pages and start the front-end server.
 
-When you modify files in the `front_end/templates` directory, you will need to re-run `make html`. When you change any of the Python code, you will need to hit Ctrl-C to stop the development server and then re-execute `make dev-server`.
+When you modify files in the `front_end/templates` directory, you will need to re-run `make dev`. When you change any of the Python code, you will need to hit Ctrl-C to stop the development server and then re-execute `make dev`.
 
 ##### Running the middle layer
 
