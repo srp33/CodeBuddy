@@ -311,7 +311,7 @@ def redirect_to_login(handler, redirect_path):
     handler.set_secure_cookie("redirect_path", redirect_path)
 
     if handler.settings_dict["mode"] == "production":
-        handler.redirect("/choose_login_option")
+        handler.redirect("/login")
     else:
         handler.redirect("/devlogin")
 

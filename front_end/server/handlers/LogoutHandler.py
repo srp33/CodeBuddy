@@ -1,12 +1,13 @@
 from BaseOtherHandler import *
 from tornado.web import *
-import logging
 from helper import *
 
 class LogoutHandler(BaseOtherHandler):
-    async def get(self):
+    def get(self):
         try:
-            self.clear_all_cookies()
+            user_id_cookie = self.get_secure_cookie("user_id")
+            if user_id_cookie:
+                self.clear_cookie("user_id")
 
             #if self.in_production_mode():
                 #self.redirect("https://accounts.google.com/Logout")

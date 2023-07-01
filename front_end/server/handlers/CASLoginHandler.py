@@ -47,5 +47,8 @@ class CASLoginHandler(BaseOtherHandler):
                 redirect_path = "/"
             self.redirect(redirect_path)
         except Exception as inst:
-            self.clear_all_cookies()
+            user_id_cookie = self.get_secure_cookie("user_id")
+            if user_id_cookie:
+                self.clear_cookie("user_id")
+
             render_error(self, traceback.format_exc())

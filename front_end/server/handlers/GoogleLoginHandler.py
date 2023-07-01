@@ -40,14 +40,19 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
                             redirect_path = "/"
                         self.redirect(redirect_path)
                     else:
-                        self.clear_all_cookies()
+                        user_id_cookie = self.get_secure_cookie("user_id")
+                        if user_id_cookie:
+                            self.clear_cookie("user_id")
+
                         render_error(self, "Google account information could not be retrieved.")
                 else:
-                    self.clear_all_cookies()
+                    user_id_cookie = self.get_secure_cookie("user_id")
+                    if user_id_cookie:
+                        self.clear_cookie("user_id")
+
                     render_error(self, "Google authentication failed. Your account could not be authenticated.")
             else:
-                # await self.authorize_redirect(
-                self.authorize_redirect(
+                await self.authorize_redirect(
                     redirect_uri = redirect_uri,
                     client_id = self.settings['google_oauth']['key'],
                     scope = ['profile', 'email'],

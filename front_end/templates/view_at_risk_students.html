@@ -1,0 +1,36 @@
+{% if course_basics["exists"] %}
+    <h4>Potentially at-risk students for {{ assignment_basics["title"] }}</h4>
+
+    {% if len(no_recent_submissions) == 0 %}
+        <p>All students have made at least one submission in the past {{ recent_submissions_days_threshold }} days.</p>
+    {% else %}
+        <p>The following students have <em>not</em> made a submission in the past {{ recent_submissions_days_threshold }} days.</p>
+
+        <div class="table-container">
+            <table class="table is-striped" id="scores_table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Student ID</th>
+                        <th>Most recent submission date/time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in no_recent_submissions %}
+                        <tr>
+                            <td class="has-text-left"><a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ score[1]['user_id'] }}">{{ row["name"] }}</a></td>
+                            <td class="has-text-left">{{ row["user_id"] }}</td>
+                            <td class="has-text-left">
+                                <a href="/student_exercise/{{ course_basics['id'] }}/{{ row['assignment_id'] }}/{{ row['exericse_id'] }}">
+                                    <script>
+                                        document.write(parseDateText("{{ row['last_passed'] }}"));
+                                    </script>
+                                </a>
+                            </td>
+                        </tr>
+                    {% end %}
+                </tbody>
+            </table>
+        </div>
+    {% end %}
+{% end %}

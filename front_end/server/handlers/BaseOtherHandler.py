@@ -1,6 +1,5 @@
 from helper import *
 from BaseRequestHandler import *
-from tornado.web import RequestHandler
 import traceback
 
 class BaseOtherHandler(BaseRequestHandler):

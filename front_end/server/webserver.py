@@ -1,7 +1,6 @@
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 from distutils.log import debug
 from content import *
-import contextvars
 from datetime import datetime
 from handlers import *
 from helper import *
@@ -84,6 +83,7 @@ def make_app(settings_dict):
             url(r"/test", TestHandler, name="test"),
             url(r"/unregister/([^/]+)/([^/]+)", UnregisterHandler, name="unregister"),
             url(r"/unavailable_exercise/([^/]+)/([^/]+)", UnavailableExerciseHandler, name="unavailable_exercise"),
+            url(r"/view_at_risk_students/([^/]+)", ViewAtRiskStudentsHandler, name="view_at_risk_students"),
             url(r"/view_instructor_solution/([^/]+)/([^/]+)/([^/]+)", ViewInstructorSolutionHandler, name="view_instructor_solution"),
             url(r"/view_peer_solution/([^/]+)/([^/]+)/([^/]+)", ViewPeerSolutionHandler, name="view_peer_solution"),
             url(r"/view_request/([^/]+)/([^/]+)/([^/]+)/([^/]+)", ViewHelpRequestsHandler, name="view_request"),
