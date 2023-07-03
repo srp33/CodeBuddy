@@ -165,7 +165,7 @@ async def exec_code(settings_dict, code, verification_code, exercise_details, ad
     #TODO: Move try/except block here for ReadTimeout?
     response = requests.post(f"http://{m_host}:{settings_dict['m_port']}/exec/", json.dumps(data_dict), timeout=request_timeout)
 
-    response = json.loads(response.content)
+    response = ujson.loads(response.content)
 
     if add_formatted_txt:
         for test_title in response["test_outputs"]:

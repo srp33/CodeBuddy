@@ -21,7 +21,7 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
                     response = urllib.request.urlopen(f"https://www.googleapis.com/oauth2/v1/userinfo?access_token={user_dict['access_token']}").read()
 
                     if response:
-                        user_dict = json.loads(response.decode('utf-8'))
+                        user_dict = ujson.loads(response.decode('utf-8'))
                         user_id = user_dict["email"].split("@")[0]
                         user_dict["email_address"] = user_dict["email"]
 

@@ -35,7 +35,7 @@ class EditExerciseHandler(BaseUserHandler):
                 course_basics = await self.get_course_basics(course_id)
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
-                exercise_details = json.loads(self.request.body)
+                exercise_details = ujson.loads(self.request.body)
 
                 exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, exercise_id)
                 exercise_basics["title"] = exercise_details.pop("title")

@@ -17,6 +17,8 @@ class BaseUserHandler(BaseRequestHandler):
 
             self.updated_dict = self.content.find_when_content_updated()
 
+            self.total_headers_size = sum(len(key) + len(value) for key, value in self.request.headers.items())
+
             self.update_cached_variable("user", "user_info", self.content.get_user_info, self.get_current_user())
             self.update_cached_variable("user", "is_administrator", self.content.is_administrator, self.get_current_user())
             self.update_cached_variable("user", "courses", self.content.get_registered_courses, self.get_current_user())
@@ -168,13 +170,23 @@ class BaseUserHandler(BaseRequestHandler):
         content = self.get_secure_cookie(cookie_key, max_age_days=max_age_days)
 
         if content:
-            return json.loads(content)
+            return ujson.loads(content)
 
     def set_content_cookie(self, cookie_key, serializable_content, expires_days):
-        total_headers_size = sum(len(key) + len(value) for key, value in self.request.headers.items())
+        if self.total_headers_size > 4096:
+            return serializable_content
 
-        if total_headers_size < 838860:
-            self.set_secure_cookie(cookie_key, json.dumps(serializable_content, default=str), expires_days = expires_days)
+        content = ujson.dumps(serializable_content)
+
+        # We have to guess how much header space the cookie will take.
+        # This is a conservative guess.
+        estimated_cookie_size = len(content) * 1.33 + 150 
+
+        if self.total_headers_size + estimated_cookie_size > 4096:
+            return serializable_content
+
+        self.set_secure_cookie(cookie_key, content, expires_days = expires_days)
+        self.total_headers_size += estimated_cookie_size
 
         return serializable_content
 

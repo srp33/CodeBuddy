@@ -9,7 +9,7 @@ class CASLoginHandler(BaseOtherHandler):
     async def get(self):
         try:
             if self.in_production_mode():
-                service_url = f"https://{self.settings_dict['domain']}/login?next=%2Flogin"
+                service_url = f"https://{self.settings_dict['domain']}/caslogin?next=%2Fcourses"
             else:
                 raise Exception("You cannot authenticate with CAS in development mode")
                 #service_url="http://codebuddy.ls.byu.edu:8008/login?next=%2Flogin"
