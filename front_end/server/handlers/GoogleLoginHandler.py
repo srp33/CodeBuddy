@@ -21,9 +21,12 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
                     response = urllib.request.urlopen(f"https://www.googleapis.com/oauth2/v1/userinfo?access_token={user_dict['access_token']}").read()
 
                     if response:
+                        # The response looks something like this: {'id': '102649622268540455347', 'email': 'stephen.piccolo.byu@gmail.com', 'verified_email': True, 'name': 'Stephen Piccolo', 'given_name': 'Stephen', 'family_name': 'Piccolo', 'picture': 'https://lh3.googleusercontent.com/a/AAcHTtc8ulvtc_mrxIljS2a-3cZUMpR4bsNIp3VIsqVPJApwhxs=s96-c', 'locale': 'en', 'email_address': 'stephen.piccolo.byu@gmail.com'}
+
                         user_dict = ujson.loads(response.decode('utf-8'))
                         user_id = user_dict["email"].split("@")[0]
                         user_dict["email_address"] = user_dict["email"]
+                        del user_dict["email"]
 
                         if self.content.user_exists(user_id):
                             # Update user with current information when they already exist.
