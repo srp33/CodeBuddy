@@ -26,8 +26,7 @@ a {
 
 /* Sets padding width or buffer around the entire site's content. */
 .container-padding {
-    padding: 2.25rem;
-    /* padding: 3.5rem 5em; */
+    padding: 1.75rem;
 }
 
 /* Hides div. */
