@@ -76,7 +76,7 @@ for in_file_path in in_file_paths:
 
 if len(summary_dict) > 0:
     with open(summary_file_path, "w") as summary_file:
-        summary_file.write(ujson.dumps(summary_dict))
+        summary_file.write(ujson.dumps(summary_dict, default=str))
 
 with gzip.open(archive_file_path, "a") as archive_file:
     for in_file_path in in_file_paths:

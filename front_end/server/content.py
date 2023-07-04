@@ -1879,7 +1879,7 @@ class Content:
                       AND assignment_id = ?
                       AND exercise_id = ?'''
 
-                cursor.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["what_students_see_after_success"], exercise_details["starter_code"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"], exercise_details["weight"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
+                cursor.execute(sql, [exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"], default=str), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["what_students_see_after_success"], exercise_details["starter_code"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"], exercise_details["weight"], exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["id"]])
 
                 sql = '''DELETE FROM test_outputs
                          WHERE test_id IN (
@@ -1913,7 +1913,7 @@ class Content:
                 sql = '''INSERT INTO exercises (course_id, assignment_id, title, visible, solution_code, solution_description, hint, max_submissions, credit, data_files, back_end, instructions, output_type, allow_any_response, what_students_see_after_success, starter_code, date_created, date_updated, enable_pair_programming, verification_code, weight)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-                cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"]), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["what_students_see_after_success"], exercise_details["starter_code"], exercise_details["date_created"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"], exercise_details["weight"]])
+                cursor.execute(sql, [exercise_basics["assignment"]["course"]["id"], exercise_basics["assignment"]["id"], exercise_basics["title"], exercise_basics["visible"], str(exercise_details["solution_code"]), exercise_details["solution_description"], exercise_details["hint"], exercise_details["max_submissions"], exercise_details["credit"], json.dumps(exercise_details["data_files"], default=str), exercise_details["back_end"], exercise_details["instructions"], exercise_details["output_type"], exercise_details["allow_any_response"], exercise_details["what_students_see_after_success"], exercise_details["starter_code"], exercise_details["date_created"], exercise_details["date_updated"], exercise_details["enable_pair_programming"], exercise_details["verification_code"], exercise_details["weight"]])
 
                 exercise_basics["id"] = cursor.lastrowid
                 exercise_basics["exists"] = True
@@ -2517,7 +2517,7 @@ class Content:
 #            rows.append(row_values)
 #
 #        with open(output_tsv_file_path, "w") as out_file:
-#            out_file.write(json.dumps(rows))
+#            out_file.write(json.dumps(rows, default=str))
 
 #    def create_zip_file_path(self, descriptor):
 #        temp_dir_path = "/database/tmp/{}".format(create_id())
@@ -2579,15 +2579,16 @@ class Content:
 
         user_ids = [row["user_id"] for row in self.fetchall(sql, (course_id, ))]
 
-        student_index = user_ids.index(student_id)
-
         prev_student_id = None
         next_student_id = None
 
-        if student_index > 0:
-            prev_student_id = user_ids[student_index - 1]
-        if student_index < len(user_ids) - 1:
-            next_student_id = user_ids[student_index + 1]
+        if student_id in user_ids:
+          student_index = user_ids.index(student_id)
+
+          if student_index > 0:
+              prev_student_id = user_ids[student_index - 1]
+          if student_index < len(user_ids) - 1:
+              next_student_id = user_ids[student_index + 1]
 
         return prev_student_id, next_student_id
 
@@ -2621,3 +2622,47 @@ class Content:
             submissions.append(submission)
 
         return sort_list_of_dicts_nicely(submissions, ["assignment_title", "exercise_title"])
+    
+    def get_students_no_recent_submissions(self, course_id, num_hours_diff):
+        sql = """
+          SELECT DISTINCT cr.user_id, u.name, u.email_address, s.assignment_id, a.title AS assignment_title, s.exercise_id, e.title AS exercise_title, MAX(s.date) AS last_submission_date
+          FROM course_registrations cr
+          INNER JOIN submissions s
+            ON cr.course_id = s.course_id
+            AND cr.user_id = s.user_id
+          INNER JOIN users u
+            ON s.user_id = u.user_id
+          INNER JOIN assignments a
+            ON s.course_id = a.course_id
+           AND s.assignment_id = a.assignment_id
+          INNER JOIN exercises e
+            ON s.course_id = e.course_id
+           AND s.assignment_id = e.assignment_id
+           AND s.exercise_id = e.exercise_id
+          WHERE cr.course_id = ?
+          GROUP BY cr.user_id, u.name, u.email_address
+          HAVING MAX(s.date) < datetime('now', '-' || ? || ' hours')
+          
+          UNION
+          
+          SELECT u.user_id, u.name, u.email_address, NULL, NULL, NULL, NULL, NULL
+          FROM users u
+          WHERE u.user_id IN (
+            SELECT user_id
+              FROM course_registrations
+              WHERE course_id = ?
+          )
+            AND user_id NOT IN (
+                SELECT DISTINCT user_id
+                  FROM submissions
+                  WHERE course_id = ?
+            )
+          ORDER BY cr.user_id
+          """
+        
+        rows = []
+
+        for row in self.fetchall(sql, (course_id, num_hours_diff, course_id, course_id, )):
+            rows.append(dict(row))
+
+        return rows

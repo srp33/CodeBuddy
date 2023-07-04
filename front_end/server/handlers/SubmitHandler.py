@@ -23,7 +23,7 @@ class SubmitHandler(BaseUserHandler):
             
                 if num_submissions >= exercise_details["max_submissions"]:
                     out_dict["message"] = "You have exceeded the maximum number of allowed submissions for this exercise."
-                    self.write(json.dumps(out_dict))
+                    self.write(json.dumps(out_dict, default=str))
                     return
 
             out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
@@ -51,7 +51,7 @@ class SubmitHandler(BaseUserHandler):
             out_dict["message"] = format_output_as_html(traceback.format_exc())
             out_dict["all_passed"] = False
 
-        self.write(json.dumps(out_dict))
+        self.write(json.dumps(out_dict, default=str))
 
     def calc_exercise_score(self, assignment_details, passed):
         if passed:

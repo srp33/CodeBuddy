@@ -18,7 +18,7 @@ manifest = None
 def _load_manifest():
 	global manifest
 	if manifest is None or ('DEBUG' in os.environ and os.environ['DEBUG'] == 'true'):
-		manifest = ujson.loads(read_file('static/manifest.json'))
+		manifest = json.loads(read_file('static/manifest.json'))
 
 	return manifest
 

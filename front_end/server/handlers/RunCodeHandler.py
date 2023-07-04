@@ -28,4 +28,4 @@ class RunCodeHandler(BaseUserHandler):
         except Exception as inst:
             out_dict["message"] = format_output_as_html(traceback.format_exc())
 
-        self.write(json.dumps(out_dict))
+        self.write(json.dumps(out_dict, default=str))

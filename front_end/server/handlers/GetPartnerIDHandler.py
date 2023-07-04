@@ -6,6 +6,6 @@ class GetPartnerIDHandler(BaseUserHandler):
 
         # Determines whether the partner_key is a valid one while hiding student emails from the client side.
         if partner_name in partner_dict:
-            self.write(json.dumps(partner_dict[partner_name]))
+            self.write(json.dumps(partner_dict[partner_name], default=str))
         else:
-            self.write(json.dumps({"error": "Invalid partner key"}))
+            self.write(json.dumps({"error": "Invalid partner key"}, default=str))

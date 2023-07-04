@@ -1,36 +1,81 @@
 {% if course_basics["exists"] %}
-    <h4>Potentially at-risk students for {{ assignment_basics["title"] }}</h4>
+    <h4>Potentially at-risk students for {{ course_basics["title"] }}</h4>
 
     {% if len(no_recent_submissions) == 0 %}
-        <p>All students have made at least one submission in the past {{ recent_submissions_days_threshold }} days.</p>
+        <p>All students have made at least one submission in the past {{ recent_submissions_days_threshold }} hour(s).</p>
     {% else %}
-        <p>The following students have <em>not</em> made a submission in the past {{ recent_submissions_days_threshold }} days.</p>
+        <p>The following students have <em>not</em> made a submission in the past {{ recent_submissions_days_threshold }} hour(s).</p>
 
         <div class="table-container">
-            <table class="table is-striped" id="scores_table">
+            <table class="table is-striped is-size-5" id="scores_table">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Name</th>
-                        <th>Student ID</th>
-                        <th>Most recent submission date/time</th>
+                        <th>Email address</th>
+                        <th>Last submission date / time</th>
+                        <th>Last assignment</th>
+                        <th>Last exercise</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in no_recent_submissions %}
                         <tr>
-                            <td class="has-text-left"><a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ score[1]['user_id'] }}">{{ row["name"] }}</a></td>
-                            <td class="has-text-left">{{ row["user_id"] }}</td>
                             <td class="has-text-left">
-                                <a href="/student_exercise/{{ course_basics['id'] }}/{{ row['assignment_id'] }}/{{ row['exericse_id'] }}">
-                                    <script>
-                                        document.write(parseDateText("{{ row['last_passed'] }}"));
-                                    </script>
+                                {{ row["user_id"] }}
+                            </td>
+                            <td class="has-text-left">
+                                <a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ row['user_id'] }}">
+                                    {{ row["name"] }}
                                 </a>
+                            </td>
+                            <td class="has-text-left">
+                                <a href="mailto:{{ row['email_address'] }}">
+                                    {{ row["email_address"] }}
+                                </a>
+                            </td>
+                            <td class="has-text-left">
+                                {% if row["exercise_id"] %}
+                                    <a href="/student_exercise/{{ course_basics['id'] }}/{{ row['assignment_id'] }}/{{ row['exercise_id'] }}/{{ row['user_id'] }}">
+                                        {{ row['last_submission_date'].split('.')[0] }}
+                                    </a>
+                                {% else %}
+                                    No submissions
+                                {% end %}
+                            </td>
+                            <td class="has-text-left">
+                                {{ row['assignment_title'] }}
+                            </td>
+                            <td class="has-text-left">
+                                {{ row['exercise_title'] }}
                             </td>
                         </tr>
                     {% end %}
                 </tbody>
             </table>
         </div>
+
+        <p>
+            <div class="select is-size-5">
+                <select id="time_dropdown" onchange="handleDropdownChange()">
+                    <option value="1">1 hour</option>
+                    <option value="6">6 hours</option>
+                    <option value="24">1 day</option>
+                    <option value="48">2 days</option>
+                    <option value="72" selected>3 days</option>
+                    <option value="120">5 days</option>
+                    <option value="168">1 week</option>
+                    <option value="336">2 weeks</option>
+                </select>
+            </div>
+
+            <script>
+                function handleDropdownChange() {
+                  var selectedHours = document.getElementById("time_dropdown").value;
+
+                  window.location.href = `/view_at_risk_students/{{ course_basics['id'] }}/${selectedHours}`;
+                }
+            </script>
+        </p>
     {% end %}
 {% end %}

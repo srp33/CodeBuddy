@@ -174,15 +174,17 @@ class BaseUserHandler(BaseRequestHandler):
 
     def set_content_cookie(self, cookie_key, serializable_content, expires_days):
         if self.total_headers_size > 4096:
+            self.clear_cookie(cookie_key)
             return serializable_content
 
-        content = ujson.dumps(serializable_content)
+        content = ujson.dumps(serializable_content, default=str)
 
         # We have to guess how much header space the cookie will take.
         # This is a conservative guess.
         estimated_cookie_size = len(content) * 1.33 + 150 
 
         if self.total_headers_size + estimated_cookie_size > 4096:
+            self.clear_cookie(cookie_key)
             return serializable_content
 
         self.set_secure_cookie(cookie_key, content, expires_days = expires_days)
