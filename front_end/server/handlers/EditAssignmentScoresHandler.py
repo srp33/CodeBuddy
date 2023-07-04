@@ -7,7 +7,7 @@ class EditAssignmentScoresHandler(BaseUserHandler):
             assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
             if self.is_administrator or await self.is_instructor_for_course(course_id):
-                self.render("edit_assignment_scores.html", student_id=student_id, courses=self.courses, course_basics = course_basics, assignments=self.content.get_assignments(course_basics), assignment_basics=assignment_basics, exercise_statuses=self.content.get_exercise_statuses(course_id, assignment_id, student_id), result=None, user_info=self.user_info, is_administrator=self.is_administrator)
+                self.render("edit_assignment_scores.html", student_id=student_id, courses=self.courses, course_basics=course_basics, assignments=self.content.get_assignments(course_basics), assignment_basics=assignment_basics, exercise_statuses=self.content.get_exercise_statuses(course_id, assignment_id, student_id, show_hidden=False), result=None, user_info=self.user_info, is_administrator=self.is_administrator)
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -19,7 +19,7 @@ class EditAssignmentScoresHandler(BaseUserHandler):
             assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
             if self.is_administrator or await self.is_instructor_for_course(course_id):
-                exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, student_id)
+                exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, student_id, show_hidden=False)
                 result = ""
                 for exercise in exercise_statuses:
                     student_score = self.get_body_argument(str(exercise[1]["id"]))
@@ -29,7 +29,7 @@ class EditAssignmentScoresHandler(BaseUserHandler):
                     else:
                         result = "Error: Newly entered scores must be numeric."
 
-                self.render("edit_assignment_scores.html", student_id=student_id, courses=self.courses, course_basics=course_basics, assignments=await self.get_assignments(course_basics), assignment_basics=assignment_basics, exercise_statuses=self.content.get_exercise_statuses(course_id, assignment_id, student_id), result=result, user_info=self.user_info, is_administrator=self.is_administrator)
+                self.render("edit_assignment_scores.html", student_id=student_id, courses=self.courses, course_basics=course_basics, assignments=await self.get_assignments(course_basics), assignment_basics=assignment_basics, exercise_statuses=self.content.get_exercise_statuses(course_id, assignment_id, student_id, show_hidden=False), result=result, user_info=self.user_info, is_administrator=self.is_administrator)
             else:
                 self.render("permissions.html")
         except Exception as inst:

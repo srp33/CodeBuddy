@@ -1079,6 +1079,7 @@ class Content:
                    SELECT assignment_id, SUM(weight) AS sum_weights
                    FROM exercises
                    WHERE course_id = ?
+                     AND visible = 1
                    GROUP BY assignment_id
                  ) max_possible
                    ON assignment_totals.assignment_id = max_possible.assignment_id
