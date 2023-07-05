@@ -14,8 +14,8 @@
                         <th>Name</th>
                         <th>Email address</th>
                         <th>Last submission date / time</th>
-                        <th>Last assignment</th>
-                        <th>Last exercise</th>
+                        <th>Last submission assignment</th>
+                        <th>Last submission exercise</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,7 +37,10 @@
                             <td class="has-text-left">
                                 {% if row["exercise_id"] %}
                                     <a href="/student_exercise/{{ course_basics['id'] }}/{{ row['assignment_id'] }}/{{ row['exercise_id'] }}/{{ row['user_id'] }}">
-                                        {{ row['last_submission_date'].split('.')[0] }}
+                                        <script>
+                                            var d = new Date("{{ row['last_submission_date'] }} UTC");
+                                            document.write(d.toLocaleString());
+                                        </script>
                                     </a>
                                 {% else %}
                                     No submissions
@@ -58,6 +61,7 @@
         <p>
             <div class="select is-size-5">
                 <select id="time_dropdown" onchange="handleDropdownChange()">
+                    <!--<option value="0">0 hours</option>-->
                     <option value="1">1 hour</option>
                     <option value="6">6 hours</option>
                     <option value="24">1 day</option>

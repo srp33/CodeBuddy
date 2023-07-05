@@ -57,7 +57,12 @@ for in_file_path in in_file_paths:
             timestamp = timestamp[:13].replace(" ", "-")
 
             path = line_items[1]
-            path_root = re.search(r"/[^/]*", path).group()
+            path_root = re.search(r"^/([^/?]+)", path)
+            
+            if not path_root:
+                continue
+            
+            path_root = path_root.group()
             path_root = f"{path_root} ({line_items[2]})"
 
             if path_root not in summary_dict:
