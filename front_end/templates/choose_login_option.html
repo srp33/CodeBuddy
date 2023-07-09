@@ -1,19 +1,53 @@
-<article class="message is-dark">
-    <div class="message-body">
-        <h4>Choose this option if you ARE a student or employee at BYU:</h4>
+<div id="privacy_statement">
+    <h3>Privacy disclosure</h3>
 
-        <p>
-            <a class="button is-dark" href="/caslogin">BYU</a>
-        </p>
-    </div>
-</article>
+    <p>
+        This website uses <a href="https://en.wikipedia.org/wiki/HTTP_cookie" target="_blank">Internet cookies</a> to store information in your <a href="https://en.wikipedia.org/wiki/Web_browser" target="_blank">browser</a>. When you log in to this website, it will store your user ID so that you do not need to log in each time you visit a page on the website. As you are logging in, it will store a temporary cookie so that you can be redirected back to the page you were attempting to access. After you have logged in, this website will use cookies to store information about which parts of the website you are allowed to access as well as content from courses, assignments, and exercises. By storing this information in cookies, the website can increase its performance because it does not need to access its <a href="https://en.wikipedia.org/wiki/Database" target="_blank">database</a> as often. After you log in, this website will store your name, login ID, and email address in its database. Finally, this website will  keep a log of which parts of the website you access and how long it takes to access them. This information provides insights to the website administrators so they can seek to improve the website's performance and analyze usage. This logging information is not stored in cookies but rather in <a href="https://en.wikipedia.org/wiki/Text_file">text files</a> on the web server. Only website administrators are allowed to access this information.
+    </p>
 
-<article class="message is-dark">
-    <div class="message-body">
-        <h4>Choose this option if you are NOT student or employee at BYU:</h4>
+    <p>
+        By clicking the "Accept" button, you agree to the storing of cookies on your device and information about you on this website. At any time, you may delete your account on this website. Doing so will delete all cookies specific to this website from your browser. It will also delete your information from the database used by this website. You will not be able to recover this information. 
+    </p>
 
-        <p>
-            <a href="/googlelogin"><img src="/static/btn_google_signin_dark_normal_web.png" /></a>
-        </p>
-    </div>
-</article>
+    <p>
+        <div class="buttons">
+            <a class="button is-primary" onclick="showLoginButtons()">Accept</a>
+            <a class="button is-primary is-outlined" href="/">Decline</a>
+        </div>
+    </p>
+</div>
+
+<div id="login_buttons" class="is-hidden">
+    <h3>Choose a login option</h3>
+
+    <article class="message is-dark">
+        <div class="message-body">
+            <h4>Choose this option if you ARE a student or employee at BYU:</h4>
+
+            <p>
+                <a class="button is-dark" href="/caslogin">BYU</a>
+            </p>
+        </div>
+    </article>
+
+    <article class="message is-dark">
+        <div class="message-body">
+            <h4>Choose this option if you are NOT a student or employee at BYU:</h4>
+
+            <p>
+                <a href="/googlelogin"><img src="/static/btn_google_signin_dark_normal_web.png" /></a>
+            </p>
+        </div>
+    </article>
+</div>
+
+<script>
+    function showLoginButtons() {
+        {% if byu_authentication == True %}
+            $("#privacy_statement").addClass("is-hidden");
+            $("#login_buttons").removeClass("is-hidden");
+        {% else %}
+            window.location.href = "/googlelogin";
+        {% end %}
+    }
+</script>

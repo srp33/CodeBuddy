@@ -39,7 +39,7 @@ CodeBuddy can be installed on any system that supports Docker and Python. Here a
 2. Install [Python](https://www.python.org/downloads) (version 3.9+) and the [pip package manager](https://pip.pypa.io/en/stable/installation).
 3. In the terminal, execute the following command to install the Python packages: `pip install -r front_end/requirements.txt`.
 4. Modify Settings.yaml according to your preferences. The default settings should work in most cases.
-5. Create a text file in `front_end/secrets/front_end.yaml` that contains a password that you wish to use for encrypting cookies, as well as Google authentication tokens. (Google authentication is not supported currently, so you can just use the placeholder values shown below for now.)
+5. Create a text file in `front_end/secrets/front_end.yaml` that contains three key/value pairs, as illustrated below. The first is a password for encrypting cookies (use a strong password). The second and third are a client ID and secret that enable CodeBuddy to perform Google authentication. You can obtain these from [here](https://console.developers.google.com).
 
 ```
 cookie: "abcdefg"

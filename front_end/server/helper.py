@@ -314,6 +314,7 @@ def redirect_to_login(handler, redirect_path):
         handler.redirect("/login")
     else:
         handler.redirect("/devlogin")
+        # handler.redirect("/login")
 
 def render_error(handler, exception):
     handler.render("error.html", error_title="An internal error occurred", error_message=format_output_as_html(exception))

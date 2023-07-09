@@ -1,0 +1,51 @@
+<h3>Delete user account</h3>
+
+<div id="top_panel">
+    <p>
+        If you click on the "Delete" button, the account for <strong><font color="red">{{ user_id_to_delete }}</font></strong> will be deleted. If this is your account, we will delete all cookies specific to this website from your browser. We will also delete your information from the database. You will not be able to recover this information. 
+    </p>
+
+    <p>
+        <div class="buttons">
+            <a class="button is-danger is-outlined" onclick="deleteUserAccount()">Delete</a>
+            <a class="button is-dark" onclick="window.history.back();">Cancel</a>
+        </div>
+    </p>
+</div>
+
+<p id="result_message" class="notification is-danger is-hidden">
+</p>
+
+<script>
+    function deleteUserAccount() {
+        $.ajax({
+            type: 'POST',
+            url: `/delete_user/{{ user_id_to_delete }}`,
+            async: true
+            })
+            .done(function(result) {
+                if (result == "") {
+                    if ("{{ user_info['user_id'] }}" == "{{ user_id_to_delete }}") {
+                        window.location.href = "/logout";
+                    }
+                    else {
+                        $("#result_message")[0].innerHTML = `Success! The account was deleted.`;
+                        $("#result_message").removeClass("is-danger");
+                        $("#result_message").addClass("is-primary");
+                        $("#result_message").removeClass("is-hidden");
+
+                        $("#top_panel").addClass("is-hidden");
+                    }
+                }
+                else {
+                    $("#result_message")[0].innerHTML = `<pre>${result}</pre>`;
+                    $("#result_message").removeClass("is-hidden");
+                }
+            })
+            .fail(function(result) {
+                $("#result_message")[0].innerHTML = "<pre>An error occurred when connecting to the server.</pre>";
+                $("#result_message").removeClass("is-hidden");
+                console.log(result);
+            });
+    }
+</script>

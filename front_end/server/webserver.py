@@ -29,6 +29,7 @@ def make_app(settings_dict):
             url(r"/copy_exercise/([^/]+)/([^/]+)/([^/]+)?", CopyExerciseHandler, name="copy_exercise"),
             url(r"/course/([^/]+)", CourseHandler, name="course"),
             url(r"/courses", CoursesHandler, name="courses"),
+            url(r"/delete_user/([^/]+)", DeleteUserHandler, name="delete_user"),
             url(r"/delete_assignment/([^/]+)/([^/]+)?", DeleteAssignmentHandler, name="delete_assignment"),
             url(r"/delete_assignment_submissions/([^/]+)/([^/]+)?", DeleteAssignmentSubmissionsHandler, name="delete_assignment_submissions"),
             url(r"/delete_course/([^/]+)?", DeleteCourseHandler, name="delete_course"),
@@ -63,8 +64,8 @@ def make_app(settings_dict):
             url(r"/manage_users", ManageUsersHandler, name="manage_users"),
             url(r"/move_assignment/([^/]+)/([^/]+)", MoveAssignmentHandler, name="move_assignment"),
             url(r"/move_exercise/([^/]+)/([^/]+)/([^/]+)?", MoveExerciseHandler, name="move_exercise"),
+            url(r"/my_profile/([^/]+)", MyProfileHandler, name="my_profile"),
             # url(r"/profile/help_requests", ProfileHelpRequestsHandler, name="profile_help_requests"),
-            url(r"/personal_info/([^/]+)", PersonalInfoHandler, name="personal_info"),
             url(r"/preferences/([^/]+)", PreferencesHandler, name="preferences"),
             # url(r"/profile/student_help_requests", ProfileStudentHelpRequestsHandler, name="profile_student_help_requests"),
             url(r"/register/([^/]+)/([^/]+)/([^/]+)", RegisterHandler, name="register"),
@@ -189,6 +190,10 @@ if __name__ == "__main__":
            "key": secrets_dict["google_oauth_key"],
            "secret": secrets_dict["google_oauth_secret"]
         }
+
+        application.settings["byu_authentication"] = False
+        if "byu_authentication" in secrets_dict:
+            application.settings["byu_authentication"] = secrets_dict["byu_authentication"]    
 
         server.bind(int(settings_dict["f_port"]))
         server.start(int(settings_dict["f_num_processes"]))

@@ -7,9 +7,9 @@
                     </div>
 
                     <div class="navbar-dropdown is-size-5 is-right">
-                        <!--<a class="navbar-item" href="/courses/{{ user_info['user_id'] }}">Courses</a>-->
+                        <a class="navbar-item" href="/">Courses</a>
 
-                        <a class="navbar-item" href="/personal_info/{{ user_info['user_id'] }}">My profile</a>
+                        <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
 
                         <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
 
@@ -20,7 +20,7 @@
 
                             <a class="navbar-item" href="/manage_admins">Manage admins</a>
 
-                            <!--<a class="navbar-item" href="/manage_users">Manage users</a>-->
+                            <a class="navbar-item" href="/manage_users">Manage users</a>
 
                             <a class="navbar-item" href="/summarize_logs">View logs</a>
                         {% end %}

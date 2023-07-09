@@ -28,7 +28,7 @@ cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_co
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_assistants.html container_bottom.html footer.html > "$OUTPUT/manage_assistants.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_students.html container_bottom.html footer.html > "$OUTPUT/manage_students.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_users.html container_bottom.html footer.html > "$OUTPUT/manage_users.html"
-cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html personal_info.html container_bottom.html footer.html > "$OUTPUT/personal_info.html"
+cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html my_profile.html container_bottom.html footer.html > "$OUTPUT/my_profile.html"
 cat header.html javascript_container.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html preferences.html container_bottom.html footer.html > "$OUTPUT/preferences.html"
 #cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_help_requests.html profile_bottom.html footer.html > "$OUTPUT/profile_help_requests.html"
 #cat profile_header.html navbar_top.html navbar_menu.html navbar_bottom.html profile.html profile_student_help_requests.html profile_bottom.html footer.html > "$OUTPUT/profile_student_help_requests.html"
@@ -53,6 +53,7 @@ cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_botto
 cat header.html javascript_container.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html view_request.html container_bottom.html footer.html > "$OUTPUT/view_request.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html exercise_submissions.html container_bottom.html footer.html > "$OUTPUT/exercise_submissions.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html summarize_logs.html container_bottom.html footer.html > "$OUTPUT/summarize_logs.html"
+cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html delete_user.html container_bottom.html footer.html > "$OUTPUT/delete_user.html"
 
 cat header.html diff_txt.html footer.html > "$OUTPUT/diff_txt.html"
 cat header.html diff_jpg.html footer.html > "$OUTPUT/diff_jpg.html"

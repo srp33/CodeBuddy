@@ -1,29 +1,104 @@
-        <div class="tab-title">
-            <h3>Manage users</h3>
-        </div>
+<h3>Manage users</h3>
 
-        <form method="post" action="/manage_users">
+<p>Search for existing user(s) based on their name or login ID.</p>
 
-        <div>
-            <p><strong>Remove all submissions for an existing user:</strong></p>
-            <input class="input is-medium is-primary" type="text" name="remove_user" placeholder="Enter ID of an existing user."/>
-            <input type="submit" id="remove_button" class="modal-button button is-dark" value="Remove"/>
-        </div>
+<p>
+    <input id="search_input" class="input is-medium is-primary" type="text" placeholder="Enter a pattern that matches a user's name or login ID." oninput="showMatchingUsers()" autofocus />
+</p>
 
-        <div style="padding-top: 30px;">
-            <p><strong>Delete an existing user:</strong></p>
-            <input class="input is-medium is-primary" type="text" name="delete_user" placeholder="Enter ID of an existing user."/>
-            <input type="submit" id="delete_button" class="modal-button button is-dark" value="Remove"/>
-        </div>
+<div class="table-container is-hidden" id="the_table">
 
-        {% if result %}
-            {% if result.startswith("Error:") %}
-                <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
-            {% else %}
-                <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
-            {% end %}
-        {% end %}
-
-        </form>
-    </div>
 </div>
+
+<div id="result_message" class="is-hidden">
+</div>
+
+<script>
+    function showMatchingUsers() {
+        $("#result_message").addClass("is-hidden");
+        $("#the_table")[0].innerHTML = "";
+
+        let pattern = $("#search_input")[0].value;
+
+        if (pattern.length <= 1)
+            return;
+
+        $.ajax({
+            type: 'POST',
+            url: `/manage_users`,
+            data: pattern,
+            async: true
+            })
+            .done(function(result) {
+                let result_obj = JSON.parse(result);
+
+                if (result_obj["message"] == "") {
+                    if (result_obj["users"].length > 0) {
+                        renderTable(result_obj["users"]);
+                    }
+                    else {
+                        $("#result_message")[0].innerHTML = "There are no matches.";
+                        $("#result_message").removeClass("is-hidden");
+                    }
+                }
+                else {
+                    $("#result_message")[0].innerHTML = `<pre>${result_obj["message"]}</pre>`;
+                    $("#result_message").removeClass("is-hidden");
+                }
+            })
+            .fail(function(result) {
+                $("#result_message")[0].innerHTML = "<pre>An error occurred when connecting to the server.</pre>";
+                $("#result_message").removeClass("is-hidden");
+                console.log(result);
+            });
+    }
+
+    function renderTable(users) {
+        const table_container = document.getElementById('the_table');
+        table_container.innerHTML = "";
+
+        const table = document.createElement('table');
+
+        const header_row = document.createElement('tr');
+        const header_items = ["User ID", "Name", ""]
+        header_items.forEach((text) => {
+                const cell = document.createElement('th');
+                cell.textContent = text;
+                header_row.appendChild(cell);
+            });
+
+        table.appendChild(header_row);
+
+        users.forEach((table_row) => {
+            const row = document.createElement('tr');
+
+            // User ID
+            var cell = document.createElement('td');
+            cell.textContent = table_row["user_id"];
+            row.appendChild(cell);
+
+            // Name
+            cell = document.createElement('td');
+            cell.textContent = table_row["name"];
+            row.appendChild(cell);
+
+            // Delete button
+            cell = document.createElement('td');
+            cell.innerHTML = `<a class='button is-dark' href='/delete_user/${table_row["user_id"]}'>Delete account</a>`;
+            row.appendChild(cell);
+            
+            table.appendChild(row);
+        });
+
+        table.classList.add("table");
+        // This doesn't seem to work
+        table.classList.add("is-striped");
+        table.classList.add("is-hoverable");
+
+        table_container.appendChild(table);
+
+        $("#the_table").removeClass("is-hidden");
+    }
+
+    showMatchingUsers();
+</script>

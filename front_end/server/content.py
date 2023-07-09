@@ -47,18 +47,28 @@ class Content:
         if len(sql_statements) != len(params_list):
             raise Exception(f"The size of sql_statements ({len(sql_statements)}) must be identical to the size of param_tuples ({len(params_list)}).")
 
-        cursor = self.conn.cursor()
-        cursor.execute("BEGIN")
-
         lastrowid = -1
-        for i, sql in enumerate(sql_statements):
-            cursor.execute(sql, params_list[i])
+        exception = None
+        cursor = self.conn.cursor()
 
-            if i == lastrowid_index:
-                lastrowid = cursor.lastrowid
+        try:
+            cursor.execute("BEGIN TRANSACTION")
 
-        self.conn.commit()
-        cursor.close()
+            for i, sql in enumerate(sql_statements):
+                cursor.execute(sql, params_list[i])
+
+                if i == lastrowid_index:
+                    lastrowid = cursor.lastrowid
+
+            self.conn.commit()
+        except sqlite3.Error as e:
+            exception = e
+            self.conn.rollback()
+        finally:
+            cursor.close()
+
+        if exception is not None:
+            raise exception
 
         return lastrowid
 
@@ -393,18 +403,18 @@ class Content:
 
         rows = self.fetchall(sql, (role, course_id,))
         return [row["user_id"] for row in rows]
+    
+    def get_users_to_manage(self, pattern):
+        sql = '''SELECT DISTINCT u.user_id, u.name
+                 FROM users u
+                 LEFT JOIN permissions p
+                   ON u.user_id = p.user_id
+                 WHERE (p.role IS NULL OR p.role != 'administrator')
+                   AND (u.user_id LIKE ? OR u.name LIKE ?)
+                 ORDER BY u.name'''
 
-    def get_course_id_from_role(self, user_id):
-        sql = '''SELECT course_id
-                 FROM permissions
-                 WHERE user_id = ?'''
-
-        row = self.fetchone(sql, (user_id,))
-
-        if row:
-            return row["course_id"]
-        else:
-            return -1 # The user is a student.
+        rows = self.fetchall(sql, (pattern, pattern,))
+        return [{"user_id": row["user_id"], "name": row["name"]} for row in rows]
 
     def set_user_dict_defaults(self, user_dict):
         if "name" not in user_dict:
@@ -509,7 +519,7 @@ class Content:
 
         self.update_when_content_updated("user")            
 
-    def remove_permissions(self, course_id, user_id, role):
+    def remove_course_permissions(self, course_id, user_id, role):
         sql = '''DELETE FROM permissions
                  WHERE user_id = ?
                    AND role = ?
@@ -2145,31 +2155,21 @@ class Content:
 
         self.update_when_content_updated("user")
 
-    def remove_user_submissions(self, user_id):
-        sql = '''SELECT submission_id
-                 FROM submissions
-                 WHERE user_id = ?'''
-
-        submissions = self.fetchall(sql, (user_id,))
-
-        if submissions:
-            sql = '''DELETE FROM scores
-                     WHERE user_id = ?'''
-            self.execute(sql, (user_id,))
-
-            sql = '''DELETE FROM submissions
-                     WHERE user_id = ?'''
-            self.execute(sql, (user_id,))
-
-            return True
-        else:
-            return False
-
     def delete_user(self, user_id):
-        sql = '''DELETE FROM users
-                  WHERE user_id = ?'''
+        sql = '''SELECT course_id
+                 FROM course_registrations
+                 WHERE user_id = ?'''
+        
+        for row in self.fetchall(sql, (user_id,)):
+            self.update_when_content_updated(row["course_id"])
 
-        self.execute(sql, (user_id,))
+        sql_statements = []
+        params_list = []
+        for table_name in ["course_registrations", "presubmissions", "user_assignment_starts", "help_requests", "scores", "submissions", "permissions", "users"]:
+            sql_statements.append(f"DELETE FROM {table_name} WHERE user_id = ?")
+            params_list.append((user_id, ))
+        
+        self.execute_multiple(sql_statements, params_list)
 
         self.update_when_content_updated("user")
 

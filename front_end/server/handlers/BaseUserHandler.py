@@ -20,6 +20,10 @@ class BaseUserHandler(BaseRequestHandler):
             self.total_headers_size = sum(len(key) + len(value) for key, value in self.request.headers.items())
 
             self.update_cached_variable("user", "user_info", self.content.get_user_info, self.get_current_user())
+
+            if self.user_info["user_id"] is None:
+                self.redirect("/logout")
+
             self.update_cached_variable("user", "is_administrator", self.content.is_administrator, self.get_current_user())
             self.update_cached_variable("user", "courses", self.content.get_registered_courses, self.get_current_user())
         except Exception as inst:
@@ -162,7 +166,7 @@ class BaseUserHandler(BaseRequestHandler):
                 setattr(self, variable_name, self.set_content_cookie(variable_name, function_name(*args, **kwargs), cookie_expiration_days))
                 # print(f"got here4 - {variable_name}")
         # else:
-            # print(f"got here5 - {variable_name}")
+        #     print(f"got here5 - {variable_name}")
 
         return getattr(self, variable_name)
 

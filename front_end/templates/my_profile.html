@@ -1,0 +1,12 @@
+<h3>My profile</h3>
+
+<p><strong>User ID:</strong> {{ user_info['user_id'] }}</p>
+<p><strong>First name:</strong> {{ user_info['given_name'] }}</p>
+<p><strong>Last name:</strong> {{ user_info['family_name'] }}</p>
+<p><strong>Email address:</strong> {{ user_info['email_address'] }}</p>
+
+{% if not is_administrator %}
+    <p>
+        <a class="button is-danger is-outlined" href="/delete_user/{{ user_info['user_id'] }}">Delete my account</a>
+    </p>
+{% end %}
