@@ -1,0 +1,10 @@
+# You must obtain this key directly from OpenAI.
+api_key: "abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvw"
+# Use one of the GPT models, as outlined here: https://platform.openai.com/docs/models/overview
+model: "gpt-4-0314"
+# The temperature should be a numeric value between 0 and 1. Values closer to one mean the outputs will be more deterministic.
+temperature: 0.7
+# How long (in seconds) before the client's request to the API will time out.
+timeout: 60
+# What is the maximum number of interactions allowed per exercise? 0 = unlimited.
+max_per_exercise: 0
