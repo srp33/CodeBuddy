@@ -27,11 +27,10 @@ if content.fetchone(check_sql)["count"] > 0:
     print("***NotNeeded***")
 else:
     sql_statements = read_file(migrate_file_path).split(";")
+    params_list = [() for x in sql_statements]
 
     try:
-        for sql in sql_statements:
-            print(sql)
-            content.execute(sql)
+        content.execute_multiple(sql_statements, params_list)
         print("***Success***")
     except:
         print(traceback.format_exc())

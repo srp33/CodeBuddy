@@ -127,10 +127,13 @@ function showSuccessMessage(submission) {
     {% if exercise_details["allow_any_response"] %}
         let message = "Thank you for your submission.";
     {% else %}
+        // let share_message = "<button class='button is-pulled-right' onclick='showLinkModal()'>Share your success!&nbsp;&nbsp;&nbsp;<span class='icon'><i class='fas fa-share'></i></span></button>";
+        let share_message = "";
+
         {% if len(exercise_details["tests"]) == 1 %}
-            var message = "Congratulations! Your solution passes the test.";
+            var message = "Congratulations! Your solution passes the test." + share_message;
         {% else %}
-            var message = "Congratulations! Your solution passes all of the tests.";
+            var message = "Congratulations! Your solution passes all of the tests." + share_message;
         {% end %}
 
         if (submission.partner_name != null)
@@ -542,20 +545,22 @@ function save_presubmission() {
     });
 }
 
-/*function showLinkModal() {
-    var modal = document.getElementById("share_modal");
-    var span = document.getElementsByClassName("close")[0];
-    var copyText = document.getElementById("share_link");
-    modal.style.display = "block";
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-}*/
+// function showLinkModal() {
+//     var modal = document.getElementById("share_modal");
+//     var span = document.getElementsByClassName("close")[0];
+//     var copyText = document.getElementById("share_link");
+//     modal.style.display = "block";
+    
+//     span.onclick = function() {
+//         modal.style.display = "none";
+//     }
+
+//     window.onclick = function(event) {
+//         if (event.target == modal) {
+//             modal.style.display = "none";
+//         }
+//     }
+// }
 
 /*function copyLink() {
     var copyText = document.getElementById("share_link");
