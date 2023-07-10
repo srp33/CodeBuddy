@@ -169,7 +169,7 @@
                             {% if help_request["more_info_needed"] %}
                                 <a class="button is-danger is-light" onclick="showHelpRequestModal()">More info needed</a>
                             {% elif same_suggestion %}
-                                <a class="button is-success is-light" onclick="showMatchingModal()">Matching suggestion</a>
+                                <a class="button is-primary is-light" onclick="showMatchingModal()">Matching suggestion</a>
                             {% elif help_request["approved"] %}
                                 <a class="button is-primary" onclick="showSuggestionModal()">View suggestion</a>
                             {% else %}

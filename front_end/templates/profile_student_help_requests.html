@@ -22,7 +22,7 @@
                             {% if request["more_info_needed"] %}
                                 <td><a href="/exercise/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}" class="button is-danger is-light">More info needed</a></td>
                             {% elif request["approved"] %}
-                                <td><a href="/exercise/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}" class="button is-success is-light">View suggestion</a></td>
+                                <td><a href="/exercise/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}" class="button is-primary is-light">View suggestion</a></td>
                             {% else %}
                                 <td><a href="/exercise/{{ request['course_id'] }}/{{ request['assignment_id'] }}/{{ request['exercise_id'] }}" class="button is-warning is-light">Request pending</a></td>
                             {% end %}

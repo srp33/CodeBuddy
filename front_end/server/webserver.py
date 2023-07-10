@@ -154,7 +154,7 @@ if __name__ == "__main__":
             if os.path.isfile(f"migration_scripts/{migration}.py"):
                 command = f"python3 migration_scripts/{migration}.py"
             else:
-                command = f"python3 migration_scripts/migrate.py {migration}"
+                command = f"python3 migration_scripts/migrate.py {migration} {v}"
 
             result = run_command(command)
 

@@ -9,6 +9,7 @@ from helper import *
 
 # Example value: 8_to_9
 migration_numbers = sys.argv[1]
+version = int(sys.argv[2])
 
 # There must be two SQL files for each migration. One checks
 # whether the migration has already occurred. The other modifies the
@@ -31,6 +32,10 @@ else:
 
     try:
         content.execute_multiple(sql_statements, params_list)
+
+        if version >= 39:
+            content.update_all_when_content_updated()
+    
         print("***Success***")
     except:
         print(traceback.format_exc())

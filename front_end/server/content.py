@@ -270,6 +270,12 @@ class Content:
         except:
             print(traceback.format_exc())
 
+    def update_all_when_content_updated(self):
+        sql = '''UPDATE when_content_updated
+                 SET when_updated = datetime('now')'''
+
+        self.execute(sql, ())
+
     def delete_content_updated(self, scope):
         sql = '''DELETE FROM when_content_updated
                  WHERE scope = ?'''
@@ -1537,11 +1543,11 @@ class Content:
         course_basics["title"] = title
         course_basics["visible"] = visible
 
-    def specify_course_details(self, course_details, introduction, passcode, allow_students_download_submissions, date_created, date_updated):
+    def specify_course_details(self, course_details, introduction, passcode, allow_students_download_submissions, virtual_buddy_config, date_created, date_updated):
         course_details["introduction"] = introduction
         course_details["passcode"] = passcode
         course_details["allow_students_download_submissions"] = allow_students_download_submissions
-
+        course_details["virtual_buddy_config"] = virtual_buddy_config
         course_details["date_updated"] = date_updated
 
         if course_details["date_created"]:
@@ -1553,7 +1559,7 @@ class Content:
         assignment_basics["title"] = title
         assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls):
+    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, use_virtual_buddy):
         assignment_details["introduction"] = introduction
         assignment_details["date_updated"] = date_updated
         assignment_details["start_date"] = start_date
@@ -1568,6 +1574,7 @@ class Content:
         assignment_details["restrict_other_assignments"] = restrict_other_assignments
         assignment_details["allowed_ip_addresses"] = allowed_ip_addresses
         assignment_details["allowed_external_urls"] = allowed_external_urls
+        assignment_details["use_virtual_buddy"] = use_virtual_buddy
 
         if assignment_details["date_created"]:
             assignment_details["date_created"] = date_created
@@ -1679,12 +1686,12 @@ class Content:
         return row["code"] if row else None
 
     def get_course_details(self, course_id):
-        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "allow_students_download_submissions": False}
+        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "allow_students_download_submissions": False, "virtual_buddy_config": None}
 
         if not course_id:
             return null_course
 
-        sql = '''SELECT introduction, passcode, date_created, date_updated, allow_students_download_submissions
+        sql = '''SELECT introduction, passcode, date_created, date_updated, allow_students_download_submissions, virtual_buddy_config
                  FROM courses
                  WHERE course_id = ?'''
 
@@ -1693,7 +1700,7 @@ class Content:
         if not row:
             return null_course
 
-        course_details = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "allow_students_download_submissions": row["allow_students_download_submissions"]}
+        course_details = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "allow_students_download_submissions": row["allow_students_download_submissions"], "virtual_buddy_config": row["virtual_buddy_config"]}
 
         sql = '''SELECT COUNT(*) > 0 AS yes
                  FROM assignments
@@ -1705,12 +1712,12 @@ class Content:
         return course_details
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "due_date_passed": None}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "use_virtual_buddy": False, "due_date_passed": None}
 
         if not assignment_id:
             return null_assignment
 
-        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, allowed_ip_addresses, allowed_external_urls, has_timer, hour_timer, minute_timer, restrict_other_assignments
+        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, allowed_ip_addresses, allowed_external_urls, use_virtual_buddy, has_timer, hour_timer, minute_timer, restrict_other_assignments
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -1720,7 +1727,7 @@ class Content:
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "due_date_passed": None}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "use_virtual_buddy": row["use_virtual_buddy"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "due_date_passed": None}
 
         curr_datetime = datetime.utcnow()
         if assignment_dict["due_date"]:
@@ -1834,17 +1841,17 @@ class Content:
     def save_course(self, course_basics, course_details):
         if course_basics["exists"]:
             sql = '''UPDATE courses
-                     SET title = ?, visible = ?, introduction = ?, passcode = ?, allow_students_download_submissions = ?, date_updated = ?
+                     SET title = ?, visible = ?, introduction = ?, passcode = ?, allow_students_download_submissions = ?, virtual_buddy_config = ?, date_updated = ?
                      WHERE course_id = ?'''
 
-            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_updated"], course_basics["id"]])
+            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_buddy_config"], course_details["date_updated"], course_basics["id"]])
 
             self.update_when_content_updated(course_basics["id"])
         else:
-            sql = '''INSERT INTO courses (title, visible, introduction, passcode, allow_students_download_submissions, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO courses (title, visible, introduction, passcode, allow_students_download_submissions, virtual_buddy_config, date_created, date_updated)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            course_basics["id"] = self.execute(sql, (course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["date_created"], course_details["date_updated"], ))
+            course_basics["id"] = self.execute(sql, (course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_buddy_config"], course_details["date_created"], course_details["date_updated"], ))
             course_basics["exists"] = True
 
             self.update_when_content_updated("user")
@@ -1854,16 +1861,16 @@ class Content:
     def save_assignment(self, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, enable_help_requests = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, restrict_other_assignments = ?, allowed_ip_addresses = ?, allowed_external_urls = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, enable_help_requests = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, restrict_other_assignments = ?, allowed_ip_addresses = ?, allowed_external_urls = ?, use_virtual_buddy = ?
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["use_virtual_buddy"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, use_virtual_buddy)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"]])
+            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["use_virtual_buddy"]])
             assignment_basics["exists"] = True
 
         self.update_when_content_updated(assignment_basics["course"]["id"])
@@ -2048,16 +2055,16 @@ class Content:
         self.execute(sql, (suggestion, approved, suggester_id, approver_id,  more_info_needed, course_id, assignment_id, exercise_id, user_id,))
 
     async def copy_course(self, existing_course_basics, new_course_title):
-        sql = '''INSERT INTO courses (title, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated)
-                 SELECT ?, introduction, visible, passcode, allow_students_download_submissions, date_created, date_updated
+        sql = '''INSERT INTO courses (title, introduction, visible, passcode, allow_students_download_submissions, virtual_buddy_config, date_created, date_updated)
+                 SELECT ?, introduction, visible, passcode, allow_students_download_submissions, virtual_buddy_config, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 
         new_course_id = self.execute(sql, (new_course_title, existing_course_basics['id'],))
 
         for assignment_basics in self.get_assignments(existing_course_basics):
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls)
-                     SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, use_virtual_buddy)
+                     SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, use_virtual_buddy
                      FROM assignments
                      WHERE course_id = ?
                        AND assignment_id = ?'''
@@ -2100,8 +2107,8 @@ class Content:
         self.update_when_content_updated(new_course_id)
 
     def copy_assignment(self, course_id, assignment_id, new_title):
-        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls)
-                 SELECT course_id, ?, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls
+        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, use_virtual_buddy)
+                 SELECT course_id, ?, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, use_virtual_buddy
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''

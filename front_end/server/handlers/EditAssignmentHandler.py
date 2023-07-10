@@ -5,6 +5,7 @@ class EditAssignmentHandler(BaseUserHandler):
     async def get(self, course_id, assignment_id):
         try:
             course_basics = await self.get_course_basics(course_id)
+            course_details = await self.get_course_details(course_id)
             assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
             if self.is_administrator or await self.is_instructor_for_course(course_id):
@@ -12,7 +13,7 @@ class EditAssignmentHandler(BaseUserHandler):
                 hour_options = list(range(13))
                 minute_options = list(range(61))
 
-                self.render("edit_assignment.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=await self.get_assignment_details(course_basics, assignment_id), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                self.render("edit_assignment.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=course_details, assignment_basics=assignment_basics, assignment_details=await self.get_assignment_details(course_basics, assignment_id), percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -25,6 +26,7 @@ class EditAssignmentHandler(BaseUserHandler):
                 return
 
             course_basics = await self.get_course_basics(course_id)
+            course_details = await self.get_course_details(course_id)
             assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
             assignment_details = await self.get_assignment_details(course_basics, assignment_id)
 
@@ -38,6 +40,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["enable_help_requests"] = False
             assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").strip()
             assignment_details["allowed_external_urls"] = self.get_body_argument("allowed_external_urls")
+            assignment_details["use_virtual_buddy"] = self.get_body_argument("use_virtual_buddy") == "Yes"
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()
@@ -102,7 +105,7 @@ class EditAssignmentHandler(BaseUserHandler):
                             if assignment_details["has_timer"] and assignment_details["hour_timer"] == 0 and assignment_details["minute_timer"] == 0:
                                 result = "Error: A timer must be longer than zero minutes."
                             else:
-                                self.content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, dt.datetime.utcnow(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"])
+                                self.content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, dt.datetime.utcnow(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["use_virtual_buddy"])
 
                                 assignment_id = self.content.save_assignment(assignment_basics, assignment_details)
 
@@ -114,6 +117,6 @@ class EditAssignmentHandler(BaseUserHandler):
             hour_options = list(range(13))
             minute_options = list(range(61))
 
-            self.render("edit_assignment.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_info=self.user_info, is_administrator=self.is_administrator)
+            self.render("edit_assignment.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=course_details, assignment_basics=assignment_basics, assignment_details=assignment_details, percentage_options=percentage_options, hour_options=hour_options, minute_options=minute_options, result=result, user_info=self.user_info, is_administrator=self.is_administrator)
         except Exception as inst:
             render_error(self, traceback.format_exc())

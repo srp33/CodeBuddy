@@ -71,9 +71,9 @@
 
         {% if result %}
             {% if result.startswith("Error:") %}
-                <p><div class="notification error-message"><strong>{{ result }}</strong></div></p>
+                <p><div class="notification is-danger"><strong>{{ result }}</strong></div></p>
             {% else %}
-                <p><div class="notification success-message"><strong>{{ result }}</strong></div></p>
+                <p><div class="notification is-primary"><strong>{{ result }}</strong></div></p>
             {% end %}
         {% end %}
 
