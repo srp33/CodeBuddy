@@ -102,86 +102,121 @@
                 <script>startTimer();</script>
             {% end %}
 
-            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
-                <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
-            {% end %}
+            <div class="columns">
+                {% if assignment_details["use_virtual_assistant"] %}
+                <!--<div class="column is-three-quarters mt-0">-->
+                    <div class="column is-two-thirds mt-0">
+                {% else %}
+                    <div class="column is-full mt-0">
+                {% end %}
 
-            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
-                <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
-            {% end %}
-
-            {% if is_administrator or is_instructor or is_assistant %}
-                <div class="buttons">
-                    <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
-                </div>
-            {% end %}
-
-            <div class="instructions">
-                <div id="instructions">
-                    {{ exercise_details["instructions"] }}
-                    
-                    {% if "previous_submission_code" in exercise_details %}
-                        <p><a class="button is-primary is-outlined" onclick="copy_code_from_previous_exercise()">Copy code from previous exercise</a></p>
+                    {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
+                        <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
                     {% end %}
-                </div>
 
-                {% if exercise_basics["enable_pair_programming"] %}
-                    <hr>
-                    <p><i style='margin: 0 .5em;' class="fab fa-product-hunt"></i><em>Pair programming is enabled for this exercise.</em></p>
-                {% end %}
-            </div>
+                    {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
+                        <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
+                    {% end %}
 
-            {% if len(exercise_details["data_files"]) > 0 %}
-                <div id="data_file_div" class="top-space">
-                <h6>Data files:</h6>
-
-                {% for data_file_index in range(len(exercise_details["data_files"])) %}
-                    <p>
-                        <!--File name-->
-                        <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">{{ sorted(list(exercise_details["data_files"].keys()))[data_file_index] }}</a>
-
-                        <!--Toggle button-->
-                        <a class="button is-white" id="data_button_{{ data_file_index }}" onclick="showHideData('data_panel_{{ data_file_index }}', 'data_button_{{ data_file_index }}')">Show</a>
-
-                        <!--File contents-->
-                        <pre id="data_panel_{{ data_file_index }}" hidden>
-                            {{ exercise_details["data_files"][sorted(list(exercise_details["data_files"].keys()))[data_file_index]].rstrip("\n") }}
-                        </pre>
-                    </p>
-                {% end %}
-                </div>
-            {% end %}
-
-            {% if exercise_details["hint"] != "" %}
-                <div class="top-space">
-                    <button id="hint_button" class="button is-warning" onclick="showHideHint()">Show hint</button>
-                </div>
-
-                <div id="hint_text" class="is-hidden hint-text"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
-            {% end %}
-
-            <p class="top-space" id="user_code_area">
-                <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and len(submissions) == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
-                <!--
-                {% if assignment_details["enable_help_requests"] %}
-                    <div class="buttons is-pulled-right">
-                        {% if help_request %}
-                            {% if help_request["more_info_needed"] %}
-                                <a class="button is-danger is-light" onclick="showHelpRequestModal()">More info needed</a>
-                            {% elif same_suggestion %}
-                                <a class="button is-primary is-light" onclick="showMatchingModal()">Matching suggestion</a>
-                            {% elif help_request["approved"] %}
-                                <a class="button is-primary" onclick="showSuggestionModal()">View suggestion</a>
-                            {% else %}
-                                <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
+                    <div class="has-background-white mt-0 p-4">
+                        <div id="instructions">
+                            {{ exercise_details["instructions"] }}
+                            
+                            {% if "previous_submission_code" in exercise_details %}
+                                <p><a class="button is-primary is-outlined" onclick="copy_code_from_previous_exercise()">Copy code from previous exercise</a></p>
                             {% end %}
-                        {% else %}
-                            <a class="button is-white" onclick="showHelpRequestModal()">Request help</a>
+                        </div>
+
+                        {% if exercise_basics["enable_pair_programming"] %}
+                            <hr>
+                            <p><i style='margin: 0 .5em;' class="fab fa-product-hunt"></i><em>Pair programming is enabled for this exercise.</em></p>
                         {% end %}
                     </div>
+
+                    {% if len(exercise_details["data_files"]) > 0 %}
+                        <div id="data_file_div" class="top-space">
+                        <h6>Data files:</h6>
+
+                        {% for data_file_index in range(len(exercise_details["data_files"])) %}
+                            <p>
+                                <!--File name-->
+                                <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">{{ sorted(list(exercise_details["data_files"].keys()))[data_file_index] }}</a>
+
+                                <!--Toggle button-->
+                                <a class="button is-white" id="data_button_{{ data_file_index }}" onclick="showHideData('data_panel_{{ data_file_index }}', 'data_button_{{ data_file_index }}')">Show</a>
+
+                                <!--File contents-->
+                                <pre id="data_panel_{{ data_file_index }}" hidden>
+                                    {{ exercise_details["data_files"][sorted(list(exercise_details["data_files"].keys()))[data_file_index]].rstrip("\n") }}
+                                </pre>
+                            </p>
+                        {% end %}
+                        </div>
+                    {% end %}
+
+                    {% if exercise_details["hint"] != "" %}
+                        <div class="top-space">
+                            <button id="hint_button" class="button is-warning" onclick="showHideHint()">Show hint</button>
+                        </div>
+
+                        <div id="hint_text" class="is-hidden hint-text"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
+                    {% end %}
+
+                    <p class="top-space" id="user_code_area">
+                        <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and len(submissions) == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+                        <!--
+                        {% if assignment_details["enable_help_requests"] %}
+                            <div class="buttons is-pulled-right">
+                                {% if help_request %}
+                                    {% if help_request["more_info_needed"] %}
+                                        <a class="button is-danger is-light" onclick="showHelpRequestModal()">More info needed</a>
+                                    {% elif same_suggestion %}
+                                        <a class="button is-primary is-light" onclick="showMatchingModal()">Matching suggestion</a>
+                                    {% elif help_request["approved"] %}
+                                        <a class="button is-primary" onclick="showSuggestionModal()">View suggestion</a>
+                                    {% else %}
+                                        <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
+                                    {% end %}
+                                {% else %}
+                                    <a class="button is-white" onclick="showHelpRequestModal()">Request help</a>
+                                {% end %}
+                            </div>
+                        {% end %}
+                        -->
+                    </p>
+                </div>
+
+                {% if assignment_details["use_virtual_assistant"] %}
+                    <!--<div class="column is-one-quarter has-background-white is-outlined mt-3 mb-3">-->
+                    <div class="column is-one-third has-background-white is-outlined mt-3 mb-3">
+                        <p class="is-size-5"><em>Hello, I am your virtual assistant!</em></p>
+
+                        <p class="is-size-5" id="virtual_assistant_message">Do your best to solve this exercise. But if you get stuck, you can enter a question below.</p>
+
+                        <p><textarea id="virtual_assistant_input" class="textarea is-medium is-info" style="font-family: sans-serif;" placeholder="Enter your question here."></textarea></p>
+
+                        <button id="virtual_assistant_button" class="button is-info is-outlined m-0" onclick="askVirtualAssistant()">Ask</button>
+
+                        {% if virtual_assistant_max_per_exercise > 0 %}
+                            <div class="smaller-font is-pulled-right mt-2 mr-1">
+                                <em>
+                                    <span id="virtual_assistant_questions_allowed_prefix"></span>
+                                    
+                                    <span id="virtual_assistant_questions_allowed">
+                                        {{ virtual_assistant_max_per_exercise }}
+                                    </span>
+
+                                    <span id="virtual_assistant_questions_allowed_suffix"></span>
+
+                                    questions allowed
+                                </em>
+                            </div>
+                        {% end %}
+
+                        <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden" style="max-height: 500px; overflow-y: auto;"></div>
+                    </div>
                 {% end %}
-                -->
-            </p>
+            </div>
 
             <div id="saved_div" class="ml-0 mt-0 mr-2 is-pulled-right mt-0 smaller-font"></div>
 
@@ -194,14 +229,10 @@
                     <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
                 {% end %}
 
-                {% if exercise_details["allow_any_response"] or exercise_details["back_end"] == "not_code" %}
-                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
-                {% else %}
-                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution against the expected output, click on 'Submit'. If you would like to see the output of your solution without officially submitting it, click on 'Run'. If you highlight a section of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation. There is also an option for commenting sections of code. To do this, highlight the code you wish to comment; then enter Command + / (Mac) or Control + / (Windows) to comment the code. If it is already commented, this will uncomment the code." />
-                {% end %}
+                <!--<a class="button is-medium is-dark is-outlined" onclick="showHelpModal()">Help</a>-->
 
-                <span class="icon mt-0">
-                    <i class="far fa-question-circle fa-1x"></i>
+                <span class="icon mb-2 ml-1">
+                    <i class="far fa-question-circle" style="cursor: pointer;" onclick="showHelpModal()"></i>
                 </span>
             </div>
 
@@ -236,6 +267,10 @@
             {% end %}
 
             <div class="buttons">
+                {% if is_administrator or is_instructor or is_assistant %}
+                    <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+                {% end %}
+
                 {% if prev_exercise %}
                     <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
                 {% end %}
@@ -340,7 +375,145 @@
                 </div>
             </div>-->
 
+            <div id="help_modal" class="modal">
+                <div class="modal-content">
+                    {% if exercise_details["allow_any_response"] or exercise_details["back_end"] == "not_code" %}
+                        <p>After you have entered your response, click on the Submit button.</p>
+                    {% else %}
+                        <p>When you are ready to test your solution, click on the Submit button. If you would like to see the outputs of your solution without submitting it, click on the Run button. If you highlight a section of code and hit the Tab key, it will indent all lines of code in the section. If you hit Shift-Tab, it will reduce the indentation. There is also an option for commenting sections of code. To do this, highlight the code you wish to comment; then enter Command + / (Mac) or Control + / (Windows). If it is already commented, this will uncomment the code.</p>
+                    {% end %}
+
+                    <p>
+                        <button id="help_modal_close" class="button is-dark">Close</button>
+                    </p>
+                </div>
+            </div>
+
             <script>
+                function showHelpModal() {
+                    var modal = document.getElementById("help_modal");
+                    modal.style.display = "block";
+
+                    var span = document.getElementById("help_modal_close");
+
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                          modal.style.display = "none";
+                        }
+                    }
+                }
+
+                {% if assignment_details["use_virtual_assistant"] %}
+                    function askVirtualAssistant() {
+                        let input_element = document.getElementById("virtual_assistant_input");
+                        let output_element = document.getElementById("virtual_assistant_output");
+
+                        let input = input_element.value;
+
+                        if (input.trim().length == 0)
+                            return;
+
+                        addVirtualAssistantEcho(input, output_element);
+                        output_element.classList.remove("is-hidden");
+
+                        var response_element = createVirtualAssistantResponse("Please wait...", output_element);
+
+                        let data = {"question": input};
+
+                        $.ajax({
+                            type: 'POST',
+                            url: "/ask_virtual_assistant/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                            data: data,
+                            async: true,
+                        }).done(function(result) {
+                            let result_dict = JSON.parse(result);
+
+                            if (result_dict.success) {
+                                response_element.classList.add('has-text-info');
+                                allowed_element.innerHTML = allowed_element.innerHTML - 1;
+
+                                data["response"] = result_dict["message"];
+                                virtual_assistant_interactions.push(data);
+                                checkMaxVirtualAssistantQuestionsAsked();
+                            } else {
+                                response_element.classList.add('has-text-danger');
+                            }
+
+                            response_element.innerHTML = result_dict.message;
+                        })
+                        .fail(function(result) {
+                            console.log(result);
+                            response_element.classList.add('has-text-danger');
+                            response_element.innerHTML = result;
+                        });
+                    }
+
+                    function addVirtualAssistantEcho(input, output_element) {
+                        var echo_element = document.createElement('div');
+                        echo_element.classList.add('has-text-dark', 'has-background-light', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
+                        echo_element.innerHTML += `You asked: ${input}`;
+
+                        output_element.insertBefore(echo_element, output_element.firstChild);
+                    }
+
+                    function createVirtualAssistantResponse(message, output_element) {
+                        var response_element = document.createElement('div');
+                        response_element.classList.add('has-background-light', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
+                        response_element.innerHTML += message;
+
+                        output_element.insertBefore(response_element, output_element.firstChild);
+
+                        return response_element;
+                    }
+
+                    {% if virtual_assistant_max_per_exercise > 0 %}
+                        function checkMaxVirtualAssistantQuestionsAsked() {
+                            if (allowed_element.innerHTML <= 0) {
+                                document.getElementById("virtual_assistant_message").classList.add("has-text-grey-lighter");
+                                document.getElementById("virtual_assistant_input").disabled = true;
+                                document.getElementById("virtual_assistant_button").disabled = true;
+                            }
+
+                            console.log("got here34");
+                            console.log(virtual_assistant_interactions);
+                            console.log(virtual_assistant_interactions.length);
+                            if (virtual_assistant_interactions.length == 0) {
+                                document.getElementById("virtual_assistant_questions_allowed_prefix").innerHTML = "Up to ";
+                                document.getElementById("virtual_assistant_questions_allowed_suffix").innerHTML = "";
+                            }
+                            else {
+                                document.getElementById("virtual_assistant_questions_allowed_prefix").innerHTML = "";
+                                document.getElementById("virtual_assistant_questions_allowed_suffix").innerHTML = "more ";
+                            }
+                        }
+
+                        let virtual_assistant_interactions = JSON.parse("{{ virtual_assistant_interactions }}");
+                        let max_questions_per_exercise = {{ virtual_assistant_max_per_exercise }};
+
+                        let allowed_element = document.getElementById("virtual_assistant_questions_allowed");
+
+                        allowed_element.innerHTML = Math.max(0, max_questions_per_exercise - virtual_assistant_interactions.length);
+
+                        checkMaxVirtualAssistantQuestionsAsked();
+                    {% end %}
+
+                    let output_element = document.getElementById("virtual_assistant_output");
+
+                    if (virtual_assistant_interactions.length > 0) {
+                        output_element.classList.remove("is-hidden");
+                    }
+                    
+                    for (let interaction of virtual_assistant_interactions) {
+                        addVirtualAssistantEcho(interaction.question, output_element);
+                        let response_element = createVirtualAssistantResponse(interaction.response, output_element);
+                        response_element.classList.add('has-text-info');
+                    }
+                {% end %}
+
                 ace.require("ace/ext/language_tools");
 
                 var editor = ace.edit("user_code", {

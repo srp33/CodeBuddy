@@ -76,9 +76,9 @@
 </div>
 
 <div class="shadow-box">
-    <p><strong>Virtual Buddy configuration (optional): </strong><br/>This feature is currently <em>experimental</em>. When it is enabled, you can configure assignments in the course to help students when they are stuck on programming exercises. It uses the <em>Chat Completions</em> endpoint of <a href="https://platform.openai.com/docs/guides/gpt/chat-completions-api" target="_blank">OpenAI's API</a> (similar to what is used by ChatGPT). To enable this feature, you must specify configuration information in YAML format, as shown in <a href="https://github.com/srp33/CodeBuddy/blob/master/examples/openai_example.yaml" target="_blank">this example</a>. Please note that you must indicate whether this feature is enabled in the settings for <em>each assignment</em>.
+    <p><strong>Virtual Assistant configuration (optional): </strong><br/>This feature is currently <em>experimental</em>. The goal is to automate the process of helping students when they are stuck on programming exercises. It uses the <em>Chat Completions</em> endpoint of <a href="https://platform.openai.com/docs/guides/gpt/chat-completions-api" target="_blank">OpenAI's API</a> (similar to what is used by ChatGPT). To enable this feature, you must specify configuration information in YAML format, as shown in <a href="https://github.com/srp33/CodeBuddy/blob/master/examples/openai_example.yaml" target="_blank">this example</a>. Then you must indicate whether this feature is enabled in the settings for <em>each assignment</em>.
 
-    <p><textarea name="virtual_buddy_config" class="textarea is-grey is-medium is-fullwidth monospace" rows="5">{% if course_details["virtual_buddy_config"] %}{{ course_details["virtual_buddy_config"] }}{% end %}</textarea></p>
+    <p><textarea name="virtual_assistant_config" class="textarea is-grey is-medium is-fullwidth monospace" rows="5">{% if course_details["virtual_assistant_config"] %}{{ course_details["virtual_assistant_config"] }}{% end %}</textarea></p>
 </div>
 
 <p class="buttons">

@@ -33,10 +33,10 @@ class EditCourseHandler(BaseUserHandler):
 
             course_details["allow_students_download_submissions"] = self.get_body_argument("allow_students_download_submissions") == "Yes"
 
-            virtual_buddy_config = self.get_body_argument("virtual_buddy_config")
-            if virtual_buddy_config.strip() == "":
-                virtual_buddy_config = None
-            course_details["virtual_buddy_config"] = virtual_buddy_config
+            virtual_assistant_config = self.get_body_argument("virtual_assistant_config")
+            if virtual_assistant_config.strip() == "":
+                virtual_assistant_config = None
+            course_details["virtual_assistant_config"] = virtual_assistant_config
 
             result = "Success: Course information saved!"
 
@@ -54,17 +54,17 @@ class EditCourseHandler(BaseUserHandler):
                     else:
                         vb_dict = {}
                         try:
-                            vb_dict = load_yaml_dict(virtual_buddy_config)
+                            vb_dict = load_yaml_dict(virtual_assistant_config)
                         except:
                             pass
 
                         if type(vb_dict) is dict and "api_key" in vb_dict and "model" in vb_dict and "temperature" in vb_dict and "timeout" in vb_dict and "max_per_exercise" in vb_dict and type(vb_dict["max_per_exercise"]) is int:
                             #self.content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
-                            self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_buddy_config"], None, dt.datetime.utcnow())
+                            self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], None, dt.datetime.utcnow())
 
                             course_id = self.content.save_course(course_basics, course_details)
                         else:
-                            result = "Error: The Virtual Buddy configuration is invalid."
+                            result = "Error: The Virtual Assistant configuration is invalid."
 
             self.render("edit_course.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=course_details, result=result, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
         except Exception as inst:

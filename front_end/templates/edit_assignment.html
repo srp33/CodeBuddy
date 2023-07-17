@@ -297,18 +297,18 @@
         </p>
     </div>
 
-    {% if course_details["virtual_buddy_config"] %}
+    {% if course_details["virtual_assistant_config"] %}
         <div class="shadow-box">
     {% else %}
         <div class="shadow-box is-hidden">
     {% end %}
 
-        <label for="use_virtual_buddy"><strong>Use Virtual Buddy:</strong><br/>If in the course settings, you have specified configuration information for the Virtual Buddy, indicate here whether you would like to allow students to use it on this assignment.</label>
+        <label for="use_virtual_assistant"><strong>Use Virtual Assistant:</strong><br/>If in the course settings, you have specified configuration information for the Virtual Assistant, indicate here whether to enable this feature on this assignment.</label>
 
         <p>
             <div class="select is-grey">
-                <select id="use_virtual_buddy" name="use_virtual_buddy" class="edit-select">
-                {% if assignment_details["use_virtual_buddy"] %}
+                <select id="use_virtual_assistant" name="use_virtual_assistant" class="edit-select">
+                {% if assignment_details["use_virtual_assistant"] %}
                     <option value="Yes" selected>Yes</option>
                     <option value="No">No</option>
                 {% else %}

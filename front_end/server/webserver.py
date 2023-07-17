@@ -20,6 +20,7 @@ def make_app(settings_dict):
             url(r"/add_admin/([^/]+)", AddAdminHandler, name="add_admin"),
             url(r"/add_assistant/([^/]+)/([^/]+)", AddAssistantHandler, name="add_assistant"),
             url(r"/add_instructor/([^/]+)/([^/]+)", AddInstructorHandler, name="add_instructor"),
+            url(r"/ask_virtual_assistant/([^/]+)/([^/]+)/([^/]+)", AskVirtualAssistantHandler, name="ask_virtual_assistant"),
             url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
             url(r"/available", AvailableCoursesHandler, name="available"),
             url(r"/caslogin", CASLoginHandler, name="caslogin"),

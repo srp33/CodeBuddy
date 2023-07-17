@@ -22,7 +22,7 @@ class DiffHandler(BaseUserHandler):
             assignments = await self.get_assignments(course_basics)
             assignment_details = await self.get_assignment_details(course_basics, assignment_id)
 
-            if not self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
+            if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
                 return
 
             args = {"expected": expected_output, "actual": actual_output, "diff": diff_output}
