@@ -197,21 +197,17 @@
 
                         <button id="virtual_assistant_button" class="button is-info is-outlined m-0" onclick="askVirtualAssistant()">Ask</button>
 
-                        {% if virtual_assistant_max_per_exercise > 0 %}
-                            <div class="smaller-font is-pulled-right mt-2 mr-1">
-                                <em>
-                                    <span id="virtual_assistant_questions_allowed_prefix"></span>
-                                    
-                                    <span id="virtual_assistant_questions_allowed">
-                                        {{ virtual_assistant_max_per_exercise }}
-                                    </span>
+                        <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
+                            <em>
+                                <span id="virtual_assistant_questions_allowed_prefix"></span>
+                                
+                                <span id="virtual_assistant_questions_allowed">
+                                    {{ virtual_assistant_max_per_exercise }}
+                                </span>
 
-                                    <span id="virtual_assistant_questions_allowed_suffix"></span>
-
-                                    questions allowed
-                                </em>
-                            </div>
-                        {% end %}
+                                <span id="virtual_assistant_questions_allowed_suffix"></span>
+                            </em>
+                        </div>
 
                         <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden" style="max-height: 500px; overflow-y: auto;"></div>
                     </div>
@@ -408,19 +404,29 @@
                 }
 
                 {% if assignment_details["use_virtual_assistant"] %}
-                    function askVirtualAssistant() {
-                        let input_element = document.getElementById("virtual_assistant_input");
-                        let output_element = document.getElementById("virtual_assistant_output");
+                    let virtual_assistant_interactions = JSON.parse("{{ virtual_assistant_interactions }}");
+                    let max_questions_per_exercise = {{ virtual_assistant_max_per_exercise }};
 
+                    let input_element = document.getElementById("virtual_assistant_input");
+                    let output_element = document.getElementById("virtual_assistant_output");
+                    let message_element = document.getElementById("virtual_assistant_message");
+                    let button_element = document.getElementById("virtual_assistant_button");
+
+                    let allowed_panel_element = document.getElementById("virtual_assistant_allowed_panel")
+                    let allowed_element = document.getElementById("virtual_assistant_questions_allowed");
+                    let allowed_prefix_element = document.getElementById("virtual_assistant_questions_allowed_prefix");
+                    let allowed_suffix_element = document.getElementById("virtual_assistant_questions_allowed_suffix");
+
+                    function askVirtualAssistant() {
                         let input = input_element.value;
 
                         if (input.trim().length == 0)
                             return;
 
-                        addVirtualAssistantEcho(input, output_element);
+                        addVirtualAssistantEcho(input);
                         output_element.classList.remove("is-hidden");
 
-                        var response_element = createVirtualAssistantResponse("Please wait...", output_element);
+                        let response_element = createVirtualAssistantResponse("Please wait...");
 
                         let data = {"question": input};
 
@@ -434,11 +440,15 @@
 
                             if (result_dict.success) {
                                 response_element.classList.add('has-text-info');
-                                allowed_element.innerHTML = allowed_element.innerHTML - 1;
+
+                                if (max_questions_per_exercise > 0) {
+                                    allowed_element.innerHTML = allowed_element.innerHTML - 1;
+
+                                    checkMaxVirtualAssistantQuestionsAsked();
+                                }
 
                                 data["response"] = result_dict["message"];
                                 virtual_assistant_interactions.push(data);
-                                checkMaxVirtualAssistantQuestionsAsked();
                             } else {
                                 response_element.classList.add('has-text-danger');
                             }
@@ -452,7 +462,7 @@
                         });
                     }
 
-                    function addVirtualAssistantEcho(input, output_element) {
+                    function addVirtualAssistantEcho(input) {
                         var echo_element = document.createElement('div');
                         echo_element.classList.add('has-text-dark', 'has-background-light', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
                         echo_element.innerHTML += `You asked: ${input}`;
@@ -460,7 +470,7 @@
                         output_element.insertBefore(echo_element, output_element.firstChild);
                     }
 
-                    function createVirtualAssistantResponse(message, output_element) {
+                    function createVirtualAssistantResponse(message) {
                         var response_element = document.createElement('div');
                         response_element.classList.add('has-background-light', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
                         response_element.innerHTML += message;
@@ -470,44 +480,41 @@
                         return response_element;
                     }
 
-                    {% if virtual_assistant_max_per_exercise > 0 %}
-                        function checkMaxVirtualAssistantQuestionsAsked() {
-                            if (allowed_element.innerHTML <= 0) {
-                                document.getElementById("virtual_assistant_message").classList.add("has-text-grey-lighter");
-                                document.getElementById("virtual_assistant_input").disabled = true;
-                                document.getElementById("virtual_assistant_button").disabled = true;
-                            }
-
-                            if (virtual_assistant_interactions.length == 0) {
-                                document.getElementById("virtual_assistant_questions_allowed_prefix").innerHTML = "Up to ";
-                                document.getElementById("virtual_assistant_questions_allowed_suffix").innerHTML = "";
-                            }
-                            else {
-                                document.getElementById("virtual_assistant_questions_allowed_prefix").innerHTML = "";
-                                document.getElementById("virtual_assistant_questions_allowed_suffix").innerHTML = "more ";
-                            }
+                    function checkMaxVirtualAssistantQuestionsAsked() {
+                        if (allowed_element.innerHTML <= 0) {
+                            message_element.classList.add("has-text-grey-lighter");
+                            input_element.disabled = true;
+                            button_element.disabled = true;
                         }
 
-                        let virtual_assistant_interactions = JSON.parse("{{ virtual_assistant_interactions }}");
-                        let max_questions_per_exercise = {{ virtual_assistant_max_per_exercise }};
+                        let question_text = allowed_element.innerHTML == 1 ? "question" : "questions"; 
 
-                        let allowed_element = document.getElementById("virtual_assistant_questions_allowed");
+                        if (virtual_assistant_interactions.length == 0) {
+                            allowed_prefix_element.innerHTML = "Up to ";
+                            allowed_suffix_element.innerHTML = `${question_text} allowed`;
+                        }
+                        else {
+                            allowed_prefix_element.innerHTML = "";
+                            allowed_suffix_element.innerHTML = `more ${question_text} allowed`;
+                        }
 
+                        allowed_panel_element.classList.remove("is-hidden");
+                    }
+
+                    if (max_questions_per_exercise > 0) {
                         allowed_element.innerHTML = Math.max(0, max_questions_per_exercise - virtual_assistant_interactions.length);
 
                         checkMaxVirtualAssistantQuestionsAsked();
-                    {% end %}
-
-                    let output_element = document.getElementById("virtual_assistant_output");
+                    }
 
                     if (virtual_assistant_interactions.length > 0) {
                         output_element.classList.remove("is-hidden");
-                    }
-                    
-                    for (let interaction of virtual_assistant_interactions) {
-                        addVirtualAssistantEcho(interaction.question, output_element);
-                        let response_element = createVirtualAssistantResponse(interaction.response, output_element);
-                        response_element.classList.add('has-text-info');
+
+                        for (let interaction of virtual_assistant_interactions) {
+                            addVirtualAssistantEcho(interaction.question);
+                            let response_element = createVirtualAssistantResponse(interaction.response);
+                            response_element.classList.add('has-text-info');
+                        }
                     }
                 {% end %}
 

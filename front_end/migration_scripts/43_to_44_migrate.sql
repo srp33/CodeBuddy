@@ -5,5 +5,6 @@ CREATE TABLE virtual_assistant_interactions (
     user_id text,
     interaction_number integer PRIMARY KEY AUTOINCREMENT,
     question text,
-    response text
+    response text,
+    when_interacted datetime DEFAULT CURRENT_TIMESTAMP
 )
