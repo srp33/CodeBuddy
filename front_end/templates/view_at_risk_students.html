@@ -1,7 +1,11 @@
 {% if course_basics["exists"] %}
     <h4>Potentially at-risk students for {{ course_basics["title"] }}</h4>
 
-    {% if len(no_recent_submissions) == 0 %}
+    {% if num_registered_students == 0 %}
+        <p>No students have registered for the course yet.</p>
+    {% elif num_submissions == 0 %}
+        <p>No students have made a submission yet for this course.</p>
+    {% elif len(students_no_recent_submissions) == 0 %}
         <p>All students have made at least one submission in the past {{ recent_submissions_days_threshold }} hour(s).</p>
     {% else %}
         <p>The following students have <em>not</em> made a submission in the past {{ recent_submissions_days_threshold }} hour(s).</p>
@@ -19,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in no_recent_submissions %}
+                    {% for row in students_no_recent_submissions %}
                         <tr>
                             <td class="has-text-left">
                                 {{ row["user_id"] }}

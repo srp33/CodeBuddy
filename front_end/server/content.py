@@ -1254,6 +1254,17 @@ class Content:
                    AND user_id = ?'''
 
         return self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id, ))["num"]
+    
+    async def get_num_course_submissions(self, course_id):
+        sql = '''SELECT COUNT(submission_id) AS count
+                 FROM submissions
+                 WHERE course_id = ? AND user_id IN (
+                   SELECT user_id
+                   FROM course_registrations
+                   WHERE course_id = ?
+                 )'''
+
+        return self.fetchone(sql, (course_id, course_id, ))["count"]
 
     def get_most_recent_submission_code(self, course_id, assignment_id, exercise_id, user_id):
         sql = '''SELECT code
@@ -2636,40 +2647,40 @@ class Content:
     
     def get_students_no_recent_submissions(self, course_id, num_hours_diff):
         sql = """
-          SELECT DISTINCT cr.user_id, u.name, u.email_address, s.assignment_id, a.title AS assignment_title, s.exercise_id, e.title AS exercise_title, MAX(s.date) AS last_submission_date
-          FROM course_registrations cr
-          INNER JOIN submissions s
-            ON cr.course_id = s.course_id
-            AND cr.user_id = s.user_id
-          INNER JOIN users u
-            ON s.user_id = u.user_id
-          INNER JOIN assignments a
-            ON s.course_id = a.course_id
-           AND s.assignment_id = a.assignment_id
-          INNER JOIN exercises e
-            ON s.course_id = e.course_id
-           AND s.assignment_id = e.assignment_id
-           AND s.exercise_id = e.exercise_id
-          WHERE cr.course_id = ?
-          GROUP BY cr.user_id, u.name, u.email_address
-          HAVING MAX(s.date) < datetime('now', '-' || ? || ' hours')
-          
-          UNION
-          
-          SELECT u.user_id, u.name, u.email_address, NULL, NULL, NULL, NULL, NULL
-          FROM users u
-          WHERE u.user_id IN (
-            SELECT user_id
-              FROM course_registrations
-              WHERE course_id = ?
-          )
-            AND user_id NOT IN (
-                SELECT DISTINCT user_id
-                  FROM submissions
-                  WHERE course_id = ?
+            SELECT DISTINCT cr.user_id, u.name, u.email_address, s.assignment_id, a.title AS assignment_title, s.exercise_id, e.title AS exercise_title, MAX(s.date) AS last_submission_date
+            FROM course_registrations cr
+            INNER JOIN submissions s
+              ON cr.course_id = s.course_id
+              AND cr.user_id = s.user_id
+            INNER JOIN users u
+              ON s.user_id = u.user_id
+            INNER JOIN assignments a
+              ON s.course_id = a.course_id
+            AND s.assignment_id = a.assignment_id
+            INNER JOIN exercises e
+              ON s.course_id = e.course_id
+            AND s.assignment_id = e.assignment_id
+            AND s.exercise_id = e.exercise_id
+            WHERE cr.course_id = ?
+            GROUP BY cr.user_id, u.name, u.email_address
+            HAVING MAX(s.date) < datetime('now', '-' || ? || ' hours')
+            
+            UNION
+            
+            SELECT u.user_id, u.name, u.email_address, NULL, NULL, NULL, NULL, NULL
+            FROM users u
+            WHERE u.user_id IN (
+              SELECT user_id
+                FROM course_registrations
+                WHERE course_id = ?
             )
-          ORDER BY cr.user_id
-          """
+              AND user_id NOT IN (
+                  SELECT DISTINCT user_id
+                    FROM submissions
+                    WHERE course_id = ?
+              )
+            ORDER BY cr.user_id
+            """
         
         rows = []
 
