@@ -2696,7 +2696,7 @@ class Content:
                    AND assignment_id = ?
                    AND exercise_id = ?
                    AND user_id = ?
-                 ORDER BY interaction_number"""
+                 ORDER BY when_interacted"""
 
         interactions = []
 

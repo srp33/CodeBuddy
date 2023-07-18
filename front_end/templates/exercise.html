@@ -103,7 +103,7 @@
             {% end %}
 
             <div class="columns">
-                {% if assignment_details["use_virtual_assistant"] %}
+                {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
                 <!--<div class="column is-three-quarters mt-0">-->
                     <div class="column is-two-thirds mt-0">
                 {% else %}
@@ -186,7 +186,7 @@
                     </p>
                 </div>
 
-                {% if assignment_details["use_virtual_assistant"] %}
+                {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
                     <!--<div class="column is-one-quarter has-background-white is-outlined mt-3 mb-3">-->
                     <div class="column is-one-third has-background-white is-outlined mt-3 mb-3">
                         <p class="is-size-5"><em>Hello, I am your virtual assistant!</em></p>
@@ -303,8 +303,8 @@
                     </div>
 
                     <p class="buttons">
-                        <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
                         <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
+                        <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
                     </p>
                 </div>
             </div>
@@ -403,7 +403,7 @@
                     }
                 }
 
-                {% if assignment_details["use_virtual_assistant"] %}
+                {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
                     let virtual_assistant_interactions = JSON.parse("{{ virtual_assistant_interactions }}");
                     let max_questions_per_exercise = {{ virtual_assistant_max_per_exercise }};
 

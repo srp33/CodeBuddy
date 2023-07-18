@@ -3,7 +3,6 @@ CREATE TABLE virtual_assistant_interactions (
     assignment_id integer,
     exercise_id integer,
     user_id text,
-    interaction_number integer PRIMARY KEY AUTOINCREMENT,
     question text,
     response text,
     when_interacted datetime DEFAULT CURRENT_TIMESTAMP
