@@ -423,12 +423,13 @@
                         if (input.trim().length == 0)
                             return;
 
-                        addVirtualAssistantEcho(input);
+                        
                         output_element.classList.remove("is-hidden");
 
                         let response_element = createVirtualAssistantResponse("Please wait...");
+                        addVirtualAssistantEcho(input);
 
-                        let data = {"question": input};
+                        let data = {"question": input, "student_code": editor.getValue()};
 
                         $.ajax({
                             type: 'POST',
@@ -453,7 +454,7 @@
                                 response_element.classList.add('has-text-danger');
                             }
 
-                            response_element.innerHTML = result_dict.message;
+                            response_element.innerHTML = `<em>Me</em>: ${result_dict.message}`;
                         })
                         .fail(function(result) {
                             console.log(result);
@@ -465,15 +466,15 @@
                     function addVirtualAssistantEcho(input) {
                         var echo_element = document.createElement('div');
                         echo_element.classList.add('has-text-dark', 'has-background-light', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
-                        echo_element.innerHTML += `You asked: ${input}`;
+                        echo_element.innerHTML += `<em>You asked</em>: ${input}`;
 
                         output_element.insertBefore(echo_element, output_element.firstChild);
                     }
 
                     function createVirtualAssistantResponse(message) {
                         var response_element = document.createElement('div');
-                        response_element.classList.add('has-background-light', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
-                        response_element.innerHTML += message;
+                        response_element.classList.add('has-background-light', 'has-text-info', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
+                        response_element.innerHTML = `<em>Me</em>: ${message}`;
 
                         output_element.insertBefore(response_element, output_element.firstChild);
 
@@ -511,9 +512,10 @@
                         output_element.classList.remove("is-hidden");
 
                         for (let interaction of virtual_assistant_interactions) {
-                            addVirtualAssistantEcho(interaction.question);
                             let response_element = createVirtualAssistantResponse(interaction.response);
                             response_element.classList.add('has-text-info');
+
+                            addVirtualAssistantEcho(interaction.question);
                         }
                     }
                 {% end %}
