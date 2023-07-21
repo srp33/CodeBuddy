@@ -22,7 +22,7 @@ class AskVirtualAssistantHandler(BaseUserHandler):
 
                 response = await self.access_openai(course_details, course_id, assignment_id, exercise_id, question, student_code)
 
-                # self.content.save_virtual_assistant_interaction(course_id, assignment_id, exercise_id, self.get_current_user(), question, response)
+                self.content.save_virtual_assistant_interaction(course_id, assignment_id, exercise_id, self.get_current_user(), question, response)
 
                 out_dict["message"] = response
                 out_dict["success"] = True
@@ -61,4 +61,9 @@ class AskVirtualAssistantHandler(BaseUserHandler):
             timeout=30
         )
 
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+
+        # Remove any code fragments
+        content = re.sub(r"```[\s\S]*?```", "```redacted```", content)
+
+        return content

@@ -105,7 +105,7 @@
             <div class="columns">
                 {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
                 <!--<div class="column is-three-quarters mt-0">-->
-                    <div class="column is-two-thirds mt-0">
+                    <div class="column is-two-thirds mt-0" id="left_column">
                 {% else %}
                     <div class="column is-full mt-0">
                 {% end %}
@@ -188,7 +188,7 @@
 
                 {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
                     <!--<div class="column is-one-quarter has-background-white is-outlined mt-3 mb-3">-->
-                    <div class="column is-one-third has-background-white is-outlined mt-3 mb-3">
+                    <div class="column is-one-third has-background-white is-outlined mt-3 mb-3" style="overflow: scroll;" id="right_column">
                         <p class="is-size-5"><em>Hello, I am your virtual assistant!</em></p>
 
                         <p class="is-size-5" id="virtual_assistant_message">Do your best to solve this exercise. But if you get stuck, you can enter a question below.</p>
@@ -209,7 +209,7 @@
                             </em>
                         </div>
 
-                        <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden" style="max-height: 500px; overflow-y: auto;"></div>
+                        <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden"></div>
                     </div>
                 {% end %}
             </div>
@@ -404,6 +404,10 @@
                 }
 
                 {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
+                    let left_column = document.getElementById("left_column");
+                    let right_column = document.getElementById("right_column");
+                    right_column.style.height = `${left_column.offsetHeight}px`;
+
                     let virtual_assistant_interactions = JSON.parse("{{ virtual_assistant_interactions }}");
                     let max_questions_per_exercise = {{ virtual_assistant_max_per_exercise }};
 
@@ -454,7 +458,7 @@
                                 response_element.classList.add('has-text-danger');
                             }
 
-                            response_element.innerHTML = `<em>Me</em>: ${result_dict.message}`;
+                            response_element.innerHTML = `<em>VA</em>: ${result_dict.message}`;
                         })
                         .fail(function(result) {
                             console.log(result);
@@ -474,7 +478,7 @@
                     function createVirtualAssistantResponse(message) {
                         var response_element = document.createElement('div');
                         response_element.classList.add('has-background-light', 'has-text-info', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
-                        response_element.innerHTML = `<em>Me</em>: ${message}`;
+                        response_element.innerHTML = `<em>VA</em>: ${message}`;
 
                         output_element.insertBefore(response_element, output_element.firstChild);
 
