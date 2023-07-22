@@ -18,8 +18,9 @@ Here are some of CodeBuddy's features:
 * Instructors can deliver video-based content to students. For example, they can embed a YouTube video and require students to post a code- or text-based response to that content.
 * When students are completing an assignment (exam) in a controlled environment that has no Internet access, instructors can configure the assignment to allow access to specific external URLs.
 * Instructors can allow students to download all of their code from a course as a single HTML file.
-* Teaching assistants can be added a course. They have access to solutions and students' scores but do not have the ability to change some course settings.
+* Teaching assistants can be added to a course. They have access to solutions and students' scores but do not have the ability to change some course settings.
 * Instructors can import and export assignments.
+* Instructors can configure an exercise so that it is easy for students to copy their (last successful) solution from the previous exercise.
 * [As of July 21, 2023] Instructors can configure a "virtual assistant" to provide help to students. The virtual assistant connects to OpenAI using the same models that ChatGPT uses. Students can ask questions about their code and request help when their code is not functioning correctly. Instructors can limit the number of interactions per student per exercise. This feature is currently experimental and requires a paid account with OpenAI.
 
 ### How to run a CodeBuddy instance
