@@ -436,7 +436,7 @@ class Content:
         self.set_user_dict_defaults(user_dict)
 
         sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme, email_address, research_cohort)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT CASE WHEN RANDOM() >= 0.5 THEN 1 ELSE 0 END))'''
+                 VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT CASE WHEN RANDOM() >= 0.5 THEN "A" ELSE "B" END))'''
 
         self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow", user_dict["email_address"]))
 
