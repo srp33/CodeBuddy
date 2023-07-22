@@ -2,11 +2,20 @@
                 <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
                     {% if len(assignments) == 1 %}
                         <a class="navbar-link is-arrowless" style="cursor: pointer;" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
-                            {{ assignment_basics["title"] }}
+                            {% if len(assignment_basics["title"]) > 30 %}
+                                {{ " ".join(assignment_basics["title"][:30].split(" ")[:-1]) }}...
+                            {% else %}
+                                {{ assignment_basics["title"] }}
+                            {% end %}
                         </a>
                     {% else %}
                         <div class="navbar-item is-arrowless" style="cursor: pointer;">
-                            {{ assignment_basics["title"] }}
+                            {% if len(assignment_basics["title"]) > 30 %}
+                                {{ " ".join(assignment_basics["title"][:30].split(" ")[:-1]) }}...
+                            {% else %}
+                                {{ assignment_basics["title"] }}
+                            {% end %}
+
                             <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
                         </div>
 
