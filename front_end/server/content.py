@@ -411,7 +411,7 @@ class Content:
         return [row["user_id"] for row in rows]
     
     def get_users_to_manage(self, pattern):
-        sql = '''SELECT DISTINCT u.user_id, u.name
+        sql = '''SELECT DISTINCT u.user_id, u.name, u.research_cohort
                  FROM users u
                  LEFT JOIN permissions p
                    ON u.user_id = p.user_id
@@ -420,7 +420,7 @@ class Content:
                  ORDER BY u.name'''
 
         rows = self.fetchall(sql, (pattern, pattern,))
-        return [{"user_id": row["user_id"], "name": row["name"]} for row in rows]
+        return [{"user_id": row["user_id"], "name": row["name"], "research_cohort": row["research_cohort"]} for row in rows]
 
     def set_user_dict_defaults(self, user_dict):
         if "name" not in user_dict:
@@ -483,7 +483,7 @@ class Content:
         return False
 
     def get_user_info(self, user_id):
-        null_user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "locale": None, "email_address": None, "ace_theme": None, "use_auto_complete": True, "use_studio_mode": True, "enable_vim": False}
+        null_user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "locale": None, "email_address": None, "ace_theme": None, "use_auto_complete": True, "use_studio_mode": True, "enable_vim": False, "research_cohort": "None"}
 
         sql = '''SELECT *
                  FROM users
@@ -494,7 +494,7 @@ class Content:
         if not user:
             return null_user_info
 
-        return {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "email_address": user["email_address"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "use_studio_mode": user["use_studio_mode"], "enable_vim": user["enable_vim"]}
+        return {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "email_address": user["email_address"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "use_studio_mode": user["use_studio_mode"], "enable_vim": user["enable_vim"], "research_cohort": user["research_cohort"]}
 
     def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role
@@ -1726,7 +1726,7 @@ class Content:
         return course_details
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "use_virtual_assistant": False, "due_date_passed": None}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "use_virtual_assistant": 0, "due_date_passed": None}
 
         if not assignment_id:
             return null_assignment
@@ -1894,6 +1894,7 @@ class Content:
     def save_exercise(self, exercise_basics, exercise_details):
         cursor = self.conn.cursor()
         cursor.execute("BEGIN")
+
         if "what_students_see_after_success" not in exercise_details:
             exercise_details["what_students_see_after_success"] = 1
 

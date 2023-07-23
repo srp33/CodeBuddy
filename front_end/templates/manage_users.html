@@ -6,9 +6,9 @@
     <input id="search_input" class="input is-medium is-primary" type="text" placeholder="Enter a pattern that matches a user's name or login ID." oninput="showMatchingUsers()" autofocus />
 </p>
 
-<div class="table-container is-hidden" id="the_table">
+<div class="table-container is-hidden" id="the_table"></div>
 
-</div>
+<div class="is-hidden" id="explanation"><em>* Some features are experimental. Instructors can configure CodeBuddy to behave differently, according to the research cohort to which each student is randomly assigned.</em></div>
 
 <div id="result_message" class="is-hidden">
 </div>
@@ -17,6 +17,7 @@
     function showMatchingUsers() {
         $("#result_message").addClass("is-hidden");
         $("#the_table")[0].innerHTML = "";
+        $("#explanation").addClass("is-hidden");
 
         let pattern = $("#search_input")[0].value;
 
@@ -60,7 +61,7 @@
         const table = document.createElement('table');
 
         const header_row = document.createElement('tr');
-        const header_items = ["User ID", "Name", ""]
+        const header_items = ["User ID", "Name", "Research Cohort*", ""]
         header_items.forEach((text) => {
                 const cell = document.createElement('th');
                 cell.textContent = text;
@@ -82,6 +83,11 @@
             cell.textContent = table_row["name"];
             row.appendChild(cell);
 
+            // Research cohort
+            cell = document.createElement('td');
+            cell.textContent = table_row["research_cohort"];
+            row.appendChild(cell);
+
             // Delete button
             cell = document.createElement('td');
             cell.innerHTML = `<a class='button is-dark' href='/delete_user/${table_row["user_id"]}'>Delete account</a>`;
@@ -98,6 +104,7 @@
         table_container.appendChild(table);
 
         $("#the_table").removeClass("is-hidden");
+        $("#explanation").removeClass("is-hidden");
     }
 
     showMatchingUsers();

@@ -103,7 +103,7 @@
             {% end %}
 
             <div class="columns">
-                {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
+                {% if use_virtual_assistant %}
                 <!--<div class="column is-three-quarters mt-0">-->
                     <div class="column is-two-thirds mt-0" id="left_column">
                 {% else %}
@@ -164,36 +164,25 @@
 
                     <p class="top-space" id="user_code_area">
                         <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and len(submissions) == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
-                        <!--
-                        {% if assignment_details["enable_help_requests"] %}
-                            <div class="buttons is-pulled-right">
-                                {% if help_request %}
-                                    {% if help_request["more_info_needed"] %}
-                                        <a class="button is-danger is-light" onclick="showHelpRequestModal()">More info needed</a>
-                                    {% elif same_suggestion %}
-                                        <a class="button is-primary is-light" onclick="showMatchingModal()">Matching suggestion</a>
-                                    {% elif help_request["approved"] %}
-                                        <a class="button is-primary" onclick="showSuggestionModal()">View suggestion</a>
-                                    {% else %}
-                                        <a class="button is-warning is-light" onclick="showSuggestionModal()">Request pending</a>
-                                    {% end %}
-                                {% else %}
-                                    <a class="button is-white" onclick="showHelpRequestModal()">Request help</a>
-                                {% end %}
-                            </div>
-                        {% end %}
-                        -->
                     </p>
                 </div>
 
-                {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
+                {% if use_virtual_assistant %}
                     <!--<div class="column is-one-quarter has-background-white is-outlined mt-3 mb-3">-->
                     <div class="column is-one-third has-background-white is-outlined mt-3 mb-3" style="overflow: scroll;" id="right_column">
-                        <p class="is-size-5" id="virtual_assistant_message"><em>Hello, I am your Virtual Assistant!</em> Do your best to solve this exercise. But if you get stuck, you can enter a question below. (This feature is experimental, so the advice provided might or might not be helpful.)</p>
+                        <div id="virtual_assistant_message">
+                            <p class="is-size-6">
+                                <strong>Hello, I am your Virtual Assistant!</strong> Do your best to solve this exercise on your own. But if you get stuck, you can enter a question below. This feature is experimental, so its advice might or might not be helpful.
+                            </p>
 
-                        <p><textarea id="virtual_assistant_input" class="textarea is-medium is-info" style="font-family: sans-serif;" placeholder="Enter your question here."></textarea></p>
+                            {% if assignment_details["use_virtual_assistant"] > 1 %}
+                                <p class="is-size-6"><em><font color="red">The instructor is testing this feature in a research study. Therefore, please use do not share it with other students who may not have access to it on this exercise.</font></em></p>
+                            {% end %}
+                        </div>
 
-                        <button id="virtual_assistant_button" class="button is-info is-outlined m-0" onclick="askVirtualAssistant()">Ask</button>
+                        <p><textarea id="virtual_assistant_input" class="textarea is-medium is-info is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here."></textarea></p>
+
+                        <button id="virtual_assistant_button" class="button is-info is-outlined m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
 
                         <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
                             <em>
@@ -207,7 +196,7 @@
                             </em>
                         </div>
 
-                        <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden"></div>
+                        <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden is-size-6"></div>
                     </div>
                 {% end %}
             </div>
@@ -324,84 +313,8 @@
                 </div>
             </div>-->
 
-            <!--<div id="help_request_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    {% if help_request and help_request["more_info_needed"] %}
-                        <p><strong>An instructor or assistant has requested more info from you about your help request.</strong></p>
-                        {% if help_request["suggestion"] %}
-                            <p>Comment made by your instructor/assistant:<br />
-                            <span class="green-text">{{ help_request["suggestion"] }}</span></p>
-                        {% end %}
-                        <p>Please update your comment to help us better understand what you need help with:</p>
-                    {% else %}
-                        <p><strong>Submit a help request so an instructor or assistant can review your code/output and make a suggestion.</strong></p>
-                        <p>Please write a comment to help us better understand what you need help with:</p>
-                    {% end %}
-                    <textarea class="textarea is-primary is-fullwidth monospace" id="student_comment" name="student_comment">{% if help_request and help_request["more_info_needed"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
-                    <p class="buttons">
-                        <a id="cancel_request_button" class="modal-button button is-light">Cancel</a>
-                        <a id="submit_request_button" class="modal-button button is-dark">Submit</a>
-                    </p>
-                </div>
-            </div>
-
-            <div id="matching_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <p><strong>A student in this class previously submitted a help request with the same output as your request. The instructor/assistant made this suggestion:</strong></p>
-                    <span class="green-text">{{ same_suggestion }}</span></p>
-                    <p>If this suggestion is helpful, do you want to cancel your own request?</p>
-                    <p class="buttons">
-                        <a id="delete_request_button" class="modal-button button is-light">Cancel request</a>
-                        <a id="keep_request_button" class="modal-button button is-dark">Keep request</a>
-                    </p>
-                </div>
-            </div>
-
-            <div id="suggestion_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <p>Your comment from the help request:</p>
-                    <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["student_comment"] %}{{ help_request["student_comment"] }}{% end %}</textarea>
-                    <br><p>Instructor's suggestion:</p>
-                    <textarea class="textarea is-primary monospace text-18" rows="3">{% if help_request and help_request["suggestion"] %}{{ help_request["suggestion"] }}{% else %}No suggestion has been made yet.{% end %}</textarea>
-                </div>
-            </div>-->
-
-            <div id="help_modal" class="modal">
-                <div class="modal-content">
-                    {% if exercise_details["allow_any_response"] or exercise_details["back_end"] == "not_code" %}
-                        <p>After you have entered your response, click on the Submit button.</p>
-                    {% else %}
-                        <p>When you are ready to test your solution, click on the Submit button. If you would like to see the outputs of your solution without submitting it, click on the Run button. If you highlight a section of code and hit the Tab key, it will indent all lines of code in the section. If you hit Shift-Tab, it will reduce the indentation. There is also an option for commenting sections of code. To do this, highlight the code you wish to comment; then enter Command + / (Mac) or Control + / (Windows). If it is already commented, this will uncomment the code.</p>
-                    {% end %}
-
-                    <p>
-                        <button id="help_modal_close" class="button is-dark">Close</button>
-                    </p>
-                </div>
-            </div>
-
             <script>
-                function showHelpModal() {
-                    var modal = document.getElementById("help_modal");
-                    modal.style.display = "block";
-
-                    var span = document.getElementById("help_modal_close");
-
-                    span.onclick = function() {
-                        modal.style.display = "none";
-                    }
-
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                          modal.style.display = "none";
-                        }
-                    }
-                }
-
-                {% if assignment_details["use_virtual_assistant"] and not exercise_basics["enable_pair_programming"] %}
+                {% if use_virtual_assistant %}
                     let left_column = document.getElementById("left_column");
                     let right_column = document.getElementById("right_column");
                     right_column.style.height = `${left_column.offsetHeight}px`;

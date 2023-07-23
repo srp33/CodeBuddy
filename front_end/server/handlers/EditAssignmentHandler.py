@@ -40,7 +40,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["enable_help_requests"] = False
             assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").strip()
             assignment_details["allowed_external_urls"] = self.get_body_argument("allowed_external_urls")
-            assignment_details["use_virtual_assistant"] = self.get_body_argument("use_virtual_assistant") == "Yes"
+            assignment_details["use_virtual_assistant"] = self.get_body_argument("use_virtual_assistant")
 
             if assignment_details["has_start_date"]:
                 start_date = self.get_body_argument("start_date_picker").strip()

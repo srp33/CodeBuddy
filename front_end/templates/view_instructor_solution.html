@@ -7,6 +7,10 @@
                 <p>There is no instructor's solution for this exercise.</p><!--This happens when any response is allowed.-->
             {% else %}
                 <div>
+                    {% if exercise_details["what_students_see_after_success"] > 3 %}
+                        <p><font color="red">The instructor is testing this feature in a research study. Therefore, please use do not share this feature with other students who may not have access to it on this exercise.</font></p>
+                    {% end %}
+
                     <h4>Your solution:</h4>
                     <pre class="student-content">{{ user_code }}</pre>
 

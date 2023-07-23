@@ -4,6 +4,10 @@
             <p>You are the first in the class to complete this exercise. Please try again later. We apologize for the inconvenience.</p>
         {% else %}
             <div>
+                {% if exercise_details["what_students_see_after_success"] > 3 %}
+                    <p><font color="red">The instructor is testing this feature in a research study. Therefore, please use do not share this feature with other students who may not have access to it on this exercise.</font></p>
+                {% end %}
+
                 <h4>Your solution:</h4>
                 <pre class="student-content">{{ user_code }}</pre>
 
