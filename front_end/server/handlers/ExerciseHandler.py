@@ -53,7 +53,7 @@ class ExerciseHandler(BaseUserHandler):
 
             virtual_assistant_interactions = []
             virtual_assistant_max_per_exercise = None
-            use_virtual_assistant = course_details["virtual_assistant_config"] and (self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id) or should_use_virtual_assistant(assignment_details, exercise_basics, self.user_info))
+            use_virtual_assistant = course_details["virtual_assistant_config"] and await should_use_virtual_assistant(self, course_id, assignment_details, exercise_basics, self.user_info)
 
             if use_virtual_assistant:
                 virtual_assistant_interactions = self.content.get_virtual_assistant_interactions(course_id, assignment_id, exercise_id, self.user_info["user_id"])

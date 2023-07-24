@@ -503,5 +503,13 @@ def get_back_ends_dict(production_mode):
 def get_back_end_config(name):
     return load_yaml_dict(read_file(f"../back_ends/{name}/config.yaml"))
 
-def should_use_virtual_assistant(assignment_details, exercise_basics, user_info):
-    return not exercise_basics["enable_pair_programming"] and (assignment_details["use_virtual_assistant"] == 1 or (assignment_details["use_virtual_assistant"] == 2 and user_info["research_cohort"] == "A") or (assignment_details["use_virtual_assistant"] == 3 and user_info["research_cohort"] == "B"))
+async def should_use_virtual_assistant(handler, course_id, assignment_details, exercise_basics, user_info):
+    if exercise_basics["enable_pair_programming"]:
+        return False
+    
+    if assignment_details["use_virtual_assistant"] == 1:
+        return True
+
+    has_special_permission = handler.is_administrator or await handler.is_instructor_for_course(course_id) or await handler.is_assistant_for_course(course_id)
+
+    return has_special_permission or (assignment_details["use_virtual_assistant"] == 2 and user_info["research_cohort"] == "A") or (assignment_details["use_virtual_assistant"] == 3 and user_info["research_cohort"] == "B")
