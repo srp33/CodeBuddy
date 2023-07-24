@@ -18,6 +18,8 @@ function process_files {
 
     echo >> ${tmp_file}
     cat $f >> ${tmp_file}
+
+    mv ${tmp_file} $f
   done
 }
 
