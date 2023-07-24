@@ -49,7 +49,7 @@ class ExerciseHandler(BaseUserHandler):
             elif mode == "classic":
                 studio_mode = False
 
-            format_exercise_details(exercise_details, course_id, assignment_id, self.user_info, self.content, next_prev_exercises, format_tests=True)
+            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True)
 
             virtual_assistant_interactions = []
             virtual_assistant_max_per_exercise = None

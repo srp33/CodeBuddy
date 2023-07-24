@@ -341,7 +341,7 @@ def get_client_ip_address(request):
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
 
-def format_exercise_details(exercise_details, course_id, assignment_id, user_info, content, next_prev_exercises=None, format_tests=True):
+def format_exercise_details(exercise_details, course_basics, assignment_basics, user_info, content, next_prev_exercises=None, format_tests=True):
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
@@ -359,15 +359,15 @@ def format_exercise_details(exercise_details, course_id, assignment_id, user_inf
         if not next_prev_exercises or not next_prev_exercises["previous"]:
             prompt = "Error: [reflection_prompt] can only be used in the instructions when an exercise is *not* the first in an assignment."
         else:
-            prev_exercise_details = content.get_exercise_details(course_id, assignment_id, next_prev_exercises["previous"]["id"])
+            prev_exercise_details = content.get_exercise_details(course_basics, assignment_basics, next_prev_exercises["previous"]["id"])
             modify_what_students_see(prev_exercise_details, user_info)
 
             # https://dl.acm.org/doi/pdf/10.1145/3313831.3376857
             blurb1 = "If you have not already done so, complete the [previous_exercise_link]. "
             #blurb2 = "Then, for the current exercise, provide an essay response (1-3 medium-sized paragraphs) that answers any or all of the following:\n\n* What did you learn from reviewing the other solutions?\n* How does your strategy compare to the others'?\n* How did the code formatting or variable naming compare among the solutions?"
-            blurb2 = "Then, for the current exercise, provide an essay response that describes what you learned from comparing the solutions. What programming strategies were used? How are they similar to or different from each other? "
-            blurb3 = "Then, for the current exercise, provide an essay response that describes your programming strategy. What was your approach? What other approaches might have been used? "
-            blurb4 = "Your response should be at least a medium-sized paragraph in length."
+            blurb2 = "Then, for the current exercise, describe what you learned from comparing the solutions. What programming strategies were used? How are they similar to or different from each other? "
+            blurb3 = "Then, for the current exercise, describe your programming strategy. What was your approach? What other approaches might have been used? "
+            blurb4 = "Your response should be at least 2-3 sentences in length."
 
             if prev_exercise_details["show_instructor_solution"]:
                 if prev_exercise_details["show_peer_solution"]:
@@ -381,11 +381,11 @@ def format_exercise_details(exercise_details, course_id, assignment_id, user_inf
 
     if next_prev_exercises != None:
         if next_prev_exercises["previous"]:
-            link_html = f"<a href='/exercise/{course_id}/{assignment_id}/{next_prev_exercises['previous']['id']}'>previous exercise</a>"
+            link_html = f"<a href='/exercise/{course_basics['id']}/{assignment_basics['id']}/{next_prev_exercises['previous']['id']}'>previous exercise</a>"
             exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", link_html)
 
             if "[copy_previous]" in exercise_details["instructions"]:
-                previous_submission_code = content.get_most_recent_submission_code(course_id, assignment_id, next_prev_exercises["previous"]["id"], user_info["user_id"])
+                previous_submission_code = content.get_most_recent_submission_code(course_basics['id'], assignment_basics['id'], next_prev_exercises["previous"]["id"], user_info["user_id"])
 
                 if previous_submission_code == "":
                     exercise_details["instructions"] = exercise_details["instructions"].replace("[copy_previous]", "")
