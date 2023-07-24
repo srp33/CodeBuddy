@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e
+
 function process_files {
   in_path="$1"
   prefix="$2"
@@ -10,7 +12,7 @@ function process_files {
 
     echo "${prefix} <copyright_statement>" > ${tmp_file}
 
-    sed "s/^/$prefix /" copyright_statement_template.txt >> ${tmp_file}
+    sed "s/^/$prefix   /" misc/copyright_statement_template.txt >> ${tmp_file}
 
     echo "${prefix} </copyright_statement>" >> ${tmp_file}
 
