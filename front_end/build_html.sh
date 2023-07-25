@@ -1,4 +1,12 @@
+# <copyright_statement>
+#   CodeBuddy - A learning management system for computer programming
+#   Copyright (C) 2023 Stephen Piccolo
+#   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# </copyright_statement>
+
 #! /bin/bash
+
+set -e
 
 # Simple pages
 OUTPUT="/app"
@@ -6,6 +14,8 @@ if [[ $1 != "" ]]; then
   #OUTPUT=$(realpath $1)
   OUTPUT=$(pwd)/$1
 fi
+
+echo "Building HTML files..."
 
 mkdir -p $OUTPUT
 rm -f $OUTPUT/*
@@ -65,5 +75,12 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html unavailable_course.html container_bottom.html footer.html > "$OUTPUT/unavailable_course.html"
 
 cat spa_header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html spa.html footer.html > "$OUTPUT/spa.html"
+
+for f in "$OUTPUT"/*.html
+do
+  python3 ../../misc/remove_copyright_statement.py $f "<!--" "-->"
+done
+
+echo "Done building HTML files. They are stored in ${OUTPUT}."
 
 cd - &> /dev/null

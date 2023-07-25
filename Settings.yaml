@@ -9,7 +9,7 @@ f_port: 8008
 # Indicate the number of the port where the middle-layer web server is hosted
 m_port: 9798
 # Indicate the number of parallel processes that should be used for the front-end server.
-f_num_processes: 2
+f_num_processes: 1
 # Indicate the number of parallel processes that should be used for the middle-layer server.
 m_num_processes: 2
 # Indicate the amount of memory that the front-end server should be allowed to use.

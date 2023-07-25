@@ -1,5 +1,5 @@
 # <copyright_statement>
-#   CodeBuddy - computing-education software
+#   CodeBuddy - A learning management system for computer programming
 #   Copyright (C) 2023 Stephen Piccolo
 #   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # </copyright_statement>
@@ -14,7 +14,7 @@ if os.path.exists("txt_output"):
         file_contents = output_file.read()
 
         # Remove output of read_* packages from readr package.
-        file_contents = re.sub(r"Parsed with column specification:\ncols\(\n[\w =\(\),_\.\n]+?\n\)\n", "", file_contents)
+        file_contents = re.sub(r"Parsed with column specification:\ncols\(\n[\w\W]+?\n\)\n", "", file_contents)
         file_contents = re.sub(r"See spec(.+?) for full column specifications.\n", "", file_contents)
 
         for line in file_contents.split("\n"):
