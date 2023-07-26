@@ -35,6 +35,7 @@ image_name=codebuddy/front_end_${mode}
 cp Settings.yaml front_end/
 cp VERSION front_end/
 cp -r back_ends front_end/
+cp -r misc front_end/
 
 docker build -t ${image_name}:version$(cat VERSION) \
              -t ${image_name}:latest \

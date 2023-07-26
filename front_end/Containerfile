@@ -1,6 +1,10 @@
 FROM node:18-buster-slim as builder
 
 WORKDIR /front_end
+
+RUN apt update \
+ && apt install python3 -y
+
 ADD package*.json /front_end/
 ADD tsconfig.json /front_end/
 ADD build.js .
@@ -10,6 +14,7 @@ ADD templates ./templates
 
 RUN npm install
 RUN npm run build:prod
+
 RUN ./build_html.sh ./html
 
 FROM python:3.11.3-slim-buster

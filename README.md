@@ -40,7 +40,7 @@ If you are using a Windows operating system, install [git for windows](https://g
 CodeBuddy can be installed on any system that supports Docker and Python. Here are the steps to install it. You will need to have basic familiarity with [executing commands through a terminal](https://www.freecodecamp.org/news/command-line-for-beginners).
 
 1. Install [Docker Desktop](https://docs.docker.com/engine/install). Make sure it is up and running.
-2. Install [Python](https://www.python.org/downloads) (version 3.9+) and the [pip package manager](https://pip.pypa.io/en/stable/installation).
+2. Install [Python](https://www.python.org/downloads) (version 3.9+) and the [pip package manager](https://pip.pypa.io/en/stable/installation). After installing it, Python should be available at the command line as `python3`.
 3. In the terminal, execute the following command to install the Python packages: `pip install -r front_end/requirements.txt`.
 4. Modify Settings.yaml according to your preferences. The default settings should work in most cases.
 5. Create a text file in `front_end/secrets/front_end.yaml` that contains three key/value pairs, as illustrated below. The first is a password for encrypting cookies (use a strong password). The second and third are a client ID and secret that enable CodeBuddy to perform Google authentication. You can obtain these from [here](https://console.developers.google.com).
