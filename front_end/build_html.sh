@@ -8,12 +8,7 @@
 
 set -e
 
-# Simple pages
-OUTPUT="/app"
-if [[ $1 != "" ]]; then
-  #OUTPUT=$(realpath $1)
-  OUTPUT=$(pwd)/$1
-fi
+OUTPUT=$(pwd)/$1
 
 echo "Building HTML files..."
 
@@ -76,15 +71,9 @@ cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_botto
 
 cat spa_header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html spa.html footer.html > "$OUTPUT/spa.html"
 
-misc_dir=../../misc
-if [ ! -d ${misc_dir} ]
-then
-    misc_dir=misc
-fi
-
 for f in "$OUTPUT"/*.html
 do
-  python3 ${misc_dir}/remove_copyright_statement.py $f "<!--" "-->"
+  python3 ../misc/remove_copyright_statement.py $f "<!--" "-->"
 done
 
 echo "Done building HTML files. They are stored in ${OUTPUT}."

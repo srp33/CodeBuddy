@@ -11,11 +11,12 @@ ADD build.js .
 ADD build_html.sh .
 ADD ui ./ui
 ADD templates ./templates
+ADD misc ./misc
 
 RUN npm install
 RUN npm run build:prod
 
-RUN ./build_html.sh ./html
+RUN ./build_html.sh html
 
 FROM python:3.11.3-slim-buster
 
