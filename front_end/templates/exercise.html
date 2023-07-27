@@ -126,6 +126,8 @@
 
                     <div class="has-background-white mt-0 p-4">
                         <div id="instructions">
+                            <h6>{{ exercise_basics["title"] }}</h6>
+
                             {{ exercise_details["instructions"] }}
                             
                             {% if "previous_submission_code" in exercise_details %}
@@ -207,9 +209,11 @@
                 {% end %}
             </div>
 
-            <div id="saved_div" class="ml-0 mt-0 mr-2 is-pulled-right mt-0 smaller-font"></div>
+            <div class="content is-pulled-right is-flex-tablet is-flex-mobile">
+                <div id="saved_div" class="smaller-font ml-0 mt-0 mr-2 mt-0"></div>
 
-            <div class="smaller-font is-pulled-right mt-0 mr-1"><em>{{ exercise_basics["title"] }}</em></div>
+                <div class="smaller-font mt-0 mr-1"><em>{{ exercise_basics["title"] }}</em></div>
+            </div>
 
             <div class="buttons">
                 <a class="button is-medium is-dark" id='submit_button'>Submit</a>

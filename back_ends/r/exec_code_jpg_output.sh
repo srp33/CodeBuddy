@@ -20,4 +20,5 @@ echo "ggsave('jpg_output', dpi = 150, device = 'jpeg')" >> code
 
 cat after_code >> code
 
+cp code /tmp/code
 Rscript code

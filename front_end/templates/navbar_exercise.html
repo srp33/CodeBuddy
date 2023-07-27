@@ -4,76 +4,62 @@
 <!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <!-- </copyright_statement>-->
 
-{% if "exercise_statuses" in globals() and len(exercise_statuses) > 0 and "exercise_basics" in globals() and exercise_basics["exists"] %}
+{% if "exercise_statuses" in globals() and len(exercise_statuses) > 1 and "exercise_basics" in globals() and exercise_basics["exists"] %}
     <div id="exercise_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('exercise_dropdown')">
-        {% if len(exercise_statuses) == 1 %}
-            <a class="navbar-link is-arrowless" style="cursor: pointer;" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">
-                {% if len(exercise_basics["title"]) > 30 %}
-                    {{ " ".join(exercise_basics["title"][:30].split(" ")[:-1]) }}...
-                {% else %}
-                    {{ exercise_basics["title"] }}
-                {% end %}
-            </a>
-        {% else %}
-            <div class="navbar-item is-arrowless" style="cursor: pointer;">
-                {% if len(exercise_basics["title"]) > 30 %}
-                    {{ " ".join(exercise_basics["title"][:30].split(" ")[:-1]) }}...
-                {% else %}
-                    {{ exercise_basics["title"] }}
-                {% end %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Exercises
 
-                <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
-            </div>
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
 
-            <div id="moreDropdown" class="navbar-dropdown">
-                {% for exercise in exercise_statuses %}
-                    {% if exercise[0] == exercise_basics['id'] %}
-                        <a class="navbar-item" style="background-color: #1AB28C; color: white; white-space: nowrap;"
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% for exercise in exercise_statuses %}
+                {% if exercise[0] == exercise_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #1AB28C; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+                
+                    {% if "is_edit_page" in globals() and is_edit_page == True %}
+                        href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
                     {% else %}
-                        <a class="navbar-item" style="white-space: nowrap;"
+                        href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
                     {% end %}
-                    
-                        {% if "is_edit_page" in globals() and is_edit_page == True %}
-                            href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
-                        {% else %}
-                            href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
-                        {% end %}
-                        >
-                        {% if exercise[1]["passed"] %}
-                            <i class="far fa-check-circle"
-                            
-                            {% if exercise[0] == exercise_basics['id'] %}
-                                style="color: white;"
-                            {% end %}
-
-                            ></i>&nbsp;
-                        {% elif exercise[1]["in_progress"] %}
-                            <i class="far fa-hourglass"
-                            
-                            {% if exercise[0] == exercise_basics['id'] %}
-                                style="color: white;"
-                            {% end %}
-
-                            ></i>&nbsp;
-                        {% else %}
-                            <i class="far fa-circle"
-                            
-                            {% if exercise[0] == exercise_basics['id'] %}
-                                style="color: white;"
-                            {% end %}
-
-                            ></i>&nbsp;
+                    >
+                    {% if exercise[1]["passed"] %}
+                        <i class="far fa-check-circle"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
                         {% end %}
 
-                        {{ exercise[1]["title"] }}
-
-                        {% if exercise[1]["enable_pair_programming"] %}
-                            <label style="margin-left: 5px;" class="has-tooltip-multiline has-tooltip-left" data-tooltip="Pair programming is enabled for this exercise"><i class="fab fa-product-hunt"></i></label>
+                        ></i>&nbsp;
+                    {% elif exercise[1]["in_progress"] %}
+                        <i class="far fa-hourglass"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
                         {% end %}
-                    </a>
-                {% end %}
-            </div>
-        {% end %}
+
+                        ></i>&nbsp;
+                    {% else %}
+                        <i class="far fa-circle"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% end %}
+
+                    {{ exercise[1]["title"] }}
+
+                    {% if exercise[1]["enable_pair_programming"] %}
+                        <label style="margin-left: 5px;" class="has-tooltip-multiline has-tooltip-left" data-tooltip="Pair programming is enabled for this exercise"><i class="fab fa-product-hunt"></i></label>
+                    {% end %}
+                </a>
+            {% end %}
+        </div>
     </div>
 
     {% if prev_exercise %}

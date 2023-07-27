@@ -58,13 +58,13 @@ class EditCourseHandler(BaseUserHandler):
                     if len(course_basics["title"]) > 100:
                         result = "Error: The title cannot exceed 100 characters."
                     else:
-                        vb_dict = {}
+                        va_dict = {}
                         try:
-                            vb_dict = load_yaml_dict(virtual_assistant_config)
+                            va_dict = load_yaml_dict(virtual_assistant_config)
                         except:
                             pass
 
-                        if type(vb_dict) is dict and "api_key" in vb_dict and "model" in vb_dict and "temperature" in vb_dict and "timeout" in vb_dict and "max_per_exercise" in vb_dict and type(vb_dict["max_per_exercise"]) is int:
+                        if virtual_assistant_config is None or (type(va_dict) is dict and "api_key" in va_dict and "model" in va_dict and "temperature" in va_dict and "timeout" in va_dict and "max_per_exercise" in va_dict and type(va_dict["max_per_exercise"]) is int):
                             #self.content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
                             self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], None, dt.datetime.utcnow())
 

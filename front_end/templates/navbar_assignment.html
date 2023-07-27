@@ -4,38 +4,24 @@
 <!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <!-- </copyright_statement>-->
 
-            {% if len(assignments) > 0 and "assignment_basics" in globals() and assignment_basics["exists"] %}
+            {% if len(assignments) > 1 and "assignment_basics" in globals() and assignment_basics["exists"] %}
                 <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
-                    {% if len(assignments) == 1 %}
-                        <a class="navbar-link is-arrowless" style="cursor: pointer;" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
-                            {% if len(assignment_basics["title"]) > 30 %}
-                                {{ " ".join(assignment_basics["title"][:30].split(" ")[:-1]) }}...
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        Assignments
+
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+                    </div>
+
+                    <div id="moreDropdown" class="navbar-dropdown">
+                        {% for assignment in assignments %}
+                            {% if assignment[0] == assignment_basics['id'] %}
+                                <a class="navbar-item" style="background-color: #1AB28C; color: white; white-space: nowrap;"
                             {% else %}
-                                {{ assignment_basics["title"] }}
-                            {% end %}
-                        </a>
-                    {% else %}
-                        <div class="navbar-item is-arrowless" style="cursor: pointer;">
-                            {% if len(assignment_basics["title"]) > 30 %}
-                                {{ " ".join(assignment_basics["title"][:30].split(" ")[:-1]) }}...
-                            {% else %}
-                                {{ assignment_basics["title"] }}
+                                <a class="navbar-item" style="white-space: nowrap;"
                             {% end %}
 
-                            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
-                        </div>
-
-                        <div id="moreDropdown" class="navbar-dropdown">
-                            {% for assignment in assignments %}
-                                {% if assignment[0] == assignment_basics['id'] %}
-                                    <a class="navbar-item" style="background-color: #1AB28C; color: white; white-space: nowrap;"
-                                {% else %}
-                                    <a class="navbar-item" style="white-space: nowrap;"
-                                {% end %}
-
-                                href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
-                            {% end %}
-                        </div>
-                    {% end %}
+                            href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
+                        {% end %}
+                    </div>
                 </div>
             {% end %}

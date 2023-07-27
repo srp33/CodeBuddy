@@ -288,7 +288,7 @@ class InformationPane extends LitElement {
 	private tabPanels: {[key in Tab]: () => TemplateResult} = {
 		[Tab.Information]: () => html`
 			<div class="content is-medium">
-				<h6>Instructions</h6>
+				<h6>${unsafeHTML(window.templateData.exercise_basics.title)}</h6>
 				${exercise_details.enable_pair_programming ? html`
 					<div style="margin-bottom: 16px;">
 						<i class="fab fa-product-hunt"></i>
