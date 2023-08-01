@@ -64,7 +64,12 @@
 
     {% if prev_exercise %}
         <div class="navbar-item is-arrowless" style="cursor: pointer;">
-            <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% else %}
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% end %}
+
                 <i class="fas fa-arrow-left" style="margin-left: 5px;margin-right: 1px;"></i>
             </a>
         </div>
@@ -72,7 +77,12 @@
 
     {% if next_exercise %}
         <div class="navbar-item is-arrowless" style="cursor: pointer;">
-            <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% else %}
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% end %}
+
                 <i class="fas fa-arrow-right" style="margin-left: 1px;margin-right: 5px;"></i>
             </a>
         </div>
