@@ -6,49 +6,47 @@
 
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="CodeBuddy">
-    <meta http-equiv="Content-Script-Type" content="text/javascript">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <link rel="stylesheet" href="/static/css/mystyles.css">
-    <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
-        integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
-    <script
-        src="https://code.jquery.com/jquery-3.6.0.min.js"
-        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
-        crossorigin="anonymous"></script>
+        <title>CodeBuddy</title>
 
-    <title>CodeBuddy</title>
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
 
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
-    <link rel="manifest" href="/static/site.webmanifest">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
-        rel="stylesheet">
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
 
-    <style type="text/css" media="screen">
-        .ace_editor {
-            border: 1px solid lightgray;
-            margin: auto;
-            height: 500px;
-            width: 100%;
-        }
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
 
-        .scrollmargin {
-            height: 80px;
-            text-align: center;
-        }
-    </style>
-</head>
-
-<body>
-    <div style="position: relative; min-height: 100vh;">
-        <div>
+    <body>
+            <div>

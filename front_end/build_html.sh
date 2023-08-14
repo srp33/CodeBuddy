@@ -17,15 +17,15 @@ rm -f $OUTPUT/*
 
 cd templates
 
-for page_name in about choose_login_option contact_us devlogin
+for page_name in home about choose_login_option contact_us devlogin
 do
-  cat header.html navbar_top.html navbar_bottom.html container_color.html ${page_name}.html container_bottom.html footer.html > "$OUTPUT/${page_name}.html"
+  # cat header.html navbar_top.html navbar_bottom.html container_color.html ${page_name}.html container_bottom.html footer.html > "$OUTPUT/${page_name}.html"
+  cat header.html container_color.html ${page_name}.html container_bottom.html footer.html > "$OUTPUT/${page_name}.html"
 done
 
 # Dynamic pages
 
 cat test.html > "$OUTPUT/test.html"
-cat header.html navbar_top.html navbar_bottom.html home.html footer.html > "$OUTPUT/home.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html courses.html container_bottom.html footer.html > "$OUTPUT/courses.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html available.html container_bottom.html footer.html > "$OUTPUT/available.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_admins.html container_bottom.html footer.html > "$OUTPUT/manage_admins.html"
