@@ -68,28 +68,37 @@
             </table>
         </div>
 
-        <p>
-            <div class="select is-size-5">
-                <select id="time_dropdown" onchange="handleDropdownChange()">
-                    <!--<option value="0">0 hours</option>-->
-                    <option value="1">1 hour</option>
-                    <option value="6">6 hours</option>
-                    <option value="24">1 day</option>
-                    <option value="48">2 days</option>
-                    <option value="72" selected>3 days</option>
-                    <option value="120">5 days</option>
-                    <option value="168">1 week</option>
-                    <option value="336">2 weeks</option>
-                </select>
-            </div>
-
-            <script>
-                function handleDropdownChange() {
-                  var selectedHours = document.getElementById("time_dropdown").value;
-
-                  window.location.href = `/view_at_risk_students/{{ course_basics['id'] }}/${selectedHours}`;
-                }
-            </script>
-        </p>
     {% end %}
+
+    <p>
+        <div class="select is-size-5">
+            <select id="time_dropdown" onchange="handleDropdownChange()">
+                <option value="1">1 hour</option>
+                <option value="6">6 hours</option>
+                <option value="24">1 day</option>
+                <option value="48">2 days</option>
+                <option value="72">3 days</option>
+                <option value="120">5 days</option>
+                <option value="168">1 week</option>
+                <option value="336">2 weeks</option>
+            </select>
+        </div>
+
+        <script>
+            function handleDropdownChange() {
+                var selectedHours = document.getElementById("time_dropdown").value;
+
+                window.location.href = `/view_at_risk_students/{{ course_basics['id'] }}/${selectedHours}`;
+            }
+
+            for (var i = 0; i < time_dropdown.options.length; i++) {
+                // console.log(time_dropdown.options[i].value);
+                // console.log({{recent_submissions_days_threshold }});
+                if (time_dropdown.options[i].value == {{recent_submissions_days_threshold }}) {
+                    time_dropdown.selectedIndex = i;
+                    break;
+                }
+            }
+        </script>
+    </p>
 {% end %}
