@@ -737,10 +737,31 @@ class Content:
                    GROUP BY e.assignment_id, e.exercise_id
                  )
                  GROUP BY assignment_id, title
+
+                 UNION
+																	
+								 SELECT assignment_id,
+                        title,
+                        visible,
+                        start_date,
+                        due_date,
+                        0 AS num_passed,
+                        0 AS num_exercises,
+                        0 AS passed,
+                        0 AS in_progress,
+                        NULL AS minutes_since_start,
+                        0 AS has_timer,
+                        NULL AS hour_timer,
+                        NULL AS minute_timer,
+                        0 AS restrict_other_assignments
+                 FROM assignments a
+                 WHERE course_id = ?
+									 AND a.assignment_id NOT IN (SELECT DISTINCT assignment_id FROM exercises WHERE course_id = ?)
+
                  ORDER BY title'''
 
         statuses = []
-        for row in self.fetchall(sql, (user_id, user_id, course_id,)):
+        for row in self.fetchall(sql, (user_id, user_id, course_id, course_id, course_id)):
             assignment = dict(row)
 
             if assignment["visible"] or show_hidden:
