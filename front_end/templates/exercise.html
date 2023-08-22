@@ -456,6 +456,7 @@
 
                 editor.setHighlightActiveLine(false);
                 editor.setShowPrintMargin(false);
+                editor.session.setOption('newLineMode', 'unix');
 
                 {% if user_info['enable_vim'] %}
                    editor.setKeyboardHandler("ace/keyboard/vim");

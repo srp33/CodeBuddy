@@ -626,6 +626,8 @@
             });
 
             editor.setHighlightActiveLine(false);
+            editor.setShowPrintMargin(false);
+            editor.session.setOption('newLineMode', 'unix');
             return(editor);
         }
 
@@ -693,9 +695,9 @@
 
         function save() {
             const title = getValue("title").trim();
-            const instructions = getValue("instructions").replace("\r", "");
+            const instructions = getValue("instructions");
             const allow_any_response = getValue("allow_any_response") == "Yes";
-            const solution_code = solution_code_editor.getValue().replace("\r", "");
+            const solution_code = solution_code_editor.getValue();
             const weight = getValue("weight");
 
             // Check submission details
@@ -743,12 +745,12 @@
                 "instructions": instructions,
                 "enable_pair_programming": getValue("enable_pair_programming") == "Yes",
                 "weight": weight,
-                "credit": getValue("credit").replace("\r", ""),
+                "credit": getValue("credit"),
                 "solution_code": solution_code,
-                "verification_code": verification_code_editor.getValue().replace("\r", ""),
-                "starter_code": starter_code_editor.getValue().replace("\r", ""),
-                "hint": getValue("hint").replace("\r", ""),
-                "solution_description": getValue("solution_description").replace("\r", ""),
+                "verification_code": verification_code_editor.getValue(),
+                "starter_code": starter_code_editor.getValue(),
+                "hint": getValue("hint"),
+                "solution_description": getValue("solution_description"),
                 "what_students_see_after_success": getValue("what_students_see_after_success"),
                 "max_submissions": getValue("max_submissions"),
                 "data_files": exercise_details_obj["data_files"],
