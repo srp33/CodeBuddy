@@ -106,11 +106,13 @@ function showRegisterModal(course_id, has_passcode=false) {
 
     registerButton.onclick = function() {
         var passcode = document.getElementById("passcode").value;
-        passcode = passcode == "" ? "none": passcode;
+        passcode = passcode == "" ? "none": encodeURIComponent(passcode);
+
+        let url = "/register/" + course_id + "/{{ user_info['user_id'] }}/" + passcode;
 
         $.ajax({
             type: 'GET',
-            url: "/register/" + course_id + "/{{ user_info['user_id'] }}/" + passcode,
+            url: url,
             async: true})
             .done(function(message) {
                 if (message.startsWith("Error:")) {
