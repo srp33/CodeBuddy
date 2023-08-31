@@ -134,7 +134,7 @@ async def exec_code(settings_dict, code, verification_code, exercise_details, ad
         response = {"message": "", "test_outputs": {}}
 
         for test_title in exercise_details["tests"]:
-            code_to_execute = exercise_details["tests"][test_title]["before_code"].strip() + "\n\n" + code + "\n\n" + exercise_details["tests"][test_title]["before_code"].strip()
+            code_to_execute = exercise_details["tests"][test_title]["before_code"].strip() + "\n\n" + code + "\n\n" + exercise_details["tests"][test_title]["after_code"].strip()
 
             output = execute_python_string_for_testing(code_to_execute)
 
