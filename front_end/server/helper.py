@@ -518,4 +518,7 @@ async def should_use_virtual_assistant(handler, course_id, assignment_details, e
 
     has_special_permission = handler.is_administrator or await handler.is_instructor_for_course(course_id) or await handler.is_assistant_for_course(course_id)
 
-    return has_special_permission or (assignment_details["use_virtual_assistant"] == 2 and user_info["research_cohort"] == "A") or (assignment_details["use_virtual_assistant"] == 3 and user_info["research_cohort"] == "B")
+    if has_special_permission and (assignment_details["use_virtual_assistant"] == 2 or ["use_virtual_assistant"] == 3):
+        return True
+
+    return (assignment_details["use_virtual_assistant"] == 2 and user_info["research_cohort"] == "A") or (assignment_details["use_virtual_assistant"] == 3 and user_info["research_cohort"] == "B")
