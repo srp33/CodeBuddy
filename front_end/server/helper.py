@@ -347,7 +347,7 @@ def get_client_ip_address(request):
            request.headers.get("X-Forwarded-For") or \
            request.remote_ip
 
-def format_exercise_details(exercise_details, course_basics, assignment_basics, user_info, content, next_prev_exercises=None, format_tests=True):
+def format_exercise_details(exercise_details, course_basics, assignment_basics, user_info, content, next_prev_exercises=None, format_tests=True, format_data=False):
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
     exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
@@ -405,6 +405,19 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
     for file_name in exercise_details["data_files"]:
         if file_name.endswith(".hide"):
             exercise_details["data_files"][file_name] = "The contents of this file are hidden."
+        elif format_data:
+            if file_name.endswith(".csv"):
+                exercise_details["data_files"][file_name] = format_delimited_data_as_table(exercise_details["data_files"][file_name], ",")
+            elif file_name.endswith(".tsv"):
+                exercise_details["data_files"][file_name] = format_delimited_data_as_table(exercise_details["data_files"][file_name], "\t")
+
+def format_delimited_data_as_table(data_text, delimiter):
+    table = "<table>"
+
+    for line in data_text.split("\n"):
+        table += "<tr><td>" + "</td><td>".join(line.split(delimiter)) + "</td></tr>"
+
+    return table + "</table>"
 
 def modify_what_students_see(exercise_details, user_info):
     exercise_details["show_instructor_solution"] = False

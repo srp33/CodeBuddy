@@ -55,7 +55,7 @@ class ExerciseHandler(BaseUserHandler):
             elif mode == "classic":
                 studio_mode = False
 
-            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True)
+            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=(not studio_mode))
 
             virtual_assistant_interactions = []
             virtual_assistant_max_per_exercise = None
@@ -102,9 +102,6 @@ class ExerciseHandler(BaseUserHandler):
                     # "same_suggestion": same_suggestion,
 
             if studio_mode:
-                #TODO: Remove when we know it is working the other way
-                #args['presubmission'] = self.content.get_presubmission(course, assignment, exercise, self.get_user_id())
-
                 exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))
                 del exercise_details['solution_code']
                 del exercise_details['solution_description']
