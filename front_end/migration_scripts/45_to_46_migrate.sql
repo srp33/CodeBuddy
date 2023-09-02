@@ -1,0 +1,1 @@
+ALTER TABLE assignments ADD COLUMN show_run_button integer DEFAULT 1

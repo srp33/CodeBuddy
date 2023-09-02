@@ -46,6 +46,7 @@ class EditAssignmentHandler(BaseUserHandler):
             assignment_details["enable_help_requests"] = False
             assignment_details["allowed_ip_addresses"] = self.get_body_argument("allowed_ip_addresses").strip()
             assignment_details["allowed_external_urls"] = self.get_body_argument("allowed_external_urls")
+            assignment_details["show_run_button"] = self.get_body_argument("show_run_button")
             assignment_details["use_virtual_assistant"] = self.get_body_argument("use_virtual_assistant")
 
             if assignment_details["has_start_date"]:
@@ -111,7 +112,7 @@ class EditAssignmentHandler(BaseUserHandler):
                             if assignment_details["has_timer"] and assignment_details["hour_timer"] == 0 and assignment_details["minute_timer"] == 0:
                                 result = "Error: A timer must be longer than zero minutes."
                             else:
-                                self.content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, dt.datetime.utcnow(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["use_virtual_assistant"])
+                                self.content.specify_assignment_details(assignment_details, assignment_details["introduction"], None, dt.datetime.utcnow(), assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["use_virtual_assistant"])
 
                                 assignment_id = self.content.save_assignment(assignment_basics, assignment_details)
 

@@ -303,6 +303,29 @@
         </p>
     </div>
 
+    <div class="shadow-box">
+        <label for="show_run_button"><strong>Show Run Button:</strong><br/>On the exercise page, a "Run" button is shown by default. This button allows students to execute their code and see its output before submitting it (and thus without saving their code to the database). In some cases, instructors prefer <em>not</em> to show this button and only show the "Submit" button so that students' code will be saved every time.</label>
+
+        <p>
+            <div class="select is-grey">
+                <select id="show_run_button" name="show_run_button" class="edit-select">
+                    <option value="0"
+                        {% if assignment_details["show_run_button"] == 0 %}
+                            selected
+                        {% end %}
+                        >No
+                    </option>
+                    <option value="1"
+                        {% if assignment_details["show_run_button"] == 1 %}
+                            selected
+                        {% end %}
+                        >Yes
+                    </option>
+                </select>
+            </div>
+        </p>
+    </div>
+
     {% if course_details["virtual_assistant_config"] %}
         <div class="shadow-box">
     {% else %}

@@ -218,14 +218,18 @@
             <div class="buttons">
                 <a class="button is-medium is-dark" id='submit_button'>Submit</a>
 
-                {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
+                {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] and assignment_details["show_run_button"] %}
                     <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
                 {% end %}
 
-                <!--<a class="button is-medium is-dark is-outlined" onclick="showHelpModal()">Help</a>-->
-
                 <span class="icon mb-2 ml-1">
-                    <i class="far fa-question-circle" style="cursor: pointer;" onclick="showHelpModal()"></i>
+                    {% if exercise_details["allow_any_response"] %}
+                        <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
+                    {% else %}
+                        <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution, click on 'Submit'. If you would like to see the output of your solution without submitting it, click on 'Run' (if it is available). If you highlight a section of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation." />
+                    {% end %}
+
+                    <i class="far fa-question-circle"></i>
                 </span>
             </div>
 
