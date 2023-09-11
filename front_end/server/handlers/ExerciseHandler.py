@@ -55,11 +55,15 @@ class ExerciseHandler(BaseUserHandler):
             elif mode == "classic":
                 studio_mode = False
 
-            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=(not studio_mode))
-
             virtual_assistant_interactions = []
             virtual_assistant_max_per_exercise = None
+
             use_virtual_assistant = course_details["virtual_assistant_config"] and await should_use_virtual_assistant(self, course_id, assignment_details, exercise_basics, self.user_info)
+
+            if use_virtual_assistant:
+                studio_mode = False
+
+            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=(not studio_mode))
 
             if use_virtual_assistant:
                 virtual_assistant_interactions = self.content.get_virtual_assistant_interactions(course_id, assignment_id, exercise_id, self.user_info["user_id"])
@@ -103,6 +107,7 @@ class ExerciseHandler(BaseUserHandler):
 
             if studio_mode:
                 exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))
+
                 del exercise_details['solution_code']
                 del exercise_details['solution_description']
 
