@@ -2197,11 +2197,12 @@ class Content:
 
         self.update_when_content_updated("user")
 
-    def update_user_settings(self, user_id, theme, use_auto_complete, use_studio_mode, enable_vim):
+    def update_user_settings(self, user_id, preferences_dict):
         sql = '''UPDATE users
                  SET ace_theme = ?, use_auto_complete = ?, use_studio_mode = ?, enable_vim = ?
                  WHERE user_id = ?'''
-        self.execute(sql, (theme, use_auto_complete, use_studio_mode, enable_vim, user_id))
+
+        self.execute(sql, (preferences_dict["ace_theme"], preferences_dict["use_auto_complete"], preferences_dict["use_studio_mode"], preferences_dict["enable_vim"], user_id))
 
         self.update_when_content_updated("user")
 

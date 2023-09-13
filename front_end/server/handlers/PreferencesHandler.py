@@ -10,21 +10,23 @@ class PreferencesHandler(BaseUserHandler):
     async def get(self, user_id):
         try:
             ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
-            self.render("preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=self.user_info, is_administrator=self.is_administrator)
+
+            self.render("preferences.html", ace_themes=ace_themes, user_info=self.user_info, is_administrator=self.is_administrator)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     async def post(self, user_id):
+        if user_id != self.get_current_user():
+            self.write(f"Error: The user identifiers do not match: {user_id} and {self.get_current_user()}.")
+            return
+        
+        message = "Success! Preferences were saved."
+
         try:
-            ace_theme = self.get_body_argument("ace_theme")
-            use_auto_complete = self.get_body_argument("use_auto_complete") == "Yes"
-            use_studio_mode = self.get_body_argument("use_studio_mode") == "Yes"
-            enable_vim = self.get_body_argument("enable_vim") == "Yes"
+            preferences_dict = ujson.loads(self.request.body)
 
-            self.content.update_user_settings(user_id, ace_theme, use_auto_complete, use_studio_mode, enable_vim)
-            
-            ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
-
-            self.render("preferences.html", page="preferences", code_completion_path="ace/mode/r", ace_themes=ace_themes, user_info=self.user_info, is_administrator=self.is_administrator)
+            self.content.update_user_settings(user_id, preferences_dict)
         except Exception as inst:
-            render_error(self, traceback.format_exc())
+            message = f"Error: The settings were not saved. {traceback.format_exc()}"
+
+        self.write(message)

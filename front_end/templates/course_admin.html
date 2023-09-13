@@ -23,10 +23,13 @@
                         <th style="text-align: center;"># Completed</th>
                         <th style="text-align: center;">Avg. Score</th>
                         <th style="text-align: center;">Edit</th>
-                        <th style="text-align: center;">Copy</th>
-                        <th style="text-align: center;">Move</th>
-                        <th style="text-align: center;">Purge</th>
-                        <th style="text-align: center;">Delete</th>
+
+                        {% if is_administrator or is_instructor %}
+                            <th style="text-align: center;">Copy</th>
+                            <th style="text-align: center;">Move</th>
+                            <th style="text-align: center;">Purge</th>
+                            <th style="text-align: center;">Delete</th>
+                        {% end %}
                     </tr>
                 </thead>
                 <tbody>
@@ -66,41 +69,33 @@
                             <td style="text-align: center;"><a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ course_summary_scores[assignment[0]]["avg_score"] }}%</a></td>
                         {% end %}
                         <td style="text-align: center;">
-                            {% if not is_assistant %}
-                                <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">
-                                    <i class="far fa-edit"></i>
-                                </a>
-                            {% end %}
+                            <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">
+                                <i class="far fa-edit"></i>
+                            </a>
                         </td>
-                        <td style="text-align: center;">
-                            {% if not is_assistant %}
+                        {% if is_administrator or is_instructor %}
+                            <td style="text-align: center;">
                                 <a onclick="showPostModal('copy_assignment', 'Copy this assignment within this course', {'assignment_id': {{ assignment[0] }}}, '')">
                                     <i class="far fa-copy"></i>
                                 </a>
-                            {% end %}
-                        </td>
-                        <td style="text-align: center;">
-                            {% if not is_assistant %}
+                            </td>
+                            <td style="text-align: center;">
                                 <a onclick="showPostModal('move_assignment', 'Move assignment to another course', {'assignment_id': {{ assignment[0] }}}, '')">
                                     <i class="far fa-arrow-alt-circle-right"></i>
                                 </a>
-                            {% end %}
-                        </td>
-                        <td style="text-align: center;">
-                            {% if not is_assistant %}
+                            </td>
+                            <td style="text-align: center;">
                                 <a onclick="showPostModal('delete_assignment_submissions', 'Purge assignment submissions', {'assignment_id': {{ assignment[0] }}}, '')">
                                     <i class="far fa-times-circle"></i>
                                 </a>
-                            {% end %}
-                            <!--https://fontawesome.com/v5/search?o=r&m=free&s=regular-->
-                        </td>
-                        <td style="text-align: center;">
-                            {% if not is_assistant %}
+                                <!--https://fontawesome.com/v5/search?o=r&m=free&s=regular-->
+                            </td>
+                            <td style="text-align: center;">
                                 <a onclick="showPostModal('delete_assignment', 'Delete assignment', {'assignment_id': {{ assignment[0] }}}, '')">
                                     <i class="far fa-trash-alt"></i>
                                 </a>
-                            {% end %}
-                        </td>
+                            </td>
+                        {% end %}
                     </tr>
                 {% end %}
                 </tbody>

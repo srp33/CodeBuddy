@@ -6,88 +6,91 @@
 
 <h3>Preferences</h3>
 
-<form method="post" action="/preferences/{{ user_info['user_id'] }}">
-    <div class="bottom-space">
-        <h6>Text editor theme:</h6>
-        <div class="select is-light" style="margin-bottom: 10px;">
-            <select name="ace_theme" class="edit-select" onchange="changeTheme(this.value)">
-                {% for theme in ace_themes %}
-                    {% if theme == user_info["ace_theme"] %}
-                        <option selected>{{ theme }}</option>
-                    {% else %}
-                        <option>{{ theme }}</option>
-                    {% end %}
-                {% end %}
-            </select>
-        </div>
-    </div>
-
-    <div class="bottom-space">
-        <h6>Use auto-complete: </h6>
-        <div class="select is-light">
-            <select name="use_auto_complete" class="edit-select" onchange="updateAutoComplete(this.value)">
-                {% if user_info["use_auto_complete"] %}
-                    <option value="Yes" selected>Yes</option>
-                    <option value="No">No</option>
+<div class="bottom-space">
+    <h6>Text editor theme:</h6>
+    <div class="select">
+        <select id="ace_theme" class="edit-select" onchange="changeTheme(this.value)">
+            {% for theme in ace_themes %}
+                {% if theme == user_info["ace_theme"] %}
+                    <option selected>{{ theme }}</option>
                 {% else %}
-                    <option value="Yes">Yes</option>
-                    <option value="No" selected>No</option>
+                    <option>{{ theme }}</option>
                 {% end %}
-            </select>
-        </div>
+            {% end %}
+        </select>
     </div>
+</div>
 
-    <div class="bottom-space">
-        <h6>Use Studio Mode (reduces scrolling):</h6>
-        <div class="select">
-            <select name="use_studio_mode" class="edit-select">
-                {% if user_info["use_studio_mode"] %}
-                    <option value="Yes" selected>Yes</option>
-                    <option value="No">No</option>
-                {% else %}
-                    <option value="Yes">Yes</option>
-                    <option value="No" selected>No</option>
-                {% end %}
-            </select>
-        </div>
+<div class="bottom-space">
+    <h6>Use auto-complete:</h6>
+    <div class="select">
+        <select id="use_auto_complete" class="edit-select" onchange="updateAutoComplete(this.value == 'Yes')">
+            {% if user_info["use_auto_complete"] %}
+                <option value="Yes" selected>Yes</option>
+                <option value="No">No</option>
+            {% else %}
+                <option value="Yes">Yes</option>
+                <option value="No" selected>No</option>
+            {% end %}
+        </select>
     </div>
+</div>
 
-    <div class="bottom-space">
-        <h6>Use <a href="https://www.vim.org"> Vim</a> when editing text:</h6>
-        <div class="select is-light">
-            <select name="enable_vim" class="edit-select">
-                {% if user_info["enable_vim"] %}
-                    <option value="Yes" selected>Yes</option>
-                    <option value="No">No</option>
-                {% else %}
-                    <option value="Yes">Yes</option>
-                    <option value="No" selected>No</option>
-                {% end %}
-            </select>
-        </div>
+<div class="bottom-space">
+    <h6>Use <a href="https://www.vim.org"> Vim</a> when editing text:</h6>
+    <div class="select">
+        <select id="enable_vim" class="edit-select" onchange="updateVim(this.value == 'Yes')">
+            {% if user_info["enable_vim"] %}
+                <option value="Yes" selected>Yes</option>
+                <option value="No">No</option>
+            {% else %}
+                <option value="Yes">Yes</option>
+                <option value="No" selected>No</option>
+            {% end %}
+        </select>
     </div>
+</div>
 
-    <div class="buttons">
-        <input type="submit" class="button is-primary" value="Save" />
+<div class="bottom-space">
+    <h6>Use Studio Mode (reduces scrolling):</h6>
+    <div class="select">
+        <select id="use_studio_mode" class="edit-select">
+            {% if user_info["use_studio_mode"] %}
+                <option value="Yes" selected>Yes</option>
+                <option value="No">No</option>
+            {% else %}
+                <option value="Yes">Yes</option>
+                <option value="No" selected>No</option>
+            {% end %}
+        </select>
     </div>
+</div>
 
-    <div id="ace_div">
-        <textarea name="preview" id="preview" class="textarea is-light monospace" rows="10">
-        cloneAnimals = function(vec, x) {
-            newvec = rep(vec, each = x+1)
-            return(sort(newvec))
-        }
+<article  id="result_message" class="message invisible">
+</article>
 
-        birds = c("parrot", "flamingo", "ostrich", "owl", "peacock")
-        print(cloneAnimals(birds, 2))</textarea>
-    </div>
-</form>
+<div class="buttons">
+    <input type="button" class="button is-primary" value="Save" onclick="save()" />
+</div>
+
+<h3>Code editor preview:</h3>
+
+<div id="ace_div">
+    <textarea name="preview" id="preview" class="textarea is-light monospace" rows="10">
+    cloneAnimals = function(vec, x) {
+        newvec = rep(vec, each = x+1)
+        return(sort(newvec))
+    }
+
+    birds = c("parrot", "flamingo", "ostrich", "owl", "peacock")
+    print(cloneAnimals(birds, 2))</textarea>
+</div>
 
 <script>
     ace.require("ace/ext/language_tools");
     var preview_editor = ace.edit("preview", {
         theme: "ace/theme/{{ user_info['ace_theme'] }}",
-        autoScrollEditorIntoView: true,
+        autoScrollEditorIntoView: false,
         minLines: 10,
         maxLines: 15,
         fontSize: "12pt",
@@ -95,14 +98,14 @@
     });
 
     updateAutoComplete({{ user_info["use_auto_complete"] }});
-    preview_editor.focus();
+    updateVim({{ user_info["enable_vim"] }});
 
     function changeTheme(theme) {
         preview_editor.setTheme("ace/theme/" + theme);
     }
 
     function updateAutoComplete(use_auto_complete) {
-        if (use_auto_complete == "Yes" || use_auto_complete == 1) {
+        if (use_auto_complete) {
             preview_editor.setOptions({
             enableBasicAutocompletion: false,
             enableSnippets: true,
@@ -116,5 +119,47 @@
             enableLiveAutocompletion: false
             });
         }
+    }
+
+    function updateVim(enable_vim) {
+        if (enable_vim)
+            preview_editor.setKeyboardHandler("ace/keyboard/vim");
+        else
+            preview_editor.setKeyboardHandler("");
+    }
+
+    function save() {
+        var ace_theme = document.getElementById("ace_theme").value;
+        var use_auto_complete = document.getElementById("use_auto_complete").value == "Yes";
+        var use_studio_mode = document.getElementById("use_studio_mode").value == "Yes";
+        var enable_vim = document.getElementById("enable_vim").value == "Yes";
+
+        let data_obj = {"ace_theme": ace_theme, "use_auto_complete": use_auto_complete, "use_studio_mode": use_studio_mode, "enable_vim": enable_vim};
+
+        $("#result_message").removeClass("invisible");
+
+        $.ajax({
+            type: 'POST',
+            url: "/preferences/{{ user_info['user_id'] }}",
+            data: JSON.stringify(data_obj),
+            async: true})
+            .done(function(message) {
+                if (message.startsWith("Error:")) {
+                    $("#result_message").removeClass("is-primary");
+                    $("#result_message").addClass("is-danger");
+                }
+                else {
+                    $("#result_message").removeClass("is-danger");
+                    $("#result_message").addClass("is-primary");
+                }
+
+                $("#result_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+            })
+            .fail(function(error) {
+                $("#result_message").removeClass("is-primary");
+                $("#result_message").addClass("is-danger");
+
+                $("#result_message")[0].innerHTML = `<div class="message-body">${error}</div>`;
+            });
     }
 </script>

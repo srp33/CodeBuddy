@@ -164,9 +164,12 @@
                                 <th style="text-align: center;">Weight*</th>
                             {% end %}
                             <th style="text-align: center;">Edit</th>
-                            <th style="text-align: center;">Copy</th>
-                            <th style="text-align: center;">Move</th>
-                            <th style="text-align: center;">Delete</th>
+
+                            {% if not is_assistant %}
+                                <th style="text-align: center;">Copy</th>
+                                <th style="text-align: center;">Move</th>
+                                <th style="text-align: center;">Delete</th>
+                            {% end %}
                         </tr>
                     </thead>
                     <tbody>
@@ -203,33 +206,28 @@
                                 {% end %}
                             {% end %}
                             <td style="text-align: center;">
-                                {% if not is_assistant %}
-                                    <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">
-                                        <i class="far fa-edit"></i>
-                                    </a>
-                                {% end %}
+                                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">
+                                    <i class="far fa-edit"></i>
+                                </a>
                             </td>
-                            <td style="text-align: center;">
-                                {% if not is_assistant %}
+                            {% if not is_assistant %}
+                                <td style="text-align: center;">
                                     <a onclick="showPostModal('copy_exercise', 'Copy exercise within the same assignment:', {'exercise_id': '{{ exercise[0] }}'}, '')">
                                         <i class="far fa-copy"></i>
                                     </a>
-                                {% end %}
-                            </td>
-                            <td style="text-align: center;">
-                                {% if not is_assistant %}
+                                </td>
+
+                                <td style="text-align: center;">
                                     <a onclick="showPostModal('move_exercise', 'Move this exercise to a different assignment:', {'exercise_id': '{{ exercise[0] }}'}, '')">
                                         <i class="far fa-arrow-alt-circle-right"></i>
                                     </a>
-                                {% end %}
-                            </td>
-                            <td style="text-align: center;">
-                                {% if not is_assistant %}
+                                </td>
+                                <td style="text-align: center;">
                                     <a onclick="showPostModal('delete_exercise', 'Delete exercise', {'exercise_id': '{{ exercise[0] }}'}, '')">
                                         <i class="far fa-trash-alt"></i>
                                     </a>
-                                {% end %}
-                            </td>
+                                </td>
+                            {% end %}
                         </tr>
                     {% end %}  
                     </tbody>

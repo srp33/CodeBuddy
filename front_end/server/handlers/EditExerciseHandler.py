@@ -62,7 +62,7 @@ class EditExerciseHandler(BaseUserHandler):
                 else:
                     results["message"] = result
             else:
-                results["message"] = "You must be an administrator or an instructor for this course to edit exercises."
+                results["message"] = "You do not have permission to edit exercises for this course."
         except ConnectionError as inst:
             results["message"] = "The front-end server was unable to contact the back-end server."
             print(traceback.format_exc())

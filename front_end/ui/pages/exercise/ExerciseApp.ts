@@ -374,7 +374,7 @@ class InformationPane extends LitElement {
 						</button>
 					`)}
 
-					${window.templateData.is_administrator || window.templateData.is_instructor ? html`
+					${window.templateData.is_administrator || window.templateData.is_instructor || window.templateData.is_assistant ? html`
 
 						<span class="spacer"></span>
 						<button class="icon-button">
