@@ -31,11 +31,6 @@ class ExerciseHandler(BaseUserHandler):
 
             next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)
 
-            # help_request = self.content.get_help_request(course, assignment, exercise, self.get_user_id())
-            # same_suggestion = None
-            # if help_request and not help_request["approved"]:
-            #     same_suggestion = self.content.get_same_suggestion(help_request)
-
             # Fetches all users enrolled in a course excluding the current user as options to pair program with.
             partner_info = await self.get_partner_info(course_id, True)
             user_list = list(partner_info.keys())

@@ -318,12 +318,15 @@ class Content:
 				            AND uas.assignment_id = a.assignment_id
                   WHERE uas.user_id = ?
                     AND a.assignment_id != ?
+                    AND a.restrict_other_assignments = 1
 			              AND a.has_timer = 1
 		              )'''
 
         row = self.fetchone(sql, (user_id, assignment_id, ))
+
         if row:
             return bool(row["yes"])
+
         return False
 
     def get_all_user_assignment_expired(self, course_id, assignment_id):
