@@ -83,3 +83,15 @@ When you modify files in the `front_end/templates` directory, you will need to r
 ##### Running the middle layer
 
 Use the `cd` command to change your current working directory to `middle_layer`. Then execute the `run_middle_layer` script.
+
+### Setting up a course
+
+Here you will learn how to create a course in CodeBuddy. When you first run CodeBuddy, it will show you a screen that allows you to specify settings for a new course. We hope this page is self explanatory, but below is a short description of these settings.
+
+* *Title* - The title of the course. Make sure the title reflects the contents of the course so that students will be able to recognize it. Example: *Demo Course*.
+* *Introduction* - Indicate who developed the course and describe the concepts and skills that are taught in the course.
+* *Visible to students* - An instructor can keep a course hidden from students until they are ready to release it.
+* *Allow students to download their code for this course?* - Students often wish to download code for the assignments and exercises that they have completed. This setting allows them to do that (or not) for the entire course (with some exceptions).
+* *Passcode* - Optionally, you can specify a passcode that students must enter before they can register for the course.
+* *Virtual Assistant configuration* - 
+The goal is to automate the process of helping students when they are stuck on programming exercises. It uses the Chat Completions endpoint of OpenAI's API (similar to what is used by ChatGPT). To enable this feature, you must specify configuration information in YAML format, as shown in this example. Then you must indicate whether this feature is enabled in the settings for each assignment.

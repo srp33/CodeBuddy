@@ -9,23 +9,26 @@ from datetime import datetime
 
 class DownloadCourseScoresHandler(BaseUserHandler):
     async def get(self, course_id):
-        course_basics = await self.get_course_basics(course_id)
-
         try:
             if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
-                the_date = datetime.utcnow().strftime("%Yy_%mM_%dd_%Hh_%Mm_%Ss")
+                course_basics = await self.get_course_basics(course_id)
+
                 out_file_prefix = re.sub(r"\W", "_", course_basics['title'])
-                tsv_text = self.content.create_course_scores_text(course_basics)
 
-                self.set_header("Content-Disposition", f"attachment; filename={out_file_prefix}_Scores_{the_date}.tsv")
+                self.set_header("Content-Disposition", f"attachment; filename=Scores__{out_file_prefix}__{get_formatted_datetime()}.tsv")
                 self.set_header('Content-type', "text/tab-separated-values")
-                self.write(tsv_text)
-            else:
-                self.render("permissions.html")
-        except Exception as inst:
-            #self.write(traceback.format_exc())
-            render_error(self, traceback.format_exc())
 
+                include_header = True
+
+                for assignment_basics in self.content.get_assignments(course_basics, show_hidden=False):
+                    tsv_text = await self.content.create_assignment_scores_text(course_basics, assignment_basics[1], include_header=include_header)
+
+                    self.write(tsv_text)
+                    include_header = False
+            else:
+                self.write("Permission denied")
+        except Exception as inst:
+            self.write(traceback.format_exc())
 
 #    def get(self, course):
 #        course_basics = self.content.get_course_basics(course)

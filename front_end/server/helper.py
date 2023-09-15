@@ -340,7 +340,7 @@ def get_scores_download_file_name(assignment_basics):
     for char in special_chars:
         assignment_title = assignment_title.replace(char, "")
 
-    return f"Scores__{assignment_title}.tsv"
+    return f"Scores__{assignment_title}__{get_formatted_datetime()}.tsv"
 
 def get_client_ip_address(request):
     return request.headers.get("X-Real-IP") or \
@@ -535,3 +535,6 @@ async def should_use_virtual_assistant(handler, course_id, assignment_details, e
         return True
 
     return (assignment_details["use_virtual_assistant"] == 2 and user_info["research_cohort"] == "A") or (assignment_details["use_virtual_assistant"] == 3 and user_info["research_cohort"] == "B")
+
+def get_formatted_datetime():
+    return datetime.utcnow().strftime("%Y%m%d_%H%M%S")

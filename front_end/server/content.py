@@ -2533,9 +2533,12 @@ class Content:
 
     #     return out_file_text
 
-    async def create_assignment_scores_text(self, course_basics, assignment_basics):
-        #TODO: Save the title(s) rather than ID(s).
-        out_file_text = "Course\tAssignment\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\n"
+    async def create_assignment_scores_text(self, course_basics, assignment_basics, include_header=True):
+        if include_header:
+            out_file_text = "Course\tAssignment\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\n"
+        else:
+            out_file_text = ""
+
         scores = self.get_assignment_scores(course_basics, assignment_basics)
 
         course_id = course_basics["title"]
