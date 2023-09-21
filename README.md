@@ -97,4 +97,9 @@ Here you will learn how to create a course in CodeBuddy. When you first run Code
 
 After submitting this information, a course will be created, and you can create assignments and exercises. To simplify this process, we have created an example assignment that you can import, rather than specifying the assignment details by hand. To import the example assignment, do the following:
 
-1. Download the example assignment file from [here]().
+1. Download the example assignment file from [here](https://raw.githubusercontent.com/srp33/CodeBuddy/master/examples/Example_assignment.json).
+2. On the page for the course that you just created, click on the "Import assignment" button.
+3. Select the file that you just downloaded.
+4. Click on Continue.
+
+You should see the assignment. If you click on the assignment, you should see a variety of exercises that illustrate some of CodeBuddy's functionality.
