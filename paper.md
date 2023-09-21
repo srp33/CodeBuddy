@@ -14,7 +14,7 @@ authors:
   - name: Emme Tufts
     affiliation: 1
   - name: PJ Tatlow
-    affiliation: "1, 2"
+    affiliation: 1
   - name: Zach Eliason
     affiliation: 1
   - name: Ashley Stephenson
@@ -22,9 +22,7 @@ authors:
 affiliations:
   - name: Brigham Young University
     index: 1
-  - name: Cockroach Labs
-    index: 2
-date: 15 August 2023
+date: 21 September 2023
 bibliography: paper.bib
 ---
 
