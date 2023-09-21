@@ -86,12 +86,15 @@ Use the `cd` command to change your current working directory to `middle_layer`.
 
 ### Setting up a course
 
-Here you will learn how to create a course in CodeBuddy. When you first run CodeBuddy, it will show you a screen that allows you to specify settings for a new course. We hope this page is self explanatory, but below is a short description of these settings.
+Here you will learn how to create a course in CodeBuddy. When you first run CodeBuddy, it will show a screen that allows you to specify settings for an initial course. We hope this page is self explanatory, but below is a short description of these settings.
 
-* *Title* - The title of the course. Make sure the title reflects the contents of the course so that students will be able to recognize it. Example: *Demo Course*.
+* *Title* - The title of the course.
 * *Introduction* - Indicate who developed the course and describe the concepts and skills that are taught in the course.
-* *Visible to students* - An instructor can keep a course hidden from students until they are ready to release it.
-* *Allow students to download their code for this course?* - Students often wish to download code for the assignments and exercises that they have completed. This setting allows them to do that (or not) for the entire course (with some exceptions).
+* *Visible to students* - An instructor can keep a course hidden from students until the instructor is ready to release it.
+* *Allow students to download their code for this course?* - Students often wish to download code for the assignments and exercises that they have completed. This setting allows them to do that for the entire course (with some exceptions).
 * *Passcode* - Optionally, you can specify a passcode that students must enter before they can register for the course.
-* *Virtual Assistant configuration* - 
-The goal is to automate the process of helping students when they are stuck on programming exercises. It uses the Chat Completions endpoint of OpenAI's API (similar to what is used by ChatGPT). To enable this feature, you must specify configuration information in YAML format, as shown in this example. Then you must indicate whether this feature is enabled in the settings for each assignment.
+* *Virtual Assistant configuration* - CodeBuddy provides support for integration with OpenAI's chat API. The goal is to automate the process of helping students when they are "stuck" on programming exercises. To enable this feature, you must specify configuration information and subsequently indicate whether this feature is enabled in the settings for each assignment.
+
+After submitting this information, a course will be created, and you can create assignments and exercises. To simplify this process, we have created an example assignment that you can import, rather than specifying the assignment details by hand. To import the example assignment, do the following:
+
+1. Download the example assignment file from [here]().
