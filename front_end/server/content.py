@@ -853,9 +853,12 @@ class Content:
     def get_course_summary_scores(self, course_id, assignments):
         sql = '''SELECT COUNT(*) AS num_students
                  FROM course_registrations
-                 WHERE course_id = ?'''
+                 WHERE course_id = ?
+                   AND user_id NOT IN (SELECT user_id
+                                       FROM permissions
+                                       WHERE course_id = 0 OR course_id = ?)'''
 
-        num_students = self.fetchone(sql, (course_id, ))["num_students"]
+        num_students = self.fetchone(sql, (course_id, course_id, ))["num_students"]
 
         sql = '''
           WITH
@@ -863,6 +866,9 @@ class Content:
               SELECT user_id
               FROM course_registrations
               WHERE course_id = ?
+                AND user_id NOT IN (SELECT user_id
+                                    FROM permissions
+                                    WHERE course_id = 0 OR course_id = ?)
             ),
 
             assignment_info AS (
@@ -893,6 +899,9 @@ class Content:
               WHERE s.course_id = ?
                 AND a.visible = 1
                 AND e.visible = 1
+                AND cr.user_id NOT IN (SELECT user_id
+                                       FROM permissions
+                                       WHERE course_id = 0 OR course_id = ?)
               GROUP BY s.assignment_id, s.user_id
             ),
 
@@ -914,7 +923,7 @@ class Content:
 
         course_scores = {}
 
-        for row in self.fetchall(sql, (course_id, course_id, course_id, )):
+        for row in self.fetchall(sql, (course_id, course_id, course_id, course_id, course_id, )):
             assignment_dict = {"assignment_id": row["assignment_id"],
                 "num_students": num_students,
                 "num_students_completed": row["num_students_completed"],
@@ -941,6 +950,9 @@ class Content:
               SELECT user_id
               FROM course_registrations
               WHERE course_id = ?
+                AND user_id NOT IN (SELECT user_id
+                                    FROM permissions
+                                    WHERE course_id = 0 OR course_id = ?)
           ),
 
             exercise_score_info AS (
@@ -960,6 +972,9 @@ class Content:
                 AND s.assignment_id = ?
                 AND a.visible = 1
                 AND e.visible = 1
+                AND cr.user_id NOT IN (SELECT user_id
+                                       FROM permissions
+                                      WHERE course_id = 0 OR course_id = ?)
               GROUP BY s.exercise_id, s.user_id
           )
 
@@ -978,7 +993,7 @@ class Content:
 
         assignment_scores = {}
 
-        for row in self.fetchall(sql, (course_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], assignment_basics["id"], )):
+        for row in self.fetchall(sql, (course_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], course_basics["id"])):
             assignment_scores[row["exercise_id"]] = row["avg_score"]
 
         if len(assignment_scores) == 0:
@@ -1089,12 +1104,15 @@ class Content:
                  FROM users
                  WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
                    AND user_id NOT IN (SELECT user_id FROM assignment_scores)
+                   AND user_id NOT IN (SELECT user_id
+                                       FROM permissions
+                                       WHERE course_id = 0 OR course_id = ?)
                  '''
 
         course_id = course_basics["id"]
         assignment_id = assignment_basics["id"]
 
-        for user in self.fetchall(sql, (course_id, assignment_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, )):
+        for user in self.fetchall(sql, (course_id, assignment_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id)):
             scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"], "when_passed": user["when_passed"], "last_submission_time": user["last_submission_time"]}
             scores.append([user["user_id"], scores_dict])
 
@@ -1166,6 +1184,9 @@ class Content:
                    WHERE s.course_id = ?
                      AND s.assignment_id = ?
                      AND s.exercise_id = ?
+                     AND u.user_id NOT IN (SELECT user_id
+                                           FROM permissions
+                                           WHERE course_id = 0 OR course_id = ?)
                    GROUP BY s.user_id
                  )
 
@@ -1178,9 +1199,10 @@ class Content:
                  FROM users
                  WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
                    AND user_id NOT IN (SELECT user_id FROM exercise_scores)
+                   AND user_id NOT IN (SELECT user_id FROM permissions WHERE course_id = 0 OR course_id = ?)
               '''
 
-        for user in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), int(course_id), )):
+        for user in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id, course_id, course_id, )):
             scores_dict = {"name": user["name"], "user_id": user["user_id"], "num_submissions": user["num_submissions"], "score": user["score"]}
             scores.append([user["user_id"], scores_dict])
 
