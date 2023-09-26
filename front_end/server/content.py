@@ -2703,7 +2703,7 @@ class Content:
 
         return sort_list_of_dicts_nicely(submissions, ["assignment_title", "exercise_title"])
     
-    def get_students_no_recent_submissions(self, course_id, num_hours_diff):
+    def get_at_risk_students(self, course_id, num_hours_diff):
         sql = """
             SELECT DISTINCT cr.user_id, u.name, u.email_address, s.assignment_id, a.title AS assignment_title, s.exercise_id, e.title AS exercise_title, MAX(s.date) AS last_submission_date
             FROM course_registrations cr
@@ -2720,6 +2720,11 @@ class Content:
             AND s.assignment_id = e.assignment_id
             AND s.exercise_id = e.exercise_id
             WHERE cr.course_id = ?
+              AND u.user_id NOT IN (
+                  SELECT user_id
+                  FROM permissions
+                  WHERE course_id = 0 OR course_id = ?
+              )
             GROUP BY cr.user_id, u.name, u.email_address
             HAVING MAX(s.date) < datetime('now', '-' || ? || ' hours')
             
@@ -2734,15 +2739,21 @@ class Content:
             )
               AND user_id NOT IN (
                   SELECT DISTINCT user_id
-                    FROM submissions
-                    WHERE course_id = ?
+                  FROM submissions
+                  WHERE course_id = ?
+
+                  UNION
+
+                  SELECT user_id
+                  FROM permissions
+                  WHERE course_id = 0 OR course_id = ?
               )
             ORDER BY cr.user_id
             """
         
         rows = []
 
-        for row in self.fetchall(sql, (course_id, num_hours_diff, course_id, course_id, )):
+        for row in self.fetchall(sql, (course_id, course_id, num_hours_diff, course_id, course_id, course_id, )):
             rows.append(dict(row))
 
         return rows
