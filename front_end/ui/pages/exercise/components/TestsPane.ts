@@ -92,7 +92,7 @@ export class TestsPane extends LitElement {
 					<div style="display: flex; flex-direction: column;">
 						<div class="field is-grouped" style="justify-content: flex-end;">
 							<div class="control">
-								<button ?disabled=${testsRunning || this.activeSubmission} class="button is-primary is-outlined" @click=${() => this.runCode()}>Run all</button>
+								<button ?disabled=${testsRunning || this.activeSubmission} class="button is-primary is-outlined ${window.templateData.assignment_details.show_run_button ? '' : 'is-hidden'}" @click=${() => this.runCode()}>Run all</button>
 							</div>
 							<div class="field has-addons">
 								<!-- <p class="control">
@@ -198,7 +198,7 @@ export class TestsPane extends LitElement {
 					<td>
 						<test-results-modal
 							.test=${test}
-							.runTest=${!this.activeSubmission ? this.runCode : null}
+							.runTest=${!this.activeSubmission && window.templateData.assignment_details.show_run_button ? this.runCode : null}
 							.testStatus=${status}
 							.expectedOutput=${test.txt_output}
 							.expectedImageOutput=${test.jpg_output}
