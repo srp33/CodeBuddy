@@ -545,7 +545,7 @@
                     if (codeChanged) {
                         save_presubmission();
                     }
-                }, 60000);
+                }, 10000);
 
                 {% if check_for_restrict_other_assignments %}
                     setInterval(isTakingRestrictedAssignment, 60000);
