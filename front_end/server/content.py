@@ -993,7 +993,7 @@ class Content:
 
         assignment_scores = {}
 
-        for row in self.fetchall(sql, (course_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], course_basics["id"])):
+        for row in self.fetchall(sql, (course_basics["id"], course_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], course_basics["id"], assignment_basics["id"], )):
             assignment_scores[row["exercise_id"]] = row["avg_score"]
 
         if len(assignment_scores) == 0:
