@@ -107,12 +107,20 @@
                 const tests = {{ jsonify(tests) }};
 
                 var submissions = {{ jsonify(submissions) }};
+                var presubmission = {{ jsonify(presubmission) }};
+
                 show_past_submissions();
 
-                if (submissions.length > 0)
-                    get_submission(submissions[submissions.length - 1].id, false, true);
-                else
+                if (submissions.length == 0) {
                     showTestOutputs(null, false);
+
+                    if (presubmission) {
+                        editor.setValue(presubmission, 1);
+                    }
+                }
+                else {
+                    get_submission(submissions[submissions.length - 1].id, false, true);
+                }
             </script>
         {% else %}
             <p>This exercise does not exist.</p>

@@ -20,7 +20,7 @@ class StudentExerciseHandler(BaseUserHandler):
                 assignment_details = await self.get_assignment_details(course_basics, assignment_id)
                 exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
-                ignore_presubmission, submissions = self.content.get_submissions(course_id, assignment_id, exercise_id, student_id, exercise_details)
+                presubmission, submissions = self.content.get_submissions(course_id, assignment_id, exercise_id, student_id, exercise_details)
                 num_submissions = len(submissions)
 
                 back_end_config = get_back_end_config(exercise_details["back_end"])
@@ -29,7 +29,7 @@ class StudentExerciseHandler(BaseUserHandler):
                 tests = exercise_details["tests"]
                 format_exercise_details(exercise_details, course_basics, assignment_basics, student_info, self.content)
 
-                self.render("student_exercise.html", student_info=student_info, student_id=student_id, courses=self.courses, course_basics=course_basics, assignments=assignments, assignment_basics=assignment_basics, exercise_basics=exercise_basics, assignment_details=assignment_details, exercise_details=exercise_details, tests=tests, code_completion_path=back_end_config["code_completion_path"], back_end_description=back_end_config["description"], submissions=submissions, num_submissions=num_submissions, user_info=self.user_info, user_id=self.get_current_user(), next_prev_student_ids = self.content.get_next_prev_student_ids(course_id, student_id), is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=is_assistant)
+                self.render("student_exercise.html", student_info=student_info, student_id=student_id, courses=self.courses, course_basics=course_basics, assignments=assignments, assignment_basics=assignment_basics, exercise_basics=exercise_basics, assignment_details=assignment_details, exercise_details=exercise_details, tests=tests, presubmission=presubmission, code_completion_path=back_end_config["code_completion_path"], back_end_description=back_end_config["description"], submissions=submissions, num_submissions=num_submissions, user_info=self.user_info, user_id=self.get_current_user(), next_prev_student_ids = self.content.get_next_prev_student_ids(course_id, student_id), is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=is_assistant)
             else:
                 self.render("permissions.html")
         except Exception as inst:
