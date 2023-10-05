@@ -396,6 +396,9 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
                 if previous_submission_code == "":
                     exercise_details["instructions"] = exercise_details["instructions"].replace("[copy_previous]", "")
                 else:
+                    # We need to replace backticks with a placeholder because backticks can cause a problem on the Javascript side.
+                    previous_submission_code = previous_submission_code.replace("`", "_bcktck_")
+
                     exercise_details["previous_submission_code"] = previous_submission_code
 
     exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "").replace("[copy_previous]", "") # This is just in case they added it when it is the first exercise.

@@ -18,7 +18,10 @@ function get_user_code() {
 
 {% if "previous_submission_code" in exercise_details %}
     function copy_code_from_previous_exercise() {
-        let previous_code = `{{ exercise_details["previous_submission_code"] }}`;
+        var previous_code = `{{ exercise_details["previous_submission_code"] }}`;
+
+        // We used a placeholder to replace backticks because backticks can cause a problem on the Javascript side.
+        previous_code = previous_code.replace(/_bcktck_/g, "`");
 
         let cursor_index = editor.session.doc.positionToIndex(editor.getCursorPosition());
 
