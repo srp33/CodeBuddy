@@ -14,11 +14,15 @@ solution_example: |
     print(sys.argv[1])
 verification_instructions: "Write your verification code in bash."
 verification_example: |
-    pattern = "xyz"
+    #!/bin/bash
 
-    with open('code') as code_file:
-        if pattern in code_file.read():
-            print(f"Error: You may not use '{pattern}' in your solution.")
+    # Set the pattern to search for
+    pattern="xyz"
+
+    # Check if the pattern exists in the file
+    if grep -q "$pattern" "code"; then
+        echo "Error: You are not allowed to use '$pattern' in your solution."
+    fi
 test_instructions: "Each test will consist of a bash script that will invoke the student's solution code (saved as 'code.py')."
 after_test_example: |
     python code.py "Hello world!"
