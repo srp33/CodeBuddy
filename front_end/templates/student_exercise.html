@@ -53,7 +53,7 @@
                 <h6>Data files:</h6>
                 {% for data_file_index in range(len(exercise_details["data_files"])) %}
                     <p>
-                        <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">{{ list(exercise_details["data_files"].keys())[data_file_index] }}</a>
+                        <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">{{ sorted(list(exercise_details["data_files"].keys()))[data_file_index] }}</a>
                         <a class="button is-white" id="data_button_{{ data_file_index }}" onclick="showHideData('data_panel_{{ data_file_index }}', 'data_button_{{ data_file_index }}')">Show</a>
                     </p>
                     <pre id="data_panel_{{ data_file_index }}" hidden>
