@@ -72,7 +72,7 @@ cat spa_header.html navbar_top.html navbar_course.html navbar_assignment.html na
 
 for f in "$OUTPUT"/*.html
 do
-  python3 ../misc/remove_copyright_statement.py $f "<!--" "-->"
+  python3 ../../misc/remove_copyright_statement.py $f "<!--" "-->"
 done
 
 echo "Done building HTML files. They are stored in ${OUTPUT}."

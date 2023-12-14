@@ -1,6 +1,6 @@
 # CodeBuddy
 
-CodeBuddy is a [learning management system](https://en.wikipedia.org/wiki/Learning_management_system) that instructors can use to deliver computer-programming exercises. It was developed by the [Piccolo Lab](https://piccolo.byu.edu) and has been used since 2019 in programming-oriented courses. It uses HTML/CSS/JavaScript on the client side and Python on the server side. It executes students' code securely within  on the back end. 
+CodeBuddy is a programming-assignment management system ([a type of learning management system](https://en.wikipedia.org/wiki/Learning_management_system) that instructors can use to deliver computer-programming exercises. It was developed by the [Piccolo Lab](https://piccolo.byu.edu) and has been used since 2019 in programming-oriented courses. It uses HTML/CSS/JavaScript on the client side and Python on the server side. It executes students' code securely within  on the back end. 
 
 Here are some of CodeBuddy's features:
 
