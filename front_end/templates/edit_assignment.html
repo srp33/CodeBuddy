@@ -4,52 +4,35 @@
 <!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <!-- </copyright_statement>-->
 
-<form id="assignmentForm" method="post" action="/edit_assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-{% if course_basics["exists"] %}
-    {% if assignment_basics["exists"] %}
-        <div class="row-container">
-            <h3>Edit assignment</h3>
-            <p>
-                <input type="submit" class="button is-dark" value="Save" />
-                <button class="button is-white" onclick="location.href='/assignment/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}'; return false;">Done</button>
-            </p>
-        </div>
-    {% else %}
-        <h3>Create assignment</h3>
-    {% end %}
-{% end %}
+<div class="row-container is-hidden" id="edit_header">
+    <h4>Edit assignment</h4>
+    <p>
+        <button class="button is-dark" onclick="save()">Save</button>
+        <a class="button is-white" id="done_button1">Done</a>
+    </p>
+</div>
 
-{% if result %}
-    {% if result.startswith("Error:") %}
-        <p><div class="notification is-danger"><strong>{{ result }}</strong></div></p>
-    {% else %}
-        <p><div class="notification is-primary"><strong>{{ result }}</strong></div></p>
-    {% end %}
-{% end %}
+<h4 id="create_header">Create assignment</h4>
+
+<div class="notification is-danger is-hidden" id="result_message"></div>
 
 {% if course_basics["exists"] %}
-
     <div class="shadow-box">
         <div class="row-container">
             <div class="a-title-container">
                 <p><strong>Title: </strong></p>
-                <p><textarea name="title" class="textarea is-grey monospace" placeholder="Please specify a descriptive title for this assignment." rows="1" autofocus>{{ assignment_basics["title"] }}</textarea></p>
+                <p><textarea id="title" class="textarea is-grey monospace" placeholder="Please specify a short, descriptive title for this assignment." rows="1" autofocus></textarea></p>
             </div>
 
             <div class="a-visible top-space">
                 <p><strong>Visible to students: </strong>
                     <div class="select is-grey">
-                        <select name="is_visible" class="edit-select">
-                        {% if assignment_basics["visible"] %}
-                            <option value="Yes" selected>Yes</option>
-                            <option value="No">No</option>
-                        {% else %}
+                        <select id="visible" class="edit-select">
                             <option value="Yes">Yes</option>
-                            <option value="No" selected>No</option>
-                        {% end %}
+                            <option value="No">No</option>
                         </select>
                     </div>
                 </p>
@@ -59,183 +42,103 @@
         <div class="top-space">
             <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
 
-            <p><textarea class="textarea" name="introduction" rows=10 placeholder="Please provide an introduction for this assignment.">{{ assignment_details["introduction"] }}</textarea></p>
+            <p><textarea id="introduction" class="textarea" rows=10 placeholder="Please provide an introduction for this assignment."></textarea></p>
         </div>
     </div>
 
     <div class="shadow-box">
-        <div class="row-container">
-            <div class="date-container">
-                <div>
-                    <p style="display: inline"><strong>Start date:</strong></p>
-                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a start date is specified, students will be unable to view this assignment before the start date and time.">
-                        <i class="far fa-question-circle"></i>
-                    </label>
+        <p>
+            <strong>Start date</strong>
+            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a start date and time are specified, students will be unable to view this assignment before this date and time.">
+                <i class="far fa-question-circle"></i>
+            </label>:
+        </p>
+
+        <p class="select is-grey">
+            <select id="has_start_date" onchange="showHideStartDate(this.value)" class="edit-select">
+                <option selected>None</option>
+                <option>Select</option>
+            </select>
+        </p>
+
+        <p id="start_date" class="is-hidden" style="width: 300px;">
+            <input class="is-medium is-primary" id="start_date_picker" type="text" data-input />
+        </p>
+
+        <p>
+            <strong>Due date</strong>
+            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a due date is specified, students will be unable to view the exercises after the due date has passed, unless late submissions or viewing the solution late are enabled.">
+                <i class="far fa-question-circle"></i>
+            </label>:
+        </p>
+
+        <p class="select is-grey">
+            <select id="has_due_date" onchange="showHideDueDate(this.value)" class="edit-select">
+                <option selected>None</option>
+                <option>Select</option>
+            </select>
+        </p>
+
+        <div class="is-hidden" id="late_panel">
+            <p style="width: 300px;">
+                <input class="is-medium is-primary" id="due_date_picker" type="text" data-input>
+            </p>
+
+            <div class="has-background-warning-light">
+                <p>
+                    <div class="pt-4 pl-4">
+                        <strong>Allow late submissions: </strong>
+                    </div>
+                    <div id="allow_late_select_div" class="select is-grey mt-4 ml-4 mb-0">
+                        <select id="allow_late_select" onchange="showLateOptions(true)" class="edit-select">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </p>
+
+                <div id="late_options_panel" class="is-hidden p-0 m-0">
+                    <div class="pl-4 pr-4">
+                        <strong>Select percentage of points students can earn with late submissions: </strong>
+                    </div>
+                    <div class="select is-grey mt-4 ml-4 mb-4">
+                        <select id="late_percent_select" class="edit-select">
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="select is-grey">
-                    <select name="has_start_date" onchange="showStartOptions(this.value)" class="edit-select">
-                        <option
-                        {% if not assignment_details["start_date"] %}
-                            selected
-                        {% end %}
-                        >None</option>
-                        <option
-                        {% if assignment_details["start_date"] %}
-                            selected
-                        {% end %}
-                        >Select</option>
+
+                <div id="view_answer_late_question" class="pt-0 pl-4 pr-4">
+                    <strong>Allow students to view the answer after the due date has passed: </strong>
+                </div>
+                <div class="select is-grey mt-4 ml-4 mb-4">
+                    <select id="view_answer_late_select" class="edit-select">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
                     </select>
-                </div>
-                <div id="start_date"
-                {% if assignment_details["start_date"] %}
-                    class="visible"
-                {% else %}
-                    class="invisible"
-                {% end %}>
-                    <input class="is-medium is-grey" id="start_date_picker" name="start_date_picker" type="text" data-input>
                 </div>
             </div>
-
-            <div class="date-container">
-                <div>
-                    <p style="display: inline"><strong>Due date:</strong></p>
-                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a due date is specified, students will be unable to view the exercises in this assignment after the due date unless late submissions or viewing the solution late is enabled.">
-                        <i class="far fa-question-circle"></i>
-                    </label>
-                </div>
-                <div class="select is-grey">
-                    <select name="has_due_date" onchange="showDueOptions(this.value)" class="edit-select">
-                        <option
-                        {% if not assignment_details["due_date"] %}
-                            selected
-                        {% end %}
-                        >None</option>
-                        <option
-                        {% if assignment_details["due_date"] %}
-                            selected
-                        {% end %}
-                        >Select</option>
-                    </select>
-                </div>
-                <div id="due_date"
-                {% if assignment_details["due_date"] %}
-                    class="visible"
-                {% else %}
-                    class="invisible"
-                {% end %}>
-                    <input class="is-medium is-grey" id="due_date_picker" name="due_date_picker" type="text" data-input>
-                </div>
-            </div>
-        </div>
-
-        <div id="allow_late"
-            {% if assignment_details["due_date"] %}
-                class="visible"
-            {% else %}
-                class="invisible"
-            {% end %}
-        >
-            <p class="top-space"><strong>Allow late submissions: </strong>
-                <div class="select is-grey">
-                    <select id="allow_late_select" name="allow_late_select" onchange="showLatePercentOptions(this.value)" class="edit-select">
-                    {% if assignment_details["allow_late"] %}
-                        <option value="Yes" selected>Yes</option>
-                        <option value="No">No</option>
-                    {% else %}
-                        <option value="Yes">Yes</option>
-                        <option value="No" selected>No</option>
-                    {% end %}
-                    </select>
-                </div>
-            </p>
-        </div>
-
-        <div id="late_percent"
-            {% if assignment_details["allow_late"] %}
-                class="visible"
-            {% else %}
-                class="invisible"
-            {% end %}
-        >
-            <p class="top-space"><strong>Select percentage of points students can earn back with late submissions: </strong>
-                <div class="select is-grey">
-                    <select id="late_percent_select" name="late_percent_select" class="edit-select">
-                    {% for percent in percentage_options %}
-                        {% if assignment_details["late_percent"] and percent == assignment_details["late_percent"] * 100 %}
-                            <option selected>{{ percent }}%</option>
-                        {% else %}
-                            <option>{{ percent }}%</option>
-                        {% end %}
-                    {% end %}
-                    </select>
-                </div>
-            </p>
-        </div>
-
-        <div id="view_answer_late"
-            {% if assignment_details["allow_late"] or not assignment_details["due_date"] %}
-                class="invisible"
-            {% else %}
-                class="visible"
-            {% end %}
-        >
-            <p class="top-space"><strong>Allow students to view the answer after the due date has passed: </strong>
-                <div class="select is-grey">
-                    <select id="view_late_select" name="view_late_select" class="edit-select">
-                    {% if assignment_details["view_answer_late"] %}
-                        <option value="Yes" selected>Yes</option>
-                        <option value="No">No</option>
-                    {% else %}
-                        <option value="Yes">Yes</option>
-                        <option value="No" selected>No</option>
-                    {% end %}
-                    </select>
-                </div>
-            </p>
         </div>
     </div>
 
     <div class="shadow-box">
         <div>
-            <p><strong>Timer: </strong></p>
+            <p><strong>Time limit: </strong></p>
             <p>You can specify a time limit for students to complete the assignment. Once a student begins the assignment, they cannot pause the timer, but you do have an option to reset the timer, if they request it.</p>
         </div>
 
-        <p>
-            <div class="select is-grey">
-                <select name="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
-                    <option
-                    {% if assignment_details["has_timer"] %}
-                        selected
-                    {% end %}
-                    >Off</option>
-                    <option
-                    {% if assignment_details["has_timer"] %}
-                        selected
-                    {% end %}
-                    >On</option>
-                </select>
-            </div>
-        </p>
+        <div class="select is-grey mt-4">
+            <select id="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
+                <option>Off</option>
+                <option>On</option>
+            </select>
+        </div>
 
-        <div id="timer_subsection"
-            {% if assignment_details["has_timer"] %}
-                style="display: inline;"
-            {% else %}
-                style="display: none;"
-            {% end %}
-        >
+        <div id="timer_subsection" class="is-hidden mt-4">
             <p>
                 <label for="hour_select">Hours:</label>
                 <div class="select is-grey">
-                    <select id="hour_select" name="hour_select" class="edit-select">
-                    {% for hour in hour_options %}
-                        <option
-                        {% if hour == assignment_details["hour_timer"] %}
-                            selected
-                        {% end %}
-                        >{{ hour }}</option>
-                    {% end %}
+                    <select id="hour_select" class="edit-select">
                     </select>
                 </div>
             </p>
@@ -243,15 +146,49 @@
             <p>
                 <label for="minute_select">Minutes:</label>
                 <div class="select is-grey">
-                    <select id="minute_select" name="minute_select" class="edit-select">
-                    {% for minute in minute_options %}
-                        <option
-                        {% if minute == assignment_details["minute_timer"] %}
-                            selected
-                        {% end %}
-                        >{{ minute }}</option>
-                    {% end %}
+                    <select id="minute_select" class="edit-select">
                     </select>
+                </div>
+            </p>
+
+            <p>
+                <div class="has-background-warning-light p-4">
+                    <div>
+                        You can modify the time limit for individual students. To modify a student's time limit, enter their login ID below, specify a time limit, and click on the "Make exception" button.
+                    </div>
+
+                    <p class="mt-4">
+                        <label for="student_timer_exceptions_select">Student:</label>
+                        <div class="select is-grey">
+                            <select id="student_timer_exceptions_select" class="edit-select">
+                            </select>
+                        </div>
+                    </p>
+
+                    <p class="mt-4">
+                        <label for="hour_select_exceptions">Hours:</label>
+                        <div class="select is-grey">
+                            <select id="hour_select_exceptions" class="edit-select">
+                            </select>
+                        </div>
+                    </p>
+
+                    <p>
+                        <label for="minute_select_exceptions">Minutes:</label>
+                        <div class="select is-grey">
+                            <select id="minute_select_exceptions" class="edit-select">
+                            </select>
+                        </div>
+                    </p>
+
+                    <div class="mt-4">
+                        <button class="button is-primary is-outlined" onclick="makeTimerException()">Make exception</button>
+                    </div>
+
+                    <div id="student_timer_exceptions_div" class="mt-4 is-hidden">
+                        <ul id="student_timer_exceptions_list">
+                        </ul>
+                    </div>
                 </div>
             </p>
 
@@ -259,47 +196,26 @@
                 <label for="restrict_other_assignments_select">You can treat this timed assignment as an exam. When this option is selected, students will not be able to access any other assignment while they are completing this assignment. Would you like to restrict access?</label>
 
                 <div class="select is-grey">
-                    <select id="restrict_other_assignments_select" name="restrict_other_assignments_select" class="edit-select">
-                    {% if assignment_details["has_timer"] and assignment_details["restrict_other_assignments"] %}
-                        <option value="Yes" selected>Yes</option>
+                    <select id="restrict_other_assignments_select" class="edit-select">
                         <option value="No">No</option>
-                    {% else %}
                         <option value="Yes">Yes</option>
-                        <option value="No" selected>No</option>
-                    {% end %}
                     </select>
                 </div>
             </p>
         </div>
     </div>
 
-    <!--<div class="shadow-box">
-        <p><strong>Enable help requests for exercises in this assignment: </strong>
-            <div class="select is-grey">
-                <select id="enable_help_requests" name="enable_help_requests" class="edit-select">
-                {% if assignment_details["enable_help_requests"] %}
-                    <option value="Yes" selected>Yes</option>
-                    <option value="No">No</option>
-                {% else %}
-                    <option value="Yes">Yes</option>
-                    <option value="No" selected>No</option>
-                {% end %}
-                </select>
-            </div>
-        </p>
-    </div>-->
-
     <div class="shadow-box">
         <p><strong>Restrict access to the following IP addresses: </strong><br />If you would like to use this feature, specify one IP address per line. If left blank, the assignment will not be restricted by IP address.</p>
 
         <p>
-            <textarea name="allowed_ip_addresses"  id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="Please specify any IP addresses to allow (one per line)" rows="3" style="display:inline">{% if assignment_details["allowed_ip_addresses"] %}{{ assignment_details["allowed_ip_addresses"] }}{% end %}</textarea>
+            <textarea id="allowed_ip_addresses" class="textarea is-info is-normal is-medium monospace" placeholder="Please specify any IP addresses to allow (one per line)" rows="3" style="display:inline"></textarea>
         </p>
 
         <p><strong>Allowed external URL(s):</strong><br />In some cases, instructors deliver assignments (often exams) in a controlled environment where they do not want students to access external websites. You can list URLs here that should be allowed (one per line). These URLs are currently limited to those that end in <code>.html</code> or <code>.pdf</code>.</p>
 
         <p>
-            <textarea class="textarea" name="allowed_external_urls" rows=3 placeholder="Please specify any allowed external URLs (one per line).">{% if assignment_details["allowed_external_urls"] %}{{ assignment_details["allowed_external_urls"] }}{% end %}</textarea>
+            <textarea class="textarea" id="allowed_external_urls" rows=3 placeholder="Please specify any allowed external URLs (one per line)."></textarea>
         </p>
     </div>
 
@@ -308,19 +224,9 @@
 
         <p>
             <div class="select is-grey">
-                <select id="show_run_button" name="show_run_button" class="edit-select">
-                    <option value="0"
-                        {% if assignment_details["show_run_button"] == 0 %}
-                            selected
-                        {% end %}
-                        >No
-                    </option>
-                    <option value="1"
-                        {% if assignment_details["show_run_button"] == 1 %}
-                            selected
-                        {% end %}
-                        >Yes
-                    </option>
+                <select id="show_run_button" class="edit-select">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
                 </select>
             </div>
         </p>
@@ -336,30 +242,11 @@
 
         <p>
             <div class="select is-grey">
-                <select id="use_virtual_assistant" name="use_virtual_assistant" class="edit-select">
-                    <option value="0"
-                        {% if assignment_details["use_virtual_assistant"] == 0 %}
-                            selected
-                        {% end %}
-                        >No
-                    </option>
-                    <option value="1"
-                        {% if assignment_details["use_virtual_assistant"] == 1 %}
-                            selected
-                        {% end %}
-                        >Yes
-                    </option>
-                    <option value="2"
-                        {% if assignment_details["use_virtual_assistant"] == 2 %}
-                            selected
-                        {% end %}
-                        >Yes - only for students randomly assigned to group "A"
-                    </option>
-                    <option value="3"
-                        {% if assignment_details["use_virtual_assistant"] == 3 %}
-                            selected
-                        {% end %}
-                        >Yes - only for students randomly assigned to group "B"
+                <select id="use_virtual_assistant" class="edit-select">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                    <option value="2">Yes - only for students randomly assigned to group "A"</option>
+                    <option value="3">Yes - only for students randomly assigned to group "B"
                     </option>
                 </select>
             </div>
@@ -367,122 +254,389 @@
     </div>
 
     <p class="buttons">
-        <input type="submit" class="button is-dark" value="Save" />
+        <button class="button is-dark" onclick="save()">Save</button>
 
-        {% if assignment_basics["exists"] %}
-            <a class="button is-white" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Done</a>
-        {% end %}
+        <span id="bottom_buttons" class="is-hidden">
+            <a class="button is-white" id="done_button2">Done</a>
+        </span>
     </p>
-
-    </form>
 {% else %}
     This course has not been created yet.
 {% end %}
 
 <script>
+    function setStartDate() {
+        if (assignment_details_obj["start_date"]) {
+            var start_date = new Date(assignment_details_obj["start_date"]);
+            start_date.setMinutes(start_date.getMinutes() - start_date.getTimezoneOffset());
 
+            start_date_picker.setDate(start_date);
+
+            setValue("has_start_date",  "Select");
+            showHideStartDate("Select");
+        }
+    }
+
+    function setDueDate() {
+        if (assignment_details_obj["due_date"]) {
+            var due_date = new Date(assignment_details_obj["due_date"]);
+            due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+
+            due_date_picker.setDate(due_date);
+
+            setValue("has_due_date",  "Select");
+            showHideDueDate("Select");
+            showLateOptions(false);
+        }
+    }
+
+    function showHideStartDate(selected_option) {
+        if (selected_option == "None") {
+            $("#start_date").addClass("is-hidden");
+        }
+        else {
+            $("#start_date").removeClass("is-hidden");
+        }
+    }
+
+    function showHideDueDate(selected_option) {
+        if (selected_option == "None") {
+            $("#late_panel").addClass("is-hidden");
+        }
+        else {
+            $("#late_panel").removeClass("is-hidden");
+        }
+    }
+
+    function showLateOptions(user_has_changed) {
+        var percent_select_element = document.getElementById("late_percent_select");
+        var late_options_panel = document.getElementById("late_options_panel");
+
+        var allow_late;
+
+        if (user_has_changed) {
+            allow_late = getValue("allow_late_select") == "Yes";
+        }
+        else {
+            allow_late = assignment_details_obj["allow_late"];
+            setValue("allow_late_select", allow_late ? "Yes": "No");
+        }
+
+        removeSelectOptions(percent_select_element);
+
+        if (allow_late) {
+            $("#late_options_panel").removeClass("is-hidden");
+            $("#allow_late_select_div").removeClass("mb-4");
+
+            addSelectOptions(percent_select_element, percentage_options);
+
+            if (assignment_details_obj["late_percent"]) {
+                setValue("late_percent_select", assignment_details_obj["late_percent"] * 100);
+            }
+        }
+        else {
+            $("#late_options_panel").addClass("is-hidden");
+
+            addSelectOption(percent_select_element, "N/A", "N/A");
+        }
+
+        if (!user_has_changed) {
+            setValue("view_answer_late_select", assignment_details_obj["view_answer_late"] ? "Yes": "No");
+        }
+    }
+
+    function showTimerOptions(selected_option) {
+        if (selected_option == "Off") {
+            $("#timer_subsection").addClass("is-hidden");
+        }
+        else {
+            $("#timer_subsection").removeClass("is-hidden");
+
+            addSelectOptions(document.getElementById("hour_select"), hour_options);
+            addSelectOptions(document.getElementById("minute_select"), minute_options);
+
+            console.log(assignment_details_obj["hour_timer"]);
+            if (assignment_details_obj["hour_timer"] == null) {
+                setValue("hour_select", 1);
+                setValue("minute_select", 0);
+            }
+            else {
+                setValue("hour_select", assignment_details_obj["hour_timer"]);
+                setValue("minute_select", assignment_details_obj["minute_timer"]);
+            }
+
+            addSelectOptions(document.getElementById("hour_select_exceptions"), hour_options);
+            addSelectOptions(document.getElementById("minute_select_exceptions"), minute_options);
+            setValue("hour_select_exceptions", 1);
+            setValue("minute_select_exceptions", 30);
+
+            setValue("restrict_other_assignments_select", assignment_details_obj["restrict_other_assignments"] ? "Yes" : "No");
+
+            setStudentTimerExceptions();
+        }
+    }
+
+    function setStudentTimerExceptions() {
+        let select_element = document.getElementById("student_timer_exceptions_select");
+        let student_timer_exceptions_list = document.getElementById("student_timer_exceptions_list");
+
+        removeSelectOptions(select_element);
+        student_timer_exceptions_list.innerHTML = "";
+
+        for (let student of all_students) {
+            if (student[0] in assignment_details_obj["student_timer_exceptions"]) {
+                let hours = assignment_details_obj["student_timer_exceptions"][student[0]][0];
+                let minutes = assignment_details_obj["student_timer_exceptions"][student[0]][1];
+
+                var li = document.createElement("li");
+                li.textContent = `${student[1].name} (${student[0]}) - ${hours} hours, ${minutes} minutes - `;
+
+                var link = document.createElement("a");
+                link.textContent = "remove";
+                link.href = `javascript:removeStudentTimerException("${student[0]}")`;
+                li.appendChild(link);
+
+                student_timer_exceptions_list.appendChild(li);
+            }
+            else {
+                addSelectOption(select_element, `${student[1]["name"]} (${student[0]})`, student[0]);
+            }
+        }
+
+        if (Object.keys(assignment_details_obj["student_timer_exceptions"]).length > 0) {
+            $("#student_timer_exceptions_div").removeClass("is-hidden");
+        }
+        else {
+            $("#student_timer_exceptions_div").addClass("is-hidden");
+        }
+    }
+
+    function removeStudentTimerException(student_id) {
+        delete assignment_details_obj["student_timer_exceptions"][student_id];
+        setStudentTimerExceptions();
+    }
+
+    function addSelectOptions(select_element, options) {
+        for (let option of options) {
+            addSelectOption(select_element, option, option);
+        }
+    }
+
+    function addSelectOption(select_element, option_text, option_value) {
+        var option = document.createElement("option");
+        option.text = option_text;
+        option.value = option_value;
+        select_element.add(option);
+    }
+
+    function removeSelectOptions(select_element) {
+        for (var i = select_element.options.length-1; i >= 0; i--) {
+            select_element.options[i] = null;
+        }
+    }
+
+    function getValue(id) {
+        return $(`#${id}`)[0].value;
+    }
+
+    function setValue(id, value) {
+        $(`#${id}`)[0].value = value;
+    }
+
+    function showResultMessage(messageHTML, messageType) {
+        $("#result_message").removeClass("is-primary");
+        $("#result_message").removeClass("is-warning");
+        $("#result_message").removeClass("is-danger");
+
+        $("#result_message").addClass(`is-${messageType}`);
+
+        $("#result_message").removeClass("is-hidden");
+        $("#result_message")[0].innerHTML = messageHTML;
+        window.scrollTo(0, 0);
+    }
+
+    function makeTimerException() {
+        var student_id = document.getElementById("student_timer_exceptions_select").value;
+        var hours = document.getElementById("hour_select_exceptions").value;
+        var minutes = document.getElementById("minute_select_exceptions").value;
+
+        if (hours == 0 && minutes == 0) {
+            return(showResultMessage("A timer exception must be longer than zero minutes.", "danger"));
+        }
+
+        assignment_details_obj["student_timer_exceptions"][student_id] = [parseInt(hours), parseInt(minutes)];
+        setStudentTimerExceptions();
+    }
+
+    function showTopBottomButtons(exists) {
+        if (exists) {
+            $("#edit_header").removeClass("is-hidden");
+            $("#create_header").addClass("is-hidden");
+            $("#bottom_buttons").removeClass("is-hidden");
+        }
+        else {
+            $("#edit_header").addClass("is-hidden");
+            $("#create_header").removeClass("is-hidden");
+            $("#bottom_buttons").addClass("is-hidden");
+        }
+    }
+
+    function save() {
+        const title = getValue("title").trim();
+        const visible = getValue("visible") == "Yes";
+        const introduction = getValue("introduction");
+
+        if (title == "")
+            return(showResultMessage("Please provide a title.", "danger"));
+        if (title.length > 80)
+            return(showResultMessage("The title cannot exceed 80 characters in length.", "danger"));
+        if (introduction == "")
+            return(showResultMessage("Please provide an introduction.", "danger"));
+
+        var start_date = null;
+        if (getValue("has_start_date") == "Select") {
+            start_date = new Date(getValue("start_date_picker"));
+        }
+        
+        var due_date = null;
+        var allow_late = false;
+        var late_percent = null;
+        var view_answer_late = false;
+
+        if (getValue("has_due_date") == "Select") {
+            due_date = new Date(getValue("due_date_picker"));
+            allow_late = getValue("allow_late_select") == "Yes";
+
+            if (allow_late) {
+                late_percent = getValue("late_percent_select") / 100;
+            }
+
+            view_answer_late = getValue("view_answer_late_select") == "Yes";
+        }
+
+        if (start_date && due_date && due_date <= start_date) {
+            return(showResultMessage("The due date must be later than the start date.", "danger"));
+        }
+
+        if (start_date) {
+            start_date = start_date.toUTCString();
+        }
+
+        if (due_date) {
+            due_date = due_date.toUTCString();
+        }
+
+        var has_timer = false;
+        var hour_timer = null;
+        var minute_timer = null;
+        var restrict_other_assignments = false;
+
+        if (getValue("has_timer") == "On") {
+            has_timer = true;
+            hour_timer = getValue("hour_select");
+            minute_timer = getValue("minute_select");
+            restrict_other_assignments = getValue("restrict_other_assignments_select") == "Yes";
+        }
+
+        let allowed_ip_addresses = getValue("allowed_ip_addresses");
+        let allowed_external_urls = getValue("allowed_external_urls");
+        let show_run_button = getValue("show_run_button") == "Yes";
+        let use_virtual_assistant = getValue("use_virtual_assistant") == "Yes";
+
+        var submission_obj = {
+            "title": title,
+            "visible": visible,
+            "allow_late": allow_late,
+            "allowed_external_urls": allowed_external_urls,
+            "allowed_ip_addresses": allowed_ip_addresses,
+            "due_date": due_date,
+            "enable_help_requests": false,
+            "has_timer": has_timer,
+            "hour_timer": hour_timer,
+            "introduction": introduction,
+            "late_percent": late_percent,
+            "minute_timer": minute_timer,
+            "restrict_other_assignments": restrict_other_assignments,
+            "show_run_button": show_run_button,
+            "start_date": start_date,
+            "student_timer_exceptions": assignment_details_obj["student_timer_exceptions"],
+            "use_virtual_assistant": use_virtual_assistant,
+            "view_answer_late": view_answer_late            
+        }
+
+        showResultMessage("<b>Please wait...</b>", "warning");
+
+        $.ajax({
+            type: 'POST',
+            url: "/edit_assignment/{{ course_basics['id'] }}/" + assignment_basics_obj['id'],
+            data: JSON.stringify(submission_obj),
+            async: true})
+            .done(function(data) {
+                var json_data = JSON.parse(data);
+
+                if (json_data["message"] == "") {
+                    assignment_basics_obj["id"] = json_data["assignment_id"];
+                    assignment_details_obj = json_data["assignment_details"];
+
+                    showTopBottomButtons(true);
+                    showResultMessage("<b>The exercise was saved successfully.</b>", "primary");
+                }
+                else {
+                    showTopBottomButtons(true | assignment_basics_obj["exists"]);
+                    showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, "danger");
+                }
+            })
+            .fail(function(data) {
+                showResultMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
+            });
+    }
+
+    $("#done_button1").click(function() {
+        location.href = `/assignment/{{ course_basics["id"] }}/${assignment_basics_obj["id"]}`;
+    });
+
+    $("#done_button2").click(function() {
+        location.href = `/assignment/{{ course_basics["id"] }}/${assignment_basics_obj["id"]}`;
+    });
+
+    var assignment_basics_obj = JSON.parse("{{ assignment_basics_json }}");
+    var assignment_details_obj = JSON.parse("{{ assignment_details_json }}");
+    let percentage_options = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
+    let hour_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 24];
+    let minute_options = Array.from({ length: 13 }, (_, index) => index * 5);
+    let all_students = JSON.parse("{{ all_students }}");
+
+    showTopBottomButtons(assignment_basics_obj["exists"]);
+
+    setValue("title", assignment_basics_obj["title"]);
+    setValue("visible", assignment_basics_obj["visible"] ? "Yes" : "No");
+    setValue("introduction", assignment_details_obj["introduction"]);
+
+    //TODO: https://doc.mh-s.de/bulma-calendar/
     var start_date_picker = flatpickr("#start_date_picker", {
         enableTime: true,
-        dateFormat: 'Z',
+        dateFormat: "Z",
         altInput: true,
-        altFormat: 'Y-m-d G:i K'
-    });
-    start_date_picker.setDate(setStartDate(),false,'Y-m-d G:i K');
+        altFormat: 'Y-m-d G:i K',
+        defaultDate: new Date()});
 
     var due_date_picker = flatpickr("#due_date_picker", {
         enableTime: true,
         dateFormat: 'Z',
         altInput: true,
-        altFormat: 'Y-m-d G:i K'
-    });
-    due_date_picker.setDate(setDueDate(),false,'Y-m-d G:i K');
+        altFormat: 'Y-m-d G:i K',
+        defaultDate: new Date().setDate(new Date().getDate() + 1)});
 
-    function setStartDate() {
-        {% if assignment_details["start_date"] %}
-            var start_date = new Date("{{ assignment_details['start_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-        {% else %}
-            var start_date = new Date();
-        {% end %}
-        return start_date;
+    setStartDate();
+    setDueDate();
+
+    if (assignment_details_obj["has_timer"]) {
+        setValue("has_timer", "On");
+        showTimerOptions("On");
     }
 
-    function setDueDate() {
-        {% if assignment_details["due_date"] %}
-            var due_date = new Date("{{ assignment_details['due_date'].strftime('%Y-%m-%dT%H:%M:%SZ') }}");
-        {% else %}
-            var due_date = new Date();
-        {% end %}
-        return due_date;
-    }
-
-    function showStartOptions(on) {
-        var start_date = document.getElementById("start_date");
-        if (on == "None") {
-            start_date.style.display = "none";
-        }
-        else {
-            start_date.style.display = "inline";
-        }
-    }
-
-    function showDueOptions(on) {
-        var due_date = document.getElementById("due_date");
-        var allow_late = document.getElementById("allow_late");
-        var view_answer_late = document.getElementById("view_answer_late");
-        var late_percent = document.getElementById("late_percent");
-
-        if (on == "None") {
-            due_date.style.display = "none";
-            allow_late.style.display = "none";
-            view_answer_late.style.display = "none";
-            late_percent.style.display = "none";
-        }
-        else {
-            due_date.style.display = "inline";
-            turnOnAllowLate();
-        }
-    }
-
-    function showLatePercentOptions(on) {
-        var late_percent = document.getElementById("late_percent");
-        var view_answer_late = document.getElementById("view_answer_late");
-        var view_late_select =  document.getElementById("view_late_select");
-
-        if (on == "Yes") {
-            late_percent.style.display = "inline";
-            view_late_select.value = "No";
-            view_answer_late.style.display = "none";
-        }
-        else {
-            late_percent.style.display = "none";
-            view_answer_late.style.display = "inline";
-        }
-    }
-
-    function turnOnAllowLate() {
-        var allow_late = document.getElementById("allow_late");
-        var view_answer_late = document.getElementById("view_answer_late");
-        var late_percent = document.getElementById("late_percent");
-
-        allow_late.style.display = "inline";
-        if ("{{ assignment_details["allow_late"] }}" == "True") {
-            late_percent.style.display = "inline";
-            view_answer_late.style.display = "none";
-        }
-        else {
-            late_percent.style.display = "none";
-            view_answer_late.style.display = "inline";
-        }
-    }
-
-    function showTimerOptions(on) {
-        var timer_subsection = document.getElementById("timer_subsection");
-
-        if (on == "On") {
-            timer_subsection.style.display = "inline";
-        }
-        else {
-            timer_subsection.style.display = "none";
-        }
-    }
+    setValue("allowed_ip_addresses", assignment_details_obj["allowed_ip_addresses"]);
+    setValue("allowed_external_urls", assignment_details_obj["allowed_external_urls"]);
+    setValue("show_run_button", assignment_details_obj["show_run_button"] ? "Yes" : "No");
+    setValue("use_virtual_assistant", assignment_details_obj["use_virtual_assistant"]);
 </script>

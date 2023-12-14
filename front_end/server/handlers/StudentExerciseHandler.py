@@ -20,7 +20,7 @@ class StudentExerciseHandler(BaseUserHandler):
                 assignment_details = await self.get_assignment_details(course_basics, assignment_id)
                 exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
-                presubmission, submissions = self.content.get_submissions(course_id, assignment_id, exercise_id, student_id, exercise_details)
+                presubmission, submissions, has_passed = self.content.get_submissions(course_id, assignment_id, exercise_id, student_id, exercise_details)
                 num_submissions = len(submissions)
 
                 back_end_config = get_back_end_config(exercise_details["back_end"])

@@ -8,14 +8,14 @@
 
 {% if course_basics["exists"] %}
 <div class="row-container">
-    <h3>Edit course</h3>
+    <h4>Edit course</h4>
     <p>
         <input type="submit" class="button is-dark" value="Save" />
         <button class="button is-white" onclick="location.href='/course/{{ course_basics["id"] }}'; return false;">Done</button>
     </p>
 </div>
 {% else %}
-    <h3>Create course</h3>
+    <h4>Create course</h4>
 {% end %}
 
 

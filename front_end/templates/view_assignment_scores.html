@@ -101,15 +101,15 @@
                                     </script>
                                 </td>
                                 {% if assignment_details["has_timer"] %}
-                                    {% if score[0] in have_timers_expired %}
-                                        {% if have_timers_expired[score[0]] %}
-                                            <td class="has-text-left">Timer ended <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
+                                    <td class="has-text-left">
+                                        {% if score[0] not in timer_statuses or timer_statuses[score[0]] == "timer_not_started" %}
+                                            Not started
+                                        {% elif timer_statuses[score[0]] == "timer_expired" %}
+                                            Time expired <a onclick="showResetModal('{{ score[0] }}')">(reset)</a>
                                         {% else %}
-                                            <td class="has-text-left">In progress <a onclick="showResetModal('{{ score[0] }}')">(reset)</a></td>
+                                            In progress
                                         {% end %}
-                                    {% else %}
-                                        <td class="has-text-left">Not started</td>
-                                    {% end %}
+                                    </td>
                                 {% end %}
                             </tr>
                         {% end %}

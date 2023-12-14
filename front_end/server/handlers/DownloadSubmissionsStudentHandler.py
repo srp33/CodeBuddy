@@ -57,7 +57,7 @@ class DownloadSubmissionsStudentHandler(BaseUserHandler):
             for submission in submissions:
                 if submission["assignment_title"] not in assignments_started:
                     assignments_started.append(submission["assignment_title"])
-                    html += f"<h2>{submission['assignment_title']}</h2>"
+                    html += f"<h4>{submission['assignment_title']}</h4>"
                     html += f"{convert_markdown_to_html(submission['assignment_introduction'])}"
 
                 html += f"<h4>{submission['exercise_title']}</h4>"

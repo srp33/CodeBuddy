@@ -7,6 +7,7 @@
 import atexit
 import random
 from datetime import datetime
+from dateutil.tz import tzutc
 import gzip
 from helper import *
 from imgcompare import *
@@ -291,14 +292,25 @@ class Content:
         except:
             print(traceback.format_exc())
 
-    def set_user_assignment_start_time(self, course_id, assignment_id, user_id, start_time):
+    def set_user_assignment_start_time(self, course_id, assignment_id, assignment_details, user_id, user_start_time):
         sql = '''INSERT INTO user_assignment_starts (course_id, assignment_id, user_id, start_time)
                  VALUES (?, ?, ?, ?)'''
 
-        self.execute(sql, (course_id, assignment_id, user_id, start_time,))
+        self.execute(sql, (course_id, assignment_id, user_id, user_start_time,))
 
-    def get_user_assignment_start_time(self, course_id, assignment_id, user_id):
-        sql = '''SELECT start_time
+        return get_student_timer_status(self, course_id, assignment_id, assignment_details, user_id, user_start_time=user_start_time)
+
+    def end_timed_assignment_early(self, course_id, assignment_id, user_id):
+        sql = '''UPDATE user_assignment_starts
+                 SET ended_early = 1
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND user_id = ?'''
+
+        self.execute(sql, (course_id, assignment_id, user_id,))
+
+    def get_user_assignment_timer_status(self, course_id, assignment_id, user_id):
+        sql = '''SELECT start_time, ended_early
                  FROM user_assignment_starts
                  WHERE course_id = ?
                    AND assignment_id = ?
@@ -306,75 +318,80 @@ class Content:
 
         row = self.fetchone(sql, (course_id, assignment_id, user_id,))
         if row:
-            return row["start_time"]
+            return row["start_time"], row["ended_early"]
+
+        return None, None
 
     def is_taking_restricted_assignment(self, user_id, assignment_id):
-        sql = '''SELECT ((julianday(datetime('now')) - julianday(latest_start_time)) * 24 * 60) < minute_limit AS yes
+        sql = '''SELECT ((julianday(datetime('now')) - julianday(latest_start_time)) * 24 * 60) < minute_limit AS is_restricted, ended_early
                  FROM
-                 (SELECT (hour_timer * 60 + minute_timer) AS minute_limit, MAX(start_time) AS latest_start_time
+                 (SELECT (IFNULL(ate.hour_timer, a.hour_timer) * 60 + IFNULL(ate.minute_timer, a.minute_timer)) AS minute_limit, MAX(start_time) AS latest_start_time, uas.ended_early
                   FROM user_assignment_starts uas
 			            INNER JOIN assignments a
 			               ON uas.course_id = a.course_id
 				            AND uas.assignment_id = a.assignment_id
+                  LEFT JOIN assignment_timer_exceptions ate
+			               ON ate.course_id = a.course_id
+                     AND ate.user_id = ?
                   WHERE uas.user_id = ?
                     AND a.assignment_id != ?
                     AND a.restrict_other_assignments = 1
 			              AND a.has_timer = 1
 		              )'''
 
-        row = self.fetchone(sql, (user_id, assignment_id, ))
-
+        row = self.fetchone(sql, (user_id, user_id, assignment_id, ))
         if row:
-            return bool(row["yes"])
+            return row["is_restricted"] and not row["ended_early"]
 
         return False
 
-    def get_all_user_assignment_expired(self, course_id, assignment_id):
+    def get_timer_statuses(self, course_id, assignment_id, assignment_details):
         user_dict = {}
 
-        sql = '''SELECT user_id, start_time
+        sql = '''SELECT user_id, start_time, ended_early
                  FROM user_assignment_starts
                  WHERE course_id = ?
                    AND assignment_id = ?'''
 
         for row in self.fetchall(sql, (course_id, assignment_id,)):
-            #TODO: It is not efficient to hit the database each time through this loop.
-            start_time = datetime.strftime(row["start_time"], "%a, %d %b %Y %H:%M:%S %Z")
-            timer_ended = self.has_user_assignment_start_timer_ended(course_id, assignment_id, start_time)
-            user_dict[row["user_id"]] = timer_ended
+            # user_start_time = datetime.strftime(row["start_time"], "%a, %d %b %Y %H:%M:%S %Z")
+            user_start_time = row["start_time"]
+
+            timer_status, __, __, __, __ = get_student_timer_status(self, course_id, assignment_id, assignment_details, row["user_id"], user_start_time, bool(row["ended_early"]))
+
+            user_dict[row["user_id"]] = timer_status
 
         return user_dict
 
-    def has_user_assignment_start_timer_ended(self, course_id, assignment_id, start_time):
-        if not start_time:
-            return False
+    # def has_user_assignment_start_timer_ended(self, course_id, assignment_id, start_time):
+    #     if not start_time:
+    #         return False
 
-        curr_time = datetime.utcnow()
-        start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ")
+    #     curr_time = datetime.utcnow()
+    #     start_time = datetime.strptime(start_time, "%a, %d %b %Y %H:%M:%S ")
 
-        sql = '''SELECT hour_timer, minute_timer
-                 FROM assignments
-                 WHERE course_id = ?
-                   AND assignment_id = ?'''
+    #     sql = '''SELECT hour_timer, minute_timer
+    #              FROM assignments
+    #              WHERE course_id = ?
+    #                AND assignment_id = ?'''
 
-        row = self.fetchone(sql, (course_id, assignment_id,))
+    #     row = self.fetchone(sql, (course_id, assignment_id,))
 
-        if row:
-            #TODO: This logic could be much simpler using datetime module.
-            elapsed_time = curr_time - start_time
-            seconds = elapsed_time.total_seconds()
-            e_hours = math.floor(seconds/3600)
-            e_minutes = math.floor((seconds/60) - (e_hours*60))
-            e_seconds = (seconds - (e_minutes*60) - (e_hours*3600))
+    #     if row:
+    #         elapsed_time = curr_time - start_time
+    #         seconds = elapsed_time.total_seconds()
+    #         e_hours = math.floor(seconds/3600)
+    #         e_minutes = math.floor((seconds/60) - (e_hours*60))
+    #         e_seconds = (seconds - (e_minutes*60) - (e_hours*3600))
 
-            if e_hours > int(row["hour_timer"]):
-                return True
-            elif e_hours == int(row["hour_timer"]) and e_minutes > int(row["minute_timer"]):
-                return True
-            elif e_hours == int(row["hour_timer"]) and e_minutes == int(row["minute_timer"]) and e_seconds > 0:
-                return True
+    #         if e_hours > int(row["hour_timer"]):
+    #             return True
+    #         elif e_hours == int(row["hour_timer"]) and e_minutes > int(row["minute_timer"]):
+    #             return True
+    #         elif e_hours == int(row["hour_timer"]) and e_minutes == int(row["minute_timer"]) and e_seconds > 0:
+    #             return True
 
-        return False
+    #     return False
 
     def reset_user_assignment_start_timer(self, course_id, assignment_id, user_id):
         sql = '''DELETE FROM user_assignment_starts
@@ -1280,6 +1297,7 @@ class Content:
 
         presubmission = None
         submissions = []
+        has_passed = False
 
         for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id,)):
             submission_test_outputs = {}
@@ -1294,7 +1312,10 @@ class Content:
 
               submissions.append({"id": row["submission_id"], "code": row["code"], "passed": row["passed"], "date": row["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
 
-        return presubmission, submissions
+              if row["passed"]:
+                  has_passed = True
+
+        return presubmission, submissions, has_passed
 
     #TODO: Is there some way to do this without going to the database?
     async def get_num_submissions(self, course_id, assignment_id, exercise_id, user_id):
@@ -1618,32 +1639,32 @@ class Content:
         else:
             course_details["date_created"] = date_updated
 
-    def specify_assignment_basics(self, assignment_basics, title, visible):
-        assignment_basics["title"] = title
-        assignment_basics["visible"] = visible
+    # def specify_assignment_basics(self, assignment_basics, title, visible):
+    #     assignment_basics["title"] = title
+    #     assignment_basics["visible"] = visible
 
-    def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, use_virtual_assistant):
-        assignment_details["introduction"] = introduction
-        assignment_details["date_updated"] = date_updated
-        assignment_details["start_date"] = start_date
-        assignment_details["due_date"] = due_date
-        assignment_details["allow_late"] = allow_late
-        assignment_details["late_percent"] = late_percent
-        assignment_details["view_answer_late"] = view_answer_late
-        assignment_details["enable_help_requests"] = enable_help_requests
-        assignment_details["has_timer"] = has_timer
-        assignment_details["hour_timer"] = hour_timer
-        assignment_details["minute_timer"] = minute_timer
-        assignment_details["restrict_other_assignments"] = restrict_other_assignments
-        assignment_details["allowed_ip_addresses"] = allowed_ip_addresses
-        assignment_details["allowed_external_urls"] = allowed_external_urls
-        assignment_details["show_run_button"] = show_run_button
-        assignment_details["use_virtual_assistant"] = use_virtual_assistant
+    # def specify_assignment_details(self, assignment_details, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, enable_help_requests, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, use_virtual_assistant):
+    #     assignment_details["introduction"] = introduction
+    #     assignment_details["date_updated"] = date_updated
+    #     assignment_details["start_date"] = start_date
+    #     assignment_details["due_date"] = due_date
+    #     assignment_details["allow_late"] = allow_late
+    #     assignment_details["late_percent"] = late_percent
+    #     assignment_details["view_answer_late"] = view_answer_late
+    #     assignment_details["enable_help_requests"] = enable_help_requests
+    #     assignment_details["has_timer"] = has_timer
+    #     assignment_details["hour_timer"] = hour_timer
+    #     assignment_details["minute_timer"] = minute_timer
+    #     assignment_details["restrict_other_assignments"] = restrict_other_assignments
+    #     assignment_details["allowed_ip_addresses"] = allowed_ip_addresses
+    #     assignment_details["allowed_external_urls"] = allowed_external_urls
+    #     assignment_details["show_run_button"] = show_run_button
+    #     assignment_details["use_virtual_assistant"] = use_virtual_assistant
 
-        if assignment_details["date_created"]:
-            assignment_details["date_created"] = date_created
-        else:
-            assignment_details["date_created"] = date_updated
+    #     if assignment_details["date_created"]:
+    #         assignment_details["date_created"] = date_created
+    #     else:
+    #         assignment_details["date_created"] = date_updated
 
     def get_course_basics(self, course_id):
         null_course = {"id": "", "title": "", "visible": True, "exists": False}
@@ -1779,7 +1800,7 @@ class Content:
         return course_details
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "show_run_button": True, "use_virtual_assistant": 0, "due_date_passed": None}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "enable_help_requests": 1, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "show_run_button": True, "student_timer_exceptions": {}, "use_virtual_assistant": 0}
 
         if not assignment_id:
             return null_assignment
@@ -1794,20 +1815,10 @@ class Content:
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "use_virtual_assistant": row["use_virtual_assistant"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "due_date_passed": None}
-
-        curr_datetime = datetime.utcnow()
-        if assignment_dict["due_date"]:
-            assignment_dict["due_date_passed"] = curr_datetime > assignment_dict["due_date"]
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "enable_help_requests": row["enable_help_requests"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")
-
-        if assignment_dict["allowed_external_urls"] != "":
-            assignment_dict["allowed_external_urls_dict"] = {}
-            for url in assignment_dict["allowed_external_urls"].split("\n"):
-                url = url.strip()
-                assignment_dict["allowed_external_urls_dict"][url] = urllib.parse.quote(url)
 
         return assignment_dict
 
@@ -1851,6 +1862,20 @@ class Content:
             exercise_dict["tests"][test["title"]] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]}
 
         return exercise_dict
+
+    def get_student_timer_exceptions(self, has_timer, course_id, assignment_id):
+        exceptions = {}
+
+        if has_timer:
+            sql = '''SELECT user_id, hour_timer, minute_timer
+                    FROM assignment_timer_exceptions
+                    WHERE course_id = ?
+                      AND assignment_id = ?'''
+            
+            for row in self.fetchall(sql, (course_id, assignment_id, )):
+                exceptions[row["user_id"]] = [row["hour_timer"], row["minute_timer"]]
+
+        return exceptions
 
     def get_log_table_contents(self, file_path, year="No filter", month="No filter", day="No filter"):
         new_dict = {}
@@ -1939,6 +1964,17 @@ class Content:
 
             assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["enable_help_requests"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["use_virtual_assistant"]])
             assignment_basics["exists"] = True
+
+        sql_statements = ['''DELETE FROM assignment_timer_exceptions
+                             WHERE course_id = ? AND assignment_id = ?''']
+        param_lists = [(assignment_basics["course"]["id"], assignment_basics["id"], )]
+
+        for user_id, timer_info in assignment_details["student_timer_exceptions"].items():
+            sql_statements.append('''INSERT INTO assignment_timer_exceptions (course_id, assignment_id, user_id, hour_timer, minute_timer)
+                                     VALUES (?, ?, ?, ?, ?)''')
+            param_lists.append((assignment_basics["course"]["id"], assignment_basics["id"], user_id, timer_info[0], timer_info[1]))
+
+        self.execute_multiple(sql_statements, param_lists)
 
         self.update_when_content_updated(assignment_basics["course"]["id"])
 
@@ -2050,7 +2086,6 @@ class Content:
 
         for test_title, test_dict in test_outputs.items():
             if test_dict["jpg_output"] != "":
-                #if test_dict["jpg_output"].strip() == BLANK_IMAGE.strip():
                 if test_dict["jpg_output"].strip() == BLANK_IMAGE:
                     test_dict["jpg_output"] = ""
 
@@ -2620,34 +2655,34 @@ class Content:
 #        if os.path.exists(tmp_dir_path):
 #            shutil.rmtree(tmp_dir_path, ignore_errors=True)
 
-    async def get_student_pairs(self, course_id, user_name):
-        # Uses the week of the year as a seed.
-        seed = datetime.utcnow().isocalendar().week
+    # async def get_student_pairs(self, course_id, user_name):
+    #     # Uses the week of the year as a seed.
+    #     seed = datetime.utcnow().isocalendar().week
 
-        # Gets student names registered in a course (will add obscured emails to the end of the name in the case of duplicate names)
-        students = list(self.get_partner_info(course_id, False).keys())
+    #     # Gets student names registered in a course (will add obscured emails to the end of the name in the case of duplicate names)
+    #     students = list(self.get_partner_info(course_id, False).keys())
 
-        # Randomizes students using seed
-        random.Random(seed).shuffle(students)
+    #     # Randomizes students using seed
+    #     random.Random(seed).shuffle(students)
 
-        if len(students) == 0:
-            pairs = []
-        elif len(students) % 2 == 0:
-            pairs = [[students[i], students[i + 1]] for i in range(0, len(students), 2)]
-        else:
-            # Create pairs for everyone except the last student.
-            pairs = [[students[i], students[i + 1]] for i in range(0, len(students) - 1, 2)]
+    #     if len(students) == 0:
+    #         pairs = []
+    #     elif len(students) % 2 == 0:
+    #         pairs = [[students[i], students[i + 1]] for i in range(0, len(students), 2)]
+    #     else:
+    #         # Create pairs for everyone except the last student.
+    #         pairs = [[students[i], students[i + 1]] for i in range(0, len(students) - 1, 2)]
 
-            # This code creates a trio.
-            #pairs[-1].append(students[-1])
+    #         # This code creates a trio.
+    #         #pairs[-1].append(students[-1])
 
-            # This code puts one person on their own.
-            pairs.extend([[students[-1]]])
+    #         # This code puts one person on their own.
+    #         pairs.extend([[students[-1]]])
 
-        # Indicates which pair the user is in.
-        pairs = [{'is_user': True, 'pair': pair} if user_name in pair else {'is_user': False, 'pair': pair} for pair in pairs]
+    #     # Indicates which pair the user is in.
+    #     pairs = [{'is_user': True, 'pair': pair} if user_name in pair else {'is_user': False, 'pair': pair} for pair in pairs]
 
-        return pairs
+    #     return pairs
 
     def get_next_prev_student_ids(self, course_id, student_id):
         sql = '''SELECT u.user_id

@@ -5,7 +5,7 @@
 <!-- </copyright_statement>-->
 
 {% if course_basics["exists"] %}
-    <h3>{{ assignment_basics["title"] }}</h3>
+    <h4>{{ assignment_basics["title"] }}</h4>
 
     {% if assignment_basics["exists"] %}
         <p>
@@ -252,6 +252,8 @@
                 <a class="button" href='/export_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}' download="{{ course_basics['title'] }}__{{ assignment_basics['title'] }}.json">Export assignment</a>
 
                 <a class="button" href='/resave_exercises/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Re-save exercises</a>
+
+                <a class="button" href='/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>View scores</a>
             </div>
         {% end %}
     {% else %}

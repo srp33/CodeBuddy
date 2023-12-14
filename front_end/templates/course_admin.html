@@ -5,7 +5,7 @@
 <!-- </copyright_statement>-->
 
 {% if course_basics["exists"] %}
-    <h3>{{ course_basics["title"] }}</h3>
+    <h4>{{ course_basics["title"] }}</h4>
     <p>{{ course_details["introduction"] }}</p>
 
     {% if len(assignment_statuses) > 0 %}
@@ -306,5 +306,5 @@
         }
     </script>
 {% else %}
-    <h2>This course does not exist.</h2>
+    <h4>This course does not exist.</h4>
 {% end %}

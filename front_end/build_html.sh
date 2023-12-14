@@ -65,7 +65,6 @@ cat header.html diff_jpg.html footer.html > "$OUTPUT/diff_jpg.html"
 
 cat header.html navbar_top.html navbar_bottom.html container_color.html error.html container_bottom.html footer.html > "$OUTPUT/error.html"
 cat header.html navbar_top.html navbar_bottom.html container_color.html permissions.html container_bottom.html footer.html > "$OUTPUT/permissions.html"
-cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html unavailable_exercise.html container_bottom.html footer.html > "$OUTPUT/unavailable_exercise.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html unavailable_assignment.html container_bottom.html footer.html > "$OUTPUT/unavailable_assignment.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html unavailable_course.html container_bottom.html footer.html > "$OUTPUT/unavailable_course.html"
 

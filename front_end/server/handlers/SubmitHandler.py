@@ -31,6 +31,12 @@ class SubmitHandler(BaseUserHandler):
                     out_dict["message"] = "You have exceeded the maximum number of allowed submissions for this exercise."
                     self.write(json.dumps(out_dict, default=str))
                     return
+                
+            set_assignment_due_date_passed(assignment_details)
+            if assignment_details["due_date_passed"] and not assignment_details["allow_late"]:
+                out_dict["message"] = "The due date has passed for this assignment."
+                self.write(json.dumps(out_dict, default=str))
+                return
 
             out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 

@@ -35,6 +35,7 @@ class ExportAssignmentHandler(BaseUserHandler):
                 del assignment_basics["id"]
                 del assignment_basics["exists"]
                 del assignment_basics["course"]
+                assignment_details["student_timer_exceptions"] = {}
 
                 assignment_dict = {
                     "version": read_file('../VERSION').rstrip("\n"),

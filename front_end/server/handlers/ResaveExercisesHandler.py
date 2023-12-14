@@ -15,7 +15,7 @@ class ResaveExercisesHandler(BaseUserHandler):
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
                 exercises = self.content.get_exercises(course_basics, assignment_basics)
 
-                output = f"<h2>Re-saving exercises for {course_basics['title']} and {assignment_basics['title']}</h2>"
+                output = f"<h4>Re-saving exercises for {course_basics['title']} and {assignment_basics['title']}</h4>"
 
                 for exercise in exercises:
                     exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, exercise[0])

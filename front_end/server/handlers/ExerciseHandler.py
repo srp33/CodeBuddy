@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-from datetime import datetime, timedelta
 
 class ExerciseHandler(BaseUserHandler):
     entrypoint = 'exercise'
@@ -19,6 +18,7 @@ class ExerciseHandler(BaseUserHandler):
             assignments = await self.get_assignments(course_basics)
             assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
             assignment_details = await self.get_assignment_details(course_basics, assignment_id)
+            set_assignment_due_date_passed(assignment_details)
 
             if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
                 return
@@ -35,12 +35,13 @@ class ExerciseHandler(BaseUserHandler):
             partner_info = await self.get_partner_info(course_id, True)
             user_list = list(partner_info.keys())
             
-            start_time = None
+            timer_status = None
+            timer_deadline = None
             if assignment_details["has_timer"]:
-                start_time = self.content.get_user_assignment_start_time(course_id, assignment_id, self.get_current_user())
+                timer_status, __, __, __, timer_deadline = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
 
             tests = exercise_details["tests"]
-            presubmission, submissions = self.content.get_submissions(course_id, assignment_id, exercise_id, self.get_current_user(), exercise_details)
+            presubmission, submissions, has_passed = self.content.get_submissions(course_id, assignment_id, exercise_id, self.get_current_user(), exercise_details)
 
             mode = self.get_query_argument("mode", default=None)
 
@@ -78,13 +79,15 @@ class ExerciseHandler(BaseUserHandler):
                     "tests": tests,
                     "presubmission": presubmission,
                     "submissions": submissions,
+                    "has_passed": has_passed,
                     "exercise_statuses": exercise_statuses,
                     "next_exercise": next_prev_exercises["next"],
                     "prev_exercise": next_prev_exercises["previous"],
                     "code_completion_path": back_end_config["code_completion_path"],
                     "back_end_description": back_end_config["description"],
                     "domain": self.settings_dict['domain'],
-                    "start_time": start_time,
+                    "timer_status": timer_status,
+                    "timer_deadline": timer_deadline,
                     "user_info": self.user_info,
                     "user_id": self.get_current_user(),
                     "is_administrator": self.is_administrator,
@@ -97,8 +100,6 @@ class ExerciseHandler(BaseUserHandler):
             }
 
 #                    "num_submissions": len(submissions),
-                    # "help_request": help_request,
-                    # "same_suggestion": same_suggestion,
 
             if studio_mode:
                 exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))

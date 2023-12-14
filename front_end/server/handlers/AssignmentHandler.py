@@ -14,33 +14,41 @@ class AssignmentHandler(BaseUserHandler):
             assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
             assignment_details = await self.get_assignment_details(course_basics, assignment_id, True)
 
-            user_start_time = None
+            self.add_external_url_dict(assignment_details)
+            set_assignment_due_date_passed(assignment_details)
+
+            timer_status = None
+            timer_start_time = None
+            timer_hours = None
+            timer_minutes = None
+            timer_deadline = None
             if assignment_details["has_timer"]:
-                user_start_time = self.content.get_user_assignment_start_time(course_id, assignment_id, self.user_info["user_id"])
-            
-            await self.render_page(course_basics, assignment_basics, assignment_details, user_start_time)
+                timer_status, timer_start_time, timer_hours, timer_minutes, timer_deadline = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
+
+            await self.render_page(course_basics, assignment_basics, assignment_details, timer_status, timer_start_time, timer_hours, timer_minutes, timer_deadline)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
     async def post(self, course_id, assignment_id):
         try:
+            task = self.request.body.decode()
+
             course_basics = await self.get_course_basics(course_id)
-            assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
             assignment_details = await self.get_assignment_details(course_basics, assignment_id, True)
 
-            user_start_time = None
-            if assignment_details["has_timer"]:
-                user_start_time = self.content.get_user_assignment_start_time(course_id, assignment_id, self.user_info["user_id"])
+            if task == "start_timer":
+                timer_start_time = datetime.utcnow()
+                
+                __, __, __, __, timer_deadline = self.content.set_user_assignment_start_time(course_id, assignment_id, assignment_details, self.user_info["user_id"], timer_start_time)
 
-                if not user_start_time:
-                    user_start_time = datetime.utcnow()
-                    self.content.set_user_assignment_start_time(course_id, assignment_id, self.user_info["user_id"], user_start_time)
-
-            await self.render_page(course_basics, assignment_basics, assignment_details, user_start_time)
+                self.write(f"Success: {timer_deadline}")
+            elif task == "stop_timer":
+                self.content.end_timed_assignment_early(course_id, assignment_id, self.user_info["user_id"])
+                self.write("Success")
         except Exception as inst:
-            render_error(self, traceback.format_exc())
+            self.write(f"Error: {traceback.format_exc()}")
 
-    async def render_page(self, course_basics, assignment_basics, assignment_details, user_start_time):
+    async def render_page(self, course_basics, assignment_basics, assignment_details, timer_status, timer_start_time, timer_hours, timer_minutes, timer_deadline):
         course_id = course_basics["id"]
         assignment_id = assignment_basics["id"]
 
@@ -58,6 +66,15 @@ class AssignmentHandler(BaseUserHandler):
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.user_info["user_id"], show_hidden=False)
             has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
 
-            return self.render("assignment.html", courses=self.courses, assignments=assignments, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, start_time=user_start_time, user_start_time=user_start_time, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+            return self.render("assignment.html", courses=self.courses, assignments=assignments, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         else:
             return self.render("unavailable_assignment.html", courses=self.courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+        
+    def add_external_url_dict(self, assignment_details):
+        if assignment_details["allowed_external_urls"] != "":
+            assignment_details["allowed_external_urls_dict"] = {}
+            
+            if assignment_details["allowed_external_urls"]:
+                for url in assignment_details["allowed_external_urls"].split("\n"):
+                    url = url.strip()
+                    assignment_details["allowed_external_urls_dict"][url] = urllib.parse.quote(url)

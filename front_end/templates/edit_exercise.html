@@ -5,7 +5,7 @@
 <!-- </copyright_statement>-->
 
 <div class="row-container is-hidden" id="edit_header">
-    <h3>Edit exercise</h3>
+    <h4>Edit exercise</h4>
 
     <p>
         <button class="button is-dark" onclick="save()">Save</button>
@@ -21,7 +21,7 @@
     </p>
 </div>
 
-<h3 id="create_header">Create exercise</h3>
+<h4 id="create_header">Create exercise</h4>
 
 <div class="notification is-danger is-hidden" id="result_message"></div>
 
@@ -371,7 +371,6 @@
     </div>
 
     <script>
-        // Functions
         function showTests() {
             if (Object.keys(exercise_details_obj["tests"]).length == 0) {
                 $("#tests_table").addClass("is-hidden");
@@ -445,7 +444,7 @@
         function showOutput(update, scroll) {
             if (update) {
                 if (getValue("allow_any_response") == "No") {
-                    var html = `<h3>Test output:</h3><div class='shadow-box'>`;
+                    var html = `<h4>Test output:</h4><div class='shadow-box'>`;
 
                     for (const test_title in sortObj(exercise_details_obj["tests"])) {
                         if (Object.keys(exercise_details_obj["tests"]).length > 1)

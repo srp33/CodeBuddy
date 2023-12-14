@@ -5,7 +5,7 @@
 <!-- </copyright_statement>-->
 
 {% if len(exercise_scores) > 0 %}
-    <h2>Scores for {{ exercise_basics["title"] }}</h2>
+    <h4>Scores for {{ exercise_basics["title"] }}</h4>
 
     <div class="table-container">
         <table class="table is-striped" id="scores_table">
@@ -34,5 +34,5 @@
         </table>
     </div>
 {% else %}
-    <h2>No submissions have been made for this exercise.</h2>
+    <h4>No submissions have been made for this exercise.</h4>
 {% end %}

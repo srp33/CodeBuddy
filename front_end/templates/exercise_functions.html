@@ -606,18 +606,45 @@ function showHideData(dataPanelID, dataButtonID) {
     }
 }
 
-function isTakingRestrictedAssignment() {
-    $.ajax({
-        type: 'GET',
-        url: "/is_taking_restricted_assignment/{{ user_info['user_id'] }}/{{ assignment_basics['id'] }}",
-        async: true
+function reloadIfRestricted(save_first) {
+    {% if check_for_restrict_other_assignments %}
+        $.ajax({
+            type: 'GET',
+            url: "/is_taking_restricted_assignment/{{ user_info['user_id'] }}/{{ assignment_basics['id'] }}",
+            async: true
+            })
+        .done(function(data) {
+            if (JSON.parse(data) == true) {
+                if (save_first) {
+                    save_presubmission();
+                }
+
+                location.reload(true);
+            }
         })
-    .done(function(data) {
-        if (JSON.parse(data))
-            window.location.replace("/unavailable_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
-    })
-    .fail(function(data) {
-        console.log(data);
-    });
+        .fail(function(data) {
+            console.log(data);
+        });
+    {% end %}
+
+    {% if assignment_details["due_date"] and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
+        let due_date = new Date("{{ assignment_details['due_date'] }}");
+        due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+
+        if (Date.now() > due_date.getTime()) {
+            location.reload(true);
+        }
+    {% end %}
+}
+
+function hasDueDatePassed() {
+    {% if not assignment_details["due_date"] or assignment_details["allow_late"] or assignment_details["view_answer_late"] %}
+        return false;
+    {% end %}
+
+    let due_date = new Date("{{ assignment_details['due_date'] }}");
+    due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+
+    return Date.now() > assignment_details.due_date.getTime()
 }
 </script>

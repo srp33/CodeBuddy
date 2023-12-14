@@ -210,21 +210,14 @@ class BaseUserHandler(BaseRequestHandler):
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
             return True
 
-        curr_datetime = datetime.utcnow()
-
         if assignment_details["has_timer"]:
-            user_start_time = self.content.get_user_assignment_start_time(course_id, assignment_id, self.user_info["user_id"])
+            timer_status, __, __, __, __ = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
 
-            if user_start_time == None:
-                # This means the student hasn't started the timed assignment.
+            if timer_status != "timer_in_progress":
                 self.redirect(f"/assignment/{course_id}/{assignment_id}")
-            else:
-                deadline = user_start_time + timedelta(hours = assignment_details["hour_timer"], minutes = assignment_details["minute_timer"])
+                return
 
-                if deadline < curr_datetime:
-                    return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="timer_has_expired", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
-
-        assignment_status = get_assignment_status(self, course_id, assignment_details, curr_datetime)
+        assignment_status = get_assignment_status(self, course_id, assignment_details, datetime.utcnow())
 
         if assignment_status != "render":
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))

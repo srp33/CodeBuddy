@@ -9,105 +9,6 @@
         {% if exercise_basics["exists"] %}
             <link rel="stylesheet" href="/static/css/modal.css">
 
-            {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
-                <link rel="stylesheet" href="/static/css/timer.css">
-
-                <script>
-                    function startTimer() {
-                        start_time_js = new Date("{{ start_time }}");
-                        start_time_js.setMinutes(start_time_js.getMinutes() - start_time_js.getTimezoneOffset());
-
-                        var deadline = start_time_js;
-                        deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
-                        deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
-
-                        initializeClock('clockdiv', deadline);
-                    }
-
-                    function getTimeRemaining(endtime){
-                        const total = Date.parse(endtime) - Date.parse(new Date());
-                        const seconds = Math.floor( (total/1000) % 60 );
-                        const minutes = Math.floor( (total/1000/60) % 60 );
-                        const hours = Math.floor( (total/(1000*60*60)) % 24 );
-
-                        return {
-                            total,
-                            hours,
-                            minutes,
-                            seconds
-                        };
-                    }
-
-                    function initializeClock(id, endtime) {
-                        const clock = document.getElementById(id);
-                        const hoursSpan = clock.querySelector('.hours');
-                        const minutesSpan = clock.querySelector('.minutes');
-                        const secondsSpan = clock.querySelector('.seconds');
-
-                        function updateClock(){
-                            const t = getTimeRemaining(endtime);
-                            hoursSpan.innerHTML = ('00' + t.hours).slice(-2);
-                            minutesSpan.innerHTML = ('00' + t.minutes).slice(-2);
-                            secondsSpan.innerHTML = ('00' + t.seconds).slice(-2);
-
-                            if (t.total == 120000) {
-                                var modal = document.getElementById("time_modal");
-                                var span = document.getElementsByClassName("close")[0];
-                                var okay_modal = document.getElementById("time_modal_okay_button");
-
-                                modal.style.display = "block";
-
-                                okay_modal.onclick = function() {
-                                    modal.style.display = "none";
-                                }
-
-                                span.onclick = function() {
-                                    modal.style.display = "none";
-                                }
-
-                                window.onclick = function(event) {
-                                    if (event.target == modal) {
-                                        modal.style.display = "none";
-                                    }
-                                }
-                            }
-
-                            if (t.total <= 0) {
-                                clearInterval(timeinterval);
-                                hoursSpan.innerHTML = '00';
-                                minutesSpan.innerHTML = '00';
-                                secondsSpan.innerHTML = '00';
-
-                                window.location.replace("/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}");
-                            }
-                        }
-
-                        updateClock(); // run function once at first to avoid delay
-                        var timeinterval = setInterval(updateClock, 1000);
-                    }
-                </script>
-            {% end %}
-
-            {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
-                <div id="clockdiv">
-                    <div>
-                        <span class="hours"></span>
-                        <div class="smalltext">Hours</div>
-                    </div>
-                    <div>
-                        <span class="minutes"></span>
-                        <div class="smalltext">Minutes</div>
-                    </div>
-                    <div>
-                        <span class="seconds"></span>
-                        <div class="smalltext">Seconds</div>
-                    </div>
-                </div>
-                <br /><br />
-
-                <script>startTimer();</script>
-            {% end %}
-
             <div class="columns">
                 {% if use_virtual_assistant %}
                 <!--<div class="column is-three-quarters mt-0">-->
@@ -126,7 +27,7 @@
 
                     <div class="has-background-white mt-0 p-4">
                         <div id="instructions">
-                            <h6>{{ exercise_basics["title"] }}</h6>
+                            <h4>{{ exercise_basics["title"] }}</h4>
 
                             {{ exercise_details["instructions"] }}
                             
@@ -216,6 +117,10 @@
                     <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
                 {% end %}
 
+                {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                    <a id="timer_button" class="button is-medium is-hidden is-warning" style="cursor: auto;"></a>
+                {% end %}
+
                 <span class="icon mb-2 ml-1">
                     {% if exercise_details["allow_any_response"] %}
                         <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
@@ -229,19 +134,11 @@
 
             <div id="max_submissions_message"></div>
 
-            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] %}
-                {% if not assignment_details["allow_late"] %}
-                    <script>
-                        document.getElementById("submit_button").disabled = true;
-                    </script>
-                {% end %}
-
-                {% if assignment_details["view_answer_late"] %}
-                    <div class='notification is-warning'>
-                        <p>Click <a style='color:#2166ac' href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
-                        </p>
-                    </div>
-                {% end %}
+            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] and not has_passed %}
+                <div class='notification is-warning'>
+                    <p>Click <a style='color:#2166ac' href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
+                    </p>
+                </div>
             {% end %}
 
             <p id="test_outputs"></p>
@@ -303,23 +200,6 @@
                     </p>
                 </div>
             </div>
-
-            <div id="time_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <p>You have less than 2 minutes remaining. If you are still working, submit a solution to avoid losing your work.</p>
-                    <p><button class="button is-dark" id="time_modal_okay_button">Okay</button></p>
-                </div>
-            </div>
-
-            <!--<div id="share_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <p>Share this link with an instructor or assistant:</p>
-                    <input class="input is-medium is-primary" type="text" id="share_link" value="https://{{ domain }}/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_info['user_id'] }}" readonly>
-                    <button class="modal-button button is-dark" onclick="copyLink()">Copy Link</button>
-                </div>
-            </div>-->
 
             <script>
                 {% if use_virtual_assistant %}
@@ -477,19 +357,71 @@
 
                 submitButton = document.getElementById("submit_button");
 
-                {% if exercise_details["enable_pair_programming"] %}
-                      if (submitButton != null)
-                          submitButton.onclick = function() {
-                              showSubmitModal()
-                      }
-                {% else %}
-                    if (submitButton != null) {
-                        submitButton.onclick = function() {
-                            if (submitButton.disabled)
-                                showErrorMessage("You are not allowed to make a submission because the due date has passed.");
-                            else
-                                submit()
+                if (submitButton != null) {
+                    submitButton.onclick = function() {
+                        {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
+                            {% if exercise_details["enable_pair_programming"] %}
+                                showSubmitModal();
+                            {% else %}
+                                submit();
+                            {% end %}
+                        {% else %}
+                            alert("Sorry, the due date for this assignment has passed.");
+                        {% end %}
+                    }
+                }
+
+                {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                    function updateTimeRemaining(timer_deadline) {
+                        const now = new Date().getTime();
+                        const remaining_time = timer_deadline - now;
+
+                        const hours = Math.floor((remaining_time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((remaining_time % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((remaining_time % (1000 * 60)) / 1000);
+
+                        if (remaining_time >= 0) {
+                            $("#timer_button")[0].innerHTML = `<strong>Time remaining: ${hours}h ${minutes}m ${seconds}s</strong>`;
                         }
+
+                        return remaining_time;
+                    }
+
+                    function gotoAssignmentPage() {
+                        window.location.href = `/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}`;
+                    }
+
+                    if ("{{ timer_status }}" == "timer_in_progress") {
+                        let timer_deadline = new Date("{{ timer_deadline }}");
+                        timer_deadline.setMinutes(timer_deadline.getMinutes() - timer_deadline.getTimezoneOffset());
+
+                        var has_shown_timer_warning = false;
+                        let time_remaining = updateTimeRemaining(timer_deadline);
+
+                        if (time_remaining <= 0) {
+                            gotoAssignmentPage();
+                        }
+                        else {
+                            const x = setInterval(function() {
+                                const remaining_time = updateTimeRemaining(timer_deadline);
+
+                                if (remaining_time < 120000 && !has_shown_timer_warning) {
+                                    alert("Less than 2 minutes remaining.");
+                                    has_shown_timer_warning = true;
+                                }
+
+                                if (remaining_time <= 0) {
+                                    clearInterval(x);
+                                    save_presubmission();
+                                    gotoAssignmentPage();
+                                }
+                            }, 1000);
+
+                            $("#timer_button").removeClass("is-hidden");
+                        }
+                    }
+                    else {
+                        gotoAssignmentPage();
                     }
                 {% end %}
 
@@ -541,9 +473,9 @@
                     }
                 }, 10000);
 
-                {% if check_for_restrict_other_assignments %}
-                    setInterval(isTakingRestrictedAssignment, 60000);
-                {% end %}
+                setInterval(function() {
+                    reloadIfRestricted(true);
+                }, 60000);
             </script>
         {% else %}
             <p>This exercise does not exist.</p>

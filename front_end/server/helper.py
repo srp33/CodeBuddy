@@ -6,8 +6,7 @@
 
 import base64
 from contextlib import redirect_stdout, redirect_stderr
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 import difflib
 import glob
 import hashlib
@@ -414,6 +413,10 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
             elif file_name.endswith(".tsv"):
                 exercise_details["data_files"][file_name] = format_delimited_data_as_table(exercise_details["data_files"][file_name], "\t")
 
+def set_assignment_due_date_passed(assignment_details):
+    if assignment_details["due_date"]:
+        assignment_details["due_date_passed"] = datetime.utcnow() > assignment_details["due_date"]
+
 def format_delimited_data_as_table(data_text, delimiter):
     table = "<table>"
 
@@ -541,3 +544,27 @@ async def should_use_virtual_assistant(handler, course_id, assignment_details, e
 
 def get_formatted_datetime():
     return datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+def get_student_timer_status(content, course_id, assignment_id, assignment_details, student_id, user_start_time=None, user_ended_early=None):
+    if user_start_time == None:
+        user_start_time, user_ended_early = content.get_user_assignment_timer_status(course_id, assignment_id, student_id)
+
+    hours = assignment_details["hour_timer"]
+    minutes = assignment_details["minute_timer"]
+
+    if student_id in assignment_details["student_timer_exceptions"]:
+        hours = assignment_details["student_timer_exceptions"][student_id][0]
+        minutes = assignment_details["student_timer_exceptions"][student_id][1]
+
+    if user_start_time == None:
+        return "timer_not_started", None, hours, minutes, None
+
+    if user_ended_early == True:
+        return "timer_expired", user_start_time, None, None, None
+
+    deadline = user_start_time + timedelta(hours = hours, minutes = minutes)
+
+    if deadline < datetime.utcnow():
+        return "timer_expired", user_start_time, None, None, None
+
+    return "timer_in_progress", user_start_time, None, None, deadline

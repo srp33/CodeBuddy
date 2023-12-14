@@ -39,3 +39,7 @@ export async function savePresubmission(courseID: number, assignmentID: number, 
 export async function getPartnerID(courseID: number, name: string): Promise<string> {
 	return await get<string>(`/get_partner_id/${courseID}/${encodeURIComponent(name)}`);
 }
+
+export async function isTakingRestrictedAssignment(userID: string, assignmentID: number): Promise<boolean> {
+	return await get<boolean>(`/is_taking_restricted_assignment/${userID}/${assignmentID}`);
+}

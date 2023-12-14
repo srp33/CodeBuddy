@@ -21,7 +21,6 @@ esbuild.build({
 		'css/bulma-tooltip': 'ui/css/bulma-tooltip.scss',
 		'css/profile-styles': 'ui/css/profile-styles.css',
 		'css/modal': 'ui/css/modal.css',
-		'css/timer': 'ui/css/timer.css',
 	},
     bundle: true,
     outdir: 'static/',

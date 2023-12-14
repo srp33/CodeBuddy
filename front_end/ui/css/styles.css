@@ -1,10 +1,4 @@
 /* <copyright_statement>*/
-/*   CodeBuddy: A programming assignment management system for short-form exercises*/
-/*   Copyright (C) 2023 Stephen Piccolo*/
-/*   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
-/* </copyright_statement>*/
-
-/* <copyright_statement>*/
 /*   CodeBuddy - A learning management system for computer programming*/
 /*   Copyright (C) 2023 Stephen Piccolo*/
 /*   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
@@ -310,10 +304,6 @@ td > button {
     margin-right: 20px;
 }
 
-.date-container {
-    width: 45%;
-}
-
 .hint-text {
     border: 2px solid  #000000;
     border-radius: 5px;
@@ -518,11 +508,6 @@ td > button {
     color: #363636; /* dark grey */
 }
 
-/* .footer {
-    background-color: white;
-    padding: 1rem 1rem 1rem 4rem;
-} */
-
 .footer-flex {
     display: flex;
     justify-content: space-around;
@@ -579,12 +564,3 @@ module {
   border-radius: 20px;
   padding: 1em 2em;
 }
-
-/* monored {
-  font-family: Consolas,"courier new";
-  font-weight: bold;
-  color: crimson;
-  background-color: #f1f1f1;
-  padding: 2px;
-  font-size: 90%;
-} */

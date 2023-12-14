@@ -34,11 +34,11 @@
                 <br />
                 <p><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Back to exercise</a></p>
 
-                {% if check_for_restrict_other_assignments %}
-                    <script>
-                        setInterval(isTakingRestrictedAssignment, 60000);
-                    </script>
-                {% end %}
+                <script>
+                setInterval(function() {
+                    reloadIfRestricted(false);
+                }, 60000);
+                </script>
             {% end %}
         {% end %}
     {% else %}

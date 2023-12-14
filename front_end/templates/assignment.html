@@ -5,9 +5,9 @@
 <!-- </copyright_statement>-->
 
 {% if course_basics["exists"] %}
-    <h3>{{ assignment_basics["title"] }}</h3>
+    <h4>{{ assignment_basics["title"] }}</h4>
 
-    {% if assignment_basics["exists"] %}
+    {% if assignment_basics["exists"] and len(exercise_statuses) > 0 %}
         <p>
             {{ assignment_details["introduction"] }}
         </p>
@@ -24,181 +24,240 @@
             </ul>
         {% end %}
 
-        {% if assignment_details["has_timer"] %}
-            <p><i>This assignment is timed. The time limit is {{ assignment_details["hour_timer"] }} hours, {{ assignment_details["minute_timer"] }} minutes.</i></p>
-        {% end %}
-
         {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
-            <div class='notification is-warning is-light'>The due date for this assignment has passed, but your instructor has enabled viewing the answer.</div>
+            <div class='notification is-warning is-light'>The due date for this assignment has passed, but you are still allowed to view the assignment.</div>
         {% end %}
 
         {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
             <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
         {% end %}
 
-        {% if len(exercise_statuses) > 0 %}
-            {% if assignment_details["has_timer"] %}
-                <link rel="stylesheet" href="/static/css/timer.css">
+        {% if assignment_details["has_timer"] %}
+            <div class="notification is-info" id="timer_message"></div>
 
-                <script>
-                    const start_time = new Date('{{ start_time }}');
-                    start_time.setMinutes(start_time.getMinutes() - start_time.getTimezoneOffset());
+            <button id="timer_button" class="button is-medium is-hidden is-rounded mb-5" type="button"></button>
 
-                    const deadline = new Date('{{ start_time }}');
-                    deadline.setMinutes(start_time.getMinutes() - start_time.getTimezoneOffset());
-                    deadline.setHours(deadline.getHours() + {{ assignment_details["hour_timer"] }});
-                    deadline.setMinutes(deadline.getMinutes() + {{ assignment_details["minute_timer"] }});
+            <link rel="stylesheet" href="/static/css/modal.css">
 
-                    function isTimerExpired() {
-                        return new Date() > deadline;
-                    }
+            <div id="stop_timer_modal" class="modal">
+                <div class="modal-content">
+                    <span id="stop_timer_close" class="close">&times;</span>
+                    <p>Are you sure you want to end this timed assignment early?</p>
 
-                    function startTimerIfNotExpired() {
-                        if (isTimerExpired()) {
-                            document.getElementById("timer_expired_message").innerHTML = "<font color='red'><b>This assignment is timed, and the time has expired.</font></b>";
-                        }
-                        else {
-                            var timer_div = document.getElementById("clockdiv");
-                            timer_div.style.display = "inline";
-
-                            initializeClock(deadline);
-                        }
-                    }
-
-                    function initializeClock(deadline) {
-                        const clock = document.getElementById('clockdiv');
-                        const hoursSpan = clock.querySelector('.hours');
-                        const minutesSpan = clock.querySelector('.minutes');
-                        const secondsSpan = clock.querySelector('.seconds');
-
-                        function updateClock(){
-                            const t = getTimeRemaining(deadline);
-                            hoursSpan.innerHTML = ('00' + t.hours).slice(-2);
-                            minutesSpan.innerHTML = ('00' + t.minutes).slice(-2);
-                            secondsSpan.innerHTML = ('00' + t.seconds).slice(-2);
-
-                            if (t.total <= 0) {
-                                clearInterval(timeinterval);
-                                hoursSpan.innerHTML = '00';
-                                minutesSpan.innerHTML = '00';
-                                secondsSpan.innerHTML = '00';
-                            }
-                        }
-
-                        updateClock(); // run function once at first to avoid delay
-                        var timeinterval = setInterval(updateClock, 1000);
-                    }
-
-                    function getTimeRemaining(deadline){
-                        const total = deadline - new Date();
-                        const seconds = Math.floor( (total/1000) % 60 );
-                        const minutes = Math.floor( (total/1000/60) % 60 );
-                        const hours = Math.floor( (total/(1000*60*60)) % 24 );
-
-                        return {
-                            total,
-                            hours,
-                            minutes,
-                            seconds
-                        };
-                    }
-                </script>
-            {% end %}
-
-            <form method="post" action="/assignment/{{ course_basics['id']}}/{{ assignment_basics['id'] }}" />
-                <div id="clockdiv" style="display: none;">
-                    <div>
-                        <span class="hours"></span>
-                        <div class="smalltext">Hours</div>
-                    </div>
-                    <div>
-                        <span class="minutes"></span>
-                        <div class="smalltext">Minutes</div>
-                    </div>
-                    <div>
-                        <span class="seconds"></span>
-                        <div class="smalltext">Seconds</div>
-                    </div>
+                    <p class="buttons">
+                        <a id="stop_timer_button" class="modal-button button is-dark">End timed assignment</a>
+                        <button type="button" id="stop_timer_cancel_button" class="modal-button button is-light">Cancel</button>
+                    </p>
                 </div>
+            </div>
+        {% end %}
 
-                {% if assignment_details["has_timer"] %}
-                    {% if start_time %}
-                        <p id="timer_expired_message"></p>
-                        <script>
-                            startTimerIfNotExpired();
-                        </script>
-                    {% else %}
-                        <button class="button is-primary is-medium is-rounded" style="margin-bottom: 20px;" type="submit">Begin Assignment</button>
-                    {% end %}
-                {% end %}
+        <div class="table-container">
+            <table class="table is-striped" id="assignment_table">
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th># Submissions</th>
+                        <th>Completed</th>
+                        <th>Score</th>
+                        {% if has_non_default_weight %}
+                            <th>Weight*</th>
+                        {% end %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exercise_i, exercise in enumerate(exercise_statuses) %}
+                        <tr>
+                            <td>
+                                <span id="exercise_title_{{ exercise_i}}_no_link" class="is-hidden">{{ exercise[1]["title"] }}</span>
 
-                <div class="table-container">
-                    <table class="table is-striped" id="assignment_table">
-                        <thead>
-                            <tr>
-                                <th>Exercise</th>
-                                <th># Submissions</th>
-                                <th>Completed</th>
-                                <th>Score</th>
-                                {% if has_non_default_weight %}
-                                    <th>Weight*</th>
+                                <span id="exercise_title_{{ exercise_i}}_link"><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a></span>
+                                
+                                {% if exercise[1]["enable_pair_programming"] %}
+                                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
                                 {% end %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for exercise in exercise_statuses %}
-                            <tr>
-                                <td>
-                                    {% if not assignment_details["has_timer"] or user_start_time %}
-                                        <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">
-                                    {% end %}
-                                            {{ exercise[1]["title"] }}
-                                    {% if not assignment_details["has_timer"] or user_start_time %}
-                                        </a>
-                                    {% end %}
-                                    
-                                    {% if exercise[1]["enable_pair_programming"] %}
-                                        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
-                                    {% end %}
-                                </td>
-                                <td>{{ exercise[1]["num_submissions"] }}</td>
+                            </td>
+                            <td>{{ exercise[1]["num_submissions"] }}</td>
 
-                                {% if exercise[1]["passed"] %}
+                            {% if exercise[1]["passed"] %}
+                                <td>
+                                    <i class="far fa-check-circle"></i>
+                                    Completed
+                                </td>
+                            {% else %}
+                                {% if exercise[1]["in_progress"] %}
                                     <td>
-                                        <i class="far fa-check-circle"></i>
-                                        Completed
+                                        <i class="far fa-hourglass"></i>
+                                        In progress
                                     </td>
                                 {% else %}
-                                    {% if exercise[1]["in_progress"] %}
-                                        <td>
-                                            <i class="far fa-hourglass"></i>
-                                            In progress
-                                        </td>
-                                    {% else %}
-                                        <td>
-                                            <i class="far fa-circle"></i>
-                                            Not started
-                                        </td>
-                                    {% end %}
+                                    <td>
+                                        <i class="far fa-circle"></i>
+                                        Not started
+                                    </td>
                                 {% end %}
+                            {% end %}
 
-                                <td>{{ exercise[1]["score"] }}%</td>
-                                {% if has_non_default_weight %}
-                                    <td>{{ exercise[1]["weight"] }}</td>
-                                {% end %}
-                            </tr>
-                        {% end %}
-                        </tbody>
-                    </table>
-                </div>
+                            <td>{{ exercise[1]["score"] }}%</td>
+                            {% if has_non_default_weight %}
+                                <td>{{ exercise[1]["weight"] }}</td>
+                            {% end %}
+                        </tr>
+                    {% end %}
+                </tbody>
+            </table>
+        </div>
 
-                {% if has_non_default_weight %}
-                    <p>* Exercises with relatively high weights count more toward the overall assignment score than exercises with relatively low weights.</p>
-                {% end %}
-            </form>
+        {% if assignment_details["has_timer"] %}
+            <script>
+                function startTimer(timer_deadline) {
+                    updateTimeRemaining(timer_deadline);
+
+                    const x = setInterval(function() {
+                        const remaining_time = updateTimeRemaining(timer_deadline);
+
+                        if (remaining_time <= 0) {
+                            clearInterval(x);
+                            updateTimerStatus("timer_expired", null);
+                        }
+                    }, 1000);
+                }
+
+                function updateTimeRemaining(timer_deadline) {
+                    const now = new Date().getTime();
+                    const remaining_time = timer_deadline - now;
+
+                    const hours = Math.floor((remaining_time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((remaining_time % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((remaining_time % (1000 * 60)) / 1000);
+
+                    $("#timer_button")[0].innerHTML = `<strong>Time remaining: ${hours}h ${minutes}m ${seconds}s</strong>`;
+
+                    return remaining_time;
+                }
+
+                function updateTimerMessage(message) {
+                    $("#timer_message")[0].innerHTML = `${message}`;
+                }
+
+                function updateTimerStatus(timer_status, timer_deadline, enable_click) {
+                    var message = "";
+
+                    if (timer_status == "timer_not_started") {
+                        message += `This is a timed assignment. Your time limit is {{ timer_hours }} hours and {{ timer_minutes }} minutes. Start the assignment when you are ready.`;
+
+                        $("#timer_button")[0].innerText = "Start assignment";
+                        $("#timer_button").removeClass("is-warning");
+                        $("#timer_button").addClass("is-primary");
+                        $("#timer_button").removeClass("is-hidden");
+                        $("#timer_button").click(function() {
+                            post("start_timer");
+                        });
+
+                        for (let i = 0; i < num_exercises; i++) {
+                            $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
+                            $(`#exercise_title_${i}_link`).addClass("is-hidden");
+                        }
+                    }
+
+                    if (timer_status == "timer_expired") {
+                        message += "This is a timed assignment. The time has expired or you ended the assignment early. You no longer have access to it.";
+
+                        $("#timer_button").addClass("is-hidden");
+
+                        for (let i = 0; i < num_exercises; i++) {
+                            $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
+                            $(`#exercise_title_${i}_link`).addClass("is-hidden");
+                        }
+                    }
+
+                    if (timer_status == "timer_in_progress") {
+                        message += "The timer has started. Click on the timer button if you wish to end the assignment early.";
+
+                        $("#timer_button").removeClass("is-primary");
+                        $("#timer_button").addClass("is-warning");
+                        $("#timer_button").removeClass("is-hidden");
+                        $("#timer_button").off('click');
+                        $("#timer_button").click(function() {
+                            showStopTimerModal();
+                        });
+
+                        timer_deadline = new Date(timer_deadline);
+                        timer_deadline.setMinutes(timer_deadline.getMinutes() - timer_deadline.getTimezoneOffset());
+                        startTimer(timer_deadline);
+
+                        for (let i = 0; i < num_exercises; i++) {
+                            $(`#exercise_title_${i}_no_link`).addClass("is-hidden");
+                            $(`#exercise_title_${i}_link`).removeClass("is-hidden");
+                        }
+                    }
+
+                    updateTimerMessage(message);
+                }
+
+                function post(task) {
+                    $.ajax({
+                        type: 'POST',
+                        url: "/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                        data: task,
+                        async: false})
+                        .done(function(response_message) {
+                            if (response_message.startsWith("Success")) {
+                                if (task == "start_timer") {
+                                    updateTimerStatus("timer_in_progress", response_message.replace("Success: ", ""));
+                                }
+                                else {
+                                    updateTimerStatus("timer_expired", null);
+                                }
+                            }
+                            else {
+                                updateTimerMessage(response_message);
+                            }
+                        })
+                        .fail(function(data) {
+                            updateTimerMessage("An error occurred when connecting to the server. It may be down.");
+                        });
+                }
+
+                function showStopTimerModal() {
+                    var modal = document.getElementById("stop_timer_modal");
+                    var span = document.getElementsByClassName("close")[0];
+                    modal.style.display = "block";
+
+                    var cancelButton = document.getElementById("stop_timer_cancel_button");
+                    var stopTimerButton = document.getElementById("stop_timer_button");
+                    $("#stop_timer_error_message").addClass("invisible");
+
+                    stopTimerButton.onclick = function() {
+                        post("stop_timer");
+                        modal.style.display = "none";
+                    }
+
+                    cancelButton.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    }
+
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+                }
+
+                const num_exercises = {{ len(exercise_statuses) }};
+                updateTimerStatus("{{ timer_status }}", "{{ timer_deadline }}");
+            </script>
+        {% end %}
+
+        {% if has_non_default_weight %}
+            <p>* Exercises with relatively high weights count more toward the overall assignment score than exercises with relatively low weights.</p>
         {% end %}
     {% else %}
-        <p>This assignment does not exist.</p>
+        <p>This assignment does not exist or else no exercises have been added to it yet.</p>
     {% end %}
 {% else %}
     <p>This course does not exist.</p>
