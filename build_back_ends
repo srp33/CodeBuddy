@@ -40,6 +40,7 @@ do
     echo "Building ${image_name}"
 
     docker build \
+        --platform=linux/amd64 \
         -t ${image_name}:version$(cat VERSION) \
         -t ${image_name}:latest \
         -f Containerfile \
