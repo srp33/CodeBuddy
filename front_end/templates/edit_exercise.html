@@ -718,19 +718,21 @@
             if (total_file_size > file_size_limit)
                 return(showResultMessage(`The total file size [${total_file_size}] exceeds the 10,000,000 character limit.`, "danger"));
 
-                if (Object.keys(exercise_details_obj["tests"]).length == 0 && !allow_any_response) {
-                // If no tests were created, create a default one.
-                exercise_details_obj["tests"] = {"Default test": {
-                    "test_id": -1,
-                    "before_code": "",
-                    "after_code": "",
-                    "instructions": "",
-                    "can_see_test_code": 1,
-                    "can_see_expected_output": 1,
-                    "can_see_code_output": 1,
-                    "txt_output": "",
-                    "jpg_output": ""
-                }}
+            if (Object.keys(exercise_details_obj["tests"]).length == 0) {
+                if (!allow_any_response || back_end != "not_code") {
+                    // If no tests were created, create a default one.
+                    exercise_details_obj["tests"] = {"Default test": {
+                        "test_id": -1,
+                        "before_code": "",
+                        "after_code": "",
+                        "instructions": "",
+                        "can_see_test_code": 1,
+                        "can_see_expected_output": 1,
+                        "can_see_code_output": 1,
+                        "txt_output": "",
+                        "jpg_output": ""
+                    }}
+                }
             }
 
             var submission_obj = {

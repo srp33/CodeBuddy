@@ -359,7 +359,7 @@
 
                 if (submitButton != null) {
                     submitButton.onclick = function() {
-                        {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
+                        {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or assignment_details["allow_late"] %}
                             {% if exercise_details["enable_pair_programming"] %}
                                 showSubmitModal();
                             {% else %}

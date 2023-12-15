@@ -414,6 +414,7 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
                 exercise_details["data_files"][file_name] = format_delimited_data_as_table(exercise_details["data_files"][file_name], "\t")
 
 def set_assignment_due_date_passed(assignment_details):
+    assignment_details["due_date_passed"] = None
     if assignment_details["due_date"]:
         assignment_details["due_date_passed"] = datetime.utcnow() > assignment_details["due_date"]
 

@@ -41,6 +41,7 @@ class ExerciseHandler(BaseUserHandler):
                 timer_status, __, __, __, timer_deadline = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
 
             tests = exercise_details["tests"]
+
             presubmission, submissions, has_passed = self.content.get_submissions(course_id, assignment_id, exercise_id, self.get_current_user(), exercise_details)
 
             mode = self.get_query_argument("mode", default=None)

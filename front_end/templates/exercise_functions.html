@@ -98,13 +98,14 @@ function submit() {
             var response_dict = JSON.parse(result);
 
             if (response_dict["message"] == "") {
-                submissions.push({
+                submission = {
                     "id": response_dict["submission_id"],
                     "code": user_code,
                     "date": submission_date.toLocaleString(),
                     "passed": response_dict["all_passed"],
                     "partner_name": response_dict["partner_name"],
-                    "test_outputs": response_dict["test_outputs"]});
+                    "test_outputs": response_dict["test_outputs"]};
+                submissions.push(submission);
 
                 show_past_submissions();
                 get_submission(response_dict["submission_id"], false, true);
@@ -199,23 +200,24 @@ function showTestOutputs(test_outputs, scroll) {
         }
     }
 
-    if ({{ exercise_details["allow_any_response"] }}) {
-        var test_header = "";
-        var tests_output = ""
+    var tests_output = "";
 
-        var test_output = test_outputs[Object.keys(test_outputs)[0]];
-        if (test_output != null && test_output.passed != null) {
-            tests_output = buildStudentOutput(test_output);
-        }
-    }
-    else {
+    {% if exercise_details["allow_any_response"] %}
+        {% if exercise_details["back_end"] != "not_code" %}
+            var test_header = "";
+            var test_output = test_outputs[Object.keys(test_outputs)[0]];
+
+            if (test_output != null && test_output.passed != null) {
+                tests_output = buildStudentOutput(test_output);
+            }
+        {% end %}
+    {% else %}
         if (Object.keys(test_outputs).length == 1) {
             var test_header = "<h6>Test:</h6>";
-            var tests_output = buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
+            tests_output = buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
         }
         else {
             var test_header = "<h6>Tests:</h6>";
-            var tests_output = "";
 
             var test_titles = Object.keys(test_outputs);
             test_titles.sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true}));
@@ -223,7 +225,7 @@ function showTestOutputs(test_outputs, scroll) {
             for (let test_title of test_titles)
                 tests_output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
         }
-    }
+    {% end %}
 
     if (tests_output != "") {
         output += test_header + tests_output;
