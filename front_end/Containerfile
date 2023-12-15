@@ -1,17 +1,19 @@
 FROM node:18-buster-slim as builder
 
-WORKDIR /front_end
+RUN mkdir -p /build/front_end
+
+WORKDIR /build/front_end
 
 RUN apt update \
  && apt install python3 -y
 
-ADD package*.json /front_end/
-ADD tsconfig.json /front_end/
+ADD package*.json /build/front_end/
+ADD tsconfig.json /build/front_end/
 ADD build.js .
 ADD build_html.sh .
 ADD ui ./ui
 ADD templates ./templates
-ADD misc ./misc
+ADD misc /build/misc
 
 RUN npm install
 RUN npm run build:prod
@@ -69,8 +71,7 @@ ADD startup.sh .
 ADD server ./server
 ADD migration_scripts ./migration_scripts
 ADD scheduled_scripts ./scheduled_scripts
-COPY --from=builder /front_end/static ./static
-COPY --from=builder /front_end/html ./server/html
+COPY --from=builder /build/front_end/static ./static
+COPY --from=builder /build/front_end/html ./server/html
 
 ENTRYPOINT ["bash", "/app/startup.sh"]
-#bash /app/scheduled_scripts/restore_database.sh
