@@ -455,7 +455,7 @@
                         }
 
                         if (exercise_details_obj["output_type"] == "jpg" && exercise_details_obj["tests"][test_title]["jpg_output"] != "") {
-                            html += `<p><figure class='img'><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["jpg_output"]}' width='95%' /></figure></p>`;
+                            html += `<p><figure class='img'><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["jpg_output"]}' width='400' height='400' /></figure></p>`;
                         }
 
                         html += "</div>";

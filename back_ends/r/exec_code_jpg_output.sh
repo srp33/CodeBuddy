@@ -16,7 +16,7 @@ echo "pdf(NULL)" >> code
 cat main_code >> code
 
 echo "library(ggplot2)" >> code
-echo "ggsave('jpg_output', dpi = 150, device = 'jpeg')" >> code
+echo "ggsave('jpg_output', dpi = 72, width=400, height=400, units='px', device = 'jpeg')" >> code
 
 cat after_code >> code
 

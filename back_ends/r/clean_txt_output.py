@@ -14,8 +14,9 @@ if os.path.exists("txt_output"):
         file_contents = output_file.read()
 
         # Remove output of read_* packages from readr package.
-        file_contents = re.sub(r"Parsed with column specification:\ncols\(\n[\w\W]+?\n\)\n", "", file_contents)
-        file_contents = re.sub(r"See spec(.+?) for full column specifications.\n", "", file_contents)
+        #file_contents = re.sub(r"Parsed with column specification:\ncols\(\n[\w\W]+?\n\)\n", "", file_contents)
+        #file_contents = re.sub(r"See spec(.+?) for full column specifications.\n", "", file_contents)
+        file_contents = re.sub(r"Rows: \d+ Columns: \d+[\w\W]+?to quiet this message.\n", "", file_contents)
 
         for line in file_contents.split("\n"):
             if line.startswith("Calls: "):

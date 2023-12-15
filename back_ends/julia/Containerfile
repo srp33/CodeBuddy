@@ -1,4 +1,4 @@
-FROM julia:1.9.0-buster
+FROM julia:1.9-bullseye
 
 # RUN apt-get update \
 #  && apt-get install python3 -y
