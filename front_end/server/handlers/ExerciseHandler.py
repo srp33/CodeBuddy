@@ -55,7 +55,7 @@ class ExerciseHandler(BaseUserHandler):
             virtual_assistant_interactions = []
             virtual_assistant_max_per_exercise = None
 
-            use_virtual_assistant = course_details["virtual_assistant_config"] and await should_use_virtual_assistant(self, course_id, assignment_details, exercise_basics, self.user_info)
+            use_virtual_assistant = await should_use_virtual_assistant(self, course_id, course_details, assignment_details, exercise_basics, self.user_info)
 
             if use_virtual_assistant:
                 studio_mode = False

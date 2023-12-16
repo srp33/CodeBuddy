@@ -541,7 +541,7 @@
         let allowed_ip_addresses = getValue("allowed_ip_addresses");
         let allowed_external_urls = getValue("allowed_external_urls");
         let show_run_button = getValue("show_run_button") == "Yes";
-        let use_virtual_assistant = getValue("use_virtual_assistant") == "Yes";
+        let use_virtual_assistant = getValue("use_virtual_assistant");
 
         var submission_obj = {
             "title": title,

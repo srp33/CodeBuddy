@@ -529,10 +529,17 @@ def get_back_ends_dict(production_mode):
 def get_back_end_config(name):
     return load_yaml_dict(read_file(f"../back_ends/{name}/config.yaml"))
 
-async def should_use_virtual_assistant(handler, course_id, assignment_details, exercise_basics, user_info):
+async def should_use_virtual_assistant(handler, course_id, course_details, assignment_details, exercise_basics, user_info):
+    hide_arg = handler.get_query_argument("hide_va", default=None)
+    if hide_arg and hide_arg == "true":
+        return False
+
+    if not course_details["virtual_assistant_config"]:
+        return False
+
     if exercise_basics["enable_pair_programming"]:
         return False
-    
+
     if assignment_details["use_virtual_assistant"] == 1:
         return True
 

@@ -11,7 +11,6 @@
 
             <div class="columns">
                 {% if use_virtual_assistant %}
-                <!--<div class="column is-three-quarters mt-0">-->
                     <div class="column is-two-thirds mt-0" id="left_column">
                 {% else %}
                     <div class="column is-full mt-0">
@@ -85,7 +84,9 @@
 
                         <p><textarea id="virtual_assistant_input" class="textarea is-medium is-info is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here."></textarea></p>
 
-                        <button id="virtual_assistant_button" class="button is-info is-outlined m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
+                        <button id="virtual_assistant_button" class="button is-info m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
+
+                        <button class="button is-info is-outlined m-0 is-size=6" onclick="closeVirtualAssistant()">Close</button>
 
                         <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
                             <em>
@@ -264,6 +265,10 @@
                             response_element.classList.add('has-text-danger');
                             response_element.innerHTML = result;
                         });
+                    }
+
+                    function closeVirtualAssistant() {
+                        window.location.href = `${window.location.pathname}?hide_va=true`;
                     }
 
                     function addVirtualAssistantEcho(input) {
