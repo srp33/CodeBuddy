@@ -21,7 +21,7 @@ if os.path.exists("txt_output"):
         for line in file_contents.split("\n"):
             if line.startswith("Calls: "):
                 continue
-            if line.startswith("Joining, by ="):
+            if line.startswith("Joining with `"):
                 continue
             if line == "Execution halted\n":
                 continue

@@ -455,7 +455,7 @@ export class TestResultsModal extends LitElement {
 		`,
 		[OutputTab.ImageDiff]: () => html`
 			<div class="image-diff-section">
-				<img src='data:image/jpg;base64,${this.imageDiff}' width="100%" />
+				<img src='data:image/jpg;base64,${this.imageDiff}' width='600' height='600' />
 			</div>
 		`,
 	}
@@ -640,7 +640,7 @@ export class TestResultsModal extends LitElement {
 				<pre>${this.userOutput}</pre>
 			` : null}
 			${this.userImageOutput ? html`
-				<img src='data:image/jpg;base64,${this.userImageOutput}' width="100%" />
+				<img src='data:image/jpg;base64,${this.userImageOutput}' width='600' height='600' />
 			` : null}		
 		`;
 	}
@@ -654,7 +654,7 @@ export class TestResultsModal extends LitElement {
 				<pre>${this.expectedOutput}</pre>
 			` : null}
 			${this.expectedImageOutput ? html`
-				<img src='data:image/jpg;base64,${this.expectedImageOutput}' width="100%" />
+				<img src='data:image/jpg;base64,${this.expectedImageOutput}' width='600' height='600' />
 			` : null}		
 		`;		
 	}

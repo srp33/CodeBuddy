@@ -41,7 +41,8 @@ def exec(info: ExecInfo):
 
     # We specify the maximum characters to read. This avoids people bogging
     # down the server with really long outputs.
-    MAX_OUTPUT_LENGTH = 100 * 1024
+    MAX_OUTPUT_LENGTH_TXT = 100 * 1024
+    MAX_OUTPUT_LENGTH_JPG = 1000 * 1024
 
     try:
         # This is meant to identify any old temp directories that inadvertently were not deleted.
@@ -113,9 +114,9 @@ def exec(info: ExecInfo):
 
                 if txt_output_file_size > 0:
                     with open(txt_output_file_path) as output_file:
-                        txt_output = output_file.read(MAX_OUTPUT_LENGTH).strip()
+                        txt_output = output_file.read(MAX_OUTPUT_LENGTH_TXT).strip()
 
-                        if txt_output_file_size > MAX_OUTPUT_LENGTH:
+                        if txt_output_file_size > MAX_OUTPUT_LENGTH_TXT:
                             txt_output += "\n[The output was truncated...]"
 
             jpg_output = ""
@@ -123,7 +124,7 @@ def exec(info: ExecInfo):
                 jpg_output_file_path = os.path.join(info.tests[test_title]['dir_path'], "jpg_output")
 
                 if os.path.exists(jpg_output_file_path) and os.path.getsize(jpg_output_file_path) > 0:
-                    if os.path.getsize(jpg_output_file_path) > MAX_OUTPUT_LENGTH:
+                    if os.path.getsize(jpg_output_file_path) > MAX_OUTPUT_LENGTH_JPG:
                         txt_output += "\n[The image was truncated...]"
                     else:
                         with open(jpg_output_file_path, "rb") as output_file:
