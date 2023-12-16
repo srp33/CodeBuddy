@@ -699,9 +699,11 @@ class Content:
                  INNER JOIN users u
                    ON r.user_id = u.user_id
                  WHERE r.course_id = ?
-                 ORDER BY u.name'''
+                   AND r.user_id NOT IN (SELECT user_id FROM permissions
+                                         WHERE course_id = ?)
+                                         ORDER BY u.name'''
 
-        for student in self.fetchall(sql, (course_id,)):
+        for student in self.fetchall(sql, (course_id, course_id, )):
             student_info = {"id": student["user_id"], "name": student["name"], 'email': student['email_address']}
             registered_students.append([student["user_id"], student_info])
 
