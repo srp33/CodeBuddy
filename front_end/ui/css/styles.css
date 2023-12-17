@@ -215,34 +215,8 @@ pre {
     background-color: white;
 }
 
-/* Styles help request comments. */
-.comment {
-    font-size: 14px;
-    border: 2px solid  #1AB28C; /* dark teal */
-    width: 100%;
-    border-radius: 5px;
-    padding: 14px;
-    background-color: white;
-}
-
 .light-heading {
     font-weight: normal !important;
-}
-
-.help_request_div {
-    background-color: #f5f5f5; /* light grey */
-    border: 2px solid  #f5f5f5; /* light grey */
-    border-radius: 15px;
-    margin-top: 25px;
-    padding: 20px;
-}
-
-.suggestion-div {
-    background-color: #f5f5f5; /* light grey */
-    border: 2px solid  #f5f5f5; /* light grey */
-    border-radius: 15px;
-    margin-top: 10px;
-    padding: 20px;
 }
 
 .space-buttons {
@@ -343,12 +317,6 @@ td > button {
     margin-left: 10px;
 }
 
-/* Styles help requests on view_request.html */
-.spread-div {
-    display: flex;
-    justify-content: space-between;
-}
-
 /* Styles submissions on exercise_student.html */
 .collapsible {
     background-color: white;
@@ -379,26 +347,6 @@ td > button {
 
 #first-p {
     margin-bottom: 0;
-}
-
-/* Styles right button on view_request.html */
-.tall-button {
-    height: 100%;
-    width: 30px;
-    background-color: #1AB28C; /* dark teal */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Styles help requests div on view_requests. */
-.padded-div {
-    padding: 20px;
-    padding-bottom: 60px;
-    width: 95%;
-    height: 100%;
-    overflow-y: scroll;
 }
 
 /* Styles instructions div. */
