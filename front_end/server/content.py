@@ -905,22 +905,17 @@ class Content:
             assignment_score_info AS (
               SELECT s.assignment_id, s.user_id, SUM(s.score * e.weight) AS score
               FROM scores s
-              INNER JOIN assignments a
-                 ON s.course_id = a.course_id
-                AND s.assignment_id = a.assignment_id
               INNER JOIN exercises e
                  ON s.course_id = e.course_id
                 AND s.assignment_id = e.assignment_id
                 AND s.exercise_id = e.exercise_id
-              INNER JOIN course_registrations cr
-                 ON s.course_id = cr.course_id
-                AND s.user_id = cr.user_id
-              WHERE s.course_id = ?
+	             INNER JOIN assignments a
+                 ON s.course_id = a.course_id
+                AND s.assignment_id = a.assignment_id
+							WHERE s.course_id = ?
                 AND a.visible = 1
                 AND e.visible = 1
-                AND cr.user_id NOT IN (SELECT user_id
-                                       FROM permissions
-                                       WHERE course_id = 0 OR course_id = ?)
+								AND s.user_id IN (SELECT user_id FROM student_info)
               GROUP BY s.assignment_id, s.user_id
             ),
 
@@ -942,7 +937,7 @@ class Content:
 
         course_scores = {}
 
-        for row in self.fetchall(sql, (course_id, course_id, course_id, course_id, course_id, )):
+        for row in self.fetchall(sql, (course_id, course_id, course_id, course_id)):
             assignment_dict = {"assignment_id": row["assignment_id"],
                 "num_students": num_students,
                 "num_students_completed": row["num_students_completed"],

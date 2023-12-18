@@ -14,8 +14,10 @@ class CourseHandler(BaseUserHandler):
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
             try:
                 assignments = self.content.get_assignments(course_basics)
+                course_summary_scores=self.content.get_course_summary_scores(course_id, assignments)
+                assignment_statuses = assignment_statuses=await self.content.get_assignment_statuses(course_id, self.get_current_user(), True)
 
-                self.render("course_admin.html", courses=self.courses, assignments=assignments, assignment_statuses=await self.content.get_assignment_statuses(course_id, self.get_current_user(), True), course_basics=course_basics, course_details=await self.get_course_details(course_id, True), course_summary_scores=self.content.get_course_summary_scores(course_id, assignments), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                self.render("course_admin.html", courses=self.courses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), assignments=assignments, course_summary_scores=course_summary_scores, assignment_statuses=assignment_statuses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             except Exception as inst:
                 render_error(self, traceback.format_exc())
         else:
