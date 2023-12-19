@@ -4,12 +4,6 @@
 /*   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 /* </copyright_statement>*/
 
-/* <copyright_statement>*/
-/*   CodeBuddy - A learning management system for computer programming*/
-/*   Copyright (C) 2023 Stephen Piccolo*/
-/*   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
-/* </copyright_statement>*/
-
 /* Import a Google Font
 @import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
 
@@ -25,11 +19,16 @@ $beige-lighter: #EFF0EB;
 $family-sans-serif: "Nunito", sans-serif;
 $grey-dark: $brown;
 $grey-light: $beige-light;*/
-$primary: #1AB28C;
-$link: #1AB28C;
-$link-visited: #1AB28C;
+$primary: #003DA5;
+//$primary: #2166ac;
+$warning: #D14124;
+//$warning: #D14124;
+$danger: #9E2A2B;
+//$danger: #9E2A2B;
+$link: #003DA5;
+$link-visited: #003DA5;
 $link-focus-border: #363636;
-$failing: #FF9138;
+$failing: #9E2A2B;
 /*$widescreen-enabled: false;
 $fullhd-enabled: false;
 
@@ -38,7 +37,6 @@ $body-background-color: $beige-lighter;
 $control-border-width: 2px;
 $input-border-color: transparent;
 $input-shadow: none;*/
-
 
 $header-height: 62px;
 $footer-height: 56px;

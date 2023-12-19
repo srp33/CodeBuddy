@@ -249,6 +249,7 @@ function buildTestOutput(test_outputs, test_title, show_title, is_last) {
     else {
         if (test_outputs[test_title].passed) {
             var test_class = "passing-bd-color";
+            // var test_class = "is-primary";
 
             if (show_title)
                 var test_message = `${test_title} - Passing`;
@@ -257,6 +258,7 @@ function buildTestOutput(test_outputs, test_title, show_title, is_last) {
         }
         else {
             var test_class = "failing-bd-color";
+            // var test_class = "is-warning";
 
             if (show_title)
                 var test_message = `${test_title} - Not passing`;
@@ -586,11 +588,13 @@ function showHideHint() {
         $("#hint_button")[0].innerHTML = "Hide hint";
         $("#hint_text").removeClass("is-hidden");
         $("#hint_button").addClass("is-light");
+        $("#hint_button").addClass("has-text-dark");
     }
     else {
         $("#hint_button")[0].innerHTML = "Show hint";
         $("#hint_text").addClass("is-hidden");
         $("#hint_button").removeClass("is-light");
+        $("#hint_button").removeClass("has-text-dark");
     }
 }
 

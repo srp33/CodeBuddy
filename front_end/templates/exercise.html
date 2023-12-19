@@ -82,11 +82,11 @@
                             {% end %}
                         </div>
 
-                        <p><textarea id="virtual_assistant_input" class="textarea is-medium is-info is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here."></textarea></p>
+                        <p><textarea id="virtual_assistant_input" class="textarea is-medium is-primary is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here."></textarea></p>
 
-                        <button id="virtual_assistant_button" class="button is-info m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
+                        <button id="virtual_assistant_button" class="button is-primary m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
 
-                        <button class="button is-info is-outlined m-0 is-size=6" onclick="closeVirtualAssistant()">Close</button>
+                        <button class="button is-primary is-outlined m-0 is-size=6" onclick="closeVirtualAssistant()">Close</button>
 
                         <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
                             <em>
@@ -137,7 +137,7 @@
 
             {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] and not has_passed %}
                 <div class='notification is-warning'>
-                    <p>Click <a style='color:#2166ac' href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
+                    <p>Click <a style='color:#003DA5' href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
                     </p>
                 </div>
             {% end %}
@@ -244,7 +244,7 @@
                             let result_dict = JSON.parse(result);
 
                             if (result_dict.success) {
-                                response_element.classList.add('has-text-info');
+                                response_element.classList.add('has-text-primary');
 
                                 if (max_questions_per_exercise > 0) {
                                     allowed_element.innerHTML = allowed_element.innerHTML - 1;
@@ -282,7 +282,7 @@
 
                     function createVirtualAssistantResponse(message) {
                         var response_element = document.createElement('div');
-                        response_element.classList.add('has-background-light', 'has-text-info', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
+                        response_element.classList.add('has-background-light', 'has-text-primary', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
                         response_element.innerHTML = `<em>VA</em>: ${message}`;
 
                         output_element.insertBefore(response_element, output_element.firstChild);
@@ -322,7 +322,7 @@
 
                         for (let interaction of virtual_assistant_interactions) {
                             let response_element = createVirtualAssistantResponse(interaction.response);
-                            response_element.classList.add('has-text-info');
+                            response_element.classList.add('has-text-primary');
 
                             addVirtualAssistantEcho(interaction.question);
                         }

@@ -113,7 +113,7 @@ export class TestsPane extends LitElement {
 					</div>
 				</div>
 				${this.activeSubmission ? html`
-					<article class="message ${this.activeSubmission.passed ? 'is-success' : 'is-orange'}">
+					<article class="message ${this.activeSubmission.passed ? 'is-primary' : 'is-warning'}">
 						<div class="message-header">
 							<p>
 								${this.activeSubmission.passed ? 'This submission passed all tests!' : 'This submission did not pass all tests.'}	
@@ -133,7 +133,7 @@ export class TestsPane extends LitElement {
 						</article>
 					` : null}
 					${this.hasPassingSubmission || this.allPassing ? html`
-						<article class="message is-success">
+						<article class="message is-primary">
 							<div class="message-header">
 								${this.hasPassingSubmission ? html`<p>Exercise complete</p>` : html`<p>All test passed!</p>`}
 							</div>
@@ -453,7 +453,7 @@ export class TestResultsModal extends LitElement {
 				<diff-viewer .left=${this.expectedOutput} .right=${this.userOutput}></diff-viewer>
 			</div>
 		`,
-		[OutputTab.ImageDiff]: () => html`
+		[OutputTab.ImageDiff]: () => this.imageDiff?.length < 15 ? html`` : html`
 			<div class="image-diff-section">
 				<img src='data:image/jpg;base64,${this.imageDiff}' width='600' height='600' />
 			</div>

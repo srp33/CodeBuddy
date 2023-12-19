@@ -435,7 +435,7 @@ class CopyExerciseModal extends LitElement {
 						</div>
 					</section>
 					<footer class="modal-card-foot">
-						<button class="button is-success" @click=${this.onSave}>Save changes</button>
+						<button class="button is-primary" @click=${this.onSave}>Save changes</button>
 					</footer>
 				</div>
 			</div>

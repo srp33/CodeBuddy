@@ -23,7 +23,7 @@ a {
 }
 
 .has-background-light {
-    background-color: #f5f5f5 !important; /* light grey */
+    background-color: #f5f5f5 !important;
 }
 
 .container {
@@ -52,12 +52,12 @@ pre {
 }
 
 .navbar-link:hover {
-   color: #1AB28C;
+   color: #003DA5;
 }
 
 .navbar-item:hover {
     background-color: hsl(0deg, 0%, 98%);
-    color: #1AB28C;
+    color: #003DA5;
 }
 
 .navbar-dropdown {
@@ -112,7 +112,6 @@ pre {
     padding: 30px 0 30px 0;
 }
 
-/* Styles each available course header on landing page (before login). */
 .landing-course {
     padding: 20px;
     background-color: #f5f5f5;
@@ -120,63 +119,53 @@ pre {
     margin: 20px;
 }
 
-/* Adds space above div. */
 .top-space {
     margin-top: 15px;
 }
 
-/* Adds space below div. */
 .bottom-space {
     margin-bottom: 25px;
 }
 
-/* Adds space above and below div. */
 .space-div {
     margin-top: 15px;
     margin-bottom: 15px;
 }
 
-/* Adds space above modal buttons. */
 .modal-button {
     margin-top: 10px;
 }
 
-/* Sets typeface to monospace. */
 .monospace {
     font-family: monospace;
 }
 
-/* Sets font size. */
 .text-18 {
     font-size: 18px;
 }
 
 .success-message {
-    background-color: #1AB28C; /* dark teal */
+    background-color: #003DA5;
     color: white;
 }
 
 .not-passing {
-    background-color: #FF9138; /* orange */
-    border-color: #FF9138; /* orange */
+    background-color: #D14124;
+    border-color: #D14124;
     color: white;
 }
 
-.is-orange {
-    background-color: #FF9138; /* orange */
-    border-color: #FF9138; /* orange */
+/* .is-failing {
+    background-color: #b2182b;
+    border-color: #b2182b;
     color: white;
 }
 
-.is-orange:hover {
-    background-color: #f5872e; /* dark orange */
-    border-color: #f5872e; /* dark orange */
+.is-failing:hover {
+    background-color: #b2182b;
+    border-color: #b2182b;
     color: white;
-}
-
-.green-text {
-    color: #00b386; /* dark muted teal */
-}
+} */
 
 /* Adds right padding to icons in navbar (ie checkmarks, circles, etc) */
 .navbar-img {
@@ -197,9 +186,9 @@ pre {
 
 /* Styles block of student's code on view_answer.html */
 .student-content {
-    border: 2px solid  #1AB28C; /* dark teal */
+    border: 2px solid  #003DA5; /* dark teal */
     width: 100%;
-    border-left: 12px solid  #1AB28C; /* dark teal */
+    border-left: 12px solid  #003DA5; /* dark teal */
     border-radius: 5px;
     padding: 14px;
     background-color: white;
@@ -227,21 +216,6 @@ td > button {
     border: none;
     background-color: white;
     cursor: pointer;
-}
-
-.ace_gutter {
-    z-index: auto !important;
-}
-
-#filter_container {
-    width: 100%;
-    overflow: hidden;
-    padding-bottom: 0px;
-}
-
-#filter_container input {
-    display: inline;
-    width: 50%;
 }
 
 /* Creates a drop shadow. */
@@ -317,29 +291,27 @@ td > button {
     margin-left: 10px;
 }
 
-/* Styles submissions on exercise_student.html */
 .collapsible {
     background-color: white;
     font-size: 20px;
     text-align: left;
     cursor: pointer;
-    border: 2px solid  #363636; /* dark grey */
+    border: 2px solid  #363636;
     width: 100%;
-    border-left: 12px solid  #363636; /* dark grey */
+    border-left: 12px solid  #363636;
     border-radius: 5px;
     padding: 14px;
     margin-top: 10px;
 }
 
 .active, .collapsible:hover {
-    background-color: #f8f8f8; /* light grey */
+    background-color: #f8f8f8;
 }
 
 .active, .collapsible-f:hover {
-    background-color: #f8f8f8; /* light grey */
+    background-color: #f8f8f8;
 }
 
-/* Styles hidden content of collapsible submission bubbles on exercise_student.html */
 .c-content {
     padding: 0 18px;
     display: none;
@@ -349,7 +321,6 @@ td > button {
     margin-bottom: 0;
 }
 
-/* Styles instructions div. */
 .instructions {
     background-color: white;
     padding: 20px;
@@ -357,17 +328,14 @@ td > button {
     margin-bottom: 15px;
 }
 
-/* Sets margins on column div in profile_admin, among other places. */
 .columns {
     margin-bottom: 0 !important;
 }
 
-/* Sets smaller font size. */
 .smaller-font {
     font-size: 16px;
 }
 
-/* Sets hover on icons. */
 .far:hover {
     cursor: pointer;
 }
@@ -385,53 +353,46 @@ td > button {
     margin-bottom: 20px;
 }
 
-.has-background-orange {
-    background-color: #FF9138; /* orange */
-    color: white;
-}
-
 .right-space {
     margin-right: 20px;
 }
 
 .passing-btn-color {
-    background-color: #1AB28C; /* teal */
-    border-color: #1AB28C; /* teal */
-    color: #FFFFFF; /* white */
+    background-color: #003DA5;
+    border-color: #003DA5;
+    color: #FFFFFF;
 }
 
 .failing-btn-color {
-    background-color: #FF9138; /* orange */
-    border-color: #FF9138; /* orange */
-    color: #FFFFFF; /* white */
+    background-color: #D14124;
+    border-color: #D14124;
+    color: #FFFFFF;
 }
 
 /* Makes a green bordered div for passing tests. */
 .passing-bd-color {
-    color: #363636; /* dark grey */
+    color: #363636;
     background-color: #FAFAFA;
-    border: 2px solid  #1AB28C;
-    border-left: 12px solid  #1AB28C;
+    border: 2px solid  #003DA5;
+    border-left: 12px solid  #003DA5;
     border-radius: 5px;
     transition: .2s;
 }
 
-/* Makes a grey bordered div for tests. */
 .neutral-bd-color {
-    color: #363636; /* dark grey */
+    color: #363636;
     background-color: #FAFAFA;
-    border: 2px solid #363636; /* dark grey */
-    border-left: 12px solid  #363636; /* dark grey */
+    border: 2px solid #363636;
+    border-left: 12px solid  #363636;
     border-radius: 5px;
     transition: .2s;
 }
 
-/* Makes an orange bordered div for failing tests. */
 .failing-bd-color {
-    color: #363636; /* dark grey */
+    color: #363636;
     background-color: #FAFAFA;
-    border: 2px solid  #FF9138;
-    border-left: 12px solid  #FF9138;
+    border: 2px solid  #D14124;
+    border-left: 12px solid  #D14124;
     border-radius: 5px;
     transition: .2s;
 }
@@ -445,15 +406,15 @@ td > button {
 }
 
 .fa-check-circle {
-    color: #1AB28C
+    color: #003DA5
 }
 
 .fa-hourglass {
-    color: #FF9138
+    color: #D14124
 }
 
 .grey-text {
-    color: #363636; /* dark grey */
+    color: #363636;
 }
 
 .footer-flex {
@@ -462,7 +423,6 @@ td > button {
     align-items: center;
 }
 
-/* Sets error messages to monospace. */
 module {
   font-family: monospace;
 }
