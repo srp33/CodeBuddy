@@ -22,3 +22,7 @@ m_run_in_background: no
 dev_password: ""
 # Indicate the hour of the day in 24-hour time (examples: 00 or 01 or 02 ... or 23) when the database should be backed up.
 backup_hour: 10
+# Include HTML (typically an <a> tag) that links to a privacy notice for your organization. This link will be placed in the footer.
+privacy_notice_html: <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+# Include HTML (typically an <a> tag) that links to a cookie notice for your organization. This link will be placed in the footer.
+cookie_information_html: <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
