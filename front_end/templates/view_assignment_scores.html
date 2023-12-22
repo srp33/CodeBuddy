@@ -80,6 +80,9 @@
                             {% if assignment_details["has_timer"] %}
                                 <th>Timer</th>
                             {% end %}
+                            {% if total_times_pair_programmed > 0 %}
+                                <th>Number of times pair programmed</th>
+                            {% end %}
                         </tr>
                     </thead>
                     <tbody>
@@ -109,6 +112,11 @@
                                         {% else %}
                                             In progress
                                         {% end %}
+                                    </td>
+                                {% end %}
+                                {% if total_times_pair_programmed > 0 %}
+                                    <td class="has-text-left">
+                                        {{ score[1]["num_times_pair_programmed"] }}
                                     </td>
                                 {% end %}
                             </tr>
