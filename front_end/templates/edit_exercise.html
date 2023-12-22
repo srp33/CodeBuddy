@@ -455,7 +455,7 @@
                         }
 
                         if (exercise_details_obj["output_type"] == "jpg" && exercise_details_obj["tests"][test_title]["jpg_output"] != "") {
-                            html += `<p><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["jpg_output"]}' width='600' height='600' /></p>`;
+                            html += `<p><img src='data:image/jpg;base64,${exercise_details_obj["tests"][test_title]["jpg_output"]}' width='600' height='600' alt='The image-based output for a test..' /></p>`;
                         }
 
                         html += "</div>";

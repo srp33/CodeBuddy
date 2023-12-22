@@ -455,7 +455,7 @@ export class TestResultsModal extends LitElement {
 		`,
 		[OutputTab.ImageDiff]: () => this.imageDiff?.length < 15 ? html`` : html`
 			<div class="image-diff-section">
-				<img src='data:image/jpg;base64,${this.imageDiff}' width='600' height='600' />
+				<img src='data:image/jpg;base64,${this.imageDiff}' width='600' height='600' alt='Visual differences between the actual output and the expected output.' />
 			</div>
 		`,
 	}
@@ -640,7 +640,7 @@ export class TestResultsModal extends LitElement {
 				<pre>${this.userOutput}</pre>
 			` : null}
 			${this.userImageOutput ? html`
-				<img src='data:image/jpg;base64,${this.userImageOutput}' width='600' height='600' />
+				<img src='data:image/jpg;base64,${this.userImageOutput}' width='600' height='600' alt='Image-based output of the code.' />
 			` : null}		
 		`;
 	}
@@ -654,7 +654,7 @@ export class TestResultsModal extends LitElement {
 				<pre>${this.expectedOutput}</pre>
 			` : null}
 			${this.expectedImageOutput ? html`
-				<img src='data:image/jpg;base64,${this.expectedImageOutput}' width='600' height='600' />
+				<img src='data:image/jpg;base64,${this.expectedImageOutput}' width='600' height='600' alt='Image-based expected output.' />
 			` : null}		
 		`;		
 	}
