@@ -1066,8 +1066,8 @@ class Content:
                      HAVING SUM(s.score) > 0
                    ),
 
-                   exercise_pass_dates AS (
-                     SELECT exercise_id, user_id, min(date) AS earliest_pass_date
+                   exercise_summary AS (
+                     SELECT exercise_id, user_id, min(date) AS earliest_pass_date, MAX(partner_id IS NOT NULL) AS did_pair_programming
                      FROM submissions s
                      WHERE course_id = ?
                        AND assignment_id = ?
@@ -1080,9 +1080,9 @@ class Content:
                      GROUP BY exercise_id, user_id
                    ),
 
-                   when_users_passed AS (
-                     SELECT user_id, max(earliest_pass_date) AS when_passed
-                     FROM exercise_pass_dates
+                   assignment_summary AS (
+                     SELECT user_id, max(earliest_pass_date) AS when_passed, sum(did_pair_programming) AS num_times_pair_programmed
+                     FROM exercise_summary
                      GROUP BY user_id
                      HAVING COUNT(*) >= (
                         SELECT COUNT(*) as num
@@ -1094,8 +1094,8 @@ class Content:
 
                      UNION
 
-                     SELECT user_id, ''
-                     FROM exercise_pass_dates
+                     SELECT user_id, '', sum(did_pair_programming) AS num_times_pair_programmed
+                     FROM exercise_summary
                      GROUP BY user_id
                      HAVING COUNT(*) < (
                        SELECT COUNT(*) as num
@@ -1107,14 +1107,14 @@ class Content:
                      ORDER BY user_id
                  )
 
-                 SELECT assignment_scores.*, when_users_passed.when_passed
+                 SELECT assignment_scores.*, assignment_summary.when_passed, assignment_summary.num_times_pair_programmed
                  FROM assignment_scores
-                 INNER JOIN when_users_passed
-                   ON assignment_scores.user_id = when_users_passed.user_id
+                 INNER JOIN assignment_summary
+                   ON assignment_scores.user_id = assignment_summary.user_id
 
                  UNION
 
-                 SELECT name, user_id, 0, '', ''
+                 SELECT name, user_id, 0, '', '', 0
                  FROM users
                  WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
                    AND user_id NOT IN (SELECT user_id FROM assignment_scores)
@@ -1125,12 +1125,15 @@ class Content:
 
         course_id = course_basics["id"]
         assignment_id = assignment_basics["id"]
+        total_times_pair_programmed = 0
 
         for user in self.fetchall(sql, (course_id, assignment_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id)):
-            scores_dict = {"name": user["name"], "user_id": user["user_id"], "percent_passed": user["percent_passed"], "when_passed": user["when_passed"], "last_submission_time": user["last_submission_time"]}
+            scores_dict = dict(user)
             scores.append([user["user_id"], scores_dict])
 
-        return scores
+            total_times_pair_programmed += scores_dict["num_times_pair_programmed"]
+
+        return scores, total_times_pair_programmed
 
     # Get score for each assignment for a particular student.
     def get_student_assignment_scores(self, course_id, user_id):
@@ -2290,18 +2293,17 @@ class Content:
                           AND exercise_id = ?)''', (course_id, assignment_id, exercise_id, ))
 
     async def create_assignment_scores_text(self, course_basics, assignment_basics, include_header=True):
+        course_id = course_basics["title"]
+        assignment_id = assignment_basics["title"]
+        scores, total_times_pair_programmed = self.get_assignment_scores(course_basics, assignment_basics)
+
         if include_header:
-            out_file_text = "Course\tAssignment\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\n"
+            out_file_text = "Course\tAssignment\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\tNum_Times_Pair_Programmed\n"
         else:
             out_file_text = ""
 
-        scores = self.get_assignment_scores(course_basics, assignment_basics)
-
-        course_id = course_basics["title"]
-        assignment_id = assignment_basics["title"]
-
         for student in scores:
-            out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['percent_passed']}\t{student[1]['when_passed']}\t{student[1]['last_submission_time']}\n"
+            out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['percent_passed']}\t{student[1]['when_passed']}\t{student[1]['last_submission_time']}\t{student[1]['num_times_pair_programmed']}\n"
 
         return out_file_text
 
