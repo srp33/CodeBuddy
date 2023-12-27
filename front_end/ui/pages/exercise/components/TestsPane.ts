@@ -151,6 +151,9 @@ export class TestsPane extends LitElement {
 								${this.hasPassingSubmission && exercise_details.show_instructor_solution ? html`
 									<p><a href="/view_instructor_solution/${course_basics.id}/${assignment_basics.id}/${exercise_basics.id}">View</a> the instructor's solution.</p>
 								`: null}
+								${this.hasPassingSubmission && exercise_details.show_peer_solution ? html`
+								<p><a href="/view_peer_solution/${course_basics.id}/${assignment_basics.id}/${exercise_basics.id}">View</a> a solution from one of your peers.</p>
+							`: null}
 							</div>
 						</article>
 					` : null}

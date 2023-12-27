@@ -7,7 +7,7 @@
 {% if exercise_basics["exists"] %}
     {% if exercise_details["show_peer_solution"] %}
         {% if peer_code == "" %}
-            <p>You are the first in the class to complete this exercise. Please try again later. We apologize for the inconvenience.</p>
+            <p>You are one of the first in the class to complete this exercise. To ensure that other students' submissions are properly anonymized, we cannot show a peer's solution at this time. Please try again later. We apologize for the inconvenience.</p>
         {% else %}
             <div>
                 {% if exercise_details["what_students_see_after_success"] > 3 %}

@@ -1366,14 +1366,18 @@ class Content:
                    AND passed = 1
                    AND user_id != ?
                    AND (partner_id != ? OR partner_id IS NULL)
+                   AND user_id NOT IN (SELECT user_id
+                                       FROM permissions
+                                       WHERE course_id = 0 OR course_id = ?)
                  GROUP BY user_id
                  ORDER BY user_id'''
 
         peer_code_dict = {}
-        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, user_id)):
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, user_id, course_id)):
             peer_code_dict[row["user_id"]] = row["code"]
 
-        if len(peer_code_dict) == 0:
+        # For privacy reasons, only show peers' solutions if at least three have submitted.
+        if len(peer_code_dict) <= 3:
             return ""
 
         peer_ids = list(peer_code_dict.keys())
