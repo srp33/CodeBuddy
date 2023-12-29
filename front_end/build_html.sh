@@ -20,7 +20,6 @@ cd templates
 privacy_notice_html=$(grep "^privacy_notice_html: " ../../Settings.yaml | sed "1s/privacy_notice_html: //")
 cookie_information_html=$(grep "^cookie_information_html: " ../../Settings.yaml | sed "1s/cookie_information_html: //")
 
-pwd
 python3 -c """
 privacy_notice_html = '${privacy_notice_html}'.strip()
 cookie_information_html = '${cookie_information_html}'.strip()
