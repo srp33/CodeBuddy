@@ -83,7 +83,7 @@ For most users, the preferred option is to run the front end within Docker. To d
 
 ##### Running the middle layer
 
-Use the `cd` command to change your current working directory to `middle_layer`. Then execute the `run_middle_layer` script. Example: `bash run_middle_layer`.
+From the CodeBuddy directory, execute the *run_middle_layer* script. Example: `bash run_middle_layer`.
 
 ### Setting up a course
 
