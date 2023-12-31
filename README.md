@@ -31,34 +31,20 @@ We have a live server running CodeBuddy [here](https://codebuddy.byu.edu). If yo
 
 ##### Open a terminal
 
-If you are using MacOS or Linux, you should already have a terminal. Go to the Applications menu, and open it. Then make sure you have installed the [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) command-line tool.
+You will need to have basic familiarity with [executing commands through a terminal](https://www.freecodecamp.org/news/command-line-for-beginners).
+
+If you are using MacOS or Linux, you should already have a terminal. Open it. Then make sure you have installed the [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) command-line tool.
 
 If you are using a Windows operating system, install [git for windows](https://gitforwindows.org). Then open Git Bash and use that as your terminal.
 
 ##### Install dependencies
 
-CodeBuddy can be installed on any system that supports Docker and Python. Here are the steps to install it. You will need to have basic familiarity with [executing commands through a terminal](https://www.freecodecamp.org/news/command-line-for-beginners).
-
 1. Install [Docker Desktop](https://docs.docker.com/engine/install). Make sure it is up and running.
-2. Install [Python](https://www.python.org/downloads) (version 3.9+) and the [pip package manager](https://pip.pypa.io/en/stable/installation). After installing it, Python should be available at the command line as `python3`.
-3. In the terminal, execute the following command to install the Python packages: `pip install -r front_end/requirements.txt`.
-4. Modify Settings.yaml according to your preferences. The default settings should work in most cases.
-5. Create a text file in `front_end/secrets/front_end.yaml` that contains three key/value pairs, as illustrated below. The first is a password for encrypting cookies (use a strong password). The second and third are a client ID and secret that enable CodeBuddy to perform Google authentication. You can obtain these from [here](https://console.developers.google.com).
+2. Install [Python](https://www.python.org/downloads) (version 3.9+) and the [pip package manager](https://pip.pypa.io/en/stable/installation). After installing them, Python should be available at the command line as `python3`. You might need to close and reopen the terminal before this command will be available to you.
 
-```
-cookie: "abcdefg"
-google_oauth_key: "123456789012-abc123a12aa12aaaa1aaaaa1aaaa1aa.apps.googleusercontent.com"
-google_oauth_secret: "ABCDEFGHIJKLMNOP"
-```
+##### Clone the GitHub repository
 
-If you would like to contribute to developing CodeBuddy, complete these additional steps.
-
-6. Install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
-7. Install Make. (Try [these instructions](https://stackoverflow.com/questions/66525016/how-to-run-make-command-in-gitbash-in-windows) for Windows.)
-
-##### Clone the repository
-
-From a terminal window, use the `cd` command to change your working directory to where you wish to store the CodeBuddy code.
+From a terminal window, use the `cd` command to change your working directory to the location on your file system where you wish to store the CodeBuddy code.
 
 ```
 git clone <cloneURL>
@@ -66,23 +52,38 @@ git clone <cloneURL>
 
 Replace `<cloneURL>` with the GitHub clone address for this project (for example, https://github.com/srp33/CodeBuddy.git).
 
-This will create a directory called CodeBuddy in your current working directory. Use the `cd` command to navigate to that directory.
+This will create a directory called CodeBuddy in your current working directory. Use the `cd` command to navigate to that directory. Then do the following:
+
+1. At the terminal, execute the following command to install the Python packages: `pip install -r front_end/requirements.txt`.
+2. Modify Settings.yaml according to your preferences. The default settings should work in most cases.
+3. Create a text file in `front_end/secrets/front_end.yaml`. It should contain three key/value pairs, as illustrated below. The first is a password for encrypting cookies (use a strong password). The second and third are a client ID and secret that enable CodeBuddy to perform Google authentication. You can obtain these from [here](https://console.developers.google.com).
+
+```
+cookie: "abcdefg"
+google_oauth_key: "123456789012-abc123a12aa12aaaa1aaaaa1aaaa1aa.apps.googleusercontent.com"
+google_oauth_secret: "ABCDEFGHIJKLMNOP"
+```
+
+[Optional] If you would like to contribute to developing CodeBuddy, complete these additional steps. Otherwise, you can skip these steps.
+
+4. Install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
+5. Install Make. (Try [these instructions](https://stackoverflow.com/questions/66525016/how-to-run-make-command-in-gitbash-in-windows) for Windows.)
 
 ##### Running the front end
 
 For most users, the preferred option is to run the front end within Docker. To do this, execute the `run_front_end` script at the terminal.
 
-If you want to contribute to developing CodeBuddy, it might be helpful to run CodeBuddy outside of Docker so that you do not need to rebuild the Docker image each time you make a change. To do so, follow these steps.
+[Optional] If you want to contribute to developing CodeBuddy, it might be helpful to run CodeBuddy outside of Docker so that you do not need to rebuild the Docker image each time you make a change. To do so, follow these steps.
 
 1. Use the `cd` command to change your current working directory to `front_end`.
-2. Execute the following command: `make build-watch`. After waiting about 60 seconds, hit Ctrl-C.
+2. Execute the following command: `make build-watch`. After waiting about 30 seconds, hit Ctrl-C to interrupt this command.
 3. Execute the following command: `make dev`. This will rebuild the HTML pages and start the front-end server.
 
-When you modify files in the `front_end/templates` directory, you will need to re-run `make dev`. When you change any of the Python code, you will need to hit Ctrl-C to stop the development server and then re-execute `make dev`.
+[Optional] When you modify files in the `front_end/templates` directory, you will need to re-run `make dev`. When you change any of the Python code, you will need to hit Ctrl-C to stop the development server and then re-execute `make dev`.
 
 ##### Running the middle layer
 
-Use the `cd` command to change your current working directory to `middle_layer`. Then execute the `run_middle_layer` script.
+Use the `cd` command to change your current working directory to `middle_layer`. Then execute the `run_middle_layer` script. Example: `bash run_middle_layer`.
 
 ### Setting up a course
 
