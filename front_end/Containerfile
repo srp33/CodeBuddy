@@ -10,6 +10,7 @@ RUN apt update \
 ADD package*.json /build/front_end/
 ADD tsconfig.json /build/front_end/
 ADD build.js .
+ADD Settings.yaml /build/
 ADD build_html.sh .
 ADD ui ./ui
 ADD templates ./templates
