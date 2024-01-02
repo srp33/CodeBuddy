@@ -10,8 +10,10 @@ import datetime
 class DownloadSubmissionsStudentHandler(BaseUserHandler):
     async def get(self, course_id):
         try:
-            if await self.get_course_details(course_id)["allow_students_download_submissions"]:
-                html = self.format(course_id, self.content.get_submissions_student(course_id, self.get_current_user()))
+            course_details = await self.get_course_details(course_id)
+
+            if course_details["allow_students_download_submissions"]:
+                html = await self.format(course_id, self.content.get_submissions_student(course_id, self.get_current_user()))
 
                 self.write(html)
                 self.set_header('Content-type', "text/html")
