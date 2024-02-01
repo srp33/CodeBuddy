@@ -78,7 +78,7 @@ def exec(info: ExecInfo):
 
             # Save any data files so they will be accessible inside the container.
             for file_name, contents in info.data_files.items():
-                if not file_name.endswith(".hide") or (info.tests[test_title]["can_see_test_code"] == False and info.tests[test_title]["can_see_expected_output"] == False and info.tests[test_title]["can_see_code_output"] == False):
+                if not file_name.endswith(".hide") or info.tests[test_title]["can_see_code_output"] == False:
                     with open(os.path.join(info.tests[test_title]['dir_path'], file_name), "w") as data_file:
                         data_file.write(contents)
 
