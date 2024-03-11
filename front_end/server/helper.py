@@ -172,9 +172,15 @@ async def exec_code(settings_dict, code, verification_code, exercise_details, ad
 
     response = ujson.loads(response.content)
 
-    if add_formatted_txt:
-        for test_title in response["test_outputs"]:
-            response["test_outputs"][test_title]["txt_output_formatted"] = format_output_as_html(response["test_outputs"][test_title]["txt_output"])
+    if "test_outputs" in response:
+        if add_formatted_txt:
+            for test_title in response["test_outputs"]:
+                response["test_outputs"][test_title]["txt_output_formatted"] = format_output_as_html(response["test_outputs"][test_title]["txt_output"])
+    else:
+        # We are using this for debugging. If something goes awry on the
+        # back end, this will help us see what happened.
+        for test_title in exercise_details["tests"]:
+            response["test_outputs"][test_title] = {"txt_output": response["message"], "jpg_output": "", "txt_output_formatted": "", "diff_output": ""}
 
     response["all_passed"] = False # This is our default assumption.
     return response
