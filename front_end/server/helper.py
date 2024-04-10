@@ -211,12 +211,10 @@ def check_test_outputs(exercise_details, test_outputs):
     return all_passed
 
 def compare_outputs(exercise_details, test_outputs, test_title):
-    expected_txt = exercise_details["tests"][test_title]["txt_output"]
-    actual_txt = test_outputs[test_title]["txt_output"]
-    expected_jpg = exercise_details["tests"][test_title]["jpg_output"]
-    actual_jpg = test_outputs[test_title]["jpg_output"]
-
     if exercise_details["output_type"] == "txt":
+        expected_txt = exercise_details["tests"][test_title]["txt_output"]
+        actual_txt = test_outputs[test_title]["txt_output"]
+
         if expected_txt == actual_txt:
             return "", True
         if actual_txt == "":
@@ -233,6 +231,9 @@ def compare_outputs(exercise_details, test_outputs, test_title):
 
         #return diff_output, False
     else:
+        expected_jpg = exercise_details["tests"][test_title]["jpg_output"]
+        actual_jpg = test_outputs[test_title]["jpg_output"]
+
         if expected_jpg == actual_jpg:
             return "", True
         if actual_jpg == "":
@@ -240,15 +241,18 @@ def compare_outputs(exercise_details, test_outputs, test_title):
         elif expected_jpg == "":
             return "", True
 
-        image_diff, diff_percent = diff_jpg(expected_jpg, actual_jpg)
+        try:
+            image_diff, diff_percent = diff_jpg(expected_jpg, actual_jpg)
 
-        if diff_percent < 10.0:
-            # Only return diff output if the differences are relatively small.
-            diff_output = encode_image_bytes(convert_image_to_bytes(image_diff))
-        else:
-            diff_output = ""
+            if diff_percent < 10.0:
+                # Only return diff output if the differences are relatively small.
+                diff_output = encode_image_bytes(convert_image_to_bytes(image_diff))
+            else:
+                diff_output = ""
 
-        return diff_output, diff_percent < 0.01 # Pass if they are similar enough.
+            return diff_output, diff_percent < 0.01 # Pass if they are similar enough.
+        except:
+            return "", False
 
 # This prevents students from seeing information they should not be able to see.
 def sanitize_test_outputs(exercise_details, test_outputs):
