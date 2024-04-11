@@ -53,6 +53,7 @@ function run_code(show_submit_warning) {
         url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
         data: {"user_code": user_code},
         async: true,
+        timeout: 300000  // 5 minute timeout (longer than we would expect the server to take)
     }).done(function(result) {
             var response_dict = JSON.parse(result);
 
@@ -63,11 +64,13 @@ function run_code(show_submit_warning) {
                 if (show_submit_warning && response_dict["all_passed"])
                     showInfoMessage("Be sure to click on Submit so your solution and score will be saved.");
             }
-            else
+            else {
                 showErrorMessage(response_dict["message"]);
+            }
         })
         .fail(function(result) {
-            showErrorMessage(result);
+            console.log(result);
+            showErrorMessage("The cause of the error is unknown. Please consult the instructor if it continues.");
         });
 
     editor.focus();
