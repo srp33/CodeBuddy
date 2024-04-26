@@ -1071,7 +1071,6 @@ class Content:
                      FROM submissions s
                      WHERE course_id = ?
                        AND assignment_id = ?
-                       AND passed = 1
                        AND user_id NOT IN (
                           SELECT user_id
                           FROM permissions
