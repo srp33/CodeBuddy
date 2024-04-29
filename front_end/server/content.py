@@ -1224,6 +1224,22 @@ class Content:
 
         return scores
 
+    def get_exercise_score(self, course_id, assignment_id, exercise_id, user_id):
+        sql = '''
+                 SELECT score
+                 FROM scores
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?
+              '''
+
+        result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id, ))
+
+        if result:
+            return result["score"]
+        return 0.0
+
     def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, score):
         # We only update the score if it's higher than what was there previously. We also account for the scenario where it is their first submission.
         sql = '''WITH user_scores AS (

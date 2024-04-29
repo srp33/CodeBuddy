@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    {% if prev_exercise %}
+    {% if "prev_exercise" in globals() and prev_exercise %}
         <div class="navbar-item is-arrowless" style="cursor: pointer;">
             {% if "is_edit_page" in globals() and is_edit_page == True %}
                 <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
@@ -75,7 +75,7 @@
         </div>
     {% end %}
 
-    {% if next_exercise %}
+    {% if "next_exercise" in globals() and next_exercise %}
         <div class="navbar-item is-arrowless" style="cursor: pointer;">
             {% if "is_edit_page" in globals() and is_edit_page == True %}
                 <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">

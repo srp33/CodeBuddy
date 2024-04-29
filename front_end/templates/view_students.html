@@ -1,0 +1,102 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2023 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<link rel="stylesheet" href="/static/css/modal.css">
+        
+<div id="unregister_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <p>Are you sure you want to unregister this student?</p>
+
+        <article  id="unregister_error_message" class="message is-danger invisible">
+        </article>
+
+        <p class="buttons">
+            <a id="unregister_cancel_button" class="modal-button button is-light">Cancel</a>
+            <button type="button" id="unregister_button" class="modal-button button is-dark">Unregister</button>
+        </p>
+    </div>
+</div>
+
+<h4>Students in {{ course_basics['title'] }}:</h4>
+
+<div class="table-container">
+    <table class="table is-striped" id="scores_table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>ID</th>
+                {% if is_administrator or is_instructor %}
+                    <th></th>
+                {% end %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+                <tr>
+                    <td><a href="/view_student_assignments_scores/{{ course_basics['id'] }}/{{ student[0] }}">{{ student[1]["name"] }}</a></td>
+                    <td>{{ student[0] }}</td>
+                    <td>
+                        {% if is_administrator or is_instructor %}
+                            <a class="button" onclick="showUnregisterModal('{{ student[0] }}')">Unregister</a>
+                        {% end %}
+                    </td>
+                </tr>
+            {% end %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function showUnregisterModal(user_id, is_self) {
+        var modal = document.getElementById("unregister_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("unregister_cancel_button");
+        var unregisterButton = document.getElementById("unregister_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        unregisterButton.onclick = function() {
+            $.ajax({
+                type: 'GET',
+                url: "/unregister/{{ course_basics['id'] }}/" + user_id,
+                async: true})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        $("#unregister_error_message").removeClass("invisible");
+                        $("#unregister_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                    }
+                    else {
+                        modal.style.display = "none";
+
+                        if (is_self)
+                            window.location.href = "/";
+                        else
+                            window.location.href = window.location.href;
+                    }
+                })
+                .fail(function(error) {
+                    $("#unregister_error_message").removeClass("invisible");
+                    $("#unregister_error_message")[0].innerHTML = `<div class="message-body">${error}</div>`;
+                });
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+</script>

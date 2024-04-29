@@ -105,11 +105,13 @@
         <p><strong>No assignments have been created for this course.</strong></p>
     {% end %}
 
-    {% if is_administrator or is_instructor %}
-        <div class="buttons">
+    <div class="buttons">
+        {% if is_administrator or is_instructor %}
             <a class="button is-dark" href="/edit_assignment/{{ course_basics['id'] }}/">Create assignment</a>
 
-            <a class="button is-primary" href="/view_at_risk_students/{{ course_basics['id'] }}/72">View at-risk students</a>
+            <a class="button is-primary" href="/view_students/{{ course_basics['id'] }}">View students</a>
+
+            <a class="button is-primary is-outlined" href="/view_at_risk_students/{{ course_basics['id'] }}/72">View at-risk students</a>
 
             <a class="button" onclick="showPostModal('import_assignment', 'Import an assignment from a JSON file', {}, '')">Import assignment</a>
 
@@ -124,16 +126,12 @@
             <a class="button" href="/download_course_scores/{{ course_basics['id'] }}">Download scores</a>
 
             <a class="button" href="/manage_instructors/{{ course_basics['id'] }}">Manage instructors</a>
-    {% end %}
+        {% end %}
 
-    {% if is_administrator or is_instructor or is_assistant %}    
-            <a class="button" href="/manage_assistants/{{ course_basics['id'] }}">Manage assistants</a>
-    {% end %}
-
-    {% if is_administrator or is_instructor %}
-            <a class="button" href="/manage_students/{{ course_basics['id'] }}">Manage students</a>
-        </div>
-    {% end %}
+        {% if is_administrator or is_instructor or is_assistant %}    
+                <a class="button" href="/manage_assistants/{{ course_basics['id'] }}">Manage assistants</a>
+        {% end %}
+    </div>
 
     <script>
         function copy_assignment_build_body(data_obj, messageElement) {

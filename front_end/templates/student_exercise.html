@@ -7,6 +7,9 @@
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
+            <script>
+            </script>
+
             <div class="student-exercise-notification">
                 <p>
                     <span class="has-text-weight-bold">{{ student_info["name"] }}</span>
@@ -19,19 +22,39 @@
                 </p>
                 <p>
                     {% if next_prev_student_ids[0] != None %}
-                        <a class="button is-outlined" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ next_prev_student_ids[0] }}">Previous student</a>
+                        <a class="button is-primary" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ next_prev_student_ids[0] }}">Previous student</a>
+                    {% end %}
+
+                    {% if next_prev_exercises['previous'] %}
+                        <a class="button is-primary" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_prev_exercises['previous']['id'] }}/{{ student_id }}">Previous exercise</a>
                     {% end %}
 
                     {% if next_prev_student_ids[1] != None %}
-                        <a class="button is-outlined" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ next_prev_student_ids[1] }}">Next student</a>
+                        <a class="button is-warning" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ next_prev_student_ids[1] }}">Next student</a>
+                    {% end %}
+
+                    {% if next_prev_exercises['next'] %}
+                        <a class="button is-warning" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_prev_exercises['next']['id'] }}/{{ student_id }}">Next exercise</a>
                     {% end %}
                 </p>
+
+                <div class="field is-grouped">
+                    <p class="has-text-white mt-1">Score:</p>
+
+                    <p class="control">
+                        <input id="score" class="input is-size-6 ml-2" type="text" placeholder="Enter text" value="{{ score }}" style="width: 80px;" />
+
+                        <button class="button is-size-6 has-background-light" onclick="updateScore()">Update</button>
+
+                        <div id="update_score_message" class="notification has-background-danger has-text-white p-2 is-size-6 invisible">
+                        </div>
+                    </p>
+                </div>
             </div>
 
             {% if len(submissions) > 0 %}
                 <script>
-
-                        document.getElementById("last_submission_date").innerHTML = new Date("{{ submissions[-1]["date"] }}").toLocaleString();
+                    document.getElementById("last_submission_date").innerHTML = new Date("{{ submissions[-1]["date"] }}").toLocaleString();
                 </script>
             {% end %}
 
@@ -121,6 +144,59 @@
                 else {
                     get_submission(submissions[submissions.length - 1].id, false, true);
                 }
+
+                function updateScore() {
+                    let score = $("#score")[0].value;
+
+                    if (!isScoreValid(score)) {
+                        updateScoreMessage("The number you specified is invalid. It must be a number between 0.0 and 100.0.", true);
+                        return;
+                    }
+
+                    $.ajax({
+                        type: 'GET',
+                        url: "/student_score/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id']}}/{{ student_id }}/" + score,
+                        async: true})
+                        .done(function(message) {
+                            if (message.startsWith("Error:")) {
+                                updateScoreMessage(message, true);
+                            }
+                            else {
+                                updateScoreMessage(message, false);
+                            }
+                        })
+                        .fail(function(error) {
+                            updateScoreMessage("An unexpected error occurred when attempting to connect to the server.", true);
+                        });
+                }
+
+                function isScoreValid(value) {
+                    const num = parseFloat(value);
+
+                    const isFloat = !isNaN(num) && value == num && value.toString().trim().length > 0;
+
+                    return isFloat && num >= 0.0 && num <= 100.0;
+                }
+
+                function updateScoreMessage(message, isError) {
+                    $("#update_score_message").removeClass("invisible");
+
+                    if (isError) {
+                        $("#update_score_message").removeClass("has-background-primary");
+                        $("#update_score_message").addClass("has-background-danger");
+                    } else {
+                        $("#update_score_message").removeClass("has-background-danger");
+                        $("#update_score_message").addClass("has-background-primary");
+                    }
+
+                    $("#update_score_message")[0].innerHTML = `<div>${message}</div>`;
+                }
+
+                $("#score")[0].addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        updateScore();
+                    }
+                });
             </script>
         {% else %}
             <p>This exercise does not exist.</p>
