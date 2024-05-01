@@ -1021,112 +1021,93 @@ class Content:
         scores = []
 
         sql = '''WITH
-                   assignment_scores AS (
-                     SELECT u.name,
-                            s.user_id,
-                            SUM(s.score * e.weight) / b.total_weight AS percent_passed,
-                            sub.last_submission_time
-                     FROM scores s
+                   valid_exercises AS (
+                     SELECT exercise_id, weight
+	                   FROM exercises
+	                   WHERE course_id = ?
+	                     AND assignment_id = ?
+	                     AND visible = 1
+                   ),
+
+                   valid_users AS (
+                     SELECT u.user_id, u.name
+                     FROM course_registrations cr
                      INNER JOIN users u
-                       ON s.user_id = u.user_id
-                     INNER JOIN (
-                       SELECT SUM(weight) AS total_weight
-                       FROM exercises
-                       WHERE course_id = ?
-                         AND assignment_id = ?
-                         AND visible = 1
-                     ) b
-                     INNER JOIN exercises e
-                       ON s.exercise_id = e.exercise_id
-                     INNER JOIN (
-                       SELECT user_id, strftime('%Y-%m-%d %H:%M:%S', MAX(date)) AS last_submission_time
-                       FROM submissions
-                       WHERE course_id = ?
-                         AND assignment_id = ?
-                       GROUP BY user_id
-                     ) sub
-                       ON s.user_id = sub.user_id
-                     WHERE s.course_id = ?
-                       AND s.assignment_id = ?
-                       AND s.user_id NOT IN
-                       (
-                        SELECT user_id
-                        FROM permissions
-                      WHERE course_id = 0 OR course_id = ?
-                       )
-                       AND s.exercise_id NOT IN
-                       (
-                         SELECT exercise_id
-                         FROM exercises
-                         WHERE course_id = ?
-                           AND assignment_id = ?
-                           AND visible = 0
-                       )
-                     GROUP BY s.course_id, s.assignment_id, s.user_id
-                     HAVING SUM(s.score) > 0
+                       ON cr.user_id = u.user_id
+                     WHERE cr.course_id = ? AND cr.user_id NOT IN (
+                       SELECT user_id
+                       FROM permissions
+                       WHERE course_id = 0 OR course_id = ?
+	                   )
                    ),
 
-                   exercise_summary AS (
-                     SELECT exercise_id, user_id, min(date) AS earliest_pass_date, MAX(partner_id IS NOT NULL) AS did_pair_programming
-                     FROM submissions s
-                     WHERE course_id = ?
-                       AND assignment_id = ?
-                       AND user_id NOT IN (
-                          SELECT user_id
-                          FROM permissions
-                          WHERE course_id = 0 OR course_id = ?
-                       )
-                     GROUP BY exercise_id, user_id
+                   exercise_user_scores AS (
+                     SELECT s.exercise_id, s.user_id, s.score
+	                   FROM scores s
+	                   WHERE exercise_id IN (SELECT exercise_id FROM valid_exercises)
+	                     AND user_id IN (SELECT user_id FROM valid_users)
                    ),
+  
+                   submitted_scores AS (
+                     SELECT s.submission_id, s.exercise_id, s.user_id, s.date, s.partner_id, ss.score
+	                   FROM submissions s
+	                   INNER JOIN exercise_user_scores ss
+	                     ON s.exercise_id = ss.exercise_id
+	                     AND s.user_id = ss.user_id
+	                   WHERE s.exercise_id IN (SELECT exercise_id FROM valid_exercises)
+	                     AND s.user_id IN (SELECT user_id FROM valid_users)
+                     ),
+  
+                   unsubmitted_scores AS (
+                     SELECT eus.exercise_id, eus.user_id, NULL as date, NULL as partner_id, eus.score
+	                   FROM exercise_user_scores eus
+	                   LEFT JOIN submitted_scores ss
+	                     ON eus.exercise_id = ss.exercise_id
+	                     AND eus.user_id = ss.user_id
+	                   WHERE ss.submission_id IS NULL
+                     ),
 
-                   assignment_summary AS (
-                     SELECT user_id, max(earliest_pass_date) AS when_passed, sum(did_pair_programming) AS num_times_pair_programmed
-                     FROM exercise_summary
-                     GROUP BY user_id
-                     HAVING COUNT(*) >= (
-                        SELECT COUNT(*) as num
-                        FROM exercises
-                        WHERE course_id = ?
-                          AND assignment_id = ?
-                          AND visible = 1
-                        )
+                     zero_scores AS (
+                       SELECT e.exercise_id, u.user_id, NULL as date, NULL as partner_id, 0.0 as score
+                       FROM valid_exercises e
+                       INNER JOIN valid_users u
+                     ),
+  
+                     all_scores AS (
+                       SELECT exercise_id, user_id, date, partner_id, score
+	                     FROM submitted_scores
+	
+                       UNION
+	
+	                     SELECT *
+	                     FROM unsubmitted_scores
 
-                     UNION
+	                     UNION
+	
+	                     SELECT *
+	                     FROM zero_scores
+                     ),
 
-                     SELECT user_id, '', sum(did_pair_programming) AS num_times_pair_programmed
-                     FROM exercise_summary
-                     GROUP BY user_id
-                     HAVING COUNT(*) < (
-                       SELECT COUNT(*) as num
-                       FROM exercises
-                       WHERE course_id = ?
-                         AND assignment_id = ?
-                         AND visible = 1
+                     weighted_scores AS (
+                       SELECT s.exercise_id, s.user_id, s.date, (s.partner_id IS NOT NULL) AS pair_programmed, MAX(s.score) * e.weight AS score
+	                     FROM all_scores s
+	                     INNER JOIN valid_exercises e
+	                       ON s.exercise_id = e.exercise_id
+	                     GROUP BY s.exercise_id, s.user_id
                      )
-                     ORDER BY user_id
-                 )
 
-                 SELECT assignment_scores.*, assignment_summary.when_passed, assignment_summary.num_times_pair_programmed
-                 FROM assignment_scores
-                 INNER JOIN assignment_summary
-                   ON assignment_scores.user_id = assignment_summary.user_id
-
-                 UNION
-
-                 SELECT name, user_id, 0, '', '', 0
-                 FROM users
-                 WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
-                   AND user_id NOT IN (SELECT user_id FROM assignment_scores)
-                   AND user_id NOT IN (SELECT user_id
-                                       FROM permissions
-                                       WHERE course_id = 0 OR course_id = ?)
-                 '''
+                     SELECT vu.user_id, vu.name, strftime('%Y-%m-%d %H:%M:%S', MAX(ws.date)) AS last_submission_time, sum(ws.pair_programmed) AS num_times_pair_programmed, AVG(ws.score) AS score
+                     FROM weighted_scores ws
+                     INNER JOIN valid_users vu
+                       ON ws.user_id = vu.user_id
+                     GROUP BY ws.user_id
+                     ORDER BY vu.name'''
 
         course_id = course_basics["id"]
         assignment_id = assignment_basics["id"]
         total_times_pair_programmed = 0
 
-        for user in self.fetchall(sql, (course_id, assignment_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id, assignment_id, course_id, assignment_id, course_id, course_id)):
+        for user in self.fetchall(sql, (course_id, assignment_id, course_id, course_id)):
             scores_dict = dict(user)
             scores.append([user["user_id"], scores_dict])
 
@@ -2317,12 +2298,12 @@ class Content:
         scores, total_times_pair_programmed = self.get_assignment_scores(course_basics, assignment_basics)
 
         if include_header:
-            out_file_text = "Course\tAssignment\tStudent_ID\tScore\tWhen_Passed\tLast_Submission\tNum_Times_Pair_Programmed\n"
+            out_file_text = "Course\tAssignment\tStudent_ID\tScore\tLast_Submission\tNum_Times_Pair_Programmed\n"
         else:
             out_file_text = ""
 
         for student in scores:
-            out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['percent_passed']}\t{student[1]['when_passed']}\t{student[1]['last_submission_time']}\t{student[1]['num_times_pair_programmed']}\n"
+            out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['score']}\t{student[1]['last_submission_time']}\t{student[1]['num_times_pair_programmed']}\n"
 
         return out_file_text
 

@@ -41,8 +41,8 @@
             }
 
             function parseDateText(text) {
-                if (text == "")
-                    return "";
+                if (text == "None")
+                    return "No submissions"
 
                 var the_date = new Date(text);
                 var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
@@ -75,7 +75,6 @@
                             <th>Name</th>
                             <th>Student ID</th>
                             <th>Score</th>
-                            <th>When completed</th>
                             <th>Last submission</th>
                             {% if assignment_details["has_timer"] %}
                                 <th>Timer</th>
@@ -91,12 +90,7 @@
                                 <td class="has-text-left">{{ score[1]["name"] }}</td>
                                 <td class="has-text-left">{{ score[0] }}</td>
                                 <td class="has-text-left">
-                                    <a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(score[1]["percent_passed"]) }}%</a>
-                                </td>
-                                <td class="has-text-left">
-                                    <script>
-                                        document.write(parseDateText("{{ score[1]['when_passed'] }}"));
-                                    </script>
+                                    <a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(score[1]["score"], 1) }}%</a>
                                 </td>
                                 <td class="has-text-left">
                                     <script>
