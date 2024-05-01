@@ -20,8 +20,8 @@ function get_user_code() {
     function copy_code_from_previous_exercise() {
         var previous_code = `{{ exercise_details["previous_submission_code"] }}`;
 
-        // We used a placeholder to replace backticks because backticks can cause a problem on the Javascript side.
-        previous_code = previous_code.replace(/_bcktck_/g, "`");
+        // We used a placeholder to replace backticks because backticks can cause a problem on the Javascript side. We replace tab and newline characters as well because they do not get translated properly on the front end.
+        previous_code = previous_code.replace(/_bcktck_/g, "`").replace(/_xyzslashxyz_/g, "\\")
 
         let cursor_index = editor.session.doc.positionToIndex(editor.getCursorPosition());
 
