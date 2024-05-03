@@ -1937,6 +1937,7 @@ class Content:
         # return submission_id
 
     async def copy_course(self, existing_course_basics, new_course_title):
+        # Copy the high-level course info and get a new course ID.
         sql = '''INSERT INTO courses (title, introduction, visible, passcode, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated)
                  SELECT ?, introduction, visible, passcode, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated
                  FROM courses
@@ -1944,6 +1945,9 @@ class Content:
 
         new_course_id = self.execute(sql, (new_course_title, existing_course_basics['id'],))
 
+        assignment_id_mapping = {}
+
+        # Copy each assignment and get new assignment IDs.
         for assignment_basics in self.get_assignments(existing_course_basics):
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, use_virtual_assistant)
                      SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, use_virtual_assistant
@@ -1953,6 +1957,9 @@ class Content:
 
             new_assignment_id = self.execute(sql, (new_course_id, existing_course_basics['id'], assignment_basics[0],))
 
+            assignment_id_mapping[assignment_basics[0]] = new_assignment_id
+
+            # Copy each exercise from each assignment.
             sql = '''SELECT exercise_id
                      FROM exercises
                      WHERE course_id = ?
@@ -1970,6 +1977,7 @@ class Content:
 
                 new_exercise_id = self.execute(sql, (new_course_id, new_assignment_id, existing_course_basics['id'], assignment_basics[0], exercise_id))
 
+                # Copy tests associated with each assignment
                 sql = '''INSERT INTO tests (course_id, assignment_id, exercise_id, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output)
                          SELECT ?, ?, ?, title, before_code, after_code, instructions, txt_output, jpg_output, can_see_test_code, can_see_expected_output, can_see_code_output
                          FROM tests
@@ -1979,6 +1987,26 @@ class Content:
 
                 self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, existing_course_basics['id'], assignment_basics[0], exercise_id))
 
+        # Copy prerequisite assignments.
+        for old_assignment_id, new_assignment_id in assignment_id_mapping.items():
+            # First, get old prerequisite assignment IDs.
+            sql = '''SELECT prerequisite_assignment_id as id
+                     FROM prerequisite_assignments
+                     WHERE course_id = ?
+                       AND assignment_id = ?'''
+
+            old_prerequisite_ids = [row["id"] for row in self.fetchall(sql, (existing_course_basics['id'], old_assignment_id,))]
+
+            # Second, insert the one IDs.
+            for old in old_prerequisite_ids:
+                new_prerequisite_id = assignment_id_mapping[old]
+
+                sql = '''INSERT INTO prerequisite_assignments (course_id, assignment_id, prerequisite_assignment_id)
+                         VALUES (?, ?, ?)'''
+
+                self.execute(sql, (new_course_id, new_assignment_id, new_prerequisite_id,))
+
+        # Copy permissions for instructors and assistants.
         sql = '''INSERT INTO permissions (user_id, role, course_id)
                  SELECT user_id, role, ?
                  FROM permissions
@@ -2211,7 +2239,8 @@ class Content:
         
         self.execute('''DELETE FROM prerequisite_assignments
                         WHERE course_id = ?
-                          AND assignment_id = ?''', (course_id, assignment_id, ))
+                          AND (assignment_id = ? OR prerequisite_assignment_id = ?)
+                          ''', (course_id, assignment_id, assignment_id))
 
         self.execute('''DELETE FROM assignment_timer_exceptions
                         WHERE course_id = ?
