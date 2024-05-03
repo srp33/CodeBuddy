@@ -225,4 +225,16 @@ class BaseUserHandler(BaseRequestHandler):
         if self.content.is_taking_restricted_assignment(self.get_current_user(), assignment_id):
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="restrict_other_assignments", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
+        if len(await self.get_prerequisite_assignments_uncompleted(course_id, assignment_details)) > 0:
+            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_uncompleted", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+
         return True
+    
+    async def get_prerequisite_assignments_uncompleted(self, course_id, assignment_details):
+        prerequisite_assignments_not_completed = []
+
+        for assignment_status in await self.content.get_assignment_statuses(course_id, self.get_current_user(), show_hidden=False):
+            if assignment_status[0] in assignment_details["prerequisite_assignment_ids"] and not assignment_status[1]["passed"]:
+                prerequisite_assignments_not_completed.append([assignment_status[0], assignment_status[1]["title"]])
+
+        return prerequisite_assignments_not_completed

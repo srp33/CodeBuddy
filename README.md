@@ -24,6 +24,7 @@ Here are some of CodeBuddy's features:
 * Instructors can configure an exercise so that it is easy for students to copy their (last successful) solution from the previous exercise.
 * [As of July 21, 2023] Instructors can configure a "Virtual Assistant" to provide help to students. The Virtual Assistant connects to OpenAI using the same models that ChatGPT uses. Students can ask questions about their code and request help when their code is not functioning correctly. Instructors can limit the number of interactions per student per exercise. This feature is currently experimental and requires a paid account with OpenAI.
 * [As of July 24, 2023] Students are randomly assigned to a research cohort ("A" or "B"). Optionally, the instructor can configure a given assignment so that some students have access to the Virtual Assistant and others do not. Also optionally, the instructor can configure a given exercise so that some students can see the instructor's solution or anonymized peer solutions and others cannot. Researchers can use this feature for [A/B testing](https://en.wikipedia.org/wiki/A%2FB_testing). **Please** [let us know](https://codebuddy.byu.edu/static/contact_us.html) if you are interested in using this feature. It would be great to collaborate!
+* [As of May 2, 2024] Instructors can configure an assignment so that other assignment(s) must be completed as prerequisites to that assignment. Students will be unable to access the assignment until they have completed the prerequisite(s).
 
 ### How to run a CodeBuddy instance
 

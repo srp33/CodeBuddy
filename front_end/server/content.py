@@ -494,6 +494,10 @@ class Content:
                         WHERE course_id = ?
                           AND user_id = ?''', (course_id, user_id, ))
         
+        self.execute('''DELETE FROM assignment_timer_exceptions
+                        WHERE course_id = ?
+                          AND user_id = ?''', (course_id, user_id, ))
+        
         self.update_when_content_updated("user")
         self.update_when_content_updated(str(course_id))
 
@@ -1462,7 +1466,8 @@ class Content:
     def get_assignments(self, course_basics, show_hidden=True):
         sql = '''SELECT assignment_id as id, title, visible
                  FROM assignments a
-                 WHERE course_id = ?'''
+                 WHERE course_id = ?
+                 ORDER BY title'''
 
         # We initially structure it this way to make sorting easier.
         assignments = []
@@ -1576,7 +1581,7 @@ class Content:
         return course_details
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "show_run_button": True, "student_timer_exceptions": {}, "use_virtual_assistant": 0}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "show_run_button": True, "prerequisite_assignment_ids": [], "student_timer_exceptions": {}, "use_virtual_assistant": 0}
 
         if not assignment_id:
             return null_assignment
@@ -1591,7 +1596,7 @@ class Content:
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")
@@ -1638,6 +1643,24 @@ class Content:
             exercise_dict["tests"][test["title"]] = {"test_id": test["test_id"], "before_code": test["before_code"], "after_code": test["after_code"], "instructions": test["instructions"], "can_see_test_code": test["can_see_test_code"], "can_see_expected_output": test["can_see_expected_output"], "can_see_code_output": test["can_see_code_output"], "txt_output": test["txt_output"], "jpg_output": test["jpg_output"]}
 
         return exercise_dict
+
+    def get_prerequisite_assignment_ids(self, course_id, assignment_id):
+        prerequisite_assignment_ids = []
+
+        sql = '''SELECT pa.prerequisite_assignment_id
+                 FROM prerequisite_assignments pa
+                 INNER JOIN assignments a
+                   ON pa.course_id = a.course_id
+                   AND pa.assignment_id = a.assignment_id
+                 WHERE pa.course_id = ?
+                   AND pa.assignment_id = ?
+                 ORDER BY a.title'''
+        
+        for row in self.fetchall(sql, (course_id, assignment_id, )):
+            prerequisite_assignment_ids.append(row["prerequisite_assignment_id"])
+
+        return prerequisite_assignment_ids
+
 
     def get_student_timer_exceptions(self, has_timer, course_id, assignment_id):
         exceptions = {}
@@ -1740,6 +1763,19 @@ class Content:
 
             assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["use_virtual_assistant"]])
             assignment_basics["exists"] = True
+
+
+        sql_statements = ['''DELETE FROM prerequisite_assignments
+                             WHERE course_id = ? AND assignment_id = ?''']
+        param_lists = [(assignment_basics["course"]["id"], assignment_basics["id"], )]
+
+        for prerequisite_assignment_id in assignment_details["prerequisite_assignment_ids"]:
+            sql_statements.append('''INSERT INTO prerequisite_assignments (course_id, assignment_id, prerequisite_assignment_id)
+                                     VALUES (?, ?, ?)''')
+            param_lists.append((assignment_basics["course"]["id"], assignment_basics["id"], prerequisite_assignment_id))
+
+        self.execute_multiple(sql_statements, param_lists)
+
 
         sql_statements = ['''DELETE FROM assignment_timer_exceptions
                              WHERE course_id = ? AND assignment_id = ?''']
@@ -2019,7 +2055,7 @@ class Content:
 
         sql_statements = []
         params_list = []
-        for table_name in ["course_registrations", "presubmissions", "user_assignment_starts", "scores", "submissions", "permissions", "users"]:
+        for table_name in ["course_registrations", "presubmissions", "user_assignment_starts", "assignment_timer_exceptions", "scores", "submissions", "permissions", "users"]:
             sql_statements.append(f"DELETE FROM {table_name} WHERE user_id = ?")
             params_list.append((user_id, ))
         
@@ -2034,7 +2070,7 @@ class Content:
                              WHERE course_id = ?
                                AND assignment_id = ?''', (new_course_id, course_id, assignment_id))
 
-        for table in ["presubmissions", "scores", "submissions", "user_assignment_starts"]:
+        for table in ["presubmissions", "scores", "submissions", "user_assignment_starts", "prerequisite_assignments", "assignment_timer_exceptions"]:
             self.execute(f'''DELETE FROM {table}
                              WHERE course_id = ?
                                AND assignment_id = ?''', (course_id, assignment_id))
@@ -2172,6 +2208,14 @@ class Content:
         self.execute('''DELETE FROM user_assignment_starts
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
+        
+        self.execute('''DELETE FROM prerequisite_assignments
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
+        self.execute('''DELETE FROM assignment_timer_exceptions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
         self.execute('''DELETE FROM exercises
                         WHERE course_id = ?
@@ -2218,6 +2262,12 @@ class Content:
                         WHERE course_id = ?''', (course_id, ))
 
         self.execute('''DELETE FROM user_assignment_starts
+                        WHERE course_id = ?''', (course_id, ))
+        
+        self.execute('''DELETE FROM prerequisite_assignments
+                        WHERE course_id = ?''', (course_id, ))
+
+        self.execute('''DELETE FROM assignment_timer_exceptions
                         WHERE course_id = ?''', (course_id, ))
         
         self.delete_content_updated(course_id)

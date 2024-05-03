@@ -28,7 +28,9 @@ class CourseHandler(BaseUserHandler):
                         user_is_registered = True
 
                 if user_is_registered:
-                    self.render("course.html", courses=self.courses, assignments=await self.get_assignments(course_basics), assignment_statuses=await self.content.get_assignment_statuses(course_id, self.get_current_user(), False), course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=dt.datetime.utcnow(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                    assignment_statuses = await self.content.get_assignment_statuses(course_id, self.get_current_user(), False)
+
+                    self.render("course.html", courses=self.courses, assignments=await self.get_assignments(course_basics), assignment_statuses=assignment_statuses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=dt.datetime.utcnow(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
                 else:
                     self.render("unavailable_course.html", courses=self.courses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
             except Exception as inst:
