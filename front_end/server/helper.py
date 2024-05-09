@@ -474,7 +474,8 @@ def open_db(db_name):
 
 def log_page_access(handler, additional_message=None):
     # The request time is in seconds
-    logging_message = f"{handler.get_browser_locale().code}\t{handler.request.uri}\t{handler.request.method}\t{handler.request.remote_ip}\t{round(handler.request.request_time(), 3)}"
+    # logging_message = f"{handler.get_browser_locale().code}\t{handler.request.uri}\t{handler.request.method}\t{handler.request.remote_ip}\t{round(handler.request.request_time(), 3)}"
+    logging_message = f"{handler.get_browser_locale().code}\t{handler.request.uri}\t{handler.request.method}\t{get_client_ip_address(handler.request)}\t{round(handler.request.request_time(), 3)}"
 
     if additional_message:
         logging_message = f"{logging_message}\t{additional_message}"
