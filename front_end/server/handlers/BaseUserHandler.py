@@ -20,18 +20,24 @@ class BaseUserHandler(BaseRequestHandler):
 
             if not user_id:
                 redirect_to_login(self, self.request.path)
+                return
 
             self.updated_dict = self.content.find_when_content_updated()
 
             self.total_headers_size = sum(len(key) + len(value) for key, value in self.request.headers.items())
 
-            self.update_cached_variable("user", "user_info", self.content.get_user_info, self.get_current_user())
+            user_info = self.content.get_user_info(self.get_current_user())
 
-            if self.user_info["user_id"] is None:
+            if user_info["user_id"] is None:
                 self.redirect("/logout")
+                return
+            else:
+                # We can't set the cookie earlier because then the response header will be
+                # modified, so we could not redirect.
+                self.update_cached_variable("user", "user_info", user_info)
 
-            self.update_cached_variable("user", "is_administrator", self.content.is_administrator, self.get_current_user())
-            self.update_cached_variable("user", "courses", self.content.get_registered_courses, self.get_current_user())
+                self.update_cached_variable("user", "is_administrator", self.content.is_administrator, self.get_current_user())
+                self.update_cached_variable("user", "courses", self.content.get_registered_courses, self.get_current_user())
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
@@ -153,26 +159,28 @@ class BaseUserHandler(BaseRequestHandler):
                     variable_cookie = self.get_content_cookie(variable_name, cookie_expiration_days)
 
                     if variable_cookie == None:
-                        setattr(self, variable_name, self.set_content_cookie(variable_name, function_name(*args, **kwargs), cookie_expiration_days))
-                        # print(f"got here1 - {variable_name}")
+                        if callable(function_name):
+                            setattr(self, variable_name, self.set_content_cookie(variable_name, function_name(*args, **kwargs), cookie_expiration_days))
+                        else:
+                            setattr(self, variable_name, self.set_content_cookie(variable_name, function_name, cookie_expiration_days))
                     else:
                         setattr(self, variable_name, variable_cookie)
-                        # print(f"got here2 - {variable_name} - {variable_cookie}")
                 else:
-                    setattr(self, variable_name, self.set_content_cookie(variable_name, function_name(*args, **kwargs), cookie_expiration_days))
-                    # print(f"got here3 - {variable_name}")
+                    if callable(function_name):
+                        setattr(self, variable_name, self.set_content_cookie(variable_name, function_name(*args, **kwargs), cookie_expiration_days))
+                    else:
+                        setattr(self, variable_name, self.set_content_cookie(variable_name, function_name, cookie_expiration_days))
 
                     if update_key in self.updated_dict:
-                        # print(f"got here3.1 - {variable_name}")
                         self.set_content_cookie(update_key, self.updated_dict[update_key], cookie_expiration_days)
             else:
                 if update_key in self.updated_dict:
                     self.set_content_cookie(update_key, self.updated_dict[update_key], cookie_expiration_days)
 
-                setattr(self, variable_name, self.set_content_cookie(variable_name, function_name(*args, **kwargs), cookie_expiration_days))
-                # print(f"got here4 - {variable_name}")
-        # else:
-        #     print(f"got here5 - {variable_name}")
+                if callable(function_name):
+                    setattr(self, variable_name, self.set_content_cookie(variable_name, function_name(*args, **kwargs), cookie_expiration_days))
+                else:
+                    setattr(self, variable_name, self.set_content_cookie(variable_name, function_name, cookie_expiration_days))
 
         return getattr(self, variable_name)
 
