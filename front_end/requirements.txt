@@ -4,7 +4,7 @@ gunicorn==22.0.0
 pydantic==1.10.13
 uvicorn==0.22.0
 tornado==6.3.3
-requests==2.31.0
+requests==2.32.0
 Pillow==10.3.0
 pytz==2023.3.post1
 PyYAML==6.0
@@ -14,3 +14,4 @@ concurrent-log-handler==0.9.24
 ujson==5.8.0
 python-cas==1.6.0
 openai==0.27.8
+reportlab==4.2.0
