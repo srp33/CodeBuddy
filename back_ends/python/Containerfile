@@ -1,9 +1,10 @@
-FROM python:3.9.1-slim-buster
+FROM python:3.12.3-slim-bullseye
 
 RUN apt-get update \
  && apt-get install git -y \
  && pip install --upgrade pip \
  && pip install seaborn==0.12.2 \
+ && pip install sympy==1.12 \
  && git clone https://github.com/mwaskom/seaborn-data.git \
  && chmod 777 /seaborn-data -R
 
