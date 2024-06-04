@@ -5,6 +5,8 @@ RUN apt-get update \
  && pip install --upgrade pip \
  && pip install seaborn==0.12.2 \
  && pip install sympy==1.12 \
+ && pip install scipy==1.13.1 \
+ && pip install imageio==2.34.1 \
  && git clone https://github.com/mwaskom/seaborn-data.git \
  && chmod 777 /seaborn-data -R
 
