@@ -33,6 +33,16 @@
                 <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses. Please consult the instructor for additional instructions.</p>
             {% elif error == "not_registered_for_course" %}
                 <p>This assignment can only be viewed by students enrolled in the course.</p>
+            {% elif error == "prerequisite_assignments_not_completed" %}
+                <div class="notification is-danger">
+                    The following assignment(s) must be fully completed be you can start this assignment:
+
+                    <ul>
+                        {% for prerequisite_assignment in prerequisite_assignments_not_completed %}
+                            <li><a href="/assignment/{{ course_basics['id'] }}/{{ prerequisite_assignment[0] }}">{{ prerequisite_assignment[1] }}</a></li>
+                        {% end %}
+                    </ul>
+                </div>
             {% end %}
         {% else %}
             <p>This assignment does not exist.</p>

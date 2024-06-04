@@ -32,8 +32,10 @@ class ExerciseHandler(BaseUserHandler):
             next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)
 
             # Fetches all users enrolled in a course excluding the current user as options to pair program with.
-            partner_info = await self.get_partner_info(course_id, True)
-            user_list = list(partner_info.keys())
+            user_list = None
+            if exercise_details["enable_pair_programming"]:
+                partner_info = await self.get_partner_info(course_id)
+                user_list = list(partner_info.keys())
             
             timer_status = None
             timer_deadline = None
@@ -46,21 +48,21 @@ class ExerciseHandler(BaseUserHandler):
 
             mode = self.get_query_argument("mode", default=None)
 
-            studio_mode = self.user_info["use_studio_mode"]
-            if mode == "studio":
-                studio_mode = True
-            elif mode == "classic":
-                studio_mode = False
+            # studio_mode = self.user_info["use_studio_mode"]
+            # if mode == "studio":
+            #     studio_mode = True
+            # elif mode == "classic":
+            studio_mode = False
 
             virtual_assistant_interactions = []
             virtual_assistant_max_per_exercise = None
 
             use_virtual_assistant = await should_use_virtual_assistant(self, course_id, course_details, assignment_details, exercise_basics, self.user_info)
 
-            if use_virtual_assistant:
-                studio_mode = False
+            # if use_virtual_assistant:
+            #     studio_mode = False
 
-            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=(not studio_mode))
+            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=True)#(not studio_mode))
 
             if use_virtual_assistant:
                 virtual_assistant_interactions = self.content.get_virtual_assistant_interactions(course_id, assignment_id, exercise_id, self.user_info["user_id"])
@@ -97,20 +99,22 @@ class ExerciseHandler(BaseUserHandler):
                     "check_for_restrict_other_assignments": course_details["check_for_restrict_other_assignments"],
                     "use_virtual_assistant": use_virtual_assistant,
                     "virtual_assistant_interactions": virtual_assistant_interactions,
-                    "virtual_assistant_max_per_exercise": virtual_assistant_max_per_exercise
+                    "virtual_assistant_max_per_exercise": virtual_assistant_max_per_exercise,
+                    "timer_hours": None,
+                    "timer_minutes": None
             }
 
 #                    "num_submissions": len(submissions),
 
-            if studio_mode:
-                exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))
+            # if studio_mode:
+            #     exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))
 
-                del exercise_details['solution_code']
-                del exercise_details['solution_description']
+            #     del exercise_details['solution_code']
+            #     del exercise_details['solution_description']
 
-                args['exercise_details'] = exercise_details
-                self.render("spa.html", template_variables=args, **args)
-            else:
-                self.render("exercise.html", **args)
+            #     args['exercise_details'] = exercise_details
+            #     self.render("spa.html", template_variables=args, **args)
+            # else:
+            self.render("exercise.html", **args)
         except Exception as inst:
             render_error(self, traceback.format_exc())

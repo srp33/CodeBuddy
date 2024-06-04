@@ -22,6 +22,7 @@ import random
 import re
 import requests
 from requests.exceptions import *
+import secrets
 import string
 import subprocess
 from tornado.web import RequestHandler
@@ -587,3 +588,26 @@ def get_student_timer_status(content, course_id, assignment_id, assignment_detai
         return "timer_expired", user_start_time, None, None, None
 
     return "timer_in_progress", user_start_time, None, None, deadline
+
+def generate_unique_id(characters_per_segment, num_segments, delimiter=""):
+    # Create a character set of uppercase letters and digits. Avoid characters that are difficult to distinguish between.
+    characters = [x for x in string.ascii_letters if x.isupper() and x != "O"]
+    for i in range(1, 10):
+        characters.append(str(i))
+
+    # Separate the id into segments
+    unique_id_segments = []
+    for i in range(num_segments):
+        segment = ''.join(secrets.choice(characters) for j in range(characters_per_segment))
+        unique_id_segments.append(segment)
+
+    return delimiter.join(unique_id_segments)
+
+def split_str_by_positions(my_str, characters_per_segment, delimiter):
+    segments = []
+
+    for i in range(1, int(len(my_str) / characters_per_segment) + 1):
+        segments.append(my_str[:characters_per_segment])
+        my_str = my_str[characters_per_segment:]
+
+    return delimiter.join(segments)

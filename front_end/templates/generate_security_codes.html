@@ -1,0 +1,187 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2023 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    {% if len(secure_assignments) > 0 %}
+        <script>
+            function buildPDF() {
+                // Validate inputs. Make sure required elements are provided, none is too long, and at least one assignment is checked.
+                const selected_assignments_ids = getSelectedAssignments();
+                const large_header = getValue("large_header").trim();
+                const small_header = getValue("small_header").trim();
+                const top_message = getValue("top_message").trim();
+                const bottom_message = getValue("bottom_message").trim();
+                const make_distinct = getValue("make_distinct") == "Yes";
+                const overwrite_existing = getValue("overwrite_existing") == "Yes";
+
+                if (selected_assignments_ids.length == 0) {
+                    return(showResultMessage("You must select at least one assignment.", "danger"));
+                }
+
+                if (top_message.length == 0) {
+                    return(showResultMessage("You must specify a top message.", "danger"));
+                }
+
+                if (large_header.length > 50) {
+                    return(showResultMessage("The large header has a maximum length of 50 characters.", "danger"));
+                }
+
+                if (small_header.length > 50) {
+                    return(showResultMessage("The small header has a maximum length of 50 characters.", "danger"));
+                }
+
+                if (top_message.length > 500) {
+                    return(showResultMessage("The top message has a maximum length of 500 characters.", "danger"));
+                }
+
+                if (bottom_message.length > 500) {
+                    return(showResultMessage("The bottom message has a maximum length of 500 characters.", "danger"));
+                }
+
+                var submission_obj = {
+                    "selected_assignments_ids": selected_assignments_ids,
+                    "large_header": large_header,
+                    "small_header": small_header,
+                    "top_message": top_message,
+                    "bottom_message": bottom_message,
+                    "make_distinct": make_distinct,
+                    "overwrite_existing": overwrite_existing
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: "/generate_security_codes/{{ course_basics['id'] }}",
+                    data: JSON.stringify(submission_obj),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function(blob) {
+                        // Create a URL for the blob object
+                        var url = window.URL.createObjectURL(blob);
+
+                        // Open PDF in a new window
+                        // window.open(url, '_blank');
+                        window.open(url, 'generate_security_codes');
+
+                        // Optional: release object URL
+                        window.URL.revokeObjectURL(url);
+                    },
+                    error: function(xhr, status, error) {
+                        showResultMessage("<p>An error occurred when connecting to the server to build the PDF file.</p>", "danger");
+                        console.error("Error: " + error);
+                    }
+                });
+            }
+
+            // Retrieve an input value from a particular control.
+            function getValue(id) {
+                return $(`#${id}`)[0].value;
+            }
+
+            function getSelectedAssignments() {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                const selectedCheckboxes = [];
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        selectedCheckboxes.push(parseInt(checkbox.id));
+                    }
+                });
+
+                return(selectedCheckboxes);
+            }
+
+            function showResultMessage(messageHTML, messageType) {
+                $("#result_message").removeClass("is-primary");
+                $("#result_message").removeClass("is-warning");
+                $("#result_message").removeClass("is-danger");
+
+                $("#result_message").addClass(`is-${messageType}`);
+
+                $("#result_message").removeClass("is-hidden");
+                $("#result_message")[0].innerHTML = messageHTML;
+                window.scrollTo(0, 0);
+            }
+        </script>
+
+        <h4>Generate security codes for {{ course_basics["title"] }}</h4>
+
+        <div class="notification is-danger is-hidden" id="result_message"></div>
+
+        <p>
+            Use this page to generate a PDF file that has security codes and explains to students how to use them. Each security code will be displayed on a separate page within the PDF. When applicable, each page will include boxes for a student to enter their confirmation code.
+        </p>
+
+        <p>
+            If you previously generated security codes for an assignment, you can view those <a href="/view_security_codes/{{ course_basics['id'] }}/null">here</a>.
+        </p>
+
+        <div class="has-background-white p-4 mb-4">
+            <p><strong>Select assignment(s): </strong></p>
+
+            <p>
+                Here you may select assignment(s) for which to generate security codes. If you select multiple assignments, a separate page will be generated for each assignment and student. A security code is not tied to any particular student (until a student uses it), so you can hand out the pages in any order.
+            </p>
+
+            <p>
+                {% for assignment_title in sorted(secure_assignments) %}
+                    <div class="field">
+                        <label class="checkbox">
+                            <input type="checkbox" id="{{ secure_assignments[assignment_title]['id'] }}" value="{{ secure_assignments[assignment_title]['id'] }}">
+                            {{ assignment_title }}
+                        </label>
+                    </div>
+                {% end %}
+            </p>
+        </div>
+
+        <div class="has-background-white p-4 mb-4">
+            <p><strong>Large header: </strong><br />Any text specified here will be shown in large, bold font at the top of each page. This header is optional. It has a maximum length of 50 characters.</p>
+            <p><textarea id="large_header" class="textarea is-grey is-medium monospace" placeholder="The header text goes here." rows="1" autofocus></textarea></p>
+
+            <p><strong>Small header: </strong><br />Each page of the PDF will have a header that uses a regular-sized, bold font. The first part of the header will be the assignment name. You can append text to the end of this header (maximum = 50 characters).</p>
+            <p><textarea id="small_header" class="textarea is-grey is-medium monospace" placeholder="The header text goes here." rows="1"></textarea></p>
+
+            <p><strong>Top message*: </strong><br />Text specified here will be shown in a regular-sized font below the small header and above the security code. Use this section to explain how students should use the security code. This message is required (maximum = 500 characters).</p>
+            <p><textarea id="top_message" class="textarea is-grey is-medium monospace" placeholder="The message goes here." rows="6">When you begin the assignment, you will be asked to enter this security code. All letters are upper case.</textarea></p>
+
+            <p><strong>Bottom message: </strong><br />This message is used only when confirmation codes are required. Any text specified here will be shown in a regular-sized font below the security code and above the empty boxes for the confirmation code. You can use this section to explain how the confirmation codes are used. This message is optional (maximum = 500 characters).</p>
+            <p><textarea id="bottom_message" class="textarea is-grey is-medium monospace" placeholder="The message goes here." rows="6">After ending the assignment, you will be given a 4-digit confirmation code. Write that code in the boxes below. Then give the printed form to the proctor.</textarea></p>
+        </div>
+
+        <div class="has-background-white p-4 mt-4">
+            <p><strong>Make codes distinct for each student: </strong><br />By default, a unique code is generated for each student for each specified assignment. Here you can indicate that only a single code per assignment is generated (the code will be the same for all students). This option is sometimes used for in-class quizzes. (If you use confirmation codes, they will always be distinct for each student.)</p>
+
+            <div class="select is-grey">
+                <select id="make_distinct" class="edit-select">
+                    <option value="No">No</option>
+                    <option value="Yes" selected>Yes</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="has-background-white p-4 mt-4">
+            <p>
+                <strong>Overwrite existing codes: </strong><br />If you previously generated security codes for the selected assignment(s), new codes can be generated to overwrite those existing codes (the old ones will be valid). Select "Yes" if you would like to overwrite any existing codes.
+            </p>
+
+            <div class="select is-grey">
+                <select id="overwrite_existing" class="edit-select">
+                    <option value="No">No</option>
+                    <option value="Yes" selected>Yes</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="has-background-white p-4 mt-4">
+            <button class="button is-primary" onclick="buildPDF();">Generate codes and build PDF</button>
+        </div>
+    {% else %}
+        <p>No assignments have been created for this course, or no assignments have been configured to require security codes.</p>
+    {% end %}
+{% else %}
+    <h4>This course does not exist.</h4>
+{% end %}

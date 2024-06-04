@@ -1,0 +1,210 @@
+{% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+    <div id="stop_timer_modal" class="modal">
+        <div class="modal-content">
+            <span id="stop_timer_close" class="close">&times;</span>
+            <p>Are you sure you want to end this assignment?</p>
+
+            <p class="buttons">
+                <a id="stop_timer_button" class="modal-button button is-dark">End assignment</a>
+                <button type="button" id="stop_timer_cancel_button" class="modal-button button is-light">Cancel</button>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function startTimer() {
+            updateTimeRemaining();
+
+            const x = setInterval(function() {
+                const time_remaining = updateTimeRemaining();
+
+                if (time_remaining < 120000 && !has_shown_timer_warning) {
+                    alert("Less than 2 minutes remaining.");
+                    has_shown_timer_warning = true;
+                }
+
+                if (time_remaining <= 0) {
+                    clearInterval(x);
+
+                    if (typeof num_exercises == 'undefined') {
+                        // This means we are on the exercise page.
+                        save_presubmission();
+                        gotoAssignmentPage();
+                    }
+                    else {
+                        // This means we are on the assignment page.
+                        updateTimerStatus("timer_expired");
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerMessage(message) {
+            // It only makes sense to do this from the assignment page.
+            if (typeof num_exercises !== 'undefined') {
+                $("#timer_message")[0].innerHTML = `${message}`;
+            }
+        }
+
+        function updateTimerStatus(timer_status) {
+            $("#timer_button").blur();
+
+            var message = "";
+
+            if (timer_status == "timer_not_started") {
+                message = `This is a timed assignment. Your time limit is {{ timer_hours }} hours and {{ timer_minutes }} minutes. Start the assignment when you are ready.`;
+
+                $("#timer_button")[0].innerText = "Start assignment";
+                $("#timer_button").removeClass("is-warning");
+                $("#timer_button").addClass("is-primary");
+                $("#timer_button").removeClass("is-hidden");
+                $("#timer_button").click(function() {
+                    post_timer_change("start_timer");
+                });
+
+                $("#time_remaining_button").addClass("is-hidden");
+                $("#confirmation_code").addClass("is-hidden");
+
+                for (let i = 0; i < num_exercises; i++) {
+                    $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
+                    $(`#exercise_title_${i}_link`).addClass("is-hidden");
+                }
+            }
+
+            if (timer_status == "timer_expired") {
+                message = "This is a timed assignment. The time has expired, or you ended the assignment early. You no longer have access to it.";
+
+                $("#timer_button").addClass("is-hidden");
+                $("#time_remaining_button").addClass("is-hidden");
+
+                {% if assignment_details["require_security_codes"] == 2 %}
+                    $("#confirmation_code").removeClass("is-hidden");
+                {% end %}
+
+                for (let i = 0; i < num_exercises; i++) {
+                    $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
+                    $(`#exercise_title_${i}_link`).addClass("is-hidden");
+                }
+            }
+
+            if (timer_status == "timer_in_progress") {
+                message = "The timer has started. Click on the \"End assignment\" button when you have completed the assignment (or wish to end it early).";
+
+                {% if assignment_details["require_security_codes"] == 2 %}
+                    message += " You will receive a confirmation code when you end the assignment.";
+                {% end %}
+
+                $("#timer_button")[0].innerText = "End assignment";
+                $("#timer_button").removeClass("is-primary");
+                $("#timer_button").addClass("is-warning");
+                $("#timer_button").removeClass("is-hidden");
+
+                $("#confirmation_code").addClass("is-hidden");
+
+                $("#time_remaining_button").removeClass("is-hidden");                        
+                $("#timer_button").click(function() {
+                    showStopTimerModal();
+                });
+
+                startTimer();
+
+                // It only makes sense to do this from the assignment page.
+                if (typeof num_exercises !== 'undefined') {
+                    for (let i = 0; i < num_exercises; i++) {
+                        $(`#exercise_title_${i}_no_link`).addClass("is-hidden");
+                        $(`#exercise_title_${i}_link`).removeClass("is-hidden");
+                    }
+                }
+            }
+
+            updateTimerMessage(message);
+        }
+
+        function updateTimeRemaining() {
+            const now = new Date().getTime();
+            const time_remaining = timer_deadline - now;
+
+            const hours = Math.floor((time_remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
+
+            $("#time_remaining_button")[0].innerHTML = `Time remaining: ${hours}h ${minutes}m ${seconds}s`;
+
+            return time_remaining;
+        }
+
+        function post_timer_change(task) {
+            $.ajax({
+                type: 'POST',
+                url: "/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                data: task,
+                async: false})
+                .done(function(response_message) {
+                    if (response_message.startsWith("Success")) {
+                        if (task == "start_timer") {
+                            timer_deadline = convertDeadline(response_message.replace("Success: ", ""));
+                            updateTimerStatus("timer_in_progress");
+                        }
+                        else {
+                            if (typeof num_exercises == 'undefined') {
+                                // This means we are on the exercise page.
+                                gotoAssignmentPage();
+                            }
+                            else {
+                                // This means we are on the assignment page.
+                                updateTimerStatus("timer_expired");
+                            }
+                        }
+                    }
+                    else {
+                        updateTimerMessage(response_message);
+                    }
+                })
+                .fail(function(data) {
+                    updateTimerMessage("An error occurred when connecting to the server. It may be down.");
+                });
+        }
+
+        function showStopTimerModal() {
+            var modal = document.getElementById("stop_timer_modal");
+            var span = document.getElementsByClassName("close")[0];
+            modal.style.display = "block";
+
+            var cancelButton = document.getElementById("stop_timer_cancel_button");
+            var stopTimerButton = document.getElementById("stop_timer_button");
+            $("#stop_timer_error_message").addClass("invisible");
+
+            stopTimerButton.onclick = function() {
+                post_timer_change("stop_timer");
+                modal.style.display = "none";
+            }
+
+            cancelButton.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        function convertDeadline(timer_deadline_str) {
+            let timer_deadline = new Date(timer_deadline_str);
+            timer_deadline.setMinutes(timer_deadline.getMinutes() - timer_deadline.getTimezoneOffset());
+
+            return timer_deadline;
+        }
+
+        {% if timer_deadline %}
+            var timer_deadline = convertDeadline("{{ timer_deadline }}");
+        {% end %}
+
+        var has_shown_timer_warning = false;
+    </script>
+{% end %}

@@ -1,0 +1,122 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2023 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    {% if len(secure_assignments) > 0 %}
+        <h4>View security codes for {{ course_basics["title"] }}</h4>
+
+        <p>
+            Use this page to view security codes that you have already generated for a particular assignment. You can also verify confirmation codes for students who have submitted them. If you have not yet generated security codes for an assignment, you do that <a href="/generate_security_codes/{{ course_basics['id'] }}">here</a>.
+        </p>
+
+        <div class="notification is-danger is-hidden" id="result_message"></div>
+
+        <div class="has-background-white p-4 mt-4">
+            <p><strong>Select assignment(s): </strong></p>
+
+            <p>
+                <div class="select">
+                    <select id="selected_assignment">
+
+                    {% for assignment_title in sorted(secure_assignments) %}
+                        <option value="{{ secure_assignments[assignment_title]['id'] }}">{{ assignment_title }}</option>
+                    {% end %}
+
+                    </select>
+                </div>
+            </p>
+        </div>
+
+        <div id="codes_table" class="is-hidden">
+        </div>
+        
+        <script>
+            function updateTable(event) {
+                $("#result_message").addClass("is-hidden");
+                $("#codes_table").addClass("is-hidden");
+
+                const selectedAssignmentID = event.target.value;
+
+                $.ajax({
+                    type: 'POST',
+                    url: "/view_security_codes/{{ course_basics['id'] }}/" + selectedAssignmentID,
+                    success: function(data) {
+                        var codes_array = JSON.parse(data);
+
+                        if (codes_array.length == 0) {
+                            return showResultMessage(`No security codes have been generated for the assignment selected below. You can generate them <a href='/generate_security_codes/{{ course_basics['id'] }}'>here</a>.`, "info");
+                        }
+
+                        if (codes_array.length == 2 && codes_array[0] == "error") {
+                            return showResultMessage(`An error occurred when attempting to retrieve the scores. ${codes_array[1]}`, "danger");
+                        }
+
+                        $("#codes_table").removeClass("is-hidden");
+                        $("#codes_table")[0].innerHTML = buildTable(codes_array);
+                    },
+                    error: function(xhr, status, error) {
+                        showResultMessage("<p>An error occurred when connecting to the server.</p>", "danger");
+                        console.error(error);
+                    }
+                });
+            }
+
+            function buildTable(codes) {
+                var html = `<table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Security code</th>
+                                        <th>Confirmation code</th>
+                                        <th>Student ID</th>
+                                        <th>Student name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+
+                for (let info of codes) {
+                    html += `       <tr>
+                                        <td>${info['security_code']}</td>
+                                        <td>${info['confirmation_code']}</td>
+                                        <td>${info['student_id']}</td>
+                                        <td>${info['student_name']}</td>
+                                    </tr>`;
+                }
+
+                return html + ` </tbody>
+                            </table>`;
+            }
+
+            function showResultMessage(messageHTML, messageType) {
+                $("#result_message").removeClass("is-primary");
+                $("#result_message").removeClass("is-warning");
+                $("#result_message").removeClass("is-danger");
+
+                $("#result_message").addClass(`is-${messageType}`);
+
+                $("#result_message").removeClass("is-hidden");
+                $("#result_message")[0].innerHTML = messageHTML;
+                window.scrollTo(0, 0);
+            }
+
+            // Get the select element
+            const selectElement = document.getElementById('selected_assignment');
+
+            // Add the change event listener
+            selectElement.addEventListener('change', updateTable);
+
+            // Manually trigger the change event when the page loads
+            window.addEventListener('load', function() {
+                const event = new Event('change');
+                // Dispatch the event on the select element
+                selectElement.dispatchEvent(event);
+            });
+        </script>
+    {% else %}
+        <p>No assignments have been created for this course, or no assignments have been configured to require security codes.</p>
+    {% end %}
+{% else %}
+    <h4>This course does not exist.</h4>
+{% end %}

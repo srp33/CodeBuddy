@@ -67,10 +67,20 @@ class AssignmentHandler(BaseUserHandler):
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=False)
             has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
 
-            prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_uncompleted(course_id, assignment_details)
+            confirmation_code = None
+            if assignment_details["require_security_codes"]:
+                confirmation_code = self.content.has_verified_security_code(course_id, assignment_id, self.get_current_user())
+
+                if not confirmation_code:
+                    return self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignments=assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+
+            prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_not_completed(course_id, assignment_details)
+
+            if len(prerequisite_assignments_not_completed) > 0:
+                return self.render("unavailable_assignment.html", courses=self.courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_not_completed", prerequisite_assignments_not_completed=prerequisite_assignments_not_completed, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
             return self.render("assignment.html", courses=self.courses, assignments=assignments, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, 
-            prerequisite_assignments_not_completed=prerequisite_assignments_not_completed, timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+            timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, confirmation_code=confirmation_code, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
         else:
             return self.render("unavailable_assignment.html", courses=self.courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         

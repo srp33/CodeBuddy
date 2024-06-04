@@ -70,9 +70,9 @@
             </ul>
         </div>
 
-        <p class="mt-5">
+        <p class="mt-6">
             <strong>Start date</strong>
-            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a start date and time are specified, students will be unable to view this assignment before this date and time.">
+            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a start date and time are specified, students will be unable to view this assignment before the specified date and time.">
                 <i class="far fa-question-circle"></i>
             </label>:
         </p>
@@ -229,13 +229,27 @@
     </div>
 
     <div class="shadow-box">
-        <p><strong>Restrict access to the following IP addresses: </strong><br />If you would like to use this feature, specify one IP address per line. If left blank, the assignment will not be restricted by IP address.</p>
+        <p>
+            <strong>Require security codes to access this assignment: </strong><br />You can require that each student provide a security code before they access the assignment. Typically, this option is used when you want to ensure students complete an assignment in a particular physical location (often used for exams or quizzes). Additionally, when they complete the assignment, a confirmation code can be provided. You can require that students provide this code as they leave the physical location where they completed the assignment (exam/quiz). After an assignment is created, you can <strong><a href="/generate_security_codes/{{ course_basics['id'] }}" target="_blank">generate security codes</a></strong> or <strong><a href="/view_security_codes/{{ course_basics['id'] }}/null" target="_blank">view students' security codes</a></strong>.
+        </p>
+
+        <p>
+            <div class="select is-grey">
+                <select id="require_security_codes" class="edit-select">
+                    <option value="0">No</option>
+                    <option value="1">Yes - Security codes only</option>
+                    <option value="2">Yes - Security and confirmation codes</option>
+                </select>
+            </div>
+        </p>
+
+        <p class="mt-5"><strong>Restrict access to the following IP addresses: </strong><br />If you would like to use this feature, specify one IP address per line. If left blank, the assignment will not be restricted by IP address.</p>
 
         <p>
             <textarea id="allowed_ip_addresses" class="textarea is-normal is-medium monospace" placeholder="Please specify any IP addresses to allow (one per line)" rows="3" style="display:inline"></textarea>
         </p>
 
-        <p><strong>Allowed external URL(s):</strong><br />In some cases, instructors deliver assignments (often exams) in a controlled environment where they do not want students to access external websites. You can list URLs here that should be allowed (one per line). These URLs are currently limited to those that end in <code>.html</code> or <code>.pdf</code>.</p>
+        <p class="mt-5"><strong>Allowed external URL(s):</strong><br />In some cases, instructors deliver assignments (often exams) in a controlled environment where they do not want students to access external websites. You can list URLs here that should be allowed (one per line). These URLs are currently limited to those that end in <code>.html</code> or <code>.pdf</code>.</p>
 
         <p>
             <textarea class="textarea" id="allowed_external_urls" rows=3 placeholder="Please specify any allowed external URLs (one per line)."></textarea>
@@ -612,6 +626,7 @@
         let allowed_ip_addresses = getValue("allowed_ip_addresses");
         let allowed_external_urls = getValue("allowed_external_urls");
         let show_run_button = getValue("show_run_button") == "Yes";
+        let require_security_codes = parseInt(getValue("require_security_codes"));
         let use_virtual_assistant = getValue("use_virtual_assistant");
 
         var submission_obj = {
@@ -628,6 +643,7 @@
             "minute_timer": minute_timer,
             "restrict_other_assignments": restrict_other_assignments,
             "show_run_button": show_run_button,
+            "require_security_codes": require_security_codes, 
             "start_date": start_date,
             "prerequisite_assignment_ids": assignment_details_obj["prerequisite_assignment_ids"],
             "student_timer_exceptions": assignment_details_obj["student_timer_exceptions"],
@@ -711,5 +727,6 @@
     setValue("allowed_ip_addresses", assignment_details_obj["allowed_ip_addresses"]);
     setValue("allowed_external_urls", assignment_details_obj["allowed_external_urls"]);
     setValue("show_run_button", assignment_details_obj["show_run_button"] ? "Yes" : "No");
+    setValue("require_security_codes", assignment_details_obj["require_security_codes"]);
     setValue("use_virtual_assistant", assignment_details_obj["use_virtual_assistant"]);
 </script>

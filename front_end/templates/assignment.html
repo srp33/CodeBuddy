@@ -8,265 +8,109 @@
     <h4>{{ assignment_basics["title"] }}</h4>
 
     {% if assignment_basics["exists"] and len(exercise_statuses) > 0 %}
-        {% if len(prerequisite_assignments_not_completed) > 0 %}
-            <div class="notification is-danger">
-                The following assignment(s) must be fully completed be you can start this assignment:
+        <link rel="stylesheet" href="/static/css/modal.css">
 
-                <ul>
-                    {% for prerequisite_assignment in prerequisite_assignments_not_completed %}
-                        <li><a href="/assignment/{{ course_basics['id'] }}/{{ prerequisite_assignment[0] }}">{{ prerequisite_assignment[1] }}</a></li>
-                    {% end %}
-                </ul>
-            </div>
-        {% else %}
+        <p>
+            {{ assignment_details["introduction"] }}
+        </p>
+
+        {% if assignment_details["allowed_external_urls"] != "" %}
             <p>
-                {{ assignment_details["introduction"] }}
+                You can access these external pages while completing this assignment:
             </p>
 
-            {% if assignment_details["allowed_external_urls"] != "" %}
-                <p>
-                    You can access these external pages while completing this assignment:
-                </p>
+            <ul>
+                {% for url, encoded_url in assignment_details["allowed_external_urls_dict"].items() %}
+                    <li><a href="/external/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ encoded_url }}" target="_blank">{{ url }}</a></li>
+                {% end %}
+            </ul>
+        {% end %}
 
-                <ul>
-                    {% for url, encoded_url in assignment_details["allowed_external_urls_dict"].items() %}
-                        <li><a href="/external/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ encoded_url }}" target="_blank">{{ url }}</a></li>
-                    {% end %}
-                </ul>
-            {% end %}
+        {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
+            <div class='notification is-warning'>The due date for this assignment has passed, but you are still allowed to view the assignment.</div>
+        {% end %}
 
-            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
-                <div class='notification is-warning is-light'>The due date for this assignment has passed, but you are still allowed to view the assignment.</div>
-            {% end %}
+        {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
+            <div class='notification is-warning'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
+        {% end %}
 
-            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
-                <div class='notification is-warning is-light'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
-            {% end %}
+        {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+            <div class="notification is-primary" id="timer_message"></div>
 
-            {% if assignment_details["has_timer"] %}
-                <div class="notification is-primary" id="timer_message"></div>
+            <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mb-5 mr-2" type="button" style="cursor: default;"></button>
 
-                <button id="timer_button" class="button is-medium is-hidden is-rounded mb-5" type="button"></button>
+            <button id="timer_button" class="button is-medium is-rounded mb-5 is-outlined" type="button" style="cursor: pointer;"></button>
+        {% end %}
 
-                <link rel="stylesheet" href="/static/css/modal.css">
+        {% if assignment_details["require_security_codes"] == 2 and confirmation_code %}
+            <div class="notification has-background-grey-darker has-text-white" id="confirmation_code">Below is your confirmation code.<pre class='mt-4 pl-4 pt-0 pr-0 pb-0 is-size-4'>{{ confirmation_code }}</pre></div>
+        {% end %}
 
-                <div id="stop_timer_modal" class="modal">
-                    <div class="modal-content">
-                        <span id="stop_timer_close" class="close">&times;</span>
-                        <p>Are you sure you want to end this timed assignment early?</p>
-
-                        <p class="buttons">
-                            <a id="stop_timer_button" class="modal-button button is-dark">End timed assignment</a>
-                            <button type="button" id="stop_timer_cancel_button" class="modal-button button is-light">Cancel</button>
-                        </p>
-                    </div>
-                </div>
-            {% end %}
-
-            <div class="table-container">
-                <table class="table is-striped" id="assignment_table">
-                    <thead>
+        <div class="table-container">
+            <table class="table is-striped" id="assignment_table">
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th># Submissions</th>
+                        <th>Completed</th>
+                        <th>Score</th>
+                        {% if has_non_default_weight %}
+                            <th>Weight*</th>
+                        {% end %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exercise_i, exercise in enumerate(exercise_statuses) %}
                         <tr>
-                            <th>Exercise</th>
-                            <th># Submissions</th>
-                            <th>Completed</th>
-                            <th>Score</th>
-                            {% if has_non_default_weight %}
-                                <th>Weight*</th>
-                            {% end %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for exercise_i, exercise in enumerate(exercise_statuses) %}
-                            <tr>
+                            <td>
+                                <span id="exercise_title_{{ exercise_i}}_no_link" class="is-hidden">{{ exercise[1]["title"] }}</span>
+
+                                <span id="exercise_title_{{ exercise_i}}_link"><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a></span>
+                                
+                                {% if exercise[1]["enable_pair_programming"] %}
+                                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
+                                {% end %}
+                            </td>
+                            <td>{{ exercise[1]["num_submissions"] }}</td>
+
+                            {% if exercise[1]["passed"] %}
                                 <td>
-                                    <span id="exercise_title_{{ exercise_i}}_no_link" class="is-hidden">{{ exercise[1]["title"] }}</span>
-
-                                    <span id="exercise_title_{{ exercise_i}}_link"><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a></span>
-                                    
-                                    {% if exercise[1]["enable_pair_programming"] %}
-                                        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
-                                    {% end %}
+                                    <i class="far fa-check-circle"></i>
+                                    Completed
                                 </td>
-                                <td>{{ exercise[1]["num_submissions"] }}</td>
-
-                                {% if exercise[1]["passed"] %}
+                            {% else %}
+                                {% if exercise[1]["in_progress"] %}
                                     <td>
-                                        <i class="far fa-check-circle"></i>
-                                        Completed
+                                        <i class="far fa-hourglass"></i>
+                                        In progress
                                     </td>
                                 {% else %}
-                                    {% if exercise[1]["in_progress"] %}
-                                        <td>
-                                            <i class="far fa-hourglass"></i>
-                                            In progress
-                                        </td>
-                                    {% else %}
-                                        <td>
-                                            <i class="far fa-circle"></i>
-                                            Not started
-                                        </td>
-                                    {% end %}
+                                    <td>
+                                        <i class="far fa-circle"></i>
+                                        Not started
+                                    </td>
                                 {% end %}
+                            {% end %}
 
-                                <td>{{ exercise[1]["score"] }}%</td>
-                                {% if has_non_default_weight %}
-                                    <td>{{ exercise[1]["weight"] }}</td>
-                                {% end %}
-                            </tr>
-                        {% end %}
-                    </tbody>
-                </table>
-            </div>
+                            <td>{{ exercise[1]["score"] }}%</td>
+                            {% if has_non_default_weight %}
+                                <td>{{ exercise[1]["weight"] }}</td>
+                            {% end %}
+                        </tr>
+                    {% end %}
+                </tbody>
+            </table>
+        </div>
 
-            {% if assignment_details["has_timer"] %}
-                <script>
-                    function startTimer(timer_deadline) {
-                        updateTimeRemaining(timer_deadline);
+        {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+            <script>
+                const num_exercises = {{ len(exercise_statuses) }};
+                updateTimerStatus("{{ timer_status }}");
+            </script>
+        {% end %}
 
-                        const x = setInterval(function() {
-                            const remaining_time = updateTimeRemaining(timer_deadline);
-
-                            if (remaining_time <= 0) {
-                                clearInterval(x);
-                                updateTimerStatus("timer_expired", null);
-                            }
-                        }, 1000);
-                    }
-
-                    function updateTimeRemaining(timer_deadline) {
-                        const now = new Date().getTime();
-                        const remaining_time = timer_deadline - now;
-
-                        const hours = Math.floor((remaining_time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((remaining_time % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((remaining_time % (1000 * 60)) / 1000);
-
-                        $("#timer_button")[0].innerHTML = `<strong>Time remaining: ${hours}h ${minutes}m ${seconds}s</strong>`;
-
-                        return remaining_time;
-                    }
-
-                    function updateTimerMessage(message) {
-                        $("#timer_message")[0].innerHTML = `${message}`;
-                    }
-
-                    function updateTimerStatus(timer_status, timer_deadline, enable_click) {
-                        var message = "";
-
-                        if (timer_status == "timer_not_started") {
-                            message += `This is a timed assignment. Your time limit is {{ timer_hours }} hours and {{ timer_minutes }} minutes. Start the assignment when you are ready.`;
-
-                            $("#timer_button")[0].innerText = "Start assignment";
-                            $("#timer_button").removeClass("is-warning");
-                            $("#timer_button").addClass("is-primary");
-                            $("#timer_button").removeClass("is-hidden");
-                            $("#timer_button").click(function() {
-                                post("start_timer");
-                            });
-
-                            for (let i = 0; i < num_exercises; i++) {
-                                $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
-                                $(`#exercise_title_${i}_link`).addClass("is-hidden");
-                            }
-                        }
-
-                        if (timer_status == "timer_expired") {
-                            message += "This is a timed assignment. The time has expired or you ended the assignment early. You no longer have access to it.";
-
-                            $("#timer_button").addClass("is-hidden");
-
-                            for (let i = 0; i < num_exercises; i++) {
-                                $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
-                                $(`#exercise_title_${i}_link`).addClass("is-hidden");
-                            }
-                        }
-
-                        if (timer_status == "timer_in_progress") {
-                            message += "The timer has started. Click on the timer button if you wish to end the assignment early.";
-
-                            $("#timer_button").removeClass("is-primary");
-                            $("#timer_button").addClass("is-warning");
-                            $("#timer_button").removeClass("is-hidden");
-                            $("#timer_button").off('click');
-                            $("#timer_button").click(function() {
-                                showStopTimerModal();
-                            });
-
-                            timer_deadline = new Date(timer_deadline);
-                            timer_deadline.setMinutes(timer_deadline.getMinutes() - timer_deadline.getTimezoneOffset());
-                            startTimer(timer_deadline);
-
-                            for (let i = 0; i < num_exercises; i++) {
-                                $(`#exercise_title_${i}_no_link`).addClass("is-hidden");
-                                $(`#exercise_title_${i}_link`).removeClass("is-hidden");
-                            }
-                        }
-
-                        updateTimerMessage(message);
-                    }
-
-                    function post(task) {
-                        $.ajax({
-                            type: 'POST',
-                            url: "/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
-                            data: task,
-                            async: false})
-                            .done(function(response_message) {
-                                if (response_message.startsWith("Success")) {
-                                    if (task == "start_timer") {
-                                        updateTimerStatus("timer_in_progress", response_message.replace("Success: ", ""));
-                                    }
-                                    else {
-                                        updateTimerStatus("timer_expired", null);
-                                    }
-                                }
-                                else {
-                                    updateTimerMessage(response_message);
-                                }
-                            })
-                            .fail(function(data) {
-                                updateTimerMessage("An error occurred when connecting to the server. It may be down.");
-                            });
-                    }
-
-                    function showStopTimerModal() {
-                        var modal = document.getElementById("stop_timer_modal");
-                        var span = document.getElementsByClassName("close")[0];
-                        modal.style.display = "block";
-
-                        var cancelButton = document.getElementById("stop_timer_cancel_button");
-                        var stopTimerButton = document.getElementById("stop_timer_button");
-                        $("#stop_timer_error_message").addClass("invisible");
-
-                        stopTimerButton.onclick = function() {
-                            post("stop_timer");
-                            modal.style.display = "none";
-                        }
-
-                        cancelButton.onclick = function() {
-                            modal.style.display = "none";
-                        }
-
-                        span.onclick = function() {
-                            modal.style.display = "none";
-                        }
-
-                        window.onclick = function(event) {
-                            if (event.target == modal) {
-                                modal.style.display = "none";
-                            }
-                        }
-                    }
-
-                    const num_exercises = {{ len(exercise_statuses) }};
-                    updateTimerStatus("{{ timer_status }}", "{{ timer_deadline }}");
-                </script>
-            {% end %}
-
-            {% if has_non_default_weight %}
-                <p>* Exercises with relatively high weights count more toward the overall assignment score than exercises with relatively low weights.</p>
-            {% end %}
+        {% if has_non_default_weight %}
+            <p>* Exercises with relatively high weights count more toward the overall assignment score than exercises with relatively low weights.</p>
         {% end %}
     {% else %}
         <p>This assignment does not exist or else no exercises have been added to it yet.</p>

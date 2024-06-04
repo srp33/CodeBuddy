@@ -1,0 +1,102 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2023 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        <h4>Verify security code for {{ assignment_basics["title"] }}</h4>
+
+        <div class="notification is-danger is-hidden" id="result_message"></div>
+
+        <div class="has-background-white p-4 mt-4">
+            <p>Enter your 12-digit code:</p>
+            <p>
+                <input id="security_code_1" class="input is-grey is-medium monospace mr-4" style="width: 120px" maxlength="4" autofocus />
+
+                <input id="security_code_2" class="input is-grey is-medium monospace mr-4" style="width: 120px" maxlength="4" />
+
+                <input id="security_code_3" class="input is-grey is-medium monospace" style="width: 120px" maxlength="4" />
+            </p>
+        </div>
+
+        <div class="has-background-white p-4 mt-4">
+            <button class="button is-primary" onclick="verify();">Verify</button>
+        </div>
+
+        <script>
+            function verify() {
+                const security_code = getValue("security_code_1").trim() + getValue("security_code_2").trim() + getValue("security_code_3").trim();
+
+                // Check security code length.
+                if (security_code.length != 12) {
+                    return(showResultMessage("<b>The security code must be 12 characters in length.</b>", "danger"));
+                }
+
+                // Check for numbers and upper-case letters.
+                const regex = /^[A-Z0-9]+$/;
+                if (!regex.test(security_code)) {
+                    return(showResultMessage("<b>The security code must contain only numbers and upper-case letters.</b>", "danger"));
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: "/verify_security_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                    data: security_code,
+                    success: function(status) {
+                        if (status == "verified" || status == "previously_verified") {
+                            showResultMessage("The security code has been verified. You can proceed to the <a href='/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>assignment page</a>.", "primary");
+
+                            setTimeout(() => {
+                                window.location.href = `/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}`;
+                            }, 1000);
+                        }
+                        else {
+                            if (status == "could_not_verify") {
+                                showResultMessage("<b>The security code was NOT verified. Please enter a valid code.</b>", "danger");
+                            }
+                            else {
+                                showResultMessage(`<b>The following error occurred:<pre>${status}</pre>.</b>`, "danger");
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showResultMessage("<p>An error occurred when connecting to the server.</p>", "danger");
+                        console.error("Error: " + error);
+                    }
+                });
+            }
+
+            // Retrieve an input value from a particular control.
+            function getValue(id) {
+                return $(`#${id}`)[0].value;
+            }
+
+            function showResultMessage(messageHTML, messageType) {
+                $("#result_message").removeClass("is-primary");
+                $("#result_message").removeClass("is-warning");
+                $("#result_message").removeClass("is-danger");
+
+                $("#result_message").addClass(`is-${messageType}`);
+
+                $("#result_message").removeClass("is-hidden");
+                $("#result_message")[0].innerHTML = messageHTML;
+                window.scrollTo(0, 0);
+            }
+
+            // This function is invoked when Enter is pressed.
+            function handleEnterKeyPress(event) {
+                if (event.key === 'Enter') {
+                    verify();
+                }
+            }
+
+            document.getElementById('security_code_3').addEventListener('keydown', handleEnterKeyPress);
+        </script>
+    {% else %}
+        <p>No assignments have been created for this course, or no assignments have been configured to require security codes.</p>
+    {% end %}
+{% else %}
+    <h4>This course does not exist.</h4>
+{% end %}

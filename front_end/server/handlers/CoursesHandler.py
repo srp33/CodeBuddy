@@ -9,8 +9,7 @@ from BaseUserHandler import *
 class CoursesHandler(BaseUserHandler):
     async def get(self):
         try:
-            # First, we check whether this is the first time the app
-            # is being accessed. If so, make this user an admin.
+            # First, we check whether this is the first time the app is being accessed. If so, make this user an admin.
             user_count = self.get_content_cookie("user_count", 30)
             if user_count:
                 user_count = int(user_count)

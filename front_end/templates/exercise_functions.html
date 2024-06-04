@@ -656,4 +656,8 @@ function hasDueDatePassed() {
 
     return Date.now() > assignment_details.due_date.getTime()
 }
+
+function gotoAssignmentPage() {
+    window.location.href = `/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}`;
+}
 </script>

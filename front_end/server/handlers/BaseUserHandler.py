@@ -136,17 +136,17 @@ class BaseUserHandler(BaseRequestHandler):
 
         return self.content.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
-    async def get_partner_info(self, course_id, exclude_self):
+    async def get_partner_info(self, course_id):
         partner_info = self.update_cached_variable(str(course_id), f"partner_info_{course_id}", self.content.get_partner_info, course_id)
 
-        if exclude_self and self.user_info["name"] in partner_info:
-            del partner_info[self.user_info["name"]]
+        # if exclude_self and self.user_info["name"] in partner_info:
+        #     del partner_info[self.user_info["name"]]
 
         return partner_info
     
-    ###################################################
-    # Functions that help with managing cookies
-    ###################################################
+###################################################
+# Functions that help with managing cookies
+###################################################
 
     def update_cached_variable(self, update_key, variable_name, function_name, *args, **kwargs):
         if not hasattr(self, variable_name):
@@ -217,6 +217,10 @@ class BaseUserHandler(BaseRequestHandler):
     async def check_whether_should_show_exercise(self, course_id, assignment_id, assignment_details, assignments, courses, assignment_basics, course_basics):
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
             return True
+        
+        if assignment_details["require_security_codes"]:
+            if not self.content.has_verified_security_code(course_id, assignment_id, self.get_current_user()):
+                return self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignments=assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
 
         if assignment_details["has_timer"]:
             timer_status, __, __, __, __ = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
@@ -233,12 +237,13 @@ class BaseUserHandler(BaseRequestHandler):
         if self.content.is_taking_restricted_assignment(self.get_current_user(), assignment_id):
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="restrict_other_assignments", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
-        if len(await self.get_prerequisite_assignments_uncompleted(course_id, assignment_details)) > 0:
+        if len(await self.get_prerequisite_assignments_not_completed(course_id, assignment_details)) > 0:
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_uncompleted", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
         return True
     
-    async def get_prerequisite_assignments_uncompleted(self, course_id, assignment_details):
+    # TODO: Invoke this function when students attempt to access the exercise pages directly or when they attempt to pair program with someone who has completed prerequisites?
+    async def get_prerequisite_assignments_not_completed(self, course_id, assignment_details):
         prerequisite_assignments_not_completed = []
 
         for assignment_status in await self.content.get_assignment_statuses(course_id, self.get_current_user(), show_hidden=False):
