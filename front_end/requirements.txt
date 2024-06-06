@@ -3,7 +3,7 @@ fastapi==0.109.1
 gunicorn==22.0.0
 pydantic==1.10.13
 uvicorn==0.22.0
-tornado==6.3.3
+tornado==6.4.1
 requests==2.32.0
 Pillow==10.3.0
 pytz==2023.3.post1
