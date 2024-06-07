@@ -43,7 +43,7 @@ class SubmitHandler(BaseUserHandler):
                 partner_prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_not_completed(course_id, assignment_details, partner_id)
 
                 if len(partner_prerequisite_assignments_not_completed) > 0:
-                    out_dict["message"] = f"ineligible: Your pair-programming partner ({partner_name}) has NOT completed the prerequisite assignment(s) for this assignment, so you may not submit a solution with this partner. Your submission has NOT been saved."
+                    out_dict["message"] = f"ineligible: The specified pair-programming partner ({partner_name}) must contact the instructor to discuss this assignment. This submission has NOT been saved for either student."
 
                     return self.write(json.dumps(out_dict, default=str))
 
