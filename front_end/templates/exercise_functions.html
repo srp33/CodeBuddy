@@ -116,11 +116,17 @@ function submit() {
                 saved_div.innerHTML = "";
             }
             else {
-                showErrorMessage(response_dict["message"]);
+                if (response_dict["message"].startsWith("error: ")) {
+                    showErrorMessage(response_dict["message"].replace("error: ", ""));
+                }
+                else {
+                    showInfoMessage(response_dict["message"].replace("ineligible: ", ""));
+                }
             }
         })
         .fail(function(result) {
-            showErrorMessage(result);
+            console.log(result);
+            showErrorMessage("An unknown error occurred when attempting to contact the Web server. It may be down.");
         });
 
     editor.focus();

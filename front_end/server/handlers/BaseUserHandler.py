@@ -137,7 +137,7 @@ class BaseUserHandler(BaseRequestHandler):
         return self.content.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
     async def get_partner_info(self, course_id):
-        partner_info = self.update_cached_variable(str(course_id), f"partner_info_{course_id}", self.content.get_partner_info, course_id)
+        partner_info = self.update_cached_variable(str(course_id), f"partner_info_{course_id}", self.content.get_partner_info, course_id, self.get_current_user())
 
         # if exclude_self and self.user_info["name"] in partner_info:
         #     del partner_info[self.user_info["name"]]
@@ -237,16 +237,15 @@ class BaseUserHandler(BaseRequestHandler):
         if self.content.is_taking_restricted_assignment(self.get_current_user(), assignment_id):
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="restrict_other_assignments", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
-        if len(await self.get_prerequisite_assignments_not_completed(course_id, assignment_details)) > 0:
+        if len(await self.get_prerequisite_assignments_not_completed(course_id, assignment_details, self.get_current_user())) > 0:
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_uncompleted", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
         return True
-    
-    # TODO: Invoke this function when students attempt to access the exercise pages directly or when they attempt to pair program with someone who has completed prerequisites?
-    async def get_prerequisite_assignments_not_completed(self, course_id, assignment_details):
+
+    async def get_prerequisite_assignments_not_completed(self, course_id, assignment_details, student_id):
         prerequisite_assignments_not_completed = []
 
-        for assignment_status in await self.content.get_assignment_statuses(course_id, self.get_current_user(), show_hidden=False):
+        for assignment_status in await self.content.get_assignment_statuses(course_id, student_id, show_hidden=False):
             if assignment_status[0] in assignment_details["prerequisite_assignment_ids"] and not assignment_status[1]["passed"]:
                 prerequisite_assignments_not_completed.append([assignment_status[0], assignment_status[1]["title"]])
 

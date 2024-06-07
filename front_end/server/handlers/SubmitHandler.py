@@ -28,15 +28,24 @@ class SubmitHandler(BaseUserHandler):
                 num_submissions = await self.content.get_num_submissions(course_id, assignment_id, exercise_id, user_id)
             
                 if num_submissions >= exercise_details["max_submissions"]:
-                    out_dict["message"] = "You have exceeded the maximum number of allowed submissions for this exercise."
-                    self.write(json.dumps(out_dict, default=str))
-                    return
+                    out_dict["message"] = "ineligible: You have exceeded the maximum number of allowed submissions for this exercise."
+                    return self.write(json.dumps(out_dict, default=str))
                 
             set_assignment_due_date_passed(assignment_details)
             if assignment_details["due_date_passed"] and not assignment_details["allow_late"]:
-                out_dict["message"] = "The due date has passed for this assignment."
-                self.write(json.dumps(out_dict, default=str))
-                return
+                out_dict["message"] = "ineligible: The due date has passed for this assignment."
+                
+                return self.write(json.dumps(out_dict, default=str))
+            
+            if partner_id:
+                partner_name = self.content.get_user_info(partner_id)['name']
+
+                partner_prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_not_completed(course_id, assignment_details, partner_id)
+
+                if len(partner_prerequisite_assignments_not_completed) > 0:
+                    out_dict["message"] = f"ineligible: Your pair-programming partner ({partner_name}) has NOT completed the prerequisite assignment(s) for this assignment, so you may not submit a solution with this partner. Your submission has NOT been saved."
+
+                    return self.write(json.dumps(out_dict, default=str))
 
             out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 
@@ -48,19 +57,19 @@ class SubmitHandler(BaseUserHandler):
                 out_dict["submission_id"] = await self.content.save_submission(course_id, assignment_id, exercise_id, user_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], partner_id)
 
                 if partner_id:
-                    await self.content.save_submission(course_id, assignment_id, exercise_id, partner_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], user_id)
+                    out_dict["partner_name"] = partner_name
 
-                    out_dict["partner_name"] = self.content.get_user_info(partner_id)["name"]
+                    await self.content.save_submission(course_id, assignment_id, exercise_id, partner_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], user_id)
 
                 sanitize_test_outputs(exercise_details, out_dict["test_outputs"])
         except ConnectionError as inst:
-            out_dict["message"] = "The front-end server was unable to contact the back-end server."
+            out_dict["message"] = "error: The front-end server was unable to contact the back-end server."
             out_dict["all_passed"] = False
         except ReadTimeout as inst:
-            out_dict["message"] = f"Your solution timed out after {self.settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
+            out_dict["message"] = f"error: Your solution timed out after {self.settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
             out_dict["all_passed"] = False
         except Exception as inst:
-            out_dict["message"] = format_output_as_html(traceback.format_exc())
+            out_dict["message"] = f"error: {format_output_as_html(traceback.format_exc())}"
             out_dict["all_passed"] = False
 
         self.write(json.dumps(out_dict, default=str))

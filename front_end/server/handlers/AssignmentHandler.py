@@ -74,7 +74,7 @@ class AssignmentHandler(BaseUserHandler):
                 if not confirmation_code:
                     return self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignments=assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
 
-            prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_not_completed(course_id, assignment_details)
+            prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_not_completed(course_id, assignment_details, self.get_current_user())
 
             if len(prerequisite_assignments_not_completed) > 0:
                 return self.render("unavailable_assignment.html", courses=self.courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_not_completed", prerequisite_assignments_not_completed=prerequisite_assignments_not_completed, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))

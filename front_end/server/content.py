@@ -664,9 +664,9 @@ class Content:
 
         return exercises2
 
-    def get_partner_info(self, course_id):
+    def get_partner_info(self, course_id, current_user_id):
         # Gets list of users.
-        users = [x[1] for x in self.get_registered_students(course_id)]
+        users = [x[1] for x in self.get_registered_students(course_id) if x[1]["id"] != current_user_id]
 
         # Adds users to dict to find duplicate names.
         user_duplicates_dict = {}
