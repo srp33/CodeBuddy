@@ -472,3 +472,11 @@ module {
   border-radius: 20px;
   padding: 1em 2em;
 }
+
+/* Custom CSS to maintain the outline on hover for specific buttons */
+.button.is-outlined.no-hover-change:hover {
+  background-color: transparent !important;
+  color: inherit !important;
+  border-color: inherit !important;
+  box-shadow: none !important;
+}

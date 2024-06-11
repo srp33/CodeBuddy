@@ -72,17 +72,43 @@
             </div>
 
             {% if len(exercise_details["data_files"]) > 0 %}
-                <div id="data_file_div" class="top-space">
-                <h6>Data files:</h6>
-                {% for data_file_index in range(len(exercise_details["data_files"])) %}
-                    <p>
-                        <a class="is-family-monospace is-size-5" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">{{ sorted(list(exercise_details["data_files"].keys()))[data_file_index] }}</a>
-                        <a class="button is-white" id="data_button_{{ data_file_index }}" onclick="showHideData('data_panel_{{ data_file_index }}', 'data_button_{{ data_file_index }}')">Show</a>
-                    </p>
-                    <pre id="data_panel_{{ data_file_index }}" hidden>
-                        {{ exercise_details["data_files"][sorted(list(exercise_details["data_files"].keys()))[data_file_index]] }}
-                    </pre>
-                {% end %}
+                <div id="data_file_div" class="has-background-white mt-1 mb-1 pl-4 pt-4 pb-1">
+                    <div class="title is-5 m-0 pl-0 pt-0 pr-0 pb-4">
+                        {% if len(exercise_details["data_files"]) == 1 %}
+                            Data file:
+                        {% else %}
+                            Data file(s):
+                        {% end %}
+                    </div>
+
+                    {% for data_file_index in range(len(exercise_details["data_files"])) %}
+                        {% set data_file_name = sorted(list(exercise_details["data_files"].keys()))[data_file_index] %}
+                        {% set data_file_extension = data_file_name.split(".")[-1] %}
+
+                        <div class="pl-4 pr-4 pb-4">
+                            <span class="is-family-monospace is-size-5">{{ data_file_name }}</span>
+
+                            {% if data_file_extension == "hide" %}
+                                <span class="ml-1">- The contents of this file are hidden.
+                                </span>
+                            {% else %}
+                                <a class="ml-1" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">
+                                    <i class="fas fa-download"></i>
+                                </a>
+
+                                {% if data_file_extension in ["csv", "tsv", "txt", "json", "fa", "fasta", "fastq", "xml"] %}
+                                    <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_raw_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, false)">Raw</button>
+                                {% end %}
+
+                                {% if data_file_extension in ["csv", "tsv"] %}
+                                    <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_formatted_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, true)">Formatted</button>
+                                {% end %}
+
+                                <div id="data_panel_{{ data_file_index }}" class="is-hidden">
+                                </div>
+                            {% end %}
+                        </div>
+                    {% end %}
                 </div>
             {% end %}
 
@@ -127,8 +153,8 @@
                 editor.focus();
                 editor.getSession().setMode("{{ code_completion_path }}");
 
+                var data_files = {{ jsonify(exercise_details["data_files"]) }};
                 const tests = {{ jsonify(tests) }};
-
                 var submissions = {{ jsonify(submissions) }};
                 var presubmission = {{ jsonify(presubmission) }};
 

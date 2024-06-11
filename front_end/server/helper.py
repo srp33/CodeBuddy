@@ -417,25 +417,12 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
 
     for file_name in exercise_details["data_files"]:
         if file_name.endswith(".hide"):
-            exercise_details["data_files"][file_name] = "The contents of this file are hidden."
-        elif format_data:
-            if file_name.endswith(".csv"):
-                exercise_details["data_files"][file_name] = format_delimited_data_as_table(exercise_details["data_files"][file_name], ",")
-            elif file_name.endswith(".tsv"):
-                exercise_details["data_files"][file_name] = format_delimited_data_as_table(exercise_details["data_files"][file_name], "\t")
+            exercise_details["data_files"][file_name] = ""
 
 def set_assignment_due_date_passed(assignment_details):
     assignment_details["due_date_passed"] = None
     if assignment_details["due_date"]:
         assignment_details["due_date_passed"] = datetime.utcnow() > assignment_details["due_date"]
-
-def format_delimited_data_as_table(data_text, delimiter):
-    table = "<table>"
-
-    for line in data_text.split("\n"):
-        table += "<tr><td>" + "</td><td>".join(line.split(delimiter)) + "</td></tr>"
-
-    return table + "</table>"
 
 def modify_what_students_see(exercise_details, user_info):
     exercise_details["show_instructor_solution"] = False

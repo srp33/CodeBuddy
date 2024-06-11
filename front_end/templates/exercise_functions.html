@@ -607,18 +607,64 @@ function showHideHint() {
     }
 }
 
-function showHideData(dataPanelID, dataButtonID) {
-    var data_panel = document.getElementById(dataPanelID);
-    var data_button = document.getElementById(dataButtonID);
+function showHideData(data_file_index, format) {
+    let dataPanelID = `#data_panel_${data_file_index}`;
+    let dataButtonID = format ? `#data_button_formatted_${data_file_index}` : `#data_button_raw_${data_file_index}`;
+    let otherDataButtonID = format ? `#data_button_raw_${data_file_index}` : `#data_button_formatted_${data_file_index}`;
 
-    if (data_panel.hidden) {
-        data_panel.hidden = false;
-        data_button.innerHTML = "Hide";
+    if ($(dataPanelID).hasClass("is-hidden") || !$(otherDataButtonID).hasClass("is-outlined")) {
+        // Retrieve the name of the data file at the specified index.
+        const keys = Object.keys(data_files);
+        keys.sort();
+        const data_file_name = keys[data_file_index];
+
+        // Show the data
+        $(dataPanelID).removeClass("is-hidden");
+
+        if (format) {
+            let delimiter = data_file_name.endsWith(".tsv") ? "\t" : ",";
+
+            $(dataPanelID)[0].innerHTML = formatDelimitedDataAsTable(data_files[data_file_name], delimiter);
+        }
+        else {
+            $(dataPanelID)[0].innerHTML = `<pre class=" has-background-light mt-2">${data_files[data_file_name]}</pre>`;
+        }
+
+        $(dataButtonID).removeClass("is-outlined");
+        $(otherDataButtonID).addClass("is-outlined");
     }
     else {
-        data_panel.hidden = true;
-        data_button.innerHTML = "Show";
+        // Hide the data
+        $(dataPanelID).addClass("is-hidden");
+        $(dataPanelID)[0].innerHTML = "";
+
+        $(dataButtonID).addClass("is-outlined");
+        $(otherDataButtonID).addClass("is-outlined");
     }
+
+    $(dataButtonID)[0].blur();
+    $(otherDataButtonID)[0].blur();
+}
+
+function formatDelimitedDataAsTable(dataText, delimiter) {
+    let table = "<div class='table-container'><table class='table is-striped'>";
+
+    const lines = trimNewLines(dataText).split("\n");
+
+    lines.forEach((line, index) => {
+        const cells = line.split(delimiter);
+        if (index === 0) {
+            table += "<tr><th>" + cells.join("</th><th>") + "</th></tr>";
+        } else {
+            table += "<tr><td>" + cells.join("</td><td>") + "</td></tr>";
+        }
+    });
+
+    return table + "</table></div>";
+}
+
+function trimNewLines(str) {
+    return str.replace(/[\n\r]+$/, '');
 }
 
 function reloadIfRestricted(save_first) {
