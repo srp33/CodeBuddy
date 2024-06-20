@@ -59,16 +59,16 @@
                             <td>No</td>
                         {% end %}
 
-                        {% if assignment[1]["passed"] %}
+                        {% if assignment[1]["completed"] %}
                             <td>
                                 <i class="far fa-check-circle"></i>
                                 Completed
                             </td>
                         {% else %}
-                            {% if assignment[1]["time_has_expired"] %}
+                            {% if assignment[1]["timer_has_ended"] %}
                                 <td>
                                     <i class="far fa-clock"></i>
-                                    Timer expired
+                                    Timer ended
                                 </td>
                             {% elif assignment[1]["in_progress"] %}
                                 <td>
@@ -83,7 +83,7 @@
                             {% end %}
                         {% end %}
 
-                        <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_passed'] }}" max="{{ assignment[1]['num_exercises'] }}"></progress>{{ assignment[1]["num_passed"] }} / {{ assignment[1]["num_exercises"] }}</td>
+                        <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_completed'] }}" max="{{ assignment[1]['num_exercises'] }}"></progress>{{ assignment[1]["num_completed"] }} / {{ assignment[1]["num_exercises"] }}</td>
                     </tr>
                 {% end %}
                 </tbody>

@@ -26,30 +26,51 @@
                         href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
                     {% end %}
                     >
-                    {% if exercise[1]["passed"] %}
-                        <i class="far fa-check-circle"
-                        
-                        {% if exercise[0] == exercise_basics['id'] %}
-                            style="color: white;"
-                        {% end %}
 
-                        ></i>&nbsp;
-                    {% elif exercise[1]["in_progress"] %}
-                        <i class="far fa-hourglass"
-                        
-                        {% if exercise[0] == exercise_basics['id'] %}
-                            style="color: white;"
-                        {% end %}
+                    {% if exercise[1]["is_multiple_choice"] %}
+                        {% if exercise[1]["num_submissions"] == 0 %}
+                            <i class="far fa-circle"
 
-                        ></i>&nbsp;
+                            {% if exercise[0] == exercise_basics['id'] %}
+                                style="color: white;"
+                            {% end %}
+
+                            ></i>&nbsp;
+                        {% else %}
+                            <i class="far fa-check-circle"
+
+                            {% if exercise[0] == exercise_basics['id'] %}
+                                style="color: white;"
+                            {% end %}
+
+                            ></i>&nbsp;
+                        {% end %}
                     {% else %}
-                        <i class="far fa-circle"
-                        
-                        {% if exercise[0] == exercise_basics['id'] %}
-                            style="color: white;"
-                        {% end %}
+                        {% if exercise[1]["passed"] %}
+                            <i class="far fa-check-circle"
+                            
+                            {% if exercise[0] == exercise_basics['id'] %}
+                                style="color: white;"
+                            {% end %}
 
-                        ></i>&nbsp;
+                            ></i>&nbsp;
+                        {% elif exercise[1]["in_progress"] %}
+                            <i class="far fa-hourglass"
+                            
+                            {% if exercise[0] == exercise_basics['id'] %}
+                                style="color: white;"
+                            {% end %}
+
+                            ></i>&nbsp;
+                        {% else %}
+                            <i class="far fa-circle"
+                            
+                            {% if exercise[0] == exercise_basics['id'] %}
+                                style="color: white;"
+                            {% end %}
+
+                            ></i>&nbsp;
+                        {% end %}
                     {% end %}
 
                     {{ exercise[1]["title"] }}

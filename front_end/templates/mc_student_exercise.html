@@ -1,0 +1,67 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2023 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        {% if exercise_basics["exists"] %}
+            <div>
+                <h4 style="display: inline-block;">{{ assignment_basics["title"] }}</h4>
+                <div class="row-container">
+                    <div>
+                        <h5 style="display: inline-block;">{{ exercise_basics["title"] }}</h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <div id="instructions">{{ exercise_details["instructions"] }}</div>
+            </div>
+
+            <h5 class="title is-5 pt-2">Below are the answer options.</h5>
+
+            <div class="has-background-white mt-0 mb-2 pl-4 pt-1 pr-4 pb-2">
+                <ul>
+                    {% for answer_option in answer_options %}
+                        <div class="is-size-5 mb-2">
+                            <li>
+                                {% if answer_option[1] %}
+                                    <strong>
+                                {% end %}
+
+                                {{ answer_option[0] }}
+
+                                {% if answer_option[1] %}
+                                    (correct answer)</strong>
+                                {% end %}
+                            </li>
+                        </div>
+                    {% end %}
+                </ul>
+            </div>
+
+            {% if len(submissions) == 0 %}
+                <div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">The student has not yet provided an answer.</div>
+            {% else %}
+                <div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">The student provided the following answer(s):<br /><br />{{ submissions[0]["code"] }}</div>
+            {% end %}
+
+            {% if exercise_basics["enable_pair_programming"] %}
+                <div class="has-background-white mt-1 mb-2 pl-4 pt-4 pb-4">
+                    <i class="fab fa-product-hunt"></i>
+                    <em>Pair programming is enabled for this exercise.</em>
+                </div>
+            {% end %}
+
+            <div class="mt-2" id="result_message"></div>
+        {% else %}
+            <p>This exercise does not exist.</p>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
+{% else %}
+    <p>This course does not exist.</p>
+{% end %}

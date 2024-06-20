@@ -231,6 +231,15 @@
             </div>
 
             <script>
+                function get_user_solution() {
+                    // This line allows you to execute only the selected part of the code.
+                    // But it may cause confusion to students, so it is disabled.
+                    //user_code = editor.getSelectedText().trim();
+                    //if (user_code == "")
+                    user_code = editor.getValue().trim();
+                    return editor.getValue().trim();
+                }
+
                 {% if use_virtual_assistant %}
                     let left_column = document.getElementById("left_column");
                     let right_column = document.getElementById("right_column");
@@ -442,7 +451,7 @@
                         editor.setValue(presubmission, 1);
                     }
                     else {
-                        get_submission(latest_submission.id, false, true);
+                        get_code_submission(latest_submission.id, false, true);
                     }
                 }
 

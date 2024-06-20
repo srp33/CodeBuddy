@@ -5,711 +5,750 @@
 <!-- </copyright_statement>-->
 
 <script>
-function get_user_code() {
-    // This line allows you to execute only the selected part of the code.
-    // But it may cause confusion to students, so it is disabled.
-    //user_code = editor.getSelectedText().trim();
+    {% if "previous_submission_code" in exercise_details %}
+        function copy_code_from_previous_exercise() {
+            var previous_code = `{{ exercise_details["previous_submission_code"] }}`;
 
-    //if (user_code == "")
-        user_code = editor.getValue().trim();
+            // We used a placeholder to replace backticks because backticks can cause a problem on the Javascript side. We replace tab and newline characters as well because they do not get translated properly on the front end.
+            previous_code = previous_code.replace(/_bcktck_/g, "`").replace(/_xyzslashxyz_/g, "\\")
 
-    return user_code;
-}
+            let cursor_index = editor.session.doc.positionToIndex(editor.getCursorPosition());
 
-{% if "previous_submission_code" in exercise_details %}
-    function copy_code_from_previous_exercise() {
-        var previous_code = `{{ exercise_details["previous_submission_code"] }}`;
-
-        // We used a placeholder to replace backticks because backticks can cause a problem on the Javascript side. We replace tab and newline characters as well because they do not get translated properly on the front end.
-        previous_code = previous_code.replace(/_bcktck_/g, "`").replace(/_xyzslashxyz_/g, "\\")
-
-        let cursor_index = editor.session.doc.positionToIndex(editor.getCursorPosition());
-
-        if (editor.getValue().trim() == "") {
-            var new_code = previous_code;
-        }
-        else {
-            let current_code = editor.getValue();
-
-            var new_code = current_code.substring(0, cursor_index) + previous_code + current_code.substring(cursor_index, current_code.length);
-        }
-
-        editor.setValue(new_code, cursor_index);
-        editor.clearSelection();
-        editor.focus();
-    }
-{% end %}
-
-function run_code(show_submit_warning) {
-    user_code = get_user_code();
-    if (user_code == "")
-        return false;
-
-    hideMessages();
-    showWaitMessage();
-
-    $.ajax({
-        type: 'POST',
-        url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-        data: {"user_code": user_code},
-        async: true,
-        timeout: 300000  // 5 minute timeout (longer than we would expect the server to take)
-    }).done(function(result) {
-            var response_dict = JSON.parse(result);
-
-            if (response_dict["message"] == "") {
-                hideMessages();
-                showTestOutputs(response_dict["test_outputs"], true);
-
-                if (show_submit_warning && response_dict["all_passed"])
-                    showInfoMessage("Be sure to click on Submit so your solution and score will be saved.");
+            if (editor.getValue().trim() == "") {
+                var new_code = previous_code;
             }
             else {
-                showErrorMessage(response_dict["message"]);
+                let current_code = editor.getValue();
+
+                var new_code = current_code.substring(0, cursor_index) + previous_code + current_code.substring(cursor_index, current_code.length);
             }
-        })
-        .fail(function(result) {
-            console.log(result);
-            showErrorMessage("The cause of the error is unknown. Please consult the instructor if it continues.");
-        });
 
-    editor.focus();
-    return false;
-}
+            editor.setValue(new_code, cursor_index);
+            editor.clearSelection();
+            editor.focus();
+        }
+    {% end %}
 
-function submit() {
-    user_code = get_user_code();
-    if (user_code == "") {
-        return false;
-    }
+    function run_code(show_submit_warning) {
+        let user_solution = get_user_solution();
+        if (user_solution == "")
+            return false;
 
-    hideMessages();
-    showWaitMessage();
+        hideMessages();
+        showWaitMessage();
 
-    let partner_id = $("#partner_id")[0].value == "" ? null : $("#partner_id")[0].value;
+        $.ajax({
+            type: 'POST',
+            url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+            data: {"user_code": user_solution},
+            async: true,
+            timeout: 300000  // 5 minute timeout (longer than we would expect the server to take)
+        }).done(function(result) {
+                var response_dict = JSON.parse(result);
 
-    let submission_date = new Date();
+                if (response_dict["message"] == "") {
+                    hideMessages();
+                    showTestOutputs(response_dict["test_outputs"], true);
 
-    post_data = {"partner_id": partner_id, "code": user_code, "date": submission_date.toLocaleString("en-US", {timeZone: "UTC"})};
-
-    $.ajax({
-        type: 'POST',
-        url: "/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-        data: post_data,
-        async: true})
-        .done(function(result) {
-            var response_dict = JSON.parse(result);
-
-            if (response_dict["message"] == "") {
-                submission = {
-                    "id": response_dict["submission_id"],
-                    "code": user_code,
-                    "date": submission_date.toLocaleString(),
-                    "passed": response_dict["all_passed"],
-                    "partner_name": response_dict["partner_name"],
-                    "test_outputs": response_dict["test_outputs"]};
-                submissions.push(submission);
-
-                show_past_submissions();
-                get_submission(response_dict["submission_id"], false, true);
-
-                saved_div.innerHTML = "";
-            }
-            else {
-                if (response_dict["message"].startsWith("error: ")) {
-                    showErrorMessage(response_dict["message"].replace("error: ", ""));
+                    if (show_submit_warning && response_dict["all_passed"])
+                        showInfoMessage("Be sure to click on Submit so your solution and score will be saved.");
                 }
                 else {
-                    showInfoMessage(response_dict["message"].replace("ineligible: ", ""));
+                    showErrorMessage(response_dict["message"]);
                 }
-            }
-        })
-        .fail(function(result) {
-            console.log(result);
-            showErrorMessage("An unknown error occurred when attempting to contact the Web server. It may be down.");
-        });
-
-    editor.focus();
-}
-
-function showWaitMessage() {
-    $("#result_message")[0].innerHTML = "<div class='notification is-warning'>Please wait while your solution is being processed...</div>";
-    $("#result_message")[0].scrollIntoView();
-}
-
- function hideMessages() {
-    $("#result_message")[0].innerHTML = "";
-    $("#test_outputs")[0].innerHTML = "";
-}
-
-function showSuccessMessage(submission) {
-    {% if exercise_details["allow_any_response"] %}
-        let message = "Thank you for your submission.";
-    {% else %}
-        // let share_message = "<button class='button is-pulled-right' onclick='showLinkModal()'>Share your success!&nbsp;&nbsp;&nbsp;<span class='icon'><i class='fas fa-share'></i></span></button>";
-        let share_message = "";
-
-        {% if len(exercise_details["tests"]) == 1 %}
-            var message = "Congratulations! Your solution passes the test." + share_message;
-        {% else %}
-            var message = "Congratulations! Your solution passes all of the tests." + share_message;
-        {% end %}
-
-        if (submission.partner_name != null)
-            message += ` Your programming partner was ${submission.partner_name}.`
-    {% end %}
-
-    var result = "<div class='notification success-message' style='color:white'><p><strong>" + message + "</strong></p>";
-
-    {% if exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
-        result += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> the instructor's solution.</p>";
-    {% end %}
-
-    {% if exercise_details["show_peer_solution"] and (exercise_details["solution_code"] != "") %}
-        result += "<p><a class='grey-text' href='/view_peer_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> a solution from one of your peers.</p>";
-    {% end %}
-
-    result += "</div>"
-
-    $("#result_message")[0].innerHTML = result;
-}
-
-function showNotPassingMessage(num_tests) {
-    var message = "Your solution does not yet pass the test";
-
-    if (num_tests > 1)
-        message += "s";
-                    
-    message += ". Keep working at it. You can do this!";
-
-    $("#result_message")[0].innerHTML = `<div class='notification not-passing' style='color: white'>${message}</div>`;
-}
-
-function showErrorMessage(message) {
-    $("#result_message")[0].innerHTML = `<div class='notification is-danger' style='color: white'>An error occurred while your code was being processed.</div><pre>${message}</pre>`;
-    $("#result_message")[0].scrollIntoView();
-}
-
-function showInfoMessage(message) {
-    $("#result_message")[0].innerHTML = `<div class='notification is-dark'>${message}</div>`;
-}
-
-function showTestOutputs(test_outputs, scroll) {
-    var output = "";
-
-    // This is what we do if we haven't gone to the server yet.
-    if (test_outputs == null || test_outputs.length == 0) {
-        test_outputs = {};
-
-        for (let test_title of Object.keys(tests)) {
-            test_outputs[test_title] = {};
-            test_outputs[test_title]["txt_output"] = null;
-            test_outputs[test_title]["jpg_output"] = null;
-            test_outputs[test_title]["passed"] = null;
-        }
-    }
-
-    var tests_output = "";
-
-    {% if exercise_details["allow_any_response"] %}
-        {% if exercise_details["back_end"] != "not_code" %}
-            var test_header = "";
-            var test_output = test_outputs[Object.keys(test_outputs)[0]];
-
-            if (test_output != null && test_output.passed != null) {
-                tests_output = buildStudentOutput(test_output);
-            }
-        {% end %}
-    {% else %}
-        if (Object.keys(test_outputs).length == 1) {
-            var test_header = "<h6>Test:</h6>";
-            tests_output = buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
-        }
-        else {
-            var test_header = "<h6>Tests:</h6>";
-
-            var test_titles = Object.keys(test_outputs);
-            test_titles.sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true}));
-
-            for (let test_title of test_titles)
-                tests_output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
-        }
-    {% end %}
-
-    if (tests_output != "") {
-        output += test_header + tests_output;
-    }
-
-    $("#test_outputs")[0].innerHTML = output;
-
-    if (scroll)
-        $("#test_outputs")[0].scrollIntoView();
-}
-
-function buildTestOutput(test_outputs, test_title, show_title, is_last) {
-    if (!(test_title in tests)) {
-        return "";
-    }
-
-    if (test_outputs[test_title].passed == null) {
-        var test_class = "neutral-bd-color";
-        var test_message = show_title ? test_title : "";
-    }
-    else {
-        if (test_outputs[test_title].passed) {
-            var test_class = "passing-bd-color";
-            // var test_class = "is-primary";
-
-            if (show_title)
-                var test_message = `${test_title} - Passing`;
-            else
-                var test_message = `Passing`;
-        }
-        else {
-            var test_class = "failing-bd-color";
-            // var test_class = "is-warning";
-
-            if (show_title)
-                var test_message = `${test_title} - Not passing`;
-            else
-                var test_message = `Not passing`;
-        }
-    }
-
-    if (is_last)
-        var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 0px">`;
-    else
-        var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 10px">`;
-
-    if (test_message == "")
-        output += `<div style="padding: 0.75em 0.5em 0em 1.25em;margin:0"></div>`;
-    else
-        output += `<h6 style="padding: 0.75em 0.5em 0.25em 1.25em;margin:0">${test_message}</h6>`;
-
-    output += '<div style="padding: 0em 1.25em 0.75em 1.25em">';
-
-    if (tests[test_title]["instructions"] != "") {
-        output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">${tests[test_title]["instructions"]}</div>`;
-    }
-
-    if (tests[test_title].can_see_test_code) {
-        if (tests[test_title].before_code != "") {
-            var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed before your code:</div>';
-            if (test_outputs[test_title].passed != null)
-                message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed before your code:</div>';
-
-            output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].before_code + '</pre>';
-        }
-
-        if (tests[test_title].after_code != "") {
-            var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed after your code:</div>';
-            if (test_outputs[test_title].passed != null)
-                message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed after your code:</div>';
-
-            output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].after_code + '</pre>';
-        }
-    }
-    else {
-        output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The test code will not be shown for this test.</em></div>';
-    }
-
-    if (test_outputs[test_title]["passed"] == null || !test_outputs[test_title]["passed"]) {
-        if (tests[test_title].can_see_expected_output) {
-            var expected_output = "";
-
-            if (tests[test_title]["txt_output_formatted"] != null && tests[test_title]["txt_output_formatted"] != "") {
-                expected_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title]["txt_output_formatted"] + '</pre>';
-            }
-
-            if (tests[test_title]["jpg_output"] != null && tests[test_title]["jpg_output"] != "") {
-                expected_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + tests[test_title]["jpg_output"] + '" width="600" height="600" alt="The image-based expected output." /></p>';
-            }
-
-            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</div>' + expected_output;
-        }
-        else {
-            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The expected output will not be shown for this test.</em></div>';
-        }
-    }
-
-    if (test_outputs[test_title].passed != null) {
-        if (tests[test_title].can_see_code_output) {
-            output += buildStudentOutput(test_outputs[test_title]);
-
-            if (tests[test_title].can_see_expected_output && !test_outputs[test_title].passed) {
-                var diff_output = test_outputs[test_title]["diff_output"];
-
-                if (diff_output != "") {
-                    output += "<div class='mt-4'>";
-                    output += `<form action="/diff" method="POST" target="diff_page">
-                        <input type="hidden" name="course_id" value="{{ course_basics["id"] }}">
-                        <input type="hidden" name="assignment_id" value="{{ assignment_basics["id"] }}">
-                        <input type="hidden" name="exercise_id" value="{{ exercise_basics["id"] }}">`;
-
-                    {% if exercise_details["output_type"] == "txt" %}
-                        output += `<input type="hidden" name="expected_output" value="`;
-                        output += encodeURI(tests[test_title]["txt_output"]);
-                        output += `">`;
-                        output += `<input type="hidden" name="actual_output", value="`;
-                        output += encodeURI(test_outputs[test_title]["txt_output"]);
-                        output += `">`;
-                    {% else %}
-                        output += `<input type="hidden" name="diff_output", value="`;
-                        output += diff_output;
-                        output += `">`;
-                    {% end %}
-                    
-                    output += `<input type="submit" value="View differences" class="button">
-                        </form>`;
-                    output += "</div>";
-                }
-            }
-        }
-        else {
-            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>Your output will not be shown for this test.</em></div>';
-        }
-    }
-
-    output += `</div>`;
-    output += `</div>`;
-
-    return output;
-}
-
-function buildStudentOutput(test_output) {
-    output = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</div>';
-
-    if ("{{ exercise_details["output_type"] }}" == "txt" || test_output["txt_output"] != "")
-        output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + test_output["txt_output_formatted"] + '</pre>';
-
-    if ("{{ exercise_details["output_type"] }}" == "jpg") {
-        if (test_output["jpg_output"] == "") {
-            output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">[No image was generated.]</pre>';
-        }
-        else {
-            output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_output["jpg_output"] + '"` width="600" height="600" alt="The image-based output of the code." /></p>';
-        }
-    }
-
-    return output;
-}
-
-function get_submission(submission_id, scroll, change_border) {
-    window.wasUserChange = false;
-
-    hideMessages();
-
-    var this_submission;
-
-    for (let submission of submissions) {
-        if ($(`#submission_button_${submission.id}`).length > 0) {
-            $(`#submission_button_${submission.id}`)[0].style.border = "none";
-        }
-
-        if (submission.id == submission_id) {
-            this_submission = submission;
-
-            if ($(`#submission_button_${submission.id}`).length > 0) {
-                if (change_border) {
-                    $(`#submission_button_${submission.id}`)[0].style.border = "solid #000000";
-                }
-            }
-        }
-    }
-
-    if (scroll)
-        $("#user_code_area")[0].scrollIntoView();
-
-    editor.focus();
-    editor.setValue(this_submission.code, -1);
-
-    if (this_submission["passed"])
-        showSuccessMessage(this_submission);
-    else
-        showNotPassingMessage(this_submission["test_outputs"].length);
-
-    if ({{ exercise_details["max_submissions"]}} > 0 && submissions.length >= {{ exercise_details["max_submissions"]}}) {
-        $("#submit_button")[0].disabled = true;
-        $("#submit_button")[0].hidden = true;
-    }
-
-    showTestOutputs(this_submission["test_outputs"], false);
-
-    {% if exercise_details["max_submissions"] > 0 %}
-        $("#max_submissions_message")[0].innerHTML = `<div style="padding: 0em 0.5em 1.25em 0em;margin:0"><em>You have made ${submissions.length} of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></div>`;
-    {% end %}
-
-    window.wasUserChange = true;
-}
-
-function show_past_submissions() {
-    var submissions_div = document.getElementById("submissions");
-
-    var submission_html = "";
-    var revert_html = "";
-    var current_code = editor.getValue()
-
-    if (submissions.length > 1) {
-        submission_html += "<h6>Past submissions:</h6>";
-        submission_html += "<div class='buttons'>";
-
-        var i;
-        for (i = submissions.length - 1; i >= 0; i--) {
-            submission = submissions[i];
-
-            if (submission.passed)
-                button_bd_color = "passing-btn-color";
-            else
-                button_bd_color = "failing-btn-color";
-
-            var submission_date = new Date(submission.date).toLocaleString();
-
-            if (submission.partner_name)
-                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Programming partner: ${submission.partner_name}"><i class="fab fa-product-hunt"></i></label></button>`;
-            else
-                submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date}</button>`;
-        }
-
-        submission_html += "</div>";
-    }
-
-    submissions_div.innerHTML = submission_html;
-}
-
-function showSubmitModal() {
-    user_code = get_user_code();
-    if (user_code == "") {
+            })
+            .fail(function(result) {
+                console.log(result);
+                showErrorMessage("The cause of the error is unknown. Please consult the instructor if it continues.");
+            });
+
+        editor.focus();
         return false;
     }
 
-    var modal = document.getElementById("submit_exercise_modal");
-    var span = document.getElementsByClassName("close")[4];
+    function submit() {
+        let user_solution = get_user_solution();
+        if (user_solution == "") {
+            return false;
+        }
 
-    modal.style.display = "block";
+        hideMessages();
+        showWaitMessage();
 
-    var cancelButton = document.getElementById("submit_cancel_button");
-    var modalSubmitButton = document.getElementById("modal_submit_button");
+        let partner_id = $("#partner_id")[0].value == "" ? null : $("#partner_id")[0].value;
 
-    modalSubmitButton.onclick = function() {
-        var partner_name = "";
+        let submission_date = new Date();
 
-        if ($("#partner_name").length > 0)
-            partner_name = $("#partner_name")[0].value;
+        post_data = {"partner_id": partner_id, "code": user_solution, "date": submission_date.toLocaleString("en-US", {timeZone: "UTC"})};
 
-        if (partner_name == "") {
-            submit();
-            modal.style.display = "none";
-        } else {
-            $("#submit_exercise_modal_message")[0].innerHTML = "";
+        $.ajax({
+            type: 'POST',
+            url: "/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+            data: post_data,
+            async: true})
+            .done(function(result) {
+                var response_dict = JSON.parse(result);
 
-            $.ajax({
-                type: 'GET',
-                url: "/get_partner_id/{{ course_basics['id'] }}/" + partner_name,
-                async: true
-                })
-                .done(function(data) {
-                    response = JSON.parse(data);
+                if (response_dict["message"] == "") {
+                    submission = {
+                        "id": response_dict["submission_id"],
+                        "code": user_solution,
+                        "date": submission_date.toLocaleString(),
+                        "passed": response_dict["all_passed"],
+                        "partner_name": response_dict["partner_name"],
+                        "test_outputs": response_dict["test_outputs"]};
+                    submissions.push(submission);
 
-                    if (response == "") {
-                        $("#submit_exercise_modal_message")[0].innerHTML = "<div style='margin:15px 0px' class='space_div notification is-danger is-light smaller-font'>An invalid partner was specified. Please try again.</div>";
+                    // We only want to do these things for programming exercises.
+                    if (typeof editor === 'undefined') {
+                        get_mc_submission(response_dict["submission_id"]);
                     }
                     else {
-                        $("#partner_id")[0].value = response;
-                        modal.style.display = "none";
-                        submit();
+                        show_past_submissions();
+
+                        get_code_submission(response_dict["submission_id"], false, true);
+
+                        saved_div.innerHTML = "";
+                        editor.focus();
+                    }                    
+                }
+                else {
+                    if (response_dict["message"].startsWith("error: ")) {
+                        showErrorMessage(response_dict["message"].replace("error: ", ""));
                     }
-                })
-                .fail(function(data) {
-                    $("#submit_exercise_modal_message")[0].innerHTML = "<div style='margin:15px 0px' class='space_div notification is-danger is-light smaller-font'>An unexpected error occurred. Please try again and notify the instructor if the error persists.</div>";
-                    console.log(data);
-                });
-        }
+                    else {
+                        showInfoMessage(response_dict["message"].replace("ineligible: ", ""));
+                    }
+                }
+            })
+            .fail(function(result) {
+                console.log(result);
+                showErrorMessage("An unknown error occurred when attempting to contact the Web server. It may be down.");
+            });
     }
 
-    cancelButton.onclick = function() {
-        modal.style.display = "none";
+    function showWaitMessage() {
+        $("#result_message")[0].innerHTML = "<div class='notification is-warning'>Please wait while your solution is being processed...</div>";
+        $("#result_message")[0].scrollIntoView();
     }
-}
 
-function save_presubmission() {
-   user_code = editor.getValue();
-   if (user_code.trim() == "")
-       return false;
+    function hideMessages() {
+        $("#result_message")[0].innerHTML = "";
+        $("#test_outputs")[0].innerHTML = "";
+    }
 
-   $.ajax({
-        type: 'POST',
-        url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-        data: {"user_code": user_code},
-        async: true
-        })
-    .done(function(result) {
-        if (result == "") {
-            codeChanged = false;
+    function showSuccessMessage(submission) {
+        {% if exercise_details["allow_any_response"] %}
+            let message = "Thank you for your submission.";
+        {% else %}
+            // let share_message = "<button class='button is-pulled-right' onclick='showLinkModal()'>Share your success!&nbsp;&nbsp;&nbsp;<span class='icon'><i class='fas fa-share'></i></span></button>";
+            let share_message = "";
 
-            last_saved_at = new Intl.DateTimeFormat('default', {
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric',
-            }).format(Date.now());
+            {% if len(exercise_details["tests"]) == 1 %}
+                var message = "Congratulations! Your solution passes the test." + share_message;
+            {% else %}
+                var message = "Congratulations! Your solution passes all of the tests." + share_message;
+            {% end %}
 
-            saved_div.innerHTML = `<em>(saved at ${last_saved_at})</em>`;
+            if (submission.partner_name != null)
+                message += ` Your programming partner was ${submission.partner_name}.`
+        {% end %}
+
+        var result = "<div class='notification success-message' style='color:white'><p><strong>" + message + "</strong></p>";
+
+        {% if exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
+            result += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> the instructor's solution.</p>";
+        {% end %}
+
+        {% if exercise_details["show_peer_solution"] and (exercise_details["solution_code"] != "") %}
+            result += "<p><a class='grey-text' href='/view_peer_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> a solution from one of your peers.</p>";
+        {% end %}
+
+        result += "</div>"
+
+        $("#result_message")[0].innerHTML = result;
+    }
+
+    function showSuccessMessageMultipleChoice() {
+        var message = "<p><strong>Congratulations! Your answer is correct.</strong></p>";
+
+        {% if exercise_details["show_instructor_solution"] and exercise_details["solution_description"] != "" %}
+            message += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>Here</a> you can find additional insight about this exercise, from the instructor.</p>";
+        {% end %}
+
+        $("#result_message")[0].innerHTML = `<div class='notification success-message' style='color:white'>${message}</div>`;
+    }
+
+    function showNotPassingMessage(num_tests) {
+        if (num_tests = 0) {
+            // This should only happen when the back_end is multiple_choice.
+            var message = "Your answer is incorrect."
         }
         else {
+            var message = "Your solution does not yet pass the test";
+
+            if (num_tests > 1)
+                message += "s";
+                            
+            message += ". Keep working at it. You can do this!";
+        }
+
+        $("#result_message")[0].innerHTML = `<div class='notification not-passing' style='color: white'>${message}</div>`;
+    }
+
+    function showNotPassingMessageMultipleChoice() {
+        $("#result_message")[0].innerHTML = `<div class='notification not-passing' style='color: white'>Your answer is incorrect.</div>`;
+    }
+
+    function showErrorMessage(message) {
+        $("#result_message")[0].innerHTML = `<div class='notification is-danger' style='color: white'>An error occurred while your submission was being processed.</div><pre>${message}</pre>`;
+        $("#result_message")[0].scrollIntoView();
+    }
+
+    function showInfoMessage(message) {
+        $("#result_message")[0].innerHTML = `<div class='notification is-dark'>${message}</div>`;
+    }
+
+    function showTestOutputs(test_outputs, scroll) {
+        var output = "";
+
+        // This is what we do if we haven't gone to the server yet.
+        if (test_outputs == null || test_outputs.length == 0) {
+            test_outputs = {};
+
+            for (let test_title of Object.keys(tests)) {
+                test_outputs[test_title] = {};
+                test_outputs[test_title]["txt_output"] = null;
+                test_outputs[test_title]["jpg_output"] = null;
+                test_outputs[test_title]["passed"] = null;
+            }
+        }
+
+        var tests_output = "";
+
+        {% if exercise_details["allow_any_response"] %}
+            {% if exercise_details["back_end"] != "not_code" %}
+                var test_header = "";
+                var test_output = test_outputs[Object.keys(test_outputs)[0]];
+
+                if (test_output != null && test_output.passed != null) {
+                    tests_output = buildStudentOutput(test_output);
+                }
+            {% end %}
+        {% else %}
+            if (Object.keys(test_outputs).length == 1) {
+                var test_header = "<h6>Test:</h6>";
+                tests_output = buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
+            }
+            else {
+                var test_header = "<h6>Tests:</h6>";
+
+                var test_titles = Object.keys(test_outputs);
+                test_titles.sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true}));
+
+                for (let test_title of test_titles)
+                    tests_output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
+            }
+        {% end %}
+
+        if (tests_output != "") {
+            output += test_header + tests_output;
+        }
+
+        $("#test_outputs")[0].innerHTML = output;
+
+        if (scroll)
+            $("#test_outputs")[0].scrollIntoView();
+    }
+
+    function buildTestOutput(test_outputs, test_title, show_title, is_last) {
+        if (!(test_title in tests)) {
+            return "";
+        }
+
+        if (test_outputs[test_title].passed == null) {
+            var test_class = "neutral-bd-color";
+            var test_message = show_title ? test_title : "";
+        }
+        else {
+            if (test_outputs[test_title].passed) {
+                var test_class = "passing-bd-color";
+                // var test_class = "is-primary";
+
+                if (show_title)
+                    var test_message = `${test_title} - Passing`;
+                else
+                    var test_message = `Passing`;
+            }
+            else {
+                var test_class = "failing-bd-color";
+                // var test_class = "is-warning";
+
+                if (show_title)
+                    var test_message = `${test_title} - Not passing`;
+                else
+                    var test_message = `Not passing`;
+            }
+        }
+
+        if (is_last)
+            var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 0px">`;
+        else
+            var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 10px">`;
+
+        if (test_message == "")
+            output += `<div style="padding: 0.75em 0.5em 0em 1.25em;margin:0"></div>`;
+        else
+            output += `<h6 style="padding: 0.75em 0.5em 0.25em 1.25em;margin:0">${test_message}</h6>`;
+
+        output += '<div style="padding: 0em 1.25em 0.75em 1.25em">';
+
+        if (tests[test_title]["instructions"] != "") {
+            output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">${tests[test_title]["instructions"]}</div>`;
+        }
+
+        if (tests[test_title].can_see_test_code) {
+            if (tests[test_title].before_code != "") {
+                var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed before your code:</div>';
+                if (test_outputs[test_title].passed != null)
+                    message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed before your code:</div>';
+
+                output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].before_code + '</pre>';
+            }
+
+            if (tests[test_title].after_code != "") {
+                var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed after your code:</div>';
+                if (test_outputs[test_title].passed != null)
+                    message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed after your code:</div>';
+
+                output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].after_code + '</pre>';
+            }
+        }
+        else {
+            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The test code will not be shown for this test.</em></div>';
+        }
+
+        if (test_outputs[test_title]["passed"] == null || !test_outputs[test_title]["passed"]) {
+            if (tests[test_title].can_see_expected_output) {
+                var expected_output = "";
+
+                if (tests[test_title]["txt_output_formatted"] != null && tests[test_title]["txt_output_formatted"] != "") {
+                    expected_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title]["txt_output_formatted"] + '</pre>';
+                }
+
+                if (tests[test_title]["jpg_output"] != null && tests[test_title]["jpg_output"] != "") {
+                    expected_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + tests[test_title]["jpg_output"] + '" width="600" height="600" alt="The image-based expected output." /></p>';
+                }
+
+                output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</div>' + expected_output;
+            }
+            else {
+                output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The expected output will not be shown for this test.</em></div>';
+            }
+        }
+
+        if (test_outputs[test_title].passed != null) {
+            if (tests[test_title].can_see_code_output) {
+                output += buildStudentOutput(test_outputs[test_title]);
+
+                if (tests[test_title].can_see_expected_output && !test_outputs[test_title].passed) {
+                    var diff_output = test_outputs[test_title]["diff_output"];
+
+                    if (diff_output != "") {
+                        output += "<div class='mt-4'>";
+                        output += `<form action="/diff" method="POST" target="diff_page">
+                            <input type="hidden" name="course_id" value="{{ course_basics["id"] }}">
+                            <input type="hidden" name="assignment_id" value="{{ assignment_basics["id"] }}">
+                            <input type="hidden" name="exercise_id" value="{{ exercise_basics["id"] }}">`;
+
+                        {% if exercise_details["output_type"] == "txt" %}
+                            output += `<input type="hidden" name="expected_output" value="`;
+                            output += encodeURI(tests[test_title]["txt_output"]);
+                            output += `">`;
+                            output += `<input type="hidden" name="actual_output", value="`;
+                            output += encodeURI(test_outputs[test_title]["txt_output"]);
+                            output += `">`;
+                        {% else %}
+                            output += `<input type="hidden" name="diff_output", value="`;
+                            output += diff_output;
+                            output += `">`;
+                        {% end %}
+                        
+                        output += `<input type="submit" value="View differences" class="button">
+                            </form>`;
+                        output += "</div>";
+                    }
+                }
+            }
+            else {
+                output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>Your output will not be shown for this test.</em></div>';
+            }
+        }
+
+        output += `</div>`;
+        output += `</div>`;
+
+        return output;
+    }
+
+    function buildStudentOutput(test_output) {
+        output = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</div>';
+
+        if ("{{ exercise_details["output_type"] }}" == "txt" || test_output["txt_output"] != "")
+            output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + test_output["txt_output_formatted"] + '</pre>';
+
+        if ("{{ exercise_details["output_type"] }}" == "jpg") {
+            if (test_output["jpg_output"] == "") {
+                output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">[No image was generated.]</pre>';
+            }
+            else {
+                output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_output["jpg_output"] + '"` width="600" height="600" alt="The image-based output of the code." /></p>';
+            }
+        }
+
+        return output;
+    }
+
+    function get_code_submission(submission_id, scroll, change_border) {
+        window.wasUserChange = false;
+
+        hideMessages();
+
+        var this_submission;
+
+        for (let submission of submissions) {
+            if ($(`#submission_button_${submission.id}`).length > 0) {
+                $(`#submission_button_${submission.id}`)[0].style.border = "none";
+            }
+
+            if (submission.id == submission_id) {
+                this_submission = submission;
+
+                if ($(`#submission_button_${submission.id}`).length > 0) {
+                    if (change_border) {
+                        $(`#submission_button_${submission.id}`)[0].style.border = "solid #000000";
+                    }
+                }
+            }
+        }
+
+        if (scroll)
+            $("#user_code_area")[0].scrollIntoView();
+
+        editor.focus();
+        editor.setValue(this_submission.code, -1);
+
+        if (this_submission["passed"])
+            showSuccessMessage(this_submission);
+        else
+            showNotPassingMessage(this_submission["test_outputs"].length);
+
+        if ({{ exercise_details["max_submissions"]}} > 0 && submissions.length >= {{ exercise_details["max_submissions"]}}) {
+            hide_submit_button();
+        }
+
+        showTestOutputs(this_submission["test_outputs"], false);
+
+        {% if exercise_details["max_submissions"] > 0 %}
+            $("#max_submissions_message")[0].innerHTML = `<div style="padding: 0em 0.5em 1.25em 0em;margin:0"><em>You have made ${submissions.length} of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></div>`;
+        {% end %}
+
+        window.wasUserChange = true;
+    }
+
+    function get_mc_submission(submission_id) {
+        // window.wasUserChange = false;
+
+        hideMessages();
+
+        var this_submission = submissions[0];
+
+        if (this_submission["passed"])
+            showSuccessMessageMultipleChoice();
+        else
+            showNotPassingMessageMultipleChoice();
+
+        hide_submit_button();
+
+        // window.wasUserChange = true;
+    }
+
+    function hide_submit_button() {
+        // Sometimes the button does not exist, so this checks for it.
+        if ($("#submit_button").length) {
+            $("#submit_button")[0].disabled = true;
+            $("#submit_button").addClass("is-hidden");
+        }
+    }
+
+    function show_past_submissions() {
+        var submissions_div = document.getElementById("submissions");
+
+        var submission_html = "";
+        var revert_html = "";
+        var current_code = editor.getValue()
+
+        if (submissions.length > 1) {
+            submission_html += "<h6>Past submissions:</h6>";
+            submission_html += "<div class='buttons'>";
+
+            var i;
+            for (i = submissions.length - 1; i >= 0; i--) {
+                submission = submissions[i];
+
+                if (submission.passed)
+                    button_bd_color = "passing-btn-color";
+                else
+                    button_bd_color = "failing-btn-color";
+
+                var submission_date = new Date(submission.date).toLocaleString();
+
+                if (submission.partner_name)
+                    submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_code_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Programming partner: ${submission.partner_name}"><i class="fab fa-product-hunt"></i></label></button>`;
+                else
+                    submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_code_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date}</button>`;
+            }
+
+            submission_html += "</div>";
+        }
+
+        submissions_div.innerHTML = submission_html;
+    }
+
+    function showSubmitModal() {
+        let user_solution = get_user_solution();
+        if (user_solution == "") {
+            return false;
+        }
+
+        var modal = document.getElementById("submit_exercise_modal");
+        var span = document.getElementsByClassName("close")[4];
+
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("submit_cancel_button");
+        var modalSubmitButton = document.getElementById("modal_submit_button");
+
+        modalSubmitButton.onclick = function() {
+            var partner_name = "";
+
+            if ($("#partner_name").length > 0)
+                partner_name = $("#partner_name")[0].value;
+
+            if (partner_name == "") {
+                submit();
+                modal.style.display = "none";
+            } else {
+                $("#submit_exercise_modal_message")[0].innerHTML = "";
+
+                $.ajax({
+                    type: 'GET',
+                    url: "/get_partner_id/{{ course_basics['id'] }}/" + partner_name,
+                    async: true
+                    })
+                    .done(function(data) {
+                        response = JSON.parse(data);
+
+                        if (response == "") {
+                            $("#submit_exercise_modal_message")[0].innerHTML = "<div style='margin:15px 0px' class='space_div notification is-danger is-light smaller-font'>An invalid partner was specified. Please try again.</div>";
+                        }
+                        else {
+                            $("#partner_id")[0].value = response;
+                            modal.style.display = "none";
+                            submit();
+                        }
+                    })
+                    .fail(function(data) {
+                        $("#submit_exercise_modal_message")[0].innerHTML = "<div style='margin:15px 0px' class='space_div notification is-danger is-light smaller-font'>An unexpected error occurred. Please try again and notify the instructor if the error persists.</div>";
+                        console.log(data);
+                    });
+            }
+        }
+
+        cancelButton.onclick = function() {
+            modal.style.display = "none";
+        }
+    }
+
+    function save_presubmission() {
+    user_code = editor.getValue();
+    if (user_code.trim() == "")
+        return false;
+
+    $.ajax({
+            type: 'POST',
+            url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+            data: {"user_code": user_code},
+            async: true
+            })
+        .done(function(result) {
+            if (result == "") {
+                codeChanged = false;
+
+                last_saved_at = new Intl.DateTimeFormat('default', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                }).format(Date.now());
+
+                saved_div.innerHTML = `<em>(saved at ${last_saved_at})</em>`;
+            }
+            else {
+                console.log("An error occurred when the user attempted to save their code.");
+                console.log(result);
+                saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
+            }
+        })
+        .fail(function(result) {
             console.log("An error occurred when the user attempted to save their code.");
             console.log(result);
             saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
-        }
-    })
-    .fail(function(result) {
-        console.log("An error occurred when the user attempted to save their code.");
-        console.log(result);
-        saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
-    });
-}
-
-// function showLinkModal() {
-//     var modal = document.getElementById("share_modal");
-//     var span = document.getElementsByClassName("close")[0];
-//     var copyText = document.getElementById("share_link");
-//     modal.style.display = "block";
-    
-//     span.onclick = function() {
-//         modal.style.display = "none";
-//     }
-
-//     window.onclick = function(event) {
-//         if (event.target == modal) {
-//             modal.style.display = "none";
-//         }
-//     }
-// }
-
-/*function copyLink() {
-    var copyText = document.getElementById("share_link");
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); //For mobile devices
-    document.execCommand("copy");
-    alert("Copied the text: " + copyText.value);
-}*/
-
-function showHideHint() {
-    if ($("#hint_text").hasClass("is-hidden")) {
-        $("#hint_button")[0].innerHTML = "Hide hint";
-        $("#hint_text").removeClass("is-hidden");
-        $("#hint_button").addClass("is-light");
-        $("#hint_button").addClass("has-text-dark");
+        });
     }
-    else {
-        $("#hint_button")[0].innerHTML = "Show hint";
-        $("#hint_text").addClass("is-hidden");
-        $("#hint_button").removeClass("is-light");
-        $("#hint_button").removeClass("has-text-dark");
-    }
-}
 
-function showHideData(data_file_index, format) {
-    let dataPanelID = `#data_panel_${data_file_index}`;
-    let dataButtonID = format ? `#data_button_formatted_${data_file_index}` : `#data_button_raw_${data_file_index}`;
-    let otherDataButtonID = format ? `#data_button_raw_${data_file_index}` : `#data_button_formatted_${data_file_index}`;
+    // function showLinkModal() {
+    //     var modal = document.getElementById("share_modal");
+    //     var span = document.getElementsByClassName("close")[0];
+    //     var copyText = document.getElementById("share_link");
+    //     modal.style.display = "block";
+        
+    //     span.onclick = function() {
+    //         modal.style.display = "none";
+    //     }
 
-    if ($(dataPanelID).hasClass("is-hidden") || !$(otherDataButtonID).hasClass("is-outlined")) {
-        // Retrieve the name of the data file at the specified index.
-        const keys = Object.keys(data_files);
-        keys.sort();
-        const data_file_name = keys[data_file_index];
+    //     window.onclick = function(event) {
+    //         if (event.target == modal) {
+    //             modal.style.display = "none";
+    //         }
+    //     }
+    // }
 
-        // Show the data
-        $(dataPanelID).removeClass("is-hidden");
+    /*function copyLink() {
+        var copyText = document.getElementById("share_link");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); //For mobile devices
+        document.execCommand("copy");
+        alert("Copied the text: " + copyText.value);
+    }*/
 
-        if (format) {
-            let delimiter = data_file_name.endsWith(".tsv") ? "\t" : ",";
-
-            $(dataPanelID)[0].innerHTML = formatDelimitedDataAsTable(data_files[data_file_name], delimiter);
+    function showHideHint() {
+        if ($("#hint_text").hasClass("is-hidden")) {
+            $("#hint_button")[0].innerHTML = "Hide hint";
+            $("#hint_text").removeClass("is-hidden");
+            $("#hint_button").addClass("is-light");
+            $("#hint_button").addClass("has-text-dark");
         }
         else {
-            $(dataPanelID)[0].innerHTML = `<pre class=" has-background-light mt-2">${data_files[data_file_name]}</pre>`;
+            $("#hint_button")[0].innerHTML = "Show hint";
+            $("#hint_text").addClass("is-hidden");
+            $("#hint_button").removeClass("is-light");
+            $("#hint_button").removeClass("has-text-dark");
         }
-
-        $(dataButtonID).removeClass("is-outlined");
-        $(otherDataButtonID).addClass("is-outlined");
-    }
-    else {
-        // Hide the data
-        $(dataPanelID).addClass("is-hidden");
-        $(dataPanelID)[0].innerHTML = "";
-
-        $(dataButtonID).addClass("is-outlined");
-        $(otherDataButtonID).addClass("is-outlined");
     }
 
-    $(dataButtonID)[0].blur();
-    $(otherDataButtonID)[0].blur();
-}
+    function showHideData(data_file_index, format) {
+        let dataPanelID = `#data_panel_${data_file_index}`;
+        let dataButtonID = format ? `#data_button_formatted_${data_file_index}` : `#data_button_raw_${data_file_index}`;
+        let otherDataButtonID = format ? `#data_button_raw_${data_file_index}` : `#data_button_formatted_${data_file_index}`;
 
-function formatDelimitedDataAsTable(dataText, delimiter) {
-    let table = "<div class='table-container'><table class='table is-striped'>";
+        if ($(dataPanelID).hasClass("is-hidden") || !$(otherDataButtonID).hasClass("is-outlined")) {
+            // Retrieve the name of the data file at the specified index.
+            const keys = Object.keys(data_files);
+            keys.sort();
+            const data_file_name = keys[data_file_index];
 
-    const lines = trimNewLines(dataText).split("\n");
+            // Show the data
+            $(dataPanelID).removeClass("is-hidden");
 
-    lines.forEach((line, index) => {
-        const cells = line.split(delimiter);
-        if (index === 0) {
-            table += "<tr><th>" + cells.join("</th><th>") + "</th></tr>";
-        } else {
-            table += "<tr><td>" + cells.join("</td><td>") + "</td></tr>";
+            if (format) {
+                let delimiter = data_file_name.endsWith(".tsv") ? "\t" : ",";
+
+                $(dataPanelID)[0].innerHTML = formatDelimitedDataAsTable(data_files[data_file_name], delimiter);
+            }
+            else {
+                $(dataPanelID)[0].innerHTML = `<pre class=" has-background-light mt-2">${data_files[data_file_name]}</pre>`;
+            }
+
+            $(dataButtonID).removeClass("is-outlined");
+            $(otherDataButtonID).addClass("is-outlined");
         }
-    });
+        else {
+            // Hide the data
+            $(dataPanelID).addClass("is-hidden");
+            $(dataPanelID)[0].innerHTML = "";
 
-    return table + "</table></div>";
-}
+            $(dataButtonID).addClass("is-outlined");
+            $(otherDataButtonID).addClass("is-outlined");
+        }
 
-function trimNewLines(str) {
-    return str.replace(/[\n\r]+$/, '');
-}
+        $(dataButtonID)[0].blur();
+        $(otherDataButtonID)[0].blur();
+    }
 
-function reloadIfRestricted(save_first) {
-    {% if check_for_restrict_other_assignments %}
-        $.ajax({
-            type: 'GET',
-            url: "/is_taking_restricted_assignment/{{ user_info['user_id'] }}/{{ assignment_basics['id'] }}",
-            async: true
-            })
-        .done(function(data) {
-            if (JSON.parse(data) == true) {
-                if (save_first) {
-                    save_presubmission();
+    function formatDelimitedDataAsTable(dataText, delimiter) {
+        let table = "<div class='table-container'><table class='table is-striped'>";
+
+        const lines = trimNewLines(dataText).split("\n");
+
+        lines.forEach((line, index) => {
+            const cells = line.split(delimiter);
+            if (index === 0) {
+                table += "<tr><th>" + cells.join("</th><th>") + "</th></tr>";
+            } else {
+                table += "<tr><td>" + cells.join("</td><td>") + "</td></tr>";
+            }
+        });
+
+        return table + "</table></div>";
+    }
+
+    function trimNewLines(str) {
+        return str.replace(/[\n\r]+$/, '');
+    }
+
+    function reloadIfRestricted(save_first) {
+        {% if check_for_restrict_other_assignments %}
+            $.ajax({
+                type: 'GET',
+                url: "/is_taking_restricted_assignment/{{ user_info['user_id'] }}/{{ assignment_basics['id'] }}",
+                async: true
+                })
+            .done(function(data) {
+                if (JSON.parse(data) == true) {
+                    if (save_first) {
+                        save_presubmission();
+                    }
+
+                    location.reload(true);
                 }
+            })
+            .fail(function(data) {
+                console.log(data);
+            });
+        {% end %}
 
+        {% if assignment_details["due_date"] and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
+            let due_date = new Date("{{ assignment_details['due_date'] }}");
+            due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+
+            if (Date.now() > due_date.getTime()) {
                 location.reload(true);
             }
-        })
-        .fail(function(data) {
-            console.log(data);
-        });
-    {% end %}
+        {% end %}
+    }
 
-    {% if assignment_details["due_date"] and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
+    function hasDueDatePassed() {
+        {% if not assignment_details["due_date"] or assignment_details["allow_late"] or assignment_details["view_answer_late"] %}
+            return false;
+        {% end %}
+
         let due_date = new Date("{{ assignment_details['due_date'] }}");
         due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
 
-        if (Date.now() > due_date.getTime()) {
-            location.reload(true);
-        }
-    {% end %}
-}
+        return Date.now() > assignment_details.due_date.getTime()
+    }
 
-function hasDueDatePassed() {
-    {% if not assignment_details["due_date"] or assignment_details["allow_late"] or assignment_details["view_answer_late"] %}
-        return false;
-    {% end %}
-
-    let due_date = new Date("{{ assignment_details['due_date'] }}");
-    due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
-
-    return Date.now() > assignment_details.due_date.getTime()
-}
-
-function gotoAssignmentPage() {
-    window.location.href = `/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}`;
-}
+    function gotoAssignmentPage() {
+        window.location.href = `/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}`;
+    }
 </script>

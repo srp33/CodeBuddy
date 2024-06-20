@@ -1,0 +1,108 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2023 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<div class="student-exercise-notification">
+    <p>
+        <span class="has-text-weight-bold">{{ student_info["name"] }}</span>
+        
+        {% if len(submissions) == 0 %}
+            - Has not submitted yet
+        {% else %}
+            - Last submission date: <span id="last_submission_date"></span>
+        {% end %}
+    </p>
+    <p>
+        {% if next_prev_student_ids[0] != None %}
+            <a class="button is-primary" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ next_prev_student_ids[0] }}">Previous student</a>
+        {% end %}
+
+        {% if next_prev_exercises['previous'] %}
+            <a class="button is-primary" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_prev_exercises['previous']['id'] }}/{{ student_id }}">Previous exercise</a>
+        {% end %}
+
+        {% if next_prev_student_ids[1] != None %}
+            <a class="button is-warning" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ next_prev_student_ids[1] }}">Next student</a>
+        {% end %}
+
+        {% if next_prev_exercises['next'] %}
+            <a class="button is-warning" href="/student_exercise/{{course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_prev_exercises['next']['id'] }}/{{ student_id }}">Next exercise</a>
+        {% end %}
+    </p>
+
+    <div class="field is-grouped">
+        <p class="has-text-white mt-1">Score:</p>
+
+        <p class="control">
+            <input id="score" class="input is-size-6 ml-2" type="text" placeholder="Enter text" value="{{ score }}" style="width: 80px;" />
+
+            <button class="button is-size-6 has-background-light" onclick="updateScore()">Update</button>
+
+            <div id="update_score_message" class="notification has-background-danger has-text-white p-2 is-size-6 invisible">
+            </div>
+        </p>
+    </div>
+</div>
+
+{% if len(submissions) > 0 %}
+    <script>
+        document.getElementById("last_submission_date").innerHTML = new Date("{{ submissions[-1]["date"] }}").toLocaleString();
+    </script>
+{% end %}
+
+<script>
+    function updateScore() {
+        let score = $("#score")[0].value;
+
+        if (!isScoreValid(score)) {
+            updateScoreMessage("The number you specified is invalid. It must be a number between 0.0 and 100.0.", true);
+            return;
+        }
+
+        $.ajax({
+            type: 'GET',
+            url: "/student_score/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id']}}/{{ student_id }}/" + score,
+            async: true})
+            .done(function(message) {
+                if (message.startsWith("Error:")) {
+                    updateScoreMessage(message, true);
+                }
+                else {
+                    updateScoreMessage(message, false);
+                }
+            })
+            .fail(function(error) {
+                updateScoreMessage("An unexpected error occurred when attempting to connect to the server.", true);
+            });
+    }
+
+    function isScoreValid(value) {
+        const num = parseFloat(value);
+
+        const isFloat = !isNaN(num) && value == num && value.toString().trim().length > 0;
+
+        return isFloat && num >= 0.0 && num <= 100.0;
+    }
+
+    function updateScoreMessage(message, isError) {
+        $("#update_score_message").removeClass("invisible");
+
+        if (isError) {
+            $("#update_score_message").removeClass("has-background-primary");
+            $("#update_score_message").addClass("has-background-danger");
+        } else {
+            $("#update_score_message").removeClass("has-background-danger");
+            $("#update_score_message").addClass("has-background-primary");
+        }
+
+        $("#update_score_message")[0].innerHTML = `<div>${message}</div>`;
+    }
+
+    $("#score")[0].addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            updateScore();
+        }
+    });
+</script>

@@ -1,0 +1,444 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2023 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<div class="row-container is-hidden" id="edit_header">
+    <h4>Edit multiple-choice exercise</h4>
+
+    <p>
+        <button class="button is-dark" onclick="save()">Save</button>
+        <a class="button is-white" id="done_button1">Done</a>
+
+        {% if prev_exercise %}
+            <a class="button is-white" href="/edit_mc_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+        {% end %}
+        {% if next_exercise %}
+            <a class="button is-white" href="/edit_mc_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+        {% end %}
+    </p>
+</div>
+
+<h4 id="create_header">Create multiple-choice exercise</h4>
+
+<div class="notification is-danger is-hidden" id="result_message"></div>
+
+{% if course_basics["exists"] %}
+  {% if assignment_basics["exists"] %}
+    <div class="shadow-box">
+        <div class="row-container bottom-space">
+            <div class="a-title-container">
+                <p><strong>Title*:</strong></p>
+                <p><input id="title" class="input is-grey is-fullwidth" placeholder="Please specify a descriptive title." autofocus></p>
+            </div>
+            <div class="a-visible">
+                <p><strong>Visible to students: </strong>
+                    <div class="select is-grey">
+                        <select id="visible" class="edit-select">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <div class="top-space">
+            <p><strong>Instructions*: </strong><br />Please write instructions for this exercise. You may use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text. If you would like, you can use the following shortcuts to customize the instructions.</p>
+            
+            <ul>
+                <li>Add a link to the previous exercise by placing <code>[previous_exercise_link]</code> in the instructions. When students see the instructions, this text will be replaced with a link to the previous exercise.</li>
+                <li>You can add video(s) to the instructions. To add a YouTube video, specify <code>youtube:id</code>, replacing "id" with the unique identifier for a particular video. For example, for <a href="https://www.youtube.com/watch?v=PLOPygVcaVE" target="_blank">this video</a>, you would use "youtube:PLOPygVcaVE".</li>
+            </ul>
+
+            <p><textarea id="instructions" class="textarea" rows=10 placeholder="Please provide instructions for this assignment."></textarea></p>
+        </div>
+
+        <div class="row-container top-space">
+            <div>
+                <p><strong>Allow students to work in pairs on this exercise: </strong>
+                    <div class="select is-grey">
+                        <select id="enable_pair_programming" class="edit-select">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <div class="row-container top-space">
+            <div>
+                <strong>Weight: </strong>
+
+                <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="By default, each exercise has a weight of 1.0. You can modify these weights so that some exercises are counted more (or less) toward the assignment score than other exercises.">
+                    <i class="far fa-question-circle"></i>
+                </label>
+
+                <div style="margin-top:1em;">
+                    <input class="input"
+                           type="text"
+                           id="weight"
+                           style="width: 70px;"
+                           value="1.0"
+                           placeholder="Please enter a positive number."
+                           oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <p><strong>Credit: </strong>
+            <br />If anyone should be given credit for creating this exercise, please indicate that here. You may use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text. Please provide a link to the data source(s) if you obtained the dataset from someone else.
+        </p>
+
+        <textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write the credit statement here." rows="2" id="credit"></textarea></p>
+    </div>
+
+    <div class="shadow-box">
+        <div>
+            <p><strong>Answer options*: </strong></p>
+            <p>Please specify answer options for this exercise. These will be displayed to students in alphabetical order.</p>
+
+            <div id="solutions_table" class="table-container is-hidden"></div>
+
+            <div class="button is-light bottom-space mt-9" id="add_solution_button">
+                Add answer option
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <div>
+            <p>
+                <strong>Solution description:</strong>
+            </p>
+                
+            <p>
+                You may write a description that provides insight about the answers. Use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text.
+            </p>
+
+            <p>
+                <textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" id="solution_description"></textarea>
+            </p>
+        </div>
+    </div>
+
+    <p class="buttons">
+        <button class="button is-dark" onclick="save()">Save</button>
+
+        <span id="bottom_buttons" class="is-hidden">
+            <a class="button is-white" id="done_button2">Done</a>
+
+            {% if prev_exercise %}
+                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+            {% end %}
+            {% if next_exercise %}
+                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+            {% end %}
+        </span>
+    </p>
+
+    <div id="add_solution_modal" class="modal is-clipped">
+        <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <span class="modal-card-title is-size-5 has-text-centered has-text-weight-bold">Specify answer option</span>
+                    <button class="delete" aria-label="close" id="add_solution_modal_close"></button>
+                </header>
+
+                <section class="modal-card-body">
+                    <div>
+                        <input id="add_solution_input" type="text" placeholder="Please specify an answer option." class="input is-fullwidth" autofocus />
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="checkbox">
+                            <input type="checkbox" id="add_solution_checkbox" />
+                            This answer is correct.
+                        </label>
+                    </div>
+
+                    <div id="solution_message" class="notification mt-4 mb-1"></div>
+                </section>
+
+                <footer class="modal-card-foot">
+                    <button class="button is-primary" id="add_solution_modal_add">Add</button>
+                    <button class="button" id="add_solution_modal_cancel">Close</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $("#add_solution_button").click(function() {
+            document.getElementById("add_solution_input").value = "";
+            document.getElementById("add_solution_checkbox").checked = false;
+
+            $("#solution_message")[0].innerHTML = "";
+            $("#solution_message").addClass("is-hidden");
+            $("#add_solution_modal").addClass("is-active");
+            $("#add_solution_input").focus();
+        });
+
+        $("#add_solution_modal_cancel").click(function() {
+            $("#add_solution_modal").removeClass("is-active");
+        });
+
+        $("#add_solution_modal_close").click(function() {
+            $("#add_solution_modal").removeClass("is-active");
+        });
+
+        $("#add_solution_input")[0].addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                $("#add_solution_modal_add").click();
+            }
+        });
+
+        $("#add_solution_modal_add").click(function() {
+            var solution_option = document.getElementById("add_solution_input").value;
+
+            // Make sure option is valid
+            if (solution_option.trim() == "")
+                return showSolutionMessage("Please specify an answer option.", true);
+
+            for (let unallowed_char of ["|"])
+                if (solution_option.includes(unallowed_char))
+                    return showSolutionMessage(`The answer option cannot include the following character: ${unallowed_char}`, true);
+
+            var solutions = getSolutions();
+
+            if (solution_option in solutions)
+                return showSolutionMessage("That answer option has already been specified.", true);
+
+            solutions[solution_option] = $("#add_solution_checkbox")[0].checked;
+            updateSolutions(solutions);
+
+            // This resets the controls in the modal.
+            $("#add_solution_button").click();
+
+            showSolutionMessage(`The following answer option has been added: ${solution_option}.`, false);
+        });
+
+        function getSolutions() {
+            let solution_code = exercise_details_obj["solution_code"];
+
+            if (solution_code.length == 0) {
+                return {};
+            }
+
+            return JSON.parse(solution_code);
+        }
+
+        function updateSolutions(solutions) {
+            if (solutions.length == 0) {
+                exercise_details_obj["solution_code"] = "";
+            }
+            else {
+                exercise_details_obj["solution_code"] = JSON.stringify(solutions);
+            }
+
+            showSolutionsTable();
+        }
+
+        function removeAnswerOption(solution_option) {
+            var solutions = getSolutions();
+            delete solutions[solution_option];
+            updateSolutions(solutions);
+        }
+
+        function showSolutionsTable() {
+            var solutions = getSolutions();
+
+            if (solutions.length == 0) {
+                $("#solutions_table").addClass("is-hidden");
+                return;
+            }
+
+            var html = "<table class='table is-striped'>";
+            html += "<thead><tr><th>Answer</th><th>Correct</th><th></th></thead>";
+            html += "<tbody>";
+
+            for (const solution_option in sortObj(solutions)) {
+                html += "<tr>";
+                html += `  <td>${solution_option}</td>`;
+                html += `  <td>${solutions[solution_option] ? "Yes": "No"}</td>`;
+                html += `  <td>
+                               <a onclick="removeAnswerOption('${solution_option}')">
+                                   <i class="fas fa-trash-alt"></i>
+                               </a>
+                           </td>`;
+                html += "</tr>";
+            }
+
+            html += "</tbody>";
+            html += "</table>";
+
+            $("#solutions_table")[0].innerHTML = html;
+            $("#solutions_table").removeClass("is-hidden");
+        }
+
+        function getNumCorrectAnswerOptions() {
+            let count = 0;
+            let solutions = getSolutions();
+
+            for (const solution in solutions) {
+                count += solutions[solution];
+            }
+
+            return count;
+        }
+
+        function showSolutionMessage(message, isError) {
+            $("#solution_message").removeClass("is-hidden");
+
+            if (isError) {
+                $("#solution_message").removeClass("is-info");
+                $("#solution_message").addClass("is-danger");
+            }
+            else {
+                $("#solution_message").removeClass("is-danger");
+                $("#solution_message").addClass("is-info");
+            }
+
+            $("#solution_message")[0].innerHTML = message;
+            $("#solution_message")[0].scrollIntoView();
+        }
+
+        function getValue(id) {
+            return $(`#${id}`)[0].value;
+        }
+
+        function setValue(id, value) {
+            $(`#${id}`)[0].value = value;
+        }
+
+        function showResultMessage(messageHTML, messageType) {
+            $("#result_message").removeClass("is-primary");
+            $("#result_message").removeClass("is-warning");
+            $("#result_message").removeClass("is-danger");
+
+            $("#result_message").addClass(`is-${messageType}`);
+
+            $("#result_message").removeClass("is-hidden");
+            $("#result_message")[0].innerHTML = messageHTML;
+            window.scrollTo(0, 0);
+        }
+
+        function showTopBottomButtons(exists) {
+            if (exists) {
+                $("#edit_header").removeClass("is-hidden");
+                $("#create_header").addClass("is-hidden");
+                $("#bottom_buttons").removeClass("is-hidden");
+                $("#output").removeClass("is-hidden");
+            }
+            else {
+                $("#edit_header").addClass("is-hidden");
+                $("#create_header").removeClass("is-hidden");
+                $("#bottom_buttons").addClass("is-hidden");
+                $("#output").addClass("is-hidden");
+            }
+        }
+
+        function load() {
+            showTopBottomButtons(exercise_basics_obj["exists"]);
+            setValue("title", exercise_basics_obj["title"]);
+
+            for (let id of ["instructions", "credit", "solution_description"])
+                setValue(id, exercise_details_obj[id]);
+
+            for (let id of ["enable_pair_programming"])
+                setValue(id, exercise_details_obj[id] ? "Yes" : "No");
+
+            if (String(exercise_details_obj["weight"]) == String(parseInt(exercise_details_obj["weight"])))
+                setValue("weight", `${exercise_details_obj["weight"]}.0`);
+            else
+                setValue("weight", exercise_details_obj["weight"]);
+
+            setValue("visible", exercise_basics_obj["visible"] ? "Yes" : "No");
+
+            updateSolutions(getSolutions());
+        }
+
+        function save() {
+            const title = getValue("title").trim();
+            const instructions = getValue("instructions");
+            const weight = getValue("weight");
+
+            // Check submission details
+            if (title == "")
+                return(showResultMessage("Please provide a title.", "danger"));
+            if (title.length > 80)
+                return(showResultMessage("The title cannot exceed 80 characters in length.", "danger"));
+            if (instructions == "")
+                return(showResultMessage("Please provide instructions.", "danger"));
+            if (exercise_details_obj["solution_code"] == "")
+                return(showResultMessage("You must provide at least one answer option.", "danger"));
+            if (getNumCorrectAnswerOptions() < 1)
+                return(showResultMessage("You must provide at least one answer option marked as a correct answer.", "danger"));
+            if(isNaN(weight))
+                return(showResultMessage("The specified weight is not a number.", "danger"));
+
+            var submission_obj = {
+                "title": title,
+                "visible": getValue("visible") == "Yes",
+                "instructions": instructions,
+                "enable_pair_programming": getValue("enable_pair_programming") == "Yes",
+                "weight": weight,
+                "credit": getValue("credit"),
+                "solution_code": exercise_details_obj["solution_code"],
+                "solution_description": getValue("solution_description"),
+                "max_submissions": 1
+            }
+
+            showResultMessage("<b>Please wait...</b>", "warning");
+
+            $.ajax({
+                type: 'POST',
+                url: "/edit_mc_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_basics_obj['id'],
+                data: JSON.stringify(submission_obj),
+                async: true})
+                .done(function(data) {
+                    var json_data = JSON.parse(data);
+
+                    if (json_data["message"] == "") {
+                        exercise_basics_obj["id"] = json_data["exercise_id"];
+                        exercise_details_obj = json_data["exercise_details"];
+
+                        showTopBottomButtons(true);
+                        showResultMessage("<b>The exercise was saved successfully.</b>", "primary");
+                    }
+                    else {
+                        showTopBottomButtons(true | exercise_basics_obj["exists"]);
+                        showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, "danger");
+                    }
+                })
+                .fail(function(data) {
+                    console.log(data);
+                    showResultMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
+                });
+        }
+
+        $("#done_button1").click(function() {
+            location.href = `/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/${exercise_basics_obj["id"]}`;
+        });
+
+        $("#done_button2").click(function() {
+            location.href = `/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/${exercise_basics_obj["id"]}`;
+        });
+
+        // Code to run on page load
+        var exercise_basics_obj = JSON.parse("{{ exercise_basics_json }}");
+        var exercise_details_obj = JSON.parse("{{ exercise_details_json }}");
+
+        load();
+    </script>
+
+    {% else %}
+        This assignment has not been created yet.
+    {% end %}
+{% else %}
+    This course has not been created yet.
+{% end %}

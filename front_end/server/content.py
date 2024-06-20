@@ -733,11 +733,12 @@ class Content:
                         visible,
                         start_date,
                         due_date,
-                        SUM(passed) AS num_passed,
+                        SUM(completed) AS num_completed,
                         COUNT(assignment_id) AS num_exercises,
-                        SUM(passed) = COUNT(assignment_id) AS passed,
-                        (SUM(passed) > 0 OR num_submissions > 0) AND SUM(passed) < COUNT(assignment_id) AS in_progress,
+                        SUM(completed) = COUNT(assignment_id) AS completed,
+                        (SUM(completed) > 0 OR num_submissions > 0) AND SUM(completed) < COUNT(assignment_id) AS in_progress,
                         minutes_since_start,
+                        ended_early,
                         has_timer,
                         hour_timer,
                         minute_timer,
@@ -748,13 +749,14 @@ class Content:
                           a.visible,
                           a.start_date,
                           a.due_date,
-                          IFNULL(MAX(s.passed), 0) AS passed,
+                          IFNULL(MAX(s.passed), 0) = 1 OR (e.back_end = 'multiple_choice' AND COUNT(s.submission_id) > 0) AS completed,
                           COUNT(s.submission_id) AS num_submissions,
                           a.has_timer,
                           a.hour_timer,
                           a.minute_timer,
                           a.restrict_other_assignments,
-													(JulianDay(DATETIME('now')) - JulianDay(uas.start_time)) * 24 * 60 AS minutes_since_start
+													(JulianDay(DATETIME('now')) - JulianDay(uas.start_time)) * 24 * 60 AS minutes_since_start,
+                          uas.ended_early
                    FROM exercises e
                    LEFT JOIN submissions s
                      ON e.course_id = s.course_id
@@ -782,11 +784,12 @@ class Content:
                         visible,
                         start_date,
                         due_date,
-                        0 AS num_passed,
+                        0 AS num_completed,
                         0 AS num_exercises,
-                        0 AS passed,
+                        0 AS completed,
                         0 AS in_progress,
                         NULL AS minutes_since_start,
+                        0 AS ended_early,
                         0 AS has_timer,
                         NULL AS hour_timer,
                         NULL AS minute_timer,
@@ -809,15 +812,20 @@ class Content:
         # We have to check for this because otherwise the instructor has to make a submission before students will see the assignments.
         if len(statuses) == 0:
             for assignment_basics in self.get_assignments(course_basics, show_hidden):
-                assignment_basics[1]["num_passed"] = 0
+                assignment_basics[1]["num_completed"] = 0
                 assignment_basics[1]["num_exercises"] = 0
-                assignment_basics[1]["passed"] = 0
+                assignment_basics[1]["completed"] = 0
                 assignment_basics[1]["in_progress"] = 0
-                assignment_basics[1]["time_has_expired"] = False
+                assignment_basics[1]["timer_has_ended"] = False
                 statuses2.append([assignment_basics[0], assignment_basics[1]])
         else:
             for status in sort_list_of_dicts_nicely(statuses, ["title", "assignment_id"]):
-                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "passed": status["passed"], "in_progress": status["in_progress"], "num_passed": status["num_passed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "time_has_expired": status["minutes_since_start"] > status["hour_timer"] * 60 + status["minute_timer"] if status["minutes_since_start"] else False, "restrict_other_assignments": status["restrict_other_assignments"]}
+                timer_has_ended = False
+                if status["minutes_since_start"]:
+                    if (status["minutes_since_start"] > status["hour_timer"] * 60 + status["minute_timer"]) or status["ended_early"]:
+                        timer_has_ended = True
+
+                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "completed": status["completed"], "in_progress": status["in_progress"], "num_completed": status["num_completed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "timer_has_ended": timer_has_ended, "restrict_other_assignments": status["restrict_other_assignments"]}
 
                 if assignment_dict["start_date"]:
                     assignment_dict["start_date"] = assignment_dict["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -842,6 +850,7 @@ class Content:
                         IFNULL(MAX(s.passed), 0) AS passed,
                         COUNT(s.submission_id) AS num_submissions,
                         COUNT(s.submission_id) > 0 AND IFNULL(MAX(s.passed), 0) = 0 AS in_progress,
+                        e.back_end = 'multiple_choice' AS is_multiple_choice,
                         IFNULL(sc.score, 0) as score,
                         e.weight,
                         e.visible
@@ -1717,7 +1726,7 @@ class Content:
         return course_details
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "show_run_button": True, "require_security_codes": False, "prerequisite_assignment_ids": [], "student_timer_exceptions": {}, "use_virtual_assistant": 0}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "show_run_button": True, "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_timer_exceptions": {}, "use_virtual_assistant": 0}
 
         if not assignment_id:
             return null_assignment

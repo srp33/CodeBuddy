@@ -24,34 +24,44 @@ class SubmitHandler(BaseUserHandler):
             assignment_details = await self.get_assignment_details(course_basics, assignment_id)
             exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
-            if exercise_details["max_submissions"] > 0:
-                num_submissions = await self.content.get_num_submissions(course_id, assignment_id, exercise_id, user_id)
-            
-                if num_submissions >= exercise_details["max_submissions"]:
-                    out_dict["message"] = "ineligible: You have exceeded the maximum number of allowed submissions for this exercise."
-                    return self.write(json.dumps(out_dict, default=str))
-                
             set_assignment_due_date_passed(assignment_details)
             if assignment_details["due_date_passed"] and not assignment_details["allow_late"]:
-                out_dict["message"] = "ineligible: The due date has passed for this assignment."
-                
-                return self.write(json.dumps(out_dict, default=str))
-            
+                return self.record_error(out_dict, "ineligible: The due date has passed for this assignment.")
+
             if partner_id:
                 partner_name = self.content.get_user_info(partner_id)['name']
 
                 partner_prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_not_completed(course_id, assignment_details, partner_id)
 
                 if len(partner_prerequisite_assignments_not_completed) > 0:
-                    out_dict["message"] = f"ineligible: The specified pair-programming partner ({partner_name}) must contact the instructor to discuss this assignment. This submission has NOT been saved for either student."
+                    return self.record_error(out_dict, f"ineligible: The specified pair-programming partner ({partner_name}) must contact the instructor to discuss this assignment. This submission has NOT been saved for either student.")
 
-                    return self.write(json.dumps(out_dict, default=str))
+            if exercise_details["max_submissions"] > 0:
+                num_submissions = await self.content.get_num_submissions(course_id, assignment_id, exercise_id, user_id)
+            
+                if num_submissions >= exercise_details["max_submissions"]:
+                    return self.record_error(out_dict, "ineligible: You have exceeded the maximum number of allowed submissions for this exercise.")
+                
+            if exercise_details['back_end'] == "multiple_choice":
+                solutions_dict = json.loads(exercise_details["solution_code"])
 
-            out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
+                # The code is the index of solution.
+                # We need to retrieve the value associated with it.
+                for i, answer_option in enumerate(sorted(solutions_dict)):
+                    if code == str(i):
+                        is_correct = solutions_dict[answer_option]
 
-            if out_dict["message"] == "":
+                        if is_correct:
+                            out_dict["all_passed"] = True
+
+                        code = answer_option
+                        break
+            else:
+                out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
+
                 out_dict["all_passed"] = check_test_outputs(exercise_details, out_dict["test_outputs"])
 
+            if out_dict["message"] == "":
                 out_dict["score"] = self.calc_exercise_score(assignment_details, out_dict["all_passed"])
 
                 out_dict["submission_id"] = await self.content.save_submission(course_id, assignment_id, exercise_id, user_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], partner_id)
@@ -73,6 +83,13 @@ class SubmitHandler(BaseUserHandler):
             out_dict["all_passed"] = False
 
         self.write(json.dumps(out_dict, default=str))
+
+    def record_error(self, out_dict, message):
+        out_dict["message"] = message
+        out_dict["all_passed"] = False
+        out_dict["score"] = 0
+
+        return self.write(json.dumps(out_dict, default=str))
 
     def calc_exercise_score(self, assignment_details, passed):
         if passed:

@@ -52,6 +52,7 @@ def make_app(settings_dict):
             url(r"/edit_assignment/([^/]+)/([^/]+)?", EditAssignmentHandler, name="edit_assignment"),
             url(r"/edit_course/([^/]+)?", EditCourseHandler, name="edit_course"),
             url(r"/edit_exercise/([^/]+)/([^/]+)/([^/]+)?", EditExerciseHandler, name="edit_exercise"),
+            url(r"/edit_mc_exercise/([^/]+)/([^/]+)/([^/]+)?", EditMultipleChoiceExerciseHandler, name="edit_mc_exercise"),
             url(r"/exercise/([^/]+)/([^/]+)/([^/]+)", ExerciseHandler, name="exercise"),
             url(r"/exercise_submissions/([^/]+)/([^/]+)/([^/]+)", ExerciseSubmissionsHandler, name="exercise_submissions"),
             url(r"/export_assignment/([^/]+)/([^/]+)", ExportAssignmentHandler, name="export_assignment"),

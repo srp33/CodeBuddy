@@ -121,4 +121,13 @@
         //         modalElement.style.display = "none";
         // }
     }
+
+    // https://www.w3docs.com/snippets/javascript/how-to-sort-javascript-object-by-key.html
+    // https://fuzzytolerance.info/blog/2019/07/19/The-better-way-to-do-natural-sort-in-JavaScript/
+    function sortObj(obj) {
+        return Object.keys(obj).sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true})).reduce(function (result, key) {
+            result[key] = obj[key];
+            return result;
+        }, {});
+    }
 </script>

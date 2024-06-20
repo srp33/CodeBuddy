@@ -23,17 +23,33 @@ class StudentExerciseHandler(BaseUserHandler):
                 presubmission, submissions, has_passed = self.content.get_submissions(course_id, assignment_id, exercise_id, student_id, exercise_details)
                 num_submissions = len(submissions)
 
-                back_end_config = get_back_end_config(exercise_details["back_end"])
+                code_completion_path = None
+                back_end_description = None
+                if exercise_details["back_end"] != "multiple_choice":
+                    back_end_config = get_back_end_config(exercise_details["back_end"])
+                    code_completion_path = back_end_config["code_completion_path"]
+                    back_end_description = back_end_config["description"]
+
                 student_info = self.content.get_user_info(student_id)
                 score = self.content.get_exercise_score(course_id, assignment_id, exercise_id, student_id)
 
                 exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), current_exercise_id=exercise_id, show_hidden=False)
+                
                 next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)
 
-                tests = exercise_details["tests"]
                 format_exercise_details(exercise_details, course_basics, assignment_basics, student_info, self.content, next_prev_exercises, format_data=True)
 
-                self.render("student_exercise.html", student_info=student_info, student_id=student_id, score=score, courses=self.courses, course_basics=course_basics, assignments=assignments, assignment_basics=assignment_basics, exercise_basics=exercise_basics, assignment_details=assignment_details, exercise_details=exercise_details, tests=tests, presubmission=presubmission, code_completion_path=back_end_config["code_completion_path"], back_end_description=back_end_config["description"], submissions=submissions, exercise_statuses=exercise_statuses, next_prev_exercises=next_prev_exercises, num_submissions=num_submissions, user_info=self.user_info, user_id=self.get_current_user(), next_prev_student_ids = self.content.get_next_prev_student_ids(course_id, student_id), check_for_restrict_other_assignments=False, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=is_assistant)
+                args = {"student_info": student_info, "student_id": student_id, "score": score, "courses": self.courses, "course_basics": course_basics, "assignments": assignments, "assignment_basics": assignment_basics, "exercise_basics": exercise_basics, "assignment_details": assignment_details, "exercise_details": exercise_details, "tests": exercise_details["tests"], "presubmission": presubmission, "code_completion_path": code_completion_path, "back_end_description": back_end_description, "submissions": submissions, "exercise_statuses": exercise_statuses, "next_prev_exercises": next_prev_exercises, "num_submissions": num_submissions, "user_info": self.user_info, "user_id": self.get_current_user(), "next_prev_student_ids": self.content.get_next_prev_student_ids(course_id, student_id), "check_for_restrict_other_assignments": False, "is_administrator": self.is_administrator, "is_instructor": await self.is_instructor_for_course(course_id), "is_assistant": is_assistant}
+
+                if exercise_details["back_end"] == "multiple_choice":
+                    solutions_dict = json.loads(exercise_details["solution_code"])
+
+                    answer_options = [(answer_option, is_correct) for answer_option, is_correct in sorted(solutions_dict.items())]
+                    args["answer_options"] = answer_options
+
+                    self.render("mc_student_exercise.html", **args)
+                else:
+                    self.render("student_exercise.html", **args)
             else:
                 self.render("permissions.html")
         except Exception as inst:

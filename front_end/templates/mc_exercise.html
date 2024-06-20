@@ -1,0 +1,179 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2023 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        {% if exercise_basics["exists"] %}
+            <link rel="stylesheet" href="/static/css/modal.css">
+
+            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
+                <div class='notification is-warning'>The due date for this assignment has passed, but your instructor has enabled viewing the solution.</div>
+            {% end %}
+
+            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
+                <div class='notification is-warning'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
+            {% end %}
+
+            <div class="has-background-white mt-0 mb-2 pl-4 pt-4 pr-4 pb-1">
+                <h4>{{ exercise_basics["title"] }}</h4>
+            </div>
+
+            <div class="has-background-white mt-0 mb-2 p-4">
+                {{ exercise_details["instructions"] }}
+            </div>
+
+            <div class="has-background-white mt-0 mb-2 pl-4 pt-4 pr-4 pb-2">
+                {% if num_correct_options == 1 %}
+                    <div class="control">
+                        {% for i, answer_option in enumerate(answer_options) %}
+                            <div class="is-size-5 mb-2">
+                                <label class="radio">
+                                    <input type="radio" name="answer" value="{{ i }}" />
+                                    {{ answer_option }}
+                                </label>
+                            </div>
+                        {% end %}
+                    </div>
+                {% end %}
+            </div>
+
+            {% if exercise_basics["enable_pair_programming"] %}
+                <div class="has-background-white mt-1 mb-2 pl-4 pt-4 pb-4">
+                    <i class="fab fa-product-hunt"></i>
+                    <em>Pair programming is enabled for this exercise.</em>
+                </div>
+            {% end %}
+
+            <div class="buttons mb-0">
+                <button class="button is-medium is-dark mt-1 mb-0" id='submit_button'>Submit</button>
+
+                {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                    <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2 mt-1 mb-0" type="button" style="cursor: default;"></button>
+
+                    <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning mt-1 mb-0" type="button" style="cursor: pointer;">End assignment</button>
+                {% end %}
+            </div>
+
+            <div class="mt-2 mb-2" id="result_message"></div>
+
+            <!-- This does not apply to multiple-choice questions. It's just here for compatibility with programming questions.-->
+            <div id="test_outputs" class="is-hidden"></div>
+
+            {% if len(exercise_details["credit"]) > 0 %}
+                <div class="has-background-white mt-4 mb-4 pl-4 pt-2 pb-1">
+                    <div class="mb-2"><em>Credit: </em></div>
+                    <div><em>{{ exercise_details["credit"] }}</em></div>
+                </div>
+            {% end %}
+
+            <div class="buttons">
+                {% if is_administrator or is_instructor or is_assistant %}
+                    <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+                {% end %}
+
+                {% if prev_exercise %}
+                    <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+                {% end %}
+
+                {% if next_exercise %}
+                    <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+                {% end %}
+            </div>
+
+            <div id="submit_exercise_modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h6 style="display:inline">Pair programming:</h6>
+                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
+                        <i class="far fa-question-circle"></i>
+                    </label><br />
+
+                    <div id="submit_exercise_modal_message"></div>
+
+                    <div id="partner_selection">
+                        <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
+                        {% if users %}
+                            <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
+                            <datalist id="users_list">
+                                {% for user_name in users %}
+                                    <option value="{{ user_name }}"></option>
+                                {% end %}
+                            </datalist>
+                        {% else %}
+                            <p>There are no other registered students in this course, so your only option is to leave this field blank.</p>
+                        {% end %}
+
+                        <input type="hidden" id="partner_id" />
+                    </div>
+
+                    <p class="buttons">
+                        <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
+                        <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
+                    </p>
+                </div>
+            </div>
+
+            <script>
+                function get_user_solution() {
+                    var selectedValue = $('input[name="answer"]:checked').val();
+
+                    if (selectedValue === undefined) {
+                        selectedValue = "";
+                    }
+
+                    return selectedValue;
+                }
+
+                var submissions = {{ jsonify(submissions) }};
+                // var presubmission = {{ jsonify(presubmission) }};
+
+                submitButton = document.getElementById("submit_button");
+
+                if (submissions.length == 0) {
+                    if (submitButton != null) {
+                        submitButton.onclick = function() {
+                            {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or assignment_details["allow_late"] %}
+                                {% if exercise_details["enable_pair_programming"] %}
+                                    showSubmitModal();
+                                {% else %}
+                                    submit();
+                                {% end %}
+                            {% else %}
+                                //TODO: Do this better.
+                                alert("Sorry, the due date for this assignment has passed.");
+                            {% end %}
+                        }
+                    }
+                }
+                else {
+                    $(`input[name="answer"][value="{{ selected_answer_index }}"]`).prop('checked', true);
+
+                    hide_submit_button();
+                    get_mc_submission(submissions[0].id);
+                }
+
+                {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                    updateTimerStatus("{{ timer_status }}");
+
+                    if ("{{ timer_status }}" == "timer_in_progress") {
+                        if (updateTimeRemaining() <= 0) {
+                            gotoAssignmentPage();
+                        }
+                    }
+                    else {
+                        gotoAssignmentPage();
+                    }
+                {% end %}
+            </script>
+        {% else %}
+            <p>This exercise does not exist.</p>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
+{% else %}
+    <p>This course does not exist.</p>
+{% end %}

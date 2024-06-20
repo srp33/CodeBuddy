@@ -167,6 +167,7 @@
                             {% if not is_assistant %}
                                 <th style="text-align: center;">Copy</th>
                                 <th style="text-align: center;">Move</th>
+                                <th style="text-align: center;">Purge</th>
                                 <th style="text-align: center;">Delete</th>
                             {% end %}
                         </tr>
@@ -189,12 +190,6 @@
                                 <td style="text-align: center;">
 
                                     <a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a>
-
-                                    {% if not is_assistant %}
-                                        / 
-                                        
-                                        <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[0] }}'}, '')">Purge</a>
-                                    {% end %}
                                 </td>
                                 <td style="text-align: center;">
                                     <a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a>
@@ -221,6 +216,9 @@
                                     </a>
                                 </td>
                                 <td style="text-align: center;">
+                                    <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[0] }}'}, '')"><i class="far fa-times-circle"></i></a>
+                                </td>
+                                <td style="text-align: center;">
                                     <a onclick="showPostModal('delete_exercise', 'Delete exercise', {'exercise_id': '{{ exercise[0] }}'}, '')">
                                         <i class="far fa-trash-alt"></i>
                                     </a>
@@ -244,6 +242,8 @@
                 <a class="button is-dark" href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/'>Create exercise</a>
                 
                 <button class="button" onclick="showPostModal('new_video', 'Create video exercise', {}, '')">Create video exercise</button>
+
+                <a class="button" href="/edit_mc_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">Create multiple-choice exercise</a>
 
                 <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Edit assignment</a>
 
