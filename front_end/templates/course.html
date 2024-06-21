@@ -22,6 +22,7 @@
                         <th>Timed</th>
                         <th>Status</th>
                         <th>Exercises completed</th>
+                        <th>Score</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,6 +85,14 @@
                         {% end %}
 
                         <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_completed'] }}" max="{{ assignment[1]['num_exercises'] }}"></progress>{{ assignment[1]["num_completed"] }} / {{ assignment[1]["num_exercises"] }}</td>
+
+                        <td>
+                            {% if assignment[1]["score"] == 0 or assignment[1]["score"] == 100 %}
+                                {{ int(assignment[1]["score"]) }}%
+                            {% else %}
+                                {{ round(assignment[1]["score"], 1) }}%
+                            {% end %}
+                        </td>
                     </tr>
                 {% end %}
                 </tbody>

@@ -728,80 +728,108 @@ class Content:
     async def get_assignment_statuses(self, course_id, user_id, show_hidden):
         course_basics = self.get_course_basics(course_id)
 
-        sql = '''SELECT assignment_id,
-                        title,
-                        visible,
-                        start_date,
-                        due_date,
-                        SUM(completed) AS num_completed,
-                        COUNT(assignment_id) AS num_exercises,
-                        SUM(completed) = COUNT(assignment_id) AS completed,
-                        (SUM(completed) > 0 OR num_submissions > 0) AND SUM(completed) < COUNT(assignment_id) AS in_progress,
-                        minutes_since_start,
-                        ended_early,
-                        has_timer,
-                        hour_timer,
-                        minute_timer,
-                        restrict_other_assignments
-                 FROM (
-                   SELECT a.assignment_id,
-                          a.title,
-                          a.visible,
-                          a.start_date,
-                          a.due_date,
-                          IFNULL(MAX(s.passed), 0) = 1 OR (e.back_end = 'multiple_choice' AND COUNT(s.submission_id) > 0) AS completed,
-                          COUNT(s.submission_id) AS num_submissions,
-                          a.has_timer,
-                          a.hour_timer,
-                          a.minute_timer,
-                          a.restrict_other_assignments,
-													(JulianDay(DATETIME('now')) - JulianDay(uas.start_time)) * 24 * 60 AS minutes_since_start,
-                          uas.ended_early
-                   FROM exercises e
-                   LEFT JOIN submissions s
-                     ON e.course_id = s.course_id
-                     AND e.assignment_id = s.assignment_id
-                     AND e.exercise_id = s.exercise_id
-                     AND (s.user_id = ? OR s.user_id IS NULL)
-                   INNER JOIN assignments a
-                     ON e.course_id = a.course_id
-                     AND e.assignment_id = a.assignment_id
-                   LEFT JOIN user_assignment_starts uas
-                     ON a.course_id = uas.course_id
-										 AND a.assignment_id = uas.assignment_id
-                     AND a.has_timer = 1
-										 AND (uas.user_id = ? OR uas.user_id IS NULL)
-                   WHERE e.course_id = ?
-                     AND e.visible = 1
-                   GROUP BY e.assignment_id, e.exercise_id
-                 )
-                 GROUP BY assignment_id, title
+        sql = '''
+WITH assignment_completions AS (
+    SELECT assignment_id,
+           SUM(completed) AS num_completed,
+           SUM(num_submissions) AS num_submissions
+    FROM (
+        SELECT s.assignment_id,
+              e.exercise_id,
+              IFNULL(MAX(s.passed), 0) = 1 OR (e.back_end = 'multiple_choice' AND COUNT(s.submission_id) > 0) AS completed,
+              COUNT(submission_id) AS num_submissions
+        FROM submissions s
+        INNER JOIN exercises e
+          ON s.exercise_id = e.exercise_id
+        WHERE s.course_id = ?
+          AND s.user_id = ?
+          AND e.visible = 1
+        GROUP BY s.assignment_id, s.exercise_id
 
-                 UNION
-																	
-								 SELECT assignment_id,
-                        title,
-                        visible,
-                        start_date,
-                        due_date,
-                        0 AS num_completed,
-                        0 AS num_exercises,
-                        0 AS completed,
-                        0 AS in_progress,
-                        NULL AS minutes_since_start,
-                        0 AS ended_early,
-                        0 AS has_timer,
-                        NULL AS hour_timer,
-                        NULL AS minute_timer,
-                        0 AS restrict_other_assignments
-                 FROM assignments a
-                 WHERE course_id = ?
-									 AND a.assignment_id NOT IN (SELECT DISTINCT assignment_id FROM exercises WHERE course_id = ?)
+        UNION
 
-                 ORDER BY title'''
+        SELECT assignment_id,
+              exercise_id,
+              0 AS num_completed,
+              0 AS num_submissions
+        FROM exercises
+        WHERE course_id = ?
+          AND visible = 1
+    )
+    GROUP BY assignment_id
+),
+
+assignment_num_exercises AS (
+  SELECT assignment_id, COUNT(exercise_id) as num_exercises
+  FROM exercises
+  WHERE course_id = ?
+    AND visible = 1
+  GROUP BY assignment_id
+),
+
+assignment_scores AS (
+    SELECT assignment_id, AVG(score) AS score
+    FROM (
+        SELECT assignment_id, exercise_id, MAX(score) AS score
+        FROM (
+            SELECT s.assignment_id, s.exercise_id, s.score
+            FROM scores s
+            INNER JOIN exercises e
+              ON s.exercise_id = e.exercise_id
+            WHERE s.course_id = ?
+              AND s.user_id = ?
+              AND e.visible = 1
+            UNION
+
+            SELECT assignment_id, exercise_id, 0
+            FROM exercises
+            WHERE course_id = ?
+              AND visible = 1
+        )
+        GROUP BY exercise_id
+    )
+    GROUP BY assignment_id
+),
+
+assignment_statuses AS (
+    SELECT a.assignment_id,
+           a.title,
+           a.visible,
+           a.start_date,
+           a.due_date,
+           a.has_timer,
+           a.hour_timer * 60 + minute_timer AS minutes_limit,
+           a.restrict_other_assignments,
+          (JulianDay(DATETIME('now')) - JulianDay(uas.start_time)) * 24 * 60 AS minutes_since_start,
+           uas.ended_early,
+           ac.num_completed,
+           ac.num_submissions,
+           ane.num_exercises,
+           ats.score
+    FROM assignments a
+    INNER JOIN assignment_num_exercises ane
+      ON a.assignment_id = ane.assignment_id
+    INNER JOIN assignment_completions ac
+      ON a.assignment_id = ac.assignment_id
+    INNER JOIN assignment_scores ats
+      ON a.assignment_id = ats.assignment_id
+    LEFT JOIN user_assignment_starts uas
+      ON a.course_id = uas.course_id
+      AND a.assignment_id = uas.assignment_id
+      AND a.has_timer = 1
+      AND (uas.user_id = ? OR uas.user_id IS NULL)
+    WHERE a.course_id = ?
+    ORDER BY a.title
+)
+
+SELECT *,
+       IFNULL(minutes_since_start > minutes_limit OR ended_early, 0) AS timer_has_ended,
+       IFNULL((num_submissions > 0 AND num_completed < num_exercises AND NOT has_timer) OR (has_timer AND minutes_since_start <= minutes_limit AND NOT ended_early), 0) AS in_progress,
+       num_completed = num_exercises AS completed
+FROM assignment_statuses'''
 
         statuses = []
-        for row in self.fetchall(sql, (user_id, user_id, course_id, course_id, course_id)):
+        for row in self.fetchall(sql, (course_id, user_id, course_id, course_id, course_id, user_id, course_id, user_id, course_id)):
             assignment = dict(row)
 
             if assignment["visible"] or show_hidden:
@@ -816,16 +844,17 @@ class Content:
                 assignment_basics[1]["num_exercises"] = 0
                 assignment_basics[1]["completed"] = 0
                 assignment_basics[1]["in_progress"] = 0
+                assignment_basics[1]["score"] = 0
                 assignment_basics[1]["timer_has_ended"] = False
                 statuses2.append([assignment_basics[0], assignment_basics[1]])
         else:
             for status in sort_list_of_dicts_nicely(statuses, ["title", "assignment_id"]):
-                timer_has_ended = False
-                if status["minutes_since_start"]:
-                    if (status["minutes_since_start"] > status["hour_timer"] * 60 + status["minute_timer"]) or status["ended_early"]:
-                        timer_has_ended = True
+                # timer_has_ended = False
+                # if status["minutes_since_start"]:
+                #     if (status["minutes_since_start"] > status["hour_timer"] * 60 + status["minute_timer"]) or status["ended_early"]:
+                #         timer_has_ended = True
 
-                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "completed": status["completed"], "in_progress": status["in_progress"], "num_completed": status["num_completed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "timer_has_ended": timer_has_ended, "restrict_other_assignments": status["restrict_other_assignments"]}
+                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "completed": status["completed"], "in_progress": status["in_progress"], "score": status["score"], "num_completed": status["num_completed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "timer_has_ended": status["timer_has_ended"], "restrict_other_assignments": status["restrict_other_assignments"]}
 
                 if assignment_dict["start_date"]:
                     assignment_dict["start_date"] = assignment_dict["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ')

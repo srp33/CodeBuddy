@@ -9,3 +9,7 @@ dev:
 build-watch:
 	npm install
 	npm start
+
+.PHONY: sql
+sql: 
+	python3 test_database_query.py
