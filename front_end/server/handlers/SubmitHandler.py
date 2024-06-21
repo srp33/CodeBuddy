@@ -45,17 +45,19 @@ class SubmitHandler(BaseUserHandler):
             if exercise_details['back_end'] == "multiple_choice":
                 solutions_dict = json.loads(exercise_details["solution_code"])
 
-                # The code is the index of solution.
-                # We need to retrieve the value associated with it.
-                for i, answer_option in enumerate(sorted(solutions_dict)):
-                    if code == str(i):
-                        is_correct = solutions_dict[answer_option]
+                # This is what the user selected.
+                answer_indexes = [int(i) for i in code.split("|")]
 
-                        if is_correct:
-                            out_dict["all_passed"] = True
+                # This is what the instructor marked as correct.
+                correct_answer_indexes = [answer_index for answer_index, answer_option in enumerate(sorted(solutions_dict)) if solutions_dict[answer_option]]
 
-                        code = answer_option
-                        break
+                out_dict["all_passed"] = answer_indexes == correct_answer_indexes
+
+                # Actual answers the use chose.
+                answers = [answer_option for answer_index, answer_option in enumerate(sorted(solutions_dict)) if answer_index in answer_indexes]
+
+                # We store the answer(s) as a delimited list.
+                code = "|".join(answers)
             else:
                 out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 

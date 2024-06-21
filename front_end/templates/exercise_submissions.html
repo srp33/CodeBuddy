@@ -14,40 +14,25 @@
     </div>
 
     {% for student in exercise_submissions %}
-        {% if student[1]["passed"] %}
-            {% if student[1]["partner_name"] %}
-                <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
-            {% else %}
-                <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
-            {% end %}
-
-            <div class="c-content">
-                <p style="margin-top: 9px; margin-bottom: 3px;">Exercise score: <strong>{{ student[1]["score"] }}%</strong>:</p>
-
-                <p><pre style="margin-bottom: 7px;">{{ student[1]["code"] }}</pre></p>
-
-                <p><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}" target="_blank">More details</a></p>
-            </div>
+        {% if student[1]["partner_name"] %}
+            <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> paired with <strong>{{student[1]["partner_name"]}}</strong></button>
         {% else %}
-            {% if student[1]["partner_name"] %}
-                <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong> pair programmed with <strong>{{student[1]["partner_name"]}}</strong></button>
-            {% else %}
-                <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
-            {% end %}
-
-            <div class="c-content">
-                {% if student[1]["code"] %}
-                    <p style="margin-top: 9px; margin-bottom: 3px;">No passing score yet.</p>
-                    <p>Most recent submission:</p>
-                    
-                    <p><pre style="margin-bottom: 3px;">{{ student[1]["code"] }}</pre></p>
-
-                    <p><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}" target="_blank">More details</a></p>
-                {% else %}
-                    <p style="margin-top: 9px; margin-bottom: 3px;">This student has not made a submission yet.</p>
-                {% end %}
-            </div>
+            <button type="button" class="clickable collapsible"><strong>{{ student[1]["name"] }}</strong></button>
         {% end %}
+
+        <div class="c-content">
+            {% if student[1]["code"] %}
+                <div class="mt-4 mb-4">Score: {{ student[1]["score"] }}%</div>
+
+                <div class="mb-4">Most recent submission:</div>
+
+                <div class="mb-4"><pre>{{ student[1]["code"] }}</pre></div>
+
+                <div><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}" target="_blank">More details</a></div>
+            {% else %}
+                <div class="mt-4 mb-2">This student has not submitted yet.</div>
+            {% end %}
+        </div>
     {% end %}
 
     <script>

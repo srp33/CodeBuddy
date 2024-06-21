@@ -1262,7 +1262,7 @@ class Content:
 
                  INSERT OR REPLACE INTO scores (course_id, assignment_id, exercise_id, user_id, score)
                  SELECT ?, ?, ?, ?, ?
-                 WHERE ? > (SELECT MAX(score) FROM user_scores)'''
+                 WHERE ? >= (SELECT MAX(score) FROM user_scores)'''
 
         self.execute(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id, score, score))
 
@@ -2054,7 +2054,9 @@ class Content:
         self.execute_multiple(sql_statements, params_list)
 
         self.save_exercise_score(course_id, assignment_id, exercise_id, user_id, score)
-        self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
+
+        if exercise_details["back_end"] != "multiple_choice":
+          self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
 
         return submission_id
     

@@ -75,14 +75,16 @@ class ExerciseHandler(BaseUserHandler):
                 answer_options = [x for x in sorted(json.loads(exercise_details["solution_code"]))]
                 args["answer_options"] = answer_options
 
-                args["selected_answer_index"] = None
+                selected_answer_indices = []
                 if len(submissions) > 0:
-                    answer = submissions[0]["code"]
+                    answers = submissions[0]["code"].split("|")
 
-                    # It defaults to -1 if the answer option no longer exists (the instructor changed it).
-                    args["selected_answer_index"] = -1
-                    if answer in answer_options:
-                        args["selected_answer_index"] = answer_options.index(answer)
+                    # This code accounts for the possibility that answer options may no longer exist (the instructor changed them).
+                    for answer in answers:
+                        if answer in answer_options:
+                            selected_answer_indices.append(answer_options.index(answer))
+
+                args["selected_answer_indices"] = selected_answer_indices
 
                 args["num_correct_options"] = sum(json.loads(exercise_details["solution_code"]).values())
 

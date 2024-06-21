@@ -26,18 +26,25 @@
             </div>
 
             <div class="has-background-white mt-0 mb-2 pl-4 pt-4 pr-4 pb-2">
-                {% if num_correct_options == 1 %}
-                    <div class="control">
-                        {% for i, answer_option in enumerate(answer_options) %}
-                            <div class="is-size-5 mb-2">
+                <div class="mb-4">At least one of the following answers is correct. Select the correct answer(s). If multiple answers are correct, you will <em>only</em> receive points if you correctly mark <em>all</em> of them.</div>
+
+                <div class="control">
+                    {% for i, answer_option in enumerate(answer_options) %}
+                        <div class="is-size-5 mb-2">
+                            {% if num_correct_options == 1 %}
                                 <label class="radio">
                                     <input type="radio" name="answer" value="{{ i }}" />
                                     {{ answer_option }}
                                 </label>
-                            </div>
-                        {% end %}
-                    </div>
-                {% end %}
+                            {% else %}
+                                <label class="checkbox">
+                                    <input type="checkbox" name="answer" value="{{ i }}" />
+                                    {{ answer_option }}
+                                </label>
+                            {% end %}
+                        </div>
+                    {% end %}
+                </div>
             </div>
 
             {% if exercise_basics["enable_pair_programming"] %}
@@ -118,11 +125,25 @@
 
             <script>
                 function get_user_solution() {
-                    var selectedValue = $('input[name="answer"]:checked').val();
+                    {% if num_correct_options == 1 %}
+                        var selectedValue = $('input[name="answer"]:checked').val();
 
-                    if (selectedValue === undefined) {
-                        selectedValue = "";
-                    }
+                        if (selectedValue === undefined) {
+                            selectedValue = "";
+                        }
+                    {% else %}
+                        var selectedValues = [];
+                        $('input[name="answer"]:checked').each(function() {
+                            selectedValues.push($(this).val());
+                        });
+
+                        if (selectedValues.length == 0) {
+                            selectedValue = "";
+                        }
+                        else {
+                            selectedValue = selectedValues.join("|");
+                        }
+                    {% end %}
 
                     return selectedValue;
                 }
@@ -149,7 +170,17 @@
                     }
                 }
                 else {
-                    $(`input[name="answer"][value="{{ selected_answer_index }}"]`).prop('checked', true);
+                    {% if len(answer_options) == 1 %}
+                        $(`input[name="answer"][value="{{ selected_answer_indices[0] }}"]`).prop('checked', true);
+                    {% else %}
+                        // Construct a string to select the checkboxes.
+                        var selector = {{ selected_answer_indices }}.map(function(value) {
+                            return 'input[name="answer"][value="' + value + '"]';
+                        }).join(',');
+
+                        // Use the constructed selector to check the corresponding checkboxes
+                        $(selector).prop('checked', true);
+                    {% end %}
 
                     hide_submit_button();
                     get_mc_submission(submissions[0].id);
