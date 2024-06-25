@@ -15,10 +15,10 @@ class EditAssignmentHandler(BaseUserHandler):
                 course_details = await self.get_course_details(course_id)
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
                 assignment_details = self.content.get_assignment_details(course_basics, assignment_id)
-                assignments = self.content.get_assignments(course_basics)
+                assignment_statuses = await self.get_assignment_statuses(course_basics)
 
                 prerequisite_assignment_options = []
-                for assignment in assignments:
+                for assignment in assignment_statuses:
                     assignment_id = assignment[0]
                     title = assignment[1]["title"]
                     visible = assignment[1]["visible"]
@@ -26,7 +26,7 @@ class EditAssignmentHandler(BaseUserHandler):
                     if visible == True and assignment_id != assignment_basics["id"]:
                         prerequisite_assignment_options.append((assignment_id, title))
 
-                self.render("edit_assignment.html", courses=self.courses, assignments=assignments, course_basics=course_basics, course_details=course_details, assignment_basics=assignment_basics, assignment_basics_json=escape_json_string(json.dumps(assignment_basics)), assignment_details_json=escape_json_string(json.dumps(assignment_details, default=str)), prerequisite_assignment_options=escape_json_string(json.dumps(prerequisite_assignment_options)), all_students=escape_json_string(json.dumps(self.content.get_registered_students(course_id))), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                self.render("edit_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, course_details=course_details, assignment_basics=assignment_basics, assignment_basics_json=escape_json_string(json.dumps(assignment_basics)), assignment_details_json=escape_json_string(json.dumps(assignment_details, default=str)), prerequisite_assignment_options=escape_json_string(json.dumps(prerequisite_assignment_options)), all_students=escape_json_string(json.dumps(self.content.get_registered_students(course_id))), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), is_edit_page=True)
             else:
                 self.render("permissions.html")
         except Exception as inst:

@@ -14,7 +14,7 @@ class EditCourseHandler(BaseUserHandler):
             course_details = await self.get_course_details(course_id)
 
             if self.is_administrator or await self.is_instructor_for_course(course_id):
-                self.render("edit_course.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=course_details, result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                self.render("edit_course.html", courses=self.courses, assignment_statuses=await self.get_assignment_statuses(course_basics), course_basics=course_basics, course_details=course_details, result=None, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_edit_page=True)
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -72,6 +72,6 @@ class EditCourseHandler(BaseUserHandler):
                         else:
                             result = "Error: The Virtual Assistant configuration is invalid."
 
-            self.render("edit_course.html", courses=self.courses, assignments=self.content.get_assignments(course_basics), course_basics=course_basics, course_details=course_details, result=result, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+            self.render("edit_course.html", courses=self.courses, assignment_statuses=await self.get_assignment_statuses(course_basics), course_basics=course_basics, course_details=course_details, result=result, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), is_edit_page=True)
         except Exception as inst:
             render_error(self, traceback.format_exc())

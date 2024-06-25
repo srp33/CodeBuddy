@@ -13,11 +13,11 @@ class CourseHandler(BaseUserHandler):
             course_basics = await self.get_course_basics(course_id)
 
             if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
-                assignments = self.content.get_assignments(course_basics)
-                course_summary_scores=self.content.get_course_summary_scores(course_id, assignments)
-                assignment_statuses = assignment_statuses=await self.content.get_assignment_statuses(course_id, self.get_current_user(), True)
+                assignment_statuses = await self.get_assignment_statuses(course_basics)
 
-                self.render("course_admin.html", courses=self.courses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), assignments=assignments, course_summary_scores=course_summary_scores, assignment_statuses=assignment_statuses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                course_summary_scores=self.content.get_course_summary_scores(course_id, assignment_statuses)
+
+                self.render("course_admin.html", courses=self.courses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), assignment_statuses=assignment_statuses, course_summary_scores=course_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             else:
                 user_is_registered = False
                 for course in self.courses:
@@ -25,9 +25,9 @@ class CourseHandler(BaseUserHandler):
                         user_is_registered = True
 
                 if user_is_registered:
-                    assignment_statuses = await self.content.get_assignment_statuses(course_id, self.get_current_user(), False)
+                    assignment_statuses = await self.get_assignment_statuses(course_basics)
 
-                    self.render("course.html", courses=self.courses, assignments=await self.get_assignments(course_basics), assignment_statuses=assignment_statuses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=dt.datetime.utcnow(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=dt.datetime.utcnow(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
                 else:
                     self.render("unavailable_course.html", courses=self.courses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         except Exception as inst:

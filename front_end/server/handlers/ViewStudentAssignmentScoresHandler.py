@@ -15,7 +15,7 @@ class ViewStudentAssignmentScoresHandler(BaseUserHandler):
                 student_info = self.content.get_user_info(student_id)
                 exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, student_id, show_hidden=False)
 
-                self.render("view_student_assignment_scores.html", student_id=student_id, student_name=student_info["name"], courses=self.courses, course_basics=course_basics, assignments=self.content.get_assignments(course_basics), assignment_basics=assignment_basics, exercise_statuses=exercise_statuses, result=None, user_info=self.user_info, is_administrator=self.is_administrator)
+                self.render("view_student_assignment_scores.html", student_id=student_id, student_name=student_info["name"], courses=self.courses, course_basics=course_basics, assignment_statuses=await self.get_assignment_statuses(course_basics), assignment_basics=assignment_basics, exercise_statuses=exercise_statuses, result=None, user_info=self.user_info, is_administrator=self.is_administrator)
             else:
                 self.render("permissions.html")
         except Exception as inst:

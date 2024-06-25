@@ -83,17 +83,20 @@ class BaseUserHandler(BaseRequestHandler):
 
         return course_details
 
-    async def get_assignments(self, course_basics):
-        course_id = course_basics["id"]
+    # async def get_assignments(self, course_basics):
+    #     course_id = course_basics["id"]
 
-        assignments_raw = self.update_cached_variable(str(course_id), f"assignments_{course_id}", self.content.get_assignments, course_basics)
+    #     assignments_raw = self.update_cached_variable(str(course_id), f"assignments_{course_id}", self.content.get_assignments, course_basics)
 
-        assignments = []
-        for assignment in assignments_raw:
-            del assignment[1]["visible"]
-            assignments.append(assignment)
+    #     assignments = []
+    #     for assignment in assignments_raw:
+    #         del assignment[1]["visible"]
+    #         assignments.append(assignment)
 
-        return assignments
+    #     return assignments
+    
+    async def get_assignment_statuses(self, course_basics, show_hidden=False):
+        return self.content.get_assignment_statuses(course_basics["id"], self.get_current_user(), False)
     
     async def get_assignment_basics(self, course_basics, assignment_id):
         course_id = course_basics["id"]
@@ -245,7 +248,7 @@ class BaseUserHandler(BaseRequestHandler):
     async def get_prerequisite_assignments_not_completed(self, course_id, assignment_details, student_id):
         prerequisite_assignments_not_completed = []
 
-        for assignment_status in await self.content.get_assignment_statuses(course_id, student_id, show_hidden=False):
+        for assignment_status in self.content.get_assignment_statuses(course_id, student_id, show_hidden=False):
             if assignment_status[0] in assignment_details["prerequisite_assignment_ids"] and not assignment_status[1]["completed"]:
                 prerequisite_assignments_not_completed.append([assignment_status[0], assignment_status[1]["title"]])
 

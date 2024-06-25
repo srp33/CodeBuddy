@@ -28,9 +28,9 @@ class ExerciseHandler(BaseUserHandler):
 
             format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=True)#(not studio_mode))
 
-            assignments = await self.get_assignments(course_basics)
+            assignment_statuses = await self.get_assignment_statuses(course_basics)
 
-            if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignments, self.courses, assignment_basics, course_basics):
+            if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignment_statuses, self.courses, assignment_basics, course_basics):
                 return
 
             # Fetches all users enrolled in a course excluding the current user as options to pair program with.
@@ -48,7 +48,7 @@ class ExerciseHandler(BaseUserHandler):
 
             args = {"users": user_list,
                     "courses": self.courses,
-                    "assignments": assignments,
+                    "assignment_statuses": assignment_statuses,
                     "course_basics": course_basics,
                     "assignment_basics": assignment_basics,
                     "assignment_details": assignment_details,

@@ -4,7 +4,7 @@
 <!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <!-- </copyright_statement>-->
 
-            {% if len(assignments) > 1 and "assignment_basics" in globals() and assignment_basics["exists"] %}
+            {% if len(assignment_statuses) > 1 and "assignment_basics" in globals() and assignment_basics["exists"] %}
                 <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
                     <div class="navbar-item is-arrowless" style="cursor: pointer;">
                         Assignments
@@ -13,14 +13,59 @@
                     </div>
 
                     <div id="moreDropdown" class="navbar-dropdown">
-                        {% for assignment in assignments %}
+                        {% for assignment in assignment_statuses %}
                             {% if assignment[0] == assignment_basics['id'] %}
                                 <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
                             {% else %}
                                 <a class="navbar-item" style="white-space: nowrap;"
                             {% end %}
 
-                            href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
+                            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                            {% else %}
+                                href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                            {% end %}
+                            >
+
+                            {% if assignment[1]["completed"] %}
+                                <i class="far fa-check-circle"
+                                
+                                {% if assignment[0] == assignment_basics['id'] %}
+                                    style="color: white;"
+                                {% end %}
+
+                                ></i>
+                            {% elif assignment[1]["in_progress"] %}
+                                <i class="far fa-hourglass"
+                                
+                                {% if assignment[0] == assignment_basics['id'] %}
+                                    style="color: white;"
+                                {% end %}
+
+                                ></i>
+                            {% elif assignment[1]["timer_has_ended"] %}
+                                <i class="far fa-clock"
+                                
+                                {% if assignment[0] == assignment_basics['id'] %}
+                                    style="color: white;"
+                                {% end %}
+
+                                ></i>
+                            {% else %}
+                                <i class="far fa-circle"
+                                
+                                {% if assignment[0] == assignment_basics['id'] %}
+                                    style="color: white;"
+                                {% end %}
+
+                                ></i>
+                            {% end %}
+                            
+                            &nbsp;
+                            
+                            {{ assignment[1]["title"] }}
+                        
+                            </a>
                         {% end %}
                     </div>
                 </div>

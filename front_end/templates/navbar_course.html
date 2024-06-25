@@ -20,7 +20,17 @@
                                 <a class="navbar-item" style="white-space: nowrap;"
                             {% end %}
 
-                            href="/course/{{ course[0] }}">{{ course[1]["title"] }}</a>
+                            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                href="/edit_course/{{ course[0] }}"
+                            {% else %}
+                                href="/course/{{ course[0] }}"
+                            {% end %}
+                            
+                            >
+                            
+                            {{ course[1]["title"] }}
+                        
+                            </a>
                         {% end %}
                     </div>
                 </div>

@@ -136,7 +136,7 @@
     <script>
         function copy_assignment_build_body(data_obj, messageElement) {
             var previous_title = "";
-            for (let assignment of {{ jsonify(assignments) }}) {
+            for (let assignment of {{ jsonify(assignment_statuses) }}) {
                 if (assignment[0] == data_obj.assignment_id) {
                     previous_title = assignment[1]["title"];
                     break;

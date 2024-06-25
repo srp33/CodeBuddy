@@ -25,7 +25,13 @@ class SummarizeLogsHandler(BaseUserHandler):
         try:
             if self.is_administrator:
                 query_details = ujson.loads(self.request.body)
-                summary_dict = self.get_summary_dict()[query_details["page"]]
+
+                summary_dict = self.get_summary_dict()
+                
+                if len(summary_dict) == 0:
+                    return self.write(json.dumps(results, default=str))
+
+                summary_dict = summary_dict[query_details["page"]]
 
                 hours_dict = {}
 

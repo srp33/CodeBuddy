@@ -21,7 +21,7 @@ class ViewAssignmentScoresHandler(BaseUserHandler):
 
                 scores, total_times_pair_programmed = self.content.get_assignment_scores(course_basics, assignment_basics)
 
-                self.render("view_assignment_scores.html", courses=self.courses, course_basics=course_basics, assignments=self.content.get_assignments(course_basics), assignment_basics=assignment_basics, assignment_details=assignment_details, exercise_statuses=self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user()), scores=scores, total_times_pair_programmed=total_times_pair_programmed, timer_statuses=timer_statuses, download_file_name=get_scores_download_file_name(assignment_basics), user_info=self.user_info, is_administrator=self.is_administrator)
+                self.render("view_assignment_scores.html", courses=self.courses, course_basics=course_basics, assignment_statuses=await self.get_assignment_statuses(course_basics), assignment_basics=assignment_basics, assignment_details=assignment_details, exercise_statuses=self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user()), scores=scores, total_times_pair_programmed=total_times_pair_programmed, timer_statuses=timer_statuses, download_file_name=get_scores_download_file_name(assignment_basics), user_info=self.user_info, is_administrator=self.is_administrator)
             else:
                 self.render("permissions.html")
         except Exception as inst:

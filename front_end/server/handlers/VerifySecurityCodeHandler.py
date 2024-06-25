@@ -11,9 +11,9 @@ class VerifySecurityCodeHandler(BaseUserHandler):
         try:
             course_basics = await self.get_course_basics(course_id)
             assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
-            assignments = await self.get_assignments(course_basics)
+            assignment_statuses = await self.get_assignment_statuses(course_basics)
 
-            self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignments=assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+            self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_statuses=assignment_statuses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
         except:
             render_error(self, traceback.format_exc())
 

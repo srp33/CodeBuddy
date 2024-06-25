@@ -725,7 +725,7 @@ class Content:
         return registered_students
 
     # Indicates whether or not a student has passed each assignment in the course.
-    async def get_assignment_statuses(self, course_id, user_id, show_hidden):
+    def get_assignment_statuses(self, course_id, user_id, show_hidden):
         course_basics = self.get_course_basics(course_id)
 
         sql = '''
@@ -849,11 +849,6 @@ FROM assignment_statuses'''
                 statuses2.append([assignment_basics[0], assignment_basics[1]])
         else:
             for status in sort_list_of_dicts_nicely(statuses, ["title", "assignment_id"]):
-                # timer_has_ended = False
-                # if status["minutes_since_start"]:
-                #     if (status["minutes_since_start"] > status["hour_timer"] * 60 + status["minute_timer"]) or status["ended_early"]:
-                #         timer_has_ended = True
-
                 assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "completed": status["completed"], "in_progress": status["in_progress"], "score": status["score"], "num_completed": status["num_completed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "timer_has_ended": status["timer_has_ended"], "restrict_other_assignments": status["restrict_other_assignments"]}
 
                 if assignment_dict["start_date"]:
