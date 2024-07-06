@@ -190,8 +190,6 @@ def check_test_outputs(exercise_details, test_outputs):
     all_passed = True
 
     for test_title in exercise_details["tests"]:
-        # It is possible we will have a submission but that the test outputs were not preserved
-        # due to an issue with migrating the database in summer 2022.
         if test_title not in test_outputs:
             test_outputs[test_title] = {"passed": None, "txt_output": None, "jpg_output": None, "diff_output": None}
             continue
@@ -203,6 +201,7 @@ def check_test_outputs(exercise_details, test_outputs):
                 test_outputs[test_title]["passed"] = True
         else:
             diff_output, passed = compare_outputs(exercise_details, test_outputs, test_title)
+
             test_outputs[test_title]["passed"] = passed
             test_outputs[test_title]["diff_output"] = diff_output
 
@@ -598,3 +597,21 @@ def split_str_by_positions(my_str, characters_per_segment, delimiter):
         my_str = my_str[characters_per_segment:]
 
     return delimiter.join(segments)
+
+def adjust_assignment_score(score, custom_scoring):
+    if not custom_scoring or len(custom_scoring) == 0:
+        # There is no custom scoring defined.
+        return(score)
+    else:
+        # Apply the custom scoring.
+        ranges = json.loads(custom_scoring)
+
+        # Start at the top of the range so that if the score
+        # falls at the lower threshold, they will receive
+        # more points.
+        for range in ranges[::-1]:
+            if score >= range[0] and score <= range[1]:
+                return range[2]
+
+        # Return the unadjusted score if there was no matching range.
+        return(score)

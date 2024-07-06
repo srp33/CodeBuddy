@@ -22,11 +22,9 @@ class ExerciseHandler(BaseUserHandler):
 
             show = self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id)
 
-            exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), current_exercise_id=exercise_id, show_hidden=show)
+            exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=show)
 
             next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)
-
-            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=True)#(not studio_mode))
 
             assignment_statuses = await self.get_assignment_statuses(course_basics)
 
@@ -45,6 +43,8 @@ class ExerciseHandler(BaseUserHandler):
                 timer_status, __, __, __, timer_deadline = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
 
             presubmission, submissions, has_passed = self.content.get_submissions(course_id, assignment_id, exercise_id, self.get_current_user(), exercise_details)
+
+            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=True)#(not studio_mode))
 
             args = {"users": user_list,
                     "courses": self.courses,

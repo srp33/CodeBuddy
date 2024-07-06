@@ -77,9 +77,9 @@
 
         let partner_id = $("#partner_id")[0].value == "" ? null : $("#partner_id")[0].value;
 
-        let submission_date = new Date();
+        let submission_date = new Date().toLocaleString("en-US", {timeZone: "UTC"});
 
-        post_data = {"partner_id": partner_id, "code": user_solution, "date": submission_date.toLocaleString("en-US", {timeZone: "UTC"})};
+        post_data = {"partner_id": partner_id, "code": user_solution, "date": submission_date};
 
         $.ajax({
             type: 'POST',
@@ -93,8 +93,8 @@
                     submission = {
                         "id": response_dict["submission_id"],
                         "code": user_solution,
-                        "date": submission_date.toLocaleString(),
-                        "passed": response_dict["all_passed"],
+                        "submission_timestamp": submission_date,
+                        "completed": response_dict["all_passed"],
                         "partner_name": response_dict["partner_name"],
                         "test_outputs": response_dict["test_outputs"]};
                     submissions.push(submission);
@@ -246,8 +246,9 @@
                 var test_titles = Object.keys(test_outputs);
                 test_titles.sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true}));
 
-                for (let test_title of test_titles)
+                for (let test_title of test_titles) {
                     tests_output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
+                }
             }
         {% end %}
 
@@ -438,10 +439,12 @@
         editor.focus();
         editor.setValue(this_submission.code, -1);
 
-        if (this_submission["passed"])
+        if (this_submission["completed"]) {
             showSuccessMessage(this_submission);
-        else
+        }
+        else {
             showNotPassingMessage(this_submission["test_outputs"].length);
+        }
 
         if ({{ exercise_details["max_submissions"]}} > 0 && submissions.length >= {{ exercise_details["max_submissions"]}}) {
             hide_submit_button();
@@ -463,7 +466,7 @@
 
         var this_submission = submissions[0];
 
-        if (this_submission["passed"])
+        if (this_submission["completed"])
             showSuccessMessageMultipleChoice();
         else
             showNotPassingMessageMultipleChoice();
@@ -496,12 +499,12 @@
             for (i = submissions.length - 1; i >= 0; i--) {
                 submission = submissions[i];
 
-                if (submission.passed)
+                if (submission.completed)
                     button_bd_color = "passing-btn-color";
                 else
                     button_bd_color = "failing-btn-color";
 
-                var submission_date = new Date(submission.date).toLocaleString();
+                var submission_date = parseDateText(submission.submission_timestamp);
 
                 if (submission.partner_name)
                     submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_code_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Programming partner: ${submission.partner_name}"><i class="fab fa-product-hunt"></i></label></button>`;

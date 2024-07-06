@@ -18,6 +18,8 @@ conn = sqlite3.connect(
         timeout = 30,
     )
 
+conn.create_function("adjust_assignment_score", 2, adjust_assignment_score)
+
 cursor = conn.cursor()
 
 num_rows = 0
@@ -34,7 +36,8 @@ try:
         tsv_file.write(out_header_row + "\n")
 
         for row in results:
-            out_row = "\t".join([str(x) for x in row])
+            out_values = [str(x).replace("\n", " ") for x in row]
+            out_row = "\t".join(out_values)
             print(out_row)
             tsv_file.write(out_row + "\n")
 

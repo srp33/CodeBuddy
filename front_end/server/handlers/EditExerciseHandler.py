@@ -20,7 +20,7 @@ class EditExerciseHandler(BaseUserHandler):
                 if exercise_details["back_end"] == "multiple_choice":
                     return self.redirect(f"/edit_mc_exercise/{course_id}/{assignment_id}/{exercise_id}")
 
-                exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), current_exercise_id=exercise_id, show_hidden=True)
+                exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=True)
 
                 for test_title in exercise_details["tests"]:
                     exercise_details["tests"][test_title]["txt_output"] = exercise_details["tests"][test_title]["txt_output"]

@@ -17,7 +17,7 @@ class EditMultipleChoiceExerciseHandler(BaseUserHandler):
                 
                 exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
-                exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), current_exercise_id=exercise_id, show_hidden=True)
+                exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=True)
 
                 next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)
 

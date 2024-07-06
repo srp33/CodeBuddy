@@ -20,7 +20,7 @@
                         <th style="text-align: center;">Visibility</th>
                         <th style="text-align: center;">Start Date</th>
                         <th style="text-align: center;">Due Date</th>
-                        <th style="text-align: center;">Num Completed</th>
+                        <th style="text-align: center;"># Completed</th>
                         <th style="text-align: center;">Avg. Score</th>
                         <th style="text-align: center;">Edit</th>
 
@@ -65,8 +65,8 @@
                                 <td> </td>
                             {% end %}
 
-                            <td style="text-align: center;">{{ course_summary_scores[assignment[0]]["num_students_completed"] }} / {{ course_summary_scores[assignment[0]]["num_students"] }}</td>
-                            <td style="text-align: center;"><a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ course_summary_scores[assignment[0]]["avg_score"] }}%</a></td>
+                            <td style="text-align: center;">{{ assignment_summary_scores[assignment[0]]["num_students_completed"] }} / {{ assignment_summary_scores[assignment[0]]["num_students"] }}</td>
+                            <td style="text-align: center;"><a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ round(assignment_summary_scores[assignment[0]]["avg_score"], 1) }}%</a></td>
                         {% end %}
                         <td style="text-align: center;">
                             <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">
@@ -109,7 +109,7 @@
         {% if is_administrator or is_instructor %}
             <a class="button is-dark" href="/edit_assignment/{{ course_basics['id'] }}/">Create assignment</a>
 
-            <a class="button is-primary" href="/view_students/{{ course_basics['id'] }}">View students</a>
+            <a class="button is-primary" href="/view_students/{{ course_basics['id'] }}">Manage students</a>
 
             <a class="button is-primary is-outlined" href="/view_at_risk_students/{{ course_basics['id'] }}/72">View at-risk students</a>
 

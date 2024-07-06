@@ -48,7 +48,7 @@
 
 {% if len(submissions) > 0 %}
     <script>
-        document.getElementById("last_submission_date").innerHTML = new Date("{{ submissions[-1]["date"] }}").toLocaleString();
+        document.getElementById("last_submission_date").innerHTML = new Date("{{ submissions[-1]['submission_timestamp'] }}").toLocaleString();
     </script>
 {% end %}
 

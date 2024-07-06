@@ -53,11 +53,11 @@ class AssignmentHandler(BaseUserHandler):
         assignment_id = assignment_basics["id"]
 
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
-            exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.user_info["user_id"], show_hidden=True)
+            exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, None, show_hidden=True)
             has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
-            assignment_summary_scores = self.content.get_assignment_summary_scores(course_basics, assignment_basics)
+            exercise_summary_scores = self.content.get_exercise_summary_scores(course_basics, assignment_basics)
 
-            return self.render("assignment_admin.html", courses=self.courses, assignment_statuses=await self.get_assignment_statuses(course_basics), exercises=self.content.get_exercises(course_basics, assignment_basics, show_hidden=True), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, course_options=[x[1] for x in self.courses if str(x[0]) != course_id], assignment_summary_scores=assignment_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), download_file_name=get_scores_download_file_name(assignment_basics))
+            return self.render("assignment_admin.html", courses=self.courses, assignment_statuses=await self.get_assignment_statuses(course_basics), exercises=self.content.get_exercises(course_basics, assignment_basics, show_hidden=True), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, course_options=[x[1] for x in self.courses if str(x[0]) != course_id], exercise_summary_scores=exercise_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), download_file_name=get_scores_download_file_name(assignment_basics))
 
         assignment_statuses = await self.get_assignment_statuses(course_basics)
 
@@ -65,6 +65,7 @@ class AssignmentHandler(BaseUserHandler):
 
         if render_status == "render":
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=False)
+
             has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
 
             confirmation_code = None

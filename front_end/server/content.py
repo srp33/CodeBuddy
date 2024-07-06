@@ -30,12 +30,17 @@ class Content:
         self.conn = open_db(db_file_path)
         self.conn.row_factory = sqlite3.Row
 
+        # Add user-defined function(s)
+        self.conn.create_function("adjust_assignment_score", 2, adjust_assignment_score)
+
         # See https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
         self.execute("PRAGMA foreign_keys=OFF")
         self.execute("PRAGMA cache_size=1000000")
         self.execute("PRAGMA mmap_size=100000000")
         self.execute("PRAGMA temp_store=MEMORY")
         self.execute("PRAGMA journal_mode=OFF")
+
+        self.scores_statuses_template = read_file("query_templates/scores_statuses.sql")
 
         atexit.register(self.close)
 
@@ -728,108 +733,33 @@ class Content:
     def get_assignment_statuses(self, course_id, user_id, show_hidden):
         course_basics = self.get_course_basics(course_id)
 
-        sql = '''
-WITH assignment_completions AS (
-    SELECT assignment_id,
-           SUM(completed) AS num_completed,
-           SUM(num_submissions) AS num_submissions
-    FROM (
-        SELECT s.assignment_id,
-              e.exercise_id,
-              IFNULL(MAX(s.passed), 0) = 1 OR (e.back_end = 'multiple_choice' AND COUNT(s.submission_id) > 0) AS completed,
-              COUNT(submission_id) AS num_submissions
-        FROM submissions s
-        INNER JOIN exercises e
-          ON s.exercise_id = e.exercise_id
-        WHERE s.course_id = ?
-          AND s.user_id = ?
-          AND e.visible = 1
-        GROUP BY s.assignment_id, s.exercise_id
-
-        UNION
-
-        SELECT assignment_id,
-              exercise_id,
-              0 AS num_completed,
-              0 AS num_submissions
-        FROM exercises
-        WHERE course_id = ?
-          AND visible = 1
-    )
-    GROUP BY assignment_id
-),
-
-assignment_num_exercises AS (
-  SELECT assignment_id, COUNT(exercise_id) as num_exercises
-  FROM exercises
-  WHERE course_id = ?
-    AND visible = 1
-  GROUP BY assignment_id
-),
-
-assignment_scores AS (
-    SELECT assignment_id, AVG(score) AS score
-    FROM (
-        SELECT assignment_id, exercise_id, MAX(score) AS score
-        FROM (
-            SELECT s.assignment_id, s.exercise_id, s.score
-            FROM scores s
-            INNER JOIN exercises e
-              ON s.exercise_id = e.exercise_id
-            WHERE s.course_id = ?
-              AND s.user_id = ?
-              AND e.visible = 1
-            UNION
-
-            SELECT assignment_id, exercise_id, 0
-            FROM exercises
-            WHERE course_id = ?
-              AND visible = 1
-        )
-        GROUP BY exercise_id
-    )
-    GROUP BY assignment_id
-),
-
-assignment_statuses AS (
-    SELECT a.assignment_id,
-           a.title,
-           a.visible,
-           a.start_date,
-           a.due_date,
-           a.has_timer,
-           a.hour_timer * 60 + minute_timer AS minutes_limit,
-           a.restrict_other_assignments,
-          (JulianDay(DATETIME('now')) - JulianDay(uas.start_time)) * 24 * 60 AS minutes_since_start,
-           uas.ended_early,
-           ac.num_completed,
-           ac.num_submissions,
-           ane.num_exercises,
-           ats.score
-    FROM assignments a
-    INNER JOIN assignment_num_exercises ane
-      ON a.assignment_id = ane.assignment_id
-    INNER JOIN assignment_completions ac
-      ON a.assignment_id = ac.assignment_id
-    INNER JOIN assignment_scores ats
-      ON a.assignment_id = ats.assignment_id
-    LEFT JOIN user_assignment_starts uas
-      ON a.course_id = uas.course_id
-      AND a.assignment_id = uas.assignment_id
-      AND a.has_timer = 1
-      AND (uas.user_id = ? OR uas.user_id IS NULL)
-    WHERE a.course_id = ?
-    ORDER BY a.title
-)
-
-SELECT *,
-       IFNULL(minutes_since_start > minutes_limit OR ended_early, 0) AS timer_has_ended,
-       IFNULL((num_submissions > 0 AND num_completed < num_exercises AND NOT has_timer) OR (has_timer AND minutes_since_start <= minutes_limit AND NOT ended_early), 0) AS in_progress,
-       num_completed = num_exercises AS completed
-FROM assignment_statuses'''
+        sql = self.scores_statuses_template + '''
+SELECT
+  sts.user_id,
+  sts.assignment_id,
+  a.title,
+  a.visible,
+  a.restrict_other_assignments,
+  sts.num_exercises,
+  sts.start_date,
+  sts.due_date,
+  sts.has_timer,
+  sts.num_completed,
+  sts.completed,
+  sts.in_progress,
+  sts.timer_has_ended,
+  sts.num_times_pair_programmed,
+  scr.score
+FROM assignment_statuses sts
+INNER JOIN assignment_scores scr
+  ON sts.assignment_id = scr.assignment_id
+  AND sts.user_id = scr.user_id
+INNER JOIN valid_assignments a
+  ON sts.assignment_id = a.assignment_id
+'''
 
         statuses = []
-        for row in self.fetchall(sql, (course_id, user_id, course_id, course_id, course_id, user_id, course_id, user_id, course_id)):
+        for row in self.fetchall(sql, (course_id, None, None, user_id)):
             assignment = dict(row)
 
             if assignment["visible"] or show_hidden:
@@ -863,39 +793,36 @@ FROM assignment_statuses'''
     # Gets the number of submissions a student has made for each exercise
     # in an assignment and whether or not they have passed the exercise.
     # TODO: Pass basics info into this function?
-    def get_exercise_statuses(self, course_id, assignment_id, user_id, current_exercise_id=None, show_hidden=True, nice_sort=True):
+    def get_exercise_statuses(self, course_id, assignment_id, user_id, show_hidden=True, nice_sort=True):
         # This happens when you are creating a new assignment.
         if not assignment_id:
             return []
 
-        sql = '''SELECT e.exercise_id as id,
-                        e.title,
-                        e.enable_pair_programming,
-                        IFNULL(MAX(s.passed), 0) AS passed,
-                        COUNT(s.submission_id) AS num_submissions,
-                        COUNT(s.submission_id) > 0 AND IFNULL(MAX(s.passed), 0) = 0 AS in_progress,
-                        e.back_end = 'multiple_choice' AS is_multiple_choice,
-                        IFNULL(sc.score, 0) as score,
-                        e.weight,
-                        e.visible
-                 FROM exercises e
-                 LEFT JOIN submissions s
-                   ON e.course_id = s.course_id
-                   AND e.assignment_id = s.assignment_id
-                   AND e.exercise_id = s.exercise_id
-                   AND s.user_id = ?
-                 LEFT JOIN scores sc
-                   ON e.course_id = sc.course_id
-                   AND e.assignment_id = sc.assignment_id
-                   AND e.exercise_id = sc.exercise_id
-                   AND (sc.user_id = ? OR sc.user_id IS NULL)
-                 WHERE e.course_id = ?
-                   AND e.assignment_id = ?
-                 GROUP BY e.assignment_id, e.exercise_id
-                 ORDER BY e.title'''
+        sql = self.scores_statuses_template + '''
+SELECT
+  es.user_id,
+  es.exercise_id as id,
+  e.title,
+  e.visible,
+  e.enable_pair_programming,
+  es.num_submissions,
+  es.completed,
+  es.in_progress,
+  esw.score,
+  e.weight,
+  e.back_end = 'multiple_choice' AS is_multiple_choice
+FROM exercise_statuses es
+INNER JOIN exercise_scores_weights esw
+  ON es.assignment_id = esw.assignment_id
+  AND es.exercise_id = esw.exercise_id
+  AND es.user_id = esw.user_id
+INNER JOIN valid_exercises e
+  ON es.assignment_id = e.assignment_id
+  AND es.exercise_id = e.exercise_id
+'''
 
         statuses = []
-        for row in self.fetchall(sql, (user_id, user_id, int(course_id), int(assignment_id),)):
+        for row in self.fetchall(sql, (course_id, assignment_id, None, user_id,)):
             if row["visible"] or show_hidden:
                 statuses.append(dict(row))
 
@@ -905,369 +832,160 @@ FROM assignment_statuses'''
         statuses2 = []
 
         for status in statuses:
-            if current_exercise_id and status["id"] == current_exercise_id:
-                statuses2.append([status["id"], status])
-
-        for status in statuses:
-            if current_exercise_id and status["id"] == current_exercise_id:
-                next
-
             statuses2.append([status["id"], status])
 
         return statuses2
 
     ## Calculates the average score across all students for each assignment in a course, as well as the number of students who have completed each assignment.
-    def get_course_summary_scores(self, course_id, assignments):
-        sql = '''SELECT COUNT(*) AS num_students
-                 FROM course_registrations
-                 WHERE course_id = ?
-                   AND user_id NOT IN (SELECT user_id
-                                       FROM permissions
-                                       WHERE course_id = 0 OR course_id = ?)'''
-
-        num_students = self.fetchone(sql, (course_id, course_id, ))["num_students"]
-
-        sql = '''
-          WITH
-            student_info AS (
-              SELECT user_id
-              FROM course_registrations
-              WHERE course_id = ?
-                AND user_id NOT IN (SELECT user_id
-                                    FROM permissions
-                                    WHERE course_id = 0 OR course_id = ?)
-            ),
-
-            assignment_info AS (
-              SELECT a.assignment_id, SUM(e.weight) * 100.0 AS max_score
-              FROM assignments a
-              INNER JOIN exercises e
-                 ON a.course_id = e.course_id
-                AND a.assignment_id = e.assignment_id
-              WHERE a.course_id = ?
-                AND a.visible = 1
-                AND e.visible = 1
-              GROUP BY a.assignment_id
-            ),
-
-            assignment_score_info AS (
-              SELECT s.assignment_id, s.user_id, SUM(s.score * e.weight) AS score
-              FROM scores s
-              INNER JOIN exercises e
-                 ON s.course_id = e.course_id
-                AND s.assignment_id = e.assignment_id
-                AND s.exercise_id = e.exercise_id
-	             INNER JOIN assignments a
-                 ON s.course_id = a.course_id
-                AND s.assignment_id = a.assignment_id
-							WHERE s.course_id = ?
-                AND a.visible = 1
-                AND e.visible = 1
-								AND s.user_id IN (SELECT user_id FROM student_info)
-              GROUP BY s.assignment_id, s.user_id
-            ),
-
-            student_scores AS (
-              SELECT ai.assignment_id,
-                     IFNULL(asi.score, 0) * 100.0 / ai.max_score AS score,
-                     IFNULL(asi.score, 0) = ai.max_score AS completed
-              FROM assignment_info ai
-              INNER JOIN student_info si
-              LEFT JOIN assignment_score_info asi
-                 ON ai.assignment_id = asi.assignment_id
-                AND si.user_id = asi.user_id
-            )
-
-            SELECT assignment_id, sum(completed) AS num_students_completed, ROUND(avg(score), 1) AS avg_score
-            FROM student_scores
-            GROUP BY assignment_id
-          '''
-
-        course_scores = {}
-
-        for row in self.fetchall(sql, (course_id, course_id, course_id, course_id)):
-            assignment_dict = {"assignment_id": row["assignment_id"],
-                "num_students": num_students,
-                "num_students_completed": row["num_students_completed"],
-                "avg_score": row["avg_score"]}
-
-            course_scores[row["assignment_id"]] = assignment_dict
-
-        for assignment in assignments:
-            assignment_id = assignment[0]
-
-            if assignment_id not in course_scores:
-                course_scores[assignment_id] = {"num_students_completed": 0,
-                    "num_students": num_students,
-                    "avg_score": "0.0"}
-
-        return course_scores
-
-    ## Calculates the average score across all students for each exercise in an assignment,
-    ## as well as the number of students who have completed each exercise.
-    def get_assignment_summary_scores(self, course_basics, assignment_basics):
-        sql = '''
-          WITH
-            student_info AS (
-              SELECT user_id
-              FROM course_registrations
-              WHERE course_id = ?
-                AND user_id NOT IN (SELECT user_id
-                                    FROM permissions
-                                    WHERE course_id = 0 OR course_id = ?)
-          ),
-
-            exercise_score_info AS (
-              SELECT s.exercise_id, s.user_id, SUM(s.score) AS score
-              FROM scores s
-              INNER JOIN assignments a
-                 ON s.course_id = a.course_id
-                AND s.assignment_id = a.assignment_id
-              INNER JOIN exercises e
-                 ON s.course_id = e.course_id
-                AND s.assignment_id = e.assignment_id
-                AND s.exercise_id = e.exercise_id
-              INNER JOIN course_registrations cr
-                 ON s.course_id = cr.course_id
-                AND s.user_id = cr.user_id
-              WHERE s.course_id = ?
-                AND s.assignment_id = ?
-                AND a.visible = 1
-                AND e.visible = 1
-                AND cr.user_id NOT IN (SELECT user_id
-                                       FROM permissions
-                                      WHERE course_id = 0 OR course_id = ?)
-              GROUP BY s.exercise_id, s.user_id
-          )
-
-          SELECT e.exercise_id,
-                 ROUND(avg(IFNULL(esi.score, 0)), 1) AS avg_score
-          FROM exercises e
-          INNER JOIN student_info si
-          LEFT JOIN exercise_score_info esi
-             ON e.exercise_id = esi.exercise_id
-            AND si.user_id = esi.user_id
-          WHERE e.course_id = ?
-            AND e.assignment_id = ?
-            AND e.visible = 1
-          GROUP BY e.exercise_id
-          '''
+    def get_assignment_summary_scores(self, course_id):
+        sql = self.scores_statuses_template + '''
+SELECT
+  sts.assignment_id,
+  a.title,
+  a.visible,
+  COUNT(sts.user_id) AS num_students,
+  SUM(sts.completed) AS num_students_completed,
+  sts.start_date,
+  sts.due_date,
+  AVG(scr.score) AS avg_score
+FROM assignment_statuses sts
+INNER JOIN assignment_scores scr
+  ON sts.assignment_id = scr.assignment_id
+  AND sts.user_id = scr.user_id
+INNER JOIN valid_assignments a
+  ON sts.assignment_id = a.assignment_id
+GROUP BY sts.assignment_id
+'''
 
         assignment_scores = {}
 
-        for row in self.fetchall(sql, (course_basics["id"], course_basics["id"], course_basics["id"], assignment_basics["id"], course_basics["id"], course_basics["id"], assignment_basics["id"], )):
-            assignment_scores[row["exercise_id"]] = row["avg_score"]
-
-        if len(assignment_scores) == 0:
-            for exercise in self.get_exercises(course_basics, assignment_basics, show_hidden=False):
-                assignment_scores[exercise[0]] = 0.0
+        for row in self.fetchall(sql, (course_id, None, None, None)):
+            assignment_scores[row["assignment_id"]] = dict(row)
 
         return assignment_scores
 
+    ## Calculates the average score across all students for each exercise in an assignment,
+    ## as well as the number of students who have completed each exercise.
+    def get_exercise_summary_scores(self, course_basics, assignment_basics):
+        sql = self.scores_statuses_template + '''
+SELECT
+  sts.exercise_id AS id,
+  e.title,
+  e.visible,
+  SUM(sts.completed) AS num_students_completed,
+  COUNT(sts.user_id) AS num_students,
+  AVG(esw.score) AS score
+FROM exercise_statuses sts
+INNER JOIN exercise_scores_weights esw
+  ON sts.exercise_id = esw.exercise_id
+  AND sts.user_id = esw.user_id
+INNER JOIN valid_exercises e
+  ON sts.exercise_id = e.exercise_id
+GROUP BY sts.exercise_id
+'''
+
+        scores_dict = {}
+        for row in self.fetchall(sql, (course_basics["id"], assignment_basics["id"], None, None)):
+            scores_dict[row["id"]] = dict(row)
+
+        return scores_dict
+
     # Gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment.
     def get_assignment_scores(self, course_basics, assignment_basics):
-        scores = []
+        sql = self.scores_statuses_template + '''
+SELECT
+  u.user_id AS id,
+  u.name,
+  scr.score,
+  sts.num_completed,
+  ane.num_exercises,
+  sts.last_submission_timestamp,
+  sts.num_times_pair_programmed
+FROM assignment_statuses sts
+INNER JOIN assignment_scores scr
+  ON sts.assignment_id = scr.assignment_id
+  AND sts.user_id = scr.user_id
+INNER JOIN valid_users u
+  ON sts.user_id = u.user_id
+INNER JOIN assignments_num_exercises ane
+  ON sts.assignment_id = ane.assignment_id
+ORDER BY u.name
+'''
 
-        sql = '''WITH
-                   valid_exercises AS (
-                     SELECT exercise_id, weight
-	                   FROM exercises
-	                   WHERE course_id = ?
-	                     AND assignment_id = ?
-	                     AND visible = 1
-                   ),
-
-                   valid_users AS (
-                     SELECT u.user_id, u.name
-                     FROM course_registrations cr
-                     INNER JOIN users u
-                       ON cr.user_id = u.user_id
-                     WHERE cr.course_id = ? AND cr.user_id NOT IN (
-                       SELECT user_id
-                       FROM permissions
-                       WHERE course_id = 0 OR course_id = ?
-	                   )
-                   ),
-
-                   exercise_user_scores AS (
-                     SELECT s.exercise_id, s.user_id, s.score
-	                   FROM scores s
-	                   WHERE exercise_id IN (SELECT exercise_id FROM valid_exercises)
-	                     AND user_id IN (SELECT user_id FROM valid_users)
-                   ),
-  
-                   submitted_scores AS (
-                     SELECT s.submission_id, s.exercise_id, s.user_id, s.date, s.partner_id, ss.score
-	                   FROM submissions s
-	                   INNER JOIN exercise_user_scores ss
-	                     ON s.exercise_id = ss.exercise_id
-	                     AND s.user_id = ss.user_id
-	                   WHERE s.exercise_id IN (SELECT exercise_id FROM valid_exercises)
-	                     AND s.user_id IN (SELECT user_id FROM valid_users)
-                     ),
-  
-                   unsubmitted_scores AS (
-                     SELECT eus.exercise_id, eus.user_id, NULL as date, NULL as partner_id, eus.score
-	                   FROM exercise_user_scores eus
-	                   LEFT JOIN submitted_scores ss
-	                     ON eus.exercise_id = ss.exercise_id
-	                     AND eus.user_id = ss.user_id
-	                   WHERE ss.submission_id IS NULL
-                     ),
-
-                     zero_scores AS (
-                       SELECT e.exercise_id, u.user_id, NULL as date, NULL as partner_id, 0.0 as score
-                       FROM valid_exercises e
-                       INNER JOIN valid_users u
-                     ),
-  
-                     all_scores AS (
-                       SELECT exercise_id, user_id, date, partner_id, score
-	                     FROM submitted_scores
-	
-                       UNION
-	
-	                     SELECT *
-	                     FROM unsubmitted_scores
-
-	                     UNION
-	
-	                     SELECT *
-	                     FROM zero_scores
-                     ),
-
-                     weighted_scores AS (
-                       SELECT s.exercise_id, s.user_id, s.date, (s.partner_id IS NOT NULL) AS pair_programmed, MAX(s.score) * e.weight AS score
-	                     FROM all_scores s
-	                     INNER JOIN valid_exercises e
-	                       ON s.exercise_id = e.exercise_id
-	                     GROUP BY s.exercise_id, s.user_id
-                     )
-
-                     SELECT vu.user_id, vu.name, strftime('%Y-%m-%d %H:%M:%S', MAX(ws.date)) AS last_submission_time, sum(ws.pair_programmed) AS num_times_pair_programmed, AVG(ws.score) AS score
-                     FROM weighted_scores ws
-                     INNER JOIN valid_users vu
-                       ON ws.user_id = vu.user_id
-                     GROUP BY ws.user_id
-                     ORDER BY vu.name'''
-
-        course_id = course_basics["id"]
-        assignment_id = assignment_basics["id"]
+        scores_dict_list = []
         total_times_pair_programmed = 0
 
-        for user in self.fetchall(sql, (course_id, assignment_id, course_id, course_id)):
-            scores_dict = dict(user)
-            scores.append([user["user_id"], scores_dict])
+        for row in self.fetchall(sql, (course_basics["id"], assignment_basics["id"], None, None)):
+            row_dict = dict(row)
+            scores_dict_list.append([row_dict["id"], row_dict])
 
-            total_times_pair_programmed += scores_dict["num_times_pair_programmed"]
+            total_times_pair_programmed += row_dict["num_times_pair_programmed"]                
 
-        return scores, total_times_pair_programmed
+        return scores_dict_list, total_times_pair_programmed
 
     # Get score for each assignment for a particular student.
     def get_student_assignment_scores(self, course_id, user_id):
+        sql = self.scores_statuses_template + '''
+SELECT
+  a.assignment_id,
+  a.title,
+  scr.score,
+  sts.num_completed,
+  ane.num_exercises,
+  sts.last_submission_timestamp,
+  sts.num_times_pair_programmed
+FROM assignment_statuses sts
+INNER JOIN assignment_scores scr
+  ON sts.assignment_id = scr.assignment_id
+  AND sts.user_id = scr.user_id
+INNER JOIN valid_assignments a
+  ON sts.assignment_id = a.assignment_id
+INNER JOIN assignments_num_exercises ane
+  ON sts.assignment_id = ane.assignment_id
+ORDER BY a.title
+'''
+
         scores = []
 
-        sql = '''SELECT assignment_totals.assignment_id, assignment_totals.title, round(assignment_totals.total_score / max_possible.sum_weights, 2) AS score
-                 FROM (
-                   SELECT a.assignment_id, a.title, SUM(s.score * e.weight) AS total_score
-                   FROM exercises e
-                   INNER JOIN scores s
-                     ON e.course_id = s.course_id
-                    AND e.assignment_id = s.assignment_id
-                    AND e.exercise_id = s.exercise_id
-                   INNER JOIN assignments a
-                     ON e.course_id = a.course_id
-                    AND e.assignment_id = a.assignment_id
-                   WHERE e.course_id = ?
-                    AND s.user_id = ?
-                    AND e.visible = 1
-                    AND a.visible = 1
-                   GROUP BY e.assignment_id
-                 ) assignment_totals
-                 INNER JOIN (
-                   SELECT assignment_id, SUM(weight) AS sum_weights
-                   FROM exercises
-                   WHERE course_id = ?
-                     AND visible = 1
-                   GROUP BY assignment_id
-                 ) max_possible
-                   ON assignment_totals.assignment_id = max_possible.assignment_id
-
-                 UNION
-
-                 SELECT assignment_id, title, 0.0 as score
-                 FROM assignments
-                 WHERE course_id = ?
-                   AND visible = 1
-                   AND assignment_id NOT IN (
-                     SELECT DISTINCT assignment_id
-                     FROM scores
-                     WHERE course_id = ?
-                       AND user_id = ?
-                     )
-                 ORDER BY assignment_totals.title
-                 '''
-
-        for row in self.fetchall(sql, (course_id, user_id, course_id, course_id, course_id, user_id, )):
-            scores.append([row["assignment_id"], row["title"], row["score"]])
+        for row in self.fetchall(sql, (course_id, None, None, user_id, )):
+            scores.append([row["assignment_id"], dict(row)])
 
         return scores
 
     def get_exercise_scores(self, course_id, assignment_id, exercise_id):
         scores = []
 
-        sql = '''WITH exercise_scores AS (
-                   SELECT u.name, s.user_id, sc.score, COUNT(s.submission_id) AS num_submissions
-                   FROM submissions s
-                   INNER JOIN users u
-                     ON u.user_id = s.user_id
-                   INNER JOIN scores sc
-                   ON sc.course_id = s.course_id
-                     AND sc.assignment_id = s.assignment_id
-                     AND sc.exercise_id = s.exercise_id
-                     AND sc.user_id = s.user_id
-                   WHERE s.course_id = ?
-                     AND s.assignment_id = ?
-                     AND s.exercise_id = ?
-                     AND u.user_id NOT IN (SELECT user_id
-                                           FROM permissions
-                                           WHERE course_id = 0 OR course_id = ?)
-                   GROUP BY s.user_id
-                 )
+        sql = self.scores_statuses_template + '''
+SELECT
+  u.name,
+  u.user_id,
+  sts.num_submissions,
+  scr.score,
+  sts.last_submission_timestamp,
+  sts.pair_programmed
+FROM exercise_statuses sts
+INNER JOIN exercise_scores_weights scr
+  ON sts.assignment_id = scr.assignment_id
+  AND sts.user_id = scr.user_id
+INNER JOIN valid_users u
+  ON sts.user_id = u.user_id
+ORDER BY u.name
+'''
 
-                 SELECT *
-                 FROM exercise_scores
-
-                 UNION
-
-                 SELECT name, user_id, 0, 0
-                 FROM users
-                 WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
-                   AND user_id NOT IN (SELECT user_id FROM exercise_scores)
-                   AND user_id NOT IN (SELECT user_id FROM permissions WHERE course_id = 0 OR course_id = ?)
-              '''
-
-        for user in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id, course_id, course_id, )):
-            scores_dict = {"name": user["name"], "user_id": user["user_id"], "num_submissions": user["num_submissions"], "score": user["score"]}
-            scores.append([user["user_id"], scores_dict])
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None, )):
+            scores.append([row["user_id"], dict(row)])
 
         return scores
 
-    def get_exercise_score(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''
-                 SELECT score
-                 FROM scores
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?
-              '''
+    def get_student_exercise_score(self, course_id, assignment_id, exercise_id, user_id):
+        sql = self.scores_statuses_template + '''
+SELECT scr.score
+FROM exercise_scores_weights scr
+'''
 
         result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id, ))
 
-        if result:
-            return result["score"]
-        return 0.0
+        return result["score"]
 
     def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, score):
         # We only update the score if it's higher than what was there previously. We also account for the scenario where it is their first submission.
@@ -1291,18 +1009,19 @@ FROM assignment_statuses'''
         self.execute(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id, score, score))
 
     def get_submissions(self, course_id, assignment_id, exercise_id, user_id, exercise_details):
-        sql = '''SELECT o.submission_id, t.title, o.txt_output, o.jpg_output
-                 FROM test_outputs o
-                 INNER JOIN tests t
-                   ON o.test_id = t.test_id
-                 INNER JOIN submissions s
-                   ON o.submission_id = s.submission_id
-                 LEFT JOIN users u
-                   ON s.partner_id = u.user_id
-                 WHERE t.course_id = ?
-                   AND t.assignment_id = ?
-                   AND t.exercise_id = ?
-                   AND s.user_id = ?'''
+        sql = '''
+SELECT o.submission_id, t.title, o.txt_output, o.jpg_output
+FROM test_outputs o
+INNER JOIN tests t
+  ON o.test_id = t.test_id
+INNER JOIN submissions s
+  ON o.submission_id = s.submission_id
+LEFT JOIN users u
+  ON s.partner_id = u.user_id
+WHERE t.course_id = ?
+  AND t.assignment_id = ?
+  AND t.exercise_id = ?
+  AND s.user_id = ?'''
 
         test_outputs = {}
         for row in self.fetchall(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id,)):
@@ -1319,45 +1038,62 @@ FROM assignment_statuses'''
             test_outputs[submission_id][test_title]["jpg_output"] = row["jpg_output"]
             test_outputs[submission_id][test_title]["txt_output_formatted"] = format_output_as_html(row["txt_output"])
 
-        sql = '''SELECT s.submission_id, s.code, s.passed, s.date, u.name AS partner_name
-                 FROM submissions s
-                 LEFT JOIN users u
-                   ON s.partner_id = u.user_id
-                 WHERE s.course_id = ?
-                   AND s.assignment_id = ?
-                   AND s.exercise_id = ?
-                   AND s.user_id = ?
-                 
-                 UNION
+        sql = self.scores_statuses_template + '''
+SELECT
+    s.submission_id,
+    s.code,
+    s.completed,
+    s.submission_timestamp,
+    esw.score,
+    u2.name AS partner_name
+  FROM valid_submissions s
+  INNER JOIN exercise_scores_weights esw
+    ON s.exercise_id = esw.exercise_id
+    AND s.user_id = esw.user_id
+  LEFT JOIN valid_users u2
+    ON u2.user_id = s.partner_id
 
-                 SELECT -1, code, FALSE, NULL, NULL
-                 FROM presubmissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?
+  UNION
 
-                 ORDER BY s.submission_id'''
+  SELECT
+    -1 AS submission_id,
+    p.code,
+    0 AS completed,
+    NULL AS submission_timestamp,
+    0 AS score,
+    NULL AS partner_name
+  FROM presubmissions p
+  INNER JOIN valid_assignments a
+    ON p.assignment_id = a.assignment_id
+  INNER JOIN valid_exercises e
+    ON p.exercise_id = e.exercise_id
+  INNER JOIN valid_users u
+    ON p.user_id = u.user_id
+  WHERE p.course_id = (SELECT course_id FROM variables)
+
+  ORDER BY submission_timestamp
+'''
 
         presubmission = None
         submissions = []
         has_passed = False
 
-        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id,)):
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
             submission_test_outputs = {}
 
             if row["submission_id"] == -1:
-                  presubmission = row["code"]
+                presubmission = row["code"]
             else:
-              if row["submission_id"] in test_outputs:
-                  submission_test_outputs = test_outputs[row["submission_id"]]
-                  check_test_outputs(exercise_details, submission_test_outputs)
-                  sanitize_test_outputs(exercise_details, submission_test_outputs)
+                if row["submission_id"] in test_outputs:
+                    submission_test_outputs = test_outputs[row["submission_id"]]
 
-              submissions.append({"id": row["submission_id"], "code": row["code"], "passed": row["passed"], "date": row["date"].strftime("%a, %d %b %Y %H:%M:%S UTC"), "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
+                    check_test_outputs(exercise_details, submission_test_outputs)
+                    sanitize_test_outputs(exercise_details, submission_test_outputs)
 
-              if row["passed"]:
-                  has_passed = True
+                submissions.append({"id": row["submission_id"], "code": row["code"], "completed": row["completed"], "submission_timestamp": row["submission_timestamp"], "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
+
+                if row["completed"] == True:
+                    has_passed = True
 
         return presubmission, submissions, has_passed
 
@@ -1429,48 +1165,34 @@ FROM assignment_statuses'''
 
         return peer_code_dict[peer_ids[0]]
 
-    # FYI: This is different from the get_submissions() function
+    # FYI: This is different from the get_submissions() function. It retrieves the latest submission and score for each student for a given exercise.
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = '''WITH exercise_submissions AS (
-                   SELECT MAX(s.date), s.code, u.user_id, u.name, sc.score, s.passed, p.name AS partner_name
-                   FROM submissions s
-                   LEFT JOIN users p
-                     ON s.partner_id = p.user_id
-                   INNER JOIN users u
-                     ON s.user_id = u.user_id
-                   INNER JOIN scores sc
-                     ON s.user_id = sc.user_id
-                     AND s.course_id = sc.course_id
-                     AND s.assignment_id = sc.assignment_id
-                     AND s.exercise_id = sc.exercise_id
-                   WHERE s.course_id = ?
-                     AND s.assignment_id = ?
-                     AND s.exercise_id = ?
-                     AND s.user_id IN
-                     (
-                        SELECT user_id
-                        FROM course_registrations
-                        WHERE course_id = ?
-                     )
-                   GROUP BY s.user_id
-                 )
+        sql = self.scores_statuses_template + '''
+SELECT
+  s.user_id AS student_id,
+  u.name AS student_name,
+  s.code,
+  s.submission_timestamp AS submission_timestamp,
+  s.partner_id,
+  u2.name AS partner_name,
+  esw.score
+FROM latest_submissions s
+INNER JOIN exercise_statuses sts
+  ON s.exercise_id = sts.exercise_id
+  AND s.user_id = sts.user_id
+INNER JOIN exercise_scores_weights esw
+  ON s.exercise_id = esw.exercise_id
+  AND s.user_id = esw.user_id
+INNER JOIN valid_users u
+  ON s.user_id = u.user_id
+LEFT JOIN valid_users u2
+  ON u2.user_id = s.partner_id
+'''
 
-                 SELECT *
-                 FROM exercise_submissions
-
-                 UNION
-
-                 SELECT NULL, NULL, user_id, name, 0, 0, NULL
-                 FROM users
-                 WHERE user_id IN (SELECT user_id FROM course_registrations WHERE course_id = ?)
-                   AND user_id NOT IN (SELECT user_id FROM exercise_submissions)
-                 ORDER BY name'''
-
-        for submission in self.fetchall(sql, (course_id, assignment_id, exercise_id, course_id, course_id, )):
-            submission_info = {"user_id": submission["user_id"], "name": submission["name"], "code": submission["code"], "score": submission["score"], "passed": submission["passed"], "partner_name": submission["partner_name"]}
-            exercise_submissions.append([submission["user_id"], submission_info])
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None, )):
+            exercise_submissions.append([row["student_id"], dict(row)])
 
         return exercise_submissions
 
@@ -1750,12 +1472,12 @@ FROM assignment_statuses'''
         return course_details
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "show_run_button": True, "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_timer_exceptions": {}, "use_virtual_assistant": 0}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": None, "show_run_button": True, "custom_scoring": None, "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_timer_exceptions": {}, "use_virtual_assistant": 0}
 
         if not assignment_id:
             return null_assignment
 
-        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, allowed_ip_addresses, allowed_external_urls, show_run_button, require_security_codes, use_virtual_assistant, has_timer, hour_timer, minute_timer, restrict_other_assignments
+        sql = '''SELECT introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, use_virtual_assistant, has_timer, hour_timer, minute_timer, restrict_other_assignments
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -1765,7 +1487,7 @@ FROM assignment_statuses'''
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")
@@ -1921,16 +1643,16 @@ FROM assignment_statuses'''
     def save_assignment(self, assignment_basics, assignment_details):
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
-                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, restrict_other_assignments = ?, allowed_ip_addresses = ?, allowed_external_urls = ?, show_run_button = ?, require_security_codes = ?, use_virtual_assistant = ?
+                     SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, restrict_other_assignments = ?, allowed_ip_addresses = ?, allowed_external_urls = ?, show_run_button = ?, custom_scoring = ?, require_security_codes = ?, use_virtual_assistant = ?
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["require_security_codes"],  assignment_details["use_virtual_assistant"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"],  assignment_details["use_virtual_assistant"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, require_security_codes, use_virtual_assistant)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, use_virtual_assistant)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["require_security_codes"], assignment_details["use_virtual_assistant"]])
+            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["use_virtual_assistant"]])
             assignment_basics["exists"] = True
 
 
@@ -2120,8 +1842,8 @@ FROM assignment_statuses'''
 
         # Copy each assignment and get new assignment IDs.
         for assignment_basics in self.get_assignments(existing_course_basics):
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, require_security_codes, use_virtual_assistant)
-                     SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, require_security_codes, use_virtual_assistant
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, use_virtual_assistant)
+                     SELECT ?, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, use_virtual_assistant
                      FROM assignments
                      WHERE course_id = ?
                        AND assignment_id = ?'''
@@ -2188,8 +1910,8 @@ FROM assignment_statuses'''
         self.update_when_content_updated(new_course_id)
 
     def copy_assignment(self, course_id, assignment_id, new_title):
-        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, require_security_codes, use_virtual_assistant)
-                 SELECT course_id, ?, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, require_security_codes, use_virtual_assistant
+        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring,  require_security_codes, use_virtual_assistant)
+                 SELECT course_id, ?, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring,  require_security_codes, use_virtual_assistant
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''

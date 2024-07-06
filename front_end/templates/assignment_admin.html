@@ -157,7 +157,7 @@
                         <tr>
                             <th>Exercise</th>
                             <th style="text-align: center;">Visibility</th>
-                            <th style="text-align: center;">Submissions</th>
+                            <th style="text-align: center;"># Completed</th>
                             <th style="text-align: center;">Avg. Score</th>
                             {% if has_non_default_weight %}
                                 <th style="text-align: center;">Weight*</th>
@@ -189,10 +189,10 @@
                                 <td style="text-align: center;">Visible</td>
                                 <td style="text-align: center;">
 
-                                    <a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">View</a>
+                                    <a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise_summary_scores[exercise[0]]["num_students_completed"] }} / {{ exercise_summary_scores[exercise[0]]["num_students"] }}</a>
                                 </td>
                                 <td style="text-align: center;">
-                                    <a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ assignment_summary_scores[exercise[0]] }}%</a>
+                                    <a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ round(exercise_summary_scores[exercise[0]]["score"], 1) }}%</a>
                                 </td>
                                 {% if has_non_default_weight %}
                                     <td style="text-align: center;">{{ exercise[1]['weight'] }}</td>

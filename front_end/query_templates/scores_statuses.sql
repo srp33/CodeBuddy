@@ -1,13 +1,10 @@
 WITH
   variables AS (
     SELECT
-      37 AS course_id,
-      -- NULL AS assignment_id,
-      1502 AS assignment_id,
-      -- NULL AS exercise_id,
-      11340 AS exercise_id,
-      -- NULL AS user_id
-      'abc' AS user_id
+      ? AS course_id,
+      ? AS assignment_id,
+      ? AS exercise_id,
+      ? AS user_id
   ),
 
   valid_assignments AS (
@@ -241,37 +238,3 @@ WITH
       AND es.user_id = ats.user_id
     GROUP BY es.assignment_id, es.user_id
   )
-
-  SELECT
-    s.submission_id,
-    s.code,
-    s.completed,
-    s.submission_timestamp,
-    esw.score,
-    u2.name AS partner_name
-  FROM valid_submissions s
-  INNER JOIN exercise_scores_weights esw
-    ON s.exercise_id = esw.exercise_id
-    AND s.user_id = esw.user_id
-  LEFT JOIN valid_users u2
-    ON u2.user_id = s.partner_id
-
-  UNION
-
-  SELECT
-    -1 AS submission_id,
-    p.code,
-    0 AS completed,
-    NULL AS submission_timestamp,
-    0 AS score,
-    NULL AS partner_name
-  FROM presubmissions p
-  INNER JOIN valid_assignments a
-    ON p.assignment_id = a.assignment_id
-  INNER JOIN valid_exercises e
-    ON p.exercise_id = e.exercise_id
-  INNER JOIN valid_users u
-    ON p.user_id = u.user_id
-  WHERE p.course_id = (SELECT course_id FROM variables)
-
-  ORDER BY submission_timestamp DESC

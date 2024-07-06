@@ -27,11 +27,13 @@
                         <td>
                             {{ exercise[1]["title"] }}
                         </td>
-                        <td>{{ exercise[1]["num_submissions"] }}</td>
                         <td>
                             <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}/{{ student_id }}">
-                                {{ exercise[1]['score'] }}
+                                {{ exercise[1]["num_submissions"] }}
                             </a>
+                        </td>
+                        <td>
+                            {{ exercise[1]['score'] }}%
                         </td>
                     </tr>
                 {% end %}    

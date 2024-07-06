@@ -39,17 +39,6 @@
                     }
                 }
             }
-
-            function parseDateText(text) {
-                if (text == "None")
-                    return "No submissions"
-
-                var the_date = new Date(text);
-                var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
-                the_date.setTime(the_date_mod);
-                        
-                return the_date.toLocaleString();
-            }
         </script>
 
         <div id="reset_modal" class="modal">
@@ -74,13 +63,14 @@
                         <tr>
                             <th>Name</th>
                             <th>Student ID</th>
+                            <th># Completed</th>
                             <th>Score</th>
-                            <th>Last submission</th>
+                            <th>Last Submission</th>
                             {% if assignment_details["has_timer"] %}
                                 <th>Timer</th>
                             {% end %}
                             {% if total_times_pair_programmed > 0 %}
-                                <th>Number of times pair programmed</th>
+                                <th>Number of Times Pair Programmed</th>
                             {% end %}
                         </tr>
                     </thead>
@@ -89,12 +79,13 @@
                             <tr>
                                 <td class="has-text-left">{{ score[1]["name"] }}</td>
                                 <td class="has-text-left">{{ score[0] }}</td>
+                                <td class="has-text-left">{{ score[1]["num_completed"] }} / {{ score[1]["num_exercises"] }}</td>
                                 <td class="has-text-left">
                                     <a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(score[1]["score"], 1) }}%</a>
                                 </td>
                                 <td class="has-text-left">
                                     <script>
-                                        document.write(parseDateText("{{ score[1]['last_submission_time'] }}"));
+                                        document.write(parseDateText("{{ score[1]['last_submission_timestamp'] }}"));
                                     </script>
                                 </td>
                                 {% if assignment_details["has_timer"] %}

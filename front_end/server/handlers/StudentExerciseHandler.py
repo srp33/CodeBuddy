@@ -31,9 +31,9 @@ class StudentExerciseHandler(BaseUserHandler):
                     back_end_description = back_end_config["description"]
 
                 student_info = self.content.get_user_info(student_id)
-                score = self.content.get_exercise_score(course_id, assignment_id, exercise_id, student_id)
+                score = self.content.get_student_exercise_score(course_id, assignment_id, exercise_id, student_id)
 
-                exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), current_exercise_id=exercise_id, show_hidden=False)
+                exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=False)
                 
                 next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)
 

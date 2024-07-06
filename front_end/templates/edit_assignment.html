@@ -61,7 +61,7 @@
             </div>
 
             <div class="mt-4">
-                <button class="button is-primary is-outlined" onclick="addPrerequisite(this);">Add prerequisite</button>
+                <button class="button is-primary is-outlined" onclick="addPrerequisite(this);">Add selected assignment as a prerequisite</button>
             </div>
         </div>
 
@@ -229,6 +229,66 @@
     </div>
 
     <div class="shadow-box">
+        <div>
+            <strong>Custom scoring: </strong>
+        </div>
+
+        <div class="mt-4">
+            By default, the assignment score is calculated as the average of the exercise scores within the assignment. If you desire, you can specify custom scoring logic. For example, suppose an assignment has five exercises. An instructor might specify that if a student successfully completes one exercise (20%), the student receives a passing grade (60%). Additionally, they might specify that if a student completes all but one of the exercises (80%), the student receives full points (100%) for the assignment. Please indicate your preferences below.
+        </div>
+
+        <div class="select is-grey mt-4">
+            <select id="custom_scoring_yes_no" onchange="showHideCustomScoring(this.value)" class="edit-select">
+                <option value="0">Default</option>
+                <option value="1">Custom scoring</option>
+            </select>
+        </div>
+
+        <div id="custom_scoring_panel" class="mt-5 has-background-warning-light p-4 is-hidden">
+            <div>
+                Provide one or more scoring ranges and an adjusted score for each range. If the sum of a student's exercise scores fall within a given threshold, they will receive the adjusted score. All ranges and adjusted scores must be specified as percentages (0 - 100). If a student earns a score that is not covered by one of the specified ranges, their score will <em>not</em> be adjusted.
+            </div>
+
+            <div id="custom_scoring_range_table" class="table-container is-hidden mt-4"></div>
+
+            <div class="mt-4">
+                <button id="add_custom_scoring_range_button" class="button is-primary is-outlined">Add scoring range</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add_custom_scoring_range_modal" class="modal is-clipped">
+        <div class="modal-background">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <span class="modal-card-title is-size-5 has-text-centered has-text-weight-bold">Specify custom scoring range</span>
+                    <button class="delete" aria-label="close" id="add_custom_scoring_range_modal_close"></button>
+                </header>
+
+                <section class="modal-card-body">
+                    <div>
+                        <div class="mb-2">Please enter the percentage for the <strong>lower</strong> end of the scoring range.</div>
+                        <input id="add_custom_scoring_range_lower_input" type="text" placeholder="Please indicate the lower percentage." class="input is-fullwidth" autofocus />
+
+                        <div class="mb-2 mt-4">Please enter the percentage for the <strong>upper</strong> end of the scoring range.</div>
+                        <input id="add_custom_scoring_range_upper_input" type="text" placeholder="Please indicate the upper percentage." class="input is-fullwidth" />
+
+                        <div class="mb-2 mt-4">Please enter the percentage that will be <strong>awarded</strong> when a student's score falls in this range.</div>
+                        <input id="add_custom_scoring_range_score_input" type="text" placeholder="Please indicate the score." class="input is-fullwidth" />
+                    </div>
+
+                    <div id="custom_scoring_range_message" class="notification mt-4 mb-1"></div>
+                </section>
+
+                <footer class="modal-card-foot">
+                    <button class="button is-primary" id="add_custom_scoring_range_modal_add">Add</button>
+                    <button class="button" id="add_custom_scoring_range_modal_cancel">Close</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-box">
         <p>
             <strong>Require security codes to access this assignment: </strong><br />You can require that each student provide a security code before they access the assignment. Typically, this option is used when you want to ensure students complete an assignment in a particular physical location (often used for exams or quizzes). Additionally, when they complete the assignment, a confirmation code can be provided. You can require that students provide this code as they leave the physical location where they completed the assignment (exam/quiz). After an assignment is created, you can <strong><a href="/generate_security_codes/{{ course_basics['id'] }}" target="_blank">generate security codes</a></strong> or <strong><a href="/view_security_codes/{{ course_basics['id'] }}/null" target="_blank">view students' security codes</a></strong>.
         </p>
@@ -332,8 +392,6 @@
                 addSelectOption(select_element, pair[1], pair[0]);
             }
         }
-
-
     }
 
     function addPrerequisite(trigger_element) {
@@ -500,6 +558,103 @@
         setStudentTimerExceptions();
     }
 
+    function showHideCustomScoring(selected_option) {
+        if (selected_option == "0") {
+            $("#custom_scoring_panel").addClass("is-hidden");
+        }
+        else {
+            $("#custom_scoring_panel").removeClass("is-hidden");
+        }
+    }
+
+    function showCustomScoringMessage(message, isError, elementID) {
+        $("#custom_scoring_range_message").removeClass("is-hidden");
+
+        if (isError) {
+            $("#custom_scoring_range_message").removeClass("is-info");
+            $("#custom_scoring_range_message").addClass("is-danger");
+        }
+        else {
+            $("#custom_scoring_range_message").removeClass("is-danger");
+            $("#custom_scoring_range_message").addClass("is-info");
+        }
+
+        $("#custom_scoring_range_message")[0].innerHTML = message;
+        $("#custom_scoring_range_message")[0].scrollIntoView();
+        $(`#${elementID}`).focus();
+    }
+
+    function getCustomScoringRanges() {
+        let ranges = assignment_details_obj["custom_scoring"];
+
+        if (ranges.length == 0) {
+            return [];
+        }
+
+        ranges = JSON.parse(ranges);
+
+        return ranges;
+    }
+
+    function updateCustomScoringRanges(ranges) {
+        if (ranges.length == 0) {
+            assignment_details_obj["custom_scoring"] = "";
+        }
+        else {
+            // Sort based on the first element in the inner vectors.
+            ranges.sort((a, b) => a[0] - b[0]);
+            
+            assignment_details_obj["custom_scoring"] = JSON.stringify(ranges);
+        }
+
+        showCustomScoringRangesTable();
+    }
+
+    function removeCustomScoringRange(lower_range) {
+        var ranges = getCustomScoringRanges();
+
+        var new_ranges = [];
+        for (let i = 0; i < ranges.length; i++) {
+            if (ranges[i][0] != lower_range) {
+                new_ranges.push(ranges[i]);
+            }
+        }
+
+        updateCustomScoringRanges(new_ranges);
+    }
+
+    function showCustomScoringRangesTable() {
+        var ranges = getCustomScoringRanges();
+
+        if (ranges.length == 0) {
+            $("#custom_scoring_range_table").addClass("is-hidden");
+            return;
+        }
+
+        var html = "<table class='table is-striped'>";
+        html += "<thead><tr><th>Low Threshold</th><th>High Threshold</th><th>Adjusted Score</th><th></th></thead>";
+        html += "<tbody>";
+
+        for (const range of ranges) {
+            html += "<tr>";
+            html += `  <td>${range[0]}</td>`;
+            html += `  <td>${range[1]}</td>`;
+            html += `  <td>${range[2]}</td>`;
+            html += `  <td>
+                            <a onclick="removeCustomScoringRange('${range[0]}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>`;
+            html += "</tr>";
+        }
+
+        html += "</tbody>";
+        html += "</table>";
+
+        $("#custom_scoring_range_table")[0].innerHTML = html;
+        $("#custom_scoring_range_table").removeClass("is-hidden");
+    }
+
     function addSelectOptions(select_element, options) {
         for (let option of options) {
             addSelectOption(select_element, option, option);
@@ -520,7 +675,13 @@
     }
 
     function getValue(id) {
-        return $(`#${id}`)[0].value;
+        var value = $(`#${id}`)[0].value;
+
+        if (value === undefined) {
+            value = "";
+        }
+
+        return value;
     }
 
     function setValue(id, value) {
@@ -643,6 +804,7 @@
             "minute_timer": minute_timer,
             "restrict_other_assignments": restrict_other_assignments,
             "show_run_button": show_run_button,
+            "custom_scoring": assignment_details_obj["custom_scoring"], 
             "require_security_codes": require_security_codes, 
             "start_date": start_date,
             "prerequisite_assignment_ids": assignment_details_obj["prerequisite_assignment_ids"],
@@ -724,9 +886,93 @@
         showTimerOptions("On");
     }
 
+    if (assignment_details_obj["custom_scoring"] != "") {
+        setValue("custom_scoring_yes_no", "1");
+        showHideCustomScoring("1");
+    }
+    else {
+        setValue("custom_scoring_yes_no", "0");
+        showHideCustomScoring("0");
+    }
+
+    $("#add_custom_scoring_range_button").click(function() {
+        document.getElementById("add_custom_scoring_range_lower_input").value = "";
+        document.getElementById("add_custom_scoring_range_upper_input").value = "";
+        document.getElementById("add_custom_scoring_range_score_input").value = "";
+
+        $("#custom_scoring_range_message")[0].innerHTML = "";
+        $("#custom_scoring_range_message").addClass("is-hidden");
+        $("#add_custom_scoring_range_modal").addClass("is-active");
+        $("#add_custom_scoring_range_lower_input").focus();
+    });
+
+    $("#add_custom_scoring_range_modal_cancel").click(function() {
+        $("#add_custom_scoring_range_modal").removeClass("is-active");
+    });
+
+    $("#add_custom_scoring_range_modal_close").click(function() {
+        $("#add_custom_scoring_range_modal").removeClass("is-active");
+    });
+
+    $("#add_custom_scoring_range_score_input")[0].addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            $("#add_custom_scoring_range_modal_add").click();
+        }
+    });
+
+    $("#add_custom_scoring_range_modal_add").click(function() {
+        var lower_range = getValue("add_custom_scoring_range_lower_input").trim();
+        var upper_range = getValue("add_custom_scoring_range_upper_input").trim();
+        var score = getValue("add_custom_scoring_range_score_input").trim();
+
+        // Make sure user input is valid
+        if (isNaN(lower_range) || lower_range == "")
+            return showCustomScoringMessage("Please specify a number for the lower range.", true, "add_custom_scoring_range_lower_input");
+
+        if (isNaN(upper_range) || upper_range == "")
+            return showCustomScoringMessage("Please specify a number for the upper range.", true, "add_custom_scoring_range_upper_input");
+
+        if (isNaN(score) || score == "")
+            return showCustomScoringMessage("Please specify a number for the score.", true, "add_custom_scoring_range_score_input");
+
+        lower_range = parseFloat(lower_range);
+        upper_range = parseFloat(upper_range);
+        score = parseFloat(score);
+
+        if (lower_range < 0 || lower_range > 100)
+            return showCustomScoringMessage("Please specify a number for the lower range that is between 0 and 100.", true, "add_custom_scoring_range_lower_input");
+
+        if (upper_range < 0 || upper_range > 100)
+            return showCustomScoringMessage("Please specify a number for the upper range that is between 0 and 100.", true, "add_custom_scoring_range_upper_input");
+
+        if (upper_range < lower_range)
+            return showCustomScoringMessage("The score for the lower end of the range must be less than or equal to the score for the upper end of the range.", true, "add_custom_scoring_range_upper_input");
+
+        if (score < 0 || score > 100)
+            return showCustomScoringMessage("Please specify a score that is between 0 and 100.", true, "add_custom_scoring_range_score_input");
+
+        var ranges = getCustomScoringRanges();
+
+        // Make sure the ranges do not overlap
+        for (const range of ranges) {
+            if (lower_range < range[1] && upper_range > range[0]) {
+                return showCustomScoringMessage("The scoring range you specified is invalid because it cannot overlap with an existing range.", true, "add_custom_scoring_range_lower_input");
+            }
+        }
+
+        ranges.push([lower_range, upper_range, score]);
+        updateCustomScoringRanges(ranges);
+
+        // This resets the controls in the modal.
+        $("#add_custom_scoring_range_button").click();
+
+        showCustomScoringMessage(`The following range has been added: ${lower_range} - ${upper_range} => ${score}.`, false);
+    });
+
     setValue("allowed_ip_addresses", assignment_details_obj["allowed_ip_addresses"]);
     setValue("allowed_external_urls", assignment_details_obj["allowed_external_urls"]);
     setValue("show_run_button", assignment_details_obj["show_run_button"] ? "Yes" : "No");
+    showCustomScoringRangesTable();
     setValue("require_security_codes", assignment_details_obj["require_security_codes"]);
     setValue("use_virtual_assistant", assignment_details_obj["use_virtual_assistant"]);
 </script>

@@ -12,14 +12,24 @@
             <thead>
                 <tr>
                     <th>Assignment</th>
+                    <th># Completed</th>
                     <th>Score</th>
+                    <th>Last Submission</th>
+                    <th># Times Pair Programmed</th>
                 </tr>
             </thead>
             <tbody>
                 {% for x in assignment_scores %}
                     <tr>
-                        <td class="has-text-left">{{ x[1] }}</td>
-                        <td class="has-text-left"><a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ x[0] }}/{{ user_info['user_id'] }}">{{ x[2] }}%</a></td>
+                        <td class="has-text-left">{{ x[1]["title"] }}</td>
+                        <td class="has-text-left">{{ x[1]["num_completed"] }} / {{ x[1]["num_exercises"] }}</td>
+                        <td class="has-text-left"><a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ x[0] }}/{{ user_info['user_id'] }}">{{ round(x[1]["score"], 1) }}%</a></td>
+                        <td class="has-text-left">
+                            <script>
+                                document.write(parseDateText("{{ x[1]['last_submission_timestamp'] }}"));
+                            </script>
+                        </td>
+                        <td class="has-text-left">{{ x[1]["num_times_pair_programmed"] }}</td>
                     </tr>
                 {% end %}
             </tbody>

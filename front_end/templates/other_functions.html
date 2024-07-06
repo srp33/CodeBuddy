@@ -130,4 +130,15 @@
             return result;
         }, {});
     }
+
+    function parseDateText(text) {
+        if (text == "None")
+             return "No submissions";
+
+        var the_date = new Date(text);
+        var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
+        the_date.setTime(the_date_mod);
+
+        return the_date.toLocaleString();
+    }
 </script>

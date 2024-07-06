@@ -15,9 +15,9 @@ class CourseHandler(BaseUserHandler):
             if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
                 assignment_statuses = await self.get_assignment_statuses(course_basics)
 
-                course_summary_scores=self.content.get_course_summary_scores(course_id, assignment_statuses)
+                assignment_summary_scores=self.content.get_assignment_summary_scores(course_id)
 
-                self.render("course_admin.html", courses=self.courses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), assignment_statuses=assignment_statuses, course_summary_scores=course_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                self.render("course_admin.html", courses=self.courses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), assignment_statuses=assignment_statuses, assignment_summary_scores=assignment_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             else:
                 user_is_registered = False
                 for course in self.courses:
