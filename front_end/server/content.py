@@ -40,7 +40,7 @@ class Content:
         self.execute("PRAGMA temp_store=MEMORY")
         self.execute("PRAGMA journal_mode=OFF")
 
-        self.scores_statuses_template = read_file("query_templates/scores_statuses.sql")
+        self.scores_statuses_temp_tables_sql = read_file("query_templates/scores_statuses.sql")
 
         atexit.register(self.close)
 
@@ -733,7 +733,7 @@ class Content:
     def get_assignment_statuses(self, course_id, user_id, show_hidden):
         course_basics = self.get_course_basics(course_id)
 
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
   sts.user_id,
   sts.assignment_id,
@@ -798,7 +798,7 @@ INNER JOIN valid_assignments a
         if not assignment_id:
             return []
 
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
   es.user_id,
   es.exercise_id as id,
@@ -838,7 +838,7 @@ INNER JOIN valid_exercises e
 
     ## Calculates the average score across all students for each assignment in a course, as well as the number of students who have completed each assignment.
     def get_assignment_summary_scores(self, course_id):
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
   sts.assignment_id,
   a.title,
@@ -867,7 +867,7 @@ GROUP BY sts.assignment_id
     ## Calculates the average score across all students for each exercise in an assignment,
     ## as well as the number of students who have completed each exercise.
     def get_exercise_summary_scores(self, course_basics, assignment_basics):
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
   sts.exercise_id AS id,
   e.title,
@@ -892,7 +892,7 @@ GROUP BY sts.exercise_id
 
     # Gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment.
     def get_assignment_scores(self, course_basics, assignment_basics):
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
   u.user_id AS id,
   u.name,
@@ -925,7 +925,7 @@ ORDER BY u.name
 
     # Get score for each assignment for a particular student.
     def get_student_assignment_scores(self, course_id, user_id):
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
   a.assignment_id,
   a.title,
@@ -955,7 +955,7 @@ ORDER BY a.title
     def get_exercise_scores(self, course_id, assignment_id, exercise_id):
         scores = []
 
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
   u.name,
   u.user_id,
@@ -978,7 +978,7 @@ ORDER BY u.name
         return scores
 
     def get_student_exercise_score(self, course_id, assignment_id, exercise_id, user_id):
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT scr.score
 FROM exercise_scores_weights scr
 '''
@@ -1010,7 +1010,11 @@ FROM exercise_scores_weights scr
 
     def get_submissions(self, course_id, assignment_id, exercise_id, user_id, exercise_details):
         sql = '''
-SELECT o.submission_id, t.title, o.txt_output, o.jpg_output
+SELECT
+  o.submission_id,
+  t.title,
+  o.txt_output,
+  o.jpg_output
 FROM test_outputs o
 INNER JOIN tests t
   ON o.test_id = t.test_id
@@ -1038,40 +1042,40 @@ WHERE t.course_id = ?
             test_outputs[submission_id][test_title]["jpg_output"] = row["jpg_output"]
             test_outputs[submission_id][test_title]["txt_output_formatted"] = format_output_as_html(row["txt_output"])
 
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
-    s.submission_id,
-    s.code,
-    s.completed,
-    s.submission_timestamp,
-    esw.score,
-    u2.name AS partner_name
-  FROM valid_submissions s
-  INNER JOIN exercise_scores_weights esw
-    ON s.exercise_id = esw.exercise_id
-    AND s.user_id = esw.user_id
-  LEFT JOIN valid_users u2
-    ON u2.user_id = s.partner_id
+  s.submission_id AS id,
+  s.code,
+  s.completed,
+  s.submission_timestamp,
+  esw.score,
+  u2.name AS partner_name
+FROM valid_submissions s
+INNER JOIN exercise_scores_weights esw
+  ON s.exercise_id = esw.exercise_id
+  AND s.user_id = esw.user_id
+LEFT JOIN users u2
+  ON s.partner_id = u2.user_id
 
-  UNION
+UNION
 
-  SELECT
-    -1 AS submission_id,
-    p.code,
-    0 AS completed,
-    NULL AS submission_timestamp,
-    0 AS score,
-    NULL AS partner_name
-  FROM presubmissions p
-  INNER JOIN valid_assignments a
-    ON p.assignment_id = a.assignment_id
-  INNER JOIN valid_exercises e
-    ON p.exercise_id = e.exercise_id
-  INNER JOIN valid_users u
-    ON p.user_id = u.user_id
-  WHERE p.course_id = (SELECT course_id FROM variables)
+SELECT
+  -1 AS id,
+  p.code,
+  0 AS completed,
+  NULL AS submission_timestamp,
+  0 AS score,
+  NULL AS partner_name
+FROM presubmissions p
+INNER JOIN valid_assignments a
+  ON p.assignment_id = a.assignment_id
+INNER JOIN valid_exercises e
+  ON p.exercise_id = e.exercise_id
+INNER JOIN valid_users u
+  ON p.user_id = u.user_id
+WHERE p.course_id = (SELECT course_id FROM variables)
 
-  ORDER BY submission_timestamp
+ORDER BY submission_timestamp
 '''
 
         presubmission = None
@@ -1081,79 +1085,63 @@ SELECT
         for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
             submission_test_outputs = {}
 
-            if row["submission_id"] == -1:
+            if row["id"] == -1:
                 presubmission = row["code"]
             else:
-                if row["submission_id"] in test_outputs:
-                    submission_test_outputs = test_outputs[row["submission_id"]]
+                submission = dict(row)
+
+                if submission["id"] in test_outputs:
+                    submission_test_outputs = test_outputs[submission["id"]]
 
                     check_test_outputs(exercise_details, submission_test_outputs)
                     sanitize_test_outputs(exercise_details, submission_test_outputs)
 
-                submissions.append({"id": row["submission_id"], "code": row["code"], "completed": row["completed"], "submission_timestamp": row["submission_timestamp"], "partner_name": row["partner_name"], "test_outputs": submission_test_outputs})
+                submission["test_outputs"] = submission_test_outputs
+                submissions.append(submission)
 
-                if row["completed"] == True:
+                if submission["completed"] == True:
                     has_passed = True
 
         return presubmission, submissions, has_passed
 
-    #TODO: Is there some way to do this without going to the database?
     async def get_num_submissions(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''SELECT COUNT(submission_id) AS num
-                 FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?'''
+        sql = self.scores_statuses_temp_tables_sql + '''
+SELECT COUNT(*) AS count
+FROM valid_submissions'''
 
-        return self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id, ))["num"]
+        return self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id, ))["count"]
     
     async def get_num_course_submissions(self, course_id):
-        sql = '''SELECT COUNT(submission_id) AS count
-                 FROM submissions
-                 WHERE course_id = ? AND user_id IN (
-                   SELECT user_id
-                   FROM course_registrations
-                   WHERE course_id = ?
-                 )'''
+        sql = self.scores_statuses_temp_tables_sql + '''
+SELECT COUNT(*) AS count
+FROM valid_submissions'''
 
-        return self.fetchone(sql, (course_id, course_id, ))["count"]
+        return self.fetchone(sql, (course_id, None, None, None))["count"]
 
     def get_most_recent_submission_code(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''SELECT code
-                 FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?
-                   AND passed = 1
-                 ORDER BY date DESC
-                 LIMIT 1'''
+        sql = self.scores_statuses_temp_tables_sql + '''
+SELECT code
+FROM latest_completed_submissions
+'''
 
         result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
 
-        if result:
+        if result and result["code"]:
             return result["code"]
         else:
             return ""
 
-    def get_peer_code(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''SELECT user_id, code, MAX(date)
-                 FROM submissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND passed = 1
-                   AND user_id != ?
-                   AND (partner_id != ? OR partner_id IS NULL)
-                   AND user_id NOT IN (SELECT user_id
-                                       FROM permissions
-                                       WHERE course_id = 0 OR course_id = ?)
-                 GROUP BY user_id
-                 ORDER BY user_id'''
+    def get_peer_most_recent_submission_code(self, course_id, assignment_id, exercise_id, user_id):
+        sql = self.scores_statuses_temp_tables_sql + '''
+SELECT user_id, code
+FROM latest_completed_submissions
+WHERE user_id != ?
+  AND (partner_id != ? OR partner_id IS NULL)
+ORDER BY user_id
+  '''
 
         peer_code_dict = {}
-        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, user_id, course_id)):
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None, user_id, user_id)):
             peer_code_dict[row["user_id"]] = row["code"]
 
         # For privacy reasons, only show peers' solutions if at least three have submitted.
@@ -1165,11 +1153,11 @@ SELECT
 
         return peer_code_dict[peer_ids[0]]
 
-    # FYI: This is different from the get_submissions() function. It retrieves the latest submission and score for each student for a given exercise.
+    # FYI: This retrieves the latest submission and score for each student for a given exercise.
     def get_exercise_submissions(self, course_id, assignment_id, exercise_id):
         exercise_submissions = []
 
-        sql = self.scores_statuses_template + '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
   s.user_id AS student_id,
   u.name AS student_name,
@@ -1177,7 +1165,8 @@ SELECT
   s.submission_timestamp AS submission_timestamp,
   s.partner_id,
   u2.name AS partner_name,
-  esw.score
+  esw.score,
+  sts.completed
 FROM latest_submissions s
 INNER JOIN exercise_statuses sts
   ON s.exercise_id = sts.exercise_id
@@ -2284,12 +2273,12 @@ LEFT JOIN valid_users u2
         scores, total_times_pair_programmed = self.get_assignment_scores(course_basics, assignment_basics)
 
         if include_header:
-            out_file_text = "Course\tAssignment\tStudent_ID\tScore\tLast_Submission\tNum_Times_Pair_Programmed\n"
+            out_file_text = "Course\tAssignment\tStudent_ID\tNum_Completed\tScore\tLast_Submission\tNum_Times_Pair_Programmed\n"
         else:
             out_file_text = ""
 
         for student in scores:
-            out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['score']}\t{student[1]['last_submission_time']}\t{student[1]['num_times_pair_programmed']}\n"
+            out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['num_completed']}\t{student[1]['score']}\t{student[1]['last_submission_timestamp']}\t{student[1]['num_times_pair_programmed']}\n"
 
         return out_file_text
 
@@ -2394,6 +2383,7 @@ LEFT JOIN valid_users u2
 
         return prev_student_id, next_student_id
 
+    #TODO: sql = self.scores_statuses_temp_tables_sql??
     def get_submissions_student(self, course_id, student_id):
         sql = '''SELECT a.title AS assignment_title,
                         a.introduction AS assignment_introduction,

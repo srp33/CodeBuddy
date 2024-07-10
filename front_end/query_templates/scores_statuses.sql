@@ -84,7 +84,8 @@ WITH
   ),
 
   exercise_statuses AS (
-    SELECT assignment_id,
+    SELECT
+      assignment_id,
       exercise_id,
       user_id,
       MAX(completed) AS completed,
@@ -137,6 +138,21 @@ WITH
       AND es.user_id = s.user_id
   ),
 
+  latest_completed_submissions AS (
+    SELECT
+      assignment_id,
+      exercise_id,
+      user_id,
+      submission_id,
+      code,
+      submission_timestamp,
+      partner_id
+    FROM valid_submissions
+    WHERE completed = 1
+    GROUP BY assignment_id, exercise_id, user_id
+    HAVING MAX(submission_timestamp)
+  ),
+
   latest_submissions AS (
     SELECT
       MAX(assignment_id) AS assignment_id,
@@ -147,31 +163,30 @@ WITH
       MAX(submission_timestamp) AS submission_timestamp,
       MAX(partner_id) AS partner_id
     FROM (
-          SELECT
-            assignment_id,
-            exercise_id,
-            user_id,
-            submission_id,
-            code,
-            submission_timestamp,
-            partner_id
-          FROM valid_submissions
-          WHERE completed = 1
-          GROUP BY assignment_id, exercise_id, user_id
-          HAVING MAX(submission_timestamp)
+      SELECT
+        assignment_id,
+        exercise_id,
+        user_id,
+        submission_id,
+        code,
+        submission_timestamp,
+        partner_id
+      FROM valid_submissions
+      GROUP BY assignment_id, exercise_id, user_id
+      HAVING MAX(submission_timestamp)
 
-          UNION
+      UNION
 
-          SELECT
-            e.assignment_id,
-            e.exercise_id,
-            u.user_id,
-            NULL AS submission_id,
-            NULL AS code,
-            NULL AS submission_timestamp,
-            NULL AS partner_id
-          FROM valid_exercises e
-          INNER JOIN valid_users u
+      SELECT
+        e.assignment_id,
+        e.exercise_id,
+        u.user_id,
+        NULL AS submission_id,
+        NULL AS code,
+        NULL AS submission_timestamp,
+        NULL AS partner_id
+      FROM valid_exercises e
+      INNER JOIN valid_users u
     )
     GROUP BY assignment_id, exercise_id, user_id
   ),

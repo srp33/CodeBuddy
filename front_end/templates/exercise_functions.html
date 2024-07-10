@@ -95,8 +95,10 @@
                         "code": user_solution,
                         "submission_timestamp": submission_date,
                         "completed": response_dict["all_passed"],
+                        "score": response_dict["score"],
                         "partner_name": response_dict["partner_name"],
                         "test_outputs": response_dict["test_outputs"]};
+
                     submissions.push(submission);
 
                     // We only want to do these things for programming exercises.
@@ -142,16 +144,21 @@
             let message = "Thank you for your submission.";
         {% else %}
             // let share_message = "<button class='button is-pulled-right' onclick='showLinkModal()'>Share your success!&nbsp;&nbsp;&nbsp;<span class='icon'><i class='fas fa-share'></i></span></button>";
-            let share_message = "";
+            //let share_message = "";
 
             {% if len(exercise_details["tests"]) == 1 %}
-                var message = "Congratulations! Your solution passes the test." + share_message;
+                var message = `Congratulations! Your solution passes the test. Your score is ${submission.score}%.`;
+                
+                //message += share_message;
             {% else %}
-                var message = "Congratulations! Your solution passes all of the tests." + share_message;
+                var message = `Congratulations! Your solution passes all of the tests. Your score is ${submission.score}%.`;
+
+                //message += share_message;
             {% end %}
 
-            if (submission.partner_name != null)
-                message += ` Your programming partner was ${submission.partner_name}.`
+            if (submission.partner_name != null) {
+                message += ` Your programming partner was ${submission.partner_name}.`;
+            }
         {% end %}
 
         var result = "<div class='notification success-message' style='color:white'><p><strong>" + message + "</strong></p>";
@@ -179,18 +186,22 @@
         $("#result_message")[0].innerHTML = `<div class='notification success-message' style='color:white'>${message}</div>`;
     }
 
-    function showNotPassingMessage(num_tests) {
-        if (num_tests = 0) {
+    function showNotPassingMessage(num_tests, submission) {
+        if (num_tests == 0) {
             // This should only happen when the back_end is multiple_choice.
-            var message = "Your answer is incorrect."
+            var message = "<strong>Your answer is incorrect.</strong>"
         }
         else {
-            var message = "Your solution does not yet pass the test";
+            var message = "<strong>Your solution does not yet pass the test";
 
             if (num_tests > 1)
                 message += "s";
                             
-            message += ". Keep working at it. You can do this!";
+            message += ". Keep working at it. You can do this!</strong>";
+
+            if (submission.partner_name != null) {
+                message += ` <br /><br />Your pair-programming partner was ${submission.partner_name}.`;
+            }
         }
 
         $("#result_message")[0].innerHTML = `<div class='notification not-passing' style='color: white'>${message}</div>`;
@@ -443,7 +454,7 @@
             showSuccessMessage(this_submission);
         }
         else {
-            showNotPassingMessage(this_submission["test_outputs"].length);
+            showNotPassingMessage(Object.keys(this_submission["test_outputs"]).length, this_submission);
         }
 
         if ({{ exercise_details["max_submissions"]}} > 0 && submissions.length >= {{ exercise_details["max_submissions"]}}) {

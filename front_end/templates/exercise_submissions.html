@@ -6,74 +6,119 @@
 
 {% if len(exercise_submissions) > 0 %}
     <div>
-        <h4 style="display: inline-block;">Submissions for {{ exercise_basics["title"] }}</h4>
-        <div class="buttons is-pulled-right">
-            <a class="button is-dark" onclick="showAllSubmissions()">Show All</a>
-            <a class="button is-light" onclick="hideAllSubmissions()">Hide All</a>
+        <h4>Most recent student submissions</h4>
+        
+        <h6>{{ assignment_basics["title"] }}</h6>
+        
+        <h6>{{ exercise_basics["title"] }}</h6>
+
+        <div class="buttons">
+            <button class="button is-info is-outlined has-background-white has-text-info mb-4" onclick="toggleSubmissions(1);">Expand All</button>
+
+            <button class="button is-info is-outlined has-background-white has-text-info mb-4" onclick="toggleSubmissions(0);">Collapse All</button>
         </div>
     </div>
 
-    {% for student in exercise_submissions %}
-        {% if student[1]["partner_name"] %}
-            <button type="button" class="clickable collapsible"><strong>{{ student[1]["student_name"] }}</strong> paired with <strong>{{student[1]["partner_name"]}}</strong></button>
-        {% else %}
-            <button type="button" class="clickable collapsible"><strong>{{ student[1]["student_name"] }}</strong></button>
-        {% end %}
+    <div class="fixed-grid has-1-cols">
+        <div class="grid">
+            {% for student_i, student in enumerate(exercise_submissions) %}
+                <div class="cell">
+                    <div id="student_name_{{ student_i }}" class="notification is-fullwidth is-size-5 mt-2 mb-2 p-4
+                        {% if student[1]["completed"] %}
+                            is-primary
+                        {% else %}
+                            {% if student[1]["code"] %}
+                                is-warning
+                            {% else %}
+                                is-dark
+                            {% end %}
+                        {% end %}
 
-        <div class="c-content">
-            {% if student[1]["code"] %}
-                <div class="mt-4 mb-4">Most recent submission:</div>
+                        " style="cursor: pointer;" onclick="toggleSubmission('{{ student_i }}', -1);">{{ student[1]["student_name"] }}
 
-                <div class="mb-4">
-                    <pre>{{ student[1]["code"] }}</pre>
+                        {% if student[1]["partner_name"] %}
+                            paired with {{student[1]["partner_name"]}}
+                        {% end %}
+                    </div>
+
+                    <div id="submission_{{ student_i }}" class="notification
+                    
+                    {% if student[1]["completed"] %}
+                        is-primary
+                    {% else %}
+                        {% if student[1]["code"] %}
+                            is-warning
+                        {% else %}
+                            has-background-white has-text-black
+                        {% end %}
+                    {% end %}
+                    
+                    is-light has-text-black mb-4 pl-4 pt-1 pb-1 is-hidden">
+                        {% if student[1]["code"] %}
+                            <div class="mt-4 mb-4">
+                                Most recent submission:
+                            </div>
+            
+                            <div class="mb-4">
+                                <pre>{{ student[1]["code"] }}</pre>
+                            </div>
+            
+                            <div class="mt-4 mb-4">Submitted:
+                                <script>
+                                    document.write(parseDateText("{{ student[1]["submission_timestamp"] }}"));
+                                </script>
+                            </div>
+            
+                            <div class="mt-4 mb-4">
+                                Score: {{ student[1]["score"] }}%
+            
+                                {% if student[1]["completed"] %}
+                                    (complete)
+                                {% else %}
+                                    (not complete)
+                                {% end %}
+                            </div>
+            
+                            <div class="mb-4">
+                                <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}">More details</a>
+                            </div>
+                        {% else %}
+                            <div class="mt-4 mb-2">This student has not completed this exercise.</div>
+                        {% end %}
+                    </div>
                 </div>
-
-                <div class="mt-4 mb-4">Submitted:
-                    <script>
-                        document.write(parseDateText("{{ student[1]["submission_timestamp"] }}"));
-                    </script>
-                </div>
-
-                <div class="mt-4 mb-4">Score: {{ student[1]["score"] }}%</div>
-
-                <div class="mb-4">
-                    <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}">More details</a>
-                </div>
-            {% else %}
-                <div class="mt-4 mb-2">This student has not submitted yet.</div>
             {% end %}
         </div>
-    {% end %}
+    </div>
 
     <script>
-        var coll = document.getElementsByClassName("clickable");
-        var content = document.getElementsByClassName("c-content");
-        var i;
+        function toggleSubmission(student_id, expand) {
+            let element_id = `#submission_${student_id}`;
 
-        for (i = 0; i < coll.length; i++) {
-            coll[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                var content = this.nextElementSibling;
-                if (content.style.display === "block") {
-                    content.style.display = "none";
-                } else {
-                    content.style.display = "block";
+            if (expand == -1) {
+                if ($(element_id).hasClass("is-hidden")) {
+                    $(element_id).removeClass("is-hidden");
                 }
+                else {
+                    $(element_id).addClass("is-hidden");
+                }
+            }
+            else {
+                if (expand == 1) {
+                    $(element_id).removeClass("is-hidden");
+                }
+                else {
+                    $(element_id).addClass("is-hidden");
+                }
+            }
+        }
+
+        function toggleSubmissions(expand) {
+            // Select all buttons with an ID that starts with pattern.
+            $("div[id^='student_name_']").each(function() {
+                let student_id = this.id.replace("student_name_", "");
+                toggleSubmission(student_id, expand);
             });
-        }
-
-        function showAllSubmissions() {
-            for (i = 0; i < content.length; i++) {
-                content[i].style.display = "block";
-                coll[i].classList.add("active");
-            }
-        }
-
-        function hideAllSubmissions() {
-            for (i = 0; i < content.length; i++) {
-                content[i].style.display = "none";
-                coll[i].classList.remove("active");
-            }
         }
     </script>
 {% else %}
