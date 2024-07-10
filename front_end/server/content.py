@@ -800,25 +800,56 @@ INNER JOIN valid_assignments a
 
         sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
-  es.user_id,
-  es.exercise_id as id,
-  e.title,
-  e.visible,
-  e.enable_pair_programming,
-  es.num_submissions,
-  es.completed,
-  es.in_progress,
-  esw.score,
-  e.weight,
-  e.back_end = 'multiple_choice' AS is_multiple_choice
-FROM exercise_statuses es
-INNER JOIN exercise_scores_weights esw
-  ON es.assignment_id = esw.assignment_id
-  AND es.exercise_id = esw.exercise_id
-  AND es.user_id = esw.user_id
-INNER JOIN valid_exercises e
-  ON es.assignment_id = e.assignment_id
-  AND es.exercise_id = e.exercise_id
+  user_id,
+  id,
+  title,
+  visible,
+  enable_pair_programming,
+  MAX(num_submissions) AS num_submissions,
+  completed,
+  in_progress,
+  score,
+  weight,
+  is_multiple_choice
+FROM (
+  SELECT
+    es.user_id,
+    es.exercise_id as id,
+    e.title,
+    e.visible,
+    e.enable_pair_programming,
+    es.num_submissions,
+    es.completed,
+    es.in_progress,
+    esw.score,
+    e.weight,
+    e.back_end = 'multiple_choice' AS is_multiple_choice
+  FROM exercise_statuses es
+  INNER JOIN exercise_scores_weights esw
+    ON es.assignment_id = esw.assignment_id
+    AND es.exercise_id = esw.exercise_id
+    AND es.user_id = esw.user_id
+  INNER JOIN valid_exercises e
+    ON es.assignment_id = e.assignment_id
+    AND es.exercise_id = e.exercise_id
+
+  UNION
+
+  SELECT
+    NULL AS user_id,
+    exercise_id AS id,
+    title,
+    visible,
+    enable_pair_programming,
+    0 AS num_submissions,
+    0 AS completed,
+    0 AS in_progress,
+    0 AS score,
+    weight,
+    back_end = 'multiple_choice' AS is_multiple_choice
+  FROM valid_exercises
+)
+GROUP by id
 '''
 
         statuses = []
@@ -840,21 +871,46 @@ INNER JOIN valid_exercises e
     def get_assignment_summary_scores(self, course_id):
         sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
-  sts.assignment_id,
-  a.title,
-  a.visible,
-  COUNT(sts.user_id) AS num_students,
-  SUM(sts.completed) AS num_students_completed,
-  sts.start_date,
-  sts.due_date,
-  AVG(scr.score) AS avg_score
-FROM assignment_statuses sts
-INNER JOIN assignment_scores scr
-  ON sts.assignment_id = scr.assignment_id
-  AND sts.user_id = scr.user_id
-INNER JOIN valid_assignments a
-  ON sts.assignment_id = a.assignment_id
-GROUP BY sts.assignment_id
+  assignment_id,
+  title,
+  visible,
+  MAX(num_students) AS num_students,
+  num_students_completed,
+  start_date,
+  due_date,
+  avg_score
+FROM (
+  SELECT
+    sts.assignment_id,
+    a.title,
+    a.visible,
+    COUNT(sts.user_id) AS num_students,
+    SUM(sts.completed) AS num_students_completed,
+    sts.start_date,
+    sts.due_date,
+    AVG(scr.score) AS avg_score
+  FROM assignment_statuses sts
+  INNER JOIN assignment_scores scr
+    ON sts.assignment_id = scr.assignment_id
+    AND sts.user_id = scr.user_id
+  INNER JOIN valid_assignments a
+    ON sts.assignment_id = a.assignment_id
+  GROUP BY sts.assignment_id
+
+  UNION
+
+  SELECT
+    assignment_id,
+    title,
+    visible,
+    0 AS num_students,
+    0 AS num_students_completed,
+    NULL AS start_date,
+    NULL AS due_date,
+    0 AS avg_score
+  FROM valid_assignments
+)
+GROUP BY assignment_id
 '''
 
         assignment_scores = {}
@@ -869,19 +925,40 @@ GROUP BY sts.assignment_id
     def get_exercise_summary_scores(self, course_basics, assignment_basics):
         sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
-  sts.exercise_id AS id,
-  e.title,
-  e.visible,
-  SUM(sts.completed) AS num_students_completed,
-  COUNT(sts.user_id) AS num_students,
-  AVG(esw.score) AS score
-FROM exercise_statuses sts
-INNER JOIN exercise_scores_weights esw
-  ON sts.exercise_id = esw.exercise_id
-  AND sts.user_id = esw.user_id
-INNER JOIN valid_exercises e
-  ON sts.exercise_id = e.exercise_id
-GROUP BY sts.exercise_id
+  id,
+  title,
+  visible,
+  MAX(num_students) AS num_students,
+  num_students_completed,
+  score
+FROM (
+  SELECT
+    sts.exercise_id AS id,
+    e.title,
+    e.visible,
+    COUNT(sts.user_id) AS num_students,
+    SUM(sts.completed) AS num_students_completed,
+    AVG(esw.score) AS score
+  FROM exercise_statuses sts
+  INNER JOIN exercise_scores_weights esw
+    ON sts.exercise_id = esw.exercise_id
+    AND sts.user_id = esw.user_id
+  INNER JOIN valid_exercises e
+    ON sts.exercise_id = e.exercise_id
+  GROUP BY sts.exercise_id
+
+  UNION
+
+  SELECT
+    exercise_id AS id,
+    title,
+    visible,
+    0 AS num_students,
+    0 AS num_students_completed,
+    0 AS score
+  FROM valid_exercises
+)
+GROUP BY id
 '''
 
         scores_dict = {}

@@ -1,11 +1,11 @@
 WITH
   variables AS (
     SELECT
-      37 AS course_id,
+      28 AS course_id,
       -- NULL AS assignment_id,
-      1502 AS assignment_id,
-      -- NULL AS exercise_id,
-      11337 AS exercise_id,
+      1139 AS assignment_id,
+      NULL AS exercise_id,
+      -- 11337 AS exercise_id,
       NULL AS user_id
       -- 'abc' AS user_id
   ),
@@ -258,22 +258,53 @@ WITH
   )
 
 SELECT
-  s.user_id AS student_id,
-  u.name AS student_name,
-  s.code,
-  s.submission_timestamp AS submission_timestamp,
-  s.partner_id,
-  u2.name AS partner_name,
-  esw.score,
-  sts.completed
-FROM latest_submissions s
-INNER JOIN exercise_statuses sts
-  ON s.exercise_id = sts.exercise_id
-  AND s.user_id = sts.user_id
-INNER JOIN exercise_scores_weights esw
-  ON s.exercise_id = esw.exercise_id
-  AND s.user_id = esw.user_id
-INNER JOIN valid_users u
-  ON s.user_id = u.user_id
-LEFT JOIN valid_users u2
-  ON u2.user_id = s.partner_id
+  user_id,
+  id,
+  title,
+  visible,
+  enable_pair_programming,
+  MAX(num_submissions) AS num_submissions,
+  completed,
+  in_progress,
+  score,
+  weight,
+  is_multiple_choice
+FROM (
+  SELECT
+    es.user_id,
+    es.exercise_id as id,
+    e.title,
+    e.visible,
+    e.enable_pair_programming,
+    es.num_submissions,
+    es.completed,
+    es.in_progress,
+    esw.score,
+    e.weight,
+    e.back_end = 'multiple_choice' AS is_multiple_choice
+  FROM exercise_statuses es
+  INNER JOIN exercise_scores_weights esw
+    ON es.assignment_id = esw.assignment_id
+    AND es.exercise_id = esw.exercise_id
+    AND es.user_id = esw.user_id
+  INNER JOIN valid_exercises e
+    ON es.assignment_id = e.assignment_id
+    AND es.exercise_id = e.exercise_id
+
+  UNION
+
+  SELECT
+    NULL AS user_id,
+    exercise_id AS id,
+    title,
+    visible,
+    enable_pair_programming,
+    0 AS num_submissions,
+    0 AS completed,
+    0 AS in_progress,
+    0 AS score,
+    weight,
+    back_end = 'multiple_choice' AS is_multiple_choice
+  FROM valid_exercises
+)
+GROUP by id
