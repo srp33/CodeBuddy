@@ -662,41 +662,70 @@
 
     function showHideData(data_file_index, format) {
         let dataPanelID = `#data_panel_${data_file_index}`;
+
+        // Retrieve the IDs for the data buttons.
         let dataButtonID = format ? `#data_button_formatted_${data_file_index}` : `#data_button_raw_${data_file_index}`;
         let otherDataButtonID = format ? `#data_button_raw_${data_file_index}` : `#data_button_formatted_${data_file_index}`;
 
-        if ($(dataPanelID).hasClass("is-hidden") || !$(otherDataButtonID).hasClass("is-outlined")) {
-            // Retrieve the name of the data file at the specified index.
-            const keys = Object.keys(data_files);
-            keys.sort();
-            const data_file_name = keys[data_file_index];
+        let otherButtonVisible = $(otherDataButtonID).length > 0;
 
-            // Show the data
-            $(dataPanelID).removeClass("is-hidden");
+        // Retrieve the name and delimiter of the data file at the specified index.
+        const keys = Object.keys(data_files);
+        keys.sort();
+        const dataFileName = keys[data_file_index];
+        let delimiter = dataFileName.endsWith(".tsv") ? "\t" : ",";
 
-            if (format) {
-                let delimiter = data_file_name.endsWith(".tsv") ? "\t" : ",";
+        // TODO: This logic is overly complex. Simplify it.
+        if (otherButtonVisible) {
+            if ($(dataPanelID).hasClass("is-hidden") || !$(otherDataButtonID).hasClass("is-outlined")) {
+                // Show the data
+                $(dataPanelID).removeClass("is-hidden");
 
-                $(dataPanelID)[0].innerHTML = formatDelimitedDataAsTable(data_files[data_file_name], delimiter);
+                if (format) {
+                    $(dataPanelID)[0].innerHTML = formatDelimitedDataAsTable(data_files[dataFileName], delimiter);
+                }
+                else {
+                    $(dataPanelID)[0].innerHTML = `<pre class=" has-background-light mt-2">${data_files[dataFileName]}</pre>`;
+                }
+
+                $(dataButtonID).removeClass("is-outlined");
+                $(otherDataButtonID).addClass("is-outlined");
             }
             else {
-                $(dataPanelID)[0].innerHTML = `<pre class=" has-background-light mt-2">${data_files[data_file_name]}</pre>`;
+                // Hide the data
+                $(dataPanelID).addClass("is-hidden");
+                $(dataPanelID)[0].innerHTML = "";
+
+                $(dataButtonID).addClass("is-outlined");
+                $(otherDataButtonID).addClass("is-outlined");
             }
 
-            $(dataButtonID).removeClass("is-outlined");
-            $(otherDataButtonID).addClass("is-outlined");
+            $(otherDataButtonID)[0].blur();
         }
         else {
-            // Hide the data
-            $(dataPanelID).addClass("is-hidden");
-            $(dataPanelID)[0].innerHTML = "";
+            if ($(dataPanelID).hasClass("is-hidden")) {
+                // Show the data
+                $(dataPanelID).removeClass("is-hidden");
 
-            $(dataButtonID).addClass("is-outlined");
-            $(otherDataButtonID).addClass("is-outlined");
+                if (format) {
+                    $(dataPanelID)[0].innerHTML = formatDelimitedDataAsTable(data_files[dataFileName], delimiter);
+                }
+                else {
+                    $(dataPanelID)[0].innerHTML = `<pre class=" has-background-light mt-2">${data_files[dataFileName]}</pre>`;
+                }
+
+                $(dataButtonID).removeClass("is-outlined");
+            }
+            else {
+                // Hide the data
+                $(dataPanelID).addClass("is-hidden");
+                $(dataPanelID)[0].innerHTML = "";
+
+                $(dataButtonID).addClass("is-outlined");
+            }
         }
 
         $(dataButtonID)[0].blur();
-        $(otherDataButtonID)[0].blur();
     }
 
     function formatDelimitedDataAsTable(dataText, delimiter) {
@@ -706,6 +735,7 @@
 
         lines.forEach((line, index) => {
             const cells = line.split(delimiter);
+
             if (index === 0) {
                 table += "<tr><th>" + cells.join("</th><th>") + "</th></tr>";
             } else {
