@@ -608,7 +608,7 @@ class Content:
 
         for course in self.fetchall(sql):
             if course["visible"] or show_hidden:
-                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": course["introduction"], "passcode": course["passcode"], "exists": True}
+                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": convert_markdown_to_html(course["introduction"]), "passcode": course["passcode"], "exists": True}
                 courses.append([course["course_id"], course_basics])
 
         return courses
@@ -640,7 +640,7 @@ class Content:
             if course_id not in unique_course_ids:
                 unique_course_ids.add(course_id)
 
-                course_basics = {"id": course_id, "title": course["title"], "introduction": course["introduction"], "role": course["role"]}
+                course_basics = {"id": course_id, "title": course["title"], "introduction": convert_markdown_to_html(course["introduction"]), "role": course["role"]}
 
                 registered_courses.append([course["course_id"], course_basics])
 
