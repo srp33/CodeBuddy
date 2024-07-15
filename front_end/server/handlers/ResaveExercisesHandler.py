@@ -17,6 +17,8 @@ class ResaveExercisesHandler(BaseUserHandler):
 
                 output = f"<h4>Re-saving exercises for {course_basics['title']} and {assignment_basics['title']}</h4>"
 
+                an_error_occurred = False
+
                 for exercise in exercises:
                     exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, exercise[0])
                     exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise[0])
@@ -24,14 +26,28 @@ class ResaveExercisesHandler(BaseUserHandler):
 
                     output += f"<p>Working on {exercise_basics['title']} (ID: {exercise_basics['id']})..."
 
-                    result, success = await execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
+                    try:
+                        result, success = await execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
+                    except ConnectionError as inst:
+                        result = "The front-end server was unable to contact the back-end server."
+                        success = False
+                    except ReadTimeout as inst:
+                        result = "Code execution timed out."
+                        success = False
+                    except Exception as int:
+                        result = traceback.format_exc()
+                        success = False
 
                     if success:
                         output += f"success!</p>"
                     else:
-                        output += f"error occurred: {result}!</p>"
+                        output += f"<strong><font color='red'>error occurred: {result}</font></strong></p>"
+                        an_error_occurred = True
 
-                output += "<h4>All done.</h4>"
+                if an_error_occurred:
+                    output += "<h4>An error occurred for at least one of the exercises.</h4>"
+                else:
+                    output += "<h4>All done.</h4>"
 
                 self.render("resave_exercises.html", courses=self.courses, assignment_statuses=await self.get_assignment_statuses(course_basics), course_basics=course_basics, assignment_basics=assignment_basics, output=output, user_info=self.user_info, is_administrator=self.is_administrator)
             else:
