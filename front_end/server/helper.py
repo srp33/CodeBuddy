@@ -366,6 +366,9 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
     # Do formatting
     for test_title in exercise_details["tests"]:
         if format_tests:
+            exercise_details["tests"][test_title]["before_code"] = format_output_as_html(exercise_details["tests"][test_title]["before_code"])
+            exercise_details["tests"][test_title]["after_code"] = format_output_as_html(exercise_details["tests"][test_title]["after_code"])
+
             exercise_details["tests"][test_title]["txt_output_formatted"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
 
         exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
