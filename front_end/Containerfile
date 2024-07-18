@@ -64,6 +64,7 @@ RUN python -m pip install -r requirements.txt
 ##RUN python -m spacy download en_core_web_sm
 
 WORKDIR /app
+ADD fix_database.sh .
 ADD VERSION /
 RUN mkdir back_ends
 ADD back_ends/ /back_ends/
@@ -77,3 +78,4 @@ COPY --from=builder /build/front_end/static ./static
 COPY --from=builder /build/front_end/html ./server/html
 
 ENTRYPOINT ["bash", "/app/startup.sh"]
+#ENTRYPOINT ["bash", "/app/fix_database.sh"]

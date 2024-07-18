@@ -3,6 +3,8 @@ FROM julia:1.9-bullseye
 # RUN apt-get update \
 #  && apt-get install python3 -y
 
+RUN julia -e 'using Pkg; Pkg.add("CSV"); Pkg.add("DataFrames"); Pkg.add("FilePaths"); Pkg.add("Plots");'
+
 # ADD *.py /
 ADD *.sh /
 

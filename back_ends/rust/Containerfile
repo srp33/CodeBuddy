@@ -1,4 +1,16 @@
-FROM rust:1.68.1-slim-buster
+FROM rust:1.68.1-slim-buster as builder
+
+WORKDIR /app
+
+# Create a dummy project to fetch dependencies
+RUN USER=root cargo new --bin myapp
+WORKDIR /app/myapp
+
+# Add the dependencies you need
+COPY Cargo.toml /app/myapp/
+
+# Pre-fetch the dependencies
+RUN cargo fetch
 
 RUN apt-get update \
  && apt-get install python3 -y
