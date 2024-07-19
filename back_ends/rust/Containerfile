@@ -2,12 +2,11 @@ FROM rust:1.68.1-slim-buster as builder
 
 WORKDIR /app
 
-#RUN mkdir -p /app/myapp \
-# && chmod 777 /app/myapp -R
-
 # Create a dummy project to fetch dependencies
 #RUN USER=root cargo new --bin myapp
-RUN cargo new --bin myapp
+RUN cargo new --bin myapp \
+ && chmod 777 /app/myapp -R
+
 WORKDIR /app/myapp
 
 # Add the dependencies you need
