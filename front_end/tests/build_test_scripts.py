@@ -69,6 +69,7 @@ import_statements.add("import tornado.ioloop\n")
 import_statements.add("import tornado.web\n")
 import_statements.add("from tornado.routing import URLSpec as url\n")
 import_statements.add("import ui_methods\n")
+import_statements.add("import asyncio\n")
 
 import_statements = sorted(import_statements)
 
@@ -129,9 +130,10 @@ with open("test_app.py", "w") as test_file:
     test_file.write("\t\tprint('Running tests:')\n")
 
     for row in handler_tests_data:
-        handler = row[0]
-        path = row[1]
-        text_to_match = row[2]
+        test_user = row[0]
+        handler = row[1]
+        path = row[2]
+        text_to_match = row[3]
 
         url = f"/{handler}"
 
@@ -139,13 +141,14 @@ with open("test_app.py", "w") as test_file:
             url += f"/{path}"
 
         test_file.write(f"\t\theaders = tornado.httputil.HTTPHeaders()\n")
-        test_file.write(f"\t\tresponse = self.fetch('{url}', headers=" + "{'Cookie': 'user_id=test_student'})\n")
+        test_file.write(f"\t\tresponse = self.fetch('{url}', headers=" + "{'Cookie': 'user_id=" + test_user + "'})\n")
         test_file.write(f"\t\tprint('  {handler}')\n")
         test_file.write(f"\t\tfound = \"" + text_to_match + "\" in response.body.decode()\n")
         test_file.write(f"\t\tif found:\n")
         test_file.write(f"\t\t\tprint(\"    '" + text_to_match + "' was found.\")\n")
         test_file.write(f"\t\telse:\n")
         test_file.write(f"\t\t\tprint(\"    '" + text_to_match + "' was NOT found.\")\n")
+        test_file.write(f"\t\t\tprint(response.body.decode())\n")
         test_file.write(f"\t\tself.assertTrue(found)\n\n")
         test_file.write(f"\t\tself.assertEqual(response.code, 200)\n\n")
 

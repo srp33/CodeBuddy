@@ -51,12 +51,31 @@
     exercise_details["solution_code"] = "print('Hello, world!')"
     exercise_details["date_created"] = datetime.datetime.now(timezone.utc)
     exercise_details["date_updated"] = datetime.datetime.now(timezone.utc)
+    exercise_details["what_students_see_after_success"] = 3
     exercise_details["tests"] = {"Test 1": {"test_id": 1, "before_code": "", "after_code": "", "instructions": "", "can_see_test_code": True, "can_see_expected_output": True, "can_see_code_output": True, "txt_output": "Hello, world!", "jpg_output": ""}}
 
     exercise_id = content.save_exercise(exercise_basics, exercise_details)
     exercise_basics = content.get_exercise_basics(course_basics, assignment_basics, exercise_id)
 
+    mc_exercise_basics = content.get_exercise_basics(course_basics, assignment_basics, None)
+    mc_exercise_basics["title"] = "Test MC Exercise"
+
+    mc_exercise_details = content.get_exercise_details(course_basics, assignment_basics, None)
+    mc_exercise_details["instructions"] = "Exercise instructions"
+    mc_exercise_details["back_end"] = "multiple_choice"
+    mc_exercise_details["solution_code"] = '{"A": false, "B": false, "C": true}'
+    mc_exercise_details["date_created"] = datetime.datetime.now(timezone.utc)
+    mc_exercise_details["date_updated"] = datetime.datetime.now(timezone.utc)
+    mc_exercise_details["tests"] = {}
+
+    mc_exercise_id = content.save_exercise(mc_exercise_basics, mc_exercise_details)
+    mc_exercise_basics = content.get_exercise_basics(course_basics, assignment_basics, mc_exercise_id)
+
     content.add_user("test_student", user_dict = {'name': f'Test User', 'given_name': "Test", 'family_name': 'User', 'locale': 'en', 'email_address': f'test_student@nospam.edu'})
     content.register_user_for_course(course_id, "test_student")
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(content.save_submission(course_id, assignment_id, exercise_id, "test_student", "print('Hello, world!')", True, datetime.datetime.now(timezone.utc), exercise_details, {'Test 1': {'txt_output': 'Hello, world!', 'jpg_output': '', 'txt_output_formatted': 'Hello, world!', 'diff_output': '', 'passed': True}}, 100, None))
+    #loop.close()
 
     secrets_dict = load_yaml_dict(read_file("secrets/front_end.yaml"))

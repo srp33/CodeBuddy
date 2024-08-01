@@ -1,6 +1,12 @@
 [
-    ["CoursesHandler", "", "Test Course"],
-    ["CourseHandler", "1", "Test Course"],
-    ["AssignmentHandler", "1/1", "Test Assignment"],
-    ["ExerciseHandler", "1/1/1", "Test Exercise"]
+    ["test_student", "CoursesHandler", "", "Test Course"],
+    ["test_student", "CourseHandler", "1", "Test Course"],
+    ["test_student", "AssignmentHandler", "1/1", "Test Assignment"],
+    ["test_student", "ExerciseHandler", "1/1/1", "Test Exercise"],
+    ["test_student", "ViewInstructorSolutionHandler", "1/1/1", "Instructor's solution"],
+    ["test_student", "ViewPeerSolutionHandler", "1/1/1", "You are one of the first in the class to complete this exercise"],
+    ["test_admin", "EditCourseHandler", "1", "Edit course"],
+    ["test_admin", "EditAssignmentHandler", "1/1", "Edit assignment"],
+    ["test_admin", "EditExerciseHandler", "1/1/1", "Edit exercise"],
+    ["test_admin", "EditMultipleChoiceExerciseHandler", "1/1/2", "Edit multiple-choice exercise"]
 ]
