@@ -1536,7 +1536,7 @@ LEFT JOIN valid_users u2
         return course_details
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": "", "show_run_button": True, "custom_scoring": None, "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_timer_exceptions": {}, "use_virtual_assistant": 0}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": "", "show_run_button": True, "custom_scoring": "", "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_timer_exceptions": {}, "use_virtual_assistant": 0}
 
         if not assignment_id:
             return null_assignment
@@ -1611,11 +1611,23 @@ LEFT JOIN valid_users u2
                    AND pa.assignment_id = ?
                  ORDER BY a.title'''
         
-        for row in self.fetchall(sql, (course_id, assignment_id, )):
+        for row in self.fetchall(sql, (course_id, assignment_id)):
             prerequisite_assignment_ids.append(row["prerequisite_assignment_id"])
 
         return prerequisite_assignment_ids
 
+    def get_assignments_prerequiring_this_assignment(self, course_id, assignment_id):
+        assignment_ids = []
+
+        sql = '''SELECT assignment_id
+                 FROM prerequisite_assignments
+                 WHERE course_id = ?
+                   AND prerequisite_assignment_id = ?'''
+        
+        for row in self.fetchall(sql, (course_id, assignment_id)):
+            assignment_ids.append(row["assignment_id"])
+
+        return assignment_ids
 
     def get_student_timer_exceptions(self, has_timer, course_id, assignment_id):
         exceptions = {}

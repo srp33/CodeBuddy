@@ -23,8 +23,12 @@
     <div class="shadow-box">
         <div class="row-container">
             <div class="a-title-container">
-                <p><strong>Title: </strong></p>
-                <p><textarea id="title" class="textarea is-grey monospace" placeholder="Please specify a short, descriptive title for this assignment." rows="1" autofocus></textarea></p>
+                <p>
+                    <strong>Title: </strong>
+                </p>
+                <p>
+                    <input id="title" type="text" placeholder="Please specify a short, descriptive title for this assignment." class="input is-fullwidth" autofocus />
+                </p>
             </div>
 
             <div class="a-visible top-space">
@@ -40,37 +44,52 @@
         </div>
 
         <div class="top-space">
-            <p><strong>Introduction: </strong><br />Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.</p>
+            <div class="mt-5">
+                <div>
+                    <strong>Introduction: </strong>
+                </div>
+                
+                <div class="mt-2">
+                    Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.
+                </div>
+            </div>
 
-            <p><textarea id="introduction" class="textarea" rows=10 placeholder="Please provide an introduction for this assignment."></textarea></p>
+            <div class="mt-4">
+                <textarea id="introduction" class="textarea" rows=10 placeholder="Please provide an introduction for this assignment."></textarea>
+            </div>
         </div>
     </div>
 
     <div class="shadow-box">
-        <p>
-            <strong>Prerequisite assignment(s)</strong>
-            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Indicate any other assignment(s) that students must complete before starting this assignment.">
-                <i class="far fa-question-circle"></i>
-            </label>:
-        </p>
+        {% if prerequisite_assignment_options != "[]" %}
+            <p>
+                <strong>Prerequisite assignment(s)</strong>
+                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Indicate any other assignment(s) that students must complete before starting this assignment.">
+                    <i class="far fa-question-circle"></i>
+                </label>:
+            </p>
 
-        <div>
-            <div class="select is-grey">
-                <select id="prerequisite_assignments_select" class="edit-select">
-                </select>
+            <div id="selected_prerequisite_options_div">
+                <div class="select is-grey">
+                    <select id="prerequisite_assignments_select" class="edit-select">
+                    </select>
+                </div>
+
+                <div class="mt-4">
+                    <button class="button is-primary is-outlined" onclick="addPrerequisite(this);">Add selected assignment as a prerequisite</button>
+                </div>
             </div>
 
-            <div class="mt-4">
-                <button class="button is-primary is-outlined" onclick="addPrerequisite(this);">Add selected assignment as a prerequisite</button>
+            <div id="prerequisite_assignments_div" class="has-background-warning-light pl-2 pt-1 pr-2 pb-4 ml-0 mt-4 mr-4 mb-4 invisible">
+                <ul id="prerequisite_assignments_list">
+                </ul>
             </div>
-        </div>
 
-        <div id="prerequisite_assignments_div" class="has-background-warning-light pl-2 pt-1 pr-2 pb-4 ml-0 mt-4 mr-4 mb-4 invisible">
-            <ul id="prerequisite_assignments_list">
-            </ul>
-        </div>
+            <p class="mt-6">
+        {% else %}
+            <p class="mt-2">
+        {% end %}
 
-        <p class="mt-6">
             <strong>Start date</strong>
             <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a start date and time are specified, students will be unable to view this assignment before the specified date and time.">
                 <i class="far fa-question-circle"></i>
@@ -374,6 +393,21 @@
         }
         else {
             $("#prerequisite_assignments_div").addClass("invisible");
+        }
+
+        // Here we check whether to show certain elements based on whether we have prerequisites.
+        let available_prerequisites = [];        
+        for (let option of prerequisite_assignment_options) {
+            if (!assignment_details_obj["prerequisite_assignment_ids"].includes(option[0])) {
+                available_prerequisites.push(option[0]);
+            }
+        }
+
+        if (available_prerequisites.length > 0) {
+            $("#selected_prerequisite_options_div").removeClass("is-hidden");
+        }
+        else {
+            $("#selected_prerequisite_options_div").addClass("is-hidden");
         }
 
         for (let pair of prerequisite_assignment_options) {
@@ -877,7 +911,10 @@
         altFormat: 'Y-m-d G:i K',
         defaultDate: new Date().setDate(new Date().getDate() + 1)});
 
-    showPrerequisites();
+    {% if prerequisite_assignment_options != "[]" %}
+        showPrerequisites();
+    {% end %}
+
     setStartDate();
     setDueDate();
 
@@ -972,7 +1009,9 @@
     setValue("allowed_ip_addresses", assignment_details_obj["allowed_ip_addresses"]);
     setValue("allowed_external_urls", assignment_details_obj["allowed_external_urls"]);
     setValue("show_run_button", assignment_details_obj["show_run_button"] ? "Yes" : "No");
+
     showCustomScoringRangesTable();
+    
     setValue("require_security_codes", assignment_details_obj["require_security_codes"]);
     setValue("use_virtual_assistant", assignment_details_obj["use_virtual_assistant"]);
 </script>

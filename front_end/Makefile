@@ -13,3 +13,8 @@ build-watch:
 .PHONY: sql
 sql: 
 	python3 test_database_query.py
+
+.PHONY: test
+test: 
+	cd tests \
+	&& ./run.sh
