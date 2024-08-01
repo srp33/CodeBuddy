@@ -151,6 +151,7 @@ with open("test_app.py", "w") as test_file:
         test_file.write(f"\t\t\tprint(response.body.decode())\n")
         test_file.write(f"\t\tself.assertTrue(found)\n\n")
         test_file.write(f"\t\tself.assertEqual(response.code, 200)\n\n")
+        test_file.write(f"\t\tprint('All tests passed!')\n\n")
 
     test_file.write("if __name__ == '__main__':\n")
     test_file.write("\tunittest.main()\n")

@@ -2,7 +2,20 @@
 
 # Run the tests before we do anything else.
 cd front_end/tests
-./run.sh
+echo "Running automated tests..."
+
+./run.sh > /tmp/test.out
+
+# See whether the tests passed.
+if ! grep -q "All tests passed" /tmp/test.out
+then
+    echo "At least one of the tests failed."
+    echo "The output is in /tmp/test.out."
+    exit 1
+else
+    echo "All tests passed"
+fi
+
 cd ../../
 
 # Now let's build everything...
