@@ -332,7 +332,7 @@ class Content:
 
         row = self.fetchone(sql, (course_id, assignment_id, user_id,))
         if row:
-            return row["start_time"], row["ended_early"]
+            return localize_datetime(row["start_time"]), row["ended_early"]
 
         return None, None
 
@@ -777,12 +777,12 @@ INNER JOIN valid_assignments a
                 statuses2.append([assignment_basics[0], assignment_basics[1]])
         else:
             for status in sort_list_of_dicts_nicely(statuses, ["title", "assignment_id"]):
-                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": status["start_date"], "due_date": status["due_date"], "completed": status["completed"], "in_progress": status["in_progress"], "score": status["score"], "num_completed": status["num_completed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "timer_has_ended": status["timer_has_ended"], "restrict_other_assignments": status["restrict_other_assignments"]}
+                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": localize_datetime(status["start_date"]), "due_date": localize_datetime(status["due_date"]), "completed": status["completed"], "in_progress": status["in_progress"], "score": status["score"], "num_completed": status["num_completed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "timer_has_ended": status["timer_has_ended"], "restrict_other_assignments": status["restrict_other_assignments"]}
 
-                if assignment_dict["start_date"]:
-                    assignment_dict["start_date"] = assignment_dict["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ')
-                if assignment_dict["due_date"]:
-                    assignment_dict["due_date"] = assignment_dict["due_date"].strftime('%Y-%m-%dT%H:%M:%SZ')
+                # if assignment_dict["start_date"]:
+                #     assignment_dict["start_date"] = assignment_dict["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ')
+                # if assignment_dict["due_date"]:
+                #     assignment_dict["due_date"] = assignment_dict["due_date"].strftime('%Y-%m-%dT%H:%M:%SZ')
 
                 statuses2.append([status["assignment_id"], assignment_dict])
 
@@ -1306,7 +1306,7 @@ LEFT JOIN valid_users u2
                 assignment = dict(row)
                 assignment["start_date"] = localize_datetime(assignment["start_date"])
                 assignment["due_date"] =  localize_datetime(assignment["due_date"])
-                assignments.append(dict(row))
+                assignments.append(assignment)
 
         assignments = sort_list_of_dicts_nicely(assignments, ["title", "id"])
 
@@ -1554,13 +1554,7 @@ LEFT JOIN valid_users u2
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  row["start_date"], "due_date":  row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
-
-        if assignment_dict["start_date"]:
-            assignment_dict["start_date"] = localize_datetime(assignment_dict["start_date"])
-
-        if assignment_dict["due_date"]:
-            assignment_dict["due_date"] = localize_datetime(assignment_dict["due_date"])
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  localize_datetime(row["start_date"]), "due_date":  localize_datetime(row["due_date"]), "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")

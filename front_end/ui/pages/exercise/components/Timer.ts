@@ -45,7 +45,7 @@ export class Timer extends LitElement {
 
 		if (assignment_details.has_timer) {
 			let deadline = new Date(timer_deadline);
-			deadline.setMinutes(deadline.getMinutes() - deadline.getTimezoneOffset());
+			// deadline.setMinutes(deadline.getMinutes() - deadline.getTimezoneOffset());
 
 			const total = deadline!.getTime() - Date.now();
 			const hours = Math.floor( (total/(1000*60*60)) % 24 );
@@ -72,7 +72,7 @@ export class Timer extends LitElement {
 
 		if (!reload && assignment_details.due_date && !assignment_details.allow_late && !assignment_details.view_answer_late) {
 			let due_date = new Date(assignment_details.due_date);
-			due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+			// due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
 
 			if (Date.now() > due_date.getTime()) {
 				reload = true;

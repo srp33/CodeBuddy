@@ -217,13 +217,13 @@ class BaseUserHandler(BaseRequestHandler):
     # Functions that do not use cookie caching
     ###############################################
 
-    async def check_whether_should_show_exercise(self, course_id, assignment_id, assignment_details, assignments, courses, assignment_basics, course_basics):
+    async def check_whether_should_show_exercise(self, course_id, assignment_id, assignment_details, assignment_statuses, courses, assignment_basics, course_basics):
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
             return True
         
         if assignment_details["require_security_codes"]:
             if not self.content.has_verified_security_code(course_id, assignment_id, self.get_current_user()):
-                return self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignments=assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                return self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignments=assignment_statuses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
 
         if assignment_details["has_timer"]:
             timer_status, __, __, __, __ = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
@@ -235,13 +235,13 @@ class BaseUserHandler(BaseRequestHandler):
         assignment_status = get_assignment_status(self, course_id, assignment_details, get_current_datetime())
 
         if assignment_status != "render":
-            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+            return self.render("unavailable_assignment.html", courses=courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
         if self.content.is_taking_restricted_assignment(self.get_current_user(), assignment_id):
-            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="restrict_other_assignments", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+            return self.render("unavailable_assignment.html", courses=courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="restrict_other_assignments", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
         if len(await self.get_prerequisite_assignments_not_completed(course_id, assignment_details, self.get_current_user())) > 0:
-            return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_uncompleted", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+            return self.render("unavailable_assignment.html", courses=courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_uncompleted", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
         return True
 

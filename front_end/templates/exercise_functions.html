@@ -774,7 +774,7 @@
 
         {% if assignment_details["due_date"] and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
             let due_date = new Date("{{ assignment_details['due_date'] }}");
-            due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+            // due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
 
             if (Date.now() > due_date.getTime()) {
                 location.reload(true);
@@ -788,7 +788,7 @@
         {% end %}
 
         let due_date = new Date("{{ assignment_details['due_date'] }}");
-        due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+        // due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
 
         return Date.now() > assignment_details.due_date.getTime()
     }

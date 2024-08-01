@@ -14,6 +14,7 @@ class EditAssignmentHandler(BaseUserHandler):
                 course_details = await self.get_course_details(course_id)
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
                 assignment_details = self.content.get_assignment_details(course_basics, assignment_id)
+
                 assignment_statuses = await self.get_assignment_statuses(course_basics)
 
                 assignment_ids_prerequiring = self.content.get_assignments_prerequiring_this_assignment(course_id, assignment_id)

@@ -21,6 +21,7 @@ class AssignmentHandler(BaseUserHandler):
             timer_hours = None
             timer_minutes = None
             timer_deadline = None
+
             if assignment_details["has_timer"]:
                 timer_status, timer_start_time, timer_hours, timer_minutes, timer_deadline = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
 

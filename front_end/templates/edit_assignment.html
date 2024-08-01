@@ -445,7 +445,7 @@
     function setStartDate() {
         if (assignment_details_obj["start_date"]) {
             var start_date = new Date(assignment_details_obj["start_date"]);
-            start_date.setMinutes(start_date.getMinutes() - start_date.getTimezoneOffset());
+            // start_date.setMinutes(start_date.getMinutes() - start_date.getTimezoneOffset());
 
             start_date_picker.setDate(start_date);
 
@@ -457,7 +457,7 @@
     function setDueDate() {
         if (assignment_details_obj["due_date"]) {
             var due_date = new Date(assignment_details_obj["due_date"]);
-            due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+            // due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
 
             due_date_picker.setDate(due_date);
 

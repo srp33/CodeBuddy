@@ -18,7 +18,7 @@
 
                 <script>
                     var start_date = new Date("{{ assignment_details['start_date'] }}");
-                    start_date.setMinutes(start_date.getMinutes() - start_date.getTimezoneOffset());
+                    // start_date.setMinutes(start_date.getMinutes() - start_date.getTimezoneOffset());
                     document.getElementById("start_date").innerHTML = start_date.toLocaleString();
                 </script>
             {% elif error == "due_date" %}
@@ -26,7 +26,7 @@
 
                 <script>
                     var due_date = new Date("{{ assignment_details['due_date'] }}");
-                    due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+                    // due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
                     document.getElementById("due_date").innerHTML = due_date.toLocaleString();
                 </script>
             {% elif error == "restricted_ip" %}

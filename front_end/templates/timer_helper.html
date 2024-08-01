@@ -202,7 +202,7 @@
 
         function convertDeadline(timer_deadline_str) {
             let timer_deadline = new Date(timer_deadline_str);
-            timer_deadline.setMinutes(timer_deadline.getMinutes() - timer_deadline.getTimezoneOffset());
+            // timer_deadline.setMinutes(timer_deadline.getMinutes() - timer_deadline.getTimezoneOffset());
 
             return timer_deadline;
         }

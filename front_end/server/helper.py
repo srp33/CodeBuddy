@@ -565,6 +565,7 @@ def get_formatted_datetime():
 def localize_datetime(dtime):
     if dtime:
         return pytz.utc.localize(dtime)
+
     return dtime
 
 def get_student_timer_status(content, course_id, assignment_id, assignment_details, student_id, user_start_time=None, user_ended_early=None):
