@@ -19,5 +19,4 @@ class HomeHandler(BaseOtherHandler):
             else:
                 self.render("home.html")
         except Exception as inst:
-            print(traceback.format_exc())
             render_error(self, traceback.format_exc())

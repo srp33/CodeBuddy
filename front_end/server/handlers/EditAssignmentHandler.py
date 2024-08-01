@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-import datetime as dt
 
 class EditAssignmentHandler(BaseUserHandler):
     async def get(self, course_id, assignment_id):
@@ -46,12 +45,12 @@ class EditAssignmentHandler(BaseUserHandler):
                 assignment_basics["visible"] = assignment_details.pop("visible")
 
                 if assignment_details["start_date"]:
-                    assignment_details["start_date"] = dt.datetime.strptime(assignment_details["start_date"], "%a, %d %b %Y %H:%M:%S %Z")
+                    assignment_details["start_date"] = datetime.strptime(assignment_details["start_date"], "%a, %d %b %Y %H:%M:%S %Z")
 
                 if assignment_details["due_date"]:
-                    assignment_details["due_date"] = dt.datetime.strptime(assignment_details["due_date"], "%a, %d %b %Y %H:%M:%S %Z")
+                    assignment_details["due_date"] = datetime.strptime(assignment_details["due_date"], "%a, %d %b %Y %H:%M:%S %Z")
 
-                current_time = dt.datetime.utcnow()
+                current_time = get_current_datetime()
 
                 if assignment_basics["exists"]:
                     assignment_details["date_created"] = (await self.get_assignment_details(course_basics, assignment_basics["id"]))["date_created"]

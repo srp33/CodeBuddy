@@ -35,7 +35,7 @@ class ExternalSiteHandler(BaseUserHandler):
             elif url.endswith(".pdf"):
                 self.set_header('Content-type', "application/pdf")
             else:
-                return self.write(f"The specified URL {url} is invalid because it does not have a valid ending.")
+                self.set_header('Content-type', 'application/octet-stream')
 
             self.write(content)
         except Exception as inst:

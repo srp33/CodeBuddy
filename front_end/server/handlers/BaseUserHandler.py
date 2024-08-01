@@ -96,7 +96,7 @@ class BaseUserHandler(BaseRequestHandler):
     #     return assignments
     
     async def get_assignment_statuses(self, course_basics, show_hidden=False):
-        return self.content.get_assignment_statuses(course_basics["id"], self.get_current_user(), False)
+        return self.content.get_assignment_statuses(course_basics["id"], self.get_current_user(), show_hidden)
     
     async def get_assignment_basics(self, course_basics, assignment_id):
         course_id = course_basics["id"]
@@ -232,7 +232,7 @@ class BaseUserHandler(BaseRequestHandler):
                 self.redirect(f"/assignment/{course_id}/{assignment_id}")
                 return
 
-        assignment_status = get_assignment_status(self, course_id, assignment_details, datetime.utcnow())
+        assignment_status = get_assignment_status(self, course_id, assignment_details, get_current_datetime())
 
         if assignment_status != "render":
             return self.render("unavailable_assignment.html", courses=courses, assignments=assignments, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))

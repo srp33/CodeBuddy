@@ -1,0 +1,6 @@
+[
+    ["CoursesHandler", "", "Test Course"],
+    ["CourseHandler", "1", "Test Course"],
+    ["AssignmentHandler", "1/1", "Test Assignment"],
+    ["ExerciseHandler", "1/1/1", "Test Exercise"]
+]

@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-import datetime as dt
 
 class ViewInstructorSolutionHandler(BaseUserHandler):
     async def get(self, course_id, assignment_id, exercise_id):

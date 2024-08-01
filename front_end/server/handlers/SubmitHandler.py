@@ -95,7 +95,7 @@ class SubmitHandler(BaseUserHandler):
 
     def calc_exercise_score(self, assignment_details, passed):
         if passed:
-            if assignment_details["due_date"] and assignment_details["due_date"] < datetime.utcnow():
+            if assignment_details["due_date"] and assignment_details["due_date"] < get_current_datetime():
                 if assignment_details["allow_late"]:
                     return 100 * assignment_details["late_percent"]
             else:

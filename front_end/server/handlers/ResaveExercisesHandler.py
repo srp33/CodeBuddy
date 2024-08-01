@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-import datetime as dt
 
 class ResaveExercisesHandler(BaseUserHandler):
     async def get(self, course_id, assignment_id):
@@ -22,7 +21,7 @@ class ResaveExercisesHandler(BaseUserHandler):
                 for exercise in exercises:
                     exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, exercise[0])
                     exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise[0])
-                    exercise_details["date_updated"] = dt.datetime.utcnow()
+                    exercise_details["date_updated"] = get_current_datetime()
 
                     output += f"<p>Working on {exercise_basics['title']} (ID: {exercise_basics['id']})..."
 

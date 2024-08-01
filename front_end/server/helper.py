@@ -6,7 +6,7 @@
 
 import base64
 from contextlib import redirect_stdout, redirect_stderr
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import difflib
 import glob
 import hashlib
@@ -332,6 +332,12 @@ def redirect_to_login(handler, redirect_path):
         # handler.redirect("/login")
 
 def render_error(handler, exception):
+    # This makes it so we see the error message on the console.
+    print(exception)
+
+    # This tells the client that an application error occurred.
+    handler.set_status(500)
+
     handler.render("error.html", error_title="An internal error occurred", error_message=format_output_as_html(exception))
 
 def create_id(current_objects=[], num_characters=4):
@@ -424,7 +430,7 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
 def set_assignment_due_date_passed(assignment_details):
     assignment_details["due_date_passed"] = None
     if assignment_details["due_date"]:
-        assignment_details["due_date_passed"] = datetime.utcnow() > assignment_details["due_date"]
+        assignment_details["due_date_passed"] = get_current_datetime() > assignment_details["due_date"]
 
 def modify_what_students_see(exercise_details, user_info):
     exercise_details["show_instructor_solution"] = False
@@ -448,9 +454,7 @@ def modify_what_students_see(exercise_details, user_info):
             exercise_details["tests"][test_title]["txt_output"] = ""
             exercise_details["tests"][test_title]["jpg_output"] = ""
 
-def open_db(db_name):
-    db_file_path = f"database/{db_name}"
-
+def open_db(db_file_path):
     # if 'ROOT' in os.environ:
     #     db_file_path = os.path.join(os.environ['ROOT'], db_file_path)
 
@@ -551,8 +555,11 @@ async def should_use_virtual_assistant(handler, course_id, course_details, assig
 
     return (assignment_details["use_virtual_assistant"] == 2 and user_info["research_cohort"] == "A") or (assignment_details["use_virtual_assistant"] == 3 and user_info["research_cohort"] == "B")
 
+def get_current_datetime():
+    return datetime.now(timezone.utc)
+
 def get_formatted_datetime():
-    return datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    return get_current_datetime().strftime("%Y%m%d_%H%M%S")
 
 def get_student_timer_status(content, course_id, assignment_id, assignment_details, student_id, user_start_time=None, user_ended_early=None):
     if user_start_time == None:
@@ -573,7 +580,7 @@ def get_student_timer_status(content, course_id, assignment_id, assignment_detai
 
     deadline = user_start_time + timedelta(hours = hours, minutes = minutes)
 
-    if deadline < datetime.utcnow():
+    if deadline < get_current_datetime():
         return "timer_expired", user_start_time, None, None, None
 
     return "timer_in_progress", user_start_time, None, None, deadline

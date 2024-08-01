@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-import datetime as dt
 
 class ViewAtRiskStudentsHandler(BaseUserHandler):
     async def get(self, course_id, recent_submissions_days_threshold):

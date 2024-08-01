@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-import datetime as dt
 
 class EditExerciseHandler(BaseUserHandler):
     async def get(self, course_id, assignment_id, exercise_id):
@@ -50,7 +49,7 @@ class EditExerciseHandler(BaseUserHandler):
                 exercise_basics["title"] = exercise_details.pop("title")
                 exercise_basics["visible"] = exercise_details.pop("visible")
 
-                current_time = dt.datetime.utcnow()
+                current_time = get_current_datetime()
                 if exercise_basics["exists"]:
                     exercise_details["date_created"] = (await self.get_exercise_details(course_basics, assignment_basics, exercise_id))["date_created"]
                 else:

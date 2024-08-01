@@ -1,0 +1,102 @@
+FROM python:3.11.3-slim-buster
+
+RUN mkdir -p /app
+
+WORKDIR /app
+
+RUN apt-get update \
+ && apt-get install -y bzip2 zip wget curl build-essential sqlite3 openssl \
+ && apt-get -y autoremove \
+ && apt-get clean
+
+ADD requirements.txt /app
+
+RUN python -m pip install -r requirements.txt
+
+ADD Settings.yaml /
+#ADD *.py /app
+#ADD server /app/server/
+
+#ENTRYPOINT ["bash"]
+
+
+
+
+#FROM node:18-buster-slim as builder
+
+#RUN mkdir -p /build/front_end
+#
+#WORKDIR /build/front_end
+#
+#ADD package*.json /build/front_end/
+#ADD tsconfig.json /build/front_end/
+#ADD build.js .
+#ADD Settings.yaml /build/
+#ADD build_html.sh .
+#ADD ui ./ui
+#ADD templates ./templates
+#ADD misc /build/misc
+#
+#RUN npm install
+#RUN npm run build:prod
+#
+#RUN bash build_html.sh html
+#
+#FROM python:3.11.3-slim-buster
+#
+#RUN apt-get update \
+# && apt-get install -y bzip2 zip wget curl git vim build-essential \
+#                       sqlite3 libmariadb3 libmariadb-dev openssl \
+# && apt-get -y autoremove \
+# && apt-get clean
+#
+#RUN mkdir -p /app /certs /conda /course /migration_scripts /scheduled_scripts /static
+#
+## We create a self-signed certificate, which is used when connecting
+## between the front end and middle layer.
+## https://wiki.debian.org/Self-Signed_Certificate
+## An alternative would be to get one from digicert, etc.
+#RUN openssl req -new -newkey rsa:2048 -days 30650 -nodes -x509 -keyout /certs/cert.key -out /certs/cert.crt -subj "/  C=GB/ST=London/L=London/O=Global Security/OU=IT Department/CN=example.com" \
+# && chmod 644 /certs/cert.key \
+# && chmod 644 /certs/cert.crt
+#
+## See https://jtreminio.com/blog/running-docker-containers-as-current-host-user/#ok-so-what-actually-works
+#ARG USER_ID=1000
+#ARG GROUP_ID=1000
+#ARG USER=codebuddy
+#
+## We'll map the user inside to the container to the user outside the container.
+## This ensures that the permissions on files shared via volumes will be
+## translatable in both directions.
+#RUN groupadd -f -g ${GROUP_ID} ${USER} && \
+#    useradd -l -u ${USER_ID} -g ${USER} ${USER} && \
+#    install -d -m 0755 -o ${USER} -g ${USER} /home/${USER} && \
+#    chown --silent --no-dereference --recursive \
+#          ${USER_ID}:${GROUP_ID} \
+#          /app /conda /course /migration_scripts /static /scheduled_scripts /tmp
+#
+#USER $USER
+#
+#ENV PATH="/home/codebuddy/.local/bin:${PATH}"
+#
+#ADD requirements.txt .
+#RUN python -m pip install -r requirements.txt
+#
+###RUN python -m spacy download en_core_web_sm
+#
+#WORKDIR /app
+#ADD fix_database.sh .
+#ADD VERSION /
+#RUN mkdir back_ends
+#ADD back_ends/ /back_ends/
+#ADD Settings.yaml /
+#ADD startup.sh .
+#ADD server ./server
+#ADD migration_scripts ./migration_scripts
+#ADD scheduled_scripts ./scheduled_scripts
+#ADD query_templates /app/query_templates/
+#COPY --from=builder /build/front_end/static ./static
+#COPY --from=builder /build/front_end/html ./server/html
+#
+#ENTRYPOINT ["bash", "/app/startup.sh"]
+##ENTRYPOINT ["bash", "/app/fix_database.sh"]

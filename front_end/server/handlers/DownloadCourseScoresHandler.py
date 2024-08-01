@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-from datetime import datetime
 
 class DownloadCourseScoresHandler(BaseUserHandler):
     async def get(self, course_id):

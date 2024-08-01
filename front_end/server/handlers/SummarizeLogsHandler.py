@@ -89,7 +89,7 @@ class SummarizeLogsHandler(BaseUserHandler):
         months = []
         days = []
 
-        dateTimeObj = datetime.utcnow()
+        dateTimeObj = get_current_datetime()
         currYear = str(dateTimeObj.year)
         yearAbrev = int(currYear)
 

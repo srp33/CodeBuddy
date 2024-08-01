@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-import datetime as dt
 
 class EditCourseHandler(BaseUserHandler):
     async def get(self, course_id):
@@ -66,7 +65,7 @@ class EditCourseHandler(BaseUserHandler):
 
                         if virtual_assistant_config is None or (type(va_dict) is dict and "api_key" in va_dict and "model" in va_dict and "temperature" in va_dict and "timeout" in va_dict and "max_per_exercise" in va_dict and type(va_dict["max_per_exercise"]) is int):
                             #self.content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
-                            self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], None, dt.datetime.utcnow())
+                            self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], None, get_current_datetime())
 
                             course_id = self.content.save_course(course_basics, course_details)
                         else:

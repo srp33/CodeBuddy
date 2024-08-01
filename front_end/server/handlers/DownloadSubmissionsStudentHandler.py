@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-import datetime
 
 class DownloadSubmissionsStudentHandler(BaseUserHandler):
     async def get(self, course_id):
@@ -68,5 +67,5 @@ class DownloadSubmissionsStudentHandler(BaseUserHandler):
                 html += f"<p><i>Your solution:</i></p>"
                 html += f"<pre>{submission['code']}</pre>"
 
-        html += f"<p><i>This file was generated on {datetime.datetime.utcnow()} (GMT).</i></p>"
+        html += f"<p><i>This file was generated on {get_current_datetime()} (GMT).</i></p>"
         return html + "</body></html>"

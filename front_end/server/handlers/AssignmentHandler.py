@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-from datetime import datetime
 
 class AssignmentHandler(BaseUserHandler):
     async def get(self, course_id, assignment_id):
@@ -37,7 +36,7 @@ class AssignmentHandler(BaseUserHandler):
             assignment_details = await self.get_assignment_details(course_basics, assignment_id, True)
 
             if task == "start_timer":
-                timer_start_time = datetime.utcnow()
+                timer_start_time = get_current_datetime()
                 
                 __, __, __, __, timer_deadline = self.content.set_user_assignment_start_time(course_id, assignment_id, assignment_details, self.user_info["user_id"], timer_start_time)
 
@@ -61,7 +60,7 @@ class AssignmentHandler(BaseUserHandler):
 
         assignment_statuses = await self.get_assignment_statuses(course_basics)
 
-        render_status = get_assignment_status(self, course_id, assignment_details, datetime.utcnow())
+        render_status = get_assignment_status(self, course_id, assignment_details, get_current_datetime())
 
         if render_status == "render":
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=False)

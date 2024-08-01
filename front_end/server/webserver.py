@@ -7,7 +7,6 @@
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 from distutils.log import debug
 from content import *
-from datetime import datetime
 from handlers import *
 from helper import *
 import logging
@@ -22,7 +21,7 @@ import ui_methods
 def make_app(settings_dict):
     app = Application(
         [
-            url(r"/", HomeHandler),
+            url(r"/", HomeHandler, name="home"),
             url(r"/add_admin/([^/]+)", AddAdminHandler, name="add_admin"),
             url(r"/add_assistant/([^/]+)/([^/]+)", AddAssistantHandler, name="add_assistant"),
             url(r"/add_instructor/([^/]+)/([^/]+)", AddInstructorHandler, name="add_instructor"),
@@ -87,7 +86,7 @@ def make_app(settings_dict):
             url(r"/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),
             url(r"/test", TestHandler, name="test"),
             url(r"/unregister/([^/]+)/([^/]+)", UnregisterHandler, name="unregister"),
-            url(r"/verify_security_code/([^/]+)/([^/]+)",VerifySecurityCodeHandler, name="verify_security_code"),
+            url(r"/verify_security_code/([^/]+)/([^/]+)", VerifySecurityCodeHandler, name="verify_security_code"),
             url(r"/view_assignment_scores/([^/]+)/([^/]+)", ViewAssignmentScoresHandler, name="view_assignment_scores"),
             url(r"/view_at_risk_students/([^/]+)/([^/]+)", ViewAtRiskStudentsHandler, name="view_at_risk_students"),
             url(r"/view_exercise_scores/([^/]+)/([^/]+)/([^/]+)", ViewExerciseScoresHandler, name="view_exercise_scores"),

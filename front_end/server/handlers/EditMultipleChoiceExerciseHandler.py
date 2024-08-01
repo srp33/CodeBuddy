@@ -5,7 +5,6 @@
 # </copyright_statement>
 
 from BaseUserHandler import *
-import datetime as dt
 
 class EditMultipleChoiceExerciseHandler(BaseUserHandler):
     async def get(self, course_id, assignment_id, exercise_id):
@@ -47,7 +46,7 @@ class EditMultipleChoiceExerciseHandler(BaseUserHandler):
                     if key != "title" and key != "visible":
                         exercise_details[key] = value
 
-                current_time = dt.datetime.utcnow()
+                current_time = get_current_datetime()
                 if not exercise_basics["exists"]:
                     exercise_details["date_created"] = current_time
                 exercise_details["date_updated"] = current_time
