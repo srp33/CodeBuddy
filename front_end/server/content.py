@@ -1303,6 +1303,9 @@ LEFT JOIN valid_users u2
         assignments = []
         for row in self.fetchall(sql, (course_basics["id"],)):
             if row["visible"] or show_hidden:
+                assignment = dict(row)
+                assignment["start_date"] = localize_datetime(assignment["start_date"])
+                assignment["due_date"] =  localize_datetime(assignment["due_date"])
                 assignments.append(dict(row))
 
         assignments = sort_list_of_dicts_nicely(assignments, ["title", "id"])
@@ -1551,7 +1554,13 @@ LEFT JOIN valid_users u2
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date": row["start_date"], "due_date": row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  row["start_date"], "due_date":  row["due_date"], "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"]}
+
+        if assignment_dict["start_date"]:
+            assignment_dict["start_date"] = localize_datetime(assignment_dict["start_date"])
+
+        if assignment_dict["due_date"]:
+            assignment_dict["due_date"] = localize_datetime(assignment_dict["due_date"])
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")

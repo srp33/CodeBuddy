@@ -1,5 +1,12 @@
 #! /bin/bash
 
+# Run the tests before we do anything else.
+cd front_end/tests
+./run.sh
+cd ../../
+
+# Now let's build everything...
+
 mkdir -p front_end/database front_end/logs
 
 mode=$(grep "^mode: " Settings.yaml | sed "1s/mode: //")

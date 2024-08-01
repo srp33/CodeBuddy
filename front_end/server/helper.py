@@ -18,6 +18,7 @@ import logging
 import markdown2
 import os
 from pathlib import Path
+import pytz
 import random
 import re
 import requests
@@ -560,6 +561,11 @@ def get_current_datetime():
 
 def get_formatted_datetime():
     return get_current_datetime().strftime("%Y%m%d_%H%M%S")
+
+def localize_datetime(dtime):
+    if dtime:
+        return pytz.utc.localize(dtime)
+    return dtime
 
 def get_student_timer_status(content, course_id, assignment_id, assignment_details, student_id, user_start_time=None, user_ended_early=None):
     if user_start_time == None:
