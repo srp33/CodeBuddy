@@ -26,7 +26,8 @@ version = int(sys.argv[2])
 check_file_path = f"migration_scripts/{migration_numbers}_check.sql"
 migrate_file_path = f"migration_scripts/{migration_numbers}_migrate.sql"
 
-content = Content()
+settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
+content = Content(settings_dict)
 
 check_sql = read_file(check_file_path)
 

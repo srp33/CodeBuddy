@@ -19,7 +19,8 @@ in_file_prefix = sys.argv[1]
 summary_file_path = sys.argv[2]
 archive_file_path = sys.argv[3]
 
-content = Content()
+settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
+content = Content(settings_dict)
 
 # Read the existing summary if it exists.
 summary_dict = {}

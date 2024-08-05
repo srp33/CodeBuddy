@@ -26,3 +26,5 @@ backup_hour: 10
 privacy_notice_html: <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
 # Include HTML (typically an <a> tag) that links to a cookie notice for your organization. This link will be placed in the footer.
 cookie_information_html: <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+# Indicate the journal mode for the database. Learn more about journal modes here: https://www.sqlite.org/pragma.html. If you want to use LiteStream for backups, you will need to use WAL.
+db_journal_mode: "OFF"

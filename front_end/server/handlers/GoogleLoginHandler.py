@@ -13,7 +13,7 @@ from content import *
 class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
     def prepare(self):
         self.settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
-        self.content = Content()
+        self.content = Content(self.settings_dict)
 
     async def get(self):
         try:

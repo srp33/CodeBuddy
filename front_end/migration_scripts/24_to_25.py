@@ -13,7 +13,8 @@ sys.path.append('./server')
 from helper import *
 from content import *
 
-content = Content()
+settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
+content = Content(settings_dict)
 
 version = read_file("../VERSION").rstrip()
 

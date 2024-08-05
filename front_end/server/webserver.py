@@ -141,7 +141,7 @@ if __name__ == "__main__":
     try:
         settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
 
-        content = Content()
+        content = Content(settings_dict)
 
         database_version = content.get_database_version()
         code_version = int(read_file("../VERSION").rstrip())
