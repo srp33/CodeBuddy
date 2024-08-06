@@ -27,7 +27,7 @@ do
     python3 tweak_migration_script.py $f $tmpDir/migration_scripts/$(basename $f)
 done
 
-cp -r ../back_ends $tmpDir/
+cp -r ../../back_ends $tmpDir/
 cp -r ../query_templates $tmpDir/
 cp -r ../secrets $tmpDir/
 cp -r ../server $tmpDir/
