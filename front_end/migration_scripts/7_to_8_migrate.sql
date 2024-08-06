@@ -1,4 +1,4 @@
-ALTER TABLE problems RENAME TO exercises;
+ALTER TABLE problems2 RENAME TO exercises;
 
 ALTER TABLE exercises RENAME COLUMN problem_id TO exercise_id;
 

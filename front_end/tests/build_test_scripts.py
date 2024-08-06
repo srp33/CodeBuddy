@@ -70,6 +70,7 @@ import_statements.add("import tornado.web\n")
 import_statements.add("from tornado.routing import URLSpec as url\n")
 import_statements.add("import ui_methods\n")
 import_statements.add("import asyncio\n")
+import_statements.add("import tracemalloc\n")
 
 import_statements = sorted(import_statements)
 
@@ -78,6 +79,7 @@ with open("app.py", "w") as test_file:
     for i_s in import_statements:
         test_file.write(i_s)
     test_file.write("\n")
+    test_file.write("tracemalloc.start()\n\n")
 
     # Save the content and helper scripts to the test script
     for other_script_file_path in other_script_file_paths:
@@ -155,3 +157,6 @@ with open("test_app.py", "w") as test_file:
 
     test_file.write("if __name__ == '__main__':\n")
     test_file.write("\tunittest.main()\n")
+    test_file.write("\tsnapshot = tracemalloc.take_snapshot()\n")
+    test_file.write("\tfor stat in snapshot.statistics('lineno'):\n")
+    test_file.write("\t\tprint(stat)\n")

@@ -20,11 +20,11 @@ f_run_in_background: no
 m_run_in_background: no
 # Indicate a password to be used in development mode. When running the server locally, it's easiest to use a blank password. However, if you deploy a development server for others to test, it is a good idea to require a password when users log in to the server.
 dev_password: ""
-# Indicate the hour of the day in 24-hour time (examples: 00 or 01 or 02 ... or 23) when the database should be backed up.
-backup_hour: 10
 # Include HTML (typically an <a> tag) that links to a privacy notice for your organization. This link will be placed in the footer.
 privacy_notice_html: <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
 # Include HTML (typically an <a> tag) that links to a cookie notice for your organization. This link will be placed in the footer.
 cookie_information_html: <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
 # Indicate the journal mode for the database. Learn more about journal modes here: https://www.sqlite.org/pragma.html. If you want to use LiteStream for backups, you will need to use WAL.
 db_journal_mode: "OFF"
+# Indicate the hour of the day in 24-hour time (examples: 00 or 01 or 02 ... or 23) when the database should be backed up. On this hour, the log files are also summarized. Backups only occur when db_journal_mode is set to OFF.
+backup_hour: 04

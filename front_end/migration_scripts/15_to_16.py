@@ -31,7 +31,6 @@ else:
         sql_statements = sql_file.read().split(";")
 
     if os.path.isfile("logs/progress.log"):
-        print("ABC")
         try:
             with open("logs/progress.log", "a") as progress_file:
                 for sql in sql_statements:
@@ -50,4 +49,7 @@ else:
     else:
         for sql in sql_statements:
             content.execute(sql)
+
         print("***Success***")
+
+content.close()

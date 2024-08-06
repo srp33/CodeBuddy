@@ -1,8 +1,9 @@
     settings_dict = load_yaml_dict(read_file("Settings.yaml"))
 
     content = Content(settings_dict)
-
     database_version = content.get_database_version()
+    content.close()
+
     code_version = int(read_file("VERSION").rstrip())
 
     for v in range(database_version, code_version):
@@ -15,8 +16,17 @@
 
         result = run_command(command)
 
+        if "***Success***" not in result and "***NotNeeded***" not in result:
+            print("A DATABASE ERROR OCCURRED.")
+            print(result)
+            sys.exit(1)
+
         print(f"Database successfully migrated to version {v+1}")
+        content = Content(settings_dict)
         content.update_database_version(v + 1)
+        content.close()
+
+    content = Content(settings_dict)
 
     content.add_user("test_admin", user_dict = {'name': f'Test Admin', 'given_name': "Test", 'family_name': 'Admin', 'locale': 'en', 'email_address': f'test_admin@nospam.edu'})
     content.add_admin_permissions("test_admin")
@@ -77,5 +87,7 @@
     loop = asyncio.get_event_loop()
     loop.run_until_complete(content.save_submission(course_id, assignment_id, exercise_id, "test_student", "print('Hello, world!')", True, datetime.datetime.now(timezone.utc), exercise_details, {'Test 1': {'txt_output': 'Hello, world!', 'jpg_output': '', 'txt_output_formatted': 'Hello, world!', 'diff_output': '', 'passed': True}}, 100, None))
     #loop.close()
+
+    content.close()
 
     secrets_dict = load_yaml_dict(read_file("secrets/front_end.yaml"))

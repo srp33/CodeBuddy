@@ -42,7 +42,9 @@ else:
 
         if version >= 39:
             content.update_all_when_content_updated()
-    
+
+        content.close()
+
         print("***Success***")
     except:
         print(traceback.format_exc())

@@ -8,19 +8,26 @@
 
 mode=$(grep "^mode: " /Settings.yaml | sed "1s/mode: //")
 backup_hour=$(grep "^backup_hour: " /Settings.yaml | sed "1s/backup_hour: //")
+db_journal_mode=$(grep "^db_journal_mode: " /Settings.yaml | sed "1s/db_journal_mode: //")
+db_journal_mode=${db_journal_mode//\"/}
 
 bash /app/scheduled_scripts/summarize_logs.sh
 
 if [[ "${mode}" == "production" ]]
 then
   bash /app/scheduled_scripts/summarize_logs.sh &
-  bash /app/scheduled_scripts/back_up_database.sh &
+
+  if [ "${db_journal_mode}" == "OFF" ]
+  then
+    bash /app/scheduled_scripts/back_up_database.sh &
+  fi
+
   wait
 
   bash /app/scheduled_scripts/vacuum_database.sh
 
   echo "Initializing hourly maintenance script..."
-  nohup bash /app/scheduled_scripts/run_hourly.sh ${backup_hour} > /tmp/CodeBuddy_hourly.log &
+  nohup bash /app/scheduled_scripts/run_hourly.sh ${backup_hour} ${db_journal_mode} > /tmp/CodeBuddy_hourly.log &
 fi
 
 echo "Starting front-end server..."

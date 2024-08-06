@@ -92,3 +92,5 @@ else:
                 content.execute(sql, (txt_output, jpg_output, x[0], x[1], x[2], test_title, ))
 
         print("***Success***")
+
+content.close()

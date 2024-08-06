@@ -30,4 +30,4 @@ INSERT INTO problems2
 SELECT course_id, assignment_id, problem_id, title, visible, answer_code, answer_description, hint, max_submissions, credit,
        data_contents, back_end, expected_text_output, expected_image_output, instructions, output_type, show_answer, show_student_submissions,
        show_expected, show_test_code, starter_code, test_code, date_created, date_updated
-FROM problems
+FROM problems;

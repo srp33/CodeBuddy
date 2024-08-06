@@ -54,3 +54,5 @@ else:
             content.execute(sql, (txt_output, course_id, assignment_id, exercise_id, test_title, ))
 
     print("***Success***")
+
+content.close()
