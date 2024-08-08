@@ -28,6 +28,7 @@ Here are some of CodeBuddy's features:
 * [June 21, 2024] Instructors can require students to have a security code to access an assignment. The instructor can generate a PDF with a separate page for each student that has a security code. The student would then receive one of these pages upon starting the assignment to ensure that the student takes the assignment in a secure location (i.e., testing center). Optionally, the instructor can configure the assignment so that a confirmation code is generated when the student completes the assignment (or ends it early). They must give this confirmation code to the instructor (or a proxy) to ensure that they completed the assignment in the secure location.
 * [June 21, 2024] Instructors can include multiple-choice (or multiple-answer) exercises in assignments.
 * [July 10, 2024] By default, the assignment score is calculated as the average of the exercise scores within the assignment. Now instructors can specify custom scoring logic. For example, suppose an assignment has five exercises. An instructor might specify that if a student successfully completes one exercise (20%), the student receives a passing grade (60%). And/or they might specify that if a student completes all but one of the exercises (80%), the student receives full points (100%) for the assignment.
+* [August 7, 2024] Instructors can paste images into the instructions on the "Edit exercise" pages.
 
 ### How to run a CodeBuddy instance
 
