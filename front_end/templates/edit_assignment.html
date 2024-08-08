@@ -265,7 +265,7 @@
 
         <div id="custom_scoring_panel" class="mt-5 has-background-warning-light p-4 is-hidden">
             <div>
-                Provide one or more scoring ranges and an adjusted score for each range. If the sum of a student's exercise scores fall within a given threshold, they will receive the adjusted score. If a student earns a score that is not covered by one of the specified ranges, their score will <em>not</em> be adjusted. All ranges and adjusted scores must be specified as percentages (0 - 100). For the highest scoring range, the upper end of the scoring range is inclusive; for all others, it is not.
+                Provide one or more scoring ranges and an adjusted score for each range. If the sum of a student's exercise scores fall within a given threshold, they will receive the adjusted score. If a student earns a score that is not covered by one of the specified ranges, their score will <em>not</em> be adjusted. All ranges and adjusted scores must be specified as percentages (example: 90). For the highest scoring range, the upper end of the scoring range is inclusive; for all others, it is not.
             </div>
 
             <div id="custom_scoring_range_table" class="table-container is-hidden mt-4"></div>
@@ -976,10 +976,10 @@
         upper_range = parseFloat(upper_range);
         score = parseFloat(score);
 
-        if (lower_range < 0 || lower_range > 100)
+        if (lower_range < 0)
             return showCustomScoringMessage("Please specify a number for the lower range that is between 0 and 100.", true, "add_custom_scoring_range_lower_input");
 
-        if (upper_range < 0 || upper_range > 100)
+        if (upper_range < 0)
             return showCustomScoringMessage("Please specify a number for the upper range that is between 0 and 100.", true, "add_custom_scoring_range_upper_input");
 
         if (upper_range < lower_range)
