@@ -976,17 +976,17 @@
         upper_range = parseFloat(upper_range);
         score = parseFloat(score);
 
-        if (lower_range < 0)
+        if (lower_range < 0 || lower_range > 100)
             return showCustomScoringMessage("Please specify a number for the lower range that is between 0 and 100.", true, "add_custom_scoring_range_lower_input");
 
-        if (upper_range < 0)
+        if (upper_range < 0 || upper_range > 100)
             return showCustomScoringMessage("Please specify a number for the upper range that is between 0 and 100.", true, "add_custom_scoring_range_upper_input");
 
         if (upper_range < lower_range)
             return showCustomScoringMessage("The score for the lower end of the range must be less than or equal to the score for the upper end of the range.", true, "add_custom_scoring_range_upper_input");
 
-        if (score < 0 || score > 100)
-            return showCustomScoringMessage("Please specify a score that is between 0 and 100.", true, "add_custom_scoring_range_score_input");
+        if (score < 0)
+            return showCustomScoringMessage("Please specify a score that is greater than or equal to zero.", true, "add_custom_scoring_range_score_input");
 
         var ranges = getCustomScoringRanges();
 
