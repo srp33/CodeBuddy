@@ -34,6 +34,10 @@
             {% elif error == "not_registered_for_course" %}
                 <p>This assignment can only be viewed by students enrolled in the course.</p>
             {% elif error == "prerequisite_assignments_not_completed" %}
+                <div class="mb-4">
+                    {{ assignment_details["introduction"] }}
+                </div>
+
                 <div class="notification is-danger">
                     The following assignment(s) must be fully completed be you can start this assignment:
 

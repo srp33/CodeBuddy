@@ -8,6 +8,14 @@
     {% if assignment_basics["exists"] %}
         <h4>Verify security code for {{ assignment_basics["title"] }}</h4>
 
+        <div class="mb-4">
+            {{ assignment_details["introduction"] }}
+        </div>
+
+        <div class="notification is-warning">
+            This assignment requires a security code. Please enter that below.
+        </div>
+
         <div class="notification is-danger is-hidden" id="result_message"></div>
 
         <div class="has-background-white p-4 mt-4">
