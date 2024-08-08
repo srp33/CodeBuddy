@@ -50,6 +50,7 @@ docker build -t ${image_name}:latest \
 
 docker run -i -t --rm \
     -v "${tmpDir}":/app \
+    --user $(id -u):$(id -g) \
     ${image_name}:latest \
     bash -c "python3 build_test_scripts.py;python3 -m unittest test_app"
 
