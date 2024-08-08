@@ -52,3 +52,5 @@ docker run -i -t --rm \
     -v "${tmpDir}":/app \
     ${image_name}:latest \
     bash -c "python3 build_test_scripts.py;python3 -m unittest test_app"
+
+rm -rf $tmpDir
