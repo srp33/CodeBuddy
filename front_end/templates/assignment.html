@@ -116,6 +116,24 @@
         {% if has_non_default_weight %}
             <p>* Exercises with relatively high weights count more toward the overall assignment score than exercises with relatively low weights.</p>
         {% end %}
+
+        {% if len(custom_scoring_list) > 0 %}
+            <div class="notification is-warning is-light">
+                This assignment uses a custom scoring rule. Scores are calculated as follows.
+
+                <ul>
+                    {% for i, range in enumerate(custom_scoring_list) %}
+                        <li>
+                            {% if i < (len(custom_scoring_list) - 1) %}
+                                If your raw assignment score is greater than or equal to {{ range[0] }}% and less than {{ range[1] }}%, your adjusted assignment score will be {{ range[2] }}%.
+                            {% else %}
+                                If your raw assignment score is greater than or equal to {{ range[0] }}% and less than or equal to {{ range[1] }}%, your adjusted assignment score will be {{ range[2] }}%.
+                            {% end %}
+                        </li>
+                    {% end %}
+                </ul>
+            </div>
+        {% end %}
     {% else %}
         <p>This assignment does not exist or else no exercises have been added to it yet.</p>
     {% end %}

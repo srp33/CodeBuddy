@@ -81,7 +81,11 @@ class AssignmentHandler(BaseUserHandler):
             
             has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
 
-            return self.render("assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, 
+            custom_scoring_list = []
+            if assignment_details["custom_scoring"] != "":
+                custom_scoring_list = json.loads(assignment_details["custom_scoring"])
+
+            return self.render("assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, custom_scoring_list=custom_scoring_list, 
             timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, confirmation_code=confirmation_code, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
         else:
             return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=render_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))

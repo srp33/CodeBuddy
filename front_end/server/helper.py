@@ -616,9 +616,13 @@ def adjust_assignment_score(score, custom_scoring):
         # Start at the top of the range so that if the score
         # falls at the lower threshold, they will receive
         # more points.
-        for range in ranges[::-1]:
-            if score >= range[0] and score <= range[1]:
-                return range[2]
+        for index, range in enumerate(ranges[::-1]):
+            if index == 0:
+                if score >= range[0] and score <= range[1]:
+                    return range[2]
+            else:
+                if score >= range[0] and score < range[1]:
+                    return range[2]
 
         # Return the unadjusted score if there was no matching range.
         return(score)
