@@ -1,13 +1,13 @@
 WITH
   variables AS (
     SELECT
-      28 AS course_id,
-      -- NULL AS assignment_id,
-      1139 AS assignment_id,
+      42 AS course_id,
+      --NULL AS assignment_id,
+      1778 AS assignment_id,
       NULL AS exercise_id,
       -- 11337 AS exercise_id,
-      NULL AS user_id
-      -- 'abc' AS user_id
+      --NULL AS user_id
+      'tbergs' AS user_id
   ),
 
   valid_assignments AS (
@@ -242,7 +242,7 @@ WITH
       a.has_timer,
       SUM(es.completed) AS num_completed,
       SUM(es.completed) = ane.num_exercises AS completed,
-      IFNULL((SUM(es.in_progress) > 0 AND NOT a.has_timer) OR (a.has_timer AND ats.minutes_since_start <= ats.minutes_limit AND NOT ats.ended_early), 0) AS in_progress,
+      IFNULL((NOT a.has_timer AND SUM(es.num_submissions) > 0 AND SUM(es.completed) < ane.num_exercises) OR (a.has_timer AND ats.minutes_since_start <= ats.minutes_limit AND NOT ats.ended_early), 0) AS in_progress,
       IFNULL(ats.minutes_since_start > ats.minutes_limit OR ats.ended_early, 0) AS timer_has_ended,
       SUM(pair_programmed) AS num_times_pair_programmed,
       MAX(last_submission_timestamp) AS last_submission_timestamp
@@ -258,53 +258,6 @@ WITH
   )
 
 SELECT
-  user_id,
-  id,
-  title,
-  visible,
-  enable_pair_programming,
-  MAX(num_submissions) AS num_submissions,
-  completed,
-  in_progress,
-  score,
-  weight,
-  is_multiple_choice
-FROM (
-  SELECT
-    es.user_id,
-    es.exercise_id as id,
-    e.title,
-    e.visible,
-    e.enable_pair_programming,
-    es.num_submissions,
-    es.completed,
-    es.in_progress,
-    esw.score,
-    e.weight,
-    e.back_end = 'multiple_choice' AS is_multiple_choice
-  FROM exercise_statuses es
-  INNER JOIN exercise_scores_weights esw
-    ON es.assignment_id = esw.assignment_id
-    AND es.exercise_id = esw.exercise_id
-    AND es.user_id = esw.user_id
-  INNER JOIN valid_exercises e
-    ON es.assignment_id = e.assignment_id
-    AND es.exercise_id = e.exercise_id
-
-  UNION
-
-  SELECT
-    NULL AS user_id,
-    exercise_id AS id,
-    title,
-    visible,
-    enable_pair_programming,
-    0 AS num_submissions,
-    0 AS completed,
-    0 AS in_progress,
-    0 AS score,
-    weight,
-    back_end = 'multiple_choice' AS is_multiple_choice
-  FROM valid_exercises
-)
-GROUP by id
+  assignment_id,
+  in_progress
+FROM assignment_statuses sts

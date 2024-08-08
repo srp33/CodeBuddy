@@ -86,11 +86,15 @@
 
                         <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_completed'] }}" max="{{ assignment[1]['num_exercises'] }}"></progress>{{ assignment[1]["num_completed"] }} / {{ assignment[1]["num_exercises"] }}</td>
 
-                        <td>
+                        <td style="white-space: nowrap;">
                             {% if assignment[1]["score"] == 0 or assignment[1]["score"] == 100 %}
                                 {{ int(assignment[1]["score"]) }}%
                             {% else %}
                                 {{ round(assignment[1]["score"], 1) }}%
+                            {% end %}
+
+                            {% if assignment[1]["custom_scoring"] != "" %}
+                                *
                             {% end %}
                         </td>
                     </tr>
@@ -98,6 +102,12 @@
                 </tbody>
             </table>
         </div>
+
+        {% if has_any_custom_scoring %}
+            <div class="notification is-warning is-light">
+                Scores marked with an asterisk (*) are calculated based on custom scoring rules.
+            </div>
+        {% end %}
 
         {% if course_details["allow_students_download_submissions"] %}
             <div class="buttons">

@@ -762,7 +762,8 @@ SELECT
   sts.in_progress,
   sts.timer_has_ended,
   sts.num_times_pair_programmed,
-  scr.score
+  scr.score,
+  IFNULL(a.custom_scoring, '') AS custom_scoring
 FROM assignment_statuses sts
 INNER JOIN assignment_scores scr
   ON sts.assignment_id = scr.assignment_id
@@ -788,11 +789,12 @@ INNER JOIN valid_assignments a
                 assignment_basics[1]["completed"] = 0
                 assignment_basics[1]["in_progress"] = 0
                 assignment_basics[1]["score"] = 0
+                assignment_basics[1]["custom_scoring"] = ""
                 assignment_basics[1]["timer_has_ended"] = False
                 statuses2.append([assignment_basics[0], assignment_basics[1]])
         else:
             for status in sort_list_of_dicts_nicely(statuses, ["title", "assignment_id"]):
-                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": localize_datetime(status["start_date"]), "due_date": localize_datetime(status["due_date"]), "completed": status["completed"], "in_progress": status["in_progress"], "score": status["score"], "num_completed": status["num_completed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "timer_has_ended": status["timer_has_ended"], "restrict_other_assignments": status["restrict_other_assignments"]}
+                assignment_dict = {"id": status["assignment_id"], "title": status["title"], "visible": status["visible"], "start_date": localize_datetime(status["start_date"]), "due_date": localize_datetime(status["due_date"]), "completed": status["completed"], "in_progress": status["in_progress"], "score": status["score"], "custom_scoring": status["custom_scoring"], "num_completed": status["num_completed"], "num_exercises": status["num_exercises"], "has_timer": status["has_timer"], "timer_has_ended": status["timer_has_ended"], "restrict_other_assignments": status["restrict_other_assignments"]}
 
                 # if assignment_dict["start_date"]:
                 #     assignment_dict["start_date"] = assignment_dict["start_date"].strftime('%Y-%m-%dT%H:%M:%SZ')

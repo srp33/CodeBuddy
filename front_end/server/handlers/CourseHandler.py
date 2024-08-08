@@ -25,8 +25,9 @@ class CourseHandler(BaseUserHandler):
 
                 if user_is_registered:
                     assignment_statuses = await self.get_assignment_statuses(course_basics)
+                    has_any_custom_scoring = len([x for x in assignment_statuses if x[1]["custom_scoring"] != ""]) > 0
 
-                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=get_current_datetime(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, has_any_custom_scoring=has_any_custom_scoring, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=get_current_datetime(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
                 else:
                     self.render("unavailable_course.html", courses=self.courses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         except Exception as inst:

@@ -239,7 +239,7 @@ WITH
       a.has_timer,
       SUM(es.completed) AS num_completed,
       SUM(es.completed) = ane.num_exercises AS completed,
-      IFNULL((SUM(es.in_progress) > 0 AND NOT a.has_timer) OR (a.has_timer AND ats.minutes_since_start <= ats.minutes_limit AND NOT ats.ended_early), 0) AS in_progress,
+      IFNULL((NOT a.has_timer AND SUM(es.num_submissions) > 0 AND SUM(es.completed) < ane.num_exercises) OR (a.has_timer AND ats.      minutes_since_start <= ats.minutes_limit AND NOT ats.ended_early), 0) AS in_progress,
       IFNULL(ats.minutes_since_start > ats.minutes_limit OR ats.ended_early, 0) AS timer_has_ended,
       SUM(pair_programmed) AS num_times_pair_programmed,
       MAX(last_submission_timestamp) AS last_submission_timestamp
