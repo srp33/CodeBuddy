@@ -87,9 +87,16 @@
                 <li>Place <code>[reflection_prompt]</code> in the instructions. Depending on the exercise settings, students might be asked to reflect on their own solution or to compare their solution against either the instructor's solution or a peer's solution.</li>
                 <li>If you place <code>[copy_previous]</code> in the instructions, a button will appear that allows the student to copy their (last successful) solution from the previous exercise.</li>
                 <li>You can add video(s) to the instructions. To add a YouTube video, specify <code>youtube:id</code>, replacing "id" with the unique identifier for a particular video. For example, for <a href="https://www.youtube.com/watch?v=PLOPygVcaVE" target="_blank">this video</a>, you would use "youtube:PLOPygVcaVE".</li>
+                <li>You can paste images into this box. They are encoded and embedded as HTML.</li>
             </ul>
 
             <p><textarea id="instructions" class="textarea" rows=10 placeholder="Please provide instructions for this assignment."></textarea></p>
+
+            <script>
+                // const textarea = document.getElementById('instructions');
+                // addPasteEventListener(textarea);
+                addPasteEventListener("instructions");
+            </script>
         </div>
 
         <div class="row-container top-space">

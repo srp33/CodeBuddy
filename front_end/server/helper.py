@@ -59,16 +59,6 @@ def read_file(file_path, mode="r"):
     with open(file_path, mode) as the_file:
         return the_file.read()
 
-# def convert_html_to_markdown(text):
-#     text = text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace('&nbsp;', '')
-#     text = re.sub(r"<(/*)span(.*?)>", "", text) # Removes opening and closing <span> tags.
-#     text = re.sub(r"<(/*)br(.*?)>", "", text) # Removes <br> tags.
-#     text = re.sub(r"<(div|p)(.*?)>", "\n", text) # Replaces <div> and <p> tags with a newline.
-#     text = re.sub(r"<(/*)(div|p)(.*?)>", "", text) # Removes closing <div> and <p> tags.
-#     text = re.sub(r'<img src="([^">]+?)">', r"![](\1)", text) # Formats images for markdown.
-
-#     return text
-
 def convert_markdown_to_html(text):
     if not text or len(text) == 0:
         return ""

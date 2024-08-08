@@ -141,4 +141,42 @@
 
         return the_date.toLocaleString();
     }
+
+    function addPasteEventListener(textarea_id) {
+        let textarea = document.getElementById(textarea_id);
+
+        textarea.addEventListener('paste', function(event) {
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        const base64Image = event.target.result;
+                        const imgTag = `<img src="${base64Image}" />`;
+                        insertTextAtCursor(textarea, imgTag);
+                    };
+
+                    reader.readAsDataURL(blob);
+
+                    // Prevent the default paste behavior
+                    event.preventDefault();
+                    break;
+                }
+            }
+        });
+    }
+
+    function insertTextAtCursor(textarea, text) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = textarea.value.substring(0, start);
+        const after = textarea.value.substring(end, textarea.value.length);
+
+        textarea.value = before + text + after;
+        textarea.selectionStart = textarea.selectionEnd = start + text.length;
+
+        textarea.focus();
+    }
 </script>
