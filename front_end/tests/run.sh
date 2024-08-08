@@ -5,8 +5,8 @@ set -o errexit
 currentDir="$(pwd)"
 tmpDir=/tmp/codebuddy_front_end_tests
 
-mkdir -p $tmpDir
 rm -rf $tmpDir
+mkdir -p $tmpDir
 
 image_name=codebuddy/front_end_tests
 
