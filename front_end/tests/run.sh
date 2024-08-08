@@ -6,7 +6,7 @@ currentDir="$(pwd)"
 tmpDir=/tmp/codebuddy_front_end_tests
 
 mkdir -p $tmpDir
-rm -rf $tmpDir/*
+rm -rf $tmpDir
 
 image_name=codebuddy/front_end_tests
 
