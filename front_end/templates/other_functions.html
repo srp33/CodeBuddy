@@ -154,7 +154,7 @@
 
                     reader.onload = function(event) {
                         const base64Image = event.target.result;
-                        const imgTag = `<img src="${base64Image}" />`;
+                        const imgTag = `<img src="${base64Image}" alt="An image illustrating something from the instructions." />`;
                         insertTextAtCursor(textarea, imgTag);
                     };
 
