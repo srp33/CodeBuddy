@@ -34,16 +34,16 @@ class GenerateSecurityCodesHandler(BaseUserHandler):
             info_dict = ujson.loads(self.request.body)
             student_count = len(self.content.get_registered_students(course_id))
 
-            if student_count == 0:
-                create_error_pdf("No students have registered for the course.", tmp_pdf_file_path)
-            else:
-                assignment_security_code_dict = self.content.save_security_codes(course_id, info_dict["selected_assignments_ids"], info_dict["overwrite_existing"], student_count, info_dict["make_distinct"])
+            assignment_security_code_dict = self.content.save_security_codes(course_id, info_dict["selected_assignments_ids"], info_dict["overwrite_existing"], student_count, info_dict["make_distinct"])
 
-                secure_assignments = self.content.get_secure_assignments(course_id, info_dict["selected_assignments_ids"])
+            secure_assignments = self.content.get_secure_assignments(course_id, info_dict["selected_assignments_ids"])
 
-                assignment_security_codes = []
+            assignment_security_codes = []
 
-                if info_dict["make_distinct"] is True:
+            if info_dict["make_distinct"] is True:
+                if student_count == 0:
+                    create_error_pdf("No students have registered for the course.", tmp_pdf_file_path)
+                else:
                     for i in range(student_count):
                         for assignment_title in secure_assignments:
                             assignment_id = secure_assignments[assignment_title]["id"]
@@ -54,16 +54,17 @@ class GenerateSecurityCodesHandler(BaseUserHandler):
                             confirmation_code = codes[1] if require_confirmation_code else None
 
                             assignment_security_codes.append([assignment_id, assignment_title, security_code, confirmation_code])
-                else:
-                    for assignment_title in secure_assignments:
-                        assignment_id = secure_assignments[assignment_title]["id"]
-                        require_confirmation_code = secure_assignments[assignment_title]["require_security_codes"] == 2
-                        codes = assignment_security_code_dict[assignment_id].pop()
+                    create_pdf(assignment_security_codes, tmp_pdf_file_path, info_dict["large_header"], info_dict["small_header"], info_dict["top_message"], info_dict["bottom_message"])
+            else:
+                for assignment_title in secure_assignments:
+                    assignment_id = secure_assignments[assignment_title]["id"]
+                    require_confirmation_code = secure_assignments[assignment_title]["require_security_codes"] == 2
+                    codes = assignment_security_code_dict[assignment_id].pop()
 
-                        security_code = codes[0]
-                        confirmation_code = codes[1] if require_confirmation_code else None
+                    security_code = codes[0]
+                    confirmation_code = codes[1] if require_confirmation_code else None
 
-                        assignment_security_codes.append([assignment_id, assignment_title, security_code, confirmation_code])
+                    assignment_security_codes.append([assignment_id, assignment_title, security_code, confirmation_code])
 
                 create_pdf(assignment_security_codes, tmp_pdf_file_path, info_dict["large_header"], info_dict["small_header"], info_dict["top_message"], info_dict["bottom_message"])
         except:

@@ -72,6 +72,8 @@
                     },
                     error: function(xhr, status, error) {
                         showResultMessage("<p>An error occurred when connecting to the server to build the PDF file.</p>", "danger");
+                        console.log(xhr);
+                        console.log(status);
                         console.error("Error: " + error);
                     }
                 });
