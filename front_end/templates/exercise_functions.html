@@ -350,7 +350,7 @@
                 }
 
                 if (tests[test_title]["jpg_output"] != null && tests[test_title]["jpg_output"] != "") {
-                    expected_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + tests[test_title]["jpg_output"] + '" width="800" height="600" alt="The image-based expected output." /></p>';
+                    expected_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + tests[test_title]["jpg_output"] + '" width="800" height="800" alt="The image-based expected output." /></p>';
                 }
 
                 output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</div>' + expected_output;
@@ -415,7 +415,7 @@
                 output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">[No image was generated.]</pre>';
             }
             else {
-                output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_output["jpg_output"] + '"` width="800" height="600" alt="The image-based output of the code." /></p>';
+                output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_output["jpg_output"] + '"` width="800" height="800" alt="The image-based output of the code." /></p>';
             }
         }
 
