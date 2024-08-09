@@ -129,6 +129,7 @@ def create_pdf(assignment_security_codes, out_file_path, large_header_text, smal
         elements.pop()
 
     # Build the PDF
+    print(elements)
     doc.build(elements)
 
 def create_error_pdf(message, out_file_path):
