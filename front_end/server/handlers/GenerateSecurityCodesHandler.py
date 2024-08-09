@@ -119,7 +119,7 @@ def create_pdf(assignment_security_codes, out_file_path, large_header_text, smal
 
         # Add the second paragraph
         if len(bottom_message_text) > 0 and assignment_security_code[3]:
-            elements.append(Paragraph(bottom_message_text, get_small_header_style()))
+            elements.append(Paragraph(bottom_message_text, get_paragraph_style()))
             elements.append(Spacer(1, 0.1 * inch))
         
             # Add the empty rectangles
