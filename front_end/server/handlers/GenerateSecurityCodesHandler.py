@@ -67,7 +67,7 @@ class GenerateSecurityCodesHandler(BaseUserHandler):
             create_error_pdf(traceback.format_exc(), tmp_pdf_file_path)
 
         self.write(read_file(tmp_pdf_file_path, mode="rb"))
-        os.unlink(tmp_pdf_file_path)
+        # os.unlink(tmp_pdf_file_path)
 
 def create_pdf(assignment_security_codes, out_file_path, large_header_text, small_header_text, top_message_text, bottom_message_text):
     # This class enables us to create the blank boxes.
