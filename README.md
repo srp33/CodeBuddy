@@ -114,6 +114,6 @@ You should see the assignment. If you click on the assignment, you should see a 
 
 # Backing up the database
 
-CodeBuddy currently uses [SQLite][https://sqlite.org] as its database. At first glance, you might think that is a limitation. In some circumstances, it is. However, there are many advantages to using SQLite ([explained here](https://fly.io/blog/all-in-on-sqlite-litestream)). So far, it has been able to handle our needs (hundreds of students per school term). (We are open to pull requests if this is a limiting factor for you.)
+CodeBuddy currently uses [SQLite](https://sqlite.org) as its database. At first glance, you might think that is a limitation. In some circumstances, it is. However, there are many advantages to using SQLite ([explained here](https://fly.io/blog/all-in-on-sqlite-litestream)). So far, it has been able to handle our needs (hundreds of students per school term). (We are open to pull requests if this is a limiting factor for you.)
 
 A great way to back up you CodeBuddy database is to specify `db_journal_mode: "WAL"` in Settings.yaml. Then you can use [Litestream](https://litestream.io) to save the database at frequent intervals to a remote server. If you want to synchronize the database to multiple servers, that may be possible with a tool like [litesync](https://litesync.io), but we have not attempted this.
