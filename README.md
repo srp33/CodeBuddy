@@ -2,6 +2,8 @@
 
 CodeBuddy is a programming-assignment management system ([a type of learning management system](https://en.wikipedia.org/wiki/Learning_management_system) that instructors can use to deliver computer-programming exercises. It was developed by the [Piccolo Lab](https://piccolo.byu.edu) and has been used since 2019 in programming-oriented courses. It uses HTML/CSS/JavaScript on the client side and Python on the server side. It executes students' code securely within  on the back end. 
 
+# Features
+
 Here are some of CodeBuddy's features:
 
 * Students' code is executed in [Docker](https://www.docker.com) containers to provide isolation and make it easier to add new programming languages.
@@ -30,7 +32,7 @@ Here are some of CodeBuddy's features:
 * [July 10, 2024] By default, the assignment score is calculated as the average of the exercise scores within the assignment. Now instructors can specify custom scoring logic. For example, suppose an assignment has five exercises. An instructor might specify that if a student successfully completes one exercise (20%), the student receives a passing grade (60%). And/or they might specify that if a student completes all but one of the exercises (80%), the student receives full points (100%) for the assignment.
 * [August 7, 2024] Instructors can paste images into the instructions on the "Edit exercise" pages.
 
-### How to run a CodeBuddy instance
+# How to run a CodeBuddy instance
 
 We have a live server running CodeBuddy [here](https://codebuddy.byu.edu). If you would like to run your own instance, follow the instructions below.
 
@@ -90,7 +92,7 @@ For most users, the preferred option is to run the front end within Docker. To d
 
 From the CodeBuddy directory, execute the *run_middle_layer* script. Example: `bash run_middle_layer`.
 
-### Setting up a course
+# Setting up a course
 
 Here you will learn how to create a course in CodeBuddy. When you first run CodeBuddy, it will show a screen that allows you to specify settings for an initial course. We hope this page is self explanatory, but below is a short description of these settings.
 
@@ -109,3 +111,9 @@ After submitting this information, a course will be created, and you can create 
 4. Click on Continue.
 
 You should see the assignment. If you click on the assignment, you should see a variety of exercises that illustrate some of CodeBuddy's functionality.
+
+# Backing up the database
+
+CodeBuddy currently uses [SQLite][https://sqlite.org] as its database. At first glance, you might think that is a limitation. In some circumstances, it is. However, there are many advantages to using SQLite ([explained here](https://fly.io/blog/all-in-on-sqlite-litestream)). So far, it has been able to handle our needs (hundreds of students per school term). (We are open to pull requests if this is a limiting factor for you.)
+
+A great way to back up you CodeBuddy database is to specify `db_journal_mode: "WAL"` in Settings.yaml. Then you can use [Litestream](https://litestream.io) to save the database at frequent intervals to a remote server. If you want to synchronize the database to multiple servers, that may be possible with a tool like [litesync](https://litesync.io), but we have not attempted this.
