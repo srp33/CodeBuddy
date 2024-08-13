@@ -35,7 +35,13 @@ try:
         print(out_header_row)
         tsv_file.write(out_header_row + "\n")
 
+        # This doesn't seem to work.
+        # column_types = [description[1] for description in cursor.description]
+        # out_types_row = "\t".join(column_types)
+        # tsv_file.write(out_types_row + "\n")
+
         for row in results:
+            print(row)
             out_values = [str(x).replace("\n", " ") for x in row]
             out_row = "\t".join(out_values)
             print(out_row)

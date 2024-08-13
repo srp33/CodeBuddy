@@ -33,7 +33,7 @@
                             </a>
                         </td>
                         <td>
-                            {{ exercise[1]['score'] }}%
+                            {{ round(float(exercise[1]['score']), 1) }}%
                         </td>
                     </tr>
                 {% end %}    

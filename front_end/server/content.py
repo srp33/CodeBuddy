@@ -384,7 +384,7 @@ class Content:
 
         for row in self.fetchall(sql, (course_id, assignment_id,)):
             # user_start_time = datetime.strftime(row["start_time"], "%a, %d %b %Y %H:%M:%S %Z")
-            user_start_time = row["start_time"]
+            user_start_time = localize_datetime(row["start_time"])
 
             timer_status, __, __, __, __ = get_student_timer_status(self, course_id, assignment_id, assignment_details, row["user_id"], user_start_time, bool(row["ended_early"]))
 
@@ -1008,10 +1008,11 @@ ORDER BY u.name
         total_times_pair_programmed = 0
 
         for row in self.fetchall(sql, (course_basics["id"], assignment_basics["id"], None, None)):
-            row_dict = dict(row)
-            scores_dict_list.append([row_dict["id"], row_dict])
+            data = dict(row)
+            data["last_submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["last_submission_timestamp"]))
+            scores_dict_list.append([data["id"], data])
 
-            total_times_pair_programmed += row_dict["num_times_pair_programmed"]                
+            total_times_pair_programmed += data["num_times_pair_programmed"]                
 
         return scores_dict_list, total_times_pair_programmed
 
@@ -1040,7 +1041,9 @@ ORDER BY a.title
         scores = []
 
         for row in self.fetchall(sql, (course_id, None, None, user_id, )):
-            scores.append([row["assignment_id"], dict(row)])
+            data = dict(row)
+            data["last_submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["last_submission_timestamp"]))
+            scores.append([row["assignment_id"], data])
 
         return scores
 
@@ -1065,7 +1068,9 @@ ORDER BY u.name
 '''
 
         for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None, )):
-            scores.append([row["user_id"], dict(row)])
+            data = dict(row)
+            data["last_submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["last_submission_timestamp"]))
+            scores.append([row["user_id"], data])
 
         return scores
 
@@ -1213,6 +1218,7 @@ ORDER BY submission_timestamp
                 presubmission = row["code"]
             else:
                 submission = dict(row)
+                submission["submission_timestamp"] = localize_datetime(submission["submission_timestamp"])
 
                 if submission["id"] in test_outputs:
                     submission_test_outputs = test_outputs[submission["id"]]
@@ -1314,6 +1320,7 @@ INNER JOIN valid_users u
   ON s.user_id = u.user_id
 LEFT JOIN valid_users u2
   ON u2.user_id = s.partner_id
+ORDER BY student_name
 '''
 
         for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None, )):

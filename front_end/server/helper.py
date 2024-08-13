@@ -552,6 +552,10 @@ def get_current_datetime():
 def get_formatted_datetime():
     return get_current_datetime().strftime("%Y%m%d_%H%M%S")
 
+def convert_string_to_datetime(date_str):
+    if date_str:
+        return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+
 def localize_datetime(dtime):
     if dtime:
         return pytz.utc.localize(dtime)
