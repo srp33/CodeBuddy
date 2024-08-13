@@ -1134,47 +1134,79 @@ WHERE t.course_id = ?
             test_outputs[submission_id][test_title]["jpg_output"] = row["jpg_output"]
             test_outputs[submission_id][test_title]["txt_output_formatted"] = format_output_as_html(row["txt_output"])
 
-        sql = self.scores_statuses_temp_tables_sql + '''
-SELECT
-  s.submission_id AS id,
-  s.code,
-  s.completed,
-  s.submission_timestamp,
-  esw.score,
-  u2.name AS partner_name
-FROM valid_submissions s
-INNER JOIN exercise_scores_weights esw
-  ON s.exercise_id = esw.exercise_id
-  AND s.user_id = esw.user_id
-LEFT JOIN users u2
-  ON s.partner_id = u2.user_id
+        sql = '''
+SELECT su.submission_id AS id,
+       su.code,
+       su.passed AS completed,
+       su.date AS submission_timestamp,
+       sc.score,
+       u.name AS partner_name
+FROM submissions su
+INNER JOIN scores sc
+  ON su.course_id = sc.course_id
+  AND su.assignment_id = sc.assignment_id
+  AND su.exercise_id = sc.exercise_id
+  AND su.user_id = sc.user_id
+LEFT JOIN users u
+  ON su.partner_id = u.user_id
+WHERE su.course_id = ?
+  AND su.assignment_id = ?
+  AND su.exercise_id = ?
+  AND su.user_id = ?
 
 UNION
 
-SELECT
-  -1 AS id,
-  p.code,
-  0 AS completed,
-  NULL AS submission_timestamp,
-  0 AS score,
-  NULL AS partner_name
-FROM presubmissions p
-INNER JOIN valid_assignments a
-  ON p.assignment_id = a.assignment_id
-INNER JOIN valid_exercises e
-  ON p.exercise_id = e.exercise_id
-INNER JOIN valid_users u
-  ON p.user_id = u.user_id
-WHERE p.course_id = (SELECT course_id FROM variables)
+SELECT -1, code, FALSE, NULL, 0, NULL
+FROM presubmissions
+WHERE course_id = ?
+  AND assignment_id = ?
+  AND exercise_id = ?
+  AND user_id = ?
 
 ORDER BY submission_timestamp
 '''
+
+#         sql = self.scores_statuses_temp_tables_sql + '''
+# SELECT
+#   s.submission_id AS id,
+#   s.code,
+#   s.completed,
+#   s.submission_timestamp,
+#   esw.score,
+#   u2.name AS partner_name
+# FROM valid_submissions s
+# INNER JOIN exercise_scores_weights esw
+#   ON s.exercise_id = esw.exercise_id
+#   AND s.user_id = esw.user_id
+# LEFT JOIN users u2
+#   ON s.partner_id = u2.user_id
+
+# UNION
+
+# SELECT
+#   -1 AS id,
+#   p.code,
+#   0 AS completed,
+#   NULL AS submission_timestamp,
+#   0 AS score,
+#   NULL AS partner_name
+# FROM presubmissions p
+# INNER JOIN valid_assignments a
+#   ON p.assignment_id = a.assignment_id
+# INNER JOIN valid_exercises e
+#   ON p.exercise_id = e.exercise_id
+# INNER JOIN valid_users u
+#   ON p.user_id = u.user_id
+# WHERE p.course_id = (SELECT course_id FROM variables)
+
+# ORDER BY submission_timestamp
+# '''
 
         presubmission = None
         submissions = []
         has_passed = False
 
-        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id,)):
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id)):
             submission_test_outputs = {}
 
             if row["id"] == -1:
@@ -1211,6 +1243,18 @@ FROM valid_submissions'''
         return self.fetchone(sql, (course_id, None, None, None))["count"]
 
     def get_most_recent_submission_code(self, course_id, assignment_id, exercise_id, user_id):
+        # sql = '''SELECT code
+        #          FROM submissions
+        #          WHERE course_id = ?
+        #            AND assignment_id = ?
+        #            AND exercise_id = ?
+        #            AND user_id = ?
+        #            AND passed = 1
+        #          ORDER BY date DESC
+        #          LIMIT 1'''
+
+        # result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
+
         sql = self.scores_statuses_temp_tables_sql + '''
 SELECT code
 FROM latest_completed_submissions

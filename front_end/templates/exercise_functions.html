@@ -208,7 +208,15 @@
     }
 
     function showNotPassingMessageMultipleChoice() {
-        $("#result_message")[0].innerHTML = `<div class='notification not-passing' style='color: white'>Your answer is incorrect.</div>`;
+        var message = `<div class='notification not-passing' style='color: white'><strong>Your answer is incorrect.</strong><br /><br />`
+
+        {% if exercise_details["show_instructor_solution"] and exercise_details["solution_description"] != "" %}
+            message += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>Here</a> you can find additional insight about this exercise, from the instructor.</p>";
+        {% end %}
+
+        message += "</div>";
+
+        $("#result_message")[0].innerHTML = message;
     }
 
     function showErrorMessage(message) {

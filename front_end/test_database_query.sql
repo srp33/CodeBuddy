@@ -1,13 +1,13 @@
 WITH
   variables AS (
     SELECT
-      42 AS course_id,
+      2 AS course_id,
       --NULL AS assignment_id,
-      1778 AS assignment_id,
-      NULL AS exercise_id,
-      -- 11337 AS exercise_id,
+      36 AS assignment_id,
+      -- NULL AS exercise_id,
+      15630 AS exercise_id,
       --NULL AS user_id
-      'tbergs' AS user_id
+      'srp33' AS user_id
   ),
 
   valid_assignments AS (
@@ -257,7 +257,38 @@ WITH
     GROUP BY es.assignment_id, es.user_id
   )
 
-SELECT
-  assignment_id,
-  in_progress
-FROM assignment_statuses sts
+select *
+from valid_users
+--SELECT
+--  s.submission_id AS id,
+--  s.code,
+--  s.completed,
+--  s.submission_timestamp,
+--  esw.score,
+--  u2.name AS partner_name
+--FROM valid_submissions s
+--INNER JOIN exercise_scores_weights esw
+--  ON s.exercise_id = esw.exercise_id
+--  AND s.user_id = esw.user_id
+--LEFT JOIN users u2
+--  ON s.partner_id = u2.user_id
+
+--UNION
+
+--SELECT
+--  -1 AS id,
+--  p.code,
+--  0 AS completed,
+--  NULL AS submission_timestamp,
+--  0 AS score,
+--  NULL AS partner_name
+--FROM presubmissions p
+--INNER JOIN valid_assignments a
+--  ON p.assignment_id = a.assignment_id
+--INNER JOIN valid_exercises e
+--  ON p.exercise_id = e.exercise_id
+--INNER JOIN valid_users u
+--  ON p.user_id = u.user_id
+--WHERE p.course_id = (SELECT course_id FROM variables)
+
+--ORDER BY submission_timestamp

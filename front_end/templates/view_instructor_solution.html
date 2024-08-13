@@ -6,14 +6,14 @@
 
 {% if exercise_basics["exists"] %}
     {% if exercise_details["show_instructor_solution"] %}
-        {% if user_code == "" and not is_administrator and not is_instructor and not is_assistant and not assignment_details["view_answer_late"] %}
+        {% if user_code == "" and not is_administrator and not is_instructor and not is_assistant and not assignment_details["view_answer_late"] and exercise_details["back_end"] != "multiple_choice" %}
             <p>You must submit a passing solution before you can view this page.</p>
         {% else %}
             {% if exercise_details["solution_code"] == "" %}
                 <p>There is no instructor's solution for this exercise.</p><!--This happens when any response is allowed.-->
             {% else %}
                 <div>
-                    <div class="notification is-warning">Please do not share the information on this page with other students who do not have access to it.</div>
+                    <div class="notification is-warning is-light">Please do not share the information on this page with other students who do not have access to it.</div>
 
                     {% if exercise_details["back_end"] != "multiple_choice" %}
                         <h4>Your solution:</h4>
