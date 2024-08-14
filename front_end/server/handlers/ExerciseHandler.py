@@ -79,10 +79,21 @@ class ExerciseHandler(BaseUserHandler):
                 if len(submissions) > 0:
                     answers = submissions[0]["code"].split("|")
 
+                    solution_descriptions_dict_raw = {}
+                    if exercise_details["solution_description"] != "":
+                        solution_descriptions_dict_raw = json.loads(exercise_details["solution_description"])
+
+                    solution_descriptions_dict = {}
+
                     # This code accounts for the possibility that answer options may no longer exist (the instructor changed them).
                     for answer in answers:
                         if answer in answer_options:
                             selected_answer_indices.append(answer_options.index(answer))
+
+                            if answer in solution_descriptions_dict_raw:
+                                solution_descriptions_dict[answer] = solution_descriptions_dict_raw[answer]
+
+                    submissions[0]["solution_descriptions_dict"] = solution_descriptions_dict
 
                 args["selected_answer_indices"] = selected_answer_indices
 

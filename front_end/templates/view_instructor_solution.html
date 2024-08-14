@@ -25,7 +25,9 @@
 
                     {% if exercise_details["solution_description"] != "" %}
                         <h4>Instructor's comments:</h4>
-                        <div class="notification is-info is-light has-text-dark" style="border: 2px solid black;">{{ exercise_details["solution_description"] }}</div>
+                        <div class="notification is-info is-light has-text-dark" style="border: 2px solid black;">
+                            {{ exercise_details["solution_description"] }}
+                        </div>
                     {% end %}
                 </div>
 

@@ -1248,25 +1248,31 @@ FROM valid_submissions'''
 
         return self.fetchone(sql, (course_id, None, None, None))["count"]
 
-    def get_most_recent_submission_code(self, course_id, assignment_id, exercise_id, user_id):
-        # sql = '''SELECT code
-        #          FROM submissions
-        #          WHERE course_id = ?
-        #            AND assignment_id = ?
-        #            AND exercise_id = ?
-        #            AND user_id = ?
-        #            AND passed = 1
-        #          ORDER BY date DESC
-        #          LIMIT 1'''
+    def get_most_recent_submission_code(self, course_id, assignment_id, exercise_id, user_id, must_have_passed):
+        sql = '''SELECT code
+                 FROM submissions
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+        
+        if must_have_passed:
+            sql += "AND passed = ?"
+            args = (course_id, assignment_id, exercise_id, user_id, 1)
+        else:
+            args = (course_id, assignment_id, exercise_id, user_id)
+
+        sql += '''ORDER BY date DESC
+                  LIMIT 1'''
+
+        result = self.fetchone(sql, args)
+
+#         sql = self.scores_statuses_temp_tables_sql + '''
+# SELECT code
+# FROM latest_completed_submissions
+# '''
 
         # result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
-
-        sql = self.scores_statuses_temp_tables_sql + '''
-SELECT code
-FROM latest_completed_submissions
-'''
-
-        result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
 
         if result and result["code"]:
             return result["code"]
@@ -1324,7 +1330,9 @@ ORDER BY student_name
 '''
 
         for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None, )):
-            exercise_submissions.append([row["student_id"], dict(row)])
+            data = dict(row)
+            data["submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["submission_timestamp"]))
+            exercise_submissions.append([row["student_id"], data])
 
         return exercise_submissions
 

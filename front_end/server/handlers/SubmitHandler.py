@@ -53,14 +53,24 @@ class SubmitHandler(BaseUserHandler):
 
                 out_dict["all_passed"] = answer_indexes == correct_answer_indexes
 
-                # Actual answers the use chose.
+                # Actual answers the user chose.
                 answers = [answer_option for answer_index, answer_option in enumerate(sorted(solutions_dict)) if answer_index in answer_indexes]
+
+                out_dict["solution_descriptions_dict"] = {}
+                if exercise_details["solution_description"] != "":
+                    solution_descriptions_dict = json.loads(exercise_details["solution_description"])
+
+                    solution_descriptions_dict = {answer: solution_descriptions_dict[answer] for answer in answers if answer in solution_descriptions_dict}
+
+                    out_dict["solution_descriptions_dict"] = solution_descriptions_dict
 
                 # We store the answer(s) as a delimited list.
                 code = "|".join(answers)
+                out_dict["code"] = code
             else:
                 out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 
+                out_dict["code"] = code
                 out_dict["all_passed"] = check_test_outputs(exercise_details, out_dict["test_outputs"])
 
             if out_dict["message"] == "":

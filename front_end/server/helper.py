@@ -355,7 +355,10 @@ def get_client_ip_address(request):
 
 def format_exercise_details(exercise_details, course_basics, assignment_basics, user_info, content, next_prev_exercises=None, format_tests=True, format_data=False):
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
-    exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
+
+    if exercise_details["back_end"] != "multiple_choice":
+        exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
+
     exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
 
     modify_what_students_see(exercise_details, user_info)

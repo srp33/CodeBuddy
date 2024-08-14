@@ -104,29 +104,13 @@
     <div class="shadow-box">
         <div>
             <p><strong>Answer options*: </strong></p>
-            <p>Please specify answer options for this exercise. These will be displayed to students in alphabetical order. If you mark multiple answer options as correct, they will be displayed as checkboxes, and students must answer <em>all</em> options correctly to receive points.</p>
+            <p>Please specify answer options for this exercise. These will be displayed to students in alphabetical order. If you mark multiple answer options as correct, they will be displayed as checkboxes, and students must answer <em>all</em> options correctly to receive points. Optionally, you can provide a blurb for each answer; if you do, students will see this blurb after they answer. You can use this as a means of helping students understand why their answer was right or wrong, for example.</p>
 
             <div id="solutions_table" class="table-container is-hidden"></div>
 
             <div class="button is-light bottom-space mt-9" id="add_solution_button">
                 Add answer option
             </div>
-        </div>
-    </div>
-
-    <div class="shadow-box">
-        <div>
-            <p>
-                <strong>Solution description:</strong>
-            </p>
-                
-            <p>
-                You may write a description that provides insight about the answers. This description will be shown to students after submitting their answers, <strong>whether or not they answered correctly.</strong> Use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text.
-            </p>
-
-            <p>
-                <textarea class="textarea is-grey is-fullwidth monospace" placeholder="Please write in Markdown." rows="5" id="solution_description"></textarea>
-            </p>
         </div>
     </div>
 
@@ -165,6 +149,10 @@
                         </label>
                     </div>
 
+                    <div class="mt-4">
+                        <input id="add_solution_description_input" type="text" placeholder="[Optional] Describe why this answer is correct or incorrect." class="input is-fullwidth" />
+                    </div>
+
                     <div id="solution_message" class="notification mt-4 mb-1"></div>
                 </section>
 
@@ -180,6 +168,7 @@
         $("#add_solution_button").click(function() {
             document.getElementById("add_solution_input").value = "";
             document.getElementById("add_solution_checkbox").checked = false;
+            document.getElementById("add_solution_description_input").value = "";
 
             $("#solution_message")[0].innerHTML = "";
             $("#solution_message").addClass("is-hidden");
@@ -201,8 +190,15 @@
             }
         });
 
+        $("#add_solution_description_input")[0].addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                $("#add_solution_modal_add").click();
+            }
+        });
+
         $("#add_solution_modal_add").click(function() {
             var solution_option = document.getElementById("add_solution_input").value;
+            var solution_description = document.getElementById("add_solution_description_input").value.trim();
 
             // Make sure option is valid
             if (solution_option.trim() == "")
@@ -212,13 +208,25 @@
                 if (solution_option.includes(unallowed_char))
                     return showSolutionMessage(`The answer option cannot include the following character: ${unallowed_char}`, true);
 
-            var solutions = getSolutions();
+            var solutions_and_descriptions = getSolutionsAndDescriptions();
 
-            if (solution_option in solutions)
+            if (solution_option in solutions_and_descriptions.solutions)
                 return showSolutionMessage("That answer option has already been specified.", true);
 
-            solutions[solution_option] = $("#add_solution_checkbox")[0].checked;
-            updateSolutions(solutions);
+            let is_correct = $("#add_solution_checkbox")[0].checked;
+
+            solutions_and_descriptions.solutions[solution_option] = is_correct;
+
+            if (solution_description == "") {
+                if (solution_option in solutions_and_descriptions.descriptions) {
+                    delete solutions_and_descriptions.descriptions[solution_option];
+                }
+            }
+            else {
+                solutions_and_descriptions.descriptions[solution_option] = solution_description;
+            }
+
+            updateSolutionsAndDescriptions(solutions_and_descriptions);
 
             // This resets the controls in the modal.
             $("#add_solution_button").click();
@@ -226,49 +234,83 @@
             showSolutionMessage(`The following answer option has been added: ${solution_option}.`, false);
         });
 
-        function getSolutions() {
+        function getSolutionsAndDescriptions() {
             let solution_code = exercise_details_obj["solution_code"];
+            let solution_description = exercise_details_obj["solution_description"];
 
-            if (solution_code.length == 0) {
-                return {};
+            var solutions = {};
+            var descriptions = {};
+
+            if (solution_code.length > 0) {
+                solutions = JSON.parse(solution_code);
             }
 
-            return JSON.parse(solution_code);
+            if (solution_description.length > 0) {
+                descriptions = JSON.parse(solution_description);
+            }
+
+            return {solutions, descriptions};
         }
 
-        function updateSolutions(solutions) {
-            if (solutions.length == 0) {
-                exercise_details_obj["solution_code"] = "";
-            }
-            else {
-                exercise_details_obj["solution_code"] = JSON.stringify(solutions);
+        function updateSolutionsAndDescriptions(solutions_and_descriptions) {
+            exercise_details_obj["solution_code"] = "";
+            exercise_details_obj["solution_description"] = "";
+
+            if (Object.keys(solutions_and_descriptions.solutions).length > 0) {
+                exercise_details_obj["solution_code"] = JSON.stringify(solutions_and_descriptions.solutions);
+
+                if (hasAnySolutionDescriptions(solutions_and_descriptions)) {
+                    exercise_details_obj["solution_description"] = JSON.stringify(solutions_and_descriptions.descriptions);
+                }
             }
 
             showSolutionsTable();
         }
 
+        function hasAnySolutionDescriptions(solutions_and_descriptions) {
+            var has = false;
+
+            for (const solution_option in solutions_and_descriptions.descriptions) {
+                if (solutions_and_descriptions.descriptions[solution_option] != "") {
+                    has = true;
+                    break;
+                }
+            }
+
+            return has;
+        }
+
         function removeAnswerOption(solution_option) {
-            var solutions = getSolutions();
-            delete solutions[solution_option];
-            updateSolutions(solutions);
+            var solutions_and_descriptions = getSolutionsAndDescriptions();
+            delete solutions_and_descriptions.solutions[solution_option];
+            delete solutions_and_descriptions.descriptions[solution_option];
+            updateSolutionsAndDescriptions(solutions_and_descriptions);
         }
 
         function showSolutionsTable() {
-            var solutions = getSolutions();
+            var solutions_and_descriptions = getSolutionsAndDescriptions();
 
-            if (solutions.length == 0) {
+            if (solutions_and_descriptions.length == 0) {
                 $("#solutions_table").addClass("is-hidden");
                 return;
             }
 
             var html = "<table class='table is-striped'>";
-            html += "<thead><tr><th>Answer</th><th>Correct</th><th></th></thead>";
+            html += "<thead><tr><th>Answer</th><th>Correct</th><th>Description</th><th></th></thead>";
             html += "<tbody>";
 
-            for (const solution_option in sortObj(solutions)) {
+            for (const solution_option in sortObj(solutions_and_descriptions.solutions)) {
                 html += "<tr>";
                 html += `  <td>${solution_option}</td>`;
-                html += `  <td>${solutions[solution_option] ? "Yes": "No"}</td>`;
+                html += `  <td>${solutions_and_descriptions.solutions[solution_option] ? "Yes": "No"}</td>`;
+
+                if (solutions_and_descriptions.descriptions[solution_option]) {
+                    html += `  <td>${solutions_and_descriptions.descriptions[solution_option]}</td>`;
+                }
+                else {
+                    html += `  <td></td>`;
+                }
+
                 html += `  <td>
                                <a onclick="removeAnswerOption('${solution_option}')">
                                    <i class="fas fa-trash-alt"></i>
@@ -286,10 +328,10 @@
 
         function getNumCorrectAnswerOptions() {
             let count = 0;
-            let solutions = getSolutions();
+            let solutions_and_descriptions = getSolutionsAndDescriptions();
 
-            for (const solution in solutions) {
-                count += solutions[solution];
+            for (const solution in solutions_and_descriptions) {
+                count += solutions_and_descriptions[solution];
             }
 
             return count;
@@ -350,7 +392,7 @@
             showTopBottomButtons(exercise_basics_obj["exists"]);
             setValue("title", exercise_basics_obj["title"]);
 
-            for (let id of ["instructions", "credit", "solution_description"])
+            for (let id of ["instructions", "credit"])
                 setValue(id, exercise_details_obj[id]);
 
             for (let id of ["enable_pair_programming"])
@@ -363,7 +405,7 @@
 
             setValue("visible", exercise_basics_obj["visible"] ? "Yes" : "No");
 
-            updateSolutions(getSolutions());
+            updateSolutionsAndDescriptions(getSolutionsAndDescriptions());
         }
 
         function save() {
@@ -393,7 +435,7 @@
                 "weight": weight,
                 "credit": getValue("credit"),
                 "solution_code": exercise_details_obj["solution_code"],
-                "solution_description": getValue("solution_description"),
+                "solution_description": exercise_details_obj["solution_description"],
                 "max_submissions": 1
             }
 

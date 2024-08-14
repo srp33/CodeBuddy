@@ -76,7 +76,7 @@
                 </div>
             {% end %}
 
-            <div class="buttons">
+            <div class="buttons mt-4">
                 {% if is_administrator or is_instructor or is_assistant %}
                     <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
                 {% end %}
@@ -149,7 +149,6 @@
                 }
 
                 var submissions = {{ jsonify(submissions) }};
-                // var presubmission = {{ jsonify(presubmission) }};
 
                 submitButton = document.getElementById("submit_button");
 
@@ -183,7 +182,7 @@
                     {% end %}
 
                     hide_submit_button();
-                    get_mc_submission(submissions[0].id);
+                    get_mc_submission();
                 }
 
                 {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}

@@ -3,11 +3,11 @@ WITH
     SELECT
       36 AS course_id,
       --NULL AS assignment_id,
-      1469 AS assignment_id,
-      NULL AS exercise_id,
-      -- 15630 AS exercise_id,
-      NULL AS user_id
-      --'srp33' AS user_id
+      1475 AS assignment_id,
+      -- NULL AS exercise_id,
+      15633 AS exercise_id,
+      -- NULL AS user_id
+      'srp33' AS user_id
   ),
 
   valid_assignments AS (
@@ -257,5 +257,5 @@ WITH
     GROUP BY es.assignment_id, es.user_id
   )
 
-select MAX(submission_timestamp) AS submission_timestamp
-from valid_submissions
+select *
+from latest_submissions

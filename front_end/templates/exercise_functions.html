@@ -92,18 +92,22 @@
                 if (response_dict["message"] == "") {
                     submission = {
                         "id": response_dict["submission_id"],
-                        "code": user_solution,
+                        "code": response_dict["code"],
                         "submission_timestamp": submission_date,
                         "completed": response_dict["all_passed"],
                         "score": response_dict["score"],
                         "partner_name": response_dict["partner_name"],
                         "test_outputs": response_dict["test_outputs"]};
 
+                        if ("solution_descriptions_dict" in response_dict) {
+                            submission["solution_descriptions_dict"] = response_dict["solution_descriptions_dict"]
+                        }
+
                     submissions.push(submission);
 
                     // We only want to do these things for programming exercises.
                     if (typeof editor === 'undefined') {
-                        get_mc_submission(response_dict["submission_id"]);
+                        get_mc_submission();
                     }
                     else {
                         show_past_submissions();
@@ -176,12 +180,10 @@
         $("#result_message")[0].innerHTML = result;
     }
 
-    function showSuccessMessageMultipleChoice() {
-        var message = "<p><strong>Congratulations! Your answer is correct.</strong></p>";
+    function showSuccessMessageMultipleChoice(submission) {
+        var message = "<div><strong>Congratulations! Your answer is correct.</strong></div>";
 
-        {% if exercise_details["show_instructor_solution"] and exercise_details["solution_description"] != "" %}
-            message += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>Here</a> you can find additional insight about this exercise, from the instructor.</p>";
-        {% end %}
+        message += describeSolutionsMultipleChoice(submission);
 
         $("#result_message")[0].innerHTML = `<div class='notification success-message' style='color:white'>${message}</div>`;
     }
@@ -207,16 +209,46 @@
         $("#result_message")[0].innerHTML = `<div class='notification not-passing' style='color: white'>${message}</div>`;
     }
 
-    function showNotPassingMessageMultipleChoice() {
-        var message = `<div class='notification not-passing' style='color: white'><strong>Your answer is incorrect.</strong><br /><br />`
+    function showNotPassingMessageMultipleChoice(submission) {
+        var message = `<div class='notification not-passing' style='color: white'><strong>Your answer is incorrect.</strong>`;
 
-        {% if exercise_details["show_instructor_solution"] and exercise_details["solution_description"] != "" %}
-            message += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>Here</a> you can find additional insight about this exercise, from the instructor.</p>";
-        {% end %}
+        message += describeSolutionsMultipleChoice(submission);
 
         message += "</div>";
 
         $("#result_message")[0].innerHTML = message;
+    }
+
+    function describeSolutionsMultipleChoice(submission) {
+        var message = "";
+
+        let num_solution_descriptions = Object.keys(submission.solution_descriptions_dict).length;
+
+        if (num_solution_descriptions > 0) {
+            message += "<div class='mt-4'>";
+            message += "The instructor provided comment(s) for the following answer(s):"
+
+            message += "<ul class='mt-4'>"
+
+            let answers = submission.code.split("|");
+
+            for (let answer of answers) {
+                if (answer in submission.solution_descriptions_dict) {
+                    message += "<li>";
+                        
+                    if (answers.length > 1) {
+                        message += `[Answer = ${answer}] `;
+                    }
+
+                    message += `${submission.solution_descriptions_dict[answer]}</li>`;
+                }
+            }
+
+            message += "</ul>";
+            message += "</div>";
+        }
+
+        return message;
     }
 
     function showErrorMessage(message) {
@@ -479,7 +511,7 @@
         window.wasUserChange = true;
     }
 
-    function get_mc_submission(submission_id) {
+    function get_mc_submission() {
         // window.wasUserChange = false;
 
         hideMessages();
@@ -487,9 +519,9 @@
         var this_submission = submissions[0];
 
         if (this_submission["completed"])
-            showSuccessMessageMultipleChoice();
+            showSuccessMessageMultipleChoice(this_submission);
         else
-            showNotPassingMessageMultipleChoice();
+            showNotPassingMessageMultipleChoice(this_submission);
 
         hide_submit_button();
 
