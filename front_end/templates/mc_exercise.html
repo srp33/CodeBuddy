@@ -26,7 +26,13 @@
             </div>
 
             <div class="has-background-white mt-0 mb-2 pl-4 pt-4 pr-4 pb-2">
-                <div class="mb-4">At least one of the following answers is correct. Select the correct answer(s). If multiple answers are correct, you will <em>only</em> receive points if you correctly mark <em>all</em> of them.</div>
+                <div class="mb-4">
+                    {% if num_correct_options == 1 %}
+                        Select the <em>best</em> answer from the following options.
+                    {% else %}
+                        <em>More than one</em> of the following answer options is correct. Select <em>all</em> of the answer options that you believe are correct. You will <em>only</em> receive points if you correctly mark <em>all</em> of the answer options.
+                    {% end %}
+                </div>
 
                 <div class="control">
                     {% for i, answer_option in enumerate(answer_options) %}
