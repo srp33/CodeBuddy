@@ -1,13 +1,13 @@
 WITH
   variables AS (
     SELECT
-      36 AS course_id,
+      2 AS course_id,
       --NULL AS assignment_id,
-      1475 AS assignment_id,
-      -- NULL AS exercise_id,
-      15633 AS exercise_id,
-      -- NULL AS user_id
-      'srp33' AS user_id
+      157 AS assignment_id,
+      NULL AS exercise_id,
+      -- 15633 AS exercise_id,
+      NULL AS user_id
+      -- 'srp33' AS user_id
   ),
 
   valid_assignments AS (
@@ -257,5 +257,20 @@ WITH
     GROUP BY es.assignment_id, es.user_id
   )
 
-select *
-from latest_submissions
+SELECT
+  u.user_id AS id,
+  u.name,
+  scr.score,
+  sts.num_completed,
+  ane.num_exercises,
+  sts.last_submission_timestamp,
+  sts.num_times_pair_programmed
+FROM assignment_statuses sts
+INNER JOIN assignment_scores scr
+  ON sts.assignment_id = scr.assignment_id
+  AND sts.user_id = scr.user_id
+INNER JOIN valid_users u
+  ON sts.user_id = u.user_id
+INNER JOIN assignments_num_exercises ane
+  ON sts.assignment_id = ane.assignment_id
+ORDER BY u.name

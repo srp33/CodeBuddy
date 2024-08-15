@@ -557,6 +557,9 @@ def get_formatted_datetime():
 
 def convert_string_to_datetime(date_str):
     if date_str:
+        # Sometimes there are decimal points on the end of dates.
+        date_str = date_str.split(".")[0]
+
         return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
 def localize_datetime(dtime):
