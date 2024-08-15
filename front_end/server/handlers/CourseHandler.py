@@ -12,7 +12,7 @@ class CourseHandler(BaseUserHandler):
             course_basics = await self.get_course_basics(course_id)
 
             if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
-                assignment_statuses = await self.get_assignment_statuses(course_basics)
+                assignment_statuses = await self.get_assignment_statuses(course_basics, show_hidden=True)
 
                 assignment_summary_scores=self.content.get_assignment_summary_scores(course_id)
 
