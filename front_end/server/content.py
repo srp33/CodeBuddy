@@ -1248,7 +1248,7 @@ FROM valid_submissions'''
 
         return self.fetchone(sql, (course_id, None, None, None))["count"]
 
-    def get_most_recent_submission_code(self, course_id, assignment_id, exercise_id, user_id, must_have_passed):
+    def get_most_recent_submission_code(self, course_id, assignment_id, exercise_id, user_id, must_have_passed=True):
         sql = '''SELECT code
                  FROM submissions
                  WHERE course_id = ?
