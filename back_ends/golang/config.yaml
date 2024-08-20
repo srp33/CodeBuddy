@@ -48,3 +48,4 @@ after_test_example: |
 
       fmt.Println("The sum is:", result)
     }
+sandbox_description: "Go"

@@ -48,3 +48,4 @@ verification_example: |
     }
 test_instructions: ""
 after_test_example: ""
+sandbox_description: "Java"

@@ -25,6 +25,75 @@
                 {{ exercise_details["instructions"] }}
             </div>
 
+            {% if exercise_basics["enable_pair_programming"] %}
+                <div class="has-background-white mt-1 mb-2 pl-4 pt-4 pb-4">
+                    <i class="fab fa-product-hunt"></i>
+                    <em>Pair programming is enabled for this exercise.</em>
+                </div>
+            {% end %}
+
+            <!--TODO: This code is duplicated with exercise.html-->
+            {% if len(exercise_details["data_files"]) > 0 %}
+                <div id="data_file_div" class="has-background-white mt-1 mb-1 pl-4 pt-4 pb-1">
+                    <div class="title is-5 m-0 pl-0 pt-0 pr-0 pb-4">
+                        {% if len(exercise_details["data_files"]) == 1 %}
+                            Data file:
+                        {% else %}
+                            Data file(s):
+                        {% end %}
+                    </div>
+
+                    {% for data_file_index in range(len(exercise_details["data_files"])) %}
+                        {% set data_file_name = sorted(list(exercise_details["data_files"].keys()))[data_file_index] %}
+                        {% set data_file_extension = data_file_name.split(".")[-1] %}
+
+                        <div class="pl-4 pr-4 pb-4">
+                            <span class="is-family-monospace is-size-5">{{ data_file_name }}</span>
+
+                            {% if data_file_extension == "hide" %}
+                                <span class="ml-1">- The contents of this file are hidden.
+                                </span>
+                            {% else %}
+                                <a class="ml-1" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">
+                                    <i class="fas fa-download"></i>
+                                </a>
+
+                                {% if data_file_extension in ["csv", "tsv"] %}
+                                    <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_raw_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, false)">Raw</button>
+
+                                    <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_formatted_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, true)">Formatted</button>
+                                {% else %}
+                                    <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_raw_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, false)">View</button>
+                                {% end %}
+
+                                <div id="data_panel_{{ data_file_index }}" class="is-hidden">
+                                </div>
+                            {% end %}
+                        </div>
+                    {% end %}
+                </div>
+            {% end %}
+
+            {% if exercise_details["starter_code"] != "" %}
+                <div class="has-background-warning-light p-4 mt-2 mb-2">
+                    <div class="mb-4">
+                        <strong>Sandbox</strong> - Although not required, you can execute code below in the {{ sandbox_description }} programming language to help answer the question. Your code will <em>not</em> be saved after you leave or refresh the page. Currently, only text-based outputs (not graphics) are supported.
+                    </div>
+
+                    <div class="control mt-0 mb-2" id="user_code_area">
+                        <textarea class="textarea is-fullwidth monospace" rows="6" id="user_code"></textarea>
+                    </div>
+
+                    <div class="mt-2 mb-0">
+                        <button class="button is-medium is-primary is-outlined" onclick='run_code_sandbox()' id='run_button'>Run</button>
+                    </div>
+
+                    <div class="mt-2 mb-0">
+                        <pre id="user_code_output">[The output will be shown here.]</pre>
+                    </div>
+                </div>
+            {% end %}
+
             <div class="has-background-white mt-0 mb-2 pl-4 pt-4 pr-4 pb-2">
                 <div class="mb-4">
                     {% if num_correct_options == 1 %}
@@ -52,13 +121,6 @@
                     {% end %}
                 </div>
             </div>
-
-            {% if exercise_basics["enable_pair_programming"] %}
-                <div class="has-background-white mt-1 mb-2 pl-4 pt-4 pb-4">
-                    <i class="fab fa-product-hunt"></i>
-                    <em>Pair programming is enabled for this exercise.</em>
-                </div>
-            {% end %}
 
             <div class="buttons mb-0">
                 <button class="button is-medium is-dark mt-1 mb-0" id='submit_button'>Submit</button>
@@ -203,7 +265,72 @@
                         gotoAssignmentPage();
                     }
                 {% end %}
-            </script>
+
+                var data_files = {{ jsonify(exercise_details["data_files"]) }};
+
+                // The sandbox_back_end is stored in starter_code.
+                {% if exercise_details["starter_code"] != "" %}
+                    function run_code_sandbox() {
+                        let user_code = sandbox_editor.getValue();
+                        if (user_code == "")
+                            return false;
+
+                        $("#user_code_output")[0].innerHTML = "Please wait...";
+
+                        $.ajax({
+                            type: 'POST',
+                            url: "/run_code_sandbox/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sandbox_back_end }}",
+                            data: {"user_code": user_code},
+                            async: true,
+                            timeout: 300000  // 5 minute timeout (longer than we would expect the server to take)
+                        }).done(function(result) {
+                            var response_dict = JSON.parse(result);
+
+                            if (response_dict["message"] == "") {
+                                $("#user_code_output")[0].innerHTML = response_dict["txt_output"];
+                            }
+                            else {
+                                $("#user_code_output")[0].innerHTML = `An error occurred. ${response_dict["message"]}`;
+                            }
+                        })
+                        .fail(function(result) {
+                            console.log(result);
+                            $("#user_code_output")[0].innerHTML = "An error occurred. The cause of the error is unknown. Please consult the instructor if it continues.";
+                        });
+
+                        sandbox_editor.focus();
+                        return false;
+                    }
+
+                    ace.require("ace/ext/language_tools");
+
+                    var sandbox_editor = ace.edit("user_code", {
+                        theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                        autoScrollEditorIntoView: false,
+                        minLines: 6,
+                        maxLines: 6,
+                        fontSize: "12pt"
+                    });
+
+                    sandbox_editor.setHighlightActiveLine(false);
+                    sandbox_editor.setShowPrintMargin(false);
+                    sandbox_editor.session.setOption('newLineMode', 'unix');
+
+                    {% if user_info['enable_vim'] %}
+                        sandbox_editor.setKeyboardHandler("ace/keyboard/vim");
+                    {% end %}
+
+                    {% if user_info["use_auto_complete"] %}
+                        sandbox_editor.setOptions({
+                            enableBasicAutocompletion: false,
+                            enableSnippets: true,
+                            enableLiveAutocompletion: true
+                        });
+                    {% end %}
+
+                    sandbox_editor.getSession().setMode("{{ code_completion_path }}");
+                </script>
+            {% end %}
         {% else %}
             <p>This exercise does not exist.</p>
         {% end %}

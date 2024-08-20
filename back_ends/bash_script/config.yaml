@@ -30,3 +30,4 @@ verification_example: |
     fi
 test_instructions: ""
 after_test_example: ""
+sandbox_description: ""

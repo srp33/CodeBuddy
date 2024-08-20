@@ -102,6 +102,13 @@ class ExerciseHandler(BaseUserHandler):
                 # This prevents students from seeing the solution on the client side.
                 exercise_details["solution_code"] = ""
 
+                if exercise_details["starter_code"] != "":
+                    back_end_config = get_back_end_config(exercise_details["starter_code"])
+
+                    args["sandbox_back_end"] = exercise_details["starter_code"]
+                    args["code_completion_path"] = back_end_config["code_completion_path"]
+                    args["sandbox_description"] = back_end_config["sandbox_description"]
+
                 self.render("mc_exercise.html", **args)
             else:
                 tests = exercise_details["tests"]
@@ -132,9 +139,9 @@ class ExerciseHandler(BaseUserHandler):
                 if exercise_details["back_end"] != "multiple_choice":
                     back_end_config = get_back_end_config(exercise_details["back_end"])
 
-                args["tests"] = tests
-                args["code_completion_path"] = back_end_config["code_completion_path"]
                 args["back_end_description"] = back_end_config["description"]
+                args["code_completion_path"] = back_end_config["code_completion_path"]
+                args["tests"] = tests
                 args["use_virtual_assistant"] = use_virtual_assistant
                 args["virtual_assistant_interactions"] = virtual_assistant_interactions
                 args["virtual_assistant_max_per_exercise"] = virtual_assistant_max_per_exercise

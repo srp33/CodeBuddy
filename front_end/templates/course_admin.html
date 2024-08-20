@@ -106,7 +106,7 @@
     {% end %}
 
     <div class="buttons">
-        {% if is_administrator or is_instructor %}
+        {% if is_administrator or is_instructor or is_assistant %}
             <a class="button is-dark" href="/edit_assignment/{{ course_basics['id'] }}/">Create assignment</a>
 
             <a class="button is-primary" href="/view_students/{{ course_basics['id'] }}">Manage students</a>
@@ -126,10 +126,8 @@
             <a class="button" href="/download_course_scores/{{ course_basics['id'] }}">Download scores</a>
 
             <a class="button" href="/manage_instructors/{{ course_basics['id'] }}">Manage instructors</a>
-        {% end %}
 
-        {% if is_administrator or is_instructor or is_assistant %}    
-                <a class="button" href="/manage_assistants/{{ course_basics['id'] }}">Manage assistants</a>
+            <a class="button" href="/manage_assistants/{{ course_basics['id'] }}">Manage assistants</a>
         {% end %}
     </div>
 

@@ -114,6 +114,44 @@
         </div>
     </div>
 
+    <div class="shadow-box">
+        <p><strong>Data file(s):</strong></p>
+
+        <p>Optionally, you can upload data files that students will use on this exercise. You can upload more than one file, if needed. The maximum amount of data per exercise is 10 megabytes across all files. If a file name ends with <code>.hide</code>, that file's contents will be hidden from students; hidden files are only available for tests for which the test code and outputs are <em>not</em> shown. If the file name ends with <code>.csv</code>, it will be assumed that the file contains comma-separated values, and students will have an option to view the data as a table. If the file name ends with <code>.tsv</code>, it will be assumed that the file contains tab-separated values, and the same option will be available.</p>
+
+        <div id="files_table" class="table-container"></div>
+
+        <div class="file is-normal">
+            <label class="file-label">
+                <input class="file-input" type="file" id="upload_file_control" multiple>
+                <span class="file-cta">
+                    <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label">
+                        Upload a file...
+                    </span>
+                </span>
+            </label>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <p><strong>Sandbox: </strong>
+            <label for="sandbox_back_end">
+                You can provide a way for students to execute code if that is necessary for them to answer the question. Their code will not be saved. To do so, select a programming language below. Currently, only text-based outputs are supported.
+            </label>
+
+            <div class="select is-grey">
+                <select id="sandbox_back_end" class="edit-select">
+                    {% for sandbox_back_end in sandbox_back_ends %}
+                        <option value="{{ sandbox_back_end }}">{{ sandbox_back_end }}</option>
+                    {% end %}
+                </select>
+            </div>
+        </p>
+    </div>
+
     <p class="buttons">
         <button class="button is-dark" onclick="save()">Save</button>
 
@@ -326,6 +364,10 @@
             $("#solutions_table").removeClass("is-hidden");
         }
 
+        function getNumAnswerOptions() {
+            return Object.keys(getSolutionsAndDescriptions().solutions).length;
+        }
+
         function getNumCorrectAnswerOptions() {
             let count = 0;
             let solutions_and_descriptions = getSolutionsAndDescriptions();
@@ -406,6 +448,15 @@
             setValue("visible", exercise_basics_obj["visible"] ? "Yes" : "No");
 
             updateSolutionsAndDescriptions(getSolutionsAndDescriptions());
+            showFiles();
+
+            // We are storing this in starter_code so that we don't need to create a new database field for the sandbox back end.
+            if (exercise_details_obj["starter_code"] == "") {
+                setValue("sandbox_back_end", "None");
+            }
+            else {
+                setValue("sandbox_back_end", exercise_details_obj["starter_code"]);
+            }
         }
 
         function save() {
@@ -422,8 +473,10 @@
                 return(showResultMessage("Please provide instructions.", "danger"));
             if (exercise_details_obj["solution_code"] == "")
                 return(showResultMessage("You must provide at least one answer option.", "danger"));
+            if (getNumAnswerOptions() < 2)
+                return(showResultMessage("You must provide at least two answer options.", "danger"));
             if (getNumCorrectAnswerOptions() < 1)
-                return(showResultMessage("You must provide at least one answer option marked as a correct answer.", "danger"));
+                return(showResultMessage("You must provide at least one answer option marked as correct.", "danger"));
             if(isNaN(weight))
                 return(showResultMessage("The specified weight is not a number.", "danger"));
 
@@ -436,7 +489,9 @@
                 "credit": getValue("credit"),
                 "solution_code": exercise_details_obj["solution_code"],
                 "solution_description": exercise_details_obj["solution_description"],
-                "max_submissions": 1
+                "max_submissions": 1,
+                "data_files": exercise_details_obj["data_files"],
+                "starter_code": getValue("sandbox_back_end")
             }
 
             showResultMessage("<b>Please wait...</b>", "warning");
@@ -473,6 +528,28 @@
 
         $("#done_button2").click(function() {
             location.href = `/exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/${exercise_basics_obj["id"]}`;
+        });
+
+        //TODO: This is duplicated with edit_exercise.html.
+        $("#view_file_modal_close").click(function() {
+            $("#view_file_modal").removeClass("is-active");
+        });
+
+        //TODO: This is duplicated with edit_exercise.html.
+        $("#upload_file_control").change(function() {
+            (async () => {
+                for (var i = 0; i < $("#upload_file_control")[0].files.length; i++) {
+                    const fileName = $("#upload_file_control")[0].files[i]["name"];
+                    const fileText = await $("#upload_file_control")[0].files[i].text();
+
+                    if (Array.isArray(exercise_details_obj["data_files"])) {
+                        exercise_details_obj["data_files"] = {}
+                    }
+                    exercise_details_obj["data_files"][fileName] = fileText;
+                }
+
+                showFiles();
+            })();
         });
 
         // Code to run on page load

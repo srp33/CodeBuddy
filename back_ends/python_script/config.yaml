@@ -26,3 +26,4 @@ verification_example: |
 test_instructions: "Each test will consist of a bash script that will invoke the student's solution code (saved as 'code.py')."
 after_test_example: |
     python code.py "Hello world!"
+sandbox_description: ""

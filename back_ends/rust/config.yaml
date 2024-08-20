@@ -23,3 +23,4 @@ after_test_example: |
         let result = add_numbers(2, 3);
         println!("The sum is: {}", result);
     }
+sandbox_description: "Rust"

@@ -179,4 +179,60 @@
 
         textarea.focus();
     }
+
+    function showFiles() {
+        if (Object.keys(exercise_details_obj["data_files"]).length == 0) {
+            $("#files_table").addClass("is-hidden");
+            return;
+        }
+
+        var html = "<table class='table is-striped'>";
+        html += "<thead><tr><th>Name</th><th>Size (characters)</th><th>View</th><th>Delete</th></thead>";
+        html += "<tbody>";
+
+        for (const file_name in sortObj(exercise_details_obj["data_files"])) {
+            html += "<tr>";
+            html += `  <td>${file_name}</td>`;
+            html += `  <td>${exercise_details_obj["data_files"][file_name].length}</td>`;
+            html += `  <td>
+                            <a onclick="viewFile('${file_name}')">
+                                <i class="fas fa-file-alt"></i>
+                            </a>
+                        </td>`;
+            html += `  <td>
+                            <a onclick="removeFile('${file_name}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>`;
+            html += "</tr>";
+        }
+
+        html += "</tbody>";
+        html += "</table>";
+
+        $("#files_table")[0].innerHTML = html;
+        $("#files_table").removeClass("is-hidden");
+    }
+
+    function viewFile(file_name) {
+        $("#view_file_modal_header")[0].innerHTML = file_name;
+        view_file_editor.setValue(exercise_details_obj["data_files"][file_name], -1);
+        $("#view_file_modal").addClass("is-active");
+    }
+
+    function removeFile(file_name) {
+        delete exercise_details_obj["data_files"][file_name];
+        showFiles();
+    }
+
+    function dataFilesTooLarge() {
+        var total_file_size = 0;
+
+        for (let file_name of Object.keys(exercise_details_obj["data_files"]))
+            total_file_size += exercise_details_obj["data_files"][file_name].length;
+
+        let file_size_limit = 10 * 1000 * 1000;
+
+        return (total_file_size > file_size_limit);
+    }
 </script>

@@ -140,7 +140,7 @@
 
         <p><strong>Data file(s):</strong></p>
 
-        <p>Optionally, you can upload data files that students will use on this exercise. You can upload more than one file, if needed. The maximum amount of data per exercise is 10 megabytes across all files. If a file name ends with <code>.hide</code>, that file's contents will be hidden from students; hidden files are only available for tests for which the test code and outputs are <em>not</em> shown. If the file name ends with <code>.csv</code>, it will be assumed that the file contains comma-separated values, and the data will be shown as a table. If the file name ends with <code>.tsv</code>, it will be assumed that the file contains tab-separated values, and the data will be shown as a table.</p>
+        <p>Optionally, you can upload data files that students will use on this exercise. You can upload more than one file, if needed. The maximum amount of data per exercise is 10 megabytes across all files. If a file name ends with <code>.hide</code>, that file's contents will be hidden from students; hidden files are only available for tests for which the test code and outputs are <em>not</em> shown. If the file name ends with <code>.csv</code>, it will be assumed that the file contains comma-separated values, and students will have an option to view the data as a table. If the file name ends with <code>.tsv</code>, it will be assumed that the file contains tab-separated values, and the same option will be available.</p>
 
         <div id="files_table" class="table-container"></div>
 
@@ -401,40 +401,6 @@
             $("#tests_table").removeClass("is-hidden");
         }
 
-        function showFiles() {
-            if (Object.keys(exercise_details_obj["data_files"]).length == 0) {
-                $("#files_table").addClass("is-hidden");
-                return;
-            }
-
-            var html = "<table class='table is-striped'>";
-            html += "<thead><tr><th>Name</th><th>Size (characters)</th><th>View</th><th>Delete</th></thead>";
-            html += "<tbody>";
-
-            for (const file_name in sortObj(exercise_details_obj["data_files"])) {
-                html += "<tr>";
-                html += `  <td>${file_name}</td>`;
-                html += `  <td>${exercise_details_obj["data_files"][file_name].length}</td>`;
-                html += `  <td>
-                               <a onclick="viewFile('${file_name}')">
-                                   <i class="fas fa-file-alt"></i>
-                               </a>
-                           </td>`;
-                html += `  <td>
-                               <a onclick="removeFile('${file_name}')">
-                                   <i class="fas fa-trash-alt"></i>
-                               </a>
-                           </td>`;
-                html += "</tr>";
-            }
-
-            html += "</tbody>";
-            html += "</table>";
-
-            $("#files_table")[0].innerHTML = html;
-            $("#files_table").removeClass("is-hidden");
-        }
-
         function showOutput(update, scroll) {
             if (update) {
                 if (getValue("allow_any_response") == "No") {
@@ -597,17 +563,6 @@
             showTests();
         }
 
-        function viewFile(file_name) {
-            $("#view_file_modal_header")[0].innerHTML = file_name;
-            view_file_editor.setValue(exercise_details_obj["data_files"][file_name], -1);
-            $("#view_file_modal").addClass("is-active");
-        }
-
-        function removeFile(file_name) {
-            delete exercise_details_obj["data_files"][file_name];
-            showFiles();
-        }
-
         function getEditor(textAreaID, minLines, maxLines) {
             var editor = ace.edit(textAreaID, {
                 theme: "ace/theme/{{ user_info['ace_theme'] }}",
@@ -704,13 +659,9 @@
                 return(showResultMessage("The specified weight is not a number.", "danger"));
 
             // Make sure total file size is not too large across all files.
-            var total_file_size = 0;
-            for (let file_name of Object.keys(exercise_details_obj["data_files"]))
-                total_file_size += exercise_details_obj["data_files"][file_name].length;
-
-            let file_size_limit = 10 * 1000 * 1000;
-            if (total_file_size > file_size_limit)
-                return(showResultMessage(`The total file size [${total_file_size}] exceeds the 10,000,000 character limit.`, "danger"));
+            if (dataFilesTooLarge()) {
+                return(showResultMessage(`The total file size [${total_file_size}] exceeds the character limit.`, "danger"));
+            }
 
             if (Object.keys(exercise_details_obj["tests"]).length == 0) {
                 if (!allow_any_response || back_end != "not_code") {

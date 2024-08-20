@@ -78,6 +78,7 @@ def make_app(settings_dict):
             url(r"/resave_exercises/([^/]+)/([^/]+)", ResaveExercisesHandler, name="resave_exercises"),
             url(r"/reset_timer/([^/]+)/([^/]+)/([^/]+)", ResetTimerHandler, name="reset_timer"),
             url(r"/run_code/([^/]+)/([^/]+)/([^/]+)", RunCodeHandler, name="run_code"),
+            url(r"/run_code_sandbox/([^/]+)/([^/]+)/([^/]+)/([^/]+)", RunCodeSandboxHandler, name="run_code_sandbox"),
             url(r"/save_presubmission/([^/]+)/([^/]+)/([^/]+)", SavePresubmissionHandler, name="save_presubmission"),
             url(r"/static/(.+)", StaticFileHandler, name="static_file"),
             url(r"/student_exercise/([^/]+)/([^/]+)/([^/]+)/([^/]+)", StudentExerciseHandler, name="student_exercise"),

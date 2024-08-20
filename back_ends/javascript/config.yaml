@@ -31,3 +31,4 @@ test_instructions: ""
 after_test_example: |
     var result = addNumbers(2, 3);
     console.log("The sum is: " + result);
+sandbox_description: "Javascript"

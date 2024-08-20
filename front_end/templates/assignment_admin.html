@@ -237,7 +237,7 @@
             <p><strong>No exercises have been created for this assignment.</strong></p>
         {% end %}
 
-        {% if is_administrator or is_instructor %}
+        {% if is_administrator or is_instructor or is_assistant %}
             <div class="buttons">
                 <a class="button is-dark" href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/'>Create exercise</a>
                 
