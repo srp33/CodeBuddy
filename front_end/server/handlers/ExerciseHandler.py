@@ -102,6 +102,7 @@ class ExerciseHandler(BaseUserHandler):
                 # This prevents students from seeing the solution on the client side.
                 exercise_details["solution_code"] = ""
 
+                # For multiple-choice questions, we store the sandbox back end in this field.
                 if exercise_details["starter_code"] != "":
                     back_end_config = get_back_end_config(exercise_details["starter_code"])
 

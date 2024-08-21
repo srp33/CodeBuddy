@@ -218,7 +218,7 @@
 
                 var submissions = {{ jsonify(submissions) }};
 
-                submitButton = document.getElementById("submit_button");
+                let submitButton = document.getElementById("submit_button");
 
                 if (submissions.length == 0) {
                     if (submitButton != null) {
@@ -268,14 +268,15 @@
 
                 var data_files = {{ jsonify(exercise_details["data_files"]) }};
 
-                // The sandbox_back_end is stored in starter_code.
                 {% if exercise_details["starter_code"] != "" %}
+                    // The sandbox_back_end is stored in starter_code.
                     function run_code_sandbox() {
                         let user_code = sandbox_editor.getValue();
                         if (user_code == "")
                             return false;
 
                         $("#user_code_output")[0].innerHTML = "Please wait...";
+                        $("#user_code_output")[0].scrollIntoView();
 
                         $.ajax({
                             type: 'POST',
@@ -287,7 +288,12 @@
                             var response_dict = JSON.parse(result);
 
                             if (response_dict["message"] == "") {
-                                $("#user_code_output")[0].innerHTML = response_dict["txt_output"];
+                                var txt_output = response_dict["txt_output"];
+
+                                if (txt_output.trim() == "")
+                                    txt_output = "[No output]"
+
+                                $("#user_code_output")[0].innerHTML = txt_output;
                             }
                             else {
                                 $("#user_code_output")[0].innerHTML = `An error occurred. ${response_dict["message"]}`;
@@ -329,8 +335,8 @@
                     {% end %}
 
                     sandbox_editor.getSession().setMode("{{ code_completion_path }}");
-                </script>
-            {% end %}
+                {% end %}
+            </script>
         {% else %}
             <p>This exercise does not exist.</p>
         {% end %}
