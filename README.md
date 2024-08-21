@@ -31,6 +31,7 @@ Here are some of CodeBuddy's features:
 * [June 21, 2024] Instructors can include multiple-choice (or multiple-answer) exercises in assignments.
 * [July 10, 2024] By default, the assignment score is calculated as the average of the exercise scores within the assignment. Now instructors can specify custom scoring logic. For example, suppose an assignment has five exercises. An instructor might specify that if a student successfully completes one exercise (20%), the student receives a passing grade (60%). And/or they might specify that if a student completes all but one of the exercises (80%), the student receives full points (100%) for the assignment.
 * [August 7, 2024] Instructors can paste images into the instructions on the "Edit exercise" pages.
+* [August 20, 2024] Sometimes, to answer a multiple-choice question, students need to execute code (e.g., to perform calculations, apply a statistical test) to answer the question. Instructors can configure an exercise so that it includes a "sandbox" on the page. With this option, students can execute code, but the code is not evaluated directly (or saved).
 
 # How to run a CodeBuddy instance
 
