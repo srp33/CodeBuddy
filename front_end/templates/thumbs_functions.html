@@ -1,0 +1,80 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<script>
+    var thumb_status = {{ thumb_status }};
+
+    toggleThumbs();
+
+    function updateThumbStatus(is_up) {
+        if (thumb_status == -1) {
+            if (is_up) {
+                thumb_status = 1;
+            }
+            else {
+                thumb_status = 0;
+            }
+        }
+        else {
+            if (thumb_status == 0) {
+                if (is_up) {
+                    thumb_status = 1;
+                }
+                else {
+                    thumb_status = -1;
+                }
+            }
+            else { // thumb_status == 1
+                if (is_up) {
+                    thumb_status = -1;
+                }
+                else {
+                    thumb_status = 0;
+                }
+            }
+        }
+    }
+
+    function toggleThumbs() {
+        // Default settings: neither thumb selected.
+        $("#thumbs_up").addClass("far");
+        $("#thumbs_up").removeClass("fas");
+        $("#thumbs_down").addClass("far");
+        $("#thumbs_down").removeClass("fas");
+
+        if (thumb_status == 0) {
+            $("#thumbs_down").removeClass("far");
+            $("#thumbs_down").addClass("fas");
+        }
+        else {
+            if (thumb_status == 1) {
+                $("#thumbs_up").removeClass("far");
+                $("#thumbs_up").addClass("fas");
+            }
+        }
+    }
+
+    function saveHelpfulness(item_description) {
+        $.ajax({
+            type: 'GET',
+            url: "/save_thumb_status/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/" + item_description + "/" + thumb_status,
+            async: true,
+            timeout: 10000  // 10 second timeout
+        }).done(function(result) {
+            if (result == "") {
+                console.log("Saved thumb status");
+            }
+            else {
+                console.log("An error occurred when attempting to save thumb status.");
+                console.log(result);
+            }
+        })
+        .fail(function(result) {
+            console.log("An error occurred when attempting to save thumb status.");
+            console.log(result);
+        });
+    }
+</script>

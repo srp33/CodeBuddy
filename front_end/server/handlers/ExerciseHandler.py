@@ -130,11 +130,14 @@ class ExerciseHandler(BaseUserHandler):
                 # if use_virtual_assistant:
                 #     studio_mode = False
 
+                args["thumb_status"] = -1
                 if use_virtual_assistant:
                     virtual_assistant_interactions = self.content.get_virtual_assistant_interactions(course_id, assignment_id, exercise_id, self.user_info["user_id"])
                     virtual_assistant_interactions = escape_json_string(json.dumps(virtual_assistant_interactions, default=str))
 
                     virtual_assistant_max_per_exercise = course_details["virtual_assistant_config"]["max_per_exercise"]
+
+                    args["thumb_status"] = await self.content.get_thumb_status(course_id, assignment_id, exercise_id, self.user_info["user_id"], "virtual_assistant")
 
                 back_end_config = None
                 if exercise_details["back_end"] != "multiple_choice":

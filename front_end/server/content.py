@@ -1938,6 +1938,29 @@ ORDER BY student_name
 
         self.execute(sql, [course_id, assignment_id, exercise_id, user_id, code])
 
+    async def save_thumb_status(self, course_id, assignment_id, exercise_id, user_id, item_description, status):
+        sql = '''INSERT OR REPLACE INTO thumbs (course_id, assignment_id, exercise_id, user_id, item_description, status)
+                 VALUES (?, ?, ?, ?, ?, ?)'''
+
+        self.execute(sql, [course_id, assignment_id, exercise_id, user_id, item_description, status])
+
+    async def get_thumb_status(self, course_id, assignment_id, exercise_id, user_id, item_description):
+        sql = '''SELECT status
+                 FROM thumbs
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?
+                   AND item_description = ?'''
+
+        result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id, item_description))
+
+        status = -1
+        if result:
+            status = result["status"]
+
+        return status
+
     async def save_submission(self, course_id, assignment_id, exercise_id, user_id, code, passed, date, exercise_details, test_outputs, score, partner_id):
         sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -2144,7 +2167,7 @@ ORDER BY student_name
         self.update_when_content_updated("user")
 
     def move_assignment(self, course_id, assignment_id, new_course_id):
-        for table in ["assignments", "exercises", "tests"]:
+        for table in ["assignments", "exercises", "tests", "virtual_assistant_interactions", "thumbs"]:
             self.execute(f'''UPDATE {table}
                              SET course_id = ?
                              WHERE course_id = ?
@@ -2190,6 +2213,18 @@ ORDER BY student_name
                           AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
 
         self.execute('''UPDATE tests
+                        SET assignment_id = ?
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
+        
+        self.execute('''UPDATE virtual_assistant_interactions
+                        SET assignment_id = ?
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (new_assignment_id, course_id, assignment_id, exercise_id, ))
+        
+        self.execute('''UPDATE thumbs
                         SET assignment_id = ?
                         WHERE course_id = ?
                           AND assignment_id = ?
@@ -2255,6 +2290,16 @@ ORDER BY student_name
                           WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?)''', (course_id, assignment_id, exercise_id, ))
+
+        self.execute('''DELETE FROM virtual_assistant_interactions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+        
+        self.execute('''DELETE FROM thumbs
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
         
         self.update_when_content_updated(course_id)
 
@@ -2299,6 +2344,14 @@ ORDER BY student_name
                           AND assignment_id = ?''', (course_id, assignment_id, ))
         
         self.execute('''DELETE FROM security_codes
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+        
+        self.execute('''DELETE FROM virtual_assistant_interactions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+        
+        self.execute('''DELETE FROM thumbs
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
@@ -2358,6 +2411,12 @@ ORDER BY student_name
         self.execute('''DELETE FROM security_codes
                         WHERE course_id = ?''', (course_id, ))
         
+        self.execute('''DELETE FROM virtual_assistant_interactions
+                        WHERE course_id = ?''', (course_id, ))
+        
+        self.execute('''DELETE FROM thumbs
+                        WHERE course_id = ?''', (course_id, ))
+        
         self.delete_content_updated(course_id)
 
     def delete_course_submissions(self, course_id):
@@ -2380,6 +2439,12 @@ ORDER BY student_name
                           WHERE course_id = ?)''', (course_id, ))
         
         self.execute('''DELETE FROM security_codes
+                        WHERE course_id = ?''', (course_id, ))
+        
+        self.execute('''DELETE FROM virtual_assistant_interactions
+                        WHERE course_id = ?''', (course_id, ))
+        
+        self.execute('''DELETE FROM thumbs
                         WHERE course_id = ?''', (course_id, ))
 
     def delete_assignment_submissions(self, assignment_basics):
@@ -2412,6 +2477,14 @@ ORDER BY student_name
         self.execute('''DELETE FROM security_codes
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
+        
+        self.execute('''DELETE FROM virtual_assistant_interactions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+        
+        self.execute('''DELETE FROM thumbs
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
 
     async def delete_exercise_submissions(self, course_id, assignment_id, exercise_id):
         self.execute('''DELETE FROM submissions
@@ -2425,6 +2498,16 @@ ORDER BY student_name
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
         self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+        
+        self.execute('''DELETE FROM virtual_assistant_interactions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+        
+        self.execute('''DELETE FROM thumbs
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))

@@ -99,34 +99,46 @@
                     <!--<div class="column is-one-quarter has-background-white is-outlined mt-3 mb-3">-->
                     <div class="column is-one-third has-background-white is-outlined mt-3 mb-3" style="overflow: scroll;" id="right_column">
                         <div id="virtual_assistant_message">
-                            <p class="is-size-6">
+                            <div class="is-size-6">
                                 <strong>Hello, I am your Virtual Assistant!</strong> Do your best to solve this exercise on your own. But if you get stuck, you can enter a question below. This feature is experimental, so its advice might or might not be helpful.
-                            </p>
 
-                            {% if assignment_details["use_virtual_assistant"] > 1 %}
-                                <p class="is-size-6"><em><font color="red">The instructor is testing this feature in a research study. Therefore, please use do not share it with other students who may not have access to it on this exercise.</font></em></p>
-                            {% end %}
+                                {% if assignment_details["use_virtual_assistant"] > 1 %}
+                                    <em>The instructor is testing this feature in a research study. Therefore, please use do not share it with other students who may not have access to it on this exercise.</em>
+                                {% end %}
+                            </div>
                         </div>
 
-                        <p><textarea id="virtual_assistant_input" class="textarea is-medium is-primary is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here."></textarea></p>
-
-                        <button id="virtual_assistant_button" class="button is-primary m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
-
-                        <button class="button is-primary is-outlined m-0 is-size=6" onclick="closeVirtualAssistant()">Close</button>
-
-                        <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
-                            <em>
-                                <span id="virtual_assistant_questions_allowed_prefix"></span>
-                                
-                                <span id="virtual_assistant_questions_allowed">
-                                    {{ virtual_assistant_max_per_exercise }}
-                                </span>
-
-                                <span id="virtual_assistant_questions_allowed_suffix"></span>
-                            </em>
+                        <div>
+                            <textarea id="virtual_assistant_input" class="textarea is-medium is-primary is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here.">
+                            </textarea>
                         </div>
 
-                        <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden is-size-6"></div>
+                        <div class="mt-2 mb-2">
+                            <button id="virtual_assistant_button" class="button is-primary m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
+
+                            <button class="button is-primary is-outlined m-0 is-size=6" onclick="closeVirtualAssistant()">Close</button>
+
+                            <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
+                                <em>
+                                    <span id="virtual_assistant_questions_allowed_prefix"></span>
+                                    
+                                    <span id="virtual_assistant_questions_allowed">
+                                        {{ virtual_assistant_max_per_exercise }}
+                                    </span>
+
+                                    <span id="virtual_assistant_questions_allowed_suffix"></span>
+                                </em>
+                            </div>
+                        </div>
+
+                        <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden is-size-6">
+                        </div>
+
+                        <div id="virtual_assistant_helpful" class="box has-background-white has-text-warning mt-2 mb-2 p-4 is-size-6 is-hidden">
+                            Was the Virtual Assistant helpful on this exercise?
+                            <i id="thumbs_up" class="far fa-thumbs-up ml-2" onclick="updateThumbStatus(true);toggleThumbs();saveHelpfulness('virtual_assistant');" style="cursor: pointer;"></i>
+                            <i id="thumbs_down" class="far fa-thumbs-down ml-2" onclick="updateThumbStatus(false);toggleThumbs();saveHelpfulness('virtual_assistant');" style="cursor: pointer;"></i>
+                        </div>
                     </div>
                 {% end %}
             </div>
@@ -254,6 +266,7 @@
                     let output_element = document.getElementById("virtual_assistant_output");
                     let message_element = document.getElementById("virtual_assistant_message");
                     let button_element = document.getElementById("virtual_assistant_button");
+                    let helpful_element = document.getElementById("virtual_assistant_helpful");
 
                     let allowed_panel_element = document.getElementById("virtual_assistant_allowed_panel")
                     let allowed_element = document.getElementById("virtual_assistant_questions_allowed");
@@ -266,11 +279,11 @@
                         if (input.trim().length == 0)
                             return;
 
-                        
                         output_element.classList.remove("is-hidden");
 
                         let response_element = createVirtualAssistantResponse("Please wait...");
                         addVirtualAssistantEcho(input);
+                        response_element.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                         let data = {"question": input, "student_code": editor.getValue()};
 
@@ -298,6 +311,8 @@
                             }
 
                             response_element.innerHTML = `<em>VA</em>: ${result_dict.message}`;
+
+                            helpful_element.classList.remove("is-hidden");
                         })
                         .fail(function(result) {
                             console.log(result);
@@ -316,7 +331,8 @@
                         echo_element.classList.add('has-text-dark', 'has-background-light', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
                         echo_element.innerHTML += `<em>You asked</em>: ${input}`;
 
-                        output_element.insertBefore(echo_element, output_element.firstChild);
+                        // output_element.insertBefore(echo_element, output_element.firstChild);
+                        output_element.insertBefore(echo_element, output_element.lastChild);
                     }
 
                     function createVirtualAssistantResponse(message) {
@@ -324,7 +340,9 @@
                         response_element.classList.add('has-background-light', 'has-text-primary', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
                         response_element.innerHTML = `<em>VA</em>: ${message}`;
 
-                        output_element.insertBefore(response_element, output_element.firstChild);
+                        // output_element.insertBefore(response_element, output_element.firstChild);
+                        const lastChild = output_element.lastChild;
+                        output_element.insertBefore(response_element, lastChild.nextSibling);
 
                         return response_element;
                     }
@@ -365,6 +383,8 @@
 
                             addVirtualAssistantEcho(interaction.question);
                         }
+
+                        helpful_element.classList.remove("is-hidden");
                     }
                 {% end %}
 

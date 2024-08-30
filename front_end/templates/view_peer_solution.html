@@ -10,9 +10,7 @@
             <p>You are one of the first in the class to complete this exercise. To ensure that other students' submissions are properly anonymized, we cannot show a peer's solution at this time. Please try again later. We apologize for the inconvenience.</p>
         {% else %}
             <div>
-                {% if exercise_details["what_students_see_after_success"] > 3 %}
-                    <p><font color="red">The instructor is testing this feature in a research study. Therefore, please use do not share this feature with other students who may not have access to it on this exercise.</font></p>
-                {% end %}
+                <div class="notification has-text-warning has-background-white">Please do not share the information on this page with students who do not have access to it.</div>
 
                 <h4>Your solution:</h4>
                 <pre class="student-content">{{ user_code }}</pre>
@@ -23,8 +21,9 @@
                 {% end %}
             </div>
 
-            <br />
-            <p><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Back to exercise</a></p>
+            <div class="mt-4">
+                <a class="button" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Back</a>.
+            </div>
 
             <script>
                 setInterval(function() {

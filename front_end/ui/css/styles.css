@@ -197,7 +197,7 @@ pre {
 }
 
 /* Styles block of student's code on view_answer.html */
-.student-content {
+.instructor-content {
     border: 2px solid  #003DA5; /* dark teal */
     width: 100%;
     border-left: 12px solid  #003DA5; /* dark teal */
@@ -207,7 +207,7 @@ pre {
 }
 
 /* Styles block of instructor's code on view_answer.html */
-.instructor-content {
+.student-content {
     border: 2px solid  #363636;
     width: 100%;
     border-left: 12px solid  #363636;

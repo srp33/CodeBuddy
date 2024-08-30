@@ -13,7 +13,7 @@
                 <p>There is no instructor's solution for this exercise.</p><!--This happens when any response is allowed.-->
             {% else %}
                 <div>
-                    <div class="notification is-warning is-light">Please do not share the information on this page with other students who do not have access to it.</div>
+                    <div class="notification has-text-warning has-background-white">Please do not share the information on this page with students who do not have access to it.</div>
 
                     {% if exercise_details["back_end"] != "multiple_choice" %}
                         <h4>Your solution:</h4>
@@ -29,15 +29,22 @@
                             {{ exercise_details["solution_description"] }}
                         </div>
                     {% end %}
+
+                    <div class="notification has-text-primary has-background-white">
+                        Was it helpful to review the instructor's solution?
+                        <i id="thumbs_up" class="far fa-thumbs-up ml-2" onclick="updateThumbStatus(true);toggleThumbs();saveHelpfulness('instructor_solution');" style="cursor: pointer;"></i>
+                        <i id="thumbs_down" class="far fa-thumbs-down ml-2" onclick="updateThumbStatus(false);toggleThumbs();saveHelpfulness('instructor_solution');" style="cursor: pointer;"></i>
+                    </div>
                 </div>
 
-                <br />
-                <p><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Go back to the exercise</a>.</p>
+                <div class="mt-4">
+                    <a class="button" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Back</a>.
+                </div>
 
                 <script>
-                setInterval(function() {
-                    reloadIfRestricted(false);
-                }, 60000);
+                    setInterval(function() {
+                        reloadIfRestricted(false);
+                    }, 60000);
                 </script>
             {% end %}
         {% end %}

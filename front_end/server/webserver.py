@@ -80,6 +80,7 @@ def make_app(settings_dict):
             url(r"/run_code/([^/]+)/([^/]+)/([^/]+)", RunCodeHandler, name="run_code"),
             url(r"/run_code_sandbox/([^/]+)/([^/]+)/([^/]+)/([^/]+)", RunCodeSandboxHandler, name="run_code_sandbox"),
             url(r"/save_presubmission/([^/]+)/([^/]+)/([^/]+)", SavePresubmissionHandler, name="save_presubmission"),
+            url(r"/save_thumb_status/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)", SaveThumbStatusHandler, name="save_thumb_status"),
             url(r"/static/(.+)", StaticFileHandler, name="static_file"),
             url(r"/student_exercise/([^/]+)/([^/]+)/([^/]+)/([^/]+)", StudentExerciseHandler, name="student_exercise"),
             url(r"/student_score/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)", StudentScoreHandler, name="student_score"),
