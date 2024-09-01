@@ -336,6 +336,10 @@
 
                     sandbox_editor.getSession().setMode("{{ code_completion_path }}");
                 {% end %}
+
+                setInterval(function() {
+                    reloadIfRestricted(false);
+                }, 60000);
             </script>
         {% else %}
             <p>This exercise does not exist.</p>
