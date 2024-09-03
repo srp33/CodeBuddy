@@ -117,6 +117,7 @@ WITH
         NULL AS last_submission_timestamp
       FROM valid_exercises e
       INNER JOIN valid_users u
+      WHERE e.visible = 1
     )
     GROUP BY assignment_id, exercise_id, user_id
   ),
@@ -136,6 +137,7 @@ WITH
       ON es.assignment_id = s.assignment_id
       AND es.exercise_id = s.exercise_id
       AND es.user_id = s.user_id
+    WHERE e.visible = 1
   ),
 
   latest_completed_submissions AS (
@@ -196,6 +198,7 @@ WITH
       assignment_id,
       COUNT(exercise_id) as num_exercises
     FROM valid_exercises
+    WHERE visible = 1
     GROUP BY assignment_id
   ),
 
@@ -211,6 +214,7 @@ WITH
       AND es.user_id = esw.user_id
     INNER JOIN valid_assignments a
       ON es.assignment_id = a.assignment_id
+    WHERE a.visible = 1
     GROUP BY es.assignment_id, es.user_id
   ),
 
@@ -227,6 +231,7 @@ WITH
       AND a.has_timer = 1
       AND uas.user_id IN (SELECT user_id FROM valid_users)
     WHERE uas.course_id = (SELECT course_id FROM variables)
+      AND a.visible = 1
   ),
 
   assignment_statuses AS (
@@ -239,7 +244,7 @@ WITH
       a.has_timer,
       SUM(es.completed) AS num_completed,
       SUM(es.completed) = ane.num_exercises AS completed,
-      IFNULL((NOT a.has_timer AND SUM(es.num_submissions) > 0 AND SUM(es.completed) < ane.num_exercises) OR (a.has_timer AND ats.      minutes_since_start <= ats.minutes_limit AND NOT ats.ended_early), 0) AS in_progress,
+      IFNULL((NOT a.has_timer AND SUM(es.num_submissions) > 0 AND SUM(es.completed) < ane.num_exercises) OR (a.has_timer AND ats.minutes_since_start <= ats.minutes_limit AND NOT ats.ended_early), 0) AS in_progress,
       IFNULL(ats.minutes_since_start > ats.minutes_limit OR ats.ended_early, 0) AS timer_has_ended,
       SUM(pair_programmed) AS num_times_pair_programmed,
       MAX(last_submission_timestamp) AS last_submission_timestamp
