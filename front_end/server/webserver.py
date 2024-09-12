@@ -11,6 +11,7 @@ from handlers import *
 from helper import *
 import logging
 import os
+import signal
 import sys
 from tornado.auth import GoogleOAuth2Mixin
 import tornado.ioloop
@@ -139,6 +140,20 @@ class StaticFileHandler(RequestHandler):
             self.set_header('Content-type', content_type)
             self.write(file_contents)
 
+# Define the function you want to run on server exit
+def on_exit():
+    print("Server is shutting down.")
+
+    content.final_commit()
+    content.close()
+
+    # Stop the I/O loop gracefully
+    tornado.ioloop.IOLoop.instance().stop()
+
+# Set up signal handling to catch termination signals
+def handle_signal(sig, frame):
+    tornado.ioloop.IOLoop.instance().add_callback_from_signal(on_exit)
+
 if __name__ == "__main__":
     try:
         settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
@@ -224,6 +239,10 @@ if __name__ == "__main__":
 
         logging.getLogger('tornado.access').disabled = True
         logging.getLogger("requests").setLevel(logging.DEBUG)
+
+        # Register signals for graceful shutdown
+        signal.signal(signal.SIGINT, handle_signal)  # Ctrl+C
+        signal.signal(signal.SIGTERM, handle_signal)  # Termination (like in Docker)
 
         logging.debug(f"Starting on port {settings_dict['f_port']} using {settings_dict['f_num_processes']} processes")
         tornado.ioloop.IOLoop.instance().start()

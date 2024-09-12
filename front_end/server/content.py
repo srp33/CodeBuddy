@@ -39,26 +39,35 @@ class Content:
         self.execute("PRAGMA cache_size=1000000")
         self.execute("PRAGMA mmap_size=100000000")
         self.execute("PRAGMA temp_store=MEMORY")
-        self.execute(f"PRAGMA journal_mode={self.settings_dict['db_journal_mode']}")
+
+        journal_mode = self.settings_dict['db_journal_mode']
+        self.execute(f"PRAGMA journal_mode={journal_mode}")
+
+        if journal_mode == "WAL":
+            self.execute("PRAGMA wal_autocheckpoint = 1000")
 
         self.scores_statuses_temp_tables_sql = read_file("query_templates/scores_statuses.sql")
 
         atexit.register(self.close)
 
-    def is_connection_open(self):
-        try:
-            # Attempt to access the total_changes attribute
-            self.conn.total_changes
-            return True
-        except sqlite3.ProgrammingError:
-            return False
+    # def is_connection_open(self):
+    #     try:
+    #         # Attempt to access the total_changes attribute
+    #         self.conn.total_changes
+    #         return True
+    #     except sqlite3.ProgrammingError:
+    #         return False
+
+    def final_commit(self):
+        if self.settings_dict['db_journal_mode'] == "WAL":
+            self.conn.execute('PRAGMA wal_checkpoint(FULL)')
 
     def close(self):
-         if self.is_connection_open():
-            if self.settings_dict['db_journal_mode'] == "WAL":
-                self.conn.execute('PRAGMA wal_checkpoint(FULL)')
+        #  if self.is_connection_open():
+        #     if self.settings_dict['db_journal_mode'] == "WAL":
+        #         self.conn.execute('PRAGMA wal_checkpoint(FULL)')
 
-            self.conn.close()
+        self.conn.close()
 
     def execute(self, sql, params=()):
         cursor = self.conn.cursor()
