@@ -69,3 +69,8 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
                     extra_params = {'approval_prompt': 'auto'})
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+    def finish(self, chunk) -> Future[None]:
+        self.content.close()
+
+        return super().finish(chunk)

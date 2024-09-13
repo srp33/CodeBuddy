@@ -20,7 +20,7 @@ summary_file_path = sys.argv[2]
 archive_file_path = sys.argv[3]
 
 settings_dict = load_yaml_dict(read_file("../Settings.yaml"))
-content = Content(settings_dict)
+# content = Content(settings_dict)
 
 # Read the existing summary if it exists.
 summary_dict = {}
@@ -97,3 +97,5 @@ with gzip.open(archive_file_path, "a") as archive_file:
                 archive_file.write(line.encode())
 
         os.remove(in_file_path)
+
+# content.close()

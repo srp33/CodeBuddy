@@ -67,7 +67,11 @@ class Content:
         #     if self.settings_dict['db_journal_mode'] == "WAL":
         #         self.conn.execute('PRAGMA wal_checkpoint(FULL)')
 
-        self.conn.close()
+        try:
+            self.conn.close()
+        except:
+            print("An error occurred when attempting to close the database connection.")
+            print(traceback.format_exc())
 
     def execute(self, sql, params=()):
         cursor = self.conn.cursor()
