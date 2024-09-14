@@ -26,9 +26,9 @@ class BaseRequestHandler(RequestHandler):
         if user_id:
             return user_id.decode()
         
-    def finish(self, chunk) -> Future[None]:
+    def on_finish(self):
         self.content.close()
-        return super().finish(chunk)
+        return super().on_finish()
 
     ###############################################
     # Helper functions
