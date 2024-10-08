@@ -1,4 +1,4 @@
-FROM rocker/tidyverse:4.3.2
+FROM rocker/tidyverse:4.4.1
 
 RUN apt-get update -qq && apt-get install -y \
   git-core \
@@ -8,10 +8,95 @@ RUN apt-get update -qq && apt-get install -y \
   libmagick++-dev \
   libglpk-dev
 
-RUN R -e "install.packages(c('car', 'conflicted', 'igraph', 'magick', 'mapproj', 'maps', 'ranger', 'tidymodels', 'workflows', 'tune', 'XML'))"
+# install package dependencies
+RUN apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+      ssh \
+      # for devtools
+      make \
+      libcurl4-openssl-dev \
+      libssl-dev \
+      git \
+      libicu-dev \
+      pandoc \
+      libxml2-dev \
+      libgit2-dev \
+      libssh2-1-dev \
+      # tensorflow
+      libpng-dev \
+      python3 \
+      pciutils \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/
+ 
+# set environment variables
+#ENV WORKON_HOME /opt/virtualenvs
+#ENV PYTHON_VENV_PATH $WORKON_HOME/r-tensorflow
+ 
+# install python3 tools
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+#        libpython3-dev \
+#        python3-venv && \
+#    rm -rf /var/lib/apt/lists/*
+ 
+# create python virtual environment
+#RUN python3 -m venv ${PYTHON_VENV_PATH}
+ 
+# setup python environment
+#RUN chown -R rstudio:rstudio ${WORKON_HOME}
+#ENV PATH ${PYTHON_VENV_PATH}/bin:${PATH}
+ 
+# install python libraries
+#USER rstudio
+#RUN pip3 install \
+#    tensorflow-cpu==2.9.2 \
+#    tensorflow-probability==0.14.1 \
+#    keras==2.9.0 \
+#    --no-cache-dir
+ 
+#USER root
+#COPY . .
+ 
+# install R packages
+#RUN Rscript install_packages.R
+RUN R -e "install.packages(c('car', 'conflicted', 'igraph', 'magick', 'mapproj', 'maps', 'ranger', 'tidymodels', 'workflows', 'tune', 'XML', 'C50', 'kernlab', 'klaR', 'discrim', 'kknn'))"
 
-ADD *.py /
-ADD *.R /
-ADD *.sh /
+#RUN R -e "install.packages(c('keras', 'reticulate', 'tensorflow'))"
+#RUN R -e "reticulate::install_python(version = '3.10')"
+#RUN R -e "library(tensorflow);tensorflow::install_tensorflow(version = 'cpu')"
+#RUN R -e "library(keras);keras::install_keras(version = 'cpu')"
+ 
+# set R lib path to be able to install packages
+#RUN echo ".libPaths('/usr/local/lib/R/site-library')\n" &gt;&gt; /home/rstudio/.Rprofile
+#RUN chown -R rstudio /usr/local/lib/R/site-library
+ 
+# setup config for rstudio user
+#RUN mkdir -p $HOME/.R/ \
+## compiler flags
+#    && echo "CXXFLAGS=-O3 -mtune=native -march=native -Wno-unused-variable -Wno-unused-function -flto -ffat-lto-objects  -Wno-unused-local-typedefs -Wno-ignored-attributes -Wno-deprecated-declarations\n" &gt;&gt; $HOME/.R/Makevars \
+#    && echo "options(mc.cores = parallel::detectCores())\n" &gt;&gt; /home/rstudio/.Rprofile
 
-ENTRYPOINT ["bash", "/exec.sh"]
+
+
+
+
+#RUN R -e "install.packages(c('car', 'conflicted', 'igraph', 'magick', 'mapproj', 'maps', 'ranger', 'tidymodels', 'workflows', 'tune', 'XML'))"
+
+#ENV PYTHON_CONFIGURE_OPTS="--enable-shared"
+#ENV RETICULATE_AUTOCONFIGURE="0"
+#ENV PURGE_BUILDDEPS="false"
+#ENV VIRTUAL_ENV="/opt/venv"
+#COPY install_python.sh /rocker_scripts/install_python.sh
+#RUN bash /rocker_scripts/install_python.sh
+
+#RUN R -e "install.packages('reticulate')"
+#RUN R -e "library(reticulate);reticulate::install_python()"
+#RUN R -e "install.packages('keras')"
+#RUN R -e "library(keras);install_keras()"
+#RUN R -e "library(tensorflow);install_tensorflow()"
+
+#ADD *.py /
+#ADD *.R /
+#ADD *.sh /
+
+#ENTRYPOINT ["bash", "/exec.sh"]
