@@ -80,8 +80,6 @@ RUN R -e "install.packages(c('car', 'conflicted', 'igraph', 'magick', 'mapproj',
 
 
 
-#RUN R -e "install.packages(c('car', 'conflicted', 'igraph', 'magick', 'mapproj', 'maps', 'ranger', 'tidymodels', 'workflows', 'tune', 'XML'))"
-
 #ENV PYTHON_CONFIGURE_OPTS="--enable-shared"
 #ENV RETICULATE_AUTOCONFIGURE="0"
 #ENV PURGE_BUILDDEPS="false"
@@ -95,8 +93,8 @@ RUN R -e "install.packages(c('car', 'conflicted', 'igraph', 'magick', 'mapproj',
 #RUN R -e "library(keras);install_keras()"
 #RUN R -e "library(tensorflow);install_tensorflow()"
 
-#ADD *.py /
-#ADD *.R /
-#ADD *.sh /
+ADD *.py /
+ADD *.R /
+ADD *.sh /
 
-#ENTRYPOINT ["bash", "/exec.sh"]
+ENTRYPOINT ["bash", "/exec.sh"]
