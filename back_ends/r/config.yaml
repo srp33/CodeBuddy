@@ -1,6 +1,6 @@
 description: Please write R code based on the instructions provided.
-memory_allowed_mb: 500
-timeout_seconds: 60
+memory_allowed_mb: 1028
+timeout_seconds: 120
 code_completion_path: ace/mode/r
 output_types:
     jpg: |-
