@@ -246,12 +246,7 @@
 
             <script>
                 function get_user_solution() {
-                    // This line allows you to execute only the selected part of the code.
-                    // But it may cause confusion to students, so it is disabled.
-                    //user_code = editor.getSelectedText().trim();
-                    //if (user_code == "")
-                    user_code = editor.getValue().trim();
-                    return editor.getValue().trim();
+                    return [editor.getValue().trim()];
                 }
 
                 {% if use_virtual_assistant %}

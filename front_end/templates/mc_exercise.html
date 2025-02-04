@@ -81,7 +81,7 @@
                     </div>
 
                     <div class="control mt-0 mb-2" id="user_code_area">
-                        <textarea class="textarea is-fullwidth monospace" rows="6" id="user_code"></textarea>
+                        <textarea class="textarea is-fullwidth monospace" rows="6" id="user_code">{{ presubmission }}</textarea>
                     </div>
 
                     <div class="mt-2 mb-0">
@@ -108,12 +108,12 @@
                         <div class="is-size-5 mb-2">
                             {% if num_correct_options == 1 %}
                                 <label class="radio">
-                                    <input type="radio" name="answer" value="{{ i }}" />
+                                    <input type="radio" name="answer" value="{{ i }}" onchange="save_presubmission();" />
                                     {{ answer_option }}
                                 </label>
                             {% else %}
                                 <label class="checkbox">
-                                    <input type="checkbox" name="answer" value="{{ i }}" />
+                                    <input type="checkbox" name="answer" value="{{ i }}" onchange="save_presubmission();" />
                                     {{ answer_option }}
                                 </label>
                             {% end %}
@@ -193,6 +193,10 @@
 
             <script>
                 function get_user_solution() {
+                    if (submissions.length > 0) {
+                        return [];
+                    }
+
                     {% if num_correct_options == 1 %}
                         var selectedValue = $('input[name="answer"]:checked').val();
 
@@ -213,10 +217,16 @@
                         }
                     {% end %}
 
-                    return selectedValue;
+                    if (typeof sandbox_editor !== "undefined" && sandbox_editor !== null) {
+                        return [selectedValue, sandbox_editor.getValue()];
+                    }
+                    else {
+                        return [selectedValue];
+                    }
                 }
 
                 var submissions = {{ jsonify(submissions) }};
+                var presubmission = {{ jsonify(presubmission) }};
 
                 let submitButton = document.getElementById("submit_button");
 
@@ -236,7 +246,8 @@
                         }
                     }
                 }
-                else {
+
+                {% if len(selected_answer_indices) > 0 %}
                     {% if len(answer_options) == 1 %}
                         $(`input[name="answer"][value="{{ selected_answer_indices[0] }}"]`).prop('checked', true);
                     {% else %}
@@ -248,7 +259,9 @@
                         // Use the constructed selector to check the corresponding checkboxes
                         $(selector).prop('checked', true);
                     {% end %}
+                {% end %}
 
+                if (submissions.length > 0) {
                     hide_submit_button();
                     get_mc_submission();
                 }
@@ -313,8 +326,8 @@
                     var sandbox_editor = ace.edit("user_code", {
                         theme: "ace/theme/{{ user_info['ace_theme'] }}",
                         autoScrollEditorIntoView: false,
-                        minLines: 6,
-                        maxLines: 6,
+                        minLines: 10,
+                        maxLines: 10,
                         fontSize: "12pt"
                     });
 
@@ -335,10 +348,14 @@
                     {% end %}
 
                     sandbox_editor.getSession().setMode("{{ code_completion_path }}");
+
+                    sandbox_editor.getSession().on("change", function() {
+                        save_presubmission();
+                    });
                 {% end %}
 
                 setInterval(function() {
-                    reloadIfRestricted(false);
+                    reloadIfRestricted(true);
                 }, 60000);
             </script>
         {% else %}

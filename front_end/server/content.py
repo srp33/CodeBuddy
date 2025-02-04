@@ -1174,7 +1174,7 @@ WHERE su.course_id = ?
 
 UNION
 
-SELECT -1, code, FALSE, NULL, 0, NULL
+SELECT -1, presubmission as code, FALSE, NULL, 0, NULL
 FROM presubmissions
 WHERE course_id = ?
   AND assignment_id = ?
@@ -1945,11 +1945,11 @@ ORDER BY student_name
 
         return exercise_basics["id"]
 
-    def save_presubmission(self, course_id, assignment_id, exercise_id, user_id, code):
-        sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, code)
+    def save_presubmission(self, course_id, assignment_id, exercise_id, user_id, presubmission):
+        sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, presubmission)
                  VALUES (?, ?, ?, ?, ?)'''
 
-        self.execute(sql, [course_id, assignment_id, exercise_id, user_id, code])
+        self.execute(sql, [course_id, assignment_id, exercise_id, user_id, presubmission])
 
     async def save_thumb_status(self, course_id, assignment_id, exercise_id, user_id, item_description, status):
         sql = '''INSERT OR REPLACE INTO thumbs (course_id, assignment_id, exercise_id, user_id, item_description, status)

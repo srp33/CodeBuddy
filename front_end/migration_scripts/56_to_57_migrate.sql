@@ -1,0 +1,1 @@
+ALTER TABLE presubmissions RENAME COLUMN code TO presubmission;

@@ -78,13 +78,13 @@
                                     (not complete)
                                 {% end %}
                             </div>
-            
-                            <div class="mb-4">
-                                <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}">More details</a>
-                            </div>
                         {% else %}
                             <div class="mt-4 mb-2">This student has not completed this exercise.</div>
                         {% end %}
+
+                        <div class="mb-4">
+                            <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{exercise_basics['id'] }}/{{ student[0] }}">More details</a>
+                        </div>
                     </div>
                 </div>
             {% end %}

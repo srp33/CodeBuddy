@@ -56,7 +56,8 @@ class ExerciseHandler(BaseUserHandler):
                     "exercise_details": exercise_details,
                     "exercise_statuses": exercise_statuses,
                     "next_exercise": next_prev_exercises["next"],
-                    "prev_exercise": next_prev_exercises["previous"], "presubmission": presubmission, "submissions": submissions,
+                    "prev_exercise": next_prev_exercises["previous"],
+                    "submissions": submissions,
                     "domain": self.settings_dict['domain'],
                     "timer_status": timer_status,
                     "timer_deadline": timer_deadline,
@@ -76,6 +77,7 @@ class ExerciseHandler(BaseUserHandler):
                 args["answer_options"] = answer_options
 
                 selected_answer_indices = []
+
                 if len(submissions) > 0:
                     answers = submissions[0]["code"].split("|")
 
@@ -95,6 +97,26 @@ class ExerciseHandler(BaseUserHandler):
 
                     submissions[0]["solution_descriptions_dict"] = solution_descriptions_dict
 
+                    if presubmission:
+                        presubmission_parts = presubmission.split("sandbox_code:")
+
+                        if len(presubmission_parts) > 1:
+                            presubmission = presubmission_parts[1]
+                        else:
+                            presubmission = ""
+                elif presubmission:
+                    presubmission_parts = presubmission.split("sandbox_code:")
+
+                    selected_answer_indices = []
+                    if presubmission_parts[0] != "":
+                        selected_answer_indices = [int(x) for x in presubmission_parts[0].split("|")]
+
+                    if len(presubmission_parts) > 1:
+                        presubmission = presubmission_parts[1]
+                else:
+                    presubmission = ""
+
+                args["presubmission"] = presubmission
                 args["selected_answer_indices"] = selected_answer_indices
 
                 args["num_correct_options"] = sum(json.loads(exercise_details["solution_code"]).values())
@@ -143,6 +165,7 @@ class ExerciseHandler(BaseUserHandler):
                 if exercise_details["back_end"] != "multiple_choice":
                     back_end_config = get_back_end_config(exercise_details["back_end"])
 
+                args["presubmission"] = presubmission
                 args["back_end_description"] = back_end_config["description"]
                 args["code_completion_path"] = back_end_config["code_completion_path"]
                 args["tests"] = tests

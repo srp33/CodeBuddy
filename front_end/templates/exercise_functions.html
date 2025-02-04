@@ -30,7 +30,7 @@
     {% end %}
 
     function run_code(show_submit_warning) {
-        let user_solution = get_user_solution();
+        let user_solution = get_user_solution()[0];
         if (user_solution == "")
             return false;
 
@@ -67,7 +67,7 @@
     }
 
     function submit() {
-        let user_solution = get_user_solution();
+        let user_solution = get_user_solution()[0];
         if (user_solution == "") {
             return false;
         }
@@ -571,7 +571,7 @@
     }
 
     function showSubmitModal() {
-        let user_solution = get_user_solution();
+        let user_solution = get_user_solution()[0];
         if (user_solution == "") {
             return false;
         }
@@ -626,38 +626,55 @@
     }
 
     function save_presubmission() {
-    user_code = editor.getValue();
-    if (user_code.trim() == "")
-        return false;
+        var presubmission_items = get_user_solution();
 
-    $.ajax({
+        if (presubmission_items.length == 0)
+            return;
+
+        var presubmission;
+        if (presubmission_items.length == 1) {
+            presubmission = presubmission_items[0];
+        }
+        else {
+            presubmission = `${presubmission_items[0]}sandbox_code:${presubmission_items[1]}`;
+        }
+
+        $.ajax({
             type: 'POST',
             url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-            data: {"user_code": user_code},
+            data: {"presubmission": presubmission},
             async: true
             })
         .done(function(result) {
             if (result == "") {
                 codeChanged = false;
 
-                last_saved_at = new Intl.DateTimeFormat('default', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    second: 'numeric',
-                }).format(Date.now());
+                if (typeof saved_div !== "undefined" && saved_div !== null) {
+                    last_saved_at = new Intl.DateTimeFormat('default', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric',
+                    }).format(Date.now());
 
-                saved_div.innerHTML = `<em>(saved at ${last_saved_at})</em>`;
+                    saved_div.innerHTML = `<em>(saved at ${last_saved_at})</em>`;
+                }
             }
             else {
                 console.log("An error occurred when the user attempted to save their code.");
                 console.log(result);
-                saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
+
+                if (typeof saved_div !== "undefined" && saved_div !== null) {
+                    saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
+                }
             }
         })
         .fail(function(result) {
             console.log("An error occurred when the user attempted to save their code.");
             console.log(result);
-            saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
+
+            if (typeof saved_div !== "undefined" && saved_div !== null) {
+                saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
+            }
         });
     }
 

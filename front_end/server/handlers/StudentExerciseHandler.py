@@ -47,8 +47,16 @@ class StudentExerciseHandler(BaseUserHandler):
                     answer_options = [(answer_option, is_correct) for answer_option, is_correct in sorted(solutions_dict.items())]
                     args["answer_options"] = answer_options
 
+                    if presubmission and "sandbox_code:" in presubmission:
+                        args["presubmission"] = presubmission.split("sandbox_code:")[1]
+                    else:
+                        args["presubmission"] = ""
+
                     self.render("mc_student_exercise.html", **args)
                 else:
+                    if has_passed:
+                        args["presubmission"] = ""
+
                     self.render("student_exercise.html", **args)
             else:
                 self.render("permissions.html")

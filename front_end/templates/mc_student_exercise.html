@@ -43,9 +43,15 @@
             </div>
 
             {% if len(submissions) == 0 %}
-                <div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">The student has not yet provided an answer.</div>
+                <div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">The student has not yet submitted.</div>
             {% else %}
                 <div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">The student provided the following answer(s):<br /><br />{{ submissions[0]["code"] }}</div>
+            {% end %}
+
+            {% if presubmission != "" %}
+                <div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">The student did record the following:<br /><br />
+                    <pre>{{ presubmission }}</pre>
+                </div>
             {% end %}
 
             {% if exercise_basics["enable_pair_programming"] %}
