@@ -1,7 +1,7 @@
 arrow==1.2.3
 concurrent-log-handler==0.9.24
 fastapi==0.109.1
-gunicorn==22.0.0
+gunicorn==23.0.0
 markdown2[all]==2.4.8
 openai==0.27.8
 Pillow==10.3.0
