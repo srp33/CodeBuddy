@@ -8,6 +8,10 @@
     {% if course_basics["exists"] %}
         <h4>{{ assignment_basics["title"] }}</h4>
 
+        <p>
+            {{ assignment_details["introduction"] }}
+        </p>
+
         {% if assignment_basics["exists"] %}
             {% if error == "restrict_other_assignments" %}
                 <p>You are currently taking a timed assignment, and the instructor has restricted access to all other assignments while you are taking it.</p>
