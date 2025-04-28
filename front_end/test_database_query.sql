@@ -1,13 +1,13 @@
 WITH
   variables AS (
     SELECT
-      2 AS course_id,
+      52 AS course_id,
       --NULL AS assignment_id,
-      157 AS assignment_id,
+      2639 AS assignment_id,
       NULL AS exercise_id,
       -- 15633 AS exercise_id,
-      NULL AS user_id
-      -- 'srp33' AS user_id
+      -- NULL AS user_id
+      'srp33' AS user_id
   ),
 
   valid_assignments AS (
@@ -258,19 +258,14 @@ WITH
   )
 
 SELECT
-  u.user_id AS id,
-  u.name,
-  scr.score,
-  sts.num_completed,
-  ane.num_exercises,
-  sts.last_submission_timestamp,
-  sts.num_times_pair_programmed
-FROM assignment_statuses sts
-INNER JOIN assignment_scores scr
-  ON sts.assignment_id = scr.assignment_id
-  AND sts.user_id = scr.user_id
-INNER JOIN valid_users u
-  ON sts.user_id = u.user_id
-INNER JOIN assignments_num_exercises ane
-  ON sts.assignment_id = ane.assignment_id
-ORDER BY u.name
+  es.assignment_id,
+  es.user_id,
+  adjust_assignment_score(ROUND(AVG(esw.score * esw.weight) / AVG(esw.weight), 2), a.custom_scoring) AS score
+FROM exercise_statuses es
+INNER JOIN exercise_scores_weights esw
+  ON es.assignment_id = esw.assignment_id
+  AND es.exercise_id = esw.exercise_id
+  AND es.user_id = esw.user_id
+INNER JOIN valid_assignments a
+  ON es.assignment_id = a.assignment_id
+GROUP BY es.assignment_id, es.user_id
