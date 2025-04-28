@@ -1,0 +1,27 @@
+{
+  "shared": {
+    "js": "static/shared.js"
+  },
+  "exercise": {
+    "css": "static/exercise.css",
+    "js": "static/exercise.js"
+  },
+  "css/mystyles": {
+    "css": "static/css/mystyles.css"
+  },
+  "css/styles": {
+    "css": "static/css/styles.css"
+  },
+  "css/bulma-tooltip": {
+    "css": "static/css/bulma-tooltip.css"
+  },
+  "css/profile-styles": {
+    "css": "static/css/profile-styles.css"
+  },
+  "css/modal": {
+    "css": "static/css/modal.css"
+  },
+  "metadata": {
+    "timestamp": "2023-12-27T13:42:26.053Z"
+  }
+}
