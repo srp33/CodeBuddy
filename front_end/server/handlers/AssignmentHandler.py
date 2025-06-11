@@ -60,6 +60,7 @@ class AssignmentHandler(BaseUserHandler):
             return self.render("assignment_admin.html", courses=self.courses, assignment_statuses=await self.get_assignment_statuses(course_basics), exercises=self.content.get_exercises(course_basics, assignment_basics, show_hidden=True), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, course_options=[x[1] for x in self.courses if str(x[0]) != course_id], exercise_summary_scores=exercise_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), download_file_name=get_scores_download_file_name(assignment_basics))
 
         assignment_statuses = await self.get_assignment_statuses(course_basics)
+        assignment_is_complete = len([x for x in assignment_statuses if x[0] == assignment_basics["id"] and x[2]["completed"]]) > 0
 
         render_status = get_assignment_status(self, course_id, assignment_details, get_current_datetime())
 
@@ -85,7 +86,7 @@ class AssignmentHandler(BaseUserHandler):
             if assignment_details["custom_scoring"] != "":
                 custom_scoring_list = json.loads(assignment_details["custom_scoring"])
 
-            return self.render("assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, custom_scoring_list=custom_scoring_list, 
+            return self.render("assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_is_complete=assignment_is_complete, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, custom_scoring_list=custom_scoring_list, 
             timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, confirmation_code=confirmation_code, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
         else:
             return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=render_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))

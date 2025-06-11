@@ -1,13 +1,13 @@
 WITH
   variables AS (
     SELECT
-      2 AS course_id,
-      --NULL AS assignment_id,
-      157 AS assignment_id,
+      51 AS course_id,
+      NULL AS assignment_id,
+      -- 2737 AS assignment_id,
       NULL AS exercise_id,
       -- 15633 AS exercise_id,
-      NULL AS user_id
-      -- 'srp33' AS user_id
+      -- NULL AS user_id
+      'cfunk0' AS user_id
   ),
 
   valid_assignments AS (
@@ -21,13 +21,22 @@ WITH
       hour_timer,
       minute_timer,
       restrict_other_assignments,
-      custom_scoring
+      custom_scoring,
+      assignment_group_id
     FROM assignments
     WHERE course_id = (SELECT course_id FROM variables)
       AND (
         (SELECT assignment_id FROM variables) IS NULL
         OR assignment_id = (SELECT assignment_id FROM variables)
       )
+  ),
+
+  valid_assignment_groups AS (
+    SELECT
+      assignment_group_id,
+      title
+    FROM assignment_groups
+    WHERE course_id = (SELECT course_id FROM variables)
   ),
 
   valid_exercises AS (
@@ -38,7 +47,8 @@ WITH
       e.visible,
       e.back_end,
       e.enable_pair_programming,
-      e.weight
+      e.weight,
+      e.back_end = 'multiple_choice' AS is_multiple_choice
     FROM exercises e
     INNER JOIN valid_assignments a
       ON e.assignment_id = a.assignment_id
@@ -71,19 +81,22 @@ WITH
 
   valid_submissions AS (
     SELECT
-      assignment_id,
-      exercise_id,
-      user_id,
-      submission_id,
-      code,
-      passed AS completed,
-      date AS submission_timestamp,
-      partner_id
+      s.assignment_id,
+      s.exercise_id,
+      s.user_id,
+      s.submission_id,
+      s.code,
+      (s.passed OR e.is_multiple_choice) AS completed,
+      s.date AS submission_timestamp,
+      s.partner_id
     FROM submissions s
-    WHERE course_id = (SELECT course_id FROM variables)
-      AND assignment_id IN (SELECT assignment_id FROM valid_assignments)
-      AND exercise_id IN (SELECT exercise_id FROM valid_exercises)
-      AND user_id IN (SELECT user_id FROM valid_users)
+    INNER JOIN valid_exercises e
+      ON s.assignment_id = e.assignment_id
+      AND s.exercise_id = e.exercise_id
+    WHERE s.course_id = (SELECT course_id FROM variables)
+      -- AND s.assignment_id IN (SELECT assignment_id FROM valid_assignments)
+      -- AND exercise_id IN (SELECT exercise_id FROM valid_exercises)
+      AND s.user_id IN (SELECT user_id FROM valid_users)
   ),
 
   exercise_statuses AS (
@@ -120,6 +133,7 @@ WITH
         NULL AS last_submission_timestamp
       FROM valid_exercises e
       INNER JOIN valid_users u
+      WHERE e.visible = 1
     )
     GROUP BY assignment_id, exercise_id, user_id
   ),
@@ -139,6 +153,7 @@ WITH
       ON es.assignment_id = s.assignment_id
       AND es.exercise_id = s.exercise_id
       AND es.user_id = s.user_id
+    WHERE e.visible = 1
   ),
 
   latest_completed_submissions AS (
@@ -199,6 +214,7 @@ WITH
       assignment_id,
       COUNT(exercise_id) as num_exercises
     FROM valid_exercises
+    WHERE visible = 1
     GROUP BY assignment_id
   ),
 
@@ -214,6 +230,7 @@ WITH
       AND es.user_id = esw.user_id
     INNER JOIN valid_assignments a
       ON es.assignment_id = a.assignment_id
+    WHERE a.visible = 1
     GROUP BY es.assignment_id, es.user_id
   ),
 
@@ -230,6 +247,7 @@ WITH
       AND a.has_timer = 1
       AND uas.user_id IN (SELECT user_id FROM valid_users)
     WHERE uas.course_id = (SELECT course_id FROM variables)
+      AND a.visible = 1
   ),
 
   assignment_statuses AS (
@@ -257,20 +275,5 @@ WITH
     GROUP BY es.assignment_id, es.user_id
   )
 
-SELECT
-  u.user_id AS id,
-  u.name,
-  scr.score,
-  sts.num_completed,
-  ane.num_exercises,
-  sts.last_submission_timestamp,
-  sts.num_times_pair_programmed
-FROM assignment_statuses sts
-INNER JOIN assignment_scores scr
-  ON sts.assignment_id = scr.assignment_id
-  AND sts.user_id = scr.user_id
-INNER JOIN valid_users u
-  ON sts.user_id = u.user_id
-INNER JOIN assignments_num_exercises ane
-  ON sts.assignment_id = ane.assignment_id
-ORDER BY u.name
+SELECT *
+FROM exercise_statuses

@@ -58,6 +58,37 @@
                 <textarea id="introduction" class="textarea" rows=10 placeholder="Please provide an introduction for this assignment."></textarea>
             </div>
         </div>
+
+        <div class="mt-5
+            {% if len(assignment_groups) == 0 %}
+                is-hidden
+            {% end %}
+        ">
+            <div>
+                <strong>Assignment group: </strong>
+            </div>
+            
+            <div class="mt-2 mb-4">
+                <div class="field is-grouped mt-4">
+                    <div class="select is-grey">
+                        <select id="assignment_group" class="is-size-5">
+                            <option value="-1">[None]</option>
+                            {% for assignment_group in assignment_groups %}
+                                <option value="{{ assignment_group[1] }}">
+                                    {{ assignment_group[0] }}
+                                </option>
+                            {% end %}
+                        </select>
+                    </div>
+
+                    <div class="pt-2 ml-4">
+                        <a href="/manage_assignment_groups/{{ course_basics['id'] }}" class="is-size-5" target="_blank">
+                        Manage assignment groups
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="shadow-box">
@@ -70,14 +101,14 @@
             </p>
 
             <div id="selected_prerequisite_options_div">
-                <div class="select is-grey">
-                    <select id="prerequisite_assignments_select" class="edit-select">
+                <div class="select is-grey mb-3">
+                    <select id="prerequisite_assignments_select" class="is-size-5">
                     </select>
                 </div>
 
-                <div class="mt-4">
-                    <button class="button is-primary is-outlined" onclick="addPrerequisite(this);">Add selected assignment as a prerequisite</button>
-                </div>
+                <button class="button is-primary is-outlined is-size-5 ml-2" onclick="addPrerequisite(this);">
+                    Add selected assignment as a prerequisite
+                </button>
             </div>
 
             <div id="prerequisite_assignments_div" class="has-background-warning-light pl-2 pt-1 pr-2 pb-4 ml-0 mt-4 mr-4 mb-4 invisible">
@@ -96,7 +127,7 @@
             </label>:
         </p>
 
-        <p class="select is-grey">
+        <p class="select is-grey is-size-5">
             <select id="has_start_date" onchange="showHideStartDate(this.value)" class="edit-select">
                 <option selected>None</option>
                 <option>Select</option>
@@ -151,7 +182,7 @@
                 </div>
 
                 <div id="view_answer_late_question" class="pt-0 pl-4 pr-4">
-                    <strong>Allow students to view the answer after the due date has passed: </strong>
+                    <strong>When students have not completed an exercise, allow them to view the solution after they are no longer allowed to submit: </strong>
                 </div>
                 <div class="select is-grey mt-4 ml-4 mb-4">
                     <select id="view_answer_late_select" class="edit-select">
@@ -765,6 +796,7 @@
         const title = getValue("title").trim();
         const visible = getValue("visible") == "Yes";
         const introduction = getValue("introduction");
+        const assignment_group_id = getValue("assignment_group") == -1 ? null : getValue("assignment_group");
 
         if (title == "")
             return(showResultMessage("Please provide a title.", "danger"));
@@ -815,6 +847,11 @@
             has_timer = true;
             hour_timer = getValue("hour_select");
             minute_timer = getValue("minute_select");
+
+            if (hour_timer == 24 && minute_timer > 0) {
+                return(showResultMessage("The maximum allowed limit for the timer is 24 hours and 0 minutes.", "danger"));
+            }
+
             restrict_other_assignments = getValue("restrict_other_assignments_select") == "Yes";
         }
 
@@ -830,6 +867,7 @@
             "allow_late": allow_late,
             "allowed_external_urls": allowed_external_urls,
             "allowed_ip_addresses": allowed_ip_addresses,
+            "assignment_group_id": assignment_group_id,
             "due_date": due_date,
             "has_timer": has_timer,
             "hour_timer": hour_timer,
@@ -895,6 +933,7 @@
     setValue("title", assignment_basics_obj["title"]);
     setValue("visible", assignment_basics_obj["visible"] ? "Yes" : "No");
     setValue("introduction", assignment_details_obj["introduction"]);
+    setValue("assignment_group", assignment_details_obj["assignment_group_id"] === null ? -1 : assignment_details_obj["assignment_group_id"]);
 
     //TODO: https://doc.mh-s.de/bulma-calendar/
     var start_date_picker = flatpickr("#start_date_picker", {

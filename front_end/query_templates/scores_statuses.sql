@@ -18,13 +18,22 @@ WITH
       hour_timer,
       minute_timer,
       restrict_other_assignments,
-      custom_scoring
+      custom_scoring,
+      assignment_group_id
     FROM assignments
     WHERE course_id = (SELECT course_id FROM variables)
       AND (
         (SELECT assignment_id FROM variables) IS NULL
         OR assignment_id = (SELECT assignment_id FROM variables)
       )
+  ),
+
+  valid_assignment_groups AS (
+    SELECT
+      assignment_group_id,
+      title
+    FROM assignment_groups
+    WHERE course_id = (SELECT course_id FROM variables)
   ),
 
   valid_exercises AS (
@@ -35,7 +44,8 @@ WITH
       e.visible,
       e.back_end,
       e.enable_pair_programming,
-      e.weight
+      e.weight,
+      e.back_end = 'multiple_choice' AS is_multiple_choice
     FROM exercises e
     INNER JOIN valid_assignments a
       ON e.assignment_id = a.assignment_id
@@ -68,19 +78,22 @@ WITH
 
   valid_submissions AS (
     SELECT
-      assignment_id,
-      exercise_id,
-      user_id,
-      submission_id,
-      code,
-      passed AS completed,
-      date AS submission_timestamp,
-      partner_id
+      s.assignment_id,
+      s.exercise_id,
+      s.user_id,
+      s.submission_id,
+      s.code,
+      (s.passed OR e.is_multiple_choice) AS completed,
+      s.date AS submission_timestamp,
+      s.partner_id
     FROM submissions s
-    WHERE course_id = (SELECT course_id FROM variables)
-      AND assignment_id IN (SELECT assignment_id FROM valid_assignments)
-      AND exercise_id IN (SELECT exercise_id FROM valid_exercises)
-      AND user_id IN (SELECT user_id FROM valid_users)
+    INNER JOIN valid_exercises e
+      ON s.assignment_id = e.assignment_id
+      AND s.exercise_id = e.exercise_id
+    WHERE s.course_id = (SELECT course_id FROM variables)
+      -- AND s.assignment_id IN (SELECT assignment_id FROM valid_assignments)
+      -- AND exercise_id IN (SELECT exercise_id FROM valid_exercises)
+      AND s.user_id IN (SELECT user_id FROM valid_users)
   ),
 
   exercise_statuses AS (

@@ -17,6 +17,9 @@
                 <thead>
                     <tr>
                         <th>Assignment</th>
+                        {% if len(assignment_groups) > 0 %}
+                            <th>Group</th>
+                        {% end %}
                         <th style="text-align: center;">Visibility</th>
                         <th style="text-align: center;">Start Date</th>
                         <th style="text-align: center;">Due Date</th>
@@ -35,8 +38,11 @@
                 <tbody>
                 {% for assignment in assignment_statuses %}
                     <tr>
-                        <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]['title'] }}</a></td>
-                        {% if assignment[1]["visible"] == 0 %}
+                        <td><a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[2]['title'] }}</a></td>
+                        {% if len(assignment_groups) > 0 %}
+                            <td>{{ assignment[1] }}</td>
+                        {% end %}
+                        {% if assignment[2]["visible"] == 0 %}
                             <td style="text-align: center;">Hidden</td>
                             <td> </td>
                             <td> </td>
@@ -44,20 +50,20 @@
                             <td> </td>
                         {% else %}
                             <td style="text-align: center;">Visible</td>
-                            {% if "start_date" in assignment[1] and assignment[1]["start_date"] %}
+                            {% if "start_date" in assignment[2] and assignment[2]["start_date"] %}
                                 <td style="text-align: center;">
                                     <script>
-                                        var d = new Date("{{ assignment[1]['start_date'] }}");
+                                        var d = new Date("{{ assignment[2]['start_date'] }}");
                                         document.write(d.toLocaleString());
                                     </script>
                                 </td>
                             {% else %}
                                 <td></td>
                             {% end %}
-                            {% if "due_date" in assignment[1] and assignment[1]["due_date"] %}
+                            {% if "due_date" in assignment[2] and assignment[2]["due_date"] %}
                                 <td style="text-align: center;">
                                     <script>
-                                        var d = new Date("{{ assignment[1]['due_date'] }}");
+                                        var d = new Date("{{ assignment[2]['due_date'] }}");
                                         document.write(d.toLocaleString());
                                     </script>
                                 </td>
@@ -117,6 +123,8 @@
 
             <a class="button" href="/edit_course/{{ course_basics['id'] }}">Edit course</a>
 
+            <a class="button" href='/manage_assignment_groups/{{ course_basics['id'] }}'>Manage assignment groups</a>
+
             <a class="button" onclick="showPostModal('copy_course', 'Copy course', {}, '')">Copy course</a>
 
             <a class="button" onclick="showPostModal('delete_course', 'Delete course', {}, '/')">Delete course</a>
@@ -136,7 +144,7 @@
             var previous_title = "";
             for (let assignment of {{ jsonify(assignment_statuses) }}) {
                 if (assignment[0] == data_obj.assignment_id) {
-                    previous_title = assignment[1]["title"];
+                    previous_title = assignment[2]["title"];
                     break;
                 }
             }

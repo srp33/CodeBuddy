@@ -48,7 +48,8 @@ class EditCourseHandler(BaseUserHandler):
             if course_basics["title"] == "" or course_details["introduction"] == "":
                 result = "Error: Missing title or introduction."
             else:
-                if self.content.has_duplicate_title(self.courses, course_basics["id"], course_basics["title"]):
+                current_titles = [x[1]["title"] for x in self.courses if x[0] != course_basics["id"]]
+                if course_basics["title"] in current_titles:
                     result = "Error: A course with that title already exists."
                 else:
                     #if re.search(r"[^\w ]", title):

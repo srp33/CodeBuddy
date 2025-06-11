@@ -173,18 +173,6 @@ class ExerciseHandler(BaseUserHandler):
                 args["virtual_assistant_interactions"] = virtual_assistant_interactions
                 args["virtual_assistant_max_per_exercise"] = virtual_assistant_max_per_exercise
 
-    #                    "num_submissions": len(submissions),
-
-                # if studio_mode:
-                #     exercise_details['show_instructor_solution'] = bool(exercise_details['show_instructor_solution'] and (exercise_details['solution_code'] != "" or exercise_details['solution_description'] != ""))
-
-                #     del exercise_details['solution_code']
-                #     del exercise_details['solution_description']
-
-                #     args['exercise_details'] = exercise_details
-                #     self.render("spa.html", template_variables=args, **args)
-                # else:
-
                 self.render("exercise.html", **args)
 
         except Exception as inst:

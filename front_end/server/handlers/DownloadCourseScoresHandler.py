@@ -20,7 +20,7 @@ class DownloadCourseScoresHandler(BaseUserHandler):
                 include_header = True
 
                 for assignment_basics in self.content.get_assignments(course_basics, show_hidden=False):
-                    tsv_text = await self.content.create_assignment_scores_text(course_basics, assignment_basics[1], include_header=include_header)
+                    tsv_text = await self.content.create_assignment_scores_text(course_basics, assignment_basics[2], include_header=include_header)
 
                     self.write(tsv_text)
                     include_header = False

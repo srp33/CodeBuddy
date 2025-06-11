@@ -9,12 +9,18 @@
         {% if exercise_basics["exists"] %}
             <link rel="stylesheet" href="/static/css/modal.css">
 
-            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
-                <div class='notification is-warning'>The due date for this assignment has passed, but your instructor has enabled viewing the solution.</div>
-            {% end %}
+            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] %}
+                <div class='notification is-warning'>
+                    The due date for this assignment has passed.
 
-            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
-                <div class='notification is-warning'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
+                    {% if not has_passed and (not assignment_details["allow_late"] or assignment_details["late_percent"] == 0) and assignment_details["view_answer_late"] and exercise_details["show_instructor_solution"] %}
+                        Click <a href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
+                    {% end %}
+
+                    {% if assignment_details["allow_late"] and assignment_details["late_percent"] > 0 and not has_passed %}
+                        You can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.
+                    {% end %}
+                </div>
             {% end %}
 
             <div class="has-background-white mt-0 mb-2 pl-4 pt-4 pr-4 pb-1">
@@ -122,15 +128,17 @@
                 </div>
             </div>
 
-            <div class="buttons mb-0">
-                <button class="button is-medium is-dark mt-1 mb-0" id='submit_button'>Submit</button>
+            {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or (assignment_details["allow_late"] and assignment_details["late_percent"] > 0) %}
+                <div class="buttons mb-0">
+                    <button class="button is-medium is-dark mt-1 mb-0" id='submit_button'>Submit</button>
 
-                {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
-                    <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2 mt-1 mb-0" type="button" style="cursor: default;"></button>
+                    {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                        <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2 mt-1 mb-0" type="button" style="cursor: default;"></button>
 
-                    <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning mt-1 mb-0" type="button" style="cursor: pointer;">End assignment</button>
-                {% end %}
-            </div>
+                        <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning mt-1 mb-0" type="button" style="cursor: pointer;">End assignment</button>
+                    {% end %}
+                </div>
+            {% end %}
 
             <div class="mt-2 mb-2" id="result_message"></div>
 
@@ -233,7 +241,7 @@
                 if (submissions.length == 0) {
                     if (submitButton != null) {
                         submitButton.onclick = function() {
-                            {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or assignment_details["allow_late"] %}
+                            {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or (assignment_details["allow_late"] and assignment_details["late_percent"] > 0) %}
                                 {% if exercise_details["enable_pair_programming"] %}
                                     showSubmitModal();
                                 {% else %}

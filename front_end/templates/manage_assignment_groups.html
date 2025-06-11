@@ -1,0 +1,175 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<link rel="stylesheet" href="/static/css/modal.css">
+        
+<div id="remove_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <p>Are you sure you want to remove this assignment group?</p>
+
+        <article  id="remove_error_message" class="message is-danger invisible">
+        </article>
+
+        <p class="buttons">
+            <a id="remove_cancel_button" class="modal-button button is-light">Cancel</a>
+            <button type="button" id="remove_button" class="modal-button button is-dark">Remove</button>
+        </p>
+    </div>
+</div>
+
+<div id="add_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <h4>Add an assignment_group:</h4>
+
+        <article  id="add_error_message" class="message is-danger invisible">
+        </article>
+
+        <input class="input is-medium is-primary" type="text" id="new_assignment_group_title" placeholder="Enter an assignment group name." />
+        
+        <p class="buttons">
+            <a id="add_cancel_button" class="modal-button button is-light">Cancel</a>
+
+            <button type="button" id="add_button" class="modal-button button is-dark">Add</button>
+        </p>
+    </div>
+</div>
+
+<h4>Manage assignment groups for {{ course_basics['title'] }}:</h4>
+
+{% if len(assignment_groups) > 0 %}
+    <ul>
+    {% for assignment_group in assignment_groups %}
+        {% if assignment_group[1] != -1 %}
+            <li>
+                {{ assignment_group[0] }}
+
+                <a onclick="showRemoveModal('{{ assignment_group[1] }}')">
+                    <i class="far fa-trash-alt is-size-6 ml-2"></i>
+                </a>
+            </li>
+        {% end %}
+    {% end %}
+    </ul>
+{% end %}
+
+<div>
+    Click on the "Add" button to create assignment groups. Then in the settings for each assignment, you will be able to specify an assignment group for that assignment.
+</div>
+
+<div class="buttons mt-4">
+    <a class="button is-dark" onclick="showAddModal()">Add</a>
+    <a class="button" href="/course/{{ course_basics['id'] }}">Go to course home</a>
+</div>
+
+<script>
+    function showAddModal() {
+        var modal = document.getElementById("add_modal");
+        var span = document.getElementsByClassName("close")[1];
+        modal.style.display = "block";
+
+        var newInput = document.getElementById("new_assignment_group_title");
+
+        var cancelButton = document.getElementById("add_cancel_button");
+        var addButton = document.getElementById("add_button");
+
+        newInput.focus();
+        newInput.addEventListener("keyup", function(event) {
+            // Check if Enter key is pressed
+            if (event.keyCode === 13) {
+                addButton.click();
+            }
+        });
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        addButton.onclick = function() {
+            var new_assignment_group_title_value = encodeURIComponent(document.getElementById("new_assignment_group_title").value);
+
+            //TODO: Do we need to check for special characters?
+
+            $.ajax({
+                type: 'GET',
+                url: "/add_assignment_group/{{ course_basics['id'] }}/" + encodeURI(new_assignment_group_title_value),
+                async: true})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        $("#add_error_message").removeClass("invisible");
+                        $("#add_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                    }
+                    else {
+                        modal.style.display = "none";
+                        window.location.href = window.location.href;
+                    }
+                })
+                .fail(function(error) {
+                    console.log(error);
+                    $("#add_error_message").removeClass("invisible");
+                    $("#add_error_message")[0].innerHTML = `<div class="message-body">An error occurred when attempting to connect to the server.</div>`;
+                });
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+
+    function showRemoveModal(assignment_group_id) {
+        var modal = document.getElementById("remove_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("remove_cancel_button");
+        var removeButton = document.getElementById("remove_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        removeButton.onclick = function() {
+            $.ajax({
+                type: 'GET',
+                url: "/remove_assignment_group/{{ course_basics['id'] }}/" + assignment_group_id,
+                async: true})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        $("#remove_error_message").removeClass("invisible");
+                        $("#remove_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                    }
+                    else {
+                        modal.style.display = "none";
+                        window.location.href = window.location.href;
+                    }
+                })
+                .fail(function(error) {
+                    console.log(error);
+                    $("#remove_error_message").removeClass("invisible");
+                    $("#remove_error_message")[0].innerHTML = `<div class="message-body">An error occurred when attempting to connect to the server.</div>`;
+                });
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+</script>

@@ -55,6 +55,7 @@ cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_co
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html available.html container_bottom.html /tmp/footer.html > "$OUTPUT/available.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_admins.html container_bottom.html /tmp/footer.html > "$OUTPUT/manage_admins.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_instructors.html container_bottom.html /tmp/footer.html > "$OUTPUT/manage_instructors.html"
+cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_assignment_groups.html container_bottom.html /tmp/footer.html > "$OUTPUT/manage_assignment_groups.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_assistants.html container_bottom.html /tmp/footer.html > "$OUTPUT/manage_assistants.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html view_students.html container_bottom.html /tmp/footer.html > "$OUTPUT/view_students.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html manage_users.html container_bottom.html /tmp/footer.html > "$OUTPUT/manage_users.html"

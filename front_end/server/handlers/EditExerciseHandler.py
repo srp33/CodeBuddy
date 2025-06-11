@@ -36,8 +36,6 @@ class EditExerciseHandler(BaseUserHandler):
             render_error(self, traceback.format_exc())
 
     async def post(self, course_id, assignment_id, exercise_id):
-        results = {"exercise_id": None, "message": "", "exercise_details": None}
-
         try:
             if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
                 course_basics = await self.get_course_basics(course_id)
@@ -49,32 +47,37 @@ class EditExerciseHandler(BaseUserHandler):
                 exercise_basics["title"] = exercise_details.pop("title")
                 exercise_basics["visible"] = exercise_details.pop("visible")
 
+                # Make sure an exercise with this title does not already exist.
+                existing_exercise_titles = [x[1]["title"] for x in self.content.get_exercises(course_basics, assignment_basics, show_hidden=True) if x[0] != exercise_basics["id"]]
+                if exercise_basics["title"] in existing_exercise_titles:
+                    return self.write_post_output(None, "Error: An exercise with that title already exists.", None)
+
                 current_time = get_current_datetime()
                 if exercise_basics["exists"]:
                     exercise_details["date_created"] = (await self.get_exercise_details(course_basics, assignment_basics, exercise_id))["date_created"]
                 else:
-                    exercise_details["date_created"] = current_time
+                     exercise_details["date_created"] = current_time
+
                 exercise_details["date_updated"] = current_time
 
                 result, success = await execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
 
                 if success:
-                    results["exercise_id"] = result
-                    results["exercise_details"] = exercise_details
+                    return self.write_post_output(result, "", exercise_details)
                 else:
-                    results["message"] = result
+                    return self.write_post_output(None, result, None)
             else:
-                results["message"] = "You do not have permission to edit exercises for this course."
+                return self.write_post_output(None, "Error: You do not have permission to edit exercises for this course.", None)
         except ConnectionError as inst:
-            results["message"] = "The front-end server was unable to contact the back-end server."
+            return self.write_post_output(None, "Error: The front-end server was unable to contact the back-end server.", None)
             print(traceback.format_exc())
         except ReadTimeout as inst:
-            results["message"] = "Your solution timed out when attempting to contact the back-end server."
+            return self.write_post_output(None, "Error: Your solution timed out when attempting to contact the back-end server.", None)
         except Exception as inst:
-            results["message"] = traceback.format_exc()
+            return self.write_post_output(None, f"Error: {traceback.format_exc()}", None)
 
+    def write_post_output(self, exercise_id, message, exercise_details):
         try:
-            self.write(json.dumps(results, default=str))
+            self.write(json.dumps({"exercise_id": exercise_id, "message": message, "exercise_details": exercise_details}, default=str))
         except:
-            results = {"exercise_id": None, "message": traceback.format_exc(), "exercise_details": None}
-            self.write(json.dumps(results, default=str))
+            self.write(json.dumps({"exercise_id": None, "message": traceback.format_exc(), "exercise_details": None}, default=str))

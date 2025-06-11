@@ -28,7 +28,8 @@ class ImportAssignmentHandler(BaseUserHandler):
             assignment_details = assignment_dict["details"]
 
             # Make sure assignment with that title doesn't already exist.
-            if self.content.has_duplicate_title(self.content.get_assignments(course_basics), None, assignment_basics["title"]):
+            current_titles = [x[2]["title"] for x in self.content.get_assignments(course_basics)]
+            if assignment_basics["title"] in current_titles:
                 return self.write("Error: An assignment with that title already exists.")
 
             for exercise_title in assignment_dict["exercises"]:
@@ -38,6 +39,12 @@ class ImportAssignmentHandler(BaseUserHandler):
 
             assignment_basics["exists"] = False
             assignment_basics["course"] = {"id": course_id}
+
+            if assignment_details["start_date"]:
+                assignment_details["start_date"] = assignment_details["start_date"].replace("+00:00", "")
+            if assignment_details["due_date"]:
+                assignment_details["due_date"] = assignment_details["due_date"].replace("+00:00", "")
+
             assignment_id = self.content.save_assignment(assignment_basics, assignment_details)
             assignment_basics["id"] = assignment_id
 

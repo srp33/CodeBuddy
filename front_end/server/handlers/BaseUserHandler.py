@@ -249,7 +249,7 @@ class BaseUserHandler(BaseRequestHandler):
         prerequisite_assignments_not_completed = []
 
         for assignment_status in self.content.get_assignment_statuses(course_id, student_id, show_hidden=False):
-            if assignment_status[0] in assignment_details["prerequisite_assignment_ids"] and not assignment_status[1]["completed"]:
-                prerequisite_assignments_not_completed.append([assignment_status[0], assignment_status[1]["title"]])
+            if assignment_status[0] in assignment_details["prerequisite_assignment_ids"] and not assignment_status[2]["completed"]:
+                prerequisite_assignments_not_completed.append([assignment_status[0], assignment_status[2]["title"]])
 
         return prerequisite_assignments_not_completed

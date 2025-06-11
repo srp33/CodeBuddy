@@ -18,10 +18,10 @@
                     {% if exercise_details["back_end"] != "multiple_choice" %}
                         <h4>Your solution:</h4>
                         <pre class="student-content">{{ user_code }}</pre>
-
-                        <h4>Instructor's solution:</h4>
-                        <pre class="instructor-content">{{ exercise_details["solution_code"] }}</pre>
                     {% end %}
+
+                    <h4>Instructor's solution:</h4>
+                    <pre class="instructor-content">{{ instructor_solution }}</pre>
 
                     {% if exercise_details["solution_description"] != "" %}
                         <h4>Instructor's comments:</h4>

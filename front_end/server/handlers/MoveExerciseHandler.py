@@ -8,8 +8,6 @@ from BaseUserHandler import *
 
 class MoveExerciseHandler(BaseUserHandler):
     async def post(self, course_id, assignment_id, exercise_id):
-        result = ""
-
         try:
             if self.is_administrator or await self.is_instructor_for_course(course_id):
                 existing_course_basics = await self.get_course_basics(course_id)
@@ -18,16 +16,15 @@ class MoveExerciseHandler(BaseUserHandler):
 
                 new_assignment_id = self.get_body_argument("new_assignment_id")
                 new_assignment_basics = self.content.get_assignment_basics(existing_course_basics, new_assignment_id)
-                new_assignment_exercises = self.content.get_exercises(existing_course_basics, new_assignment_basics)
+                new_assignment_exercise_titles = [x[1]["title"] for x in self.content.get_exercises(existing_course_basics, new_assignment_basics)]
 
-
-                if self.content.has_duplicate_title(new_assignment_exercises, None, existing_exercise_basics["title"]):
-                    result = f"Error: An exercise with the title <b>{existing_exercise_basics['title']}</b> already exists in the <b>{new_assignment_basics['title']}</b> assignment."
+                if existing_exercise_basics["title"] in new_assignment_exercise_titles:
+                    return self.write(f"Error: An exercise with the title <b>{existing_exercise_basics['title']}</b> already exists in the <b>{new_assignment_basics['title']}</b> assignment.")
                 else:
                     self.content.move_exercise(course_id, assignment_id, exercise_id, new_assignment_id)
-            else:
-                result = "You do not have permission to move this exercise."
-        except Exception as inst:
-            result = traceback.format_exc()
 
-        self.write(result)
+                    return self.write("")
+            else:
+                return self.write("Error: You do not have permission to move this exercise.")
+        except Exception as inst:
+            return self.write(f"Error: {traceback.format_exc()}")

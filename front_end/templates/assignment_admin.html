@@ -76,7 +76,7 @@
                 html += `<select id="exercise_new_assignment_id">`;
                 {% for assignment in assignment_statuses %}
                     {% if assignment[0] != assignment_basics["id"] %}
-                        html += `<option value="{{ assignment[0] }}">{{ assignment[1]["title"] }}</option>`;
+                        html += `<option value="{{ assignment[0] }}">{{ assignment[2]["title"] }}</option>`;
                     {% end %}
                 {% end %}
                 html += `</select>`;

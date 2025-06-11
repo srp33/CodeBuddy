@@ -24,6 +24,7 @@ def make_app(settings_dict):
         [
             url(r"/", HomeHandler, name="home"),
             url(r"/add_admin/([^/]+)", AddAdminHandler, name="add_admin"),
+            url(r"/add_assignment_group/([^/]+)/([^/]+)", AddAssignmentGroupHandler, name="add_assignment_group"),
             url(r"/add_assistant/([^/]+)/([^/]+)", AddAssistantHandler, name="add_assistant"),
             url(r"/add_instructor/([^/]+)/([^/]+)", AddInstructorHandler, name="add_instructor"),
             url(r"/ask_virtual_assistant/([^/]+)/([^/]+)/([^/]+)", AskVirtualAssistantHandler, name="ask_virtual_assistant"),
@@ -65,6 +66,7 @@ def make_app(settings_dict):
             url(r"/login", LoginHandler, name="login"),
             url(r"/logout", LogoutHandler, name="logout"),
             url(r"/manage_admins", ManageAdminsHandler, name="manage_admins"),
+            url(r"/manage_assignment_groups/([^/]+)", ManageAssignmentGroupsHandler, name="manage_assignment_groups"),
             url(r"/manage_assistants/([^/]+)", ManageAssistantsHandler, name="manage_assistants"),
             url(r"/manage_instructors/([^/]+)", ManageInstructorsHandler, name="manage_instructors"),
             url(r"/manage_users", ManageUsersHandler, name="manage_users"),
@@ -74,6 +76,7 @@ def make_app(settings_dict):
             url(r"/preferences/([^/]+)", PreferencesHandler, name="preferences"),
             url(r"/register/([^/]+)/([^/]+)/([^/]+)", RegisterHandler, name="register"),
             url(r"/remove_admin", RemoveAdminHandler, name="remove_admin"),
+            url(r"/remove_assignment_group/([^/]+)/([^/]+)", RemoveAssignmentGroupHandler, name="remove_assignment_group"),
             url(r"/remove_assistant/([^/]+)/([^/]+)", RemoveAssistantHandler, name="remove_assistant"),
             url(r"/remove_instructor/([^/]+)/([^/]+)", RemoveInstructorHandler, name="remove_instructor"),
             url(r"/resave_exercises/([^/]+)/([^/]+)", ResaveExercisesHandler, name="resave_exercises"),

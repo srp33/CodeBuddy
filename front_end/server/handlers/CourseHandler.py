@@ -13,10 +13,11 @@ class CourseHandler(BaseUserHandler):
 
             if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
                 assignment_statuses = await self.get_assignment_statuses(course_basics, show_hidden=True)
+                assignment_groups = self.content.get_assignment_groups(course_id)
 
                 assignment_summary_scores=self.content.get_assignment_summary_scores(course_id)
 
-                self.render("course_admin.html", courses=self.courses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), assignment_statuses=assignment_statuses, assignment_summary_scores=assignment_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                self.render("course_admin.html", courses=self.courses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), assignment_statuses=assignment_statuses, assignment_groups=assignment_groups, assignment_summary_scores=assignment_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             else:
                 user_is_registered = False
                 for course in self.courses:
@@ -25,9 +26,11 @@ class CourseHandler(BaseUserHandler):
 
                 if user_is_registered:
                     assignment_statuses = await self.get_assignment_statuses(course_basics)
-                    has_any_custom_scoring = len([x for x in assignment_statuses if x[1]["custom_scoring"] != ""]) > 0
+                    assignment_groups = self.content.parse_assignment_groups(assignment_statuses)
 
-                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, has_any_custom_scoring=has_any_custom_scoring, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=get_current_datetime(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                    has_any_custom_scoring = len([x for x in assignment_statuses if x[2]["custom_scoring"] != ""]) > 0
+
+                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_groups=assignment_groups,has_any_custom_scoring=has_any_custom_scoring, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=get_current_datetime(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
                 else:
                     self.render("unavailable_course.html", courses=self.courses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         except Exception as inst:

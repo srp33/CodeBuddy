@@ -12,96 +12,118 @@
     {% if len(assignment_statuses) > 0 %}
         <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
 
-        <div class="table-container">
-            <table class="table is-striped" id="assignment_table">
-                <thead>
-                    <tr>
-                        <th>Assignment</th>
-                        <th>Start date</th>
-                        <th>Due date</th>
-                        <th>Timed</th>
-                        <th>Status</th>
-                        <th>Exercises Completed</th>
-                        <th>Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for assignment in assignment_statuses %}
-                    <tr>
-                        <td>
-                            <a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[1]["title"] }}</a>
-                        </td>
-
-                        {% if "start_date" in assignment[1] and assignment[1]["start_date"] %}
-                            <td>
-                                <script>
-                                    var d = new Date("{{ assignment[1]["start_date"] }}");
-                                    document.write(d.toLocaleString());
-                                </script>
-                            </td>
-                        {% else %}
-                            <td> </td>
+        {% for assignment_group in assignment_groups %}
+            {% if len(assignment_groups) > 1 %}
+                <div class="box has-background-dark has-text-white p-4">
+                    {% if assignment_group[0] == "" %}
+                        {% if len(assignment_groups) > 1 %}
+                            <div class="is-size-5 has-text-weight-bold pb-4">Other</div>
                         {% end %}
+                    {% else %}
+                        <div class="is-size-5 has-text-weight-bold pb-4">
+                            {{ assignment_group[0] }}
+                        </div>
+                    {% end %}
+            {% end %}
 
-                        {% if "due_date" in assignment[1] and assignment[1]["due_date"] %}
-                            <td>
-                                <script>
-                                    var d = new Date("{{ assignment[1]["due_date"] }}");
-                                    document.write(d.toLocaleString());
-                                </script>
-                            </td>
-                        {% else %}
-                            <td> </td>
-                        {% end %}
-
-                        {% if "has_timer" in assignment[1] and assignment[1]["has_timer"] %}
-                            <td>Yes </td>
-                        {% else %}
-                            <td>No</td>
-                        {% end %}
-
-                        {% if assignment[1]["completed"] %}
-                            <td>
-                                <i class="far fa-check-circle"></i>
-                                Completed
-                            </td>
-                        {% else %}
-                            {% if assignment[1]["timer_has_ended"] %}
+            <div class="table-container">
+                <table class="table is-striped" id="assignment_table">
+                    <thead>
+                        <tr>
+                            <th>Assignment</th>
+                            <th>Start date</th>
+                            <th>Due date</th>
+                            <th>Timed</th>
+                            <th>Status</th>
+                            <th>Exercises Completed</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for assignment in assignment_statuses %}
+                        {% if assignment[1] == assignment_group[0] %}
+                            <tr>
                                 <td>
-                                    <i class="far fa-clock"></i>
-                                    Timer ended
+                                    <a href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ assignment[2]["title"] }}</a>
                                 </td>
-                            {% elif assignment[1]["in_progress"] %}
-                                <td>
-                                    <i class="far fa-hourglass"></i>
-                                    In progress
+
+                                {% if "start_date" in assignment[2] and assignment[2]["start_date"] %}
+                                    <td>
+                                        <script>
+                                            var d = new Date("{{ assignment[2]["start_date"] }}");
+                                            document.write(d.toLocaleString());
+                                        </script>
+                                    </td>
+                                {% else %}
+                                    <td> </td>
+                                {% end %}
+
+                                {% if "due_date" in assignment[2] and assignment[2]["due_date"] %}
+                                    <td>
+                                        <script>
+                                            var d = new Date("{{ assignment[2]["due_date"] }}");
+                                            document.write(d.toLocaleString());
+                                        </script>
+                                    </td>
+                                {% else %}
+                                    <td> </td>
+                                {% end %}
+
+                                {% if "has_timer" in assignment[2] and assignment[2]["has_timer"] %}
+                                    <td>Yes </td>
+                                {% else %}
+                                    <td>No</td>
+                                {% end %}
+
+                                {% if assignment[2]["completed"] %}
+                                    <td>
+                                        <i class="far fa-check-circle"></i>
+                                        Completed
+                                    </td>
+                                {% else %}
+                                    {% if assignment[2]["timer_has_ended"] %}
+                                        <td>
+                                            <i class="far fa-clock"></i>
+                                            Timer ended
+                                        </td>
+                                    {% elif assignment[2]["in_progress"] %}
+                                        <td>
+                                            <i class="far fa-hourglass"></i>
+                                            In progress
+                                        </td>
+                                    {% else %}
+                                        <td>
+                                            <i class="far fa-circle"></i>
+                                            Not started
+                                        </td>
+                                    {% end %}
+                                {% end %}
+
+                                <td><progress class="progress is-small is-primary" value="{{ assignment[2]['num_completed'] }}" max="{{ assignment[2]['num_exercises'] }}"></progress>{{ assignment[2]["num_completed"] }} / {{ assignment[2]["num_exercises"] }}</td>
+
+                                <td style="white-space: nowrap;">
+                                    {% if assignment[2]["score"] == 0 or assignment[2]["score"] == 100 %}
+                                        {{ int(assignment[2]["score"]) }}%
+                                    {% else %}
+                                        {{ round(assignment[2]["score"], 1) }}%
+                                    {% end %}
+
+                                    {% if assignment[2]["custom_scoring"] != "" %}
+                                        *
+                                    {% end %}
                                 </td>
-                            {% else %}
-                                <td>
-                                    <i class="far fa-circle"></i>
-                                    Not started
-                                </td>
-                            {% end %}
+                            </tr>
                         {% end %}
+                    {% end %}
+                    </tbody>
+                </table>
 
-                        <td><progress class="progress is-small is-primary" value="{{ assignment[1]['num_completed'] }}" max="{{ assignment[1]['num_exercises'] }}"></progress>{{ assignment[1]["num_completed"] }} / {{ assignment[1]["num_exercises"] }}</td>
+            {% if len(assignment_groups) > 1 %}
+                </div>
+            {% end %}
 
-                        <td style="white-space: nowrap;">
-                            {% if assignment[1]["score"] == 0 or assignment[1]["score"] == 100 %}
-                                {{ int(assignment[1]["score"]) }}%
-                            {% else %}
-                                {{ round(assignment[1]["score"], 1) }}%
-                            {% end %}
-
-                            {% if assignment[1]["custom_scoring"] != "" %}
-                                *
-                            {% end %}
-                        </td>
-                    </tr>
-                {% end %}
-                </tbody>
-            </table>
-        </div>
+            </div>
+        {% end %}
 
         {% if has_any_custom_scoring %}
             <div class="notification is-warning is-light">

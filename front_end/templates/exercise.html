@@ -16,12 +16,18 @@
                     <div class="column is-full mt-0">
                 {% end %}
 
-                    {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] %}
-                        <div class='notification is-warning'>The due date for this assignment has passed, but your instructor has enabled viewing the solution.</div>
-                    {% end %}
+                    {% if assignment_details["due_date"] and assignment_details["due_date_passed"] %}
+                        <div class='notification is-warning'>
+                            The due date for this assignment has passed.
 
-                    {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] %}
-                        <div class='notification is-warning'>The due date for this assignment has passed, but you can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.</div>
+                            {% if not has_passed and (not assignment_details["allow_late"] or assignment_details["late_percent"] == 0) and assignment_details["view_answer_late"] and exercise_details["show_instructor_solution"] %}
+                                Click <a href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
+                            {% end %}
+
+                            {% if assignment_details["allow_late"] and assignment_details["late_percent"] > 0 and not has_passed %}
+                                You can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.
+                            {% end %}
+                        </div>
                     {% end %}
 
                     <div class="has-background-white mt-0 p-4">
@@ -95,91 +101,86 @@
                     </p>
                 </div>
 
-                {% if use_virtual_assistant %}
-                    <!--<div class="column is-one-quarter has-background-white is-outlined mt-3 mb-3">-->
-                    <div class="column is-one-third has-background-white is-outlined mt-3 mb-3" style="overflow: scroll;" id="right_column">
-                        <div id="virtual_assistant_message">
-                            <div class="is-size-6">
-                                <strong>Hello, I am your Virtual Assistant!</strong> Do your best to solve this exercise on your own. But if you get stuck, you can enter a question below. This feature is experimental, so its advice might or might not be helpful.
+                {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or (assignment_details["allow_late"] and assignment_details["late_percent"] > 0) %}
+                    {% if use_virtual_assistant %}
+                        <!--<div class="column is-one-quarter has-background-white is-outlined mt-3 mb-3">-->
+                        <div class="column is-one-third has-background-white is-outlined mt-3 mb-3" style="overflow: scroll;" id="right_column">
+                            <div id="virtual_assistant_message">
+                                <div class="is-size-6">
+                                    <strong>Hello, I am your Virtual Assistant!</strong> Do your best to solve this exercise on your own. But if you get stuck, you can enter a question below. This feature is experimental, so its advice might or might not be helpful.
 
-                                {% if assignment_details["use_virtual_assistant"] > 1 %}
-                                    <em>The instructor is testing this feature in a research study. Therefore, please use do not share it with other students who may not have access to it on this exercise.</em>
-                                {% end %}
+                                    {% if assignment_details["use_virtual_assistant"] > 1 %}
+                                        <em>The instructor is testing this feature in a research study. Therefore, please use do not share it with other students who may not have access to it on this exercise.</em>
+                                    {% end %}
+                                </div>
+                            </div>
+
+                            <div>
+                                <textarea id="virtual_assistant_input" class="textarea is-medium is-primary is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here.">
+                                </textarea>
+                            </div>
+
+                            <div class="mt-2 mb-2">
+                                <button id="virtual_assistant_button" class="button is-primary m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
+
+                                <button class="button is-primary is-outlined m-0 is-size=6" onclick="closeVirtualAssistant()">Close</button>
+
+                                <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
+                                    <em>
+                                        <span id="virtual_assistant_questions_allowed_prefix"></span>
+                                        
+                                        <span id="virtual_assistant_questions_allowed">
+                                            {{ virtual_assistant_max_per_exercise }}
+                                        </span>
+
+                                        <span id="virtual_assistant_questions_allowed_suffix"></span>
+                                    </em>
+                                </div>
+                            </div>
+
+                            <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden is-size-6">
+                            </div>
+
+                            <div id="virtual_assistant_helpful" class="box has-background-white has-text-warning mt-2 mb-2 p-4 is-size-6 is-hidden">
+                                Was the Virtual Assistant helpful on this exercise?
+                                <i id="thumbs_up" class="far fa-thumbs-up ml-2" onclick="updateThumbStatus(true);toggleThumbs();saveHelpfulness('virtual_assistant');" style="cursor: pointer;"></i>
+                                <i id="thumbs_down" class="far fa-thumbs-down ml-2" onclick="updateThumbStatus(false);toggleThumbs();saveHelpfulness('virtual_assistant');" style="cursor: pointer;"></i>
                             </div>
                         </div>
+                    {% end %}
+                </div>
 
-                        <div>
-                            <textarea id="virtual_assistant_input" class="textarea is-medium is-primary is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here.">
-                            </textarea>
-                        </div>
+                <div class="content is-pulled-right is-flex-tablet is-flex-mobile">
+                    <div id="saved_div" class="smaller-font ml-0 mt-0 mr-2 mt-0"></div>
 
-                        <div class="mt-2 mb-2">
-                            <button id="virtual_assistant_button" class="button is-primary m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
+                    <div class="smaller-font mt-0 mr-1"><em>{{ exercise_basics["title"] }}</em></div>
+                </div>
 
-                            <button class="button is-primary is-outlined m-0 is-size=6" onclick="closeVirtualAssistant()">Close</button>
+                <div class="buttons">
+                    <a class="button is-medium is-dark" id='submit_button'>Submit</a>
 
-                            <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
-                                <em>
-                                    <span id="virtual_assistant_questions_allowed_prefix"></span>
-                                    
-                                    <span id="virtual_assistant_questions_allowed">
-                                        {{ virtual_assistant_max_per_exercise }}
-                                    </span>
-
-                                    <span id="virtual_assistant_questions_allowed_suffix"></span>
-                                </em>
-                            </div>
-                        </div>
-
-                        <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden is-size-6">
-                        </div>
-
-                        <div id="virtual_assistant_helpful" class="box has-background-white has-text-warning mt-2 mb-2 p-4 is-size-6 is-hidden">
-                            Was the Virtual Assistant helpful on this exercise?
-                            <i id="thumbs_up" class="far fa-thumbs-up ml-2" onclick="updateThumbStatus(true);toggleThumbs();saveHelpfulness('virtual_assistant');" style="cursor: pointer;"></i>
-                            <i id="thumbs_down" class="far fa-thumbs-down ml-2" onclick="updateThumbStatus(false);toggleThumbs();saveHelpfulness('virtual_assistant');" style="cursor: pointer;"></i>
-                        </div>
-                    </div>
-                {% end %}
-            </div>
-
-            <div class="content is-pulled-right is-flex-tablet is-flex-mobile">
-                <div id="saved_div" class="smaller-font ml-0 mt-0 mr-2 mt-0"></div>
-
-                <div class="smaller-font mt-0 mr-1"><em>{{ exercise_basics["title"] }}</em></div>
-            </div>
-
-            <div class="buttons">
-                <a class="button is-medium is-dark" id='submit_button'>Submit</a>
-
-                {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] and assignment_details["show_run_button"] %}
-                    <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
-                {% end %}
-
-                {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
-                    <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2" type="button" style="cursor: default;"></button>
-
-                    <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning" type="button" style="cursor: pointer;">End assignment</button>
-                {% end %}
-
-                <span class="icon mb-2 ml-1">
-                    {% if exercise_details["allow_any_response"] %}
-                        <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
-                    {% else %}
-                        <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution, click on 'Submit'. If you would like to see the output of your solution without submitting it, click on 'Run' (if it is available). If you highlight a section of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation." />
+                    {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] and assignment_details["show_run_button"] %}
+                        <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
                     {% end %}
 
-                    <i class="far fa-question-circle"></i>
-                </span>
-            </div>
+                    {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                        <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2" type="button" style="cursor: default;"></button>
 
-            <div id="max_submissions_message"></div>
+                        <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning" type="button" style="cursor: pointer;">End assignment</button>
+                    {% end %}
 
-            {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["view_answer_late"] and not has_passed %}
-                <div class='notification is-warning'>
-                    <p>Click <a href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
-                    </p>
+                    <span class="icon mb-2 ml-1">
+                        {% if exercise_details["allow_any_response"] %}
+                            <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
+                        {% else %}
+                            <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution, click on 'Submit'. If you would like to see the output of your solution without submitting it, click on 'Run' (if it is available). If you highlight a section of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation." />
+                        {% end %}
+
+                        <i class="far fa-question-circle"></i>
+                    </span>
                 </div>
+
+                <div id="max_submissions_message"></div>
             {% end %}
 
             <p id="test_outputs"></p>
@@ -419,7 +420,7 @@
 
                 if (submitButton != null) {
                     submitButton.onclick = function() {
-                        {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or assignment_details["allow_late"] %}
+                        {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or (assignment_details["allow_late"] and assignment_details["late_percent"] > 0) %}
                             {% if exercise_details["enable_pair_programming"] %}
                                 showSubmitModal();
                             {% else %}
