@@ -14,7 +14,6 @@ nohup*
 paper.jats
 paper.pdf
 secrets
-static/
 tmp
 .DS_Store
 .idea

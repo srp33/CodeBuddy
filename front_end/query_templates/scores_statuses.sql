@@ -219,7 +219,7 @@ WITH
     SELECT
       es.assignment_id,
       es.user_id,
-      adjust_assignment_score(AVG(esw.score * esw.weight) / AVG(esw.weight), a.custom_scoring) AS score
+      adjust_assignment_score(ROUND(AVG(esw.score * esw.weight) / AVG(esw.weight), 2), a.custom_scoring) AS score
     FROM exercise_statuses es
     INNER JOIN exercise_scores_weights esw
       ON es.assignment_id = esw.assignment_id

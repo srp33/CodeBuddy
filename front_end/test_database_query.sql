@@ -7,7 +7,7 @@ WITH
       NULL AS exercise_id,
       -- 15633 AS exercise_id,
       -- NULL AS user_id
-      'cfunk0' AS user_id
+      'srp33' AS user_id
   ),
 
   valid_assignments AS (
