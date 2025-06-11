@@ -14,7 +14,7 @@
     <div class="columns scrollable">
         <div class="column">
         {% for course in available_courses %}
-            <div class="box">
+            <div class="box {% if course[1]['highlighted'] %}has-background-warning-light has-border-warning{% end %}">
                 <article class="media">
                     <div class="media-content">
                         <div class="content">

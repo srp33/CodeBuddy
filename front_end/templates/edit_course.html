@@ -57,6 +57,30 @@
 </div>
 
 <div class="shadow-box">
+    <div class="a-visible">
+        <p>
+            <strong>Highlight this course on the registration page?</strong>
+            
+            <br />
+            
+            This option can only be enabled by users with administrator privileges.
+        </p>
+
+        <div class="select is-grey">
+            <select name="highlighted" class="edit-select">
+                {% if course_details["highlighted"] %}
+                    <option value="Yes" selected>Yes</option>
+                    <option value="No">No</option>
+                {% else %}
+                    <option value="Yes">Yes</option>
+                    <option value="No" selected>No</option>
+                {% end %}
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="shadow-box">
     <div class="a-visible top-space">
         <p><strong>Allow students to download their code for this course?</strong>
         <br />With this option, students are allowed to download their code for all assignments and exercises in this course as a single HTML file. The file includes their <i>latest, passing</i> submission for each exercise. To provide context, assignment introductions and exercise instructions are provided. Timed assignments, hidden assignments, and non-code exercises are excluded.</p>

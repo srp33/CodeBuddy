@@ -627,14 +627,14 @@ class Content:
     def get_all_courses(self):
         courses = []
 
-        sql = '''SELECT course_id, title, visible, introduction, passcode
+        sql = '''SELECT course_id, title, visible, introduction, passcode, highlighted
                  FROM courses
                  WHERE visible = 1
-                 ORDER BY title'''
+                 ORDER BY highlighted DESC, title'''
 
         for course in self.fetchall(sql):
             if course["visible"] or show_hidden:
-                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": convert_markdown_to_html(course["introduction"]), "passcode": course["passcode"], "exists": True}
+                course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": convert_markdown_to_html(course["introduction"]), "passcode": course["passcode"], "highlighted": course["highlighted"], "exists": True}
                 courses.append([course["course_id"], course_basics])
 
         return courses
@@ -1417,9 +1417,10 @@ ORDER BY student_name
         course_basics["title"] = title
         course_basics["visible"] = visible
 
-    def specify_course_details(self, course_details, introduction, passcode, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated):
+    def specify_course_details(self, course_details, introduction, passcode, highlighted, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated):
         course_details["introduction"] = introduction
         course_details["passcode"] = passcode
+        course_details["highlighted"] = highlighted
         course_details["allow_students_download_submissions"] = allow_students_download_submissions
         course_details["virtual_assistant_config"] = virtual_assistant_config
         course_details["date_updated"] = date_updated
@@ -1666,12 +1667,12 @@ ORDER BY student_name
         return row["code"] if row else None
 
     def get_course_details(self, course_id):
-        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "allow_students_download_submissions": False, "virtual_assistant_config": None}
+        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "highlighted": False, "allow_students_download_submissions": False, "virtual_assistant_config": None}
 
         if not course_id:
             return null_course
 
-        sql = '''SELECT introduction, passcode, date_created, date_updated, allow_students_download_submissions, virtual_assistant_config
+        sql = '''SELECT introduction, passcode, date_created, date_updated, highlighted, allow_students_download_submissions, virtual_assistant_config
                  FROM courses
                  WHERE course_id = ?'''
 
@@ -1680,7 +1681,7 @@ ORDER BY student_name
         if not row:
             return null_course
 
-        course_details = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "allow_students_download_submissions": row["allow_students_download_submissions"], "virtual_assistant_config": row["virtual_assistant_config"]}
+        course_details = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "highlighted": row["highlighted"], "allow_students_download_submissions": row["allow_students_download_submissions"], "virtual_assistant_config": row["virtual_assistant_config"]}
 
         if course_details["virtual_assistant_config"]:
             course_details["virtual_assistant_config"] = load_yaml_dict(course_details["virtual_assistant_config"])
@@ -1858,17 +1859,17 @@ ORDER BY student_name
     def save_course(self, course_basics, course_details):
         if course_basics["exists"]:
             sql = '''UPDATE courses
-                     SET title = ?, visible = ?, introduction = ?, passcode = ?, allow_students_download_submissions = ?, virtual_assistant_config = ?, date_updated = ?
+                     SET title = ?, visible = ?, introduction = ?, passcode = ?, highlighted = ?,  allow_students_download_submissions = ?, virtual_assistant_config = ?, date_updated = ?
                      WHERE course_id = ?'''
 
-            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], course_details["date_updated"], course_basics["id"]])
+            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["highlighted"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], course_details["date_updated"], course_basics["id"]])
 
             self.update_when_content_updated(course_basics["id"])
         else:
-            sql = '''INSERT INTO courses (title, visible, introduction, passcode, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO courses (title, visible, introduction, passcode, highlighted, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            course_basics["id"] = self.execute(sql, (course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], course_details["date_created"], course_details["date_updated"], ))
+            course_basics["id"] = self.execute(sql, (course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["highlighted"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], course_details["date_created"], course_details["date_updated"], ))
             course_basics["exists"] = True
 
             self.update_when_content_updated("user")
@@ -2090,8 +2091,8 @@ ORDER BY student_name
 
     async def copy_course(self, existing_course_basics, new_course_title):
         # Copy the high-level course info and get a new course ID.
-        sql = '''INSERT INTO courses (title, introduction, visible, passcode, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated)
-                 SELECT ?, introduction, visible, passcode, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated
+        sql = '''INSERT INTO courses (title, introduction, visible, passcode, highlighted, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated)
+                 SELECT ?, introduction, visible, passcode, highlighted, allow_students_download_submissions, virtual_assistant_config, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 
