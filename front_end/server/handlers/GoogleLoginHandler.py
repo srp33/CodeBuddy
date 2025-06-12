@@ -70,7 +70,6 @@ class GoogleLoginHandler(RequestHandler, GoogleOAuth2Mixin):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def finish(self, chunk) -> Future[None]:
+    def finish(self) -> None:
         self.content.close()
-
-        return super().finish(chunk)
+        super().finish()
