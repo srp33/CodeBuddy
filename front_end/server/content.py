@@ -835,10 +835,10 @@ LEFT JOIN valid_assignment_groups ag
 
         assignment_groups = sorted(assignment_groups)
 
+        # Move the blank one to the end.
         if len(assignment_groups) > 0 and assignment_groups[0][0] == "":
             del assignment_groups[0]
-        
-        assignment_groups.append(["", -1])
+            assignment_groups.append(["", -1])
 
         return assignment_groups
 

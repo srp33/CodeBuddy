@@ -16,9 +16,7 @@
             {% if len(assignment_groups) > 1 %}
                 <div class="box has-background-dark has-text-white p-4">
                     {% if assignment_group[0] == "" %}
-                        {% if len(assignment_groups) > 1 %}
-                            <div class="is-size-5 has-text-weight-bold pb-4">Other</div>
-                        {% end %}
+                        <div class="is-size-5 has-text-weight-bold pb-4">Other</div>
                     {% else %}
                         <div class="is-size-5 has-text-weight-bold pb-4">
                             {{ assignment_group[0] }}
@@ -35,7 +33,7 @@
                             <th>Due date</th>
                             <th>Timed</th>
                             <th>Status</th>
-                            <th>Exercises Completed</th>
+                            <th>Completed</th>
                             <th>Score</th>
                         </tr>
                     </thead>
