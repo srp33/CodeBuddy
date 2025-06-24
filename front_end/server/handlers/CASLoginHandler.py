@@ -37,6 +37,8 @@ class CASLoginHandler(BaseOtherHandler):
 
             if not user_id:
                 return
+            
+            print(user_dict)
 
             user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": attributes["emailAddress"]}
 
