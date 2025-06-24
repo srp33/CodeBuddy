@@ -1,0 +1,202 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<div class="title is-4">
+    {{ course_basics['title'] }}
+</div>
+
+<div class="title is-5">
+    {{ assignment_basics['title'] }}
+</div>
+
+<div class="title is-5">
+    {{ exercise_basics['title'] }}
+</div>
+
+<div class="has-background-white mb-4 p-4">
+    {{ exercise_details['instructions'] }}
+</div>
+
+<div>
+    Below is a question that a student asked. When you answer the question, an email will be sent to the student who asked it. Before answering, you can modify the question for clarity or simplicity. If the student has agreed to share their question, you can also indicate whether it and the answer will be shared with other students in the class.
+</div>
+
+<div class="mt-4">
+    <span class="is-italic">Questioner:</span> {{ questioner_info["name"] }} ({{ questioner_info["user_id"] }})
+</div>
+
+<div class="mt-4">
+    <span class="is-italic">Question date/time:</span>
+    
+    <script>
+        var d = new Date("{{ question['question_date'] }}");
+        document.write(d.toLocaleString());
+    </script>
+</div>
+
+<div class="mt-4 is-italic">
+    Question:
+</div>
+
+<div class="mt-4">
+    <textarea id="question_box" class="textarea" placeholder="Enter your question here." rows="6">{{ question["question"] }}</textarea>
+</div>
+
+{% if answerer_info["user_id"] %}
+    <div class="mt-4">
+        <span class="is-italic">Answerer:</span> {{ answerer_info["name"] }} ({{ answerer_info["user_id"] }})
+    </div>
+
+    <div class="mt-4">
+        <span class="is-italic">Answer date/time:</span>
+        
+        <script>
+            var d = new Date("{{ question['answer_date'] }}");
+            document.write(d.toLocaleString());
+        </script>
+    </div>
+{% end %}
+
+<div class="mt-4 is-italic">
+    Answer:
+</div>
+
+<div class="mt-4">
+    <textarea id="answer_box" class="textarea" placeholder="Enter your answer here." rows="6" autofocus>{{ question["answer"] if question["answer"] else "" }}</textarea>
+</div>
+
+<div class="mt-4">
+    {% if question["questioner_share"] %}
+        <label class="checkbox">
+            <input type="checkbox" id="answerer_share" 
+            
+            {% if question["answerer_share"] %}
+                checked
+            {% end %}
+
+            />
+            The student agreed to share the question with others in the class. <b>Would you like to make the question and answer visible to all students?</b>
+        </label>
+    {% else %}
+        The student did not agree to share the question with others in the class.
+    {% end %}
+</div>
+
+<div class="buttons mt-4">
+    <a id="reply_button" class="button is-dark" onclick="reply();">Reply</a>
+    <a id="delete_button" class="button has-background-warning-light has-text-warning" onClick="showDeleteModal();">Delete</a>
+    <a class="button has-background-primary-light" href="/manage_questions/{{ course_basics['id'] }}">Manage questions and answers</a>
+</div>
+
+<div id="reply_message" class="notification is-hidden mt-4"></div>
+
+<div class="modal" id="confirm-delete-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title has-text-weight-bold">Confirm Deletion</p>
+            <button class="delete" aria-label="close" id="modal-close-btn"></button>
+        </header>
+        <section class="modal-card-body">
+            Are you sure you want to delete this question?
+
+            <div id="delete_message" class="notification is-hidden mt-4"></div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger" id="confirm-delete-btn">Yes, delete</button>
+            <button class="button" id="cancel-delete-btn">Cancel</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    function reply() {
+        const questionText = $("#question_box")[0].value.trim();
+        const answerText = $("#answer_box")[0].value.trim();
+        const answererShare = $('#answerer_share').length > 0 ? $('#answerer_share').is(':checked') : false;
+
+        $("#reply_message").removeClass("is-primary");
+        $("#reply_message").removeClass("is-danger");
+        $("#reply_message").addClass("is-warning");
+        $("#reply_message")[0].innerHTML = "Please wait...";
+        $("#reply_message").removeClass("is-hidden");
+        $("#reply_message")[0].scrollIntoView();
+
+        if (questionText == "") {
+            return showError("The question cannot be blank.", "reply_message");
+        }
+
+        if (answerText == "") {
+            return showError("The answer cannot be blank.", "reply_message");
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: "/answer_question/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ question_id }}",
+            data: { "question": questionText, "answer": answerText, "answerer_share": answererShare },
+            async: true
+        })
+        .done(function(response) {
+            if (response.startsWith("Success:")) {
+                showSuccess(response, "reply_message");
+            } else {
+                showError(response, "reply_message");
+            }
+        })
+        .fail(function(response) {
+            showError("An unspecified error occurred. Please notify the instructor.");
+            console.log(response, "reply_message");
+        });
+    }
+
+    function showSuccess(message, control_id) {
+        $("#" + control_id)[0].innerHTML = message;
+        $("#" + control_id).removeClass("is-warning");
+        $("#" + control_id).addClass("is-primary");
+    }
+
+    function showError(message, control_id) {
+        $("#" + control_id)[0].innerHTML = message;
+        $("#" + control_id).removeClass("is-warning");
+        $("#" + control_id).addClass("is-danger");
+    }
+
+    function showDeleteModal() {
+        $('#confirm-delete-modal').addClass('is-active');
+    }
+
+    function closeDeleteModal() {
+        $('#confirm-delete-modal').removeClass('is-active');
+    }
+
+    // Close modal via close buttons or background click
+    $(document).ready(function () {
+        $('#modal-close-btn').on('click', closeDeleteModal);
+        $('#cancel-delete-btn').on('click', closeDeleteModal);
+        $('#confirm-delete-modal .modal-background').on('click', closeDeleteModal);
+
+        $('#confirm-delete-btn').on('click', function () {
+            $.ajax({
+                type: 'GET',
+                url: "/delete_question/{{ question_id }}",
+                async: true})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        showError(message, "delete_message");
+                    }
+                    else {
+                        showSuccess("Please wait...", "delete_message");
+                        window.location.href = "/manage_questions/{{ course_basics['id'] }}";
+                    }
+                })
+                .fail(function(error) {
+                    showError(error, "delete_message");
+                });
+            
+            closeDeleteModal();
+        });
+    });
+</script>

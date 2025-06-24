@@ -379,6 +379,25 @@
         </p>
     </div>
 
+    <div class="shadow-box">
+        <div class="a-visible">
+            <p>
+                <strong>Support questions and answers:</strong>
+                
+                <br />
+                
+                When this option is enabled, students will be able to ask questions while completing the exercises in this assignment, as long an email address has been provided in the course settings and an SMTP server has been specified in the app's settings file. Questions are sent to the provided email address, and the instructor and/or assistant(s) answer the questions through a Web interface.
+            </p>
+
+            <div class="select is-grey">
+                <select id="support_questions" class="edit-select">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
     {% if course_details["virtual_assistant_config"] %}
         <div class="shadow-box">
     {% else %}
@@ -859,6 +878,7 @@
         let allowed_external_urls = getValue("allowed_external_urls");
         let show_run_button = getValue("show_run_button") == "Yes";
         let require_security_codes = parseInt(getValue("require_security_codes"));
+        var support_questions = getValue("support_questions") == "Yes";
         let use_virtual_assistant = getValue("use_virtual_assistant");
 
         var submission_obj = {
@@ -880,7 +900,8 @@
             "require_security_codes": require_security_codes, 
             "start_date": start_date,
             "prerequisite_assignment_ids": assignment_details_obj["prerequisite_assignment_ids"],
-            "student_timer_exceptions": assignment_details_obj["student_timer_exceptions"],
+            "student_timer_exceptions": assignment_details_obj["student_timer_exceptions"], 
+            "support_questions": support_questions, 
             "use_virtual_assistant": use_virtual_assistant,
             "view_answer_late": view_answer_late            
         }
@@ -1050,7 +1071,7 @@
     setValue("show_run_button", assignment_details_obj["show_run_button"] ? "Yes" : "No");
 
     showCustomScoringRangesTable();
-    
     setValue("require_security_codes", assignment_details_obj["require_security_codes"]);
+    setValue("support_questions", assignment_details_obj["support_questions"] ? "Yes" : "No");
     setValue("use_virtual_assistant", assignment_details_obj["use_virtual_assistant"]);
 </script>

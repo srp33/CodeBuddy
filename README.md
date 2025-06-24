@@ -33,6 +33,7 @@ Here are some of CodeBuddy's features:
 * [August 7, 2024] Instructors can paste images into the instructions on the "Edit exercise" pages.
 * [August 20, 2024] Sometimes, to answer a multiple-choice question, students need to execute code (e.g., to perform calculations, apply a statistical test) to answer the question. Instructors can configure an exercise so that it includes a "sandbox" on the page. With this option, students can execute code, but the code is not evaluated directly (or saved).
 * [June 12, 2025] Instructors can create assignment groups.
+* [June 25, 2025] Instructors can configure courses and assignments so that students can submit questions about the material. An instructor / assistant are notified by email. They answer the questions via CodeBuddy. If the student and instructor / assistant agree, the question is shared with other students in the same class.
 
 # How to run a CodeBuddy instance
 

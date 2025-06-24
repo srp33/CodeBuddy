@@ -1,0 +1,70 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<link rel="stylesheet" href="/static/css/modal.css">
+
+<h4>Manage questions for {{ course_basics['title'] }}:</h4>
+
+{% if len(questions) == 0 %}
+    <p>No questions have been asked yet. Make sure you have provided a support email address in the course settings and enabled questions and answers for assignments where you want to support this feature.</p>
+{% else %}
+    <div class="table-container">
+        <table class="table is-hoverable">
+            <thead>
+                <tr>
+                    <th>Assignment</th>
+                    <th>Exercise</th>
+                    <th>Questioner</th>
+                    <th>Question date/time</th>
+                    <th>Question</th>
+                    <th>Answerer</th>
+                    <th>Answer date/time</th>
+                    <th>Answer</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for question in questions %}
+                <tr>
+                    <td><a href="/assignment/{{ course_basics['id'] }}/{{ question['assignment_id'] }}">{{ question["assignment_title"] }}</a></td>
+                    <td><a href="/exercise/{{ course_basics['id'] }}/{{ question['assignment_id'] }}/{{ question['exercise_id'] }}">{{ question["exercise_title"] }}</a></td>
+                    <td>{{ question["questioner_name"] }} ({{ question["questioner_id"] }})</td>
+
+                    <td>
+                        <script>
+                            var d = new Date("{{ question['question_date'] }}");
+                            document.write(d.toLocaleString());
+                        </script>
+                    </td>
+
+                    <td>{{ question["question"] }}</td>
+
+                    {% if question["answer"] == "" %}
+                        <td colspan="2" class="has-text-left">
+                            <a href="/answer_question/{{ question['course_id'] }}/{{ question['assignment_id'] }}/{{ question['exercise_id'] }}/{{ question['question_id'] }}"
+                                class="button is-warning is-size-5 pl-4">
+                                Needs an answer
+                            </a>
+                        </td>
+                    {% else %}
+                        <td>{{ question["answerer_name"] }} ({{ question["answerer_id"] }})</td>
+
+                        <td>
+                            {% if question["answer"] %}
+                                <script>
+                                    var d = new Date("{{ question['answer_date'] }}");
+                                    document.write(d.toLocaleString());
+                                </script>
+                            {% end %}
+                        </td>
+
+                        <td><a href="/answer_question/{{ question['course_id'] }}/{{ question['assignment_id'] }}/{{ question['exercise_id'] }}/{{ question['question_id'] }}">{{ question["answer"] }}</a></td>
+                    {% end %}
+                </tr>
+            {% end %}
+            </tbody>
+        </table>
+    </div>
+{% end %}

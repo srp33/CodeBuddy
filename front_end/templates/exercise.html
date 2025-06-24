@@ -160,13 +160,22 @@
                     <a class="button is-medium is-dark" id='submit_button'>Submit</a>
 
                     {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] and assignment_details["show_run_button"] %}
-                        <a class="button is-medium is-primary is-outlined" onclick='run_code(true)' id='run_button'>Run</a>
+                        <a class="button is-medium is-white" onclick='run_code(true)' id='run_button'>Run</a>
                     {% end %}
 
                     {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
                         <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2" type="button" style="cursor: default;"></button>
 
                         <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning" type="button" style="cursor: pointer;">End assignment</button>
+                    {% end %}
+
+                    {% if support_questions %}
+                        <a class="button is-medium is-white" id="qa_button" onclick="toggleQA()">
+                            Q & A
+                            {% if len(qa) > 0 %}
+                                ({{ len(qa) }})
+                            {% end %}
+                        </a>
                     {% end %}
 
                     <span class="icon mb-2 ml-1">
@@ -210,39 +219,6 @@
                 {% end %}
 
                 <!--<a class="button is-outlined" href="https://mail.google.com/mail/?extsrc=mailto&url=mailto%3Acodebuddy%40example.com%3Fsubject%3DSUBJECT%26body%3DBODY%26bcc%3Ddakota%40example.com  /exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Ask a question</a>-->
-            </div>
-
-            <div id="submit_exercise_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h6 style="display:inline">Pair programming:</h6>
-                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
-                        <i class="far fa-question-circle"></i>
-                    </label><br />
-
-                    <div id="submit_exercise_modal_message"></div>
-
-                    <div id="partner_selection">
-                        <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
-                        {% if users %}
-                            <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
-                            <datalist id="users_list">
-                                {% for user_name in users %}
-                                    <option value="{{ user_name }}"></option>
-                                {% end %}
-                            </datalist>
-                        {% else %}
-                            <p>There are no other registered students in this course, so your only option is to leave this field blank.</p>
-                        {% end %}
-
-                        <input type="hidden" id="partner_id" />
-                    </div>
-
-                    <p class="buttons">
-                        <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
-                        <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
-                    </p>
-                </div>
             </div>
 
             <script>

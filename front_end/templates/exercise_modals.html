@@ -1,0 +1,159 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<div id="submit_exercise_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h6 style="display:inline">Pair programming:</h6>
+        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
+            <i class="far fa-question-circle"></i>
+        </label><br />
+
+        <div id="submit_exercise_modal_message"></div>
+
+        <div id="partner_selection">
+            <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
+            {% if users %}
+                <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
+                <datalist id="users_list">
+                    {% for user_name in users %}
+                        <option value="{{ user_name }}"></option>
+                    {% end %}
+                </datalist>
+            {% else %}
+                <p>There are no other registered students in this course, so your only option is to leave this field blank.</p>
+            {% end %}
+
+            <input type="hidden" id="partner_id" />
+        </div>
+
+        <p class="buttons">
+            <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
+            <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
+        </p>
+    </div>
+</div>
+
+{% if support_questions %}
+    <style>
+        .panel-slide {
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 350px;
+        height: 100vh;
+        background-color: #f5f5f5; /* light gray */;
+        border-left: 1px solid #dbdbdb;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        transition: right 0.3s ease;
+        overflow-y: auto;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        }
+
+        .panel-slide.is-active {
+        right: 0;
+        }
+
+        .panel-slide .box {
+        flex: 1;
+        border-radius: 0;
+        margin: 0;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        }
+
+        .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        }
+
+        .panel-header .title {
+        margin-bottom: 0;
+        }
+
+        .close-button {
+        margin-left: 1rem;
+        }
+
+        .panel-body {
+        margin-top: 1rem;
+        }
+    </style>
+
+    <div id="slide-panel" class="panel-slide">
+        <div class="box">
+            <div class="panel-header">
+                <div class="title is-size-4 mb-0">
+                    Q & A
+                </div>
+
+                <button class="delete close-button" onclick="toggleQA()"></button>
+            </div>
+
+            <div class="panel-body">
+                {% if len(qa) > 0 %}
+                    {% for x in qa %}
+                        <div class="mb-2 is-size-6">
+                            <span class="has-text-weight-bold">
+                                Question
+
+                                {% if x[2] and x[3] %}
+                                    (asked by you, has been modified):
+                                {% elif x[2] and not x[3] %}
+                                    (asked by you):
+                                {% else %}
+                                    (asked by someone else):
+                                {% end %}
+                            </span>
+                            
+                            {{ x[0] }}
+                        </div>
+
+                        <div class="mb-4 is-size-6">
+                            <span class="has-text-weight-bold">Answer:</span> {{ x[1] }}
+                        </div>
+                    {% end %}
+                {% end %}
+
+                <a class="button is-medium is-primary is-size-6" id="ask_button" onclick="showQuestionModal()">
+                    Ask a question
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="question_modal" class="modal" style="align-items: flex-start; padding-top: 2rem; overflow-y: auto;">
+        <div class="modal-content" style="margin: 0 auto; width: 90%; max-width: 800px;">
+            <button id="question_x_button" class="delete close-button is-pulled-right"></button>
+            <h6>Ask a question:</h6>
+
+            <div id="question_message" class="notification is-hidden mt-4"></div>
+
+            <div class="mt-4">Here you can submit a question (or you can report a problem with the material). After submitting your question, you should receive an email with your question and a later email with an answer. The timeliness of responses will depend on the availability of an instructor or teaching assistant. If we determine that the question and answer would be helpful to others in the class, we will make it available for the entire class on the page where you asked it (with possible edits to your question). If you prefer that your question and answer <span class="is-italic">not</span> be posted for the entire class to see, indicate this clearly with your question.</div>
+
+            <div class="mt-4 p-2 has-background-light">
+                <label class="checkbox">
+                    <input type="checkbox" id="questioner_share" />
+                    <span class="ml-2">Do you agree to have your question (and any answer that is provided) shared with other students in the class (if the instructor decides to share it)?</span>
+                </label>
+            </div>
+
+            <div class="mt-4">
+                <textarea id="question_box" class="textarea" placeholder="Enter your question here." rows="6"></textarea>
+            </div>
+
+            <p class="buttons">
+                <a id="question_ask_button" class="modal-button button is-dark">Ask</a>
+                <a id="question_cancel_button" class="modal-button button is-light">Cancel</a>
+            </p>
+        </div>
+    </div>
+{% end %}

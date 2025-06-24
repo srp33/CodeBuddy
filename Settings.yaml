@@ -28,3 +28,7 @@ cookie_information_html: <a href="https://infosec.byu.edu/cookie-prefs" target="
 db_journal_mode: "OFF"
 # Indicate the hour of the day in 24-hour time (examples: 00 or 01 or 02 ... or 23) when the database should be backed up. On this hour, the log files are also summarized. Backups only occur when db_journal_mode is set to OFF.
 backup_hour: 04
+# Provide the name of an SMTP server that accepts requests to send outgoing email. Use an empty string if you do not plan to send emails.
+smtp_server: "gateway.byu.edu"
+# Provide the port number for the SMTP server (if one is provided).
+smtp_port: 587

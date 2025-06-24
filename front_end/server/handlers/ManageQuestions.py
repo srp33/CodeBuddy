@@ -6,12 +6,12 @@
 
 from BaseUserHandler import *
 
-class DeleteCourseHandler(BaseUserHandler):
-    async def post(self, course_id):
+class ManageQuestionsHandler(BaseUserHandler):
+    async def get(self, course_id):
         try:
             if self.is_administrator or await self.is_instructor_for_course(course_id):
-                self.content.delete_course(course_id)
+                self.render("manage_questions.html", courses=self.courses, course_basics=await self.get_course_basics(course_id), questions=self.content.get_questions(course_id), user_info=self.user_info, is_administrator=self.is_administrator)
             else:
-                return self.write("Error: You do not have permission to perform this task.")
+                self.render("permissions.html")
         except Exception as inst:
-            return self.write(f"Error: {traceback.format_exc()}")
+            render_error(self, traceback.format_exc())

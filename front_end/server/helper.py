@@ -8,6 +8,9 @@ import base64
 from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime, timedelta, timezone
 import difflib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formataddr
 import glob
 import hashlib
 import html
@@ -24,16 +27,17 @@ import re
 import requests
 from requests.exceptions import *
 import secrets
+import smtplib, ssl 
+import sqlite3
 import string
 import subprocess
 from tornado.web import RequestHandler
 import traceback
+import ujson
+import urllib.parse
 import yaml
 from yaml import load
 from yaml import Loader
-import sqlite3
-import ujson
-import urllib.parse
 
 def run_command(command):
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -507,7 +511,34 @@ async def execute_and_save_exercise(settings_dict, content, exercise_basics, exe
             return "No output was produced for any test.", False
     else:
         return exec_response["message"], False
-    
+
+def is_valid_email_address(email_address):
+    pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    return re.match(pattern, email_address) is not None
+
+def send_email(from_name, from_address, to_name, to_address, smtp_server, smtp_port, subject, body):
+    msg = MIMEMultipart()
+    msg["From"] = formataddr((from_name, from_address))
+    msg["To"] = to_address
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "html"))
+
+    try:
+        context = ssl.create_default_context()
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls(context = context)
+
+        server.sendmail(from_address, to_address, msg.as_string())
+        success = True
+    except Exception as e:
+        print(f"Error: {e}")
+        logging.error(traceback.format_exc())
+        success = False
+    finally:
+        server.quit()
+
+    return success
+
 def md5_hash_string(string):
     return hashlib.md5(string.encode()).hexdigest()
 

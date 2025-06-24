@@ -853,4 +853,83 @@
     function gotoAssignmentPage() {
         window.location.href = `/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}`;
     }
+
+    {% if support_questions %}
+        function toggleQA() {
+            document.getElementById("slide-panel").classList.toggle("is-active");
+        }
+
+        function showQuestionModal() {
+            var modal = document.getElementById("question_modal");
+
+            var askButton = document.getElementById("question_ask_button");
+            var cancelButton = document.getElementById("question_cancel_button");
+            var xButton = document.getElementById("question_x_button");
+            var questionBox = document.getElementById("question_box");
+
+            $("#questioner_share")[0].checked = false;
+            $("#question_message").addClass("is-hidden");
+            questionBox.value = "";
+            questionBox.focus();
+            show();
+
+            askButton.onclick = function() {
+                const questionText = questionBox.value.trim();
+                const questionerShare = $("#questioner_share")[0].checked;
+
+                $("#question_message")[0].innerHTML = "Please wait...";
+                $("#question_message").removeClass("is-primary");
+                $("#question_message").removeClass("is-danger");
+                $("#question_message").addClass("is-warning");
+                $("#question_message").removeClass("is-hidden");
+                $("#question_message")[0].scrollIntoView();
+
+                if (questionText.length > 0) {
+                    $.ajax({
+                        type: 'POST',
+                        url: "/save_question/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_id }}",
+                        data: { "question": questionText, "questioner_share":  questionerShare},
+                        async: true
+                    })
+                    .done(function(response) {
+                        if (response.startsWith("Success:")) {
+                            $("#question_message")[0].innerHTML = response;
+                            
+                            $("#question_message").removeClass("is-warning");
+                            $("#question_message").addClass("is-primary");
+
+                            // hide();
+                            // toggleQA();
+                        } else {
+                            $("#question_message")[0].innerHTML = response;
+                            $("#question_message").removeClass("is-warning");
+                            $("#question_message").addClass("is-danger");
+                        }
+                    })
+                    .fail(function(response) {
+                        $("#question_message")[0].innerHTML = "An unspecified error occurred. Please notify the instructor.";
+                        $("#question_message").removeClass("is-warning");
+                        $("#question_message").addClass("is-danger");
+                        console.log(response);
+                    });
+                }
+            }
+
+            cancelButton.onclick = function() {
+                hide();
+            }
+
+            xButton.onclick = function() {
+                hide();
+            }
+
+            function show() {
+                modal.style.display = "block";
+            }
+
+            function hide() {
+                modal.style.display = "none";
+            }
+        }
+    {% end %}
 </script>

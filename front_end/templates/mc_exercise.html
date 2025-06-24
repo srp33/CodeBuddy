@@ -137,6 +137,13 @@
 
                         <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning mt-1 mb-0" type="button" style="cursor: pointer;">End assignment</button>
                     {% end %}
+
+                    <a class="button is-medium is-primary is-outlined" id="qa_button" onclick="toggleQA()">
+                        Q & A
+                        {% if len(qa) > 0 %}
+                            ({{ len(qa) }})
+                        {% end %}
+                    </a>
                 </div>
             {% end %}
 
@@ -164,39 +171,6 @@
                 {% if next_exercise %}
                     <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
                 {% end %}
-            </div>
-
-            <div id="submit_exercise_modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h6 style="display:inline">Pair programming:</h6>
-                    <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
-                        <i class="far fa-question-circle"></i>
-                    </label><br />
-
-                    <div id="submit_exercise_modal_message"></div>
-
-                    <div id="partner_selection">
-                        <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
-                        {% if users %}
-                            <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
-                            <datalist id="users_list">
-                                {% for user_name in users %}
-                                    <option value="{{ user_name }}"></option>
-                                {% end %}
-                            </datalist>
-                        {% else %}
-                            <p>There are no other registered students in this course, so your only option is to leave this field blank.</p>
-                        {% end %}
-
-                        <input type="hidden" id="partner_id" />
-                    </div>
-
-                    <p class="buttons">
-                        <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
-                        <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
-                    </p>
-                </div>
             </div>
 
             <script>

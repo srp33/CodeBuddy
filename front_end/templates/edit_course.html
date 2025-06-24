@@ -81,6 +81,26 @@
 </div>
 
 <div class="shadow-box">
+    <div class="a-visible">
+        <p>
+            <strong>Support email address:</strong>
+            
+            <br />
+            
+            If you would like, you can provide an email address. If question-answering is supported for any assignment in the course, students' questions will be sent to the specified email address. You will then be able to review the questions and respond to them via a Web interface. This option also requires that an SMTP server be specified in the app's settings file.
+        </p>
+
+        <div>
+            <input class="input"
+                type="text"
+                name="email_address"
+                value="{{ course_details['email_address'] if course_details['email_address'] else '' }}"
+                placeholder="Please enter a valid email address." />
+        </div>
+    </div>
+</div>
+
+<div class="shadow-box">
     <div class="a-visible top-space">
         <p><strong>Allow students to download their code for this course?</strong>
         <br />With this option, students are allowed to download their code for all assignments and exercises in this course as a single HTML file. The file includes their <i>latest, passing</i> submission for each exercise. To provide context, assignment introductions and exercise instructions are provided. Timed assignments, hidden assignments, and non-code exercises are excluded.</p>

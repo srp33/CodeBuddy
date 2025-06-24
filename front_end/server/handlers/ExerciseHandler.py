@@ -44,7 +44,13 @@ class ExerciseHandler(BaseUserHandler):
 
             presubmission, submissions, has_passed = self.content.get_submissions(course_id, assignment_id, exercise_id, self.get_current_user(), exercise_details)
 
-            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=True)#(not studio_mode))
+            format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=True)
+
+            support_questions = self.settings_dict["smtp_server"] != "" and self.settings_dict["smtp_port"] != "" and course_details["email_address"] != "" and assignment_details["support_questions"]
+
+            qa = []
+            if support_questions:
+                qa = self.content.get_answered_questions(course_id, assignment_id, exercise_id, self.current_user)
 
             args = {"users": user_list,
                     "courses": self.courses,
@@ -69,7 +75,8 @@ class ExerciseHandler(BaseUserHandler):
                     "check_for_restrict_other_assignments": course_details["check_for_restrict_other_assignments"],
                     "timer_hours": None,
                     "timer_minutes": None,
-                    "has_passed": has_passed
+                    "has_passed": has_passed, "support_questions": support_questions,
+                    "qa": qa
             }
 
             if exercise_details["back_end"] == "multiple_choice":
@@ -136,21 +143,10 @@ class ExerciseHandler(BaseUserHandler):
             else:
                 tests = exercise_details["tests"]
 
-                # mode = self.get_query_argument("mode", default=None)
-
-                # studio_mode = self.user_info["use_studio_mode"]
-                # if mode == "studio":
-                #     studio_mode = True
-                # elif mode == "classic":
-                # studio_mode = False
-
                 virtual_assistant_interactions = []
                 virtual_assistant_max_per_exercise = None
 
                 use_virtual_assistant = await should_use_virtual_assistant(self, course_id, course_details, assignment_details, exercise_basics, self.user_info)
-
-                # if use_virtual_assistant:
-                #     studio_mode = False
 
                 args["thumb_status"] = -1
                 if use_virtual_assistant:

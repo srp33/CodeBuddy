@@ -33,6 +33,8 @@ class CASLoginHandler(BaseOtherHandler):
 
             user_id, attributes, pgtiou = cas_client.verify_ticket(ticket)
 
+            # print(attributes)
+
             if not user_id:
                 return
 

@@ -36,47 +36,52 @@ class EditCourseHandler(BaseUserHandler):
             if course_details["passcode"] == "":
                 course_details["passcode"] = None
 
-            new_highlighted = self.get_body_argument("highlighted") == "Yes"
-            if not course_details["highlighted"] and new_highlighted and not self.is_administrator:
-                result = "Error: Only an administrator can highlight a course."
+            course_details["email_address"] = self.get_body_argument("email_address").strip()
+
+            if course_details["email_address"] != "" and not is_valid_email_address(course_details["email_address"]):
+                result = "Error: The email address you provided is invalid."
             else:
-                course_details["highlighted"] = new_highlighted
-
-                course_details["allow_students_download_submissions"] = self.get_body_argument("allow_students_download_submissions") == "Yes"
-
-                virtual_assistant_config = self.get_body_argument("virtual_assistant_config")
-                if virtual_assistant_config.strip() == "":
-                    virtual_assistant_config = None
-                course_details["virtual_assistant_config"] = virtual_assistant_config
-
-                result = "Success: Course information saved!"
-
-                if course_basics["title"] == "" or course_details["introduction"] == "":
-                    result = "Error: Missing title or introduction."
+                new_highlighted = self.get_body_argument("highlighted") == "Yes"
+                if not course_details["highlighted"] and new_highlighted and not self.is_administrator:
+                    result = "Error: Only an administrator can highlight a course."
                 else:
-                    current_titles = [x[1]["title"] for x in self.courses if x[0] != course_basics["id"]]
-                    if course_basics["title"] in current_titles:
-                        result = "Error: A course with that title already exists."
+                    course_details["highlighted"] = new_highlighted
+
+                    course_details["allow_students_download_submissions"] = self.get_body_argument("allow_students_download_submissions") == "Yes"
+
+                    virtual_assistant_config = self.get_body_argument("virtual_assistant_config")
+                    if virtual_assistant_config.strip() == "":
+                        virtual_assistant_config = None
+                    course_details["virtual_assistant_config"] = virtual_assistant_config
+
+                    result = "Success: Course information saved!"
+
+                    if course_basics["title"] == "" or course_details["introduction"] == "":
+                        result = "Error: Missing title or introduction."
                     else:
-                        #if re.search(r"[^\w ]", title):
-                        #    result = "Error: The title can only contain alphanumeric characters and spaces."
-                        #else:
-                        if len(course_basics["title"]) > 100:
-                            result = "Error: The title cannot exceed 100 characters."
+                        current_titles = [x[1]["title"] for x in self.courses if x[0] != course_basics["id"]]
+                        if course_basics["title"] in current_titles:
+                            result = "Error: A course with that title already exists."
                         else:
-                            va_dict = {}
-                            try:
-                                va_dict = load_yaml_dict(virtual_assistant_config)
-                            except:
-                                pass
-
-                            if virtual_assistant_config is None or (type(va_dict) is dict and "api_key" in va_dict and "model" in va_dict and "temperature" in va_dict and "timeout" in va_dict and "max_per_exercise" in va_dict and type(va_dict["max_per_exercise"]) is int):
-                                #self.content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
-                                self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["highlighted"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], None, get_current_datetime())
-
-                                course_id = self.content.save_course(course_basics, course_details)
+                            #if re.search(r"[^\w ]", title):
+                            #    result = "Error: The title can only contain alphanumeric characters and spaces."
+                            #else:
+                            if len(course_basics["title"]) > 100:
+                                result = "Error: The title cannot exceed 100 characters."
                             else:
-                                result = "Error: The Virtual Assistant configuration is invalid."
+                                va_dict = {}
+                                try:
+                                    va_dict = load_yaml_dict(virtual_assistant_config)
+                                except:
+                                    pass
+
+                                if virtual_assistant_config is None or (type(va_dict) is dict and "api_key" in va_dict and "model" in va_dict and "temperature" in va_dict and "timeout" in va_dict and "max_per_exercise" in va_dict and type(va_dict["max_per_exercise"]) is int):
+                                    #self.content.specify_course_basics(course_basics, course_basics["title"], course_basics["visible"])
+                                    self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["email_address"],  course_details["highlighted"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], None, get_current_datetime())
+
+                                    course_id = self.content.save_course(course_basics, course_details)
+                                else:
+                                    result = "Error: The Virtual Assistant configuration is invalid."
 
             self.render("edit_course.html", courses=self.courses, assignment_statuses=await self.get_assignment_statuses(course_basics), course_basics=course_basics, course_details=course_details, result=result, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), is_edit_page=True)
         except Exception as inst:
