@@ -36,11 +36,11 @@ class CASLoginHandler(BaseOtherHandler):
             if not user_id:
                 return
             
-            # with open("/tmp/test.txt", "w") as tmp_file:
-            #     tmp_file.write(ujson.dumps(attributes))
+            with open("/tmp/test.txt", "w") as tmp_file:
+                tmp_file.write(ujson.dumps(attributes))
 
             if attributes["idCardPrimaryRole"] == "Student":
-                email_address = f"{attributes['netId']}_testing@student.byu.edu"
+                email_address = f"{attributes['netId']}@student.byu.edu"
             else:
                 email_address = attributes["emailAddress"]
 
