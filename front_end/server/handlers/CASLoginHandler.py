@@ -36,10 +36,16 @@ class CASLoginHandler(BaseOtherHandler):
             if not user_id:
                 return
             
-            with open("/tmp/test.txt", "w") as tmp_file:
-                tmp_file.write(ujson.dumps(attributes))
+            # with open("/tmp/test.txt", "w") as tmp_file:
+            #     tmp_file.write(ujson.dumps(attributes))
 
-            user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": attributes["emailAddress"]}
+            if attributes["idCardPrimaryRole"] == "Student":
+                email_address = f"{attributes['netId']}@student.byu.edu"
+            else:
+                email_address = "testing@byu.edu"
+                #attributes["emailAddress"]
+
+            user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": email_address}
 
             if self.content.user_exists(user_id):
                 # Update user with current information when they already exist.

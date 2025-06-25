@@ -39,7 +39,12 @@ class StudentExerciseHandler(BaseUserHandler):
 
                 format_exercise_details(exercise_details, course_basics, assignment_basics, student_info, self.content, next_prev_exercises, format_data=True)
 
-                args = {"student_info": student_info, "student_id": student_id, "score": score, "courses": self.courses, "course_basics": course_basics, "assignment_statuses": assignment_statuses, "assignment_basics": assignment_basics, "exercise_basics": exercise_basics, "assignment_details": assignment_details, "exercise_details": exercise_details, "tests": exercise_details["tests"], "presubmission": presubmission, "code_completion_path": code_completion_path, "back_end_description": back_end_description, "submissions": submissions, "exercise_statuses": exercise_statuses, "next_prev_exercises": next_prev_exercises, "num_submissions": num_submissions, "user_info": self.user_info, "user_id": self.get_current_user(), "next_prev_student_ids": self.content.get_next_prev_student_ids(course_id, student_id), "check_for_restrict_other_assignments": False, "is_administrator": self.is_administrator, "is_instructor": await self.is_instructor_for_course(course_id), "is_assistant": is_assistant}
+                user_list = None
+                if exercise_details["enable_pair_programming"]:
+                    partner_info = await self.get_partner_info(course_id)
+                    user_list = list(partner_info.keys())
+
+                args = {"student_info": student_info, "student_id": student_id, "score": score, "courses": self.courses, "course_basics": course_basics, "assignment_statuses": assignment_statuses, "assignment_basics": assignment_basics, "exercise_basics": exercise_basics, "assignment_details": assignment_details, "exercise_details": exercise_details, "tests": exercise_details["tests"], "presubmission": presubmission, "code_completion_path": code_completion_path, "back_end_description": back_end_description, "submissions": submissions, "exercise_statuses": exercise_statuses, "next_prev_exercises": next_prev_exercises, "num_submissions": num_submissions, "user_info": self.user_info, "user_id": self.get_current_user(), "next_prev_student_ids": self.content.get_next_prev_student_ids(course_id, student_id), "check_for_restrict_other_assignments": False, "users": user_list, "is_administrator": self.is_administrator, "is_instructor": await self.is_instructor_for_course(course_id), "is_assistant": is_assistant, "support_questions": False}
 
                 if exercise_details["back_end"] == "multiple_choice":
                     solutions_dict = json.loads(exercise_details["solution_code"])
