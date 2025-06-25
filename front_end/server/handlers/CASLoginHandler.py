@@ -33,12 +33,11 @@ class CASLoginHandler(BaseOtherHandler):
 
             user_id, attributes, pgtiou = cas_client.verify_ticket(ticket)
 
-            # print(attributes)
-
             if not user_id:
                 return
             
-            print(attributes)
+            with open("/tmp/test.txt") as tmp_file:
+                tmp_file.write(ujson.dumps(attributes))
 
             user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": attributes["emailAddress"]}
 
