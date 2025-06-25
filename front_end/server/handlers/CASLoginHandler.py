@@ -36,7 +36,7 @@ class CASLoginHandler(BaseOtherHandler):
             if not user_id:
                 return
             
-            with open("/tmp/test.txt") as tmp_file:
+            with open("/tmp/test.txt", "w") as tmp_file:
                 tmp_file.write(ujson.dumps(attributes))
 
             user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": attributes["emailAddress"]}
