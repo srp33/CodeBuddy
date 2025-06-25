@@ -8,37 +8,41 @@
     {% if assignment_basics["exists"] %}
         <h4>{{ assignment_basics["title"] }}</h4>
 
-        <p>This page shows the scores for <strong>{{ student_name }} ({{ student_id }})</strong>.</p>
+        {% if student_name %}
+            <p>This page shows the scores for <strong>{{ student_name }} ({{ student_id }})</strong>.</p>
 
-        <p>Click on an exercise below to view the student's submission(s) for that exercise. On that page, you can also edit the student's score.</p>
+            <p>Click on an exercise below to view the student's submission(s) for that exercise. On that page, you can also edit the student's score.</p>
 
-        <div class="table-container">
-            <table class="table is-striped" id="scores_table">
-                <thead>
-                    <tr>
-                    <th>Exercise</th>
-                    <th># Submissions</th>
-                    <th>Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for exercise in exercise_statuses %}
-                    <tr>
-                        <td>
-                            {{ exercise[1]["title"] }}
-                        </td>
-                        <td>
-                            <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}/{{ student_id }}">
-                                {{ exercise[1]["num_submissions"] }}
-                            </a>
-                        </td>
-                        <td>
-                            {{ round(float(exercise[1]['score']), 1) }}%
-                        </td>
-                    </tr>
-                {% end %}    
-                </tbody>
-            </table>
-        </div>
+            <div class="table-container">
+                <table class="table is-striped" id="scores_table">
+                    <thead>
+                        <tr>
+                        <th>Exercise</th>
+                        <th># Submissions</th>
+                        <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for exercise in exercise_statuses %}
+                        <tr>
+                            <td>
+                                {{ exercise[1]["title"] }}
+                            </td>
+                            <td>
+                                <a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}/{{ student_id }}">
+                                    {{ exercise[1]["num_submissions"] }}
+                                </a>
+                            </td>
+                            <td>
+                                {{ round(float(exercise[1]['score']), 1) }}%
+                            </td>
+                        </tr>
+                    {% end %}    
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Invalid student.</p>
+        {% end %}
     {% end %}
 {% end %}

@@ -60,7 +60,13 @@
                             </div>
             
                             <div class="mb-4">
-                                <pre>{{ student[1]["code"] }}</pre>
+                                {% if exercise_details['back_end'] == 'not_code' %}
+                                    <div class="has-background-white p-4">
+                                        {{ student[1]["code"] }}
+                                    </div>
+                                {% else %}
+                                    <pre>{{ student[1]["code"] }}</pre>
+                                {% end %}
                             </div>
             
                             <div class="mt-4 mb-4">Submitted:
