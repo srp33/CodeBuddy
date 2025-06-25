@@ -40,10 +40,9 @@ class CASLoginHandler(BaseOtherHandler):
             #     tmp_file.write(ujson.dumps(attributes))
 
             if attributes["idCardPrimaryRole"] == "Student":
-                email_address = f"{attributes['netId']}@student.byu.edu"
+                email_address = f"{attributes['netId']}_testing@student.byu.edu"
             else:
-                email_address = "testing@byu.edu"
-                #attributes["emailAddress"]
+                email_address = attributes["emailAddress"]
 
             user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": email_address}
 
