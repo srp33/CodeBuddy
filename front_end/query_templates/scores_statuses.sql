@@ -94,6 +94,7 @@ WITH
       -- AND s.assignment_id IN (SELECT assignment_id FROM valid_assignments)
       -- AND exercise_id IN (SELECT exercise_id FROM valid_exercises)
       AND s.user_id IN (SELECT user_id FROM valid_users)
+      AND e.visible = 1
   ),
 
   exercise_statuses AS (

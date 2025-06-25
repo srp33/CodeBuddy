@@ -2,12 +2,12 @@ WITH
   variables AS (
     SELECT
       51 AS course_id,
-      NULL AS assignment_id,
-      -- 2737 AS assignment_id,
+      -- NULL AS assignment_id,
+      2519 AS assignment_id,
       NULL AS exercise_id,
       -- 15633 AS exercise_id,
-      -- NULL AS user_id
-      'srp33' AS user_id
+      NULL AS user_id
+      -- 'srp33' AS user_id
   ),
 
   valid_assignments AS (
@@ -276,4 +276,4 @@ WITH
   )
 
 SELECT *
-FROM exercise_statuses
+FROM assignment_statuses
