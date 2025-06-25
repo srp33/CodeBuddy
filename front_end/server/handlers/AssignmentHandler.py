@@ -78,7 +78,7 @@ class AssignmentHandler(BaseUserHandler):
                 if not confirmation_code:
                     return self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, assignment_statuses=assignment_statuses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
 
-            exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=False)
+            exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user())
             
             has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
 

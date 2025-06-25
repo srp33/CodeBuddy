@@ -885,7 +885,7 @@ WHERE course_id = ?
     # Gets the number of submissions a student has made for each exercise
     # in an assignment and whether or not they have passed the exercise.
     # TODO: Pass basics info into this function?
-    def get_exercise_statuses(self, course_id, assignment_id, user_id, show_hidden=True, nice_sort=True):
+    def get_exercise_statuses(self, course_id, assignment_id, user_id, show_hidden=False, nice_sort=True):
         # This happens when you are creating a new assignment.
         if not assignment_id:
             return []
