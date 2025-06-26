@@ -333,34 +333,61 @@
                 return;
             }
 
-            var html = "<table class='table is-striped'>";
-            html += "<thead><tr><th>Answer</th><th>Correct</th><th>Description</th><th></th></thead>";
-            html += "<tbody>";
+            const table = document.createElement("table");
+            table.className = "table is-striped";
+
+            // Create table header
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+            ["Answer", "Correct", "Description", ""].forEach(text => {
+                const th = document.createElement("th");
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Create table body
+            const tbody = document.createElement("tbody");
 
             for (const solution_option in sortObj(solutions_and_descriptions.solutions)) {
-                html += "<tr>";
-                html += `  <td>${solution_option}</td>`;
-                html += `  <td>${solutions_and_descriptions.solutions[solution_option] ? "Yes": "No"}</td>`;
+                const row = document.createElement("tr");
 
-                if (solutions_and_descriptions.descriptions[solution_option]) {
-                    html += `  <td>${solutions_and_descriptions.descriptions[solution_option]}</td>`;
-                }
-                else {
-                    html += `  <td></td>`;
-                }
+                // Answer cell
+                const tdAnswer = document.createElement("td");
+                tdAnswer.textContent = solution_option;
+                row.appendChild(tdAnswer);
 
-                html += `  <td>
-                               <a onclick="removeAnswerOption('${solution_option}')">
-                                   <i class="fas fa-trash-alt"></i>
-                               </a>
-                           </td>`;
-                html += "</tr>";
+                // Correct cell
+                const tdCorrect = document.createElement("td");
+                tdCorrect.textContent = solutions_and_descriptions.solutions[solution_option] ? "Yes" : "No";
+                row.appendChild(tdCorrect);
+
+                // Description cell
+                const tdDesc = document.createElement("td");
+                const desc = solutions_and_descriptions.descriptions[solution_option];
+                tdDesc.textContent = desc ? desc : "";
+                row.appendChild(tdDesc);
+
+                // Action cell with delete icon
+                const tdDelete = document.createElement("td");
+                const a = document.createElement("a");
+                a.onclick = () => removeAnswerOption(solution_option);
+                const icon = document.createElement("i");
+                icon.className = "fas fa-trash-alt";
+                a.appendChild(icon);
+                tdDelete.appendChild(a);
+                row.appendChild(tdDelete);
+
+                tbody.appendChild(row);
             }
 
-            html += "</tbody>";
-            html += "</table>";
+            table.appendChild(tbody);
 
-            $("#solutions_table")[0].innerHTML = html;
+            const container = document.getElementById("solutions_table");
+            container.innerHTML = "";
+            container.appendChild(table);
+
             $("#solutions_table").removeClass("is-hidden");
         }
 
