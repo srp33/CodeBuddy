@@ -27,7 +27,7 @@
         {% end %}
 
         {% if assignment_details["due_date"] and assignment_details["due_date_passed"] and assignment_details["allow_late"] and not assignment_is_complete %}
-            <div class='notification is-warning'>
+            <div class='notification is-warning is-light'>
                 The due date for this assignment has passed. 
 
                 {% if assignment_details["late_percent"] > 0 %}
@@ -55,7 +55,9 @@
                         <th>Exercise</th>
                         <th># Submissions</th>
                         <th>Completed</th>
-                        <th>Score</th>
+                        {% if not assignment_details["has_timer"] or timer_status != "timer_in_progress" %}
+                            <th>Score</th>
+                        {% end %}
                         {% if has_non_default_weight %}
                             <th>Weight*</th>
                         {% end %}
@@ -88,7 +90,10 @@
                                 {% end %}
                             </td>
 
-                            <td>{{ exercise[1]["score"] }}%</td>
+                            {% if not assignment_details["has_timer"] or timer_status != "timer_in_progress" %}
+                                <td>{{ round(float(exercise[1]["score"]), 1) }}%</td>
+                            {% end %}
+
                             {% if has_non_default_weight %}
                                 <td>{{ exercise[1]["weight"] }}</td>
                             {% end %}

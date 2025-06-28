@@ -1159,7 +1159,9 @@ FROM exercise_scores_weights scr
 
         result = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id, ))
 
-        return result["score"]
+        if result:
+          return result["score"]
+        return 0
 
     def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, score):
         # We only update the score if it's higher than what was there previously. We also account for the scenario where it is their first submission.
@@ -1216,14 +1218,15 @@ WHERE t.course_id = ?
             test_outputs[submission_id][test_title]["jpg_output"] = row["jpg_output"]
             test_outputs[submission_id][test_title]["txt_output_formatted"] = format_output_as_html(row["txt_output"])
 
-        sql = '''
+        sql = self.scores_statuses_temp_tables_sql + '''
 SELECT su.submission_id AS id,
        su.code,
-       su.passed AS completed,
-       su.date AS submission_timestamp,
+       su.completed,
+       su.passed,
+       su.submission_timestamp,
        sc.score,
        u.name AS partner_name
-FROM submissions su
+FROM valid_submissions su
 INNER JOIN scores sc
   ON su.course_id = sc.course_id
   AND su.assignment_id = sc.assignment_id
@@ -1238,7 +1241,7 @@ WHERE su.course_id = ?
 
 UNION
 
-SELECT -1, presubmission as code, FALSE, NULL, 0, NULL
+SELECT -1, presubmission as code, FALSE, 0, NULL, 0, NULL
 FROM presubmissions
 WHERE course_id = ?
   AND assignment_id = ?
@@ -1288,7 +1291,7 @@ ORDER BY submission_timestamp
         submissions = []
         has_passed = False
 
-        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id)):
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id)):
             submission_test_outputs = {}
 
             if row["id"] == -1:
@@ -1889,7 +1892,7 @@ ORDER BY student_name
             self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["support_questions"],   assignment_details["use_virtual_assistant"], assignment_details["assignment_group_id"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, support_questions,  use_virtual_assistant, assignment_group_id)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["support_questions"],  assignment_details["use_virtual_assistant"], assignment_details["assignment_group_id"]])
             assignment_basics["exists"] = True

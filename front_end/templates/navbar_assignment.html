@@ -65,7 +65,14 @@
 
                     ></i>
                 {% elif assignment[2]["timer_has_ended"] %}
-                    <i class="far fa-clock"
+                    <!-- <i class="far fa-clock"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i> -->
+                    <i class="far fa-check-circle"
                     
                     {% if assignment[0] == assignment_basics['id'] %}
                         style="color: white;"

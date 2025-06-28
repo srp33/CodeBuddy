@@ -80,9 +80,13 @@
                                     </td>
                                 {% else %}
                                     {% if assignment[2]["timer_has_ended"] %}
-                                        <td>
+                                        <!-- <td>
                                             <i class="far fa-clock"></i>
                                             Timer ended
+                                        </td> -->
+                                        <td>
+                                            <i class="far fa-check-circle"></i>
+                                            Completed
                                         </td>
                                     {% elif assignment[2]["in_progress"] %}
                                         <td>
@@ -100,14 +104,18 @@
                                 <td><progress class="progress is-small is-primary" value="{{ assignment[2]['num_completed'] }}" max="{{ assignment[2]['num_exercises'] }}"></progress>{{ assignment[2]["num_completed"] }} / {{ assignment[2]["num_exercises"] }}</td>
 
                                 <td style="white-space: nowrap;">
-                                    {% if assignment[2]["score"] == 0 or assignment[2]["score"] == 100 %}
-                                        {{ int(assignment[2]["score"]) }}%
+                                    {% if assignment[2]["has_timer"] and assignment[2]["in_progress"] %}
+                                        [Hidden]
                                     {% else %}
-                                        {{ round(assignment[2]["score"], 1) }}%
-                                    {% end %}
+                                        {% if assignment[2]["score"] == 0 or assignment[2]["score"] == 100 %}
+                                            {{ int(assignment[2]["score"]) }}%
+                                        {% else %}
+                                            {{ round(assignment[2]["score"], 1) }}%
+                                        {% end %}
 
-                                    {% if assignment[2]["custom_scoring"] != "" %}
-                                        *
+                                        {% if assignment[2]["custom_scoring"] != "" %}
+                                            *
+                                        {% end %}
                                     {% end %}
                                 </td>
                             </tr>

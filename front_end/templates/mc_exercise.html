@@ -10,7 +10,7 @@
             <link rel="stylesheet" href="/static/css/modal.css">
 
             {% if assignment_details["due_date"] and assignment_details["due_date_passed"] %}
-                <div class='notification is-warning'>
+                <div class='notification is-warning is-light'>
                     The due date for this assignment has passed.
 
                     {% if not has_passed and (not assignment_details["allow_late"] or assignment_details["late_percent"] == 0) and assignment_details["view_answer_late"] and exercise_details["show_instructor_solution"] %}
@@ -138,12 +138,14 @@
                         <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning mt-1 mb-0" type="button" style="cursor: pointer;">End assignment</button>
                     {% end %}
 
-                    <a class="button is-medium is-primary is-outlined" id="qa_button" onclick="toggleQA()">
-                        Q & A
-                        {% if len(qa) > 0 %}
-                            ({{ len(qa) }})
-                        {% end %}
-                    </a>
+                    {% if support_questions %}
+                        <a class="button is-medium is-primary is-outlined mt-3 ml-2" id="qa_button" onclick="toggleQA()">
+                            Q & A
+                            {% if len(qa) > 0 %}
+                                ({{ len(qa) }})
+                            {% end %}
+                        </a>
+                    {% end %}
                 </div>
             {% end %}
 

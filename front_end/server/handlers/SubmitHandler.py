@@ -9,7 +9,7 @@ from dateutil import parser
 
 class SubmitHandler(BaseUserHandler):
     async def post(self, course_id, assignment_id, exercise_id):
-        out_dict = {"message": "", "test_outputs": {}, "all_passed": False, "score": 0, "partner_name": None, "submission_id": ""}
+        out_dict = {"message": "", "test_outputs": {}, "completed": False, "passed": False, "score": 0, "partner_name": None, "submission_id": ""}
 
         try:
             user_id = self.get_current_user()
@@ -51,7 +51,8 @@ class SubmitHandler(BaseUserHandler):
                 # This is what the instructor marked as correct.
                 correct_answer_indexes = [answer_index for answer_index, answer_option in enumerate(sorted(solutions_dict)) if solutions_dict[answer_option]]
 
-                out_dict["all_passed"] = answer_indexes == correct_answer_indexes
+                out_dict["completed"] = True
+                out_dict["passed"] = answer_indexes == correct_answer_indexes
 
                 # Actual answers the user chose.
                 answers = [answer_option for answer_index, answer_option in enumerate(sorted(solutions_dict)) if answer_index in answer_indexes]
@@ -71,34 +72,39 @@ class SubmitHandler(BaseUserHandler):
                 out_dict = await exec_code(self.settings_dict, code, exercise_details["verification_code"], exercise_details, True)
 
                 out_dict["code"] = code
-                out_dict["all_passed"] = check_test_outputs(exercise_details, out_dict["test_outputs"])
+                out_dict["completed"] = check_test_outputs(exercise_details, out_dict["test_outputs"])
+                out_dict["passed"] = out_dict["completed"]
 
             if out_dict["message"] == "":
-                out_dict["score"] = self.calc_exercise_score(assignment_details, out_dict["all_passed"])
+                out_dict["score"] = self.calc_exercise_score(assignment_details, out_dict["passed"])
 
-                out_dict["submission_id"] = await self.content.save_submission(course_id, assignment_id, exercise_id, user_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], partner_id)
+                out_dict["submission_id"] = await self.content.save_submission(course_id, assignment_id, exercise_id, user_id, code, out_dict["passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], partner_id)
 
                 if partner_id:
                     out_dict["partner_name"] = partner_name
 
-                    await self.content.save_submission(course_id, assignment_id, exercise_id, partner_id, code, out_dict["all_passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], user_id)
+                    await self.content.save_submission(course_id, assignment_id, exercise_id, partner_id, code, out_dict["passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], user_id)
 
                 sanitize_test_outputs(exercise_details, out_dict["test_outputs"])
         except ConnectionError as inst:
             out_dict["message"] = "error: The front-end server was unable to contact the back-end server."
-            out_dict["all_passed"] = False
+            out_dict["completed"] = False
+            out_dict["passed"] = False
         except ReadTimeout as inst:
             out_dict["message"] = f"error: Your solution timed out after {self.settings_dict['back_ends'][exercise_details['back_end']]['timeout_seconds']} seconds."
-            out_dict["all_passed"] = False
+            out_dict["completed"] = False
+            out_dict["passed"] = False
         except Exception as inst:
             out_dict["message"] = f"error: {format_output_as_html(traceback.format_exc())}"
-            out_dict["all_passed"] = False
+            out_dict["completed"] = False
+            out_dict["passed"] = False
 
         self.write(json.dumps(out_dict, default=str))
 
     def record_error(self, out_dict, message):
         out_dict["message"] = message
-        out_dict["all_passed"] = False
+        out_dict["completed"] = False
+        out_dict["passed"] = False
         out_dict["score"] = 0
 
         return self.write(json.dumps(out_dict, default=str))

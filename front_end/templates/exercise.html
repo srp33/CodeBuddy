@@ -17,7 +17,7 @@
                 {% end %}
 
                     {% if assignment_details["due_date"] and assignment_details["due_date_passed"] %}
-                        <div class='notification is-warning'>
+                        <div class='notification is-warning is-light'>
                             The due date for this assignment has passed.
 
                             {% if not has_passed and (not assignment_details["allow_late"] or assignment_details["late_percent"] == 0) and assignment_details["view_answer_late"] and exercise_details["show_instructor_solution"] %}

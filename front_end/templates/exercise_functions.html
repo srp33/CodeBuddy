@@ -50,7 +50,7 @@
                     hideMessages();
                     showTestOutputs(response_dict["test_outputs"], true);
 
-                    if (show_submit_warning && response_dict["all_passed"])
+                    if (show_submit_warning && response_dict["passed"])
                         showInfoMessage("Be sure to click on Submit so your solution and score will be saved.");
                 }
                 else {
@@ -94,7 +94,7 @@
                         "id": response_dict["submission_id"],
                         "code": response_dict["code"],
                         "submission_timestamp": submission_date,
-                        "completed": response_dict["all_passed"],
+                        "completed": response_dict["completed"], "passed": response_dict["passed"],
                         "score": response_dict["score"],
                         "partner_name": response_dict["partner_name"],
                         "test_outputs": response_dict["test_outputs"]};
@@ -105,11 +105,11 @@
 
                     submissions.push(submission);
 
-                    // We only want to do these things for programming exercises.
                     if (typeof editor === 'undefined') {
                         get_mc_submission();
                     }
                     else {
+                        // We only want to do these things for programming exercises.
                         show_past_submissions();
 
                         get_code_submission(response_dict["submission_id"], false, true);
@@ -141,6 +141,12 @@
     function hideMessages() {
         $("#result_message")[0].innerHTML = "";
         $("#test_outputs")[0].innerHTML = "";
+    }
+
+    function showThankYouMessageMultipleChoice() {
+        var message = "<div><strong>Thank you for your submission. You will see your score after the assignment has ended.</strong></div>";
+
+        $("#result_message")[0].innerHTML = `<div class='notification success-message' style='color:white'>${message}</div>`;
     }
 
     function showSuccessMessage(submission) {
@@ -513,15 +519,18 @@
 
     function get_mc_submission() {
         // window.wasUserChange = false;
-
         hideMessages();
 
-        var this_submission = submissions[0];
+        {% if assignment_details["has_timer"] and timer_status == "timer_in_progress" %}
+            showThankYouMessageMultipleChoice();
+        {% else %}
+            var this_submission = submissions[0];
 
-        if (this_submission["completed"])
-            showSuccessMessageMultipleChoice(this_submission);
-        else
-            showNotPassingMessageMultipleChoice(this_submission);
+            if (this_submission["passed"] == 1)
+                showSuccessMessageMultipleChoice(this_submission);
+            else
+                showNotPassingMessageMultipleChoice(this_submission);
+        {% end %}
 
         hide_submit_button();
 

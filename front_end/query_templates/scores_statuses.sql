@@ -78,11 +78,13 @@ WITH
 
   valid_submissions AS (
     SELECT
+      s.course_id,
       s.assignment_id,
       s.exercise_id,
       s.user_id,
       s.submission_id,
       s.code,
+      s.passed,
       (s.passed OR e.is_multiple_choice) AS completed,
       s.date AS submission_timestamp,
       s.partner_id
