@@ -34,6 +34,7 @@ Here are some of CodeBuddy's features:
 * [August 20, 2024] Sometimes, to answer a multiple-choice question, students need to execute code (e.g., to perform calculations, apply a statistical test) to answer the question. Instructors can configure an exercise so that it includes a "sandbox" on the page. With this option, students can execute code, but the code is not evaluated directly (or saved).
 * [June 12, 2025] Instructors can create assignment groups.
 * [June 25, 2025] Instructors can configure courses and assignments so that students can submit questions about the material. An instructor / assistant are notified by email. They answer the questions via CodeBuddy. If the student and instructor / assistant agree, the question is shared with other students in the same class.
+* [June 30, 2025] For assignments that are timed, students do not know whether they have answered multiple-choice questions correctly until after the assignment has ended. This helps to reduce student anxiety on quizzes and exams.
 
 # How to run a CodeBuddy instance
 

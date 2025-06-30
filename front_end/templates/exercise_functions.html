@@ -68,6 +68,7 @@
 
     function submit() {
         let user_solution = get_user_solution()[0];
+
         if (user_solution == "") {
             return false;
         }
@@ -532,7 +533,9 @@
                 showNotPassingMessageMultipleChoice(this_submission);
         {% end %}
 
-        hide_submit_button();
+        {% if not assignment_details["has_timer"] %}
+            hide_submit_button();
+        {% end %}
 
         // window.wasUserChange = true;
     }
@@ -640,51 +643,59 @@
         if (presubmission_items.length == 0)
             return;
 
-        var presubmission;
+        var presubmission = null;
+
         if (presubmission_items.length == 1) {
             presubmission = presubmission_items[0];
         }
         else {
-            presubmission = `${presubmission_items[0]}sandbox_code:${presubmission_items[1]}`;
+            // presubmission = `${presubmission_items[0]}sandbox_code:${presubmission_items[1]}`;
+
+            // We're no longer saving the selected answer, just the sandbox code.
+            if (presubmission_items[1] != "") {
+                presubmission = `sandbox_code:${presubmission_items[1]}`;
+            }
         }
 
-        $.ajax({
-            type: 'POST',
-            url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-            data: {"presubmission": presubmission},
-            async: true
-            })
-        .done(function(result) {
-            if (result == "") {
-                codeChanged = false;
+        if (presubmission !== null) {
+            $.ajax({
+                type: 'POST',
+                url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                data: {"presubmission": presubmission},
+                async: true
+                })
+            .done(function(result) {
+                if (result == "") {
+                    codeChanged = false;
 
-                if (typeof saved_div !== "undefined" && saved_div !== null) {
-                    last_saved_at = new Intl.DateTimeFormat('default', {
-                        hour: 'numeric',
-                        minute: 'numeric',
-                        second: 'numeric',
-                    }).format(Date.now());
+                    if (typeof saved_div !== "undefined" && saved_div !== null) {
+                        last_saved_at = new Intl.DateTimeFormat('default', {
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            second: 'numeric',
+                        }).format(Date.now());
 
-                    saved_div.innerHTML = `<em>(saved at ${last_saved_at})</em>`;
+                        saved_div.innerHTML = `<em>(saved at ${last_saved_at})</em>`;
+                    }
                 }
-            }
-            else {
+                else {
+                    console.log("An error occurred when the user attempted to save their code.");
+                    console.log(result);
+
+                    if (typeof saved_div !== "undefined" && saved_div !== null) {
+                        saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
+                    }
+                }
+            })
+            .fail(function(result) {
                 console.log("An error occurred when the user attempted to save their code.");
                 console.log(result);
 
                 if (typeof saved_div !== "undefined" && saved_div !== null) {
                     saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
                 }
-            }
-        })
-        .fail(function(result) {
-            console.log("An error occurred when the user attempted to save their code.");
-            console.log(result);
-
-            if (typeof saved_div !== "undefined" && saved_div !== null) {
-                saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
-            }
-        });
+            });
+        }
     }
 
     // function showLinkModal() {

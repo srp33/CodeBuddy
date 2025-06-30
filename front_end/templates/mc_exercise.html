@@ -177,9 +177,9 @@
 
             <script>
                 function get_user_solution() {
-                    if (submissions.length > 0) {
-                        return [];
-                    }
+                    // if (submissions.length > 0) {
+                    //     return [];
+                    // }
 
                     {% if num_correct_options == 1 %}
                         var selectedValue = $('input[name="answer"]:checked').val();
@@ -214,7 +214,7 @@
 
                 let submitButton = document.getElementById("submit_button");
 
-                if (submissions.length == 0) {
+                // if (submissions.length == 0) {
                     if (submitButton != null) {
                         submitButton.onclick = function() {
                             {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or (assignment_details["allow_late"] and assignment_details["late_percent"] > 0) %}
@@ -229,7 +229,7 @@
                             {% end %}
                         }
                     }
-                }
+                // }
 
                 {% if len(selected_answer_indices) > 0 %}
                     {% if len(answer_options) == 1 %}
@@ -246,7 +246,10 @@
                 {% end %}
 
                 if (submissions.length > 0) {
-                    hide_submit_button();
+                    {% if not assignment_details["has_timer"] %}
+                        hide_submit_button();
+                    {% end %}
+
                     get_mc_submission();
                 }
 

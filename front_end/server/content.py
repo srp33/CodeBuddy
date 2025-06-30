@@ -1892,7 +1892,7 @@ ORDER BY student_name
             self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["support_questions"],   assignment_details["use_virtual_assistant"], assignment_details["assignment_group_id"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
             sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, support_questions,  use_virtual_assistant, assignment_group_id)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
             assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["support_questions"],  assignment_details["use_virtual_assistant"], assignment_details["assignment_group_id"]])
             assignment_basics["exists"] = True
@@ -2044,9 +2044,29 @@ ORDER BY student_name
         return status
 
     async def save_submission(self, course_id, assignment_id, exercise_id, user_id, code, passed, date, exercise_details, test_outputs, score, partner_id):
-        sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
-        submission_id = self.execute(sql, (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id,))
+        insert_submission = True
+
+        if exercise_details["back_end"] == "multiple_choice":
+            submissions = self.get_submissions(course_id, assignment_id, exercise_id, user_id, exercise_details)
+
+            if len(submissions[1]) > 0:
+                submission_id = submissions[1][0]["id"]
+                sql = '''UPDATE submissions
+                         SET code = ?,
+                             passed = ?,
+                             date = ?,
+                             partner_id = ?
+                         WHERE submission_id = ?'''
+                
+                self.execute(sql, (code, passed, date, partner_id, submission_id))
+                
+                insert_submission = False
+
+        if insert_submission:
+            sql = '''INSERT INTO submissions (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+
+            submission_id = self.execute(sql, (course_id, assignment_id, exercise_id, user_id, code, passed, date, partner_id))
 
         sql_statements = []
         params_list = []
@@ -2065,8 +2085,8 @@ ORDER BY student_name
 
         self.save_exercise_score(course_id, assignment_id, exercise_id, user_id, score)
 
-        if exercise_details["back_end"] != "multiple_choice":
-          self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
+        # if exercise_details["back_end"] != "multiple_choice":
+        self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
 
         return submission_id
     
