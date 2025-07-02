@@ -115,17 +115,17 @@
         {% if is_administrator or is_instructor or is_assistant %}
             <a class="button is-dark" href="/edit_assignment/{{ course_basics['id'] }}/">Create assignment</a>
 
+            <a class="button has-background-primary-light" href="/edit_course/{{ course_basics['id'] }}">Edit course</a>
+
             <a class="button has-background-primary-light" href="/view_students/{{ course_basics['id'] }}">Manage students</a>
 
             <a class="button has-background-primary-light" href="/view_at_risk_students/{{ course_basics['id'] }}/72">View at-risk students</a>
 
             <a class="button has-background-primary-light" href="/manage_questions/{{ course_basics['id'] }}">Manage questions and answers</a>
 
-            <a class="button" href="/edit_course/{{ course_basics['id'] }}">Edit course</a>
+            <a class="button has-background-primary-light" href='/manage_assignment_groups/{{ course_basics['id'] }}'>Manage assignment groups</a>
 
             <a class="button" onclick="showPostModal('import_assignment', 'Import an assignment from a JSON file', {}, '')">Import assignment</a>
-
-            <a class="button" href='/manage_assignment_groups/{{ course_basics['id'] }}'>Manage assignment groups</a>
 
             <a class="button" onclick="showPostModal('copy_course', 'Copy course', {}, '')">Copy course</a>
 

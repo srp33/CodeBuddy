@@ -241,11 +241,11 @@
             <div class="buttons">
                 <a class="button is-dark" href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/'>Create exercise</a>
                 
-                <button class="button" onclick="showPostModal('new_video', 'Create video exercise', {}, '')">Create video exercise</button>
+                <button class="button has-background-primary-light" onclick="showPostModal('new_video', 'Create video exercise', {}, '')">Create video exercise</button>
 
-                <a class="button" href="/edit_mc_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">Create multiple-choice exercise</a>
+                <a class="button has-background-primary-light" href="/edit_mc_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">Create multiple-choice exercise</a>
 
-                <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Edit assignment</a>
+                <a class="button has-background-primary-light" href='/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Edit assignment</a>
 
                 <a class="button" href='/export_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}' download="{{ course_basics['title'] }}__{{ assignment_basics['title'] }}.json">Export assignment</a>
 
