@@ -17,6 +17,9 @@ class DevelopmentLoginHandler(BaseOtherHandler):
             user_id = self.get_body_argument("user_id")
             dev_password = self.get_body_argument("dev_password")
 
+            if self.settings_dict["dev_password"] == "" and self.in_production_mode():
+                return self.write("Cannot do a development login when in production mode and the dev_password setting is blank.")
+
             if user_id == "":
                 self.write("Invalid user ID.")
             else:

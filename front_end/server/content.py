@@ -45,6 +45,7 @@ class Content:
 
         if journal_mode == "WAL":
             self.execute("PRAGMA wal_autocheckpoint = 1000")
+            self.execute("PRAGMA busy_timeout = 5000")
 
         self.scores_statuses_temp_tables_sql = read_file("query_templates/scores_statuses.sql")
 
