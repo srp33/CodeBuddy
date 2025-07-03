@@ -17,22 +17,21 @@ class DevelopmentLoginHandler(BaseOtherHandler):
             user_id = self.get_body_argument("user_id")
             dev_password = self.get_body_argument("dev_password")
 
-            if self.settings_dict["dev_password"] == "" and self.in_production_mode():
-                return self.write("Cannot do a development login when in production mode and the dev_password setting is blank.")
+            if len(self.settings_dict["dev_password"]) < 16 and self.in_production_mode():
+                return self.write("You cannot do a development login when in production mode and the dev_password setting is shorter than 16 characters. This helps prevent hacking and protect student privacy.")
 
             if user_id == "":
                 self.write("Invalid user ID.")
             else:
                 if dev_password == self.settings_dict["dev_password"]:
-                    # Add static information for test user.
-                    user_dict = {'name': f'{user_id} TestUser', 'given_name': user_id, 'family_name': 'TestUser', 'locale': 'en', 'email_address': f'{user_id}@nospam.edu'}
+                    if not self.content.user_exists(user_id):
+                        if self.in_production_mode():
+                            return self.write("Invalid user ID.")
+                        else:
+                            # Add static information for test user.
+                            user_dict = {'name': f'{user_id} TestUser', 'given_name': user_id, 'family_name': 'TestUser', 'locale': 'en', 'email_address': f'{user_id}@nospam.edu'}
 
-                    if self.content.user_exists(user_id):
-                        # Update user with current information when they already exist.
-                        self.content.update_user(user_id, user_dict)
-                    else:
-                        # Store current user information when they do not already exist.
-                        self.content.add_user(user_id, user_dict)
+                            self.content.add_user(user_id, user_dict)
 
                     self.set_secure_cookie("user_id", user_id, expires_days=30)
 

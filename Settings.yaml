@@ -18,7 +18,7 @@ f_memory_gb: 4
 f_run_in_background: no
 # Indicate whether the middle-layer server should run in the background (yes) and thus continue running when you log out of the server. Otherwise, put no.
 m_run_in_background: no
-# Indicate a password to be used in development mode. When running the server locally, it's easiest to use a blank password. However, if you deploy a development server for others to test, it is a good idea to require a password when users log in to the server.
+# Indicate a password to be used in development mode. When running the server locally, it's easiest to use a blank password. However, when you deploy to a production server, the password must be at least 16 characters in length.
 dev_password: ""
 # Include HTML (typically an <a> tag) that links to a privacy notice for your organization. This link will be placed in the footer.
 privacy_notice_html: <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
