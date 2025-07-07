@@ -3,11 +3,11 @@ WITH
     SELECT
       51 AS course_id,
       -- NULL AS assignment_id,
-      2519 AS assignment_id,
-      NULL AS exercise_id,
-      -- 15633 AS exercise_id,
-      NULL AS user_id
-      -- 'srp33' AS user_id
+      2653 AS assignment_id,
+      -- NULL AS exercise_id,
+      24495 AS exercise_id,
+      -- NULL AS user_id
+      'srp33' AS user_id
   ),
 
   valid_assignments AS (
@@ -81,11 +81,13 @@ WITH
 
   valid_submissions AS (
     SELECT
+      s.course_id,
       s.assignment_id,
       s.exercise_id,
       s.user_id,
       s.submission_id,
       s.code,
+      s.passed,
       (s.passed OR e.is_multiple_choice) AS completed,
       s.date AS submission_timestamp,
       s.partner_id
@@ -97,6 +99,7 @@ WITH
       -- AND s.assignment_id IN (SELECT assignment_id FROM valid_assignments)
       -- AND exercise_id IN (SELECT exercise_id FROM valid_exercises)
       AND s.user_id IN (SELECT user_id FROM valid_users)
+      AND e.visible = 1
   ),
 
   exercise_statuses AS (
@@ -222,7 +225,7 @@ WITH
     SELECT
       es.assignment_id,
       es.user_id,
-      adjust_assignment_score(AVG(esw.score * esw.weight) / AVG(esw.weight), a.custom_scoring) AS score
+      adjust_assignment_score(ROUND(AVG(esw.score * esw.weight) / AVG(esw.weight), 2), a.custom_scoring) AS score
     FROM exercise_statuses es
     INNER JOIN exercise_scores_weights esw
       ON es.assignment_id = esw.assignment_id
@@ -276,4 +279,22 @@ WITH
   )
 
 SELECT *
-FROM assignment_statuses
+-- su.submission_id AS id,
+--        su.code,
+--        su.completed,
+--        su.passed,
+--        su.submission_timestamp,
+      --  sc.score,
+      --  u.name AS partner_name
+FROM valid_submissions su
+-- INNER JOIN scores sc
+--   ON su.course_id = sc.course_id
+--   AND su.assignment_id = sc.assignment_id
+--   AND su.exercise_id = sc.exercise_id
+--   AND su.user_id = sc.user_id
+-- LEFT JOIN users u
+--   ON su.partner_id = u.user_id
+WHERE su.course_id = 51
+  AND su.assignment_id = 2653
+  AND su.exercise_id = 24495
+  AND su.user_id = 'srp33'

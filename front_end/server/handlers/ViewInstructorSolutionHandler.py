@@ -23,8 +23,9 @@ class ViewInstructorSolutionHandler(BaseUserHandler):
             exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
             instructor_solution = exercise_details["solution_code"]
-            if exercise_details["back_end"] == "multiple_choice":
-                instructor_solution = "<br>".join([key for key, value in ujson.loads(instructor_solution).items() if value])
+
+            # if exercise_details["back_end"] == "multiple_choice":
+            #     instructor_solution = "<br>".join([key for key, value in ujson.loads(instructor_solution).items() if value])
 
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, user_info["user_id"])
 

@@ -1222,12 +1222,16 @@ WHERE t.course_id = ?
         sql = self.scores_statuses_temp_tables_sql + '''
 SELECT su.submission_id AS id,
        su.code,
-       su.completed,
+       (su.passed OR e.back_end = 'multiple_choice') AS completed,
        su.passed,
-       su.submission_timestamp,
+       su.date AS submission_timestamp,
        sc.score,
        u.name AS partner_name
-FROM valid_submissions su
+FROM submissions su
+INNER JOIN exercises e
+  ON su.course_id = e.course_id
+  AND su.assignment_id = e.assignment_id
+  AND su.exercise_id
 INNER JOIN scores sc
   ON su.course_id = sc.course_id
   AND su.assignment_id = sc.assignment_id

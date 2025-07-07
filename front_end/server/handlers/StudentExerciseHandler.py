@@ -25,7 +25,10 @@ class StudentExerciseHandler(BaseUserHandler):
 
                 code_completion_path = None
                 back_end_description = None
-                if exercise_details["back_end"] != "multiple_choice":
+                if exercise_details["back_end"] == "multiple_choice":
+                    if len(submissions) > 0:
+                        submissions[0]["code"] = convert_markdown_to_html(submissions[0]["code"])
+                else:
                     back_end_config = get_back_end_config(exercise_details["back_end"])
                     code_completion_path = back_end_config["code_completion_path"]
                     back_end_description = back_end_config["description"]
@@ -53,8 +56,7 @@ class StudentExerciseHandler(BaseUserHandler):
                 if exercise_details["back_end"] == "multiple_choice":
                     solutions_dict = json.loads(exercise_details["solution_code"])
 
-                    answer_options = [(answer_option, is_correct) for answer_option, is_correct in sorted(solutions_dict.items())]
-                    args["answer_options"] = answer_options
+                    args["answer_options"]  = [(convert_markdown_to_html(answer_option), is_correct) for answer_option, is_correct in sorted(solutions_dict.items())]
 
                     if presubmission and "sandbox_code:" in presubmission:
                         args["presubmission"] = presubmission.split("sandbox_code:")[1]

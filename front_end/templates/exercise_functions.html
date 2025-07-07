@@ -198,7 +198,7 @@
     function showNotPassingMessage(num_tests, submission) {
         if (num_tests == 0) {
             // This should only happen when the back_end is multiple_choice.
-            var message = "<strong>Your answer is incorrect.</strong>"
+            var message = "<strong>Your solution is incorrect.</strong>"
         }
         else {
             var message = "<strong>Your solution does not yet pass the test";
@@ -217,7 +217,7 @@
     }
 
     function showNotPassingMessageMultipleChoice(submission) {
-        var message = `<div class='notification not-passing' style='color: white'><strong>Your answer is incorrect.</strong>`;
+        var message = `<div class='notification not-passing' style='color: white'><strong>Your solution is incorrect.</strong>`;
 
         message += describeSolutionsMultipleChoice(submission);
 

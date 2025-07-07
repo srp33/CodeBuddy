@@ -80,8 +80,8 @@ class ExerciseHandler(BaseUserHandler):
             }
 
             if exercise_details["back_end"] == "multiple_choice":
-                answer_options = [x for x in sorted(json.loads(exercise_details["solution_code"]))]
-                args["answer_options"] = answer_options
+                answer_dict = json.loads(exercise_details["solution_code"])
+                answer_options = [x for x in sorted(answer_dict)]
 
                 selected_answer_indices = []
 
@@ -126,7 +126,9 @@ class ExerciseHandler(BaseUserHandler):
                 args["presubmission"] = presubmission
                 args["selected_answer_indices"] = selected_answer_indices
 
-                args["num_correct_options"] = sum(json.loads(exercise_details["solution_code"]).values())
+                args["num_correct_options"] = sum(answer_dict.values())
+
+                args["answer_options"] = [convert_markdown_to_html(ao) for ao in answer_options]
 
                 # This prevents students from seeing the solution on the client side.
                 exercise_details["solution_code"] = ""
