@@ -399,8 +399,8 @@
             let count = 0;
             let solutions_and_descriptions = getSolutionsAndDescriptions();
 
-            for (const solution in solutions_and_descriptions) {
-                count += solutions_and_descriptions[solution];
+            for (const answer_option in solutions_and_descriptions.solutions) {
+                count += solutions_and_descriptions.solutions[answer_option];
             }
 
             return count;
