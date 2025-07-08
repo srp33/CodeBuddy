@@ -49,6 +49,7 @@ class EditExerciseHandler(BaseUserHandler):
 
                 # Make sure an exercise with this title does not already exist.
                 existing_exercise_titles = [x[1]["title"] for x in self.content.get_exercises(course_basics, assignment_basics, show_hidden=True) if x[0] != exercise_basics["id"]]
+
                 if exercise_basics["title"] in existing_exercise_titles:
                     return self.write_post_output(None, "Error: An exercise with that title already exists.", None)
 

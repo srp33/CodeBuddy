@@ -42,22 +42,29 @@ class EditMultipleChoiceExerciseHandler(BaseUserHandler):
                 submission_dict = ujson.loads(self.request.body)
 
                 exercise_basics["title"] = submission_dict.pop("title")
-                exercise_basics["visible"] = submission_dict.pop("visible")
 
-                exercise_details["back_end"] = "multiple_choice"
-                for key, value in submission_dict.items():
-                    if key != "title" and key != "visible":
-                        exercise_details[key] = value
+                # Make sure an exercise with this title does not already exist.
+                existing_exercise_titles = [x[1]["title"] for x in self.content.get_exercises(course_basics, assignment_basics, show_hidden=True) if x[0] != exercise_basics["id"]]
 
-                current_time = get_current_datetime()
-                if not exercise_basics["exists"]:
-                    exercise_details["date_created"] = current_time
-                exercise_details["date_updated"] = current_time
+                if exercise_basics["title"] in existing_exercise_titles:
+                    results["message"] = "An exercise with that title already exists."
+                else:
+                    exercise_basics["visible"] = submission_dict.pop("visible")
 
-                exercise_id = self.content.save_exercise(exercise_basics, exercise_details)
+                    exercise_details["back_end"] = "multiple_choice"
+                    for key, value in submission_dict.items():
+                        if key != "title" and key != "visible":
+                            exercise_details[key] = value
 
-                results["exercise_id"] = exercise_id
-                results["exercise_details"] = exercise_details
+                    current_time = get_current_datetime()
+                    if not exercise_basics["exists"]:
+                        exercise_details["date_created"] = current_time
+                    exercise_details["date_updated"] = current_time
+
+                    exercise_id = self.content.save_exercise(exercise_basics, exercise_details)
+
+                    results["exercise_id"] = exercise_id
+                    results["exercise_details"] = exercise_details
             else:
                 results["message"] = "You do not have permission to edit exercises for this course."
         except ConnectionError as inst:
