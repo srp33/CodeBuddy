@@ -9,10 +9,13 @@
 
 <div class="row-container is-hidden" id="edit_header">
     <h4>Edit assignment</h4>
-    <p>
+    <div class="buttons mb-2">
         <button class="button is-dark" onclick="save()">Save</button>
+        
         <a class="button is-white" id="done_button1">Done</a>
-    </p>
+
+        <a class="button is-white" href='/course/{{ course_basics['id'] }}'>Course home</a>
+    </div>
 </div>
 
 <h4 id="create_header">Create assignment</h4>
@@ -423,8 +426,10 @@
         <button class="button is-dark" onclick="save()">Save</button>
 
         <span id="bottom_buttons" class="is-hidden">
-            <a class="button is-white" id="done_button2">Done</a>
+            <a class="button is-white ml-1" id="done_button2">Done</a>
         </span>
+
+        <a class="button is-white ml-3" href='/course/{{ course_basics['id'] }}'>Course home</a>
     </p>
 {% else %}
     This course has not been created yet.
