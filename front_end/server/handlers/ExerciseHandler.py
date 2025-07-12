@@ -148,7 +148,7 @@ class ExerciseHandler(BaseUserHandler):
                 virtual_assistant_interactions = []
                 virtual_assistant_max_per_exercise = None
 
-                use_virtual_assistant = await should_use_virtual_assistant(self, course_id, course_details, assignment_details, exercise_basics, self.user_info)
+                use_virtual_assistant = await should_use_virtual_assistant(self, course_id, course_details, assignment_details, exercise_basics, exercise_details, self.user_info)
 
                 args["thumb_status"] = -1
                 if use_virtual_assistant:
