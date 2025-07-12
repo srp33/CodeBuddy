@@ -75,7 +75,7 @@ def convert_markdown_to_html(text):
     html = markdown2.markdown(html, extras=["tables"])
     html = re.sub(r"<a href=\"([^\"]+)\">", r"<a href='\1' target='_blank' rel='noopener noreferrer'>", html)
 
-    html = re.sub(r'^\s*<p>(.*?)</p>\s+$', r'\1', html, flags=re.MULTILINE)
+    html = re.sub(r'^\s*<p>(.*?)</p>\s+$', r'\1', html)
 
     return html
 
