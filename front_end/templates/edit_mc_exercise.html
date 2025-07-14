@@ -206,6 +206,21 @@
         </div>
     </div>
 
+    <div id="view_file_modal" class="modal is-clipped">
+        <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title is-size-5 has-text-centered has-text-weight-bold" id="view_file_modal_header"></p>
+                    <button class="delete" aria-label="close" id="view_file_modal_close"></button>
+                </header>
+
+                <section class="modal-card-body">
+                    <textarea id="view_file_modal_text" class="textarea is-fullwidth"></textarea>
+                </section>
+            </div>
+        </div>
+    </div>
+
     <script>
         $("#add_solution_button").click(function() {
             document.getElementById("add_solution_input").value = "";
@@ -426,6 +441,20 @@
             $("#solution_message")[0].scrollIntoView();
         }
 
+        function getEditor(textAreaID, minLines, maxLines) {
+            var editor = ace.edit(textAreaID, {
+                theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                minLines: minLines,
+                maxLines: maxLines,
+                fontSize: "12pt"
+            });
+
+            editor.setHighlightActiveLine(false);
+            editor.setShowPrintMargin(false);
+            editor.session.setOption('newLineMode', 'unix');
+            return(editor);
+        }
+
         function getValue(id) {
             return $(`#${id}`)[0].value;
         }
@@ -584,6 +613,9 @@
         });
 
         // Code to run on page load
+        var view_file_editor = getEditor("view_file_modal_text", 15, 15);
+        ace.require("ace/ext/language_tools");
+
         var exercise_basics_obj = JSON.parse("{{ exercise_basics_json }}");
         var exercise_details_obj = JSON.parse("{{ exercise_details_json }}");
 
