@@ -212,6 +212,9 @@
 
         $("#files_table")[0].innerHTML = html;
         $("#files_table").removeClass("is-hidden");
+
+        // This clears the memory for this control so we can re-upload a file after removing it.
+        $("#upload_file_control").val(null);
     }
 
     function viewFile(file_name) {
