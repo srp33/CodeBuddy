@@ -45,12 +45,12 @@
                                     <i class="fas fa-download"></i>
                                 </a>
 
-                                {% if data_file_extension in ["csv", "tsv", "txt", "json", "fa", "fasta", "fastq", "xml"] %}
-                                    <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_raw_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, false)">Raw</button>
-                                {% end %}
-
                                 {% if data_file_extension in ["csv", "tsv"] %}
+                                    <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_raw_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, false)">Raw</button>
+
                                     <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_formatted_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, true)">Formatted</button>
+                                {% else %}
+                                    <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_raw_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, false)">View</button>
                                 {% end %}
 
                                 <div id="data_panel_{{ data_file_index }}" class="is-hidden">
