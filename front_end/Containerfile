@@ -1,4 +1,4 @@
-FROM node:18-buster-slim as builder
+FROM node:24-bullseye-slim as builder
 
 RUN mkdir -p /build/front_end
 
@@ -21,7 +21,7 @@ RUN npm run build:prod
 
 RUN bash build_html.sh html
 
-FROM python:3.11.3-slim-buster
+FROM python:3.11.3-slim-bullseye
 
 RUN apt-get update \
  && apt-get install -y bzip2 zip wget curl git vim build-essential \
