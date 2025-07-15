@@ -182,6 +182,7 @@
                 <section class="modal-card-body">
                     <div>
                         <input id="add_solution_input" type="text" placeholder="Please specify an answer option." class="input is-fullwidth" autofocus />
+                        <input id="add_solution_input_before_change" type="hidden" />
                     </div>
 
                     <div class="mt-4">
@@ -199,7 +200,7 @@
                 </section>
 
                 <footer class="modal-card-foot">
-                    <button class="button is-primary" id="add_solution_modal_add">Add</button>
+                    <button class="button is-primary" id="add_solution_modal_add"></button>
                     <button class="button" id="add_solution_modal_cancel">Close</button>
                 </footer>
             </div>
@@ -222,15 +223,23 @@
     </div>
 
     <script>
-        $("#add_solution_button").click(function() {
-            document.getElementById("add_solution_input").value = "";
-            document.getElementById("add_solution_checkbox").checked = false;
-            document.getElementById("add_solution_description_input").value = "";
+        function populateAnswerOptionModal(text, isCorrect, description, buttonText) {
+            document.getElementById("add_solution_input").value = text;
+            document.getElementById("add_solution_input_before_change").value = text;
+            document.getElementById("add_solution_checkbox").checked = isCorrect;
+            document.getElementById("add_solution_description_input").value = description;
+
+            $("#add_solution_modal_add").text(buttonText);
 
             $("#solution_message")[0].innerHTML = "";
             $("#solution_message").addClass("is-hidden");
+
             $("#add_solution_modal").addClass("is-active");
             $("#add_solution_input").focus();
+        }
+
+        $("#add_solution_button").click(function() {
+            populateAnswerOptionModal("", false, "", "Add");
         });
 
         $("#add_solution_modal_cancel").click(function() {
@@ -254,7 +263,10 @@
         });
 
         $("#add_solution_modal_add").click(function() {
+            const is_new_option = $("#add_solution_modal_add").text() == "Add";
+
             var solution_option = document.getElementById("add_solution_input").value;
+            var solution_option_before_change = document.getElementById("add_solution_input_before_change").value;
             var solution_description = document.getElementById("add_solution_description_input").value.trim();
 
             // Make sure option is valid
@@ -267,28 +279,32 @@
 
             var solutions_and_descriptions = getSolutionsAndDescriptions();
 
-            if (solution_option in solutions_and_descriptions.solutions)
+            if (solution_option in solutions_and_descriptions.solutions && solution_option != solution_option_before_change) {
                 return showSolutionMessage("That answer option has already been specified.", true);
+            }
+
+            if (!is_new_option) {
+                removeAnswerOption(solution_option_before_change);
+                solutions_and_descriptions = getSolutionsAndDescriptions();
+            }
 
             let is_correct = $("#add_solution_checkbox")[0].checked;
-
             solutions_and_descriptions.solutions[solution_option] = is_correct;
 
-            if (solution_description == "") {
-                if (solution_option in solutions_and_descriptions.descriptions) {
-                    delete solutions_and_descriptions.descriptions[solution_option];
-                }
-            }
-            else {
+            if (solution_description != "")
                 solutions_and_descriptions.descriptions[solution_option] = solution_description;
-            }
 
             updateSolutionsAndDescriptions(solutions_and_descriptions);
 
             // This resets the controls in the modal.
             $("#add_solution_button").click();
 
-            showSolutionMessage(`The following answer option has been added: ${solution_option}.`, false);
+            if (is_new_option) {
+                showSolutionMessage(`The following answer option has been added: ${solution_option}`, false);
+            }
+            else {
+                $("#add_solution_modal_close").click();
+            }
         });
 
         function getSolutionsAndDescriptions() {
@@ -339,8 +355,13 @@
 
         function removeAnswerOption(solution_option) {
             var solutions_and_descriptions = getSolutionsAndDescriptions();
-            delete solutions_and_descriptions.solutions[solution_option];
-            delete solutions_and_descriptions.descriptions[solution_option];
+
+            if (solution_option in solutions_and_descriptions.solutions)
+                delete solutions_and_descriptions.solutions[solution_option];
+
+            if (solution_option in solutions_and_descriptions.descriptions)
+                delete solutions_and_descriptions.descriptions[solution_option];
+            
             updateSolutionsAndDescriptions(solutions_and_descriptions);
         }
 
@@ -358,7 +379,7 @@
             // Create table header
             const thead = document.createElement("thead");
             const headerRow = document.createElement("tr");
-            ["Answer", "Correct", "Description", ""].forEach(text => {
+            ["Answer", "Correct", "Description", "Edit", "Delete"].forEach(text => {
                 const th = document.createElement("th");
                 th.textContent = text;
                 headerRow.appendChild(th);
@@ -388,14 +409,24 @@
                 tdDesc.textContent = desc ? desc : "";
                 row.appendChild(tdDesc);
 
+                // Action cell with edit icon
+                const tdEdit = document.createElement("td");
+                const aEdit = document.createElement("a");
+                aEdit.onclick = () => populateAnswerOptionModal(solution_option, solutions_and_descriptions.solutions[solution_option], (solution_option in solutions_and_descriptions.descriptions) ? solutions_and_descriptions.descriptions[solution_option] : "", "Update");
+                const iconEdit = document.createElement("i");
+                iconEdit.className = "fas fa-edit";
+                aEdit.appendChild(iconEdit);
+                tdEdit.appendChild(aEdit);
+                row.appendChild(tdEdit);
+
                 // Action cell with delete icon
                 const tdDelete = document.createElement("td");
-                const a = document.createElement("a");
-                a.onclick = () => removeAnswerOption(solution_option);
-                const icon = document.createElement("i");
-                icon.className = "fas fa-trash-alt";
-                a.appendChild(icon);
-                tdDelete.appendChild(a);
+                const aDelete = document.createElement("a");
+                aDelete.onclick = () => removeAnswerOption(solution_option);
+                const iconDelete = document.createElement("i");
+                iconDelete.className = "fas fa-trash-alt";
+                aDelete.appendChild(iconDelete);
+                tdDelete.appendChild(aDelete);
                 row.appendChild(tdDelete);
 
                 tbody.appendChild(row);
