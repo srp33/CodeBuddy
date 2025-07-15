@@ -21,27 +21,31 @@ class ResaveExercisesHandler(BaseUserHandler):
                 for exercise in exercises:
                     exercise_basics = self.content.get_exercise_basics(course_basics, assignment_basics, exercise[0])
                     exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise[0])
-                    exercise_details["date_updated"] = get_current_datetime()
 
                     output += f"<p>Working on {exercise_basics['title']} (ID: {exercise_basics['id']})..."
 
-                    try:
-                        result, success = await execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
-                    except ConnectionError as inst:
-                        result = "The front-end server was unable to contact the back-end server."
-                        success = False
-                    except ReadTimeout as inst:
-                        result = "Code execution timed out."
-                        success = False
-                    except Exception as int:
-                        result = traceback.format_exc()
-                        success = False
-
-                    if success:
-                        output += f"success!</p>"
+                    if exercise_details["back_end"] == "multiple_choice":
+                        output += "not necessary to re-save because it is a multiple-choice question.</p>"
                     else:
-                        output += f"<strong><font color='red'>error occurred: {result}</font></strong></p>"
-                        an_error_occurred = True
+                        exercise_details["date_updated"] = get_current_datetime()
+
+                        try:
+                            result, success = await execute_and_save_exercise(self.settings_dict, self.content, exercise_basics, exercise_details)
+                        except ConnectionError as inst:
+                            result = "The front-end server was unable to contact the back-end server."
+                            success = False
+                        except ReadTimeout as inst:
+                            result = "Code execution timed out."
+                            success = False
+                        except Exception as int:
+                            result = traceback.format_exc()
+                            success = False
+
+                        if success:
+                            output += f"success!</p>"
+                        else:
+                            output += f"<strong><font color='red'>error occurred: {result}</font></strong></p>"
+                            an_error_occurred = True
 
                 if an_error_occurred:
                     output += "<h4>An error occurred for at least one of the exercises.</h4>"
