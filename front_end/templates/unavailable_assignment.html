@@ -14,11 +14,11 @@
 
         {% if assignment_basics["exists"] %}
             {% if error == "restrict_other_assignments" %}
-                <p>You are currently taking a timed assignment, and the instructor has restricted access to all other assignments while you are taking it.</p>
+                <div class="notification is-danger">You are currently taking a timed assignment, and the instructor has restricted access to all other assignments while you are taking it.</div>
             {% elif error == "prerequisite_assignments_uncompleted" %}
-                <p>You are attempting to access an assignment that has prerequisite assignments, which have not yet been completed.</p>
+                <div class="notification is-danger">You are attempting to access an assignment that has prerequisite assignments, which have not yet been completed.</div>
             {% elif error == "start_date" %}
-                <p>This assignment opens on <span id="start_date"></span>.</p>
+                <div class="notification is-danger">This assignment opens on <span id="start_date"></span>.</div>
 
                 <script>
                     var start_date = new Date("{{ assignment_details['start_date'] }}");
@@ -26,7 +26,7 @@
                     document.getElementById("start_date").innerHTML = start_date.toLocaleString();
                 </script>
             {% elif error == "due_date" %}
-                <p>This assignment closed on <span id="due_date"></span>.</p>
+                <div class="notification is-danger">This assignment closed on <span id="due_date"></span>.</div>
 
                 <script>
                     var due_date = new Date("{{ assignment_details['due_date'] }}");
@@ -34,9 +34,9 @@
                     document.getElementById("due_date").innerHTML = due_date.toLocaleString();
                 </script>
             {% elif error == "restricted_ip" %}
-                <p>This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses. Please consult the instructor for additional instructions.</p>
+                <div class="notification is-danger">This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses. Please consult the instructor for additional instructions.</div>
             {% elif error == "not_registered_for_course" %}
-                <p>This assignment can only be viewed by students enrolled in the course.</p>
+                <div class="notification is-danger">This assignment can only be viewed by students enrolled in the course.</div>
             {% elif error == "prerequisite_assignments_not_completed" %}
                 <div class="notification is-danger">
                     The following assignment(s) must be fully completed be you can start this assignment:

@@ -28,7 +28,9 @@ class ExerciseHandler(BaseUserHandler):
 
             assignment_statuses = await self.get_assignment_statuses(course_basics)
 
-            if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignment_statuses, self.courses, assignment_basics, course_basics):
+            is_taking_timed_assignment, is_taking_restricted_assignment = self.content.is_taking_timed_assignment(self.get_current_user(), assignment_id)
+
+            if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignment_statuses, self.courses, assignment_basics, course_basics, is_taking_restricted_assignment):
                 return
 
             # Fetches all users enrolled in a course excluding the current user as options to pair program with.
@@ -148,7 +150,7 @@ class ExerciseHandler(BaseUserHandler):
                 virtual_assistant_interactions = []
                 virtual_assistant_max_per_exercise = None
 
-                use_virtual_assistant = await should_use_virtual_assistant(self, course_id, course_details, assignment_details, exercise_basics, exercise_details, self.user_info)
+                use_virtual_assistant = await should_use_virtual_assistant(self, course_id, course_details, assignment_details, exercise_basics, exercise_details, self.user_info) and not is_taking_timed_assignment
 
                 args["thumb_status"] = -1
                 if use_virtual_assistant:

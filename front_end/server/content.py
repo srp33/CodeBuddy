@@ -365,10 +365,16 @@ class Content:
 
         return None, None
 
-    def is_taking_restricted_assignment(self, user_id, assignment_id):
-        sql = '''SELECT ((julianday(datetime('now')) - julianday(latest_start_time)) * 24 * 60) < minute_limit AS is_restricted, ended_early
+    def is_taking_timed_assignment(self, user_id, assignment_id):
+        sql = '''SELECT ((julianday(datetime('now')) - julianday(latest_start_time)) * 24 * 60) < minute_limit AS is_timed,
+                   ended_early,
+                   is_restricted
                  FROM
-                 (SELECT (IFNULL(ate.hour_timer, a.hour_timer) * 60 + IFNULL(ate.minute_timer, a.minute_timer)) AS minute_limit, MAX(start_time) AS latest_start_time, uas.ended_early
+                 (
+                    SELECT (IFNULL(ate.hour_timer, a.hour_timer) * 60 + IFNULL(ate.minute_timer, a.minute_timer)) AS minute_limit,
+                    MAX(start_time) AS latest_start_time, 
+                    uas.ended_early,
+                    a.restrict_other_assignments = 1 AS is_restricted
                   FROM user_assignment_starts uas
 			            INNER JOIN assignments a
 			               ON uas.course_id = a.course_id
@@ -378,15 +384,16 @@ class Content:
                      AND ate.user_id = ?
                   WHERE uas.user_id = ?
                     AND a.assignment_id != ?
-                    AND a.restrict_other_assignments = 1
 			              AND a.has_timer = 1
 		              )'''
 
         row = self.fetchone(sql, (user_id, user_id, assignment_id, ))
         if row:
-            return row["is_restricted"] and not row["ended_early"]
+            is_timed = row["is_timed"] and not row["ended_early"]
 
-        return False
+            return is_timed, row["is_restricted"]
+
+        return False, False
 
     def get_timer_statuses(self, course_id, assignment_id, assignment_details):
         user_dict = {}
