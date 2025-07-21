@@ -76,7 +76,7 @@ class SubmitHandler(BaseUserHandler):
                 out_dict["passed"] = out_dict["completed"]
 
             if out_dict["message"] == "":
-                out_dict["score"] = self.calc_exercise_score(assignment_details, out_dict["passed"])
+                out_dict["score"] = self.calc_exercise_score(course_basics, assignment_basics, assignment_details, user_id, out_dict["passed"])
 
                 out_dict["submission_id"] = await self.content.save_submission(course_id, assignment_id, exercise_id, user_id, code, out_dict["passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], partner_id)
 
@@ -109,11 +109,18 @@ class SubmitHandler(BaseUserHandler):
 
         return self.write(json.dumps(out_dict, default=str))
 
-    def calc_exercise_score(self, assignment_details, passed):
+    def calc_exercise_score(self, course_basics, assignment_basics,  assignment_details, user_id, passed):
         if passed:
-            if assignment_details["due_date"] and assignment_details["due_date"] < get_current_datetime():
+            if assignment_details["due_date"] and assignment_details["due_date"] < get_current_datetime(): # It's late
                 if assignment_details["allow_late"]:
-                    return 100 * assignment_details["late_percent"]
+                    late_percent = assignment_details["late_percent"]
+
+                    if late_percent < 1 and self.content.student_has_late_exception(course_basics["id"], assignment_basics["id"], user_id):
+                        late_percent = 1
+
+                    return 100 * late_percent
+                else:
+                    return 0 # This should not be reached
             else:
                 return 100
         else:

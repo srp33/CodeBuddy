@@ -536,7 +536,11 @@ class Content:
         self.execute('''DELETE FROM user_assignment_starts
                         WHERE course_id = ?
                           AND user_id = ?''', (course_id, user_id, ))
-        
+
+        self.execute('''DELETE FROM assignment_late_exceptions
+                        WHERE course_id = ?
+                          AND user_id = ?''', (course_id, user_id, ))
+
         self.execute('''DELETE FROM assignment_timer_exceptions
                         WHERE course_id = ?
                           AND user_id = ?''', (course_id, user_id, ))
@@ -1705,7 +1709,7 @@ ORDER BY student_name
         return course_details
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": "", "show_run_button": True, "custom_scoring": "", "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_timer_exceptions": {}, "support_questions": False, "use_virtual_assistant": 0, "assignment_group_id": None}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": "", "show_run_button": True, "custom_scoring": "", "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_late_exceptions": [], "student_timer_exceptions": {}, "support_questions": False, "use_virtual_assistant": 0, "assignment_group_id": None}
 
         if not assignment_id:
             return null_assignment
@@ -1723,7 +1727,7 @@ ORDER BY student_name
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  localize_datetime(row["start_date"]), "due_date":  localize_datetime(row["due_date"]), "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "support_questions": row["support_questions"], "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "assignment_group_id": row["assignment_group_id"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  localize_datetime(row["start_date"]), "due_date":  localize_datetime(row["due_date"]), "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_late_exceptions": self.get_student_late_exceptions(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "support_questions": row["support_questions"], "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "assignment_group_id": row["assignment_group_id"]}
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")
@@ -1804,6 +1808,28 @@ ORDER BY student_name
             assignment_ids.append(row["assignment_id"])
 
         return assignment_ids
+
+    def get_student_late_exceptions(self, course_id, assignment_id):
+        users = []
+
+        sql = '''SELECT user_id
+                FROM assignment_late_exceptions
+                WHERE course_id = ?
+                  AND assignment_id = ?'''
+
+        for row in self.fetchall(sql, (course_id, assignment_id, )):
+            users.append(row["user_id"])
+
+        return users
+    
+    def student_has_late_exception(self, course_id, assignment_id, user_id):
+        sql = '''SELECT COUNT(*) > 0 AS has_exception
+                FROM assignment_late_exceptions
+                WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND user_id = ?'''
+
+        return self.fetchone(sql, (course_id, assignment_id, user_id))["has_exception"]
 
     def get_student_timer_exceptions(self, has_timer, course_id, assignment_id):
         exceptions = {}
@@ -1913,10 +1939,18 @@ ORDER BY student_name
 
         self.execute_multiple(sql_statements, param_lists)
 
-
-        sql_statements = ['''DELETE FROM assignment_timer_exceptions
+        sql_statements = ['''DELETE FROM assignment_late_exceptions
                              WHERE course_id = ? AND assignment_id = ?''']
         param_lists = [(assignment_basics["course"]["id"], assignment_basics["id"], )]
+
+        for user_id in assignment_details["student_late_exceptions"]:
+            sql_statements.append('''INSERT INTO assignment_late_exceptions (course_id, assignment_id, user_id)
+                                     VALUES (?, ?, ?)''')
+            param_lists.append((assignment_basics["course"]["id"], assignment_basics["id"], user_id))
+
+        sql_statements.append('''DELETE FROM assignment_timer_exceptions
+                             WHERE course_id = ? AND assignment_id = ?''')
+        param_lists.append((assignment_basics["course"]["id"], assignment_basics["id"], ))
 
         for user_id, timer_info in assignment_details["student_timer_exceptions"].items():
             sql_statements.append('''INSERT INTO assignment_timer_exceptions (course_id, assignment_id, user_id, hour_timer, minute_timer)
@@ -2311,7 +2345,7 @@ ORDER BY student_name
 
         sql_statements = []
         params_list = []
-        for table_name in ["course_registrations", "presubmissions", "user_assignment_starts", "assignment_timer_exceptions", "scores", "submissions", "permissions", "users"]:
+        for table_name in ["course_registrations", "presubmissions", "user_assignment_starts", "assignment_late_exceptions", "assignment_timer_exceptions", "scores", "submissions", "permissions", "users"]:
             sql_statements.append(f"DELETE FROM {table_name} WHERE user_id = ?")
             params_list.append((user_id, ))
         
@@ -2326,7 +2360,7 @@ ORDER BY student_name
                              WHERE course_id = ?
                                AND assignment_id = ?''', (new_course_id, course_id, assignment_id))
 
-        for table in ["presubmissions", "scores", "submissions", "user_assignment_starts", "prerequisite_assignments", "assignment_timer_exceptions", "virtual_assistant_interactions", "questions", "thumbs"]:
+        for table in ["presubmissions", "scores", "submissions", "user_assignment_starts", "prerequisite_assignments", "assignment_late_exceptions", "assignment_timer_exceptions", "virtual_assistant_interactions", "questions", "thumbs"]:
             self.execute(f'''DELETE FROM {table}
                              WHERE course_id = ?
                                AND assignment_id = ?''', (course_id, assignment_id))
@@ -2479,6 +2513,10 @@ ORDER BY student_name
                           AND (assignment_id = ? OR prerequisite_assignment_id = ?)
                           ''', (course_id, assignment_id, assignment_id))
 
+        self.execute('''DELETE FROM assignment_late_exceptions
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
         self.execute('''DELETE FROM assignment_timer_exceptions
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
@@ -2550,6 +2588,9 @@ ORDER BY student_name
                         WHERE course_id = ?''', (course_id, ))
         
         self.execute('''DELETE FROM prerequisite_assignments
+                        WHERE course_id = ?''', (course_id, ))
+
+        self.execute('''DELETE FROM assignment_late_exceptions
                         WHERE course_id = ?''', (course_id, ))
 
         self.execute('''DELETE FROM assignment_timer_exceptions

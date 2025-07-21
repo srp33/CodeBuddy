@@ -65,6 +65,17 @@ class EditAssignmentHandler(BaseUserHandler):
                 if assignment_basics["title"] in existing_assignment_titles:
                     return self.write_post_output(None, "Error: An assignment with that title already exists.", None)
 
+                if assignment_details["allow_late"]:
+                    assignment_details["view_answer_late"] = False
+                else:
+                    assignment_details["late_percent"] = None
+                    assignment_details["student_late_exceptions"] = []
+
+                if not assignment_details["has_timer"]:
+                    assignment_details["hour_timer"] = None
+                    assignment_details["minute_timer"] = None
+                    assignment_details["student_timer_exceptions"] = {}
+
                 assignment_id = self.content.save_assignment(assignment_basics, assignment_details)
 
                 return self.write_post_output(assignment_id, "", assignment_details)
