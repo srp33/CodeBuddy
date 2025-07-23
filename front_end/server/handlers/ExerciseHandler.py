@@ -16,7 +16,7 @@ class ExerciseHandler(BaseUserHandler):
             exercise_basics = await self.get_exercise_basics(course_basics, assignment_basics, exercise_id)
 
             course_details = await self.get_course_details(course_id)
-            assignment_details = await self.get_assignment_details(course_basics, assignment_id)
+            assignment_details = await self.get_assignment_details(course_basics, assignment_id, True)
             set_assignment_due_date_passed(assignment_details)
             exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 

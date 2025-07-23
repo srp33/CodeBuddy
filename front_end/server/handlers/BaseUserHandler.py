@@ -221,7 +221,7 @@ class BaseUserHandler(BaseRequestHandler):
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
             return True
         
-        assignment_status = get_assignment_status(self, course_id, assignment_details, get_current_datetime())
+        assignment_status = get_assignment_status(self, course_id, assignment_id, assignment_details, get_current_datetime(), self.get_current_user())
 
         if assignment_status != "render":
             self.render("unavailable_assignment.html", courses=courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=assignment_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))

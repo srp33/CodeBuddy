@@ -48,9 +48,13 @@ class EditAssignmentHandler(BaseUserHandler):
 
                 if assignment_details["start_date"]:
                     assignment_details["start_date"] = datetime.strptime(assignment_details["start_date"], "%a, %d %b %Y %H:%M:%S %Z")
+                else:
+                    assignment_details["student_early_exceptions"] = []
 
                 if assignment_details["due_date"]:
                     assignment_details["due_date"] = datetime.strptime(assignment_details["due_date"], "%a, %d %b %Y %H:%M:%S %Z")
+                else:
+                    assignment_details["allow_late"] = None
 
                 current_time = get_current_datetime()
 

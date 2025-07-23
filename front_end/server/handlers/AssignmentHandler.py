@@ -62,7 +62,7 @@ class AssignmentHandler(BaseUserHandler):
         assignment_statuses = await self.get_assignment_statuses(course_basics)
         assignment_is_complete = len([x for x in assignment_statuses if x[0] == assignment_basics["id"] and x[2]["completed"]]) > 0
 
-        render_status = get_assignment_status(self, course_id, assignment_details, get_current_datetime())
+        render_status = get_assignment_status(self, course_id, assignment_id, assignment_details, get_current_datetime(), self.get_current_user())
 
         if render_status == "render":
             prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_not_completed(course_id, assignment_details, self.get_current_user())

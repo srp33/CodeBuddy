@@ -120,42 +120,61 @@
                 <ul id="prerequisite_assignments_list">
                 </ul>
             </div>
-
-            <p class="mt-6">
-        {% else %}
-            <p class="mt-2">
         {% end %}
 
+        <div class="mt-5">
             <strong>Start date</strong>
             <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a start date and time are specified, students will be unable to view this assignment before the specified date and time.">
                 <i class="far fa-question-circle"></i>
             </label>:
-        </p>
+        </div>
 
-        <p class="select is-grey is-size-5">
+        <div class="select mt-2 mb-2 is-grey is-size-5">
             <select id="has_start_date" onchange="showHideStartDate(this.value)" class="edit-select">
                 <option selected>None</option>
                 <option>Select</option>
             </select>
-        </p>
+        </div>
 
-        <p id="start_date" class="is-hidden" style="width: 300px;">
-            <input class="is-medium is-primary" id="start_date_picker" type="text" data-input />
-        </p>
+        <div id="start_date_panel" class="is-hidden">
+            <p id="start_date" style="width: 300px;">
+                <input class="is-medium is-primary" id="start_date_picker" type="text" data-input />
+            </p>
 
-        <p>
+            <div class="has-background-warning-light p-4">
+                <div>
+                    For individual students, you can indicate that they are able to access and submit this assignment <span class="is-italic">early</span>. To indicate this, select their name below and click on "Add exception".
+                </div>
+
+                <div class="select is-grey mt-4">
+                    <select id="student_early_exceptions_select" class="edit-select">
+                    </select>
+                </div>
+
+                <div class="mt-4">
+                    <a class="button is-primary is-outlined" onclick="makeEarlyException(this)">Add exception</a>
+                </div>
+
+                <div id="student_early_exceptions_div" class="is-hidden">
+                    <ul id="student_early_exceptions_list">
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
             <strong>Due date</strong>
             <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a due date is specified, students will be unable to view the exercises after the due date has passed, unless late submissions or viewing the solution late are enabled.">
                 <i class="far fa-question-circle"></i>
             </label>:
-        </p>
+        </div>
 
-        <p class="select is-grey">
+        <div class="select is-grey mt-2 mb-2">
             <select id="has_due_date" onchange="showHideDueDate(this.value)" class="edit-select">
                 <option selected>None</option>
                 <option>Select</option>
             </select>
-        </p>
+        </div>
 
         <div class="is-hidden" id="late_panel">
             <p style="width: 300px;">
@@ -200,10 +219,6 @@
 
                     <div class="mt-4">
                         For individual students, you can indicate that they should <span class="is-italic">not</span> be penalized for submitting this assignment late. To indicate this, select their name below and click on "Add exception".
-                    </div>
-
-                    <div class="mt-4">
-                        Student:
                     </div>
 
                     <div class="select is-grey mt-4">
@@ -257,7 +272,7 @@
             <p>
                 <div class="has-background-warning-light p-4">
                     <div>
-                        You can modify the time limit for individual students. To modify a student's time limit, select their name below, specify a time limit, and click on "Add exception.""
+                        You can modify the time limit for individual students. To modify a student's time limit, select their name below, specify a time limit, and click on "Add exception."
                     </div>
 
                     <p class="mt-4">
@@ -551,10 +566,11 @@
 
     function showHideStartDate(selected_option) {
         if (selected_option == "None") {
-            $("#start_date").addClass("is-hidden");
+            $("#start_date_panel").addClass("is-hidden");
         }
         else {
-            $("#start_date").removeClass("is-hidden");
+            $("#start_date_panel").removeClass("is-hidden");
+            setStudentEarlyExceptions();
         }
     }
 
@@ -641,6 +657,38 @@
         }
     }
 
+function setStudentEarlyExceptions() {
+        let select_element = document.getElementById("student_early_exceptions_select");
+        let student_early_exceptions_list = document.getElementById("student_early_exceptions_list");
+
+        removeSelectOptions(select_element);
+        student_early_exceptions_list.innerHTML = "";
+
+        for (let student of all_students) {
+            if (assignment_details_obj["student_early_exceptions"].includes(student[0])) {
+                var li = document.createElement("li");
+                li.textContent = `${student[1].name} (${student[0]}) `;
+
+                var link = document.createElement("a");
+                link.textContent = "remove";
+                link.href = `javascript:removeStudentEarlyException("${student[0]}")`;
+                li.appendChild(link);
+
+                student_early_exceptions_list.appendChild(li);
+            }
+            else {
+                addSelectOption(select_element, `${student[1]["name"]} (${student[0]})`, student[0]);
+            }
+        }
+
+        if (assignment_details_obj["student_early_exceptions"].length > 0) {
+            $("#student_early_exceptions_div").removeClass("is-hidden");
+        }
+        else {
+            $("#student_early_exceptions_div").addClass("is-hidden");
+        }
+    }
+
     function setStudentLateExceptions() {
         let select_element = document.getElementById("student_late_exceptions_select");
         let student_late_exceptions_list = document.getElementById("student_late_exceptions_list");
@@ -708,6 +756,12 @@
         }
     }
 
+    function removeStudentEarlyException(student_id) {
+        assignment_details_obj["student_early_exceptions"] = assignment_details_obj["student_early_exceptions"].filter(item => item !== student_id);
+
+        setStudentEarlyExceptions();
+    }
+
     function removeStudentLateException(student_id) {
         assignment_details_obj["student_late_exceptions"] = assignment_details_obj["student_late_exceptions"].filter(item => item !== student_id);
 
@@ -717,6 +771,14 @@
     function removeStudentTimerException(student_id) {
         delete assignment_details_obj["student_timer_exceptions"][student_id];
         setStudentTimerExceptions();
+    }
+
+    function makeEarlyException(trigger_element) {
+        var student_id = document.getElementById("student_early_exceptions_select").value;
+
+        assignment_details_obj["student_early_exceptions"].push(student_id);
+        setStudentEarlyExceptions();
+        trigger_element.blur();
     }
 
     function makeLateException(trigger_element) {
@@ -984,7 +1046,7 @@
             "custom_scoring": assignment_details_obj["custom_scoring"], 
             "require_security_codes": require_security_codes, 
             "start_date": start_date,
-            "prerequisite_assignment_ids": assignment_details_obj["prerequisite_assignment_ids"],
+            "prerequisite_assignment_ids": assignment_details_obj["prerequisite_assignment_ids"], "student_early_exceptions": assignment_details_obj["student_early_exceptions"],
             "student_late_exceptions": assignment_details_obj["student_late_exceptions"], 
             "student_timer_exceptions": assignment_details_obj["student_timer_exceptions"], 
             "support_questions": support_questions, 

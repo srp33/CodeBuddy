@@ -1,4 +1,4 @@
-CREATE TABLE assignment_late_exceptions (
+CREATE TABLE assignment_early_exceptions (
 	course_id INTEGER,
 	assignment_id INTEGER,
 	user_id TEXT,

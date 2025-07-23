@@ -476,12 +476,12 @@ def log_page_access(handler, additional_message=None):
 
     logging.info(logging_message)
 
-def get_assignment_status(handler, course_id, assignment_details, curr_datetime):
+def get_assignment_status(handler, course_id, assignment_id, assignment_details, curr_datetime, user_id):
     client_ip = get_client_ip_address(handler.request)
 
     if assignment_details["allowed_ip_addresses"] and assignment_details["allowed_ip_addresses"] != "" and client_ip not in assignment_details["allowed_ip_addresses_list"]:
         return "restricted_ip"
-    elif assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime:
+    elif assignment_details["start_date"] and assignment_details["start_date"] > curr_datetime and not handler.content.student_has_early_exception(course_id, assignment_id, user_id):
         return "start_date"
     elif assignment_details["due_date"] and assignment_details["due_date"] < curr_datetime and not assignment_details["allow_late"] and not assignment_details["view_answer_late"]:
         return "due_date"
