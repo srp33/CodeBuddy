@@ -9,7 +9,7 @@
         {% if exercise_basics["exists"] %}
             <link rel="stylesheet" href="/static/css/modal.css">
 
-            <div class="columns">
+            <div class="columns is-vcentered">
                 {% if use_virtual_assistant %}
                     <div class="column is-two-thirds mt-0" id="left_column">
                 {% else %}
@@ -150,43 +150,55 @@
                     {% end %}
                 </div>
 
-                <div class="content is-pulled-right is-flex-tablet is-flex-mobile">
-                    <div id="saved_div" class="smaller-font ml-0 mt-0 mr-2 mt-0"></div>
+                <div class="columns is-mobile is-multiline">
+                    <div class="column">
+                        <div class="buttons">
+                            <a class="button is-medium is-dark" id='submit_button'>Submit</a>
 
-                    <div class="smaller-font mt-0 mr-1"><em>{{ exercise_basics["title"] }}</em></div>
-                </div>
-
-                <div class="buttons">
-                    <a class="button is-medium is-dark" id='submit_button'>Submit</a>
-
-                    {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] and assignment_details["show_run_button"] %}
-                        <a class="button is-medium is-white" onclick='run_code(true)' id='run_button'>Run</a>
-                    {% end %}
-
-                    {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
-                        <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2" type="button" style="cursor: default;"></button>
-
-                        <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning" type="button" style="cursor: pointer;">End assignment</button>
-                    {% end %}
-
-                    {% if support_questions %}
-                        <a class="button is-medium is-white" id="qa_button" onclick="toggleQA()">
-                            Q & A
-                            {% if len(qa) > 0 %}
-                                ({{ len(qa) }})
+                            {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] and assignment_details["show_run_button"] %}
+                                <a class="button is-medium is-white" onclick='run_code(true)' id='run_button'>Run</a>
                             {% end %}
-                        </a>
-                    {% end %}
 
-                    <span class="icon mb-2 ml-1">
-                        {% if exercise_details["allow_any_response"] %}
-                            <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
-                        {% else %}
-                            <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution, click on 'Submit'. If you would like to see the output of your solution without submitting it, click on 'Run' (if it is available). If you highlight a block of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation. If you highlight a block of code, you can comment the code (if it is not currently commented) or uncomment the code (if it is currently commented); to do this, press Ctrl + / (Windows or Linux) or Command + / (Mac)." />
-                        {% end %}
+                            {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                                <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2" type="button" style="cursor: default;"></button>
 
-                        <i class="far fa-question-circle"></i>
-                    </span>
+                                <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning" type="button" style="cursor: pointer;">End assignment</button>
+                            {% end %}
+
+                            {% if support_questions %}
+                                <a class="button is-medium is-white" id="qa_button" onclick="toggleQA()">
+                                    Q & A
+                                    {% if len(qa) > 0 %}
+                                        ({{ len(qa) }})
+                                    {% end %}
+                                </a>
+                            {% end %}
+
+                            <span id="help_icon" class="icon mb-2 ml-1">
+                                {% if exercise_details["allow_any_response"] %}
+                                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
+                                {% else %}
+                                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution, click on 'Submit'. If you would like to see the output of your solution without submitting it, click on 'Run' (if it is available). If you highlight a block of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation. If you highlight a block of code, you can comment the code (if it is not currently commented) or uncomment the code (if it is currently commented); to do this, press Ctrl + / (Windows or Linux) or Command + / (Mac)." />
+                                {% end %}
+
+                                <i class="far fa-question-circle"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                   <div class="column is-narrow">
+                        <div class="">
+                            <span id="saved_div" class="is-italic"></span>
+                        </div>
+                    </div>
+
+                    <div class="column is-narrow">
+                        <div class="is-pulled-right">
+                            {{ exercise_basics["title"] }}
+
+                            <span id="solution_length_message"></span></span>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="max_submissions_message"></div>
@@ -224,6 +236,42 @@
             <script>
                 function get_user_solution() {
                     return [editor.getValue().trim()];
+                }
+
+                function update_solution_length() {
+                    {% if exercise_details["min_solution_length"] > 1 or exercise_details["max_solution_length"] < 10000 %}
+                        const solution_length = get_user_solution()[0].length;
+
+                        if (solution_length == 0) {
+                            $("#solution_length_message")[0].innerHTML = "";
+                        }
+                        else {
+                            if (solution_length < {{ exercise_details["min_solution_length"] }} || solution_length > {{ exercise_details["max_solution_length"] }}) {
+                                hide_submit_button();
+                            }
+                            else {
+                                show_submit_button();
+                            }
+
+                            var length_message = ` (${solution_length} character`;
+
+                            if (solution_length > 1) {
+                                length_message += "s";
+                            }
+
+                            {% if exercise_details["min_solution_length"] > 1 %}
+                                length_message += "; minimum = {{ exercise_details["min_solution_length"] }}";
+                            {% end %}
+
+                            {% if exercise_details["max_solution_length"] < 10000 %}
+                                length_message += "; maximum = {{ exercise_details["max_solution_length"] }}";
+                            {% end %}
+
+                            length_message += ")";
+
+                            $("#solution_length_message")[0].innerHTML = length_message;
+                        }
+                    {% end %}
                 }
 
                 {% if use_virtual_assistant %}
@@ -456,11 +504,16 @@
                 editor.on('change', function() {
                     if (window.wasUserChange){
                         codeChanged = true;
-                        saved_div.innerHTML = `<span class="icon mt-0 ml-1">
-                            <i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission();editor.focus();"></i>
-                        </span>`;
+
+                        // Use fa-2x if you want the icon to be larger.
+                        saved_div.innerHTML = `
+                            <i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission();editor.focus();"></i>`;
+
+                        update_solution_length();
                     }
                 });
+
+                update_solution_length();
 
                 // Autosave if code has changed
                 setInterval(function() {

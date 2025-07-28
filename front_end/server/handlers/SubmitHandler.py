@@ -36,6 +36,12 @@ class SubmitHandler(BaseUserHandler):
                 if len(partner_prerequisite_assignments_not_completed) > 0:
                     return self.record_error(out_dict, f"ineligible: The specified pair-programming partner ({partner_name}) must contact the instructor to discuss this assignment. This submission has NOT been saved for either student.")
 
+            if len(code) < exercise_details["min_solution_length"]:
+                return self.record_error(out_dict, f"ineligible: Your submission is shorter than the required minimum length ({exercise_details['min_solution_length']} characters).")
+
+            if len(code) > exercise_details["max_solution_length"]:
+                return self.record_error(out_dict, f"ineligible: Your submission is longer than the maximum allowed length ({exercise_details['max_solution_length']} characters).")
+
             if exercise_details["max_submissions"] > 0:
                 num_submissions = await self.content.get_num_submissions(course_id, assignment_id, exercise_id, user_id)
             

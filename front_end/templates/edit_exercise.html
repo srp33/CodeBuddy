@@ -131,6 +131,42 @@
                 </div>
             </div>
         </div>
+
+        <div class="front-row-container">
+            <div class="a-visible mt-4">
+                <p><strong>Minimum response length (# characters): </strong>
+                    <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Indicate the minimum # of characters per student response. If a student's response is shorter than this limit, it will be rejected.">
+                        <i class="far fa-question-circle"></i>
+                    </label>
+                    <div>
+                        <input class="input"
+                            type="text"
+                            id="min_solution_length"
+                            style="width: 100px;"
+                            value="1"
+                            placeholder="Please enter the minimum number of allowed characters."
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+                    </div>
+                </p>
+            </div>
+
+            <div class="a-visible mt-4">
+                <p><strong>Maximum response length (# characters): </strong>
+                    <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="Indicate the maximum # of characters per student response. If a student's response is longer than this limit, it will be rejected. The maximum allowed value is 10000.">
+                        <i class="far fa-question-circle"></i>
+                    </label>
+                    <div>
+                        <input class="input"
+                            type="text"
+                            id="max_solution_length"
+                            style="width: 100px;"
+                            value="10000"
+                            placeholder="Please enter the maximum number of allowed characters."
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+                    </div>
+                </p>
+            </div>
+        </div>
     </div>
 
     <div class="shadow-box">
@@ -632,6 +668,9 @@
             else
                 setValue("weight", exercise_details_obj["weight"]);
 
+            setValue("min_solution_length", exercise_details_obj["min_solution_length"]);
+            setValue("max_solution_length", exercise_details_obj["max_solution_length"]);
+
             setValue("visible", exercise_basics_obj["visible"] ? "Yes" : "No");
 
             solution_code_editor.setValue(exercise_details_obj["solution_code"], -1);
@@ -649,6 +688,8 @@
             const allow_any_response = getValue("allow_any_response") == "Yes";
             const solution_code = solution_code_editor.getValue();
             const weight = getValue("weight");
+            const min_solution_length = getValue("min_solution_length");
+            const max_solution_length = getValue("max_solution_length");
 
             // Check submission details
             if (title == "")
@@ -659,8 +700,14 @@
                 return(showResultMessage("Please provide instructions.", "danger"));
             if (!allow_any_response && solution_code == "")
                 return(showResultMessage("Except when any response is allowed, you must provide a solution.", "danger"));
-            if(isNaN(weight))
+            if (isNaN(weight))
                 return(showResultMessage("The specified weight is not a number.", "danger"));
+            if (min_solution_length < 1)
+                return(showResultMessage("The minimum response length cannot be zero.", "danger"));
+            if (min_solution_length > 10000)
+                return(showResultMessage("The minimum response length cannot be larger than 10000.", "danger"));
+            if (max_solution_length > 10000)
+                return(showResultMessage("The maximum response length must be 10000 or smaller.", "danger"));
 
             // Make sure total file size is not too large across all files.
             if (dataFilesTooLarge()) {
@@ -693,6 +740,8 @@
                 "instructions": instructions,
                 "enable_pair_programming": getValue("enable_pair_programming") == "Yes",
                 "weight": weight,
+                "min_solution_length": min_solution_length,
+                "max_solution_length": max_solution_length,
                 "credit": getValue("credit"),
                 "solution_code": solution_code,
                 "verification_code": verification_code_editor.getValue(),

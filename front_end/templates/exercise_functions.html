@@ -546,6 +546,33 @@
             $("#submit_button")[0].disabled = true;
             $("#submit_button").addClass("is-hidden");
         }
+
+        if ($("#run_button").length) {
+            $("#run_button")[0].disabled = true;
+            $("#run_button").addClass("is-hidden");
+        }
+
+        if ($("#help_icon").length) {
+            $("#help_icon")[0].disabled = true;
+            $("#help_icon").addClass("is-hidden");
+        }
+    }
+
+    function show_submit_button() {
+        if ($("#submit_button").length) {
+            $("#submit_button")[0].disabled = false;
+            $("#submit_button").removeClass("is-hidden");
+        }
+
+        if ($("#run_button").length) {
+            $("#run_button")[0].disabled = false;
+            $("#run_button").removeClass("is-hidden");
+        }
+
+        if ($("#help_icon").length) {
+            $("#help_icon")[0].disabled = false;
+            $("#help_icon").removeClass("is-hidden");
+        }
     }
 
     function show_past_submissions() {
@@ -675,7 +702,7 @@
                             second: 'numeric',
                         }).format(Date.now());
 
-                        saved_div.innerHTML = `<em>(saved at ${last_saved_at})</em>`;
+                        saved_div.innerHTML = `Saved at ${last_saved_at}.`;
                     }
                 }
                 else {
@@ -683,7 +710,7 @@
                     console.log(result);
 
                     if (typeof saved_div !== "undefined" && saved_div !== null) {
-                        saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
+                        saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
                     }
                 }
             })
@@ -692,7 +719,7 @@
                 console.log(result);
 
                 if (typeof saved_div !== "undefined" && saved_div !== null) {
-                    saved_div.innerHTML = "<em>An error occurred when saving your code. If this error persists, please contact the instructor.</em>";
+                    saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
                 }
             });
         }
