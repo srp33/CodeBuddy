@@ -35,6 +35,8 @@ Here are some of CodeBuddy's features:
 * [June 12, 2025] Instructors can create assignment groups.
 * [June 25, 2025] Instructors can configure courses and assignments so that students can submit questions about the material. An instructor / assistant are notified by email. They answer the questions via CodeBuddy. If the student and instructor / assistant agree, the question is shared with other students in the same class.
 * [June 30, 2025] For assignments that are timed, students do not know whether they have answered multiple-choice questions correctly until after the assignment has ended. This helps to reduce student anxiety on quizzes and exams.
+* [July 21, 2025] Instructors can allow individual students to access and submit an assignment early (if it has a start date) or late (if it has a due date).
+* [July 28, 2025] Instructors can specify minimum and maximum limits for the length of students' responses (# of characters).
 
 # How to run a CodeBuddy instance
 
