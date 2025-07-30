@@ -694,8 +694,8 @@
             // Check submission details
             if (title == "")
                 return(showResultMessage("Please provide a title.", "danger"));
-            if (title.length > 80)
-                return(showResultMessage("The title cannot exceed 80 characters in length.", "danger"));
+            if (title.length > 100)
+                return(showResultMessage("The title cannot exceed 100 characters in length.", "danger"));
             if (instructions == "")
                 return(showResultMessage("Please provide instructions.", "danger"));
             if (!allow_any_response && solution_code == "")
