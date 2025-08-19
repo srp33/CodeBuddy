@@ -836,6 +836,13 @@
     function formatDelimitedDataAsTable(dataText, delimiter) {
         let table = "<div class='table-container'><table class='table is-striped'>";
 
+        // First collapse CRLF → LF
+        dataText = dataText.replace(/\r\n/g, "\n");
+
+        // Then handle any remaining stray CR
+        dataText = dataText.replace(/\r/g, "\n");
+
+        // Remove newline characters from the end
         const lines = trimNewLines(dataText).split("\n");
 
         lines.forEach((line, index) => {
