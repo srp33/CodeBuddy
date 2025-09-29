@@ -39,6 +39,10 @@
                         {% if student[1]["partner_name"] %}
                             paired with {{student[1]["partner_name"]}}
                         {% end %}
+
+                        {% if student[1]["may_be_ai_generated"] %}
+                            (may be AI generated)
+                        {% end %}
                     </div>
 
                     <div id="submission_{{ student_i }}" class="notification

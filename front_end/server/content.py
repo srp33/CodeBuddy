@@ -1430,9 +1430,20 @@ LEFT JOIN valid_users u2
 ORDER BY student_name
 '''
 
-        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None, )):
+        course_basics = self.get_course_basics(course_id)
+        assignment_basics = self.get_assignment_basics(course_basics, assignment_id)
+        exercise_details = self.get_exercise_details(course_basics, assignment_basics, exercise_id)
+
+        for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None)):
             data = dict(row)
+
             data["submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["submission_timestamp"]))
+
+            data["may_be_ai_generated"] = False
+            if exercise_details != "not_code":
+                if data["code"]:
+                    data["may_be_ai_generated"] = detect_ai(data["code"])
+
             exercise_submissions.append([row["student_id"], data])
 
         return exercise_submissions
