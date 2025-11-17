@@ -27,6 +27,8 @@ else
   echo "Killed ${server_name} daemon on ${m_port} ${m_port} - ($pid)"
 fi
 
+source myenv/bin/activate
+
 start_command="gunicorn main:app -b 127.0.0.1:${m_port} -w ${m_num_processes} -k uvicorn.workers.UvicornWorker"
 if [[ "${server_name}" == "uvicorn" ]]
 then

@@ -1758,7 +1758,7 @@ ORDER BY student_name
         return assignment_dict
 
     def get_exercise_details(self, course_basics, assignment_basics, exercise_id):
-        null_exercise = {"instructions": "", "back_end": "python", "output_type": "txt", "allow_any_response": False, "solution_code": "", "solution_description": "", "hint": "", "max_submissions": 0, "starter_code": "", "credit": "", "data_files": [], "what_students_see_after_success": 1, "date_created": None, "date_updated": None, "enable_pair_programming": False, "verification_code": "", "weight": 1.0, "min_solution_length": 1, "max_solution_length": 10000, "tests": {}}
+        null_exercise = {"instructions": "", "back_end": "python", "output_type": "txt", "allow_any_response": False, "solution_code": "", "solution_description": "", "hint": "", "max_submissions": 0, "starter_code": "", "credit": "", "data_files": {}, "what_students_see_after_success": 1, "date_created": None, "date_updated": None, "enable_pair_programming": False, "verification_code": "", "weight": 1.0, "min_solution_length": 1, "max_solution_length": 10000, "tests": {}}
 
         if not exercise_id:
             return null_exercise
@@ -1773,8 +1773,14 @@ ORDER BY student_name
 
         if not row:
             return null_exercise
+        
+        # This is a little defensive programming due to some potential relics of prior ways we stored data files.
+        if row["data_files"] == "" or row["data_files"] == "[]" or row["data_files"] == "{}":
+            data_files = {}
+        else:
+            data_files = ujson.loads(data_files)
 
-        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "allow_any_response": row["allow_any_response"], "solution_code": row["solution_code"], "solution_description": row["solution_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "credit": row["credit"], "data_files": ujson.loads(row["data_files"]), "what_students_see_after_success": row["what_students_see_after_success"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"], "verification_code": row["verification_code"], "weight": row["weight"], "min_solution_length": row["min_solution_length"], "max_solution_length": row["max_solution_length"], "tests": {}}
+        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "allow_any_response": row["allow_any_response"], "solution_code": row["solution_code"], "solution_description": row["solution_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "credit": row["credit"], "data_files": data_files, "what_students_see_after_success": row["what_students_see_after_success"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"], "verification_code": row["verification_code"], "weight": row["weight"], "min_solution_length": row["min_solution_length"], "max_solution_length": row["max_solution_length"], "tests": {}}
 
         # For multiple-choice questions, we store the sandbox back end in this field.
         if exercise_dict["back_end"] == "multiple_choice" and exercise_dict["starter_code"] == "None":

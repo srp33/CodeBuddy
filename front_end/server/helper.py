@@ -164,7 +164,7 @@ async def exec_code(settings_dict, code, verification_code, exercise_details, ad
     m_host = os.getenv("MHOST")
     if not m_host:
         m_host = settings_dict["m_host"]
-    
+
     #TODO: Move try/except block here for ReadTimeout?
     response = requests.post(f"http://{m_host}:{settings_dict['m_port']}/exec/", json.dumps(data_dict, default=str), timeout=request_timeout)
 
