@@ -253,6 +253,14 @@
 
                 <a class="button" href='/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>View scores</a>
 
+                {% if next_assignment_id %}
+                    <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
+                {% end %}
+
+                {% if previous_assignment_id %}
+                    <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ previous_assignment_id }}'>Previous assignment</a>
+                {% end %}
+
                 <a class="button" href='/course/{{ course_basics['id'] }}'>Course home</a>
             </div>
         {% end %}

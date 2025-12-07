@@ -131,6 +131,16 @@
                 </ul>
             </div>
         {% end %}
+
+        <div class="buttons">
+            {% if next_assignment_id %}
+                <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
+            {% end %}
+
+            {% if previous_assignment_id %}
+                <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ previous_assignment_id }}'>Previous assignment</a>
+            {% end %}
+        </div>
     {% else %}
         <p>This assignment does not exist or else no exercises have been added to it yet.</p>
     {% end %}

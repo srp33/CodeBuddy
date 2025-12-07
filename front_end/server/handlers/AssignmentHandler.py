@@ -52,14 +52,17 @@ class AssignmentHandler(BaseUserHandler):
         course_id = course_basics["id"]
         assignment_id = assignment_basics["id"]
 
+        assignment_statuses = await self.get_assignment_statuses(course_basics)
+
+        next_assignment_id, previous_assignment_id = self.get_next_prev_assignments(assignment_statuses, assignment_id)
+
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, None, show_hidden=True)
             has_non_default_weight = len([x[1]["weight"] for x in exercise_statuses if x[1]["weight"] != 1.0]) > 0
             exercise_summary_scores = self.content.get_exercise_summary_scores(course_basics, assignment_basics)
 
-            return self.render("assignment_admin.html", courses=self.courses, assignment_statuses=await self.get_assignment_statuses(course_basics), exercises=self.content.get_exercises(course_basics, assignment_basics, show_hidden=True), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, course_options=[x[1] for x in self.courses if str(x[0]) != course_id], exercise_summary_scores=exercise_summary_scores, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), download_file_name=get_scores_download_file_name(assignment_basics))
+            return self.render("assignment_admin.html", courses=self.courses, assignment_statuses=assignment_statuses, exercises=self.content.get_exercises(course_basics, assignment_basics, show_hidden=True), exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, course_options=[x[1] for x in self.courses if str(x[0]) != course_id], exercise_summary_scores=exercise_summary_scores, next_assignment_id=next_assignment_id, previous_assignment_id=previous_assignment_id, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), download_file_name=get_scores_download_file_name(assignment_basics))
 
-        assignment_statuses = await self.get_assignment_statuses(course_basics)
         assignment_is_complete = len([x for x in assignment_statuses if x[0] == assignment_basics["id"] and x[2]["completed"]]) > 0
 
         render_status = get_assignment_status(self, course_id, assignment_id, assignment_details, get_current_datetime(), self.get_current_user())
@@ -87,7 +90,7 @@ class AssignmentHandler(BaseUserHandler):
                 custom_scoring_list = json.loads(assignment_details["custom_scoring"])
 
             return self.render("assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_is_complete=assignment_is_complete, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, custom_scoring_list=custom_scoring_list, 
-            timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, confirmation_code=confirmation_code, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+            timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, confirmation_code=confirmation_code, next_assignment_id=next_assignment_id, previous_assignment_id=previous_assignment_id, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
         else:
             return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=render_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         
@@ -99,3 +102,23 @@ class AssignmentHandler(BaseUserHandler):
                 for url in assignment_details["allowed_external_urls"].split("\n"):
                     url = url.strip()
                     assignment_details["allowed_external_urls_dict"][url] = urllib.parse.quote(url)
+
+    def get_next_prev_assignments(self, assignment_statuses, assignment_id):
+        next_assignment_id = None
+        previous_assignment_id = None
+
+        if len(assignment_statuses) == 0:
+            return next_assignment_id, previous_assignment_id
+
+        if assignment_statuses[0][0] == assignment_id: # This is the first assignment.
+            next_assignment_id = assignment_statuses[1][0]
+        elif assignment_statuses[-1][0] == assignment_id: # This is the last assignment.
+            previous_assignment_id = assignment_statuses[-2][0]
+        else:
+            for i in range(len(assignment_statuses)):
+                if assignment_statuses[i][0] == assignment_id:
+                    next_assignment_id = assignment_statuses[i + 1][0]
+                    previous_assignment_id = assignment_statuses[i - 1][0]
+                    break
+
+        return next_assignment_id, previous_assignment_id
