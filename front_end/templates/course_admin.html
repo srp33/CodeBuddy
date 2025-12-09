@@ -72,7 +72,13 @@
                             {% end %}
 
                             <td style="text-align: center;">{{ assignment_summary_scores[assignment[0]]["num_students_completed"] }} / {{ assignment_summary_scores[assignment[0]]["num_students"] }}</td>
-                            <td style="text-align: center;"><a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ round(assignment_summary_scores[assignment[0]]["avg_score"], 1) }}%</a></td>
+                            <td style="text-align: center;">
+                                {% if "avg_score" in assignment_summary_scores[assignment[0]] %}
+                                    <a href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment[0] }}">{{ round(assignment_summary_scores[assignment[0]]["avg_score"], 1) }}%</a>
+                                {% else %}
+                                    N/A
+                                {% end %}
+                            </td>
                         {% end %}
                         <td style="text-align: center;">
                             <a href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}">
