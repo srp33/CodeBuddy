@@ -107,14 +107,18 @@
                                     {% if assignment[2]["has_timer"] and assignment[2]["in_progress"] %}
                                         [Hidden]
                                     {% else %}
-                                        {% if assignment[2]["score"] == 0 or assignment[2]["score"] == 100 %}
-                                            {{ int(assignment[2]["score"]) }}%
-                                        {% else %}
-                                            {{ round(assignment[2]["score"], 1) }}%
-                                        {% end %}
+                                        {% if "score" in assignment[2] %}
+                                            {% if assignment[2]["score"] == 0 or assignment[2]["score"] == 100 %}
+                                                {{ int(assignment[2]["score"]) }}%
+                                            {% else %}
+                                                {{ round(assignment[2]["score"], 1) }}%
+                                            {% end %}
 
-                                        {% if assignment[2]["custom_scoring"] != "" %}
-                                            *
+                                            {% if assignment[2]["custom_scoring"] != "" %}
+                                                *
+                                            {% end %}
+                                        {% else %}
+                                            N/A
                                         {% end %}
                                     {% end %}
                                 </td>
