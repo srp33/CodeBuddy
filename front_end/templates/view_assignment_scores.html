@@ -81,7 +81,7 @@
                                 <td class="has-text-left">{{ score[0] }}</td>
                                 <td class="has-text-left">{{ score[1]["num_completed"] }} / {{ score[1]["num_exercises"] }}</td>
                                 <td class="has-text-left">
-                                    <a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(score[1]["score"], 1) }}%</a>
+                                    <a href="/view_student_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ score[0] }}">{{ round(float(score[1]["score"]), 1) }}%</a>
                                 </td>
                                 <td class="has-text-left">
                                     <script>

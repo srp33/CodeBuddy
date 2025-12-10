@@ -792,7 +792,7 @@ SELECT
   sts.in_progress,
   sts.timer_has_ended,
   sts.num_times_pair_programmed,
-  scr.score,
+  IFNULL(scr.score, 0) AS score,
   IFNULL(a.custom_scoring, '') AS custom_scoring,
   IFNULL(ag.assignment_group_id, '') AS assignment_group_id,
   IFNULL(ag.title, '') AS assignment_group_title
@@ -987,7 +987,7 @@ SELECT
   num_students_completed,
   start_date,
   due_date,
-  avg_score
+  IFNULL(avg_score, 0) AS avg_score
 FROM (
   SELECT
     sts.assignment_id,
@@ -1082,7 +1082,7 @@ GROUP BY id
 SELECT
   u.user_id AS id,
   u.name,
-  scr.score,
+  IFNULL(scr.score, 0) AS score,
   sts.num_completed,
   ane.num_exercises,
   sts.last_submission_timestamp,
@@ -1116,7 +1116,7 @@ ORDER BY u.name
 SELECT
   a.assignment_id,
   a.title,
-  scr.score,
+  IFNULL(scr.score, 0) AS score,
   sts.num_completed,
   ane.num_exercises,
   sts.last_submission_timestamp,
