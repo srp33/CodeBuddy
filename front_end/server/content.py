@@ -2275,8 +2275,8 @@ ORDER BY student_name
                 self.execute(sql, (new_course_id, new_assignment_id, new_exercise_id, existing_course_basics['id'], assignment_basics[0], exercise_id))
 
                 # Copy questions associated with each exercise
-                sql = '''INSERT INTO questions (course_id, assignment_id, exercise_id, questioner_id, question, questioner_share, question_modified, answerer_id, answer, answerer_share)
-                         SELECT ?, ?, ?, questioner_id, question, questioner_share, question_modified, answerer_id, answer, answerer_share
+                sql = '''INSERT INTO questions (course_id, assignment_id, exercise_id, questioner_id, question, questioner_share, question_date, question_modified, answerer_id, answer, answerer_share, answer_date)
+                         SELECT ?, ?, ?, questioner_id, question, questioner_share, question_date, question_modified, answerer_id, answer, answerer_share, answer_date
                          FROM questions
                          WHERE course_id = ?
                            AND assignment_id = ?

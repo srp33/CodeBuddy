@@ -4,12 +4,12 @@ fastapi==0.109.1
 gunicorn==23.0.0
 markdown2[all]==2.4.8
 openai==0.27.8
-Pillow==10.3.0
+Pillow==10.4.0
 pydantic==1.10.13
 python-cas==1.6.0
 python-dateutil==2.8.2
 pytz==2023.3.post1
-PyYAML==6.0
+PyYAML==6.0.3
 reportlab==4.2.0
 requests==2.32.4
 tornado==6.5.1
