@@ -673,26 +673,26 @@ def adjust_assignment_score(score, custom_scoring):
         # Return the unadjusted score if there was no matching range.
         return(score)
     
-def detect_ai(code):
-    num_comment_lines = 0
-    num_comment_lines_with_ai_marker = 0
+# def detect_ai(code):
+#     num_comment_lines = 0
+#     num_comment_lines_with_ai_marker = 0
 
-    for line in code.split("\n"):
-        line = line.strip()
+#     for line in code.split("\n"):
+#         line = line.strip()
 
-        if re.search(r"^(#|\/\/)", line):
-            num_comment_lines += 1
+#         if re.search(r"^(#|\/\/)", line):
+#             num_comment_lines += 1
 
-            if re.search(r"(#|\/\/)$", line):
-                num_comment_lines_with_ai_marker += 1
+#             if re.search(r"(#|\/\/)$", line):
+#                 num_comment_lines_with_ai_marker += 1
     
-    if num_comment_lines > 0:
-        proportion = num_comment_lines_with_ai_marker / num_comment_lines
+#     if num_comment_lines > 0:
+#         proportion = num_comment_lines_with_ai_marker / num_comment_lines
 
-        if proportion > 0.5:
-            return True
+#         if proportion > 0.5:
+#             return True
     
-    return False
+#     return False
 
 def get_next_prev_assignments(assignment_statuses, assignment_id):
     assignment_id = int(assignment_id)

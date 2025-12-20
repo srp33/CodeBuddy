@@ -1439,10 +1439,10 @@ ORDER BY student_name
 
             data["submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["submission_timestamp"]))
 
-            data["may_be_ai_generated"] = False
-            if exercise_details != "not_code":
-                if data["code"]:
-                    data["may_be_ai_generated"] = detect_ai(data["code"])
+            # data["may_be_ai_generated"] = False
+            # if exercise_details != "not_code":
+            #     if data["code"]:
+            #         data["may_be_ai_generated"] = detect_ai(data["code"])
 
             exercise_submissions.append([row["student_id"], data])
 
