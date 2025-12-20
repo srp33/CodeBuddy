@@ -9,17 +9,17 @@
 
     <div class="buttons mb-2">
         <button class="button is-dark" onclick="save()">Save</button>
-        <a class="button is-white" onclick="showOutput(false, true)">View output</a>
-        <a class="button is-white" id="done_button1">Exercise home</a>
+        <a class="button" onclick="showOutput(false, true)">View output</a>
+        <a class="button" id="done_button1">Exercise home</a>
 
         {% if prev_exercise %}
-            <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+            <a class="button" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
         {% end %}
         {% if next_exercise %}
-            <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+            <a class="button" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
         {% end %}
 
-        <a class="button is-white" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Assignment home</a>
+        <a class="button" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Assignment home</a>
     </div>
 </div>
 
@@ -309,17 +309,17 @@
         <button class="button is-dark" onclick="save()">Save</button>
 
         <span id="bottom_buttons" class="is-hidden">
-            <a class="button is-white ml-1" id="done_button2">Exercise home</a>
+            <a class="button ml-1" id="done_button2">Exercise home</a>
 
             {% if prev_exercise %}
-                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+                <a class="button" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
             {% end %}
             {% if next_exercise %}
-                <a class="button is-white" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+                <a class="button" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
             {% end %}
         </span>
 
-        <a class="button is-white ml-3" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Assignment home</a>
+        <a class="button ml-3" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Assignment home</a>
     </p>
 
     <div class="is-hidden" id="output">
