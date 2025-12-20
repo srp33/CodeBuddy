@@ -11,7 +11,7 @@
     <h4>Edit course</h4>
     <p>
         <input type="submit" class="button is-dark" value="Save" />
-        <button class="button is-white" onclick="location.href='/course/{{ course_basics["id"] }}'; return false;">Done</button>
+        <button class="button is-white" onclick="location.href='/course/{{ course_basics["id"] }}'; return false;">Course home</button>
     </p>
 </div>
 {% else %}
@@ -134,7 +134,7 @@
     <input type="submit" class="button is-dark is-half-width" value="Save" />
 
     {% if course_basics["exists"] %}
-        <a class="button is-white" href="/course/{{ course_basics['id'] }}">Done</a>
+        <a class="button is-white" href="/course/{{ course_basics['id'] }}">Course home</a>
     {% end %}
 </p>
 

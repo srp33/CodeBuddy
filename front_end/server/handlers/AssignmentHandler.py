@@ -54,7 +54,7 @@ class AssignmentHandler(BaseUserHandler):
 
         assignment_statuses = await self.get_assignment_statuses(course_basics)
 
-        next_assignment_id, previous_assignment_id = self.get_next_prev_assignments(assignment_statuses, assignment_id)
+        next_assignment_id, previous_assignment_id = get_next_prev_assignments(assignment_statuses, assignment_id)
 
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
             exercise_statuses = self.content.get_exercise_statuses(course_id, assignment_id, None, show_hidden=True)
@@ -102,23 +102,3 @@ class AssignmentHandler(BaseUserHandler):
                 for url in assignment_details["allowed_external_urls"].split("\n"):
                     url = url.strip()
                     assignment_details["allowed_external_urls_dict"][url] = urllib.parse.quote(url)
-
-    def get_next_prev_assignments(self, assignment_statuses, assignment_id):
-        next_assignment_id = None
-        previous_assignment_id = None
-
-        if len(assignment_statuses) == 0:
-            return next_assignment_id, previous_assignment_id
-
-        if assignment_statuses[0][0] == assignment_id: # This is the first assignment.
-            next_assignment_id = assignment_statuses[1][0]
-        elif assignment_statuses[-1][0] == assignment_id: # This is the last assignment.
-            previous_assignment_id = assignment_statuses[-2][0]
-        else:
-            for i in range(len(assignment_statuses)):
-                if assignment_statuses[i][0] == assignment_id:
-                    next_assignment_id = assignment_statuses[i + 1][0]
-                    previous_assignment_id = assignment_statuses[i - 1][0]
-                    break
-
-        return next_assignment_id, previous_assignment_id

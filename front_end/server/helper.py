@@ -693,3 +693,25 @@ def detect_ai(code):
             return True
     
     return False
+
+def get_next_prev_assignments(assignment_statuses, assignment_id):
+    assignment_id = int(assignment_id)
+
+    next_assignment_id = None
+    previous_assignment_id = None
+
+    if len(assignment_statuses) == 0:
+        return next_assignment_id, previous_assignment_id
+
+    if assignment_statuses[0][0] == assignment_id: # This is the first assignment.
+        next_assignment_id = assignment_statuses[1][0]
+    elif assignment_statuses[-1][0] == assignment_id: # This is the last assignment.
+        previous_assignment_id = assignment_statuses[-2][0]
+    else:
+        for i in range(len(assignment_statuses)):
+            if assignment_statuses[i][0] == assignment_id:
+                next_assignment_id = assignment_statuses[i + 1][0]
+                previous_assignment_id = assignment_statuses[i - 1][0]
+                break
+
+    return next_assignment_id, previous_assignment_id

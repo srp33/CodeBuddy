@@ -12,7 +12,15 @@
     <div class="buttons mb-2">
         <button class="button is-dark" onclick="save()">Save</button>
         
-        <a class="button is-white" id="done_button1">Done</a>
+        <a class="button is-white" id="done_button1">Assignment home</a>
+
+        {% if previous_assignment_id %}
+            <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ previous_assignment_id }}'>Previous assignment</a>
+        {% end %}
+
+        {% if next_assignment_id %}
+            <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
+        {% end %}
 
         <a class="button is-white" href='/course/{{ course_basics['id'] }}'>Course home</a>
     </div>
@@ -468,10 +476,18 @@
         <button class="button is-dark" onclick="save()">Save</button>
 
         <span id="bottom_buttons" class="is-hidden">
-            <a class="button is-white ml-1" id="done_button2">Done</a>
-        </span>
+            <a class="button is-white ml-1" id="done_button2">Assignment home</a>
 
-        <a class="button is-white ml-3" href='/course/{{ course_basics['id'] }}'>Course home</a>
+            {% if previous_assignment_id %}
+                <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ previous_assignment_id }}'>Previous assignment</a>
+            {% end %}
+
+            {% if next_assignment_id %}
+                <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
+            {% end %}
+
+            <a class="button is-white" href='/course/{{ course_basics['id'] }}'>Course home</a>
+        </span>
     </p>
 {% else %}
     This course has not been created yet.
