@@ -695,7 +695,8 @@ def adjust_assignment_score(score, custom_scoring):
 #     return False
 
 def get_next_prev_assignments(assignment_statuses, assignment_id):
-    assignment_id = int(assignment_id)
+    if assignment_id:
+        assignment_id = int(assignment_id)
 
     next_assignment_id = None
     previous_assignment_id = None
