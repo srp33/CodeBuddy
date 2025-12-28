@@ -66,6 +66,7 @@ class ExerciseHandler(BaseUserHandler):
                     "next_exercise": next_prev_exercises["next"],
                     "prev_exercise": next_prev_exercises["previous"],
                     "submissions": submissions,
+                    "presubmission": presubmission["code"],
                     "domain": self.settings_dict['domain'],
                     "timer_status": timer_status,
                     "timer_deadline": timer_deadline,
@@ -82,11 +83,11 @@ class ExerciseHandler(BaseUserHandler):
             }
 
             if exercise_details["back_end"] == "multiple_choice":
+                args["selected_answer_indices"] = []
                 answer_dict = json.loads(exercise_details["solution_code"])
                 answer_options = [x for x in sorted(answer_dict)]
 
-                selected_answer_indices = []
-
+                # If the student has submitted, specify what they have submitted (don't use presubmission for this).
                 if len(submissions) > 0:
                     answers = submissions[0]["code"].split("|")
 
@@ -99,38 +100,17 @@ class ExerciseHandler(BaseUserHandler):
                     # This code accounts for the possibility that answer options may no longer exist (the instructor changed them).
                     for answer in answers:
                         if answer in answer_options:
-                            selected_answer_indices.append(answer_options.index(answer))
+                            args["selected_answer_indices"].append(answer_options.index(answer))
 
                             if answer in solution_descriptions_dict_raw:
                                 solution_descriptions_dict[answer] = solution_descriptions_dict_raw[answer]
 
                     submissions[0]["solution_descriptions_dict"] = solution_descriptions_dict
-
-                    if presubmission:
-                        presubmission_parts = presubmission.split("sandbox_code:")
-
-                        if len(presubmission_parts) > 1:
-                            presubmission = presubmission_parts[1]
-                        else:
-                            presubmission = ""
-                elif presubmission:
-                    presubmission_parts = presubmission.split("sandbox_code:")
-
-                    selected_answer_indices = []
-                    if presubmission_parts[0] != "":
-                        selected_answer_indices = [int(x) for x in presubmission_parts[0].split("|")]
-
-                    if len(presubmission_parts) > 1:
-                        presubmission = presubmission_parts[1]
                 else:
-                    presubmission = ""
-
-                args["presubmission"] = presubmission
-                args["selected_answer_indices"] = selected_answer_indices
+                    args["selected_answer_indices"] = presubmission["selected_answer_indices"]
 
                 args["num_correct_options"] = sum(answer_dict.values())
-
-                args["answer_options"] = [convert_markdown_to_html(ao) for ao in answer_options]
+                args["answer_options"] = [convert_markdown_to_html(answer_option) for answer_option in answer_options]
 
                 # This prevents students from seeing the solution on the client side.
                 exercise_details["solution_code"] = ""
@@ -165,7 +145,7 @@ class ExerciseHandler(BaseUserHandler):
                 if exercise_details["back_end"] != "multiple_choice":
                     back_end_config = get_back_end_config(exercise_details["back_end"])
 
-                args["presubmission"] = presubmission
+                args["presubmission"] = presubmission["code"]
                 args["back_end_description"] = back_end_config["description"]
                 args["code_completion_path"] = back_end_config["code_completion_path"]
                 args["tests"] = tests

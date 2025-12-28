@@ -79,7 +79,10 @@
 
             <script>
                 function get_user_solution() {
-                    return [editor.getValue().trim()];
+                    return {
+                        code: editor.getValue().trim().replace("\r", "") || "",
+                        selected_answer_indices: ""
+                    };
                 }
 
                 ace.require("ace/ext/language_tools");
@@ -117,7 +120,7 @@
                 if (submissions.length == 0) {
                     showTestOutputs(null, false);
 
-                    if (presubmission) {
+                    if (presubmission != "") {
                         editor.setValue(presubmission, 1);
                     }
                 }

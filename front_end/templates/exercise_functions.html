@@ -5,6 +5,10 @@
 <!-- </copyright_statement>-->
 
 <script>
+    function is_multiple_choice() {
+        return "{{ exercise_details['back_end'] }}" == "multiple_choice";
+    }
+
     {% if "previous_submission_code" in exercise_details %}
         function copy_code_from_previous_exercise() {
             var previous_code = `{{ exercise_details["previous_submission_code"] }}`;
@@ -30,7 +34,7 @@
     {% end %}
 
     function run_code(show_submit_warning) {
-        let user_solution = get_user_solution()[0];
+        let user_solution = get_user_solution().code;
         if (user_solution == "")
             return false;
 
@@ -67,10 +71,21 @@
     }
 
     function submit() {
-        let user_solution = get_user_solution()[0];
+        let user_solution = get_user_solution();
 
-        if (user_solution == "") {
-            return false;
+        if (is_multiple_choice()) {
+            if (user_solution.selected_answer_indices == "") {
+                return false;
+            }
+
+            user_solution = user_solution.selected_answer_indices;
+        }
+        else {
+            if (user_solution.code == "") {
+                return false;
+            }
+
+            user_solution = user_solution.code;
         }
 
         hideMessages();
@@ -195,9 +210,9 @@
         $("#result_message")[0].innerHTML = `<div class='notification success-message' style='color:white'>${message}</div>`;
     }
 
-    function showNotPassingMessage(num_tests, submission) {
-        if (num_tests == 0) {
-            // This should only happen when the back_end is multiple_choice.
+    function showNotPassingMessage(num_tests, max_submissions, submission) {
+        if (num_tests == 0 || max_submissions == 0) {
+            // This should only happen when the back_end is multiple_choice or when max_submissions is 0.
             var message = "<strong>Your solution is incorrect.</strong>"
         }
         else {
@@ -502,7 +517,7 @@
             showSuccessMessage(this_submission);
         }
         else {
-            showNotPassingMessage(Object.keys(this_submission["test_outputs"]).length, this_submission);
+            showNotPassingMessage(Object.keys(this_submission["test_outputs"]).length, {{ exercise_details["max_submissions"]}}, this_submission);
         }
 
         if ({{ exercise_details["max_submissions"]}} > 0 && submissions.length >= {{ exercise_details["max_submissions"]}}) {
@@ -610,19 +625,19 @@
     }
 
     function showSubmitModal() {
-        let user_solution = get_user_solution()[0];
-        if (user_solution == "") {
+        let user_solution = get_user_solution();
+        if (is_multiple_choice() && user_solution.selected_answer_indices == "") {
             return false;
         }
-
+        else if (!is_multiple_choice() && user_solution.code == "") {
+            return false;
+        }
+        
         var modal = document.getElementById("submit_exercise_modal");
-        var span = document.getElementsByClassName("close")[4];
-
         modal.style.display = "block";
 
         var cancelButton = document.getElementById("submit_cancel_button");
         var modalSubmitButton = document.getElementById("modal_submit_button");
-
         modalSubmitButton.onclick = function() {
             var partner_name = "";
 
@@ -665,64 +680,47 @@
     }
 
     function save_presubmission() {
-        var presubmission_items = get_user_solution();
+        var presubmission = get_user_solution();
 
-        if (presubmission_items.length == 0)
-            return;
-
-        var presubmission = null;
-
-        if (presubmission_items.length == 1) {
-            presubmission = presubmission_items[0];
-        }
-        else {
-            // presubmission = `${presubmission_items[0]}sandbox_code:${presubmission_items[1]}`;
-
-            // We're no longer saving the selected answer, just the sandbox code.
-            if (presubmission_items[1] != "") {
-                presubmission = `sandbox_code:${presubmission_items[1]}`;
-            }
-        }
-
-        if (presubmission !== null) {
-            $.ajax({
-                type: 'POST',
-                url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
-                data: {"presubmission": presubmission},
-                async: true
-                })
-            .done(function(result) {
-                if (result == "") {
-                    codeChanged = false;
-
-                    if (typeof saved_div !== "undefined" && saved_div !== null) {
-                        last_saved_at = new Intl.DateTimeFormat('default', {
-                            hour: 'numeric',
-                            minute: 'numeric',
-                            second: 'numeric',
-                        }).format(Date.now());
-
-                        saved_div.innerHTML = `Saved at ${last_saved_at}.`;
-                    }
-                }
-                else {
-                    console.log("An error occurred when the user attempted to save their code.");
-                    console.log(result);
-
-                    if (typeof saved_div !== "undefined" && saved_div !== null) {
-                        saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
-                    }
-                }
+        $.ajax({
+            type: 'POST',
+            url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+            data: JSON.stringify(presubmission),
+            contentType: 'application/json',
+            processData: false,
+            async: true
             })
-            .fail(function(result) {
+        .done(function(result) {
+            if (result == "") {
+                codeChanged = false;
+
+                if (typeof saved_div !== "undefined" && saved_div !== null) {
+                    last_saved_at = new Intl.DateTimeFormat('default', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric',
+                    }).format(Date.now());
+
+                    saved_div.innerHTML = `Saved at ${last_saved_at}.`;
+                }
+            }
+            else {
                 console.log("An error occurred when the user attempted to save their code.");
                 console.log(result);
 
                 if (typeof saved_div !== "undefined" && saved_div !== null) {
                     saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
                 }
-            });
-        }
+            }
+        })
+        .fail(function(result) {
+            console.log("An error occurred when the user attempted to save their code.");
+            console.log(result);
+
+            if (typeof saved_div !== "undefined" && saved_div !== null) {
+                saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
+            }
+        });
     }
 
     // function showLinkModal() {

@@ -51,22 +51,17 @@ class StudentExerciseHandler(BaseUserHandler):
                 if assignment_details["has_timer"]:
                     timer_status, __, __, __, __ = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
 
-                args = {"student_info": student_info, "student_id": student_id, "score": score, "courses": self.courses, "course_basics": course_basics, "assignment_statuses": assignment_statuses, "assignment_basics": assignment_basics, "exercise_basics": exercise_basics, "assignment_details": assignment_details, "exercise_details": exercise_details, "tests": exercise_details["tests"], "presubmission": presubmission, "code_completion_path": code_completion_path, "back_end_description": back_end_description, "submissions": submissions, "exercise_statuses": exercise_statuses, "next_prev_exercises": next_prev_exercises, "num_submissions": num_submissions, "user_info": self.user_info, "user_id": self.get_current_user(), "next_prev_student_ids": self.content.get_next_prev_student_ids(course_id, student_id), "check_for_restrict_other_assignments": False, "users": user_list, "is_administrator": self.is_administrator, "is_instructor": await self.is_instructor_for_course(course_id), "is_assistant": is_assistant, "support_questions": False, "timer_status": timer_status}
+                args = {"student_info": student_info, "student_id": student_id, "score": score, "courses": self.courses, "course_basics": course_basics, "assignment_statuses": assignment_statuses, "assignment_basics": assignment_basics, "exercise_basics": exercise_basics, "assignment_details": assignment_details, "exercise_details": exercise_details, "tests": exercise_details["tests"], "presubmission": presubmission["code"], "code_completion_path": code_completion_path, "back_end_description": back_end_description, "submissions": submissions, "exercise_statuses": exercise_statuses, "next_prev_exercises": next_prev_exercises, "num_submissions": num_submissions, "user_info": self.user_info, "user_id": self.get_current_user(), "next_prev_student_ids": self.content.get_next_prev_student_ids(course_id, student_id), "check_for_restrict_other_assignments": False, "users": user_list, "is_administrator": self.is_administrator, "is_instructor": await self.is_instructor_for_course(course_id), "is_assistant": is_assistant, "support_questions": False, "timer_status": timer_status}
 
                 if exercise_details["back_end"] == "multiple_choice":
                     solutions_dict = json.loads(exercise_details["solution_code"])
 
                     args["answer_options"]  = [(convert_markdown_to_html(answer_option), is_correct) for answer_option, is_correct in sorted(solutions_dict.items())]
 
-                    if presubmission and "sandbox_code:" in presubmission:
-                        args["presubmission"] = presubmission.split("sandbox_code:")[1]
-                    else:
-                        args["presubmission"] = ""
-
                     self.render("mc_student_exercise.html", **args)
                 else:
-                    if has_passed:
-                        args["presubmission"] = ""
+                    # if has_passed:
+                    #     args["presubmission"] = ""
 
                     self.render("student_exercise.html", **args)
             else:

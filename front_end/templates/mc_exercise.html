@@ -114,12 +114,12 @@
                         <div class="is-size-5 mb-2">
                             {% if num_correct_options == 1 %}
                                 <label class="radio">
-                                    <input type="radio" name="answer" value="{{ i }}" onchange="save_presubmission();" />
+                                    <input type="radio" name="answer" value="{{ i }}" onchange="save_mc_presubmission();" />
                                     {{ answer_option }}
                                 </label>
                             {% else %}
                                 <label class="checkbox">
-                                    <input type="checkbox" name="answer" value="{{ i }}" onchange="save_presubmission();" />
+                                    <input type="checkbox" name="answer" value="{{ i }}" onchange="save_mc_presubmission();" />
                                     {{ answer_option }}
                                 </label>
                             {% end %}
@@ -179,15 +179,11 @@
 
             <script>
                 function get_user_solution() {
-                    // if (submissions.length > 0) {
-                    //     return [];
-                    // }
-
                     {% if num_correct_options == 1 %}
-                        var selectedValue = $('input[name="answer"]:checked').val();
+                        var selected_answer_indices = $('input[name="answer"]:checked').val();
 
-                        if (selectedValue === undefined) {
-                            selectedValue = "";
+                        if (selected_answer_indices === undefined) {
+                            selected_answer_indices = "";
                         }
                     {% else %}
                         var selectedValues = [];
@@ -196,19 +192,35 @@
                         });
 
                         if (selectedValues.length == 0) {
-                            selectedValue = "";
+                            selected_answer_indices = "";
                         }
                         else {
-                            selectedValue = selectedValues.join("|");
+                            selected_answer_indices = selectedValues.join("|");
                         }
                     {% end %}
 
                     if (typeof sandbox_editor !== "undefined" && sandbox_editor !== null) {
-                        return [selectedValue, sandbox_editor.getValue()];
+                        return {
+                            code: sandbox_editor.getValue().trim().replace("\r", "") || "",
+                            selected_answer_indices: selected_answer_indices
+                        };
                     }
                     else {
-                        return [selectedValue];
+                        return {
+                            code: "",
+                            selected_answer_indices: selected_answer_indices
+                        };
                     }
+                }
+
+                function save_mc_presubmission() {
+                    {% if assignment_details["has_timer"] %}
+                        save_presubmission();
+                    {% else %}
+                        if (submissions.length == 0) {    
+                            save_presubmission();
+                        }
+                    {% end %}
                 }
 
                 var submissions = {{ jsonify(submissions) }};
@@ -339,7 +351,7 @@
                     sandbox_editor.getSession().setMode("{{ code_completion_path }}");
 
                     sandbox_editor.getSession().on("change", function() {
-                        save_presubmission();
+                        save_mc_presubmission();
                     });
                 {% end %}
 

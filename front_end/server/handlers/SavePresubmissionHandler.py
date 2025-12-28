@@ -10,7 +10,7 @@ class SavePresubmissionHandler(BaseUserHandler):
     async def post(self, course_id, assignment_id, exercise_id):
         try:
             user_id = self.get_current_user()
-            presubmission = self.get_body_argument("presubmission").replace("\r", "")
+            presubmission = self.request.body.decode("utf-8")
 
             self.content.save_presubmission(course_id, assignment_id, exercise_id, user_id, presubmission)
         except Exception as inst:

@@ -1308,7 +1308,7 @@ ORDER BY submission_timestamp
 # ORDER BY submission_timestamp
 # '''
 
-        presubmission = None
+        presubmission = {"code": "", "selected_answer_indices": []}
         submissions = []
         has_passed = False
 
@@ -1316,7 +1316,10 @@ ORDER BY submission_timestamp
             submission_test_outputs = {}
 
             if row["id"] == -1:
-                presubmission = row["code"]
+                presubmission = ujson.loads(row["code"])
+
+                if presubmission["selected_answer_indices"] != "":
+                    presubmission["selected_answer_indices"] = [int(x) for x in presubmission["selected_answer_indices"].split("|")]
             else:
                 submission = dict(row)
                 submission["submission_timestamp"] = localize_datetime(submission["submission_timestamp"])
@@ -1690,17 +1693,17 @@ ORDER BY student_name
 
         self.execute(sql)
 
-    def get_presubmission(self, course_id, assignment_id, exercise_id, user_id):
-        sql = '''SELECT code
-                 FROM presubmissions
-                 WHERE course_id = ?
-                   AND assignment_id = ?
-                   AND exercise_id = ?
-                   AND user_id = ?'''
+    # def get_presubmission(self, course_id, assignment_id, exercise_id, user_id):
+    #     sql = '''SELECT code
+    #              FROM presubmissions
+    #              WHERE course_id = ?
+    #                AND assignment_id = ?
+    #                AND exercise_id = ?
+    #                AND user_id = ?'''
 
-        row = self.fetchone(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id))
+    #     row = self.fetchone(sql, (int(course_id), int(assignment_id), int(exercise_id), user_id))
 
-        return row["code"] if row else None
+    #     return row["code"] if row else None
 
     def get_course_details(self, course_id):
         null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "email_address": "", "highlighted": False, "allow_students_download_submissions": False, "virtual_assistant_config": None}
@@ -2186,8 +2189,8 @@ ORDER BY student_name
 
         self.save_exercise_score(course_id, assignment_id, exercise_id, user_id, score)
 
-        # if exercise_details["back_end"] != "multiple_choice":
-        self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
+        if exercise_details["back_end"] != "multiple_choice":
+            self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
 
         return submission_id
     
