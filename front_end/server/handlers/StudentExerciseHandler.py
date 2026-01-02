@@ -60,9 +60,6 @@ class StudentExerciseHandler(BaseUserHandler):
 
                     self.render("mc_student_exercise.html", **args)
                 else:
-                    # if has_passed:
-                    #     args["presubmission"] = ""
-
                     self.render("student_exercise.html", **args)
             else:
                 self.render("permissions.html")
