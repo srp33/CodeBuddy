@@ -4,10 +4,10 @@ WITH
       51 AS course_id,
       -- NULL AS assignment_id,
       2653 AS assignment_id,
-      -- NULL AS exercise_id,
-      24495 AS exercise_id,
-      -- NULL AS user_id
-      'srp33' AS user_id
+      NULL AS exercise_id,
+      -- 24495 AS exercise_id,
+      NULL AS user_id
+      -- 'srp33' AS user_id
   ),
 
   valid_assignments AS (
@@ -278,23 +278,21 @@ WITH
     GROUP BY es.assignment_id, es.user_id
   )
 
-SELECT *
--- su.submission_id AS id,
---        su.code,
---        su.completed,
---        su.passed,
---        su.submission_timestamp,
-      --  sc.score,
-      --  u.name AS partner_name
-FROM valid_submissions su
--- INNER JOIN scores sc
---   ON su.course_id = sc.course_id
---   AND su.assignment_id = sc.assignment_id
---   AND su.exercise_id = sc.exercise_id
---   AND su.user_id = sc.user_id
--- LEFT JOIN users u
---   ON su.partner_id = u.user_id
-WHERE su.course_id = 51
-  AND su.assignment_id = 2653
-  AND su.exercise_id = 24495
-  AND su.user_id = 'srp33'
+SELECT
+  sts.assignment_id,
+  u.user_id AS id,
+  u.name,
+  IFNULL(scr.score, 0) AS score,
+  sts.num_completed,
+  ane.num_exercises,
+  sts.last_submission_timestamp,
+  sts.num_times_pair_programmed
+FROM assignment_statuses sts
+INNER JOIN assignment_scores scr
+  ON sts.assignment_id = scr.assignment_id
+  AND sts.user_id = scr.user_id
+INNER JOIN valid_users u
+  ON sts.user_id = u.user_id
+INNER JOIN assignments_num_exercises ane
+  ON sts.assignment_id = ane.assignment_id
+ORDER BY u.name

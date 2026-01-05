@@ -17,13 +17,12 @@ class DownloadCourseScoresHandler(BaseUserHandler):
                 self.set_header("Content-Disposition", f"attachment; filename=Scores__{out_file_prefix}__{get_formatted_datetime()}.tsv")
                 self.set_header('Content-type', "text/tab-separated-values")
 
-                include_header = True
+                scores, total_times_pair_programmed = self.content.get_assignment_scores(course_basics)
 
-                for assignment_basics in self.content.get_assignments(course_basics, show_hidden=False):
-                    tsv_text = await self.content.create_assignment_scores_text(course_basics, assignment_basics[2], include_header=include_header)
+                self.write("Course\tAssignment\tStudent_ID\tNum_Completed\tScore\tLast_Submission\tNum_Times_Pair_Programmed\n")
 
-                    self.write(tsv_text)
-                    include_header = False
+                for student in scores:
+                    self.write(f"{course_id}\t{student[1]['assignment_id']}\t{student[0]}\t{student[1]['num_completed']}\t{student[1]['score']}\t{student[1]['last_submission_timestamp']}\t{student[1]['num_times_pair_programmed']}\n")
             else:
                 self.write("Permission denied")
         except Exception as inst:

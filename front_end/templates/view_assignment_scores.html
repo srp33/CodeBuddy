@@ -85,7 +85,11 @@
                                 </td>
                                 <td class="has-text-left">
                                     <script>
-                                        document.write(parseDateText("{{ score[1]['last_submission_timestamp'] }}"));
+                                        {% if score[1]['last_submission_timestamp'] != "" %}
+                                            document.write(parseDateText("{{ score[1]['last_submission_timestamp'] }}"));
+                                        {% else %}
+                                            document.write("");
+                                        {% end %}
                                     </script>
                                 </td>
                                 {% if assignment_details["has_timer"] %}

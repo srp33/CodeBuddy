@@ -1077,9 +1077,10 @@ GROUP BY id
         return scores_dict
 
     # Gets all users who have submitted on a particular assignment and creates a list of their average scores for the assignment.
-    def get_assignment_scores(self, course_basics, assignment_basics):
+    def get_assignment_scores(self, course_basics, assignment_basics=None):
         sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
+  sts.assignment_id,
   u.user_id AS id,
   u.name,
   IFNULL(scr.score, 0) AS score,
@@ -1098,12 +1099,16 @@ INNER JOIN assignments_num_exercises ane
 ORDER BY u.name
 '''
 
+        assignment_id = assignment_basics["id"] if assignment_basics else None
+
         scores_dict_list = []
         total_times_pair_programmed = 0
 
-        for row in self.fetchall(sql, (course_basics["id"], assignment_basics["id"], None, None)):
+        for row in self.fetchall(sql, (course_basics["id"], assignment_id, None, None)):
             data = dict(row)
-            data["last_submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["last_submission_timestamp"]))
+
+            data["last_submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["last_submission_timestamp"])) if data["last_submission_timestamp"] else ""
+
             scores_dict_list.append([data["id"], data])
 
             total_times_pair_programmed += data["num_times_pair_programmed"]                
