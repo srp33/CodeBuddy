@@ -22,7 +22,7 @@ class DownloadCourseScoresHandler(BaseUserHandler):
                 self.write("Course\tAssignment\tStudent_ID\tNum_Completed\tScore\tLast_Submission\tNum_Times_Pair_Programmed\n")
 
                 for student in scores:
-                    self.write(f"{course_id}\t{student[1]['assignment_id']}\t{student[0]}\t{student[1]['num_completed']}\t{student[1]['score']}\t{student[1]['last_submission_timestamp']}\t{student[1]['num_times_pair_programmed']}\n")
+                    self.write(f"{course_basics['title']}\t{student[1]['assignment_title']}\t{student[0]}\t{student[1]['num_completed']}\t{student[1]['score']}\t{student[1]['last_submission_timestamp']}\t{student[1]['num_times_pair_programmed']}\n")
             else:
                 self.write("Permission denied")
         except Exception as inst:

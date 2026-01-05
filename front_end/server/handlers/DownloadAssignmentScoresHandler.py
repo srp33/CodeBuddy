@@ -13,10 +13,17 @@ class DownloadAssignmentScoresHandler(BaseUserHandler):
                 course_basics = await self.get_course_basics(course_id)
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
 
-                tsv_text = await self.content.create_assignment_scores_text(course_basics, assignment_basics)
-                
+                scores, total_times_pair_programmed = self.content.get_assignment_scores(course_basics, assignment_basics)
+
+                out_file_prefix = re.sub(r"\W", "_", assignment_basics['title'])
+
+                self.set_header("Content-Disposition", f"attachment; filename=Scores__{out_file_prefix}__{get_formatted_datetime()}.tsv")
                 self.set_header('Content-type', "text/tab-separated-values")
-                self.write(tsv_text)
+
+                self.write("Course\tAssignment\tStudent_ID\tNum_Completed\tScore\tLast_Submission\tNum_Times_Pair_Programmed\n")
+
+                for student in scores:
+                    self.write(f"{course_basics['title']}\t{assignment_basics['title']}\t{student[0]}\t{student[1]['num_completed']}\t{student[1]['score']}\t{student[1]['last_submission_timestamp']}\t{student[1]['num_times_pair_programmed']}\n")
             else:
                 self.write("Permission denied")
         except Exception as inst:

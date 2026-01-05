@@ -1080,7 +1080,8 @@ GROUP BY id
     def get_assignment_scores(self, course_basics, assignment_basics=None):
         sql = self.scores_statuses_temp_tables_sql + '''
 SELECT
-  sts.assignment_id,
+  a.assignment_id,
+  a.title AS assignment_title,
   u.user_id AS id,
   u.name,
   IFNULL(scr.score, 0) AS score,
@@ -1089,6 +1090,8 @@ SELECT
   sts.last_submission_timestamp,
   sts.num_times_pair_programmed
 FROM assignment_statuses sts
+INNER JOIN valid_assignments a
+  ON sts.assignment_id = a.assignment_id
 INNER JOIN assignment_scores scr
   ON sts.assignment_id = scr.assignment_id
   AND sts.user_id = scr.user_id
@@ -2787,21 +2790,6 @@ ORDER BY student_name
                           WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?)''', (course_id, assignment_id, exercise_id, ))
-
-    async def create_assignment_scores_text(self, course_basics, assignment_basics, include_header=True):
-        course_id = course_basics["title"]
-        assignment_id = assignment_basics["title"]
-        scores, total_times_pair_programmed = self.get_assignment_scores(course_basics, assignment_basics)
-
-        if include_header:
-            out_file_text = "Course\tAssignment\tStudent_ID\tNum_Completed\tScore\tLast_Submission\tNum_Times_Pair_Programmed\n"
-        else:
-            out_file_text = ""
-
-        for student in scores:
-            out_file_text += f"{course_id}\t{assignment_id}\t{student[0]}\t{student[1]['num_completed']}\t{student[1]['score']}\t{student[1]['last_submission_timestamp']}\t{student[1]['num_times_pair_programmed']}\n"
-
-        return out_file_text
 
 #    def export_data(self, course_basics, table_name, output_tsv_file_path):
 #        if table_name == "submissions":
