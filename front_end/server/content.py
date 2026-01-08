@@ -1324,10 +1324,15 @@ ORDER BY submission_timestamp
             submission_test_outputs = {}
 
             if row["id"] == -1:
-                presubmission = ujson.loads(row["code"])
+                if row["code"] and row["code"] != "":
+                    # This try/catch is a temporary fix for a bug caused by a previous version of the code.
+                    try:
+                        presubmission = ujson.loads(row["code"])
 
-                if presubmission["selected_answer_indices"] != "":
-                    presubmission["selected_answer_indices"] = [int(x) for x in presubmission["selected_answer_indices"].split("|")]
+                        if presubmission["selected_answer_indices"] != "":
+                            presubmission["selected_answer_indices"] = [int(x) for x in presubmission["selected_answer_indices"].split("|")]
+                    except:
+                        presubmission = {"code": "", "selected_answer_indices": []}
             else:
                 submission = dict(row)
                 submission["submission_timestamp"] = localize_datetime(submission["submission_timestamp"])
@@ -2198,7 +2203,7 @@ ORDER BY student_name
         self.save_exercise_score(course_id, assignment_id, exercise_id, user_id, score)
 
         if exercise_details["back_end"] != "multiple_choice":
-            self.save_presubmission(course_id, assignment_id, exercise_id, user_id, code)
+            self.save_presubmission(course_id, assignment_id, exercise_id, user_id, ujson.dumps({"code": code, "selected_answer_indices": []}))
 
         return submission_id
     
