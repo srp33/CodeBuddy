@@ -454,9 +454,39 @@ def modify_what_students_see(exercise_details, user_info):
             exercise_details["tests"][test_title]["txt_output"] = ""
             exercise_details["tests"][test_title]["jpg_output"] = ""
 
+def convert_timestamp(val):
+    """Convert SQLite timestamp bytes to naive UTC datetime. Handles formats with
+    or without microseconds and with or without +00:00 (and similar) timezone,
+    which the built-in sqlite3 converter does not support."""
+    if val is None:
+        return None
+    s = val.decode("utf-8").strip()
+    if not s:
+        return None
+    try:
+        s = s.replace("Z", "+00:00")
+        dt = datetime.fromisoformat(s)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
+    except (ValueError, TypeError):
+        raise
+
+def format_datetime_for_db(dt):
+    """Return a datetime as 'YYYY-MM-DD HH:MM:SS' for consistent SQLite storage.
+    Avoids mixed formats (with/without microseconds or timezone) that break the
+    default sqlite3 timestamp converter."""
+    if dt is None:
+        return None
+    if isinstance(dt, datetime):
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    return dt
+
 def open_db(db_file_path):
     # if 'ROOT' in os.environ:
     #     db_file_path = os.path.join(os.environ['ROOT'], db_file_path)
+
+    sqlite3.register_converter("timestamp", convert_timestamp)
 
     # This enables auto-commit.
     return sqlite3.connect(
