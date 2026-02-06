@@ -473,13 +473,15 @@ def convert_timestamp(val):
         raise
 
 def format_datetime_for_db(dt):
-    """Return a datetime as 'YYYY-MM-DD HH:MM:SS' for consistent SQLite storage.
-    Avoids mixed formats (with/without microseconds or timezone) that break the
-    default sqlite3 timestamp converter."""
+    """Return a datetime as 'YYYY-MM-DD HH:MM:SS' in UTC for SQLite storage.
+    Timezone-aware datetimes are converted to UTC; naive datetimes are assumed
+    UTC. No timezone is stored in the string."""
     if dt is None:
         return None
     if isinstance(dt, datetime):
-        return dt.strftime("%Y-%m-%d %H:%M:%S")
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(timezone.utc)
+        return dt.replace(microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
     return dt
 
 def open_db(db_file_path):
