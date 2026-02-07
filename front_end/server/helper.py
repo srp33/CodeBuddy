@@ -478,7 +478,9 @@ def format_datetime_for_db(dt):
     UTC. No timezone is stored in the string."""
     if dt is None:
         return None
-    if isinstance(dt, datetime):
+    # Use datetime.datetime so isinstance works even if 'datetime' is shadowed (e.g. in bundled app.py)
+    import datetime as _dtmod
+    if isinstance(dt, _dtmod.datetime):
         if dt.tzinfo is not None:
             dt = dt.astimezone(timezone.utc)
         return dt.replace(microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
