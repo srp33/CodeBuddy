@@ -57,6 +57,9 @@
         {% else %}
             <p>Click on the View button to view a student's score and past submissions for each exercise in this assignment.</p>
 
+            {% if email_configured %}
+            <form id="scores_form" method="post" action="/email_students/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
+            {% end %}
             <div class="table-container">
                 <table class="table is-striped" id="scores_table">
                     <thead>
@@ -71,6 +74,9 @@
                             {% end %}
                             {% if total_times_pair_programmed > 0 %}
                                 <th>Number of Times Pair Programmed</th>
+                            {% end %}
+                            {% if email_configured %}
+                                <th>Select</th>
                             {% end %}
                         </tr>
                     </thead>
@@ -108,13 +114,42 @@
                                         {{ score[1]["num_times_pair_programmed"] }}
                                     </td>
                                 {% end %}
+                                {% if email_configured %}
+                                    <td class="has-text-left">
+                                        <input type="checkbox" name="selected_student" value="{{ score[0] }}">
+                                    </td>
+                                {% end %}
                             </tr>
                         {% end %}
                     </tbody>
                 </table>
             </div>
 
-            <a class="button is-dark" href="/download_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ download_file_name }}">Download scores</a>
+            <div class="buttons">
+                {% if email_configured %}
+                    <button type="submit" form="scores_form" id="email_selected_btn" class="button is-dark" disabled>Email selected student(s)</button>
+                {% end %}
+                <a class="button" href="/download_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}" download="{{ download_file_name }}">Download scores</a>
+
+                <a class="button" href='/course/{{ course_basics['id'] }}'>Course home</a>
+            </div>
+            {% if email_configured %}
+            </form>
+            <script>
+                (function() {
+                    var btn = document.getElementById("email_selected_btn");
+                    var checkboxes = document.querySelectorAll("input[name='selected_student']");
+                    if (btn && checkboxes.length) {
+                        function updateButton() {
+                            var anyChecked = Array.prototype.some.call(checkboxes, function(cb) { return cb.checked; });
+                            btn.disabled = !anyChecked;
+                        }
+                        checkboxes.forEach(function(cb) { cb.addEventListener("change", updateButton); });
+                        updateButton();
+                    }
+                })();
+            </script>
+            {% end %}
         {% end %}
     {% end %}
 {% end %}

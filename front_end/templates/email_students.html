@@ -1,0 +1,65 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        <h4>Email selected students</h4>
+        <p><strong>Assignment:</strong> {{ assignment_basics["title"] }}</p>
+        {% if not email_configured %}
+            <p class="notification is-warning">This feature is not available until email is configured. To enable it: (1) Set <strong>smtp_server</strong> and <strong>smtp_port</strong> in Settings.yaml, and (2) specify an <strong>email address</strong> in the course settings.</p>
+        {% elif len(students) == 0 %}
+            <p>No students were selected.</p>
+        {% else %}
+            {% if email_result is not None %}
+                {% if email_result.get("error") %}
+                    <p class="notification is-warning">{{ email_result["error"] }}</p>
+                {% else %}
+                    <p class="notification is-success">Email(s) sent successfully.</p>
+                    {% if email_result.get("num_sent", 0) > 0 and len(email_result.get("failed", [])) > 0 %}
+                        <p class="notification is-warning">Failed to send to: {{ ", ".join(email_result["failed"]) }}</p>
+                    {% end %}
+                {% end %}
+            {% end %}
+            <p><strong>Students to email:</strong></p>
+            <ul>
+                {% for student in students %}
+                    <li>{{ student["name"] }} ({{ student["student_id"] }})</li>
+                {% end %}
+            </ul>
+
+            <form id="email_form" method="post" action="/email_students/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
+                {% for student in students %}
+                    <input type="hidden" name="selected_student" value="{{ student['student_id'] }}">
+                {% end %}
+                <p class="mt-4"><strong>Message</strong></p>
+                <p><textarea id="email_message" name="email_message" class="textarea is-fullwidth" rows="10" placeholder="Compose your email to the selected students..." autofocus></textarea></p>
+            </form>
+        {% end %}
+        <div class="buttons mt-4">
+            {% if email_configured and len(students) > 0 %}
+                <button type="submit" form="email_form" id="send_email_btn" class="button is-dark" disabled>Send email</button>
+            {% end %}
+            <a class="button" href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment scores</a>
+            <a class="button" href="/course/{{ course_basics['id'] }}">Course home</a>
+        </div>
+        {% if email_configured and len(students) > 0 %}
+            <script>
+                (function() {
+                    var textarea = document.getElementById("email_message");
+                    var btn = document.getElementById("send_email_btn");
+                    if (textarea && btn) {
+                        function updateButton() {
+                            btn.disabled = !textarea.value || !textarea.value.trim();
+                        }
+                        textarea.addEventListener("input", updateButton);
+                        textarea.addEventListener("change", updateButton);
+                        updateButton();
+                    }
+                })();
+            </script>
+        {% end %}
+    {% end %}
+{% end %}

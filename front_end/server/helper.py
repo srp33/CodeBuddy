@@ -552,6 +552,13 @@ def is_valid_email_address(email_address):
     pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     return re.match(pattern, email_address) is not None
 
+def is_email_configured(settings_dict, course_details):
+    """Return True if email can be sent: SMTP is set in settings and course has a valid email address."""
+    smtp_server = (settings_dict.get("smtp_server") or "").strip()
+    smtp_port_str = str(settings_dict.get("smtp_port") or "").strip()
+    course_email = (course_details.get("email_address") or "").strip()
+    return bool(smtp_server and smtp_port_str and course_email and is_valid_email_address(course_email))
+
 def send_email(from_name, from_address, to_name, to_address, smtp_server, smtp_port, subject, body):
     msg = MIMEMultipart()
     msg["From"] = formataddr((from_name, from_address))

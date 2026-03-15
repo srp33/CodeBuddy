@@ -9333,7 +9333,7 @@ Lexer.prototype = {
   },
   scanPunctuator: function() {
     var ch1 = this.peek();
-    var ch2, ch3, ch4;
+    var ch2, CH8, ch4;
 
     switch (ch1) {
     case ".":
@@ -9383,45 +9383,45 @@ Lexer.prototype = {
     }
 
     ch2 = this.peek(1);
-    ch3 = this.peek(2);
+    CH8 = this.peek(2);
     ch4 = this.peek(3);
 
-    if (ch1 === ">" && ch2 === ">" && ch3 === ">" && ch4 === "=") {
+    if (ch1 === ">" && ch2 === ">" && CH8 === ">" && ch4 === "=") {
       return {
         type: Token.Punctuator,
         value: ">>>="
       };
     }
 
-    if (ch1 === "=" && ch2 === "=" && ch3 === "=") {
+    if (ch1 === "=" && ch2 === "=" && CH8 === "=") {
       return {
         type: Token.Punctuator,
         value: "==="
       };
     }
 
-    if (ch1 === "!" && ch2 === "=" && ch3 === "=") {
+    if (ch1 === "!" && ch2 === "=" && CH8 === "=") {
       return {
         type: Token.Punctuator,
         value: "!=="
       };
     }
 
-    if (ch1 === ">" && ch2 === ">" && ch3 === ">") {
+    if (ch1 === ">" && ch2 === ">" && CH8 === ">") {
       return {
         type: Token.Punctuator,
         value: ">>>"
       };
     }
 
-    if (ch1 === "<" && ch2 === "<" && ch3 === "=") {
+    if (ch1 === "<" && ch2 === "<" && CH8 === "=") {
       return {
         type: Token.Punctuator,
         value: "<<="
       };
     }
 
-    if (ch1 === ">" && ch2 === ">" && ch3 === "=") {
+    if (ch1 === ">" && ch2 === ">" && CH8 === "=") {
       return {
         type: Token.Punctuator,
         value: ">>="
@@ -9434,10 +9434,10 @@ Lexer.prototype = {
       };
     }
     if (ch1 === ch2 && ("+-<>&|*".indexOf(ch1) >= 0)) {
-      if (ch1 === "*" && ch3 === "=") {
+      if (ch1 === "*" && CH8 === "=") {
         return {
           type: Token.Punctuator,
-          value: ch1 + ch2 + ch3
+          value: ch1 + ch2 + CH8
         };
       }
 

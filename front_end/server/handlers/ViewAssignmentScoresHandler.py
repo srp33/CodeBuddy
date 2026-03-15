@@ -13,6 +13,8 @@ class ViewAssignmentScoresHandler(BaseUserHandler):
                 course_basics = await self.get_course_basics(course_id)
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
                 assignment_details = await self.get_assignment_details(course_basics, assignment_id)
+                course_details = await self.get_course_details(course_id)
+                email_configured = is_email_configured(self.settings_dict, course_details)
 
                 timer_statuses = None
                 if assignment_details["has_timer"]:
@@ -20,7 +22,7 @@ class ViewAssignmentScoresHandler(BaseUserHandler):
 
                 scores, total_times_pair_programmed = self.content.get_assignment_scores(course_basics, assignment_basics)
 
-                self.render("view_assignment_scores.html", courses=self.courses, course_basics=course_basics, assignment_statuses=await self.get_assignment_statuses(course_basics), assignment_basics=assignment_basics, assignment_details=assignment_details, exercise_statuses=self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=True), scores=scores, total_times_pair_programmed=total_times_pair_programmed, timer_statuses=timer_statuses, download_file_name=get_scores_download_file_name(assignment_basics), user_info=self.user_info, is_administrator=self.is_administrator)
+                self.render("view_assignment_scores.html", courses=self.courses, course_basics=course_basics, assignment_statuses=await self.get_assignment_statuses(course_basics), assignment_basics=assignment_basics, assignment_details=assignment_details, exercise_statuses=self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user(), show_hidden=True), scores=scores, total_times_pair_programmed=total_times_pair_programmed, timer_statuses=timer_statuses, download_file_name=get_scores_download_file_name(assignment_basics), email_configured=email_configured, user_info=self.user_info, is_administrator=self.is_administrator)
             else:
                 self.render("permissions.html")
         except Exception as inst:
