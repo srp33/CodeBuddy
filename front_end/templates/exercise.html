@@ -33,6 +33,13 @@
                     <div class="has-background-white mt-0 p-4">
                         <h4>{{ exercise_basics["title"] }}</h4>
 
+                        {% if exercise_basics["enable_pair_programming"] %}
+                            <div class="has-background-white mt-1 mb-1 pb-2">
+                                <i class="fab fa-product-hunt"></i>
+                                <em>Pair programming is enabled for this exercise.</em>
+                            </div>
+                        {% end %}
+
                         <div id="instructions">
                             {{ exercise_details["instructions"] }}
                         </div>
@@ -56,13 +63,6 @@
                             <p><a class="button is-primary is-outlined" onclick="copy_code_from_previous_exercise()">Copy code from previous exercise</a></p>
                         {% end %}
                     </div>
-
-                    {% if exercise_basics["enable_pair_programming"] %}
-                        <div class="has-background-white mt-1 mb-1 pl-4 pt-4 pb-4">
-                            <i class="fab fa-product-hunt"></i>
-                            <em>Pair programming is enabled for this exercise.</em>
-                        </div>
-                    {% end %}
 
                     {% if len(exercise_details["data_files"]) > 0 %}
                         <div id="data_file_div" class="has-background-white mt-1 mb-1 pl-4 pt-4 pb-1">
@@ -110,7 +110,7 @@
                             <button id="hint_button" class="button is-warning" onclick="showHideHint()">Show hint</button>
                         </div>
 
-                        <div id="hint_text" class="is-hidden hint-text"><p style="margin-top: 10px;">{{ exercise_details["hint"] }}</p></div>
+                        <div id="hint_text" class="is-hidden has-background-white p-4 mt-4">{{ exercise_details["hint"] }}</div>
                     {% end %}
 
                     <p class="top-space" id="user_code_area">

@@ -264,14 +264,6 @@ td > button {
     margin-right: 20px;
 }
 
-.hint-text {
-    border: 2px solid  #000000;
-    border-radius: 5px;
-    background-color: white;
-    margin-top: 10px;
-    padding: 0 10px 0 10px;
-}
-
 /* Styles data files added to an exercise. */
 .file-cta {
     display: flex;
