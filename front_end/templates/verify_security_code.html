@@ -56,9 +56,9 @@
                         if (status == "verified" || status == "previously_verified") {
                             showResultMessage("The security code has been verified. You can proceed to the <a href='/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>assignment page</a>.", "primary");
 
-                            setTimeout(() => {
+                            // setTimeout(() => {
                                 window.location.href = `/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}`;
-                            }, 1000);
+                            // }, 1000);
                         }
                         else {
                             if (status == "could_not_verify") {

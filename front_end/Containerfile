@@ -16,6 +16,8 @@ RUN bash build_html.sh html
 ########################################################
 FROM python:3.13.6-slim-bullseye
 
+ENV PYTHONUNBUFFERED=1
+
 RUN apt-get update \
  && apt-get install -y bzip2 zip wget curl git vim build-essential \
                        sqlite3 libmariadb3 libmariadb-dev openssl \

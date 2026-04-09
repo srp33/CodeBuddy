@@ -1571,6 +1571,8 @@ ORDER BY student_name
                 sql_statements.append(sql_delete)
                 param_lists.append([course_id, assignment_id])
 
+                security_code = generate_unique_id(characters_per_segment, num_segments, delimiter)
+
                 for i in range(student_count):
                     if make_distinct:
                         security_code = generate_unique_id(characters_per_segment, num_segments, delimiter)

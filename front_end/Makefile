@@ -2,8 +2,7 @@
 dev: 
 	mkdir -p database logs \
     && bash build_html.sh server/html \
-    && DEBUG=true \
-    && python3 server/webserver.py
+    && DEBUG=true PYTHONUNBUFFERED=1 python3 server/webserver.py
 
 # .PHONY: build-watch
 # build-watch:

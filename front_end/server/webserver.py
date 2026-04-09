@@ -233,18 +233,28 @@ if __name__ == "__main__":
         log_level = logging.INFO
         if settings_dict["mode"] == "development":
             log_level = logging.DEBUG
-
         log_file_handler = ConcurrentRotatingFileHandler("logs/codebuddy.log", maxBytes=100*1024*1024, backupCount=10, encoding="utf-8", mode="a")
 
+        log_format = logging.Formatter("[%(asctime)s] %(message)s", datefmt='%Y-%m-%d %H:%M:%S')
+        log_file_handler.setFormatter(log_format)
+        log_handlers = [log_file_handler]
+        stream_handler = None
+        if settings_dict["mode"] == "development":
+            stream_handler = logging.StreamHandler(sys.stderr)
+            stream_handler.setLevel(log_level)
+            stream_handler.setFormatter(log_format)
+            log_handlers.append(stream_handler)
+
         logging.basicConfig(
-            handlers=[log_file_handler],
+            handlers=log_handlers,
             level=log_level,
-            format="[%(asctime)s] %(message)s",
-            datefmt='%Y-%m-%d %H:%M:%S'
+            force=True
         )
 
         logger = logging.getLogger('codebuddy_logger')
         logger.addHandler(log_file_handler)
+        if stream_handler is not None:
+            logger.addHandler(stream_handler)
 
         logging.getLogger('tornado.access').disabled = True
         logging.getLogger("requests").setLevel(logging.DEBUG)
