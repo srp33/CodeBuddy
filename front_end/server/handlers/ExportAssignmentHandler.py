@@ -11,7 +11,7 @@ class ExportAssignmentHandler(BaseUserHandler):
         json_text = "An unknown error occurred."
 
         try:
-            if self.is_administrator or await self.is_instructor_for_course(course_id):
+            if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
                 course_basics = await self.get_course_basics(course_id)
 
                 assignment_basics = self.content.get_assignment_basics(course_basics, assignment_id)
