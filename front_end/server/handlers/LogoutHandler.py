@@ -16,6 +16,9 @@ class LogoutHandler(BaseOtherHandler):
 
             self.redirect("/")
         except Exception as inst:
-            render_error(self, traceback.format_exc())
+            try:
+                render_error(self, traceback.format_exc())
+            except:
+                self.redirect("/")
 
 # See https://quanttype.net/posts/2020-02-05-request-id-logging.html
