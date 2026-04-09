@@ -9,6 +9,13 @@
         return "{{ exercise_details['back_end'] }}" == "multiple_choice";
     }
 
+    function moveEditorCaretToEndIfTypable() {
+        if (typeof editor === "undefined" || !editor || editor.getReadOnly()) {
+            return;
+        }
+        editor.navigateFileEnd();
+    }
+
     {% if "previous_submission_code" in exercise_details %}
         function copy_code_from_previous_exercise() {
             var previous_code = `{{ exercise_details["previous_submission_code"] }}`;
@@ -29,7 +36,9 @@
 
             editor.setValue(new_code, cursor_index);
             editor.clearSelection();
-            editor.focus();
+            if (!editor.getReadOnly()) {
+                editor.focus();
+            }
         }
     {% end %}
 
@@ -66,7 +75,9 @@
                 showErrorMessage("The cause of the error is unknown. Please consult the instructor if it continues.");
             });
 
-        editor.focus();
+        if (!editor.getReadOnly()) {
+            editor.focus();
+        }
         return false;
     }
 
@@ -131,7 +142,9 @@
                         get_code_submission(response_dict["submission_id"], false, true);
 
                         saved_div.innerHTML = "";
-                        editor.focus();
+                        if (!editor.getReadOnly()) {
+                            editor.focus();
+                        }
                     }                    
                 }
                 else {
@@ -510,7 +523,9 @@
         if (scroll)
             $("#user_code_area")[0].scrollIntoView();
 
-        editor.focus();
+        if (!editor.getReadOnly()) {
+            editor.focus();
+        }
         editor.setValue(this_submission.code, -1);
 
         if (this_submission["completed"]) {
@@ -529,6 +544,8 @@
         {% if exercise_details["max_submissions"] > 0 %}
             $("#max_submissions_message")[0].innerHTML = `<div style="padding: 0em 0.5em 1.25em 0em;margin:0"><em>You have made ${submissions.length} of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></div>`;
         {% end %}
+
+        moveEditorCaretToEndIfTypable();
 
         window.wasUserChange = true;
     }

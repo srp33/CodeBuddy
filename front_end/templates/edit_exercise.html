@@ -116,6 +116,19 @@
 
         <div class="row-container top-space">
             <div>
+                <p><strong>Show upload button for this exercise: </strong>
+                    <div class="select is-grey">
+                        <select id="show_upload_button" class="edit-select">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <div class="row-container top-space">
+            <div>
                 <strong>Weight: </strong>
 
                 <label class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="By default, each exercise has a weight of 1.0. You can modify these weights so that some exercises are counted more (or less) toward the assignment score than other exercises.">
@@ -664,7 +677,7 @@
             for (let id of ["back_end", "output_type", "instructions", "credit", "hint", "solution_description", "max_submissions", "what_students_see_after_success"])
                 setValue(id, exercise_details_obj[id]);
 
-            for (let id of ["allow_any_response", "enable_pair_programming"])
+            for (let id of ["allow_any_response", "enable_pair_programming", "show_upload_button"])
                 setValue(id, exercise_details_obj[id] ? "Yes" : "No");
 
             if (String(exercise_details_obj["weight"]) == String(parseInt(exercise_details_obj["weight"])))
@@ -743,6 +756,7 @@
                 "allow_any_response": allow_any_response,
                 "instructions": instructions,
                 "enable_pair_programming": getValue("enable_pair_programming") == "Yes",
+                "show_upload_button": getValue("show_upload_button") == "Yes",
                 "weight": weight,
                 "min_solution_length": min_solution_length,
                 "max_solution_length": max_solution_length,

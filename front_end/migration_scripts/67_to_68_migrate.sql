@@ -1,0 +1,2 @@
+ALTER TABLE exercises
+ADD COLUMN show_upload_button INTEGER NOT NULL DEFAULT 0;

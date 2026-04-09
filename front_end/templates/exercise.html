@@ -105,15 +105,26 @@
                         </div>
                     {% end %}
 
-                    {% if exercise_details["hint"] != "" %}
-                        <div class="top-space">
-                            <button id="hint_button" class="button is-warning" onclick="showHideHint()">Show hint</button>
+                    {% if exercise_details["show_upload_button"] or exercise_details["hint"] != "" %}
+                        <div class="mt-4">
+                            <div class="buttons {% if exercise_details['hint'] != '' %}mb-1{% else %}mb-3{% end %}">
+                                {% if exercise_details["show_upload_button"] %}
+                                    <button type="button" id="upload_button" class="button is-primary" onclick="openUploadDialog()">Upload solution file...</button>
+                                {% end %}
+                                {% if exercise_details["hint"] != "" %}
+                                    <button id="hint_button" class="button is-warning" onclick="showHideHint()">Show hint</button>
+                                {% end %}
+                            </div>
+                            {% if exercise_details["show_upload_button"] %}
+                                <input id="upload_file_input" type="file" class="is-hidden" onchange="loadUploadedCode(event)">
+                            {% end %}
+                            {% if exercise_details["hint"] != "" %}
+                                <div id="hint_text" class="is-hidden content has-background-white px-4 py-3 mt-1 mb-2">{{ exercise_details["hint"] }}</div>
+                            {% end %}
                         </div>
-
-                        <div id="hint_text" class="is-hidden has-background-white p-4 mt-4">{{ exercise_details["hint"] }}</div>
                     {% end %}
 
-                    <p class="top-space" id="user_code_area">
+                    <p class="mt-3 mb-0" id="user_code_area">
                         <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and len(submissions) == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
                     </p>
                 </div>
@@ -257,6 +268,96 @@
                     return {
                         code: editor.getValue().trim().replace("\r", "") || "", selected_answer_indices: ""
                     };
+                }
+
+                function openUploadDialog() {
+                    const uploadInput = document.getElementById("upload_file_input");
+
+                    if (uploadInput) {
+                        uploadInput.click();
+                    }
+                }
+
+                function isLikelyTextFile(file) {
+                    return new Promise((resolve) => {
+                        const sampleReader = new FileReader();
+                        const sampleBlob = file.slice(0, 8192);
+
+                        sampleReader.onload = function(loadEvent) {
+                            const bytes = new Uint8Array(loadEvent.target.result || new ArrayBuffer(0));
+
+                            if (bytes.length == 0) {
+                                resolve(true);
+                                return;
+                            }
+
+                            let suspiciousCount = 0;
+
+                            for (let i = 0; i < bytes.length; i++) {
+                                const byte = bytes[i];
+
+                                if (byte == 0) {
+                                    resolve(false);
+                                    return;
+                                }
+
+                                const isPrintableAscii = byte >= 32 && byte <= 126;
+                                const isCommonWhitespace = byte == 9 || byte == 10 || byte == 13;
+                                const isExtendedUtf8Byte = byte >= 128;
+
+                                if (!isPrintableAscii && !isCommonWhitespace && !isExtendedUtf8Byte) {
+                                    suspiciousCount += 1;
+                                }
+                            }
+
+                            resolve((suspiciousCount / bytes.length) < 0.3);
+                        };
+
+                        sampleReader.onerror = function() {
+                            resolve(false);
+                        };
+
+                        sampleReader.readAsArrayBuffer(sampleBlob);
+                    });
+                }
+
+                async function loadUploadedCode(event) {
+                    const fileInput = event.target;
+                    const file = fileInput.files && fileInput.files[0];
+
+                    if (!file) {
+                        return;
+                    }
+
+                    const isTextFile = await isLikelyTextFile(file);
+
+                    if (!isTextFile) {
+                        alert("Please choose a text-based file.");
+                        fileInput.value = "";
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(loadEvent) {
+                        const uploadedText = String(loadEvent.target.result || "");
+                        if (!editor.getReadOnly()) {
+                            editor.focus();
+                        }
+                        editor.setValue(uploadedText, 1);
+                        setTimeout(function() {
+                            var uploadBtn = document.getElementById("upload_button");
+                            if (uploadBtn) {
+                                uploadBtn.blur();
+                            }
+                        }, 0);
+                    };
+                    reader.onerror = function() {
+                        alert("Sorry, this file could not be read.");
+                    };
+                    reader.readAsText(file);
+
+                    // Reset so the same file can be selected again.
+                    fileInput.value = "";
                 }
 
                 function update_solution_length() {
@@ -458,8 +559,30 @@
                     {% end %}
                 {% end %}
 
-                editor.focus();
                 editor.getSession().setMode("{{ code_completion_path }}");
+
+                {% if exercise_details["show_upload_button"] %}
+                (function() {
+                    editor.setReadOnly(true);
+                    editor.setOptions({
+                        enableBasicAutocompletion: false,
+                        enableSnippets: false,
+                        enableLiveAutocompletion: false
+                    });
+                    var bg = "#f0f0f0";
+                    var gutterBg = "#e6e6e6";
+                    editor.container.style.backgroundColor = bg;
+                    if (editor.renderer.scroller) {
+                        editor.renderer.scroller.style.backgroundColor = bg;
+                    }
+                    var gutterEl = editor.container.querySelector(".ace_gutter");
+                    if (gutterEl) {
+                        gutterEl.style.backgroundColor = gutterBg;
+                    }
+                })();
+                {% else %}
+                editor.focus();
+                {% end %}
 
                 submitButton = document.getElementById("submit_button");
 
@@ -501,7 +624,9 @@
                     showTestOutputs(null, false);
 
                     if (presubmission != "") {
+                        {% if not exercise_details["show_upload_button"] %}
                         editor.focus();
+                        {% end %}
                         editor.setValue(presubmission, 1);
                     }
                 }
@@ -510,13 +635,17 @@
 
                     // Set editor value to presubmission if the presubmission is different than the latest submission code.
                     if (presubmission != "" && presubmission != latest_submission.code) {
+                        {% if not exercise_details["show_upload_button"] %}
                         editor.focus();
+                        {% end %}
                         editor.setValue(presubmission, 1);
                     }
                     else {
                         get_code_submission(latest_submission.id, false, true);
                     }
                 }
+
+                moveEditorCaretToEndIfTypable();
 
                 let codeChanged = false;
                 window.wasUserChange = true;
@@ -528,7 +657,7 @@
 
                         // Use fa-2x if you want the icon to be larger.
                         saved_div.innerHTML = `
-                            <i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission();editor.focus();"></i>`;
+                            <i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission(); if (!editor.getReadOnly()) { editor.focus(); }"></i>`;
 
                         update_solution_length();
                     }
