@@ -5,7 +5,7 @@
 # </copyright_statement>
 
 from concurrent_log_handler import ConcurrentRotatingFileHandler
-from distutils.log import debug
+# from distutils.log import debug
 from content import *
 from handlers import *
 from helper import *

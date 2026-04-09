@@ -5,10 +5,10 @@ dev:
     && DEBUG=true \
     && python3 server/webserver.py
 
-.PHONY: build-watch
-build-watch:
-	npm install
-	npm start
+# .PHONY: build-watch
+# build-watch:
+# 	npm install
+# 	npm start
 
 .PHONY: sql
 sql: 

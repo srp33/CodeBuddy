@@ -1,4 +1,0 @@
-https://favicon.io/favicon-generator/
-Font family: Lato
-Background color: #003DA5
-Font size: 70
