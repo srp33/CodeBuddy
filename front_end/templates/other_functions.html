@@ -5,7 +5,12 @@
 <!-- </copyright_statement>-->
 
 <script>
-    function showPostModal(action, title, data_obj, reload_url) {
+    function showPostModal(action, title, data_obj, reload_url, wait_detail_text) {
+        var waitDefaultDetail = " while this task completes and the page refreshes\u2026";
+        var waitDetail = (wait_detail_text !== undefined && wait_detail_text !== null && wait_detail_text !== "")
+            ? wait_detail_text
+            : waitDefaultDetail;
+
         // Build the modal
         var modalElement = document.createElement("div");
         modalElement.setAttribute("class", "modal");
@@ -44,7 +49,7 @@
                         </span>
                         <p class="is-size-5 mb-0">
                             <strong class="has-text-info">Please wait</strong>
-                            <span class="has-text-grey-dark"> while this task completes and the page refreshes&hellip;</span>
+                            <span class="has-text-grey-dark">${waitDetail}</span>
                         </p>
                     </div>
                 </div>`;
