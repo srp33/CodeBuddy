@@ -1,0 +1,64 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<h4>Clean up courses</h4>
+
+<p>Courses are listed by last activity from oldest to newest, including courses that are hidden from the catalog. The date is the latest of: any submission in the course, the course’s last update, the latest assignment update, or the latest exercise update.</p>
+
+{% if len(all_courses) > 0 %}
+    <link rel="stylesheet" href="/static/css/modal.css">
+
+    <div class="table-container">
+        <table class="table is-striped">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th style="text-align: center;">Visibility</th>
+                    <th>Last update</th>
+                    <th style="text-align: center;">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in all_courses %}
+                <tr>
+                    <td><a href="/course/{{ course[0] }}">{{ course[1]["title"] }}</a></td>
+                    {% if course[1]["visible"] == 0 %}
+                        <td style="text-align: center;">Hidden</td>
+                    {% else %}
+                        <td style="text-align: center;">Visible</td>
+                    {% end %}
+                    <td>
+                        {% if course[1]["last_update_date"] != "" %}
+                            {{ course[1]["last_update_date"] }}
+                        {% else %}
+                            —
+                        {% end %}
+                    </td>
+                    <td style="text-align: center;">
+                        <a onclick="showPostModal('delete_course', 'Delete course', {'course_id': '{{ course[0] }}'}, '/clean_up_courses')">
+                            <i class="far fa-trash-alt"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% end %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p><strong>There are no courses.</strong></p>
+{% end %}
+
+<script>
+    function delete_course_build_body(data_obj, messageElement) {
+        pElement = document.createElement("p");
+        pElement.innerHTML = "Are you sure you want to delete this course?";
+        messageElement.appendChild(pElement);
+    }
+
+    function delete_course_get_post_url(data_obj) {
+        return `/delete_course/${data_obj.course_id}`;
+    }
+</script>

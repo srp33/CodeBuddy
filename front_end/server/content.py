@@ -656,6 +656,67 @@ class Content:
 
         return courses
 
+    def get_all_courses_for_clean_up_courses(self):
+        courses = []
+
+        sql = '''SELECT c.course_id,
+                        c.title,
+                        c.visible,
+                        c.introduction,
+                        c.passcode,
+                        c.highlighted,
+                        (
+                          SELECT MAX(v)
+                          FROM (
+                            SELECT s.last_submission_date AS v
+                            UNION ALL SELECT c.date_updated
+                            UNION ALL SELECT a.last_assignment_update_date
+                            UNION ALL SELECT e.last_exercise_update_date
+                          )
+                        ) AS last_update_date
+                 FROM courses c
+                 LEFT JOIN (
+                   SELECT s.course_id, MAX(s.date) AS last_submission_date
+                   FROM submissions s
+                   GROUP BY s.course_id
+                 ) s
+                   ON c.course_id = s.course_id
+                 INNER JOIN (
+                   SELECT course_id, MAX(date_updated) AS last_assignment_update_date
+                   FROM assignments
+                   GROUP BY course_id
+                 ) a
+                   ON c.course_id = a.course_id
+                 INNER JOIN (
+                   SELECT course_id, MAX(date_updated) AS last_exercise_update_date
+                   FROM exercises
+                   GROUP BY course_id
+                 ) e
+                   ON c.course_id = e.course_id
+                 ORDER BY last_update_date ASC, c.title COLLATE NOCASE'''
+
+        for course in self.fetchall(sql):
+            last_update_raw = course["last_update_date"]
+            if last_update_raw:
+                if isinstance(last_update_raw, str):
+                    dt = localize_datetime(convert_string_to_datetime(last_update_raw.split(".")[0]))
+                else:
+                    dt = last_update_raw
+                formatted = format_datetime_for_db(dt)
+                if formatted:
+                    y, mo, d = map(int, formatted.split(" ")[0].split("-"))
+                    disp = datetime(y, mo, d)
+                    last_update_date = f"{disp.strftime('%B')} {disp.day}, {disp.year}"
+                else:
+                    last_update_date = ""
+            else:
+                last_update_date = ""
+
+            course_basics = {"id": course["course_id"], "title": course["title"], "visible": course["visible"], "introduction": convert_markdown_to_html(course["introduction"]), "passcode": course["passcode"], "highlighted": course["highlighted"], "exists": True, "last_update_date": last_update_date}
+            courses.append([course["course_id"], course_basics])
+
+        return courses
+
     def get_registered_courses(self, user_id):
         registered_courses = []
 

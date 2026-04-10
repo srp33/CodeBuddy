@@ -31,6 +31,38 @@
 
         var errorElement = document.createElement("div");
 
+        var waitElement = document.createElement("div");
+        waitElement.style.display = "none";
+
+        function setWaiting(isWaiting) {
+            if (isWaiting) {
+                waitElement.style.display = "block";
+                waitElement.innerHTML = `<div class="notification is-info is-light mt-4 mb-0">
+                    <div class="is-flex is-align-items-flex-start">
+                        <span class="icon is-large has-text-info mr-3 mt-1" style="flex-shrink: 0;">
+                            <i class="fas fa-spinner fa-pulse" aria-hidden="true"></i>
+                        </span>
+                        <p class="is-size-5 mb-0">
+                            <strong class="has-text-info">Please wait</strong>
+                            <span class="has-text-grey-dark"> while this task completes and the page refreshes&hellip;</span>
+                        </p>
+                    </div>
+                </div>`;
+                actionButton.style.pointerEvents = "none";
+                actionButton.style.opacity = "0.5";
+                cancelButton.style.pointerEvents = "none";
+                cancelButton.style.opacity = "0.5";
+            }
+            else {
+                waitElement.style.display = "none";
+                waitElement.innerHTML = "";
+                actionButton.style.pointerEvents = "";
+                actionButton.style.opacity = "";
+                cancelButton.style.pointerEvents = "";
+                cancelButton.style.opacity = "";
+            }
+        }
+
         function updateErrorMessage(message) {
             if (message == "")
                 errorElement.innerHTML = message;
@@ -56,6 +88,7 @@
         headerElement.appendChild(titleElement);
         sectionElement.appendChild(messageElement);
         sectionElement.appendChild(errorElement);
+        sectionElement.appendChild(waitElement);
         footerElement.appendChild(actionButton);
         footerElement.appendChild(cancelButton);
 
@@ -84,6 +117,8 @@
                 return;
             }
 
+            setWaiting(true);
+
             $.ajax({
                 type: 'POST',
                 url: window[`${action}_get_post_url`](data_obj),
@@ -102,11 +137,13 @@
                         }
                     }
                     else {
+                        setWaiting(false);
                         updateErrorMessage(result);
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown)
                 {
+                    setWaiting(false);
                     updateErrorMessage(`Error: ${errorThrown}`);
                 }
             });
