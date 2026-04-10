@@ -5,7 +5,11 @@
 <!-- </copyright_statement>-->
 
 {% if course_basics["exists"] %}
-    {% if len(secure_assignments) > 0 %}
+    {% if len(registered_students) == 0 %}
+        <h4>Generate security codes for {{ course_basics["title"] }}</h4>
+
+        <p>At least one student must be registered for this course before you can generate security codes.</p>
+    {% elif len(secure_assignments) > 0 %}
         <script>
             function buildPDF() {
                 // Validate inputs. Make sure required elements are provided, none is too long, and at least one assignment is checked.
