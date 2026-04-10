@@ -20,7 +20,20 @@ class GenerateSecurityCodesHandler(BaseUserHandler):
                 course_basics = await self.get_course_basics(course_id)
                 secure_assignments = self.content.get_secure_assignments(course_basics["id"])
 
-                self.render("generate_security_codes.html", courses=self.courses, course_basics=course_basics, secure_assignments=secure_assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                preselect_assignment_id = self.get_argument("assignment_id", default=None)
+                if preselect_assignment_id:
+                    try:
+                        preselect_assignment_id = int(preselect_assignment_id)
+                    except ValueError:
+                        preselect_assignment_id = None
+                    if preselect_assignment_id is not None:
+                        secure_ids = {a["id"] for a in secure_assignments.values()}
+                        if preselect_assignment_id not in secure_ids:
+                            preselect_assignment_id = None
+                else:
+                    preselect_assignment_id = None
+
+                self.render("generate_security_codes.html", courses=self.courses, course_basics=course_basics, secure_assignments=secure_assignments, preselect_assignment_id=preselect_assignment_id, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             else:
                 self.render("permissions.html")
         except:

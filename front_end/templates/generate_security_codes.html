@@ -107,6 +107,16 @@
                 $("#result_message")[0].innerHTML = messageHTML;
                 window.scrollTo(0, 0);
             }
+
+            {% if preselect_assignment_id %}
+            document.addEventListener('DOMContentLoaded', function() {
+                var cb = document.getElementById(String({{ preselect_assignment_id }}));
+                if (cb) {
+                    cb.focus();
+                    cb.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+                }
+            });
+            {% end %}
         </script>
 
         <h4>Generate security codes for {{ course_basics["title"] }}</h4>
@@ -132,7 +142,7 @@
                 {% for assignment_title in sorted(secure_assignments) %}
                     <div class="field">
                         <label class="checkbox">
-                            <input type="checkbox" id="{{ secure_assignments[assignment_title]['id'] }}" value="{{ secure_assignments[assignment_title]['id'] }}">
+                            <input type="checkbox" id="{{ secure_assignments[assignment_title]['id'] }}" value="{{ secure_assignments[assignment_title]['id'] }}"{% if preselect_assignment_id == secure_assignments[assignment_title]['id'] %} checked{% end %}>
                             {{ assignment_title }}
                         </label>
                     </div>
@@ -142,7 +152,7 @@
 
         <div class="has-background-white p-4 mb-4">
             <p><strong>Large header: </strong><br />Any text specified here will be shown in large, bold font at the top of each page. This header is optional. It has a maximum length of 50 characters.</p>
-            <p><textarea id="large_header" class="textarea is-grey is-medium monospace" placeholder="The header text goes here." rows="1" autofocus></textarea></p>
+            <p><textarea id="large_header" class="textarea is-grey is-medium monospace" placeholder="The header text goes here." rows="1"></textarea></p>
 
             <p><strong>Small header: </strong><br />Each page of the PDF will have a header that uses a regular-sized, bold font. The first part of the header will be the assignment name. You can append text to the end of this header (maximum = 50 characters).</p>
             <p><textarea id="small_header" class="textarea is-grey is-medium monospace" placeholder="The header text goes here." rows="1"></textarea></p>

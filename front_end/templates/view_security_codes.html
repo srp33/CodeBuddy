@@ -22,7 +22,7 @@
                     <select id="selected_assignment">
 
                     {% for assignment_title in sorted(secure_assignments) %}
-                        <option value="{{ secure_assignments[assignment_title]['id'] }}">{{ assignment_title }}</option>
+                        <option value="{{ secure_assignments[assignment_title]['id'] }}"{% if preselect_assignment_id == secure_assignments[assignment_title]['id'] %} selected{% end %}>{{ assignment_title }}</option>
                     {% end %}
 
                     </select>

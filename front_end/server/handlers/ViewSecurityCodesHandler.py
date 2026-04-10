@@ -7,12 +7,23 @@
 from BaseUserHandler import *
 
 class ViewSecurityCodesHandler(BaseUserHandler):
-    async def get(self, course_id, _ignore):
+    async def get(self, course_id, path_assignment_id):
         try:
             course_basics = await self.get_course_basics(course_id)
             secure_assignments = self.content.get_secure_assignments(course_basics["id"])
 
-            self.render("view_security_codes.html", courses=self.courses, course_basics=course_basics, secure_assignments=secure_assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+            preselect_assignment_id = None
+            if path_assignment_id and path_assignment_id.lower() != "null":
+                try:
+                    aid = int(path_assignment_id)
+                except ValueError:
+                    aid = None
+                if aid is not None:
+                    secure_ids = {a["id"] for a in secure_assignments.values()}
+                    if aid in secure_ids:
+                        preselect_assignment_id = aid
+
+            self.render("view_security_codes.html", courses=self.courses, course_basics=course_basics, secure_assignments=secure_assignments, preselect_assignment_id=preselect_assignment_id, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
         except:
             render_error(self, traceback.format_exc())
     
