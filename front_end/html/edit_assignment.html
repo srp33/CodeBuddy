@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="/static/bulma.0.9.3.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="/static/font-awesome.5.3.1.all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>-->
+        <script
+            src="/static/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+        <!--<script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>-->
+
+        <title>CodeBuddy</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
+
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
+
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+            <div>
+<script>
+    const toggleBurger = () => {
+        let burgerIcon = document.getElementById('burger');
+        let dropMenu = document.getElementById('the_menu');
+        burgerIcon.classList.toggle('is-active');
+        dropMenu.classList.toggle('is-active');
+    };
+
+    // $(document).ready(function() {
+    //     // Function to check if the navbar contents are wider than the available space
+    //     function isNavbarOverflowed() {
+    //         return $('.navbar-menu').prop('scrollWidth') > $('.navbar-menu').width();
+    //     }
+
+    //     // Function to toggle the burger icon and menu based on screen width and contents
+    //     function toggleNavbar() {
+    //         if ($(window).width() > 1224 && isNavbarOverflowed()) {
+    //             $('.navbar-burger').show();
+    //             $('.navbar-menu').hide();
+    //         } else {
+    //             $('.navbar-burger').hide();
+    //             $('.navbar-menu').show();
+    //         }
+    //     }
+
+    //     // Initial toggle when the page loads
+    //     toggleNavbar();
+
+    //     $(window).resize(function() {
+    //         toggleNavbar();
+    //     });
+
+    //     // Toggle the navbar when the burger icon is clicked
+    //     $('.navbar-burger').click(function() {
+    //         $('.navbar-menu').toggle();
+    //     });
+    // });
+    
+    function toggleDropdown(div_id) {
+        var element = document.getElementById(div_id);
+        element.classList.toggle('is-active');
+    }
+
+    window.addEventListener('click', function(e) {
+        for (menu of ["course", "assignment", "exercise", "menu"]) {
+            var dropdown = document.getElementById(`${menu}_dropdown`);
+
+            if (dropdown == null)
+                continue;
+
+            if (!dropdown.contains(e.target) && dropdown.classList.contains("is-active"))
+                dropdown.classList.remove("is-active");
+        }
+    });
+</script>
+
+<nav id="navbar" class="navbar is-spaced has-shadow" role="navigation" aria-label="main navigation" style="border-radius: 0px; padding: 1px; box-shadow: 3px 3px 6px lightgray;">
+    <div class="navbar-brand" style="padding: 3px 0px 0px 0px;">
+        <a href="/" id="navbar-start">CodeBuddy <i class="fa fa-home" style="padding: 0 .3em; width:auto;" aria-hidden="true"></i></a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" id="burger" onclick="toggleBurger()">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+    <div class="navbar-menu is-size-5" id="the_menu">
+        <div class="navbar-start">            {% if len(courses) > 1 and "course_basics" in globals() and course_basics["exists"] %}
+                <div id="course_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('course_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        Courses
+
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+                    </div>
+
+                    <div id="moreDropdown" class="navbar-dropdown">
+                        {% for course in courses %}
+                            {% if course[0] == course_basics['id'] %}
+                                <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                            {% else %}
+                                <a class="navbar-item" style="white-space: nowrap;"
+                            {% end %}
+
+                            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                href="/edit_course/{{ course[0] }}"
+                            {% else %}
+                                href="/course/{{ course[0] }}"
+                            {% end %}
+                            
+                            >
+                            
+                            {{ course[1]["title"] }}
+                        
+                            </a>
+                        {% end %}
+                    </div>
+                </div>
+            {% end %}{% if "assignment_statuses" in globals() and len(assignment_statuses) > 1 and "assignment_basics" in globals() and assignment_basics["exists"] %}
+    <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Assignments
+
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
+
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% set prev_assignment_group = None %}
+            {% set non_other_assignment_group = False %}
+
+            {% for assignment in assignment_statuses %}
+                {% set current_assignment_group = assignment[1] %}
+
+                {% if current_assignment_group != "" %}
+                    {% set non_other_assignment_group = True %}
+                {% end %}
+
+                {% if current_assignment_group != prev_assignment_group and non_other_assignment_group %}
+                    <div class="navbar-item has-text-weight-bold" style="padding-top: 10px; padding-bottom: 5px;">
+                        {% if current_assignment_group == "" %}
+                            Other
+                        {% else %}
+                            {{ current_assignment_group }}
+                        {% end %}                        
+                    </div>
+
+                    {% set prev_assignment_group = current_assignment_group %}
+                {% end %}
+
+                {% if assignment[0] == assignment_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+
+                {% if "is_edit_page" in globals() and is_edit_page == True %}
+                    href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% else %}
+                    href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% end %}
+                >
+
+                {% if assignment[2]["completed"] %}
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["in_progress"] %}
+                    <i class="far fa-hourglass"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["timer_has_ended"] %}
+                    <!-- <i class="far fa-clock"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i> -->
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% else %}
+                    <i class="far fa-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% end %}
+                
+                &nbsp;
+                
+                {{ assignment[2]["title"] }}
+            
+                </a>
+            {% end %}
+        </div>
+    </div>
+{% end %}{% if "exercise_statuses" in globals() and len(exercise_statuses) > 1 and "exercise_basics" in globals() and exercise_basics["exists"] %}
+    <div id="exercise_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('exercise_dropdown')">
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Exercises
+
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
+
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% for exercise in exercise_statuses %}
+                {% if exercise[0] == exercise_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+                
+                    {% if "is_edit_page" in globals() and is_edit_page == True %}
+                        href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                    {% else %}
+                        href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                    {% end %}
+                    >
+
+                    {% if exercise[1]["completed"] %}
+                        <i class="far fa-check-circle"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% elif exercise[1]["in_progress"] %}
+                        <i class="far fa-hourglass"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% else %}
+                        <i class="far fa-circle"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% end %}
+
+                    {{ exercise[1]["title"] }}
+
+                    {% if exercise[1]["enable_pair_programming"] %}
+                        <label style="margin-left: 5px;" class="has-tooltip-multiline has-tooltip-left" data-tooltip="Pair programming is enabled for this exercise"><i class="fab fa-product-hunt"></i></label>
+                    {% end %}
+                </a>
+            {% end %}
+        </div>
+    </div>
+
+    {% if "prev_exercise" in globals() and prev_exercise %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% else %}
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% end %}
+
+                <i class="fas fa-arrow-left" style="margin-left: 5px;margin-right: 1px;"></i>
+            </a>
+        </div>
+    {% end %}
+
+    {% if "next_exercise" in globals() and next_exercise %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% else %}
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% end %}
+
+                <i class="fas fa-arrow-right" style="margin-left: 1px;margin-right: 5px;"></i>
+            </a>
+        </div>
+    {% end %}
+{% end %}
+            </div>
+            <div class="navbar-end">
+                <div id="menu_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('menu_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        {{ user_info["given_name"] }}
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </div>
+
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/">Courses</a>
+
+                        <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
+
+                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+
+                        {% if is_administrator %}
+                            <hr class="navbar-divider">
+
+                            <a class="navbar-item" href="/edit_course/">Create course</a>
+
+                            <a class="navbar-item" href="/manage_admins">Manage admins</a>
+
+                            <a class="navbar-item" href="/manage_users">Manage users</a>
+
+                            <a class="navbar-item" href="/summarize_logs">View logs</a>
+
+                            <a class="navbar-item" href="/clean_up_courses">Clean up courses</a>
+                        {% end %}
+
+                        <hr class="navbar-divider">
+
+                        <a class="navbar-item" href="/logout">Log out</a>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+</nav><div class="has-background-light container-padding">
+    <div class="content is-medium"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<div class="row-container is-hidden" id="edit_header">
+    <h4>Edit assignment</h4>
+    <div class="buttons mb-2">
+        <button class="button is-dark" onclick="save()">Save</button>
+        
+        <a class="button" id="done_button1">Assignment home</a>
+
+        {% if previous_assignment_id %}
+            <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ previous_assignment_id }}'>Previous assignment</a>
+        {% end %}
+
+        {% if next_assignment_id %}
+            <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
+        {% end %}
+
+        <a class="button" href='/course/{{ course_basics['id'] }}'>Course home</a>
+    </div>
+</div>
+
+<h4 id="create_header">Create assignment</h4>
+
+<div class="notification is-danger is-hidden" id="result_message"></div>
+
+{% if course_basics["exists"] %}
+    <div class="shadow-box">
+        <div class="row-container">
+            <div class="a-title-container">
+                <p>
+                    <strong>Title: </strong>
+                </p>
+                <p>
+                    <input id="title" type="text" placeholder="Please specify a short, descriptive title for this assignment." class="input is-fullwidth" autofocus />
+                </p>
+            </div>
+
+            <div class="a-visible top-space">
+                <p><strong>Visible to students: </strong>
+                    <div class="select is-grey">
+                        <select id="visible" class="edit-select">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <div class="top-space">
+            <div class="mt-5">
+                <div>
+                    <strong>Introduction: </strong>
+                </div>
+                
+                <div class="mt-2">
+                    Please use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to write an introduction for this assignment.
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <textarea id="introduction" class="textarea" rows=10 placeholder="Please provide an introduction for this assignment."></textarea>
+            </div>
+        </div>
+
+        <div class="mt-5
+            {% if len(assignment_groups) == 0 %}
+                is-hidden
+            {% end %}
+        ">
+            <div>
+                <strong>Assignment group: </strong>
+            </div>
+            
+            <div class="mt-2 mb-4">
+                <div class="field is-grouped mt-4">
+                    <div class="select is-grey">
+                        <select id="assignment_group" class="is-size-5">
+                            <option value="-1">[None]</option>
+                            {% for assignment_group in assignment_groups %}
+                                <option value="{{ assignment_group[1] }}">
+                                    {{ assignment_group[0] }}
+                                </option>
+                            {% end %}
+                        </select>
+                    </div>
+
+                    <div class="pt-2 ml-4">
+                        <a href="/manage_assignment_groups/{{ course_basics['id'] }}" class="is-size-5" target="_blank">
+                        Manage assignment groups
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        {% if prerequisite_assignment_options != "[]" %}
+            <p>
+                <strong>Prerequisite assignment(s)</strong>
+                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Indicate any other assignment(s) that students must complete before starting this assignment.">
+                    <i class="far fa-question-circle"></i>
+                </label>:
+            </p>
+
+            <div id="selected_prerequisite_options_div">
+                <div class="select is-grey mb-3">
+                    <select id="prerequisite_assignments_select" class="is-size-5">
+                    </select>
+                </div>
+
+                <div>
+                    <button class="button is-primary is-outlined is-size-5" onclick="addPrerequisite(this);">
+                        Add selected assignment as a prerequisite
+                    </button>
+                </div>
+            </div>
+
+            <div id="prerequisite_assignments_div" class="has-background-warning-light pl-2 pt-1 pr-2 pb-4 ml-0 mt-4 mr-4 mb-4 invisible">
+                <ul id="prerequisite_assignments_list">
+                </ul>
+            </div>
+        {% end %}
+
+        <div class="mt-5">
+            <strong>Start date</strong>
+            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a start date and time are specified, students will be unable to view this assignment before the specified date and time.">
+                <i class="far fa-question-circle"></i>
+            </label>:
+        </div>
+
+        <div class="select mt-2 mb-2 is-grey is-size-5">
+            <select id="has_start_date" onchange="showHideStartDate(this.value)" class="edit-select">
+                <option selected>None</option>
+                <option>Select</option>
+            </select>
+        </div>
+
+        <div id="start_date_panel" class="is-hidden">
+            <p id="start_date" style="width: 300px;">
+                <input class="is-medium is-primary" id="start_date_picker" type="text" data-input />
+            </p>
+
+            <div class="has-background-warning-light p-4">
+                <div>
+                    For individual students, you can indicate that they are able to access and submit this assignment <span class="is-italic">early</span>. To indicate this, select their name below and click on "Add exception".
+                </div>
+
+                <div class="select is-grey mt-4">
+                    <select id="student_early_exceptions_select" class="edit-select">
+                    </select>
+                </div>
+
+                <div class="mt-4">
+                    <a class="button is-primary is-outlined" onclick="makeEarlyException(this)">Add exception</a>
+                </div>
+
+                <div id="student_early_exceptions_div" class="is-hidden">
+                    <ul id="student_early_exceptions_list">
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <strong>Due date</strong>
+            <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If a due date is specified, students will be unable to view the exercises after the due date has passed, unless late submissions or viewing the solution late are enabled.">
+                <i class="far fa-question-circle"></i>
+            </label>:
+        </div>
+
+        <div class="select is-grey mt-2 mb-2">
+            <select id="has_due_date" onchange="showHideDueDate(this.value)" class="edit-select">
+                <option selected>None</option>
+                <option>Select</option>
+            </select>
+        </div>
+
+        <div class="is-hidden" id="late_panel">
+            <p style="width: 300px;">
+                <input class="is-medium is-primary" id="due_date_picker" type="text" data-input>
+            </p>
+
+            <div class="has-background-warning-light p-4">
+                <div>
+                    Allow late submissions:
+                </div>
+
+                <div id="allow_late_select_div" class="select is-grey mt-4">
+                    <select id="allow_late_select" onchange="showLateOptions(true)" class="edit-select">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+
+                <div id="view_answer_late_panel" class="mt-4">
+                    <div>
+                        When students have not completed an exercise, allow them to view the solution after they are no longer allowed to submit:
+                    </div>
+
+                    <div class="select is-grey mt-4">
+                        <select id="view_answer_late_select" class="edit-select">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="late_options_panel" class="is-hidden mt-4">
+                    <div>
+                        Select percentage of points students can earn with late submissions:
+                    </div>
+
+                    <div class="select is-grey mt-4">
+                        <select id="late_percent_select" class="edit-select">
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-4">
+                        For individual students, you can indicate that they should <span class="is-italic">not</span> be penalized for submitting this assignment late. To indicate this, select their name below and click on "Add exception".
+                    </div>
+
+                    <div class="select is-grey mt-4">
+                        <select id="student_late_exceptions_select" class="edit-select">
+                        </select>
+                    </div>
+
+                    <div class="mt-4">
+                        <a class="button is-primary is-outlined" onclick="makeLateException(this)">Add exception</a>
+                    </div>
+
+                    <div id="student_late_exceptions_div" class="is-hidden">
+                        <ul id="student_late_exceptions_list">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <div>
+            <p><strong>Time limit: </strong></p>
+            <p>You can specify a time limit for students to complete the assignment. Once a student begins the assignment, they cannot pause the timer, but you do have an option to reset the timer, if they request it.</p>
+        </div>
+
+        <div class="select is-grey mt-4">
+            <select id="has_timer" onchange="showTimerOptions(this.value)" class="edit-select">
+                <option>Off</option>
+                <option>On</option>
+            </select>
+        </div>
+
+        <div id="timer_subsection" class="is-hidden mt-4">
+            <p>
+                <label for="hour_select">Hours:</label>
+                <div class="select is-grey">
+                    <select id="hour_select" class="edit-select">
+                    </select>
+                </div>
+            </p>
+
+            <p>
+                <label for="minute_select">Minutes:</label>
+                <div class="select is-grey">
+                    <select id="minute_select" class="edit-select">
+                    </select>
+                </div>
+            </p>
+
+            <p>
+                <div class="has-background-warning-light p-4">
+                    <div>
+                        You can modify the time limit for individual students. To modify a student's time limit, select their name below, specify a time limit, and click on "Add exception."
+                    </div>
+
+                    <p class="mt-4">
+                        <label for="student_timer_exceptions_select">Student:</label>
+                        <div class="select is-grey">
+                            <select id="student_timer_exceptions_select" class="edit-select">
+                            </select>
+                        </div>
+                    </p>
+
+                    <p class="mt-4">
+                        <label for="hour_select_exceptions">Hours:</label>
+                        <div class="select is-grey">
+                            <select id="hour_select_exceptions" class="edit-select">
+                            </select>
+                        </div>
+                    </p>
+
+                    <p>
+                        <label for="minute_select_exceptions">Minutes:</label>
+                        <div class="select is-grey">
+                            <select id="minute_select_exceptions" class="edit-select">
+                            </select>
+                        </div>
+                    </p>
+
+                    <div class="mt-4">
+                        <button class="button is-primary is-outlined" onclick="makeTimerException(this)">Add exception</button>
+                    </div>
+
+                    <div id="student_timer_exceptions_div" class="mt-4 is-hidden">
+                        <ul id="student_timer_exceptions_list">
+                        </ul>
+                    </div>
+                </div>
+            </p>
+
+            <p>
+                <label for="restrict_other_assignments_select">You can treat this timed assignment as an exam/quiz. When this option is selected, students will not be able to access any other assignment while they are completing this assignment. Would you like to restrict access?</label>
+
+                <div class="select is-grey">
+                    <select id="restrict_other_assignments_select" class="edit-select">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+            </p>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <div>
+            <strong>Custom scoring: </strong>
+        </div>
+
+        <div class="mt-4">
+            By default, the assignment score is calculated as the average of the exercise scores within the assignment. If you desire, you can specify custom scoring logic. For example, suppose an assignment has five exercises. An instructor might specify that if a student successfully completes one exercise (20%), the student receives a passing grade (60%). And/or they might specify that if a student completes all but one of the exercises (80%), the student receives full points (100%) for the assignment. Please indicate your preferences below.
+        </div>
+
+        <div class="select is-grey mt-4">
+            <select id="custom_scoring_yes_no" onchange="showHideCustomScoring(this.value)" class="edit-select">
+                <option value="0">Default</option>
+                <option value="1">Custom scoring</option>
+            </select>
+        </div>
+
+        <div id="custom_scoring_panel" class="mt-5 has-background-warning-light p-4 is-hidden">
+            <div>
+                Provide one or more scoring ranges and an adjusted score for each range. If the sum of a student's exercise scores fall within a given threshold, they will receive the adjusted score. If a student earns a score that is not covered by one of the specified ranges, their score will <em>not</em> be adjusted. All ranges and adjusted scores must be specified as percentages (example: 90). For the highest scoring range, the upper end of the scoring range is inclusive; for all others, it is not.
+            </div>
+
+            <div id="custom_scoring_range_table" class="table-container is-hidden mt-4"></div>
+
+            <div class="mt-4">
+                <button id="add_custom_scoring_range_button" class="button is-primary is-outlined">Add scoring range</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add_custom_scoring_range_modal" class="modal is-clipped">
+        <div class="modal-background">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <span class="modal-card-title is-size-5 has-text-centered has-text-weight-bold">Specify custom scoring range</span>
+                    <button class="delete" aria-label="close" id="add_custom_scoring_range_modal_close"></button>
+                </header>
+
+                <section class="modal-card-body">
+                    <div>
+                        <div class="mb-2">Please enter the percentage for the <strong>lower</strong> end of the scoring range.</div>
+                        <input id="add_custom_scoring_range_lower_input" type="text" placeholder="Please indicate the lower percentage." class="input is-fullwidth" autofocus />
+
+                        <div class="mb-2 mt-4">Please enter the percentage for the <strong>upper</strong> end of the scoring range.</div>
+                        <input id="add_custom_scoring_range_upper_input" type="text" placeholder="Please indicate the upper percentage." class="input is-fullwidth" />
+
+                        <div class="mb-2 mt-4">Please enter the percentage that will be <strong>awarded</strong> when a student's score falls in this range.</div>
+                        <input id="add_custom_scoring_range_score_input" type="text" placeholder="Please indicate the score." class="input is-fullwidth" />
+                    </div>
+
+                    <div id="custom_scoring_range_message" class="notification mt-4 mb-1"></div>
+                </section>
+
+                <footer class="modal-card-foot">
+                    <button class="button is-primary" id="add_custom_scoring_range_modal_add">Add</button>
+                    <button class="button" id="add_custom_scoring_range_modal_cancel">Close</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-box">
+        <p>
+            <strong>Require security codes to access this assignment: </strong><br />You can require that each student provide a security code before they access the assignment. Typically, this option is used when you want to ensure students complete an assignment in a particular physical location (often used for exams or quizzes). Additionally, when they complete the assignment, a confirmation code can be provided. You can require that students provide this code as they leave the physical location where they completed the assignment (exam/quiz). After an assignment is created, you can <strong><a href="/generate_security_codes/{{ course_basics['id'] }}{% if assignment_basics['exists'] and assignment_basics['id'] %}?assignment_id={{ assignment_basics['id'] }}{% end %}">generate security codes</a></strong> or <strong><a href="/view_security_codes/{{ course_basics['id'] }}/{% if assignment_basics['exists'] and assignment_basics['id'] %}{{ assignment_basics['id'] }}{% else %}null{% end %}">view students' security codes</a></strong>.
+        </p>
+
+        <p>
+            <div class="select is-grey">
+                <select id="require_security_codes" class="edit-select">
+                    <option value="0">No</option>
+                    <option value="1">Yes - Security codes only</option>
+                    <option value="2">Yes - Security and confirmation codes</option>
+                </select>
+            </div>
+        </p>
+
+        <p class="mt-5"><strong>Restrict access to the following IP addresses: </strong><br />If you would like to use this feature, specify one IP address per line. If left blank, the assignment will not be restricted by IP address.</p>
+
+        <p>
+            <textarea id="allowed_ip_addresses" class="textarea is-normal is-medium monospace" placeholder="Please specify any IP addresses to allow (one per line)" rows="3" style="display:inline"></textarea>
+        </p>
+
+        <p class="mt-5"><strong>Allowed external URL(s):</strong><br />In some cases, instructors deliver assignments (often exams) in a controlled environment where they do not want students to access external websites. You can list URLs here that should be allowed (one per line).</p>
+
+        <p>
+            <textarea class="textarea" id="allowed_external_urls" rows=3 placeholder="Please specify any allowed external URLs (one per line)."></textarea>
+        </p>
+    </div>
+
+    <div class="shadow-box">
+        <label for="show_run_button"><strong>Show Run Button:</strong><br/>On the exercise page, a "Run" button is shown by default. This button allows students to execute their code and see its output before submitting it (and thus without saving their code to the database). In some cases, instructors prefer <em>not</em> to show this button and only show the "Submit" button so that students' code will be saved every time.</label>
+
+        <p>
+            <div class="select is-grey">
+                <select id="show_run_button" class="edit-select">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+        </p>
+    </div>
+
+    <div class="shadow-box">
+        <div class="a-visible">
+            <p>
+                <strong>Support questions and answers:</strong>
+                
+                <br />
+                
+                When this option is enabled, students will be able to ask questions while completing the exercises in this assignment, as long an email address has been provided in the course settings and an SMTP server has been specified in the app's settings file. Questions are sent to the provided email address, and the instructor and/or assistant(s) answer the questions through a Web interface.
+            </p>
+
+            <div class="select is-grey">
+                <select id="support_questions" class="edit-select">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    {% if course_details["virtual_assistant_config"] %}
+        <div class="shadow-box">
+    {% else %}
+        <div class="shadow-box is-hidden">
+    {% end %}
+
+        <label for="use_virtual_assistant"><strong>Use Virtual Assistant:</strong><br/>In the course settings, you have specified configuration information for the Virtual Assistant. Indicate here whether to enable this feature on this assignment. The Virtual Assistant will <strong><em>only</em></strong> be enabled on exercises that do <strong><em>not</em></strong> support pair programming.</label>
+
+        <p>
+            <div class="select is-grey">
+                <select id="use_virtual_assistant" class="edit-select">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                    <option value="2">Yes - only for students randomly assigned to group "A"</option>
+                    <option value="3">Yes - only for students randomly assigned to group "B"
+                    </option>
+                </select>
+            </div>
+        </p>
+    </div>
+
+    <p class="buttons">
+        <button class="button is-dark" onclick="save()">Save</button>
+
+        <span id="bottom_buttons" class="is-hidden">
+            <a class="button ml-2" id="done_button2">Assignment home</a>
+
+            {% if previous_assignment_id %}
+                <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ previous_assignment_id }}'>Previous assignment</a>
+            {% end %}
+
+            {% if next_assignment_id %}
+                <a class="button" href='/edit_assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
+            {% end %}
+
+            <a class="button" href='/course/{{ course_basics['id'] }}'>Course home</a>
+        </span>
+    </p>
+{% else %}
+    This course has not been created yet.
+{% end %}
+
+<script>
+    function showPrerequisites() {
+        let select_element = document.getElementById("prerequisite_assignments_select");
+        let list_element = document.getElementById("prerequisite_assignments_list");
+
+        removeSelectOptions(select_element);
+        list_element.innerHTML = "";
+
+        if (assignment_details_obj["prerequisite_assignment_ids"].length > 0) {
+            $("#prerequisite_assignments_div").removeClass("invisible");
+        }
+        else {
+            $("#prerequisite_assignments_div").addClass("invisible");
+        }
+
+        // Here we check whether to show certain elements based on whether we have prerequisites.
+        let available_prerequisites = [];        
+        for (let option of prerequisite_assignment_options) {
+            if (!assignment_details_obj["prerequisite_assignment_ids"].includes(option[0])) {
+                available_prerequisites.push(option[0]);
+            }
+        }
+
+        if (available_prerequisites.length > 0) {
+            $("#selected_prerequisite_options_div").removeClass("is-hidden");
+        }
+        else {
+            $("#selected_prerequisite_options_div").addClass("is-hidden");
+        }
+
+        for (let pair of prerequisite_assignment_options) {
+            if (assignment_details_obj["prerequisite_assignment_ids"].includes(pair[0])) {
+                var li = document.createElement("li");
+                li.textContent = `${pair[1]} - `;
+
+                var link = document.createElement("a");
+                link.textContent = "remove";
+                link.href = `javascript:removePrerequisite(${pair[0]})`;
+                li.appendChild(link);
+
+                prerequisite_assignments_list.appendChild(li);
+            }
+            else {
+                addSelectOption(select_element, pair[1], pair[0]);
+            }
+        }
+    }
+
+    function addPrerequisite(trigger_element) {
+        var assignment_id = parseInt(document.getElementById("prerequisite_assignments_select").value);
+        assignment_details_obj["prerequisite_assignment_ids"].push(assignment_id);
+
+        showPrerequisites();
+        trigger_element.blur();
+    }
+
+    function removePrerequisite(assignment_id) {
+        assignment_details_obj["prerequisite_assignment_ids"] = assignment_details_obj["prerequisite_assignment_ids"].filter(element => element !== assignment_id);
+
+        showPrerequisites();
+    }
+
+    function setStartDate() {
+        if (assignment_details_obj["start_date"]) {
+            var start_date = new Date(assignment_details_obj["start_date"]);
+            // start_date.setMinutes(start_date.getMinutes() - start_date.getTimezoneOffset());
+
+            start_date_picker.setDate(start_date);
+
+            setValue("has_start_date",  "Select");
+            showHideStartDate("Select");
+        }
+    }
+
+    function setDueDate() {
+        if (assignment_details_obj["due_date"]) {
+            var due_date = new Date(assignment_details_obj["due_date"]);
+            // due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+
+            due_date_picker.setDate(due_date);
+
+            setValue("has_due_date",  "Select");
+            showHideDueDate("Select");
+            showLateOptions(false);
+        }
+    }
+
+    function showHideStartDate(selected_option) {
+        if (selected_option == "None") {
+            $("#start_date_panel").addClass("is-hidden");
+        }
+        else {
+            $("#start_date_panel").removeClass("is-hidden");
+            setStudentEarlyExceptions();
+        }
+    }
+
+    function showHideDueDate(selected_option) {
+        if (selected_option == "None") {
+            $("#late_panel").addClass("is-hidden");
+        }
+        else {
+            $("#late_panel").removeClass("is-hidden");
+        }
+    }
+
+    function showLateOptions(user_has_changed) {
+        var percent_select_element = document.getElementById("late_percent_select");
+        var late_options_panel = document.getElementById("late_options_panel");
+
+        var allow_late;
+
+        if (user_has_changed) {
+            allow_late = getValue("allow_late_select") == "Yes";
+        }
+        else {
+            allow_late = assignment_details_obj["allow_late"];
+            setValue("allow_late_select", allow_late ? "Yes": "No");
+        }
+
+        removeSelectOptions(percent_select_element);
+
+        if (allow_late) {
+            $("#late_options_panel").removeClass("is-hidden");
+
+            addSelectOptions(percent_select_element, percentage_options);
+
+            if (assignment_details_obj["late_percent"]) {
+                setValue("late_percent_select", assignment_details_obj["late_percent"] * 100);
+            }
+            else {
+                setValue("late_percent_select", 50);
+            }
+
+            $("#view_answer_late_panel").addClass("is-hidden");
+            setStudentLateExceptions();
+        }
+        else {
+            $("#late_options_panel").addClass("is-hidden");
+
+            addSelectOption(percent_select_element, "N/A", "N/A");
+
+            $("#view_answer_late_panel").removeClass("is-hidden");
+        }
+
+        if (!user_has_changed) {
+            setValue("view_answer_late_select", assignment_details_obj["view_answer_late"] ? "Yes": "No");
+        }
+    }
+
+    function showTimerOptions(selected_option) {
+        if (selected_option == "Off") {
+            $("#timer_subsection").addClass("is-hidden");
+        }
+        else {
+            $("#timer_subsection").removeClass("is-hidden");
+
+            addSelectOptions(document.getElementById("hour_select"), hour_options);
+            addSelectOptions(document.getElementById("minute_select"), minute_options);
+
+            if (assignment_details_obj["hour_timer"] == null) {
+                setValue("hour_select", 1);
+                setValue("minute_select", 0);
+            }
+            else {
+                setValue("hour_select", assignment_details_obj["hour_timer"]);
+                setValue("minute_select", assignment_details_obj["minute_timer"]);
+            }
+
+            addSelectOptions(document.getElementById("hour_select_exceptions"), hour_options);
+            addSelectOptions(document.getElementById("minute_select_exceptions"), minute_options);
+            setValue("hour_select_exceptions", 1);
+            setValue("minute_select_exceptions", 30);
+
+            setValue("restrict_other_assignments_select", assignment_details_obj["restrict_other_assignments"] ? "Yes" : "No");
+
+            setStudentTimerExceptions();
+        }
+    }
+
+function setStudentEarlyExceptions() {
+        let select_element = document.getElementById("student_early_exceptions_select");
+        let student_early_exceptions_list = document.getElementById("student_early_exceptions_list");
+
+        removeSelectOptions(select_element);
+        student_early_exceptions_list.innerHTML = "";
+
+        for (let student of all_students) {
+            if (assignment_details_obj["student_early_exceptions"].includes(student[0])) {
+                var li = document.createElement("li");
+                li.textContent = `${student[1].name} (${student[0]}) `;
+
+                var link = document.createElement("a");
+                link.textContent = "remove";
+                link.href = `javascript:removeStudentEarlyException("${student[0]}")`;
+                li.appendChild(link);
+
+                student_early_exceptions_list.appendChild(li);
+            }
+            else {
+                addSelectOption(select_element, `${student[1]["name"]} (${student[0]})`, student[0]);
+            }
+        }
+
+        if (assignment_details_obj["student_early_exceptions"].length > 0) {
+            $("#student_early_exceptions_div").removeClass("is-hidden");
+        }
+        else {
+            $("#student_early_exceptions_div").addClass("is-hidden");
+        }
+    }
+
+    function setStudentLateExceptions() {
+        let select_element = document.getElementById("student_late_exceptions_select");
+        let student_late_exceptions_list = document.getElementById("student_late_exceptions_list");
+
+        removeSelectOptions(select_element);
+        student_late_exceptions_list.innerHTML = "";
+
+        for (let student of all_students) {
+            if (assignment_details_obj["student_late_exceptions"].includes(student[0])) {
+                var li = document.createElement("li");
+                li.textContent = `${student[1].name} (${student[0]}) `;
+
+                var link = document.createElement("a");
+                link.textContent = "remove";
+                link.href = `javascript:removeStudentLateException("${student[0]}")`;
+                li.appendChild(link);
+
+                student_late_exceptions_list.appendChild(li);
+            }
+            else {
+                addSelectOption(select_element, `${student[1]["name"]} (${student[0]})`, student[0]);
+            }
+        }
+
+        if (assignment_details_obj["student_late_exceptions"].length > 0) {
+            $("#student_late_exceptions_div").removeClass("is-hidden");
+        }
+        else {
+            $("#student_late_exceptions_div").addClass("is-hidden");
+        }
+    }
+
+    function setStudentTimerExceptions() {
+        let select_element = document.getElementById("student_timer_exceptions_select");
+        let student_timer_exceptions_list = document.getElementById("student_timer_exceptions_list");
+
+        removeSelectOptions(select_element);
+        student_timer_exceptions_list.innerHTML = "";
+
+        for (let student of all_students) {
+            if (student[0] in assignment_details_obj["student_timer_exceptions"]) {
+                let hours = assignment_details_obj["student_timer_exceptions"][student[0]][0];
+                let minutes = assignment_details_obj["student_timer_exceptions"][student[0]][1];
+
+                var li = document.createElement("li");
+                li.textContent = `${student[1].name} (${student[0]}) - ${hours} hours, ${minutes} minutes - `;
+
+                var link = document.createElement("a");
+                link.textContent = "remove";
+                link.href = `javascript:removeStudentTimerException("${student[0]}")`;
+                li.appendChild(link);
+
+                student_timer_exceptions_list.appendChild(li);
+            }
+            else {
+                addSelectOption(select_element, `${student[1]["name"]} (${student[0]})`, student[0]);
+            }
+        }
+
+        if (Object.keys(assignment_details_obj["student_timer_exceptions"]).length > 0) {
+            $("#student_timer_exceptions_div").removeClass("is-hidden");
+        }
+        else {
+            $("#student_timer_exceptions_div").addClass("is-hidden");
+        }
+    }
+
+    function removeStudentEarlyException(student_id) {
+        assignment_details_obj["student_early_exceptions"] = assignment_details_obj["student_early_exceptions"].filter(item => item !== student_id);
+
+        setStudentEarlyExceptions();
+    }
+
+    function removeStudentLateException(student_id) {
+        assignment_details_obj["student_late_exceptions"] = assignment_details_obj["student_late_exceptions"].filter(item => item !== student_id);
+
+        setStudentLateExceptions();
+    }
+
+    function removeStudentTimerException(student_id) {
+        delete assignment_details_obj["student_timer_exceptions"][student_id];
+        setStudentTimerExceptions();
+    }
+
+    function makeEarlyException(trigger_element) {
+        var student_id = document.getElementById("student_early_exceptions_select").value;
+
+        assignment_details_obj["student_early_exceptions"].push(student_id);
+        setStudentEarlyExceptions();
+        trigger_element.blur();
+    }
+
+    function makeLateException(trigger_element) {
+        var student_id = document.getElementById("student_late_exceptions_select").value;
+
+        assignment_details_obj["student_late_exceptions"].push(student_id);
+        setStudentLateExceptions();
+        trigger_element.blur();
+    }
+
+    function makeTimerException(trigger_element) {
+        var student_id = document.getElementById("student_timer_exceptions_select").value;
+        var hours = document.getElementById("hour_select_exceptions").value;
+        var minutes = document.getElementById("minute_select_exceptions").value;
+
+        if (hours == 0 && minutes == 0) {
+            return(showResultMessage("A timer exception must be longer than zero minutes.", "danger"));
+        }
+
+        assignment_details_obj["student_timer_exceptions"][student_id] = [parseInt(hours), parseInt(minutes)];
+        setStudentTimerExceptions();
+        trigger_element.blur();
+    }
+
+    function showHideCustomScoring(selected_option) {
+        if (selected_option == "0") {
+            $("#custom_scoring_panel").addClass("is-hidden");
+        }
+        else {
+            $("#custom_scoring_panel").removeClass("is-hidden");
+        }
+    }
+
+    function showCustomScoringMessage(message, isError, elementID) {
+        $("#custom_scoring_range_message").removeClass("is-hidden");
+
+        if (isError) {
+            $("#custom_scoring_range_message").removeClass("is-info");
+            $("#custom_scoring_range_message").addClass("is-danger");
+        }
+        else {
+            $("#custom_scoring_range_message").removeClass("is-danger");
+            $("#custom_scoring_range_message").addClass("is-info");
+        }
+
+        $("#custom_scoring_range_message")[0].innerHTML = message;
+        $("#custom_scoring_range_message")[0].scrollIntoView();
+        $(`#${elementID}`).focus();
+    }
+
+    function getCustomScoringRanges() {
+        let ranges = assignment_details_obj["custom_scoring"];
+
+        if (ranges.length == 0) {
+            return [];
+        }
+
+        ranges = JSON.parse(ranges);
+
+        return ranges;
+    }
+
+    function updateCustomScoringRanges(ranges) {
+        if (ranges.length == 0) {
+            assignment_details_obj["custom_scoring"] = "";
+        }
+        else {
+            // Sort based on the first element in the inner vectors.
+            ranges.sort((a, b) => a[0] - b[0]);
+            
+            assignment_details_obj["custom_scoring"] = JSON.stringify(ranges);
+        }
+
+        showCustomScoringRangesTable();
+    }
+
+    function removeCustomScoringRange(lower_range) {
+        var ranges = getCustomScoringRanges();
+
+        var new_ranges = [];
+        for (let i = 0; i < ranges.length; i++) {
+            if (ranges[i][0] != lower_range) {
+                new_ranges.push(ranges[i]);
+            }
+        }
+
+        updateCustomScoringRanges(new_ranges);
+    }
+
+    function showCustomScoringRangesTable() {
+        var ranges = getCustomScoringRanges();
+
+        if (ranges.length == 0) {
+            $("#custom_scoring_range_table").addClass("is-hidden");
+            return;
+        }
+
+        var html = "<table class='table is-striped'>";
+        html += "<thead><tr><th>Low Threshold</th><th>High Threshold</th><th>Adjusted Score</th><th></th></thead>";
+        html += "<tbody>";
+
+        for (const range of ranges) {
+            html += "<tr>";
+            html += `  <td>${range[0]}</td>`;
+            html += `  <td>${range[1]}</td>`;
+            html += `  <td>${range[2]}</td>`;
+            html += `  <td>
+                            <a onclick="removeCustomScoringRange('${range[0]}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>`;
+            html += "</tr>";
+        }
+
+        html += "</tbody>";
+        html += "</table>";
+
+        $("#custom_scoring_range_table")[0].innerHTML = html;
+        $("#custom_scoring_range_table").removeClass("is-hidden");
+    }
+
+    function addSelectOptions(select_element, options) {
+        for (let option of options) {
+            addSelectOption(select_element, option, option);
+        }
+    }
+
+    function addSelectOption(select_element, option_text, option_value) {
+        var option = document.createElement("option");
+        option.text = option_text;
+        option.value = option_value;
+        select_element.add(option);
+    }
+
+    function removeSelectOptions(select_element) {
+        for (var i = select_element.options.length-1; i >= 0; i--) {
+            select_element.options[i] = null;
+        }
+    }
+
+    function getValue(id) {
+        var value = $(`#${id}`)[0].value;
+
+        if (value === undefined) {
+            value = "";
+        }
+
+        return value;
+    }
+
+    function setValue(id, value) {
+        $(`#${id}`)[0].value = value;
+    }
+
+    function showResultMessage(messageHTML, messageType) {
+        $("#result_message").removeClass("is-primary");
+        $("#result_message").removeClass("is-warning");
+        $("#result_message").removeClass("is-danger");
+
+        $("#result_message").addClass(`is-${messageType}`);
+
+        $("#result_message").removeClass("is-hidden");
+        $("#result_message")[0].innerHTML = messageHTML;
+        window.scrollTo(0, 0);
+    }
+
+    function showTopBottomButtons(exists) {
+        if (exists) {
+            $("#edit_header").removeClass("is-hidden");
+            $("#create_header").addClass("is-hidden");
+            $("#bottom_buttons").removeClass("is-hidden");
+        }
+        else {
+            $("#edit_header").addClass("is-hidden");
+            $("#create_header").removeClass("is-hidden");
+            $("#bottom_buttons").addClass("is-hidden");
+        }
+    }
+
+    function save() {
+        const title = getValue("title").trim();
+        const visible = getValue("visible") == "Yes";
+        const introduction = getValue("introduction");
+        const assignment_group_id = getValue("assignment_group") == -1 ? null : getValue("assignment_group");
+
+        if (title == "")
+            return(showResultMessage("Please provide a title.", "danger"));
+        if (title.length > 100)
+            return(showResultMessage("The title cannot exceed 100 characters in length.", "danger"));
+        if (introduction == "")
+            return(showResultMessage("Please provide an introduction.", "danger"));
+
+        var start_date = null;
+        if (getValue("has_start_date") == "Select") {
+            start_date = new Date(getValue("start_date_picker"));
+        }
+        
+        var due_date = null;
+        var allow_late = false;
+        var late_percent = null;
+        var view_answer_late = false;
+
+        if (getValue("has_due_date") == "Select") {
+            due_date = new Date(getValue("due_date_picker"));
+            allow_late = getValue("allow_late_select") == "Yes";
+
+            if (allow_late) {
+                late_percent = getValue("late_percent_select") / 100;
+            }
+
+            view_answer_late = getValue("view_answer_late_select") == "Yes";
+        }
+
+        if (start_date && due_date && due_date <= start_date) {
+            return(showResultMessage("The due date must be later than the start date.", "danger"));
+        }
+
+        if (start_date) {
+            start_date = start_date.toUTCString();
+        }
+
+        if (due_date) {
+            due_date = due_date.toUTCString();
+        }
+
+        var has_timer = false;
+        var hour_timer = null;
+        var minute_timer = null;
+        var restrict_other_assignments = false;
+
+        if (getValue("has_timer") == "On") {
+            has_timer = true;
+            hour_timer = getValue("hour_select");
+            minute_timer = getValue("minute_select");
+
+            if (hour_timer == 24 && minute_timer > 0) {
+                return(showResultMessage("The maximum allowed limit for the timer is 24 hours and 0 minutes.", "danger"));
+            }
+
+            restrict_other_assignments = getValue("restrict_other_assignments_select") == "Yes";
+        }
+
+        let allowed_ip_addresses = getValue("allowed_ip_addresses");
+        let allowed_external_urls = getValue("allowed_external_urls");
+        let show_run_button = getValue("show_run_button") == "Yes";
+        let require_security_codes = parseInt(getValue("require_security_codes"));
+        var support_questions = getValue("support_questions") == "Yes";
+        let use_virtual_assistant = getValue("use_virtual_assistant");
+
+        var submission_obj = {
+            "title": title,
+            "visible": visible,
+            "allow_late": allow_late,
+            "allowed_external_urls": allowed_external_urls,
+            "allowed_ip_addresses": allowed_ip_addresses,
+            "assignment_group_id": assignment_group_id,
+            "due_date": due_date,
+            "has_timer": has_timer,
+            "hour_timer": hour_timer,
+            "introduction": introduction,
+            "late_percent": late_percent,
+            "minute_timer": minute_timer,
+            "restrict_other_assignments": restrict_other_assignments,
+            "show_run_button": show_run_button,
+            "custom_scoring": assignment_details_obj["custom_scoring"], 
+            "require_security_codes": require_security_codes, 
+            "start_date": start_date,
+            "prerequisite_assignment_ids": assignment_details_obj["prerequisite_assignment_ids"], "student_early_exceptions": assignment_details_obj["student_early_exceptions"],
+            "student_late_exceptions": assignment_details_obj["student_late_exceptions"], 
+            "student_timer_exceptions": assignment_details_obj["student_timer_exceptions"], 
+            "support_questions": support_questions, 
+            "use_virtual_assistant": use_virtual_assistant,
+            "view_answer_late": view_answer_late            
+        }
+
+        showResultMessage("<b>Please wait...</b>", "warning");
+
+        $.ajax({
+            type: 'POST',
+            url: "/edit_assignment/{{ course_basics['id'] }}/" + assignment_basics_obj['id'],
+            data: JSON.stringify(submission_obj),
+            async: true})
+            .done(function(data) {
+                var json_data = JSON.parse(data);
+
+                if (json_data["message"] == "") {
+                    assignment_basics_obj["id"] = json_data["assignment_id"];
+                    assignment_details_obj = json_data["assignment_details"];
+
+                    showTopBottomButtons(true);
+                    showResultMessage("<b>The exercise was saved successfully.</b>", "primary");
+                }
+                else {
+                    showTopBottomButtons(true | assignment_basics_obj["exists"]);
+                    showResultMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, "danger");
+                }
+            })
+            .fail(function(data) {
+                showResultMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
+            });
+    }
+
+    $("#done_button1").click(function() {
+        location.href = `/assignment/{{ course_basics["id"] }}/${assignment_basics_obj["id"]}`;
+    });
+
+    $("#done_button2").click(function() {
+        location.href = `/assignment/{{ course_basics["id"] }}/${assignment_basics_obj["id"]}`;
+    });
+
+    var assignment_basics_obj = JSON.parse("{{ assignment_basics_json }}");
+    var assignment_details_obj = JSON.parse("{{ assignment_details_json }}");
+    var prerequisite_assignment_options = JSON.parse("{{ prerequisite_assignment_options }}");
+    let percentage_options = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
+    let hour_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 24];
+    let minute_options = [0, 1, 2, 3, 5, 7, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+    let all_students = JSON.parse("{{ all_students }}");
+
+    showTopBottomButtons(assignment_basics_obj["exists"]);
+
+    setValue("title", assignment_basics_obj["title"]);
+    setValue("visible", assignment_basics_obj["visible"] ? "Yes" : "No");
+    setValue("introduction", assignment_details_obj["introduction"]);
+    setValue("assignment_group", assignment_details_obj["assignment_group_id"] === null ? -1 : assignment_details_obj["assignment_group_id"]);
+
+    //TODO: https://doc.mh-s.de/bulma-calendar/
+    var start_date_picker = flatpickr("#start_date_picker", {
+        enableTime: true,
+        dateFormat: "Z",
+        altInput: true,
+        altFormat: 'Y-m-d G:i K',
+        defaultDate: new Date()});
+
+    var due_date_picker = flatpickr("#due_date_picker", {
+        enableTime: true,
+        dateFormat: 'Z',
+        altInput: true,
+        altFormat: 'Y-m-d G:i K',
+        defaultDate: new Date().setDate(new Date().getDate() + 1)});
+
+    {% if prerequisite_assignment_options != "[]" %}
+        showPrerequisites();
+    {% end %}
+
+    setStartDate();
+    setDueDate();
+
+    if (assignment_details_obj["has_timer"]) {
+        setValue("has_timer", "On");
+        showTimerOptions("On");
+    }
+
+    if (assignment_details_obj["custom_scoring"] != "") {
+        setValue("custom_scoring_yes_no", "1");
+        showHideCustomScoring("1");
+    }
+    else {
+        setValue("custom_scoring_yes_no", "0");
+        showHideCustomScoring("0");
+    }
+
+    $("#add_custom_scoring_range_button").click(function() {
+        document.getElementById("add_custom_scoring_range_lower_input").value = "";
+        document.getElementById("add_custom_scoring_range_upper_input").value = "";
+        document.getElementById("add_custom_scoring_range_score_input").value = "";
+
+        $("#custom_scoring_range_message")[0].innerHTML = "";
+        $("#custom_scoring_range_message").addClass("is-hidden");
+        $("#add_custom_scoring_range_modal").addClass("is-active");
+        $("#add_custom_scoring_range_lower_input").focus();
+    });
+
+    $("#add_custom_scoring_range_modal_cancel").click(function() {
+        $("#add_custom_scoring_range_modal").removeClass("is-active");
+    });
+
+    $("#add_custom_scoring_range_modal_close").click(function() {
+        $("#add_custom_scoring_range_modal").removeClass("is-active");
+    });
+
+    $("#add_custom_scoring_range_score_input")[0].addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            $("#add_custom_scoring_range_modal_add").click();
+        }
+    });
+
+    $("#add_custom_scoring_range_modal_add").click(function() {
+        var lower_range = getValue("add_custom_scoring_range_lower_input").trim();
+        var upper_range = getValue("add_custom_scoring_range_upper_input").trim();
+        var score = getValue("add_custom_scoring_range_score_input").trim();
+
+        // Make sure user input is valid
+        if (isNaN(lower_range) || lower_range == "")
+            return showCustomScoringMessage("Please specify a number for the lower range.", true, "add_custom_scoring_range_lower_input");
+
+        if (isNaN(upper_range) || upper_range == "")
+            return showCustomScoringMessage("Please specify a number for the upper range.", true, "add_custom_scoring_range_upper_input");
+
+        if (isNaN(score) || score == "")
+            return showCustomScoringMessage("Please specify a number for the score.", true, "add_custom_scoring_range_score_input");
+
+        lower_range = parseFloat(lower_range);
+        upper_range = parseFloat(upper_range);
+        score = parseFloat(score);
+
+        if (lower_range < 0 || lower_range > 100)
+            return showCustomScoringMessage("Please specify a number for the lower range that is between 0 and 100.", true, "add_custom_scoring_range_lower_input");
+
+        if (upper_range < 0 || upper_range > 100)
+            return showCustomScoringMessage("Please specify a number for the upper range that is between 0 and 100.", true, "add_custom_scoring_range_upper_input");
+
+        if (upper_range < lower_range)
+            return showCustomScoringMessage("The score for the lower end of the range must be less than or equal to the score for the upper end of the range.", true, "add_custom_scoring_range_upper_input");
+
+        if (score < 0)
+            return showCustomScoringMessage("Please specify a score that is greater than or equal to zero.", true, "add_custom_scoring_range_score_input");
+
+        var ranges = getCustomScoringRanges();
+
+        // Make sure the ranges do not overlap
+        for (const range of ranges) {
+            if (lower_range < range[1] && upper_range > range[0]) {
+                return showCustomScoringMessage("The scoring range you specified is invalid because it cannot overlap with an existing range.", true, "add_custom_scoring_range_lower_input");
+            }
+        }
+
+        ranges.push([lower_range, upper_range, score]);
+        updateCustomScoringRanges(ranges);
+
+        // This resets the controls in the modal.
+        $("#add_custom_scoring_range_button").click();
+
+        showCustomScoringMessage(`The following range has been added: ${lower_range} - ${upper_range} => ${score}.`, false);
+    });
+
+    setValue("allowed_ip_addresses", assignment_details_obj["allowed_ip_addresses"]);
+    setValue("allowed_external_urls", assignment_details_obj["allowed_external_urls"]);
+    setValue("show_run_button", assignment_details_obj["show_run_button"] ? "Yes" : "No");
+
+    showCustomScoringRangesTable();
+    setValue("require_security_codes", assignment_details_obj["require_security_codes"]);
+    setValue("support_questions", assignment_details_obj["support_questions"] ? "Yes" : "No");
+    setValue("use_virtual_assistant", assignment_details_obj["use_virtual_assistant"]);
+</script>    </div>
+</div>                <div class="columns is-gapless has-text-centered is-size-6 pt-4 pb-4">
+                    <div class="column">
+                        <a href="/static/about.html">About</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+                    </div>
+                    <div class="column">
+                        <a href="/static/contact_us.html">Contact Us</a>
+                    </div>
+                </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="/static/bulma.0.9.3.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="/static/font-awesome.5.3.1.all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>-->
+        <script
+            src="/static/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+        <!--<script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>-->
+
+        <title>CodeBuddy</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
+
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
+
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+            <div>
+<script>
+    const toggleBurger = () => {
+        let burgerIcon = document.getElementById('burger');
+        let dropMenu = document.getElementById('the_menu');
+        burgerIcon.classList.toggle('is-active');
+        dropMenu.classList.toggle('is-active');
+    };
+
+    // $(document).ready(function() {
+    //     // Function to check if the navbar contents are wider than the available space
+    //     function isNavbarOverflowed() {
+    //         return $('.navbar-menu').prop('scrollWidth') > $('.navbar-menu').width();
+    //     }
+
+    //     // Function to toggle the burger icon and menu based on screen width and contents
+    //     function toggleNavbar() {
+    //         if ($(window).width() > 1224 && isNavbarOverflowed()) {
+    //             $('.navbar-burger').show();
+    //             $('.navbar-menu').hide();
+    //         } else {
+    //             $('.navbar-burger').hide();
+    //             $('.navbar-menu').show();
+    //         }
+    //     }
+
+    //     // Initial toggle when the page loads
+    //     toggleNavbar();
+
+    //     $(window).resize(function() {
+    //         toggleNavbar();
+    //     });
+
+    //     // Toggle the navbar when the burger icon is clicked
+    //     $('.navbar-burger').click(function() {
+    //         $('.navbar-menu').toggle();
+    //     });
+    // });
+    
+    function toggleDropdown(div_id) {
+        var element = document.getElementById(div_id);
+        element.classList.toggle('is-active');
+    }
+
+    window.addEventListener('click', function(e) {
+        for (menu of ["course", "assignment", "exercise", "menu"]) {
+            var dropdown = document.getElementById(`${menu}_dropdown`);
+
+            if (dropdown == null)
+                continue;
+
+            if (!dropdown.contains(e.target) && dropdown.classList.contains("is-active"))
+                dropdown.classList.remove("is-active");
+        }
+    });
+</script>
+
+<nav id="navbar" class="navbar is-spaced has-shadow" role="navigation" aria-label="main navigation" style="border-radius: 0px; padding: 1px; box-shadow: 3px 3px 6px lightgray;">
+    <div class="navbar-brand" style="padding: 3px 0px 0px 0px;">
+        <a href="/" id="navbar-start">CodeBuddy <i class="fa fa-home" style="padding: 0 .3em; width:auto;" aria-hidden="true"></i></a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" id="burger" onclick="toggleBurger()">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+    <div class="navbar-menu is-size-5" id="the_menu">
+        <div class="navbar-start">            {% if len(courses) > 1 and "course_basics" in globals() and course_basics["exists"] %}
+                <div id="course_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('course_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        Courses
+
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+                    </div>
+
+                    <div id="moreDropdown" class="navbar-dropdown">
+                        {% for course in courses %}
+                            {% if course[0] == course_basics['id'] %}
+                                <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                            {% else %}
+                                <a class="navbar-item" style="white-space: nowrap;"
+                            {% end %}
+
+                            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                href="/edit_course/{{ course[0] }}"
+                            {% else %}
+                                href="/course/{{ course[0] }}"
+                            {% end %}
+                            
+                            >
+                            
+                            {{ course[1]["title"] }}
+                        
+                            </a>
+                        {% end %}
+                    </div>
+                </div>
+            {% end %}{% if "assignment_statuses" in globals() and len(assignment_statuses) > 1 and "assignment_basics" in globals() and assignment_basics["exists"] %}
+    <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Assignments
+
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
+
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% set prev_assignment_group = None %}
+            {% set non_other_assignment_group = False %}
+
+            {% for assignment in assignment_statuses %}
+                {% set current_assignment_group = assignment[1] %}
+
+                {% if current_assignment_group != "" %}
+                    {% set non_other_assignment_group = True %}
+                {% end %}
+
+                {% if current_assignment_group != prev_assignment_group and non_other_assignment_group %}
+                    <div class="navbar-item has-text-weight-bold" style="padding-top: 10px; padding-bottom: 5px;">
+                        {% if current_assignment_group == "" %}
+                            Other
+                        {% else %}
+                            {{ current_assignment_group }}
+                        {% end %}                        
+                    </div>
+
+                    {% set prev_assignment_group = current_assignment_group %}
+                {% end %}
+
+                {% if assignment[0] == assignment_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+
+                {% if "is_edit_page" in globals() and is_edit_page == True %}
+                    href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% else %}
+                    href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% end %}
+                >
+
+                {% if assignment[2]["completed"] %}
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["in_progress"] %}
+                    <i class="far fa-hourglass"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["timer_has_ended"] %}
+                    <!-- <i class="far fa-clock"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i> -->
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% else %}
+                    <i class="far fa-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% end %}
+                
+                &nbsp;
+                
+                {{ assignment[2]["title"] }}
+            
+                </a>
+            {% end %}
+        </div>
+    </div>
+{% end %}            </div>
+            <div class="navbar-end">
+                <div id="menu_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('menu_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        {{ user_info["given_name"] }}
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </div>
+
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/">Courses</a>
+
+                        <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
+
+                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+
+                        {% if is_administrator %}
+                            <hr class="navbar-divider">
+
+                            <a class="navbar-item" href="/edit_course/">Create course</a>
+
+                            <a class="navbar-item" href="/manage_admins">Manage admins</a>
+
+                            <a class="navbar-item" href="/manage_users">Manage users</a>
+
+                            <a class="navbar-item" href="/summarize_logs">View logs</a>
+
+                            <a class="navbar-item" href="/clean_up_courses">Clean up courses</a>
+                        {% end %}
+
+                        <hr class="navbar-divider">
+
+                        <a class="navbar-item" href="/logout">Log out</a>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+</nav><div class="has-background-light container-padding">
+    <div class="content is-medium"><div class="title is-4">
+    {{ course_basics['title'] }}
+</div>
+
+<div class="title is-5">
+    <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">{{ assignment_basics['title'] }}</a>
+</div>
+
+<div class="title is-5">
+    <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">{{ exercise_basics['title'] }}</a>
+</div>
+
+<div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">
+    Below is a question a student asked. When you answer the question, an email will be sent to the student. Before answering, you can modify the question for clarity or simplicity. If the student has agreed to share their question, you can also indicate whether it and the answer will be shared with other students in the class. You may use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text.
+</div>
+
+<div class="mt-4">
+    <span class="is-italic">Questioner:</span> {{ questioner_info["name"] }} ({{ questioner_info["user_id"] }})
+</div>
+
+<div class="mt-4">
+    <span class="is-italic">Question date/time:</span>
+    
+    <script>
+        var d = new Date("{{ question['question_date'] }}");
+        document.write(d.toLocaleString());
+    </script>
+</div>
+
+<div class="mt-4">
+    <span class="is-italic"><a href="/student_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ questioner_info['user_id'] }}" target="_blank">Questioner's current solution</a></span>
+</div>
+
+<div class="mt-4 is-italic">
+    Question:
+</div>
+
+<div class="mt-4">
+    <textarea id="question_box" class="textarea" placeholder="Enter your question here." rows="6">{{ question["question"] }}</textarea>
+</div>
+
+{% if answerer_info["user_id"] %}
+    <div class="mt-4">
+        <span class="is-italic">Answerer:</span> {{ answerer_info["name"] }} ({{ answerer_info["user_id"] }})
+    </div>
+
+    <div class="mt-4">
+        <span class="is-italic">Answer date/time:</span>
+        
+        <script>
+            var d = new Date("{{ question['answer_date'] }}");
+            document.write(d.toLocaleString());
+        </script>
+    </div>
+{% end %}
+
+<div class="mt-4 is-italic">
+    Answer:
+</div>
+
+<div class="mt-4">
+    <textarea id="answer_box" class="textarea" placeholder="Enter your answer here." rows="6">{{ question["answer"] if question["answer"] else "" }}</textarea>
+</div>
+
+<div class="mt-4">
+    {% if question["questioner_share"] %}
+        <label class="checkbox">
+            <input type="checkbox" id="answerer_share" 
+            
+            {% if question["answerer_share"] %}
+                checked
+            {% end %}
+
+            />
+            The student agreed to share the question with others in the class. <b>Would you like to make the question and answer visible to all students?</b>
+        </label>
+    {% else %}
+        The student did not agree to share the question with others in the class.
+    {% end %}
+</div>
+
+<div class="buttons mt-4">
+    <a id="reply_button" class="button is-dark" onclick="reply();">Reply</a>
+    <a id="delete_button" class="button has-background-warning-light has-text-warning" onClick="showDeleteModal();">Delete</a>
+    <a class="button has-background-primary-light" href="/manage_questions/{{ course_basics['id'] }}">Manage questions and answers</a>
+</div>
+
+<div id="reply_message" class="notification is-hidden mt-4"></div>
+
+<div class="modal" id="confirm-delete-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title has-text-weight-bold">Confirm Deletion</p>
+            <button class="delete" aria-label="close" id="modal-close-btn"></button>
+        </header>
+        <section class="modal-card-body">
+            Are you sure you want to delete this question?
+
+            <div id="delete_message" class="notification is-hidden mt-4"></div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger" id="confirm-delete-btn">Yes, delete</button>
+            <button class="button" id="cancel-delete-btn">Cancel</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    function reply() {
+        const questionText = $("#question_box")[0].value.trim();
+        const answerText = $("#answer_box")[0].value.trim();
+        const answererShare = $('#answerer_share').length > 0 ? $('#answerer_share').is(':checked') : false;
+
+        $("#reply_message").removeClass("is-primary");
+        $("#reply_message").removeClass("is-danger");
+        $("#reply_message").addClass("is-warning");
+        $("#reply_message")[0].innerHTML = "Please wait...";
+        $("#reply_message").removeClass("is-hidden");
+        $("#reply_message")[0].scrollIntoView();
+
+        if (questionText == "") {
+            return showError("The question cannot be blank.", "reply_message");
+        }
+
+        if (answerText == "") {
+            return showError("The answer cannot be blank.", "reply_message");
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: "/answer_question/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ question_id }}",
+            data: { "question": questionText, "answer": answerText, "answerer_share": answererShare },
+            async: true
+        })
+        .done(function(response) {
+            if (response.startsWith("Success:")) {
+                showSuccess(response, "reply_message");
+            } else {
+                showError(response, "reply_message");
+            }
+        })
+        .fail(function(response) {
+            showError("An unspecified error occurred. Please notify the instructor.");
+            console.log(response, "reply_message");
+        });
+    }
+
+    function showSuccess(message, control_id) {
+        $("#" + control_id)[0].innerHTML = message;
+        $("#" + control_id).removeClass("is-warning");
+        $("#" + control_id).addClass("is-primary");
+    }
+
+    function showError(message, control_id) {
+        $("#" + control_id)[0].innerHTML = message;
+        $("#" + control_id).removeClass("is-warning");
+        $("#" + control_id).addClass("is-danger");
+    }
+
+    function showDeleteModal() {
+        $('#confirm-delete-modal').addClass('is-active');
+    }
+
+    function closeDeleteModal() {
+        $('#confirm-delete-modal').removeClass('is-active');
+    }
+
+    // Close modal via close buttons or background click
+    $(document).ready(function () {
+        $('#modal-close-btn').on('click', closeDeleteModal);
+        $('#cancel-delete-btn').on('click', closeDeleteModal);
+        $('#confirm-delete-modal .modal-background').on('click', closeDeleteModal);
+
+        $('#confirm-delete-btn').on('click', function () {
+            $.ajax({
+                type: 'GET',
+                url: "/delete_question/{{ question_id }}",
+                async: true})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        showError(message, "delete_message");
+                    }
+                    else {
+                        showSuccess("Please wait...", "delete_message");
+                        window.location.href = "/manage_questions/{{ course_basics['id'] }}";
+                    }
+                })
+                .fail(function(error) {
+                    showError(error, "delete_message");
+                });
+            
+            closeDeleteModal();
+        });
+    });
+</script>    </div>
+</div>                <div class="columns is-gapless has-text-centered is-size-6 pt-4 pb-4">
+                    <div class="column">
+                        <a href="/static/about.html">About</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+                    </div>
+                    <div class="column">
+                        <a href="/static/contact_us.html">Contact Us</a>
+                    </div>
+                </div>
+        </div>
+    </body>
+</html>

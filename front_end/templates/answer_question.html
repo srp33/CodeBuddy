@@ -9,19 +9,15 @@
 </div>
 
 <div class="title is-5">
-    {{ assignment_basics['title'] }}
+    <a href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">{{ assignment_basics['title'] }}</a>
 </div>
 
 <div class="title is-5">
-    {{ exercise_basics['title'] }}
+    <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">{{ exercise_basics['title'] }}</a>
 </div>
 
-<div class="has-background-white mb-4 p-4">
-    {{ exercise_details['instructions'] }}
-</div>
-
-<div>
-    Below is a question that a student asked. When you answer the question, an email will be sent to the student who asked it. Before answering, you can modify the question for clarity or simplicity. If the student has agreed to share their question, you can also indicate whether it and the answer will be shared with other students in the class.
+<div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">
+    Below is a question a student asked. When you answer the question, an email will be sent to the student. Before answering, you can modify the question for clarity or simplicity. If the student has agreed to share their question, you can also indicate whether it and the answer will be shared with other students in the class. You may use <a href="https://www.markdownguide.org/basic-syntax/" target='_blank' rel='noopener noreferrer'>Markdown syntax</a> to format the text.
 </div>
 
 <div class="mt-4">
@@ -69,7 +65,7 @@
 </div>
 
 <div class="mt-4">
-    <textarea id="answer_box" class="textarea" placeholder="Enter your answer here." rows="6" autofocus>{{ question["answer"] if question["answer"] else "" }}</textarea>
+    <textarea id="answer_box" class="textarea" placeholder="Enter your answer here." rows="6">{{ question["answer"] if question["answer"] else "" }}</textarea>
 </div>
 
 <div class="mt-4">

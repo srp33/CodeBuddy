@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="/static/bulma.0.9.3.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="/static/font-awesome.5.3.1.all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>-->
+        <script
+            src="/static/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+        <!--<script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>-->
+
+        <title>CodeBuddy</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
+
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
+
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+            <div>
+<div class="has-background-light container-padding">
+    <div class="content is-medium"><div id="privacy_statement">
+    <h4>Privacy disclosure</h4>
+
+    <p>
+        This website uses <a href="https://en.wikipedia.org/wiki/HTTP_cookie" target="_blank">Internet cookies</a> to store information in your <a href="https://en.wikipedia.org/wiki/Web_browser" target="_blank">browser</a>. When you log in to this website, it will store your user ID so that you do not need to log in each time you visit a page on the website. As you are logging in, it will store a temporary cookie so that you can be redirected back to the page you were attempting to access. After you have logged in, this website will use cookies to store information about which parts of the website you are allowed to access as well as content from courses, assignments, and exercises. By storing this information in cookies, the website can increase its performance because it does not need to access its <a href="https://en.wikipedia.org/wiki/Database" target="_blank">database</a> as often. After you log in, this website will store your name, login ID, and email address in its database. Finally, this website will  keep a log of which parts of the website you access and how long it takes to access them. This information provides insights to the website administrators so they can seek to improve the website's performance and analyze usage. This logging information is not stored in cookies but rather in <a href="https://en.wikipedia.org/wiki/Text_file">text files</a> on the web server. Only website administrators are allowed to access this information.
+    </p>
+
+    <p>
+        By clicking the "Accept" button, you agree to the storing of cookies on your device and information about you on this website. At any time, you may delete your account on this website. Doing so will delete all cookies specific to this website from your browser. It will also delete your information from the database used by this website. You will not be able to recover this information. 
+    </p>
+
+    <p>
+        <div class="buttons">
+            <a class="button is-primary" onclick="showLoginButtons()">Accept</a>
+            <a class="button is-primary is-outlined" href="/">Decline</a>
+        </div>
+    </p>
+</div>
+
+<div id="login_buttons" class="is-hidden">
+    <h4>Choose a login option</h4>
+
+    <article class="message is-dark">
+        <div class="message-body">
+            <h4>Choose this option if you ARE a student or employee at BYU:</h4>
+
+            <p>
+                <a class="button is-dark" href="/caslogin">BYU</a>
+            </p>
+        </div>
+    </article>
+
+    <article class="message is-dark">
+        <div class="message-body">
+            <h4>Choose this option if you are NOT a student or employee at BYU:</h4>
+
+            <p>
+                <a href="/googlelogin"><img src="/static/btn_google_signin_dark_normal_web.png" alt="Google login button" /></a>
+            </p>
+        </div>
+    </article>
+</div>
+
+<script>
+    function showLoginButtons() {
+        {% if byu_authentication == True %}
+            $("#privacy_statement").addClass("is-hidden");
+            $("#login_buttons").removeClass("is-hidden");
+        {% else %}
+            window.location.href = "/googlelogin";
+        {% end %}
+    }
+</script>    </div>
+</div>                <div class="columns is-gapless has-text-centered is-size-6 pt-4 pb-4">
+                    <div class="column">
+                        <a href="/static/about.html">About</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+                    </div>
+                    <div class="column">
+                        <a href="/static/contact_us.html">Contact Us</a>
+                    </div>
+                </div>
+        </div>
+    </body>
+</html>

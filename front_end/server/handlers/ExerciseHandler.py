@@ -52,7 +52,11 @@ class ExerciseHandler(BaseUserHandler):
 
             qa = []
             if support_questions:
-                qa = self.content.get_answered_questions(course_id, assignment_id, exercise_id, self.current_user)
+                qa_raw = self.content.get_answered_questions(course_id, assignment_id, exercise_id, self.current_user)
+                qa = [
+                    (convert_markdown_to_html(q), convert_markdown_to_html(a), by_self, modified)
+                    for q, a, by_self, modified in qa_raw
+                ]
 
             args = {"users": user_list,
                     "courses": self.courses,

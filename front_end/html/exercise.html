@@ -1,0 +1,2784 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="/static/bulma.0.9.3.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="/static/font-awesome.5.3.1.all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>-->
+        <script
+            src="/static/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+        <!--<script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>-->
+
+        <title>CodeBuddy</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
+
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
+
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+            <div>
+<script src="/static/ace/ace.js"></script>
+
+<script>
+  ace.config.set("basePath", "/static/ace");
+</script>
+
+<!--<script src="/static/ace/mode-r.js"></script>-->
+<script src="/static/ace/ext-language_tools.js"></script>
+<script>
+    const toggleBurger = () => {
+        let burgerIcon = document.getElementById('burger');
+        let dropMenu = document.getElementById('the_menu');
+        burgerIcon.classList.toggle('is-active');
+        dropMenu.classList.toggle('is-active');
+    };
+
+    // $(document).ready(function() {
+    //     // Function to check if the navbar contents are wider than the available space
+    //     function isNavbarOverflowed() {
+    //         return $('.navbar-menu').prop('scrollWidth') > $('.navbar-menu').width();
+    //     }
+
+    //     // Function to toggle the burger icon and menu based on screen width and contents
+    //     function toggleNavbar() {
+    //         if ($(window).width() > 1224 && isNavbarOverflowed()) {
+    //             $('.navbar-burger').show();
+    //             $('.navbar-menu').hide();
+    //         } else {
+    //             $('.navbar-burger').hide();
+    //             $('.navbar-menu').show();
+    //         }
+    //     }
+
+    //     // Initial toggle when the page loads
+    //     toggleNavbar();
+
+    //     $(window).resize(function() {
+    //         toggleNavbar();
+    //     });
+
+    //     // Toggle the navbar when the burger icon is clicked
+    //     $('.navbar-burger').click(function() {
+    //         $('.navbar-menu').toggle();
+    //     });
+    // });
+    
+    function toggleDropdown(div_id) {
+        var element = document.getElementById(div_id);
+        element.classList.toggle('is-active');
+    }
+
+    window.addEventListener('click', function(e) {
+        for (menu of ["course", "assignment", "exercise", "menu"]) {
+            var dropdown = document.getElementById(`${menu}_dropdown`);
+
+            if (dropdown == null)
+                continue;
+
+            if (!dropdown.contains(e.target) && dropdown.classList.contains("is-active"))
+                dropdown.classList.remove("is-active");
+        }
+    });
+</script>
+
+<nav id="navbar" class="navbar is-spaced has-shadow" role="navigation" aria-label="main navigation" style="border-radius: 0px; padding: 1px; box-shadow: 3px 3px 6px lightgray;">
+    <div class="navbar-brand" style="padding: 3px 0px 0px 0px;">
+        <a href="/" id="navbar-start">CodeBuddy <i class="fa fa-home" style="padding: 0 .3em; width:auto;" aria-hidden="true"></i></a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" id="burger" onclick="toggleBurger()">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+    <div class="navbar-menu is-size-5" id="the_menu">
+        <div class="navbar-start">            {% if len(courses) > 1 and "course_basics" in globals() and course_basics["exists"] %}
+                <div id="course_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('course_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        Courses
+
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+                    </div>
+
+                    <div id="moreDropdown" class="navbar-dropdown">
+                        {% for course in courses %}
+                            {% if course[0] == course_basics['id'] %}
+                                <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                            {% else %}
+                                <a class="navbar-item" style="white-space: nowrap;"
+                            {% end %}
+
+                            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                href="/edit_course/{{ course[0] }}"
+                            {% else %}
+                                href="/course/{{ course[0] }}"
+                            {% end %}
+                            
+                            >
+                            
+                            {{ course[1]["title"] }}
+                        
+                            </a>
+                        {% end %}
+                    </div>
+                </div>
+            {% end %}{% if "assignment_statuses" in globals() and len(assignment_statuses) > 1 and "assignment_basics" in globals() and assignment_basics["exists"] %}
+    <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Assignments
+
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
+
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% set prev_assignment_group = None %}
+            {% set non_other_assignment_group = False %}
+
+            {% for assignment in assignment_statuses %}
+                {% set current_assignment_group = assignment[1] %}
+
+                {% if current_assignment_group != "" %}
+                    {% set non_other_assignment_group = True %}
+                {% end %}
+
+                {% if current_assignment_group != prev_assignment_group and non_other_assignment_group %}
+                    <div class="navbar-item has-text-weight-bold" style="padding-top: 10px; padding-bottom: 5px;">
+                        {% if current_assignment_group == "" %}
+                            Other
+                        {% else %}
+                            {{ current_assignment_group }}
+                        {% end %}                        
+                    </div>
+
+                    {% set prev_assignment_group = current_assignment_group %}
+                {% end %}
+
+                {% if assignment[0] == assignment_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+
+                {% if "is_edit_page" in globals() and is_edit_page == True %}
+                    href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% else %}
+                    href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% end %}
+                >
+
+                {% if assignment[2]["completed"] %}
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["in_progress"] %}
+                    <i class="far fa-hourglass"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["timer_has_ended"] %}
+                    <!-- <i class="far fa-clock"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i> -->
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% else %}
+                    <i class="far fa-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% end %}
+                
+                &nbsp;
+                
+                {{ assignment[2]["title"] }}
+            
+                </a>
+            {% end %}
+        </div>
+    </div>
+{% end %}{% if "exercise_statuses" in globals() and len(exercise_statuses) > 1 and "exercise_basics" in globals() and exercise_basics["exists"] %}
+    <div id="exercise_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('exercise_dropdown')">
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Exercises
+
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
+
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% for exercise in exercise_statuses %}
+                {% if exercise[0] == exercise_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+                
+                    {% if "is_edit_page" in globals() and is_edit_page == True %}
+                        href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                    {% else %}
+                        href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                    {% end %}
+                    >
+
+                    {% if exercise[1]["completed"] %}
+                        <i class="far fa-check-circle"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% elif exercise[1]["in_progress"] %}
+                        <i class="far fa-hourglass"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% else %}
+                        <i class="far fa-circle"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% end %}
+
+                    {{ exercise[1]["title"] }}
+
+                    {% if exercise[1]["enable_pair_programming"] %}
+                        <label style="margin-left: 5px;" class="has-tooltip-multiline has-tooltip-left" data-tooltip="Pair programming is enabled for this exercise"><i class="fab fa-product-hunt"></i></label>
+                    {% end %}
+                </a>
+            {% end %}
+        </div>
+    </div>
+
+    {% if "prev_exercise" in globals() and prev_exercise %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% else %}
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% end %}
+
+                <i class="fas fa-arrow-left" style="margin-left: 5px;margin-right: 1px;"></i>
+            </a>
+        </div>
+    {% end %}
+
+    {% if "next_exercise" in globals() and next_exercise %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% else %}
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% end %}
+
+                <i class="fas fa-arrow-right" style="margin-left: 1px;margin-right: 5px;"></i>
+            </a>
+        </div>
+    {% end %}
+{% end %}
+            </div>
+            <div class="navbar-end">
+                <div id="menu_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('menu_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        {{ user_info["given_name"] }}
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </div>
+
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/">Courses</a>
+
+                        <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
+
+                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+
+                        {% if is_administrator %}
+                            <hr class="navbar-divider">
+
+                            <a class="navbar-item" href="/edit_course/">Create course</a>
+
+                            <a class="navbar-item" href="/manage_admins">Manage admins</a>
+
+                            <a class="navbar-item" href="/manage_users">Manage users</a>
+
+                            <a class="navbar-item" href="/summarize_logs">View logs</a>
+
+                            <a class="navbar-item" href="/clean_up_courses">Clean up courses</a>
+                        {% end %}
+
+                        <hr class="navbar-divider">
+
+                        <a class="navbar-item" href="/logout">Log out</a>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+</nav><div class="has-background-light container-padding">
+    <div class="content is-medium"><div id="submit_exercise_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h6 style="display:inline">Pair programming:</h6>
+        <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="If using pair programming for this exercise, enter the name of your partner here.">
+            <i class="far fa-question-circle"></i>
+        </label><br />
+
+        <div id="submit_exercise_modal_message"></div>
+
+        <div id="partner_selection">
+            <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
+
+            {% if users %}
+                <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
+                <datalist id="users_list">
+                    {% for user_name in users %}
+                        <option value="{{ user_name }}"></option>
+                    {% end %}
+                </datalist>
+            {% else %}
+                <p>There are no other registered students in this course, so your only option is to leave this field blank.</p>
+            {% end %}
+
+            <input type="hidden" id="partner_id" />
+        </div>
+
+        <p class="buttons">
+            <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
+            <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
+        </p>
+    </div>
+</div>
+
+{% if support_questions %}
+    <style>
+        .panel-slide {
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 350px;
+        height: 100vh;
+        background-color: #f5f5f5; /* light gray */;
+        border-left: 1px solid #dbdbdb;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        transition: right 0.3s ease;
+        overflow-y: auto;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        }
+
+        .panel-slide.is-active {
+        right: 0;
+        }
+
+        .panel-slide .box {
+        flex: 1;
+        border-radius: 0;
+        margin: 0;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        }
+
+        .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        }
+
+        .panel-header .title {
+        margin-bottom: 0;
+        }
+
+        .close-button {
+        margin-left: 1rem;
+        }
+
+        .panel-body {
+        margin-top: 1rem;
+        }
+    </style>
+
+    <div id="slide-panel" class="panel-slide">
+        <div class="box">
+            <div class="panel-header">
+                <div class="title is-size-4 mb-0">
+                    Q & A
+                </div>
+
+                <button class="delete close-button" onclick="toggleQA()"></button>
+            </div>
+
+            <div class="panel-body">
+                {% if len(qa) > 0 %}
+                    {% for x in qa %}
+                        <div class="mb-2 is-size-6">
+                            <span class="has-text-weight-bold">
+                                Question
+
+                                {% if x[2] and x[3] %}
+                                    (asked by you, has been modified):
+                                {% elif x[2] and not x[3] %}
+                                    (asked by you):
+                                {% else %}
+                                    (asked by someone else):
+                                {% end %}
+                            </span>
+
+                            <div class="content mt-2">{{ x[0] }}</div>
+                        </div>
+
+                        <div class="mb-4 is-size-6">
+                            <span class="has-text-weight-bold">Answer:</span>
+                            <div class="content mt-2">{{ x[1] }}</div>
+                        </div>
+                    {% end %}
+                {% end %}
+
+                <a class="button is-medium is-primary is-size-6" id="ask_button" onclick="showQuestionModal()">
+                    Ask a question
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="question_modal" class="modal" style="align-items: flex-start; padding-top: 2rem; overflow-y: auto;">
+        <div class="modal-content" style="margin: 0 auto; width: 90%; max-width: 800px;">
+            <button id="question_x_button" class="delete close-button is-pulled-right"></button>
+            <h6>Ask a question:</h6>
+
+            <div id="question_message" class="notification is-hidden mt-4"></div>
+
+            <div class="mt-4">Here you can submit a question (or you can report a problem with the material). After submitting your question, you should receive an email with your question and a later email with an answer. The timeliness of responses will depend on the availability of an instructor or teaching assistant. If we determine that the question and answer would be helpful to others in the class, we will make it available for the entire class on the page where you asked it (with possible edits to your question). If you prefer that your question and answer <span class="is-italic">not</span> be posted for the entire class to see, indicate this clearly with your question.</div>
+
+            <div class="mt-4 p-2 has-background-light">
+                <label class="checkbox">
+                    <input type="checkbox" id="questioner_share" />
+                    <span class="ml-2">Do you agree to have your question (and any answer that is provided) shared with other students in the class (if the instructor decides to share it)?</span>
+                </label>
+            </div>
+
+            <div class="mt-4">
+                <textarea id="question_box" class="textarea" placeholder="Enter your question here." rows="6"></textarea>
+            </div>
+
+            <p class="buttons">
+                <a id="question_ask_button" class="modal-button button is-dark">Ask</a>
+                <a id="question_cancel_button" class="modal-button button is-light">Cancel</a>
+            </p>
+        </div>
+    </div>
+{% end %}<script>
+    function is_multiple_choice() {
+        return "{{ exercise_details['back_end'] }}" == "multiple_choice";
+    }
+
+    function moveEditorCaretToEndIfTypable() {
+        if (typeof editor === "undefined" || !editor || editor.getReadOnly()) {
+            return;
+        }
+        editor.navigateFileEnd();
+    }
+
+    {% if "previous_submission_code" in exercise_details %}
+        function copy_code_from_previous_exercise() {
+            var previous_code = `{{ exercise_details["previous_submission_code"] }}`;
+
+            // We used a placeholder to replace backticks because backticks can cause a problem on the Javascript side. We replace tab and newline characters as well because they do not get translated properly on the front end.
+            previous_code = previous_code.replace(/_bcktck_/g, "`").replace(/_xyzslashxyz_/g, "\\")
+
+            let cursor_index = editor.session.doc.positionToIndex(editor.getCursorPosition());
+
+            if (editor.getValue().trim() == "") {
+                var new_code = previous_code;
+            }
+            else {
+                let current_code = editor.getValue();
+
+                var new_code = current_code.substring(0, cursor_index) + previous_code + current_code.substring(cursor_index, current_code.length);
+            }
+
+            editor.setValue(new_code, cursor_index);
+            editor.clearSelection();
+            if (!editor.getReadOnly()) {
+                editor.focus();
+            }
+        }
+    {% end %}
+
+    function run_code(show_submit_warning) {
+        let user_solution = get_user_solution().code;
+        if (user_solution == "")
+            return false;
+
+        hideMessages();
+        showWaitMessage();
+
+        $.ajax({
+            type: 'POST',
+            url: "/run_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+            data: {"user_code": user_solution},
+            async: true,
+            timeout: 300000  // 5 minute timeout (longer than we would expect the server to take)
+        }).done(function(result) {
+                var response_dict = JSON.parse(result);
+
+                if (response_dict["message"] == "") {
+                    hideMessages();
+                    showTestOutputs(response_dict["test_outputs"], true);
+
+                    if (show_submit_warning && response_dict["passed"])
+                        showInfoMessage("Be sure to click on Submit so your solution and score will be saved.");
+                }
+                else {
+                    showErrorMessage(response_dict["message"]);
+                }
+            })
+            .fail(function(result) {
+                console.log(result);
+                showErrorMessage("The cause of the error is unknown. Please consult the instructor if it continues.");
+            });
+
+        if (!editor.getReadOnly()) {
+            editor.focus();
+        }
+        return false;
+    }
+
+    function submit() {
+        let user_solution = get_user_solution();
+
+        if (is_multiple_choice()) {
+            if (user_solution.selected_answer_indices == "") {
+                return false;
+            }
+
+            user_solution = user_solution.selected_answer_indices;
+        }
+        else {
+            if (user_solution.code == "") {
+                return false;
+            }
+
+            user_solution = user_solution.code;
+        }
+
+        hideMessages();
+        showWaitMessage();
+
+        let partner_id = $("#partner_id")[0].value == "" ? null : $("#partner_id")[0].value;
+
+        let submission_date = new Date().toLocaleString("en-US", {timeZone: "UTC"});
+
+        post_data = {"partner_id": partner_id, "code": user_solution, "date": submission_date};
+
+        $.ajax({
+            type: 'POST',
+            url: "/submit/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+            data: post_data,
+            async: true})
+            .done(function(result) {
+                var response_dict = JSON.parse(result);
+
+                if (response_dict["message"] == "") {
+                    submission = {
+                        "id": response_dict["submission_id"],
+                        "code": response_dict["code"],
+                        "submission_timestamp": submission_date,
+                        "completed": response_dict["completed"], "passed": response_dict["passed"],
+                        "score": response_dict["score"],
+                        "partner_name": response_dict["partner_name"],
+                        "test_outputs": response_dict["test_outputs"]};
+
+                        if ("solution_descriptions_dict" in response_dict) {
+                            submission["solution_descriptions_dict"] = response_dict["solution_descriptions_dict"]
+                        }
+
+                    submissions.push(submission);
+
+                    if (typeof editor === 'undefined') {
+                        get_mc_submission();
+                    }
+                    else {
+                        // We only want to do these things for programming exercises.
+                        show_past_submissions();
+
+                        get_code_submission(response_dict["submission_id"], false, true);
+
+                        saved_div.innerHTML = "";
+                        if (!editor.getReadOnly()) {
+                            editor.focus();
+                        }
+                    }                    
+                }
+                else {
+                    if (response_dict["message"].startsWith("error: ")) {
+                        showErrorMessage(response_dict["message"].replace("error: ", ""));
+                    }
+                    else {
+                        showInfoMessage(response_dict["message"].replace("ineligible: ", ""));
+                    }
+                }
+            })
+            .fail(function(result) {
+                console.log(result);
+                showErrorMessage("An unknown error occurred when attempting to contact the Web server. It may be down.");
+            });
+    }
+
+    function showWaitMessage() {
+        $("#result_message")[0].innerHTML = "<div class='notification is-warning'>Please wait while your solution is being processed...</div>";
+        $("#result_message")[0].scrollIntoView();
+    }
+
+    function hideMessages() {
+        $("#result_message")[0].innerHTML = "";
+        $("#test_outputs")[0].innerHTML = "";
+    }
+
+    function showThankYouMessageMultipleChoice() {
+        var message = "<div><strong>Thank you for your submission. You will see your score after the assignment has ended.</strong></div>";
+
+        $("#result_message")[0].innerHTML = `<div class='notification success-message' style='color:white'>${message}</div>`;
+    }
+
+    function showSuccessMessage(submission) {
+        {% if exercise_details["allow_any_response"] %}
+            let message = "Thank you for your submission.";
+        {% else %}
+            // let share_message = "<button class='button is-pulled-right' onclick='showLinkModal()'>Share your success!&nbsp;&nbsp;&nbsp;<span class='icon'><i class='fas fa-share'></i></span></button>";
+            //let share_message = "";
+
+            {% if len(exercise_details["tests"]) == 1 %}
+                var message = `Congratulations! Your solution passes the test. Your score is ${submission.score}%.`;
+                
+                //message += share_message;
+            {% else %}
+                var message = `Congratulations! Your solution passes all of the tests. Your score is ${submission.score}%.`;
+
+                //message += share_message;
+            {% end %}
+
+            if (submission.partner_name != null) {
+                message += ` Your programming partner was ${submission.partner_name}.`;
+            }
+        {% end %}
+
+        var result = "<div class='notification success-message' style='color:white'><p><strong>" + message + "</strong></p>";
+
+        {% if exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
+            result += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> the instructor's solution.</p>";
+        {% end %}
+
+        {% if exercise_details["show_peer_solution"] and (exercise_details["solution_code"] != "") %}
+            result += "<p><a class='grey-text' href='/view_peer_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> a solution from one of your peers.</p>";
+        {% end %}
+
+        result += "</div>"
+
+        $("#result_message")[0].innerHTML = result;
+    }
+
+    function showSuccessMessageMultipleChoice(submission) {
+        var message = "<div><strong>Congratulations! Your answer is correct.</strong></div>";
+
+        message += describeSolutionsMultipleChoice(submission);
+
+        $("#result_message")[0].innerHTML = `<div class='notification success-message' style='color:white'>${message}</div>`;
+    }
+
+    function showNotPassingMessage(num_tests, max_submissions, submission) {
+        if (num_tests == 0 || max_submissions == 0) {
+            // This should only happen when the back_end is multiple_choice or when max_submissions is 0.
+            var message = "<strong>Your solution is incorrect.</strong>"
+        }
+        else {
+            var message = "<strong>Your solution does not yet pass the test";
+
+            if (num_tests > 1)
+                message += "s";
+                            
+            message += ". Keep working at it. You can do this!</strong>";
+
+            if (submission.partner_name != null) {
+                message += ` <br /><br />Your pair-programming partner was ${submission.partner_name}.`;
+            }
+        }
+
+        $("#result_message")[0].innerHTML = `<div class='notification not-passing' style='color: white'>${message}</div>`;
+    }
+
+    function showNotPassingMessageMultipleChoice(submission) {
+        var message = `<div class='notification not-passing' style='color: white'><strong>Your solution is incorrect.</strong>`;
+
+        message += describeSolutionsMultipleChoice(submission);
+
+        message += "</div>";
+
+        $("#result_message")[0].innerHTML = message;
+    }
+
+    function describeSolutionsMultipleChoice(submission) {
+        var message = "";
+
+        let num_solution_descriptions = Object.keys(submission.solution_descriptions_dict).length;
+
+        if (num_solution_descriptions > 0) {
+            message += "<div class='mt-4'>";
+            message += "The instructor provided comment(s) for the following answer(s):"
+
+            message += "<ul class='mt-4'>"
+
+            let answers = submission.code.split("|");
+
+            for (let answer of answers) {
+                if (answer in submission.solution_descriptions_dict) {
+                    message += "<li>";
+                        
+                    if (answers.length > 1) {
+                        message += `[Answer = ${answer}] `;
+                    }
+
+                    message += `${submission.solution_descriptions_dict[answer]}</li>`;
+                }
+            }
+
+            message += "</ul>";
+            message += "</div>";
+        }
+
+        return message;
+    }
+
+    function showErrorMessage(message) {
+        $("#result_message")[0].innerHTML = `<div class='notification is-danger' style='color: white'>An error occurred while your submission was being processed.</div><pre>${message}</pre>`;
+        $("#result_message")[0].scrollIntoView();
+    }
+
+    function showInfoMessage(message) {
+        $("#result_message")[0].innerHTML = `<div class='notification is-dark'>${message}</div>`;
+    }
+
+    function showTestOutputs(test_outputs, scroll) {
+        var output = "";
+
+        // This is what we do if we haven't gone to the server yet.
+        if (test_outputs == null || test_outputs.length == 0) {
+            test_outputs = {};
+
+            for (let test_title of Object.keys(tests)) {
+                test_outputs[test_title] = {};
+                test_outputs[test_title]["txt_output"] = null;
+                test_outputs[test_title]["jpg_output"] = null;
+                test_outputs[test_title]["passed"] = null;
+            }
+        }
+
+        var tests_output = "";
+
+        {% if exercise_details["allow_any_response"] %}
+            {% if exercise_details["back_end"] != "not_code" %}
+                var test_header = "";
+                var test_output = test_outputs[Object.keys(test_outputs)[0]];
+
+                if (test_output != null && test_output.passed != null) {
+                    tests_output = buildStudentOutput(test_output);
+                }
+            {% end %}
+        {% else %}
+            if (Object.keys(test_outputs).length == 1) {
+                var test_header = "<h6>Test:</h6>";
+                tests_output = buildTestOutput(test_outputs, Object.keys(test_outputs)[0], false, true);
+            }
+            else {
+                var test_header = "<h6>Tests:</h6>";
+
+                var test_titles = Object.keys(test_outputs);
+                test_titles.sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true}));
+
+                for (let test_title of test_titles) {
+                    tests_output += buildTestOutput(test_outputs, test_title, true, test_title == test_titles[test_titles.length - 1]);
+                }
+            }
+        {% end %}
+
+        if (tests_output != "") {
+            output += test_header + tests_output;
+        }
+
+        $("#test_outputs")[0].innerHTML = output;
+
+        if (scroll)
+            $("#test_outputs")[0].scrollIntoView();
+    }
+
+    function buildTestOutput(test_outputs, test_title, show_title, is_last) {
+        if (!(test_title in tests)) {
+            return "";
+        }
+
+        if (test_outputs[test_title].passed == null) {
+            var test_class = "neutral-bd-color";
+            var test_message = show_title ? test_title : "";
+        }
+        else {
+            if (test_outputs[test_title].passed) {
+                var test_class = "passing-bd-color";
+                // var test_class = "is-primary";
+
+                if (show_title)
+                    var test_message = `${test_title} - Passing`;
+                else
+                    var test_message = `Passing`;
+            }
+            else {
+                var test_class = "failing-bd-color";
+                // var test_class = "is-warning";
+
+                if (show_title)
+                    var test_message = `${test_title} - Not passing`;
+                else
+                    var test_message = `Not passing`;
+            }
+        }
+
+        if (is_last)
+            var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 0px">`;
+        else
+            var output = `<div class='${test_class}' style="font-size: 1em; margin-bottom: 10px">`;
+
+        if (test_message == "")
+            output += `<div style="padding: 0.75em 0.5em 0em 1.25em;margin:0"></div>`;
+        else
+            output += `<h6 style="padding: 0.75em 0.5em 0.25em 1.25em;margin:0">${test_message}</h6>`;
+
+        output += '<div style="padding: 0em 1.25em 0.75em 1.25em">';
+
+        if (tests[test_title]["instructions"] != "") {
+            output += `<div style="padding: 0.5em 0em 0.5em 0em;margin:0">${tests[test_title]["instructions"]}</div>`;
+        }
+
+        if (tests[test_title].can_see_test_code) {
+            if (tests[test_title].before_code != "") {
+                var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed before your code:</div>';
+                if (test_outputs[test_title].passed != null)
+                    message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed before your code:</div>';
+
+                output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].before_code + '</pre>';
+            }
+
+            if (tests[test_title].after_code != "") {
+                var message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that will be executed after your code:</div>';
+
+                if (test_outputs[test_title].passed != null)
+                    message = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Code that was executed after your code:</div>';
+
+                output += message + '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title].after_code + '</pre>';
+            }
+        }
+        else {
+            output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The test code will not be shown for this test.</em></div>';
+        }
+
+        if (test_outputs[test_title]["passed"] == null || !test_outputs[test_title]["passed"]) {
+            if (tests[test_title].can_see_expected_output) {
+                var expected_output = "";
+
+                if (tests[test_title]["txt_output_formatted"] != null && tests[test_title]["txt_output_formatted"] != "") {
+                    expected_output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + tests[test_title]["txt_output_formatted"] + '</pre>';
+                }
+
+                if (tests[test_title]["jpg_output"] != null && tests[test_title]["jpg_output"] != "") {
+                    expected_output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + tests[test_title]["jpg_output"] + '" width="800" height="800" alt="The image-based expected output." /></p>';
+                }
+
+                output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Expected output:</div>' + expected_output;
+            }
+            else {
+                output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>The expected output will not be shown for this test.</em></div>';
+            }
+        }
+
+        if (test_outputs[test_title].passed != null) {
+            if (tests[test_title].can_see_code_output) {
+                output += buildStudentOutput(test_outputs[test_title]);
+
+                if (tests[test_title].can_see_expected_output && !test_outputs[test_title].passed) {
+                    var diff_output = test_outputs[test_title]["diff_output"];
+
+                    if (diff_output != "") {
+                        output += "<div class='mt-4'>";
+                        output += `<form action="/diff" method="POST" target="diff_page">
+                            <input type="hidden" name="course_id" value="{{ course_basics["id"] }}">
+                            <input type="hidden" name="assignment_id" value="{{ assignment_basics["id"] }}">
+                            <input type="hidden" name="exercise_id" value="{{ exercise_basics["id"] }}">`;
+
+                        {% if exercise_details["output_type"] == "txt" %}
+                            output += `<input type="hidden" name="expected_output" value="`;
+                            output += encodeURI(tests[test_title]["txt_output"]);
+                            output += `">`;
+                            output += `<input type="hidden" name="actual_output", value="`;
+                            output += encodeURI(test_outputs[test_title]["txt_output"]);
+                            output += `">`;
+                        {% else %}
+                            output += `<input type="hidden" name="diff_output", value="`;
+                            output += diff_output;
+                            output += `">`;
+                        {% end %}
+                        
+                        output += `<input type="submit" value="View differences" class="button">
+                            </form>`;
+                        output += "</div>";
+                    }
+                }
+            }
+            else {
+                output += '<div style="padding: 0.5em 0em 0.5em 0em;margin:0"><em>Your output will not be shown for this test.</em></div>';
+            }
+        }
+
+        output += `</div>`;
+        output += `</div>`;
+
+        return output;
+    }
+
+    function buildStudentOutput(test_output) {
+        output = '<div style="padding: 0.5em 0em 0.5em 0em;margin:0">Your output:</div>';
+
+        if ("{{ exercise_details["output_type"] }}" == "txt" || test_output["txt_output"] != "")
+            output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">' + test_output["txt_output_formatted"] + '</pre>';
+
+        if ("{{ exercise_details["output_type"] }}" == "jpg") {
+            if (test_output["jpg_output"] == "") {
+                output += '<pre style="padding: 0.75em 0.5em 0.75em 0.75em;margin:0">[No image was generated.]</pre>';
+            }
+            else {
+                output += '<p style="padding: 0em 0em 0em 0em;margin:0"><img src="data:image/jpg;base64,' + test_output["jpg_output"] + '"` width="800" height="800" alt="The image-based output of the code." /></p>';
+            }
+        }
+
+        return output;
+    }
+
+    function get_code_submission(submission_id, scroll, change_border) {
+        window.wasUserChange = false;
+
+        hideMessages();
+
+        var this_submission;
+
+        for (let submission of submissions) {
+            if ($(`#submission_button_${submission.id}`).length > 0) {
+                $(`#submission_button_${submission.id}`)[0].style.border = "none";
+            }
+
+            if (submission.id == submission_id) {
+                this_submission = submission;
+
+                if ($(`#submission_button_${submission.id}`).length > 0) {
+                    if (change_border) {
+                        $(`#submission_button_${submission.id}`)[0].style.border = "solid #000000";
+                    }
+                }
+            }
+        }
+
+        if (scroll)
+            $("#user_code_area")[0].scrollIntoView();
+
+        if (!editor.getReadOnly()) {
+            editor.focus();
+        }
+        editor.setValue(this_submission.code, -1);
+
+        if (this_submission["completed"]) {
+            showSuccessMessage(this_submission);
+        }
+        else {
+            showNotPassingMessage(Object.keys(this_submission["test_outputs"]).length, {{ exercise_details["max_submissions"]}}, this_submission);
+        }
+
+        if ({{ exercise_details["max_submissions"]}} > 0 && submissions.length >= {{ exercise_details["max_submissions"]}}) {
+            hide_submit_button();
+        }
+
+        showTestOutputs(this_submission["test_outputs"], false);
+
+        {% if exercise_details["max_submissions"] > 0 %}
+            $("#max_submissions_message")[0].innerHTML = `<div style="padding: 0em 0.5em 1.25em 0em;margin:0"><em>You have made ${submissions.length} of {{ exercise_details["max_submissions"] }} allowed submission(s).</em></div>`;
+        {% end %}
+
+        moveEditorCaretToEndIfTypable();
+
+        window.wasUserChange = true;
+    }
+
+    function get_mc_submission() {
+        // window.wasUserChange = false;
+        hideMessages();
+
+        {% if assignment_details["has_timer"] and timer_status == "timer_in_progress" %}
+            showThankYouMessageMultipleChoice();
+        {% else %}
+            var this_submission = submissions[0];
+
+            if (this_submission["passed"] == 1)
+                showSuccessMessageMultipleChoice(this_submission);
+            else
+                showNotPassingMessageMultipleChoice(this_submission);
+        {% end %}
+
+        {% if not assignment_details["has_timer"] %}
+            hide_submit_button();
+        {% end %}
+
+        // window.wasUserChange = true;
+    }
+
+    function hide_submit_button() {
+        // Sometimes the button does not exist, so this checks for it.
+        if ($("#submit_button").length) {
+            $("#submit_button")[0].disabled = true;
+            $("#submit_button").addClass("is-hidden");
+        }
+
+        if ($("#run_button").length) {
+            $("#run_button")[0].disabled = true;
+            $("#run_button").addClass("is-hidden");
+        }
+
+        if ($("#help_icon").length) {
+            $("#help_icon")[0].disabled = true;
+            $("#help_icon").addClass("is-hidden");
+        }
+    }
+
+    function show_submit_button() {
+        if ($("#submit_button").length) {
+            $("#submit_button")[0].disabled = false;
+            $("#submit_button").removeClass("is-hidden");
+        }
+
+        if ($("#run_button").length) {
+            $("#run_button")[0].disabled = false;
+            $("#run_button").removeClass("is-hidden");
+        }
+
+        if ($("#help_icon").length) {
+            $("#help_icon")[0].disabled = false;
+            $("#help_icon").removeClass("is-hidden");
+        }
+    }
+
+    function show_past_submissions() {
+        var submissions_div = document.getElementById("submissions");
+
+        var submission_html = "";
+        var revert_html = "";
+        var current_code = editor.getValue();
+
+        if (submissions.length > 1) {
+            submission_html += "<h6>Past submissions:</h6>";
+            submission_html += "<div class='buttons'>";
+
+            var i;
+            for (i = submissions.length - 1; i >= 0; i--) {
+                submission = submissions[i];
+
+                if (submission.completed)
+                    button_bd_color = "passing-btn-color";
+                else
+                    button_bd_color = "failing-btn-color";
+
+                var submission_date = parseDateText(submission.submission_timestamp);
+
+                if (submission.partner_name)
+                    submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_code_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date} <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Programming partner: ${submission.partner_name}"><i class="fab fa-product-hunt"></i></label></button>`;
+                else
+                    submission_html += `<button class='button ${button_bd_color}' id='submission_button_${submission.id}' style='display: block; width: 315px;' onclick='get_code_submission(${submission.id}, true, true)'><b>${i + 1}.</b> ${submission_date}</button>`;
+            }
+
+            submission_html += "</div>";
+        }
+
+        submissions_div.innerHTML = submission_html;
+    }
+
+    function showSubmitModal() {
+        let user_solution = get_user_solution();
+        if (is_multiple_choice() && user_solution.selected_answer_indices == "") {
+            return false;
+        }
+        else if (!is_multiple_choice() && user_solution.code == "") {
+            return false;
+        }
+        
+        var modal = document.getElementById("submit_exercise_modal");
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("submit_cancel_button");
+        var modalSubmitButton = document.getElementById("modal_submit_button");
+        modalSubmitButton.onclick = function() {
+            var partner_name = "";
+
+            if ($("#partner_name").length > 0)
+                partner_name = $("#partner_name")[0].value;
+
+            if (partner_name == "") {
+                submit();
+                modal.style.display = "none";
+            } else {
+                $("#submit_exercise_modal_message")[0].innerHTML = "";
+
+                $.ajax({
+                    type: 'GET',
+                    url: "/get_partner_id/{{ course_basics['id'] }}/" + partner_name,
+                    async: true
+                    })
+                    .done(function(data) {
+                        response = JSON.parse(data);
+
+                        if (response == "") {
+                            $("#submit_exercise_modal_message")[0].innerHTML = "<div style='margin:15px 0px' class='space_div notification is-danger is-light smaller-font'>An invalid partner was specified. Please try again.</div>";
+                        }
+                        else {
+                            $("#partner_id")[0].value = response;
+                            modal.style.display = "none";
+                            submit();
+                        }
+                    })
+                    .fail(function(data) {
+                        $("#submit_exercise_modal_message")[0].innerHTML = "<div style='margin:15px 0px' class='space_div notification is-danger is-light smaller-font'>An unexpected error occurred. Please try again and notify the instructor if the error persists.</div>";
+                        console.log(data);
+                    });
+            }
+        }
+
+        cancelButton.onclick = function() {
+            modal.style.display = "none";
+        }
+    }
+
+    function save_presubmission() {
+        var presubmission = get_user_solution();
+
+        $.ajax({
+            type: 'POST',
+            url: "/save_presubmission/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+            data: JSON.stringify(presubmission),
+            contentType: 'application/json',
+            processData: false,
+            async: true
+            })
+        .done(function(result) {
+            if (result == "") {
+                codeChanged = false;
+
+                if (typeof saved_div !== "undefined" && saved_div !== null) {
+                    last_saved_at = new Intl.DateTimeFormat('default', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric',
+                    }).format(Date.now());
+
+                    saved_div.innerHTML = `Saved at ${last_saved_at}.`;
+                }
+            }
+            else {
+                console.log("An error occurred when the user attempted to save their code.");
+                console.log(result);
+
+                if (typeof saved_div !== "undefined" && saved_div !== null) {
+                    saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
+                }
+            }
+        })
+        .fail(function(result) {
+            console.log("An error occurred when the user attempted to save their code.");
+            console.log(result);
+
+            if (typeof saved_div !== "undefined" && saved_div !== null) {
+                saved_div.innerHTML = "An error occurred when saving your code. If this error persists, please contact the instructor.";
+            }
+        });
+    }
+
+    // function showLinkModal() {
+    //     var modal = document.getElementById("share_modal");
+    //     var span = document.getElementsByClassName("close")[0];
+    //     var copyText = document.getElementById("share_link");
+    //     modal.style.display = "block";
+        
+    //     span.onclick = function() {
+    //         modal.style.display = "none";
+    //     }
+
+    //     window.onclick = function(event) {
+    //         if (event.target == modal) {
+    //             modal.style.display = "none";
+    //         }
+    //     }
+    // }
+
+    /*function copyLink() {
+        var copyText = document.getElementById("share_link");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); //For mobile devices
+        document.execCommand("copy");
+        alert("Copied the text: " + copyText.value);
+    }*/
+
+    function showHideHint() {
+        if ($("#hint_text").hasClass("is-hidden")) {
+            $("#hint_button")[0].innerHTML = "Hide hint";
+            $("#hint_text").removeClass("is-hidden");
+            $("#hint_button").addClass("is-light");
+            $("#hint_button").addClass("has-text-dark");
+        }
+        else {
+            $("#hint_button")[0].innerHTML = "Show hint";
+            $("#hint_text").addClass("is-hidden");
+            $("#hint_button").removeClass("is-light");
+            $("#hint_button").removeClass("has-text-dark");
+        }
+    }
+
+    function showHideData(data_file_index, format) {
+        let dataPanelID = `#data_panel_${data_file_index}`;
+
+        // Retrieve the IDs for the data buttons.
+        let dataButtonID = format ? `#data_button_formatted_${data_file_index}` : `#data_button_raw_${data_file_index}`;
+        let otherDataButtonID = format ? `#data_button_raw_${data_file_index}` : `#data_button_formatted_${data_file_index}`;
+
+        let otherButtonVisible = $(otherDataButtonID).length > 0;
+
+        // Retrieve the name and delimiter of the data file at the specified index.
+        const keys = Object.keys(data_files);
+        keys.sort();
+        const dataFileName = keys[data_file_index];
+        let delimiter = dataFileName.endsWith(".tsv") ? "\t" : ",";
+
+        // TODO: This logic is overly complex. Simplify it.
+        if (otherButtonVisible) {
+            if ($(dataPanelID).hasClass("is-hidden") || !$(otherDataButtonID).hasClass("is-outlined")) {
+                // Show the data
+                $(dataPanelID).removeClass("is-hidden");
+
+                if (format) {
+                    $(dataPanelID)[0].innerHTML = formatDelimitedDataAsTable(data_files[dataFileName], delimiter);
+                }
+                else {
+                    $(dataPanelID)[0].innerHTML = `<pre class=" has-background-light mt-2">${data_files[dataFileName]}</pre>`;
+                }
+
+                $(dataButtonID).removeClass("is-outlined");
+                $(otherDataButtonID).addClass("is-outlined");
+            }
+            else {
+                // Hide the data
+                $(dataPanelID).addClass("is-hidden");
+                $(dataPanelID)[0].innerHTML = "";
+
+                $(dataButtonID).addClass("is-outlined");
+                $(otherDataButtonID).addClass("is-outlined");
+            }
+
+            $(otherDataButtonID)[0].blur();
+        }
+        else {
+            if ($(dataPanelID).hasClass("is-hidden")) {
+                // Show the data
+                $(dataPanelID).removeClass("is-hidden");
+
+                if (format) {
+                    $(dataPanelID)[0].innerHTML = formatDelimitedDataAsTable(data_files[dataFileName], delimiter);
+                }
+                else {
+                    $(dataPanelID)[0].innerHTML = `<pre class=" has-background-light mt-2">${data_files[dataFileName]}</pre>`;
+                }
+
+                $(dataButtonID).removeClass("is-outlined");
+            }
+            else {
+                // Hide the data
+                $(dataPanelID).addClass("is-hidden");
+                $(dataPanelID)[0].innerHTML = "";
+
+                $(dataButtonID).addClass("is-outlined");
+            }
+        }
+
+        $(dataButtonID)[0].blur();
+    }
+
+    function formatDelimitedDataAsTable(dataText, delimiter) {
+        let table = "<div class='table-container'><table class='table is-striped'>";
+
+        // First collapse CRLF → LF
+        dataText = dataText.replace(/\r\n/g, "\n");
+
+        // Then handle any remaining stray CR
+        dataText = dataText.replace(/\r/g, "\n");
+
+        // Remove newline characters from the end
+        const lines = trimNewLines(dataText).split("\n");
+
+        lines.forEach((line, index) => {
+            const cells = line.split(delimiter);
+
+            if (index === 0) {
+                table += "<tr><th>" + cells.join("</th><th>") + "</th></tr>";
+            } else {
+                table += "<tr><td>" + cells.join("</td><td>") + "</td></tr>";
+            }
+        });
+
+        return table + "</table></div>";
+    }
+
+    function trimNewLines(str) {
+        return str.replace(/[\n\r]+$/, '');
+    }
+
+    function reloadIfRestricted(save_first) {
+        {% if check_for_restrict_other_assignments %}
+            $.ajax({
+                type: 'GET',
+                url: "/is_taking_restricted_assignment/{{ user_info['user_id'] }}/{{ assignment_basics['id'] }}",
+                async: true
+                })
+            .done(function(data) {
+                if (JSON.parse(data) == true) {
+                    if (save_first) {
+                        save_presubmission();
+                    }
+
+                    location.reload(true);
+                }
+            })
+            .fail(function(data) {
+                console.log(data);
+            });
+        {% end %}
+
+        {% if assignment_details["due_date"] and not assignment_details["allow_late"] and not assignment_details["view_answer_late"] %}
+            let due_date = new Date("{{ assignment_details['due_date'] }}");
+            // due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+
+            if (Date.now() > due_date.getTime()) {
+                location.reload(true);
+            }
+        {% end %}
+    }
+
+    function hasDueDatePassed() {
+        {% if not assignment_details["due_date"] or assignment_details["allow_late"] or assignment_details["view_answer_late"] %}
+            return false;
+        {% end %}
+
+        let due_date = new Date("{{ assignment_details['due_date'] }}");
+        // due_date.setMinutes(due_date.getMinutes() - due_date.getTimezoneOffset());
+
+        return Date.now() > assignment_details.due_date.getTime()
+    }
+
+    function gotoAssignmentPage() {
+        window.location.href = `/assignment/{{ course_basics["id"]}}/{{ assignment_basics["id"] }}`;
+    }
+
+    {% if support_questions %}
+        function toggleQA() {
+            document.getElementById("slide-panel").classList.toggle("is-active");
+        }
+
+        function showQuestionModal() {
+            var modal = document.getElementById("question_modal");
+
+            var askButton = document.getElementById("question_ask_button");
+            var cancelButton = document.getElementById("question_cancel_button");
+            var xButton = document.getElementById("question_x_button");
+            var questionBox = document.getElementById("question_box");
+
+            $("#questioner_share")[0].checked = false;
+            $("#question_message").addClass("is-hidden");
+            questionBox.value = "";
+            questionBox.focus();
+            show();
+
+            askButton.onclick = function() {
+                const questionText = questionBox.value.trim();
+                const questionerShare = $("#questioner_share")[0].checked;
+
+                $("#question_message")[0].innerHTML = "Please wait...";
+                $("#question_message").removeClass("is-primary");
+                $("#question_message").removeClass("is-danger");
+                $("#question_message").addClass("is-warning");
+                $("#question_message").removeClass("is-hidden");
+                $("#question_message")[0].scrollIntoView();
+
+                if (questionText.length > 0) {
+                    $.ajax({
+                        type: 'POST',
+                        url: "/save_question/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ user_id }}",
+                        data: { "question": questionText, "questioner_share":  questionerShare},
+                        async: true
+                    })
+                    .done(function(response) {
+                        if (response.startsWith("Success:")) {
+                            $("#question_message")[0].innerHTML = response;
+                            
+                            $("#question_message").removeClass("is-warning");
+                            $("#question_message").addClass("is-primary");
+
+                            // hide();
+                            // toggleQA();
+                        } else {
+                            $("#question_message")[0].innerHTML = response;
+                            $("#question_message").removeClass("is-warning");
+                            $("#question_message").addClass("is-danger");
+                        }
+                    })
+                    .fail(function(response) {
+                        $("#question_message")[0].innerHTML = "An unspecified error occurred. Please notify the instructor.";
+                        $("#question_message").removeClass("is-warning");
+                        $("#question_message").addClass("is-danger");
+                        console.log(response);
+                    });
+                }
+            }
+
+            cancelButton.onclick = function() {
+                hide();
+            }
+
+            xButton.onclick = function() {
+                hide();
+            }
+
+            function show() {
+                modal.style.display = "block";
+            }
+
+            function hide() {
+                modal.style.display = "none";
+            }
+        }
+    {% end %}
+</script>{% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+    <div id="stop_timer_modal" class="modal">
+        <div class="modal-content">
+            <span id="stop_timer_close" class="close">&times;</span>
+
+            <p>Please make sure you have submitted all exercises that you wish to submit before ending this assignment. <span class="has-text-weight-bold">Are you sure you want to end the assignment?</span></p>
+
+            <p class="buttons">
+                <a id="stop_timer_button" class="modal-button button is-dark">End assignment</a>
+                <button type="button" id="stop_timer_cancel_button" class="modal-button button is-light">Cancel</button>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function startTimer() {
+            updateTimeRemaining();
+
+            const x = setInterval(function() {
+                const time_remaining = updateTimeRemaining();
+
+                if (time_remaining < 120000 && !has_shown_timer_warning) {
+                    alert("Less than 2 minutes remaining.");
+                    has_shown_timer_warning = true;
+                }
+
+                if (time_remaining <= 0) {
+                    clearInterval(x);
+
+                    if (typeof num_exercises == 'undefined') {
+                        // This means we are on the exercise page.
+                        save_presubmission();
+                        gotoAssignmentPage();
+                    }
+                    else {
+                        // This means we are on the assignment page.
+                        updateTimerStatus("timer_expired");
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerMessage(message) {
+            // It only makes sense to do this from the assignment page.
+            if (typeof num_exercises !== 'undefined') {
+                $("#timer_message")[0].innerHTML = `${message}`;
+            }
+        }
+
+        function updateTimerStatus(timer_status) {
+            $("#timer_button").blur();
+
+            var message = "";
+
+            if (timer_status == "timer_not_started") {
+                message = `This is a timed assignment. Your time limit is {{ timer_hours }} hours and {{ timer_minutes }} minutes. Start the assignment when you are ready.`;
+
+                $("#timer_button")[0].innerText = "Start assignment";
+                $("#timer_button").removeClass("is-warning");
+                $("#timer_button").addClass("is-primary");
+                $("#timer_button").removeClass("is-hidden");
+                $("#timer_button").click(function() {
+                    post_timer_change("start_timer");
+                });
+
+                $("#time_remaining_button").addClass("is-hidden");
+                $("#confirmation_code").addClass("is-hidden");
+
+                for (let i = 0; i < num_exercises; i++) {
+                    $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
+                    $(`#exercise_title_${i}_link`).addClass("is-hidden");
+                }
+            }
+
+            if (timer_status == "timer_expired") {
+                message = "This is a timed assignment. The time has expired, or you ended the assignment early. You no longer have access to it.";
+
+                $("#timer_button").addClass("is-hidden");
+                $("#time_remaining_button").addClass("is-hidden");
+
+                {% if assignment_details["require_security_codes"] == 2 %}
+                    $("#confirmation_code").removeClass("is-hidden");
+                {% end %}
+
+                for (let i = 0; i < num_exercises; i++) {
+                    $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
+                    $(`#exercise_title_${i}_link`).addClass("is-hidden");
+                }
+            }
+
+            if (timer_status == "timer_in_progress") {
+                message = "The timer has started. Click on the \"End assignment\" button when you have completed the assignment (or wish to end it early).";
+
+                {% if assignment_details["require_security_codes"] == 2 %}
+                    message += " You will receive a confirmation code when you end the assignment.";
+                {% end %}
+
+                $("#timer_button")[0].innerText = "End assignment";
+                $("#timer_button").removeClass("is-primary");
+                $("#timer_button").addClass("is-warning");
+                $("#timer_button").removeClass("is-hidden");
+
+                $("#confirmation_code").addClass("is-hidden");
+
+                $("#time_remaining_button").removeClass("is-hidden");                        
+                $("#timer_button").click(function() {
+                    showStopTimerModal();
+                });
+
+                startTimer();
+
+                // It only makes sense to do this from the assignment page.
+                if (typeof num_exercises !== 'undefined') {
+                    for (let i = 0; i < num_exercises; i++) {
+                        $(`#exercise_title_${i}_no_link`).addClass("is-hidden");
+                        $(`#exercise_title_${i}_link`).removeClass("is-hidden");
+                    }
+                }
+            }
+
+            updateTimerMessage(message);
+        }
+
+        function updateTimeRemaining() {
+            const now = new Date().getTime();
+            const time_remaining = timer_deadline - now;
+
+            const hours = Math.floor((time_remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((time_remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((time_remaining % (1000 * 60)) / 1000);
+
+            $("#time_remaining_button")[0].innerHTML = `Time remaining: ${hours}h ${minutes}m ${seconds}s`;
+
+            return time_remaining;
+        }
+
+        function post_timer_change(task) {
+            $.ajax({
+                type: 'POST',
+                url: "/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                data: task,
+                async: false})
+                .done(function(response_message) {
+                    if (response_message.startsWith("Success")) {
+                        if (task == "start_timer") {
+                            timer_deadline = convertDeadline(response_message.replace("Success: ", ""));
+                            updateTimerStatus("timer_in_progress");
+                            location.reload();
+                        }
+                        else {
+                            if (typeof num_exercises == 'undefined') {
+                                // This means we are on the exercise page.
+                                gotoAssignmentPage();
+                            }
+                            else {
+                                // This means we are on the assignment page.
+                                updateTimerStatus("timer_expired");
+                                location.reload();
+                            }
+                        }
+                    }
+                    else {
+                        updateTimerMessage(response_message);
+                    }
+                })
+                .fail(function(data) {
+                    updateTimerMessage("An error occurred when connecting to the server. It may be down.");
+                });
+        }
+
+        function showStopTimerModal() {
+            var modal = document.getElementById("stop_timer_modal");
+            var span = document.getElementsByClassName("close")[0];
+            modal.style.display = "block";
+
+            var cancelButton = document.getElementById("stop_timer_cancel_button");
+            var stopTimerButton = document.getElementById("stop_timer_button");
+            $("#stop_timer_error_message").addClass("invisible");
+
+            stopTimerButton.onclick = function() {
+                post_timer_change("stop_timer");
+                modal.style.display = "none";
+            }
+
+            cancelButton.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        function convertDeadline(timer_deadline_str) {
+            let timer_deadline = new Date(timer_deadline_str);
+            // timer_deadline.setMinutes(timer_deadline.getMinutes() - timer_deadline.getTimezoneOffset());
+
+            return timer_deadline;
+        }
+
+        {% if timer_deadline %}
+            var timer_deadline = convertDeadline("{{ timer_deadline }}");
+        {% end %}
+
+        var has_shown_timer_warning = false;
+    </script>
+{% end %}<script>
+    function showPostModal(action, title, data_obj, reload_url, wait_detail_text) {
+        var waitDefaultDetail = " while this task completes and the page refreshes\u2026";
+        var waitDetail = (wait_detail_text !== undefined && wait_detail_text !== null && wait_detail_text !== "")
+            ? wait_detail_text
+            : waitDefaultDetail;
+
+        // Build the modal
+        var modalElement = document.createElement("div");
+        modalElement.setAttribute("class", "modal");
+        modalElement.style.display = "block";
+
+        var backgroundElement = document.createElement("div");
+        backgroundElement.setAttribute("class", "modal-background");
+
+        var cardElement = document.createElement("div");
+        cardElement.setAttribute("class", "modal-card");
+
+        var headerElement = document.createElement("header");
+        headerElement.setAttribute("class", "modal-card-head");
+
+        var titleElement = document.createElement("p");
+        titleElement.setAttribute("class", "modal-card-title");
+        titleElement.innerHTML = `<strong>${title}</strong>`;
+
+        var sectionElement = document.createElement("section");
+        sectionElement.setAttribute("class", "modal-card-body is-large");
+        messageElement = document.createElement("div");
+        messageElement.setAttribute("style", "font-size: 24px;");
+
+        var errorElement = document.createElement("div");
+
+        var waitElement = document.createElement("div");
+        waitElement.style.display = "none";
+
+        function setWaiting(isWaiting) {
+            if (isWaiting) {
+                waitElement.style.display = "block";
+                waitElement.innerHTML = `<div class="notification is-info is-light mt-4 mb-0">
+                    <div class="is-flex is-align-items-flex-start">
+                        <span class="icon is-large has-text-info mr-3 mt-1" style="flex-shrink: 0;">
+                            <i class="fas fa-spinner fa-pulse" aria-hidden="true"></i>
+                        </span>
+                        <p class="is-size-5 mb-0">
+                            <strong class="has-text-info">Please wait</strong>
+                            <span class="has-text-grey-dark">${waitDetail}</span>
+                        </p>
+                    </div>
+                </div>`;
+                actionButton.style.pointerEvents = "none";
+                actionButton.style.opacity = "0.5";
+                cancelButton.style.pointerEvents = "none";
+                cancelButton.style.opacity = "0.5";
+            }
+            else {
+                waitElement.style.display = "none";
+                waitElement.innerHTML = "";
+                actionButton.style.pointerEvents = "";
+                actionButton.style.opacity = "";
+                cancelButton.style.pointerEvents = "";
+                cancelButton.style.opacity = "";
+            }
+        }
+
+        function updateErrorMessage(message) {
+            if (message == "")
+                errorElement.innerHTML = message;
+            else
+                errorElement.innerHTML = `<hr /><p><font color='red'>${message}</p>`;
+                errorElement.scrollIntoView();
+        }
+
+        var footerElement = document.createElement("footer");
+        footerElement.setAttribute("class", "modal-card-foot");
+
+        var actionButton = document.createElement("a");
+        actionButton.setAttribute("class", "modal-button button is-dark");
+        actionButton.innerHTML = "Continue";
+
+        var cancelButton = document.createElement("a");
+        cancelButton.setAttribute("class", "modal-button button");
+        cancelButton.innerHTML = "Cancel";
+
+        // Nest everything within the modal
+        modalElement.appendChild(backgroundElement);
+
+        headerElement.appendChild(titleElement);
+        sectionElement.appendChild(messageElement);
+        sectionElement.appendChild(errorElement);
+        sectionElement.appendChild(waitElement);
+        footerElement.appendChild(actionButton);
+        footerElement.appendChild(cancelButton);
+
+        cardElement.appendChild(headerElement);
+        cardElement.appendChild(sectionElement);
+        cardElement.appendChild(footerElement);
+
+        modalElement.appendChild(cardElement);
+        document.body.appendChild(modalElement);
+
+        var build_body_function = window[`${action}_build_body`];
+        if (build_body_function)
+            build_body_function(data_obj, messageElement);
+
+        actionButton.onclick = function() {
+            // This sets it back to the original value if they get an error and then click the action button again.
+            updateErrorMessage("");
+
+            var postData = {};
+            var get_post_data_function = window[`${action}_get_post_data`];
+            if (get_post_data_function)
+                postData = get_post_data_function();
+
+            if ("error" in postData && postData.error != "") {
+                updateErrorMessage(postData.error);
+                return;
+            }
+
+            setWaiting(true);
+
+            $.ajax({
+                type: 'POST',
+                url: window[`${action}_get_post_url`](data_obj),
+                data: postData,
+                async: true,
+                success: function(result) {
+                    if (result == "") {
+                        modalElement.style.display = "none";
+
+                        if (reload_url == "") {
+                            //window.scrollTo(0, 0);
+                            location.reload();
+                        }
+                        else {
+                            location.href = reload_url;
+                        }
+                    }
+                    else {
+                        setWaiting(false);
+                        updateErrorMessage(result);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown)
+                {
+                    setWaiting(false);
+                    updateErrorMessage(`Error: ${errorThrown}`);
+                }
+            });
+        }
+
+        cancelButton.onclick = function() {
+            modalElement.style.display = "none";
+        }
+
+        // window.onclick = function(event) {
+        //     if (event.target == modalElement)
+        //         modalElement.style.display = "none";
+        // }
+    }
+
+    // https://www.w3docs.com/snippets/javascript/how-to-sort-javascript-object-by-key.html
+    // https://fuzzytolerance.info/blog/2019/07/19/The-better-way-to-do-natural-sort-in-JavaScript/
+    function sortObj(obj) {
+        return Object.keys(obj).sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true})).reduce(function (result, key) {
+            result[key] = obj[key];
+            return result;
+        }, {});
+    }
+
+    function parseDateText(text) {
+        if (text == "None")
+             return "No submissions";
+
+        var the_date = new Date(text);
+        // var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
+        // the_date.setTime(the_date_mod);
+
+        return the_date.toLocaleString();
+    }
+
+    function addPasteEventListener(textarea_id) {
+        let textarea = document.getElementById(textarea_id);
+
+        textarea.addEventListener('paste', function(event) {
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        const base64Image = event.target.result;
+                        const imgTag = `<img src="${base64Image}" alt="An image illustrating something from the instructions." />`;
+                        insertTextAtCursor(textarea, imgTag);
+                    };
+
+                    reader.readAsDataURL(blob);
+
+                    // Prevent the default paste behavior
+                    event.preventDefault();
+                    break;
+                }
+            }
+        });
+    }
+
+    function insertTextAtCursor(textarea, text) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = textarea.value.substring(0, start);
+        const after = textarea.value.substring(end, textarea.value.length);
+
+        textarea.value = before + text + after;
+        textarea.selectionStart = textarea.selectionEnd = start + text.length;
+
+        textarea.focus();
+    }
+
+    function showFiles() {
+        if (Object.keys(exercise_details_obj["data_files"]).length == 0) {
+            $("#files_table").addClass("is-hidden");
+            return;
+        }
+
+        var html = "<table class='table is-striped'>";
+        html += "<thead><tr><th>Name</th><th>Size (characters)</th><th>View</th><th>Delete</th></thead>";
+        html += "<tbody>";
+
+        for (const file_name in sortObj(exercise_details_obj["data_files"])) {
+            html += "<tr>";
+            html += `  <td>${file_name}</td>`;
+            html += `  <td>${exercise_details_obj["data_files"][file_name].length}</td>`;
+            html += `  <td>
+                            <a onclick="viewFile('${file_name}')">
+                                <i class="fas fa-file-alt"></i>
+                            </a>
+                        </td>`;
+            html += `  <td>
+                            <a onclick="removeFile('${file_name}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>`;
+            html += "</tr>";
+        }
+
+        html += "</tbody>";
+        html += "</table>";
+
+        $("#files_table")[0].innerHTML = html;
+        $("#files_table").removeClass("is-hidden");
+
+        // This clears the memory for this control so we can re-upload a file after removing it.
+        $("#upload_file_control").val(null);
+    }
+
+    function viewFile(file_name) {
+        $("#view_file_modal_header")[0].innerHTML = file_name;
+        view_file_editor.setValue(exercise_details_obj["data_files"][file_name], -1);
+        $("#view_file_modal").addClass("is-active");
+    }
+
+    function removeFile(file_name) {
+        delete exercise_details_obj["data_files"][file_name];
+        showFiles();
+    }
+
+    function dataFilesTooLarge() {
+        var total_file_size = 0;
+
+        for (let file_name of Object.keys(exercise_details_obj["data_files"]))
+            total_file_size += exercise_details_obj["data_files"][file_name].length;
+
+        let file_size_limit = 10 * 1000 * 1000;
+
+        return (total_file_size > file_size_limit);
+    }
+</script>
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        {% if exercise_basics["exists"] %}
+            <link rel="stylesheet" href="/static/css/modal.css">
+
+            <div class="columns is-vcentered">
+                {% if use_virtual_assistant %}
+                    <div class="column is-two-thirds mt-0" id="left_column">
+                {% else %}
+                    <div class="column is-full mt-0">
+                {% end %}
+
+                    {% if assignment_details["due_date"] and assignment_details["due_date_passed"] %}
+                        <div class='notification is-warning is-light'>
+                            The due date for this assignment has passed.
+
+                            {% if not has_passed and (not assignment_details["allow_late"] or assignment_details["late_percent"] == 0) and assignment_details["view_answer_late"] and exercise_details["show_instructor_solution"] %}
+                                Click <a href="/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">here</a> to view the instructor's solution.
+                            {% end %}
+
+                            {% if assignment_details["allow_late"] and assignment_details["late_percent"] > 0 and not has_passed %}
+                                Students can make late submissions for {{ round(assignment_details["late_percent"] * 100) }}% of the points.
+                            {% end %}
+                        </div>
+                    {% end %}
+
+                    <div class="has-background-white mt-0 p-4">
+                        <h4>{{ exercise_basics["title"] }}</h4>
+
+                        {% if exercise_basics["enable_pair_programming"] %}
+                            <div class="has-background-white mt-1 mb-1 pb-2">
+                                <i class="fab fa-product-hunt"></i>
+                                <em>Pair programming is enabled for this exercise.</em>
+                            </div>
+                        {% end %}
+
+                        <div id="instructions">
+                            {{ exercise_details["instructions"] }}
+                        </div>
+
+                        <script>
+                            // (function () {
+                            // const instructions = document.getElementById("instructions");
+                            // if (!instructions) return;
+
+                            // const note = " Include comments explaining the code, and place a comment marker at the end of each comment.";
+
+                            // instructions.addEventListener("copy", (e) => {
+                            //     const selected = document.getSelection ? document.getSelection().toString() : "";
+                            //     e.clipboardData.setData("text/plain", selected + note + "\n");
+                            //     e.preventDefault();
+                            // });
+                            // })();
+                        </script>
+                        
+                        {% if "previous_submission_code" in exercise_details %}
+                            <p><a class="button is-primary is-outlined" onclick="copy_code_from_previous_exercise()">Copy code from previous exercise</a></p>
+                        {% end %}
+                    </div>
+
+                    {% if len(exercise_details["data_files"]) > 0 %}
+                        <div id="data_file_div" class="has-background-white mt-1 mb-1 pl-4 pt-4 pb-1">
+                            <div class="title is-5 m-0 pl-0 pt-0 pr-0 pb-4">
+                                {% if len(exercise_details["data_files"]) == 1 %}
+                                    Data file:
+                                {% else %}
+                                    Data file(s):
+                                {% end %}
+                            </div>
+
+                            {% for data_file_index in range(len(exercise_details["data_files"])) %}
+                                {% set data_file_name = sorted(list(exercise_details["data_files"].keys()))[data_file_index] %}
+                                {% set data_file_extension = data_file_name.split(".")[-1] %}
+
+                                <div class="pl-4 pr-4 pb-4">
+                                    <span class="is-family-monospace is-size-5">{{ data_file_name }}</span>
+
+                                    {% if data_file_extension == "hide" %}
+                                        <span class="ml-1">- The contents of this file are hidden.
+                                        </span>
+                                    {% else %}
+                                        <a class="ml-1" href="/download_file/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ sorted(list(exercise_details['data_files'].keys()))[data_file_index] }}">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+
+                                        {% if data_file_extension in ["csv", "tsv"] %}
+                                            <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_raw_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, false)">Raw</button>
+
+                                            <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_formatted_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, true)">Formatted</button>
+                                        {% else %}
+                                            <button class="button is-primary is-outlined is-small is-rounded ml-2 no-hover-change" id="data_button_raw_{{ data_file_index }}" onclick="showHideData({{ data_file_index }}, false)">View</button>
+                                        {% end %}
+
+                                        <div id="data_panel_{{ data_file_index }}" class="is-hidden">
+                                        </div>
+                                    {% end %}
+                                </div>
+                            {% end %}
+                        </div>
+                    {% end %}
+
+                    {% if exercise_details["show_upload_button"] or exercise_details["hint"] != "" %}
+                        <div class="mt-4">
+                            <div class="buttons {% if exercise_details['hint'] != '' %}mb-1{% else %}mb-3{% end %}">
+                                {% if exercise_details["show_upload_button"] %}
+                                    <button type="button" id="upload_button" class="button is-primary" onclick="openUploadDialog()">Upload solution file...</button>
+                                {% end %}
+                                {% if exercise_details["hint"] != "" %}
+                                    <button id="hint_button" class="button is-warning" onclick="showHideHint()">Show hint</button>
+                                {% end %}
+                            </div>
+                            {% if exercise_details["show_upload_button"] %}
+                                <input id="upload_file_input" type="file" class="is-hidden" onchange="loadUploadedCode(event)">
+                            {% end %}
+                            {% if exercise_details["hint"] != "" %}
+                                <div id="hint_text" class="is-hidden content has-background-white px-4 py-3 mt-1 mb-2">{{ exercise_details["hint"] }}</div>
+                            {% end %}
+                        </div>
+                    {% end %}
+
+                    <p class="mt-3 mb-0" id="user_code_area">
+                        <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and len(submissions) == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
+                    </p>
+                </div>
+
+                {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or (assignment_details["allow_late"] and assignment_details["late_percent"] > 0) %}
+                    {% if use_virtual_assistant %}
+                        <!--<div class="column is-one-quarter has-background-white is-outlined mt-3 mb-3">-->
+                        <div class="column is-one-third has-background-white is-outlined mt-3 mb-3" style="overflow: scroll;" id="right_column">
+                            <div id="virtual_assistant_message">
+                                <div class="is-size-6">
+                                    <strong>Hello, I am your Virtual Assistant!</strong> Do your best to solve this exercise on your own. But if you get stuck, you can enter a question below. This feature is experimental, so its advice might or might not be helpful.
+
+                                    {% if assignment_details["use_virtual_assistant"] > 1 %}
+                                        <em>The instructor is testing this feature in a research study. Therefore, please use do not share it with other students who may not have access to it on this exercise.</em>
+                                    {% end %}
+                                </div>
+                            </div>
+
+                            <div>
+                                <textarea id="virtual_assistant_input" class="textarea is-medium is-primary is-size-6 mt-4" style="font-family: sans-serif;" placeholder="Enter your question here.">
+                                </textarea>
+                            </div>
+
+                            <div class="mt-2 mb-2">
+                                <button id="virtual_assistant_button" class="button is-primary m-0 is-size=6" onclick="askVirtualAssistant()">Ask</button>
+
+                                <button class="button is-primary is-outlined m-0 is-size=6" onclick="closeVirtualAssistant()">Close</button>
+
+                                <div id="virtual_assistant_allowed_panel" class="smaller-font is-pulled-right mt-2 mr-1 is-hidden">
+                                    <em>
+                                        <span id="virtual_assistant_questions_allowed_prefix"></span>
+                                        
+                                        <span id="virtual_assistant_questions_allowed">
+                                            {{ virtual_assistant_max_per_exercise }}
+                                        </span>
+
+                                        <span id="virtual_assistant_questions_allowed_suffix"></span>
+                                    </em>
+                                </div>
+                            </div>
+
+                            <div id="virtual_assistant_output" class="box mt-2 mb-2 p-1 is-hidden is-size-6">
+                            </div>
+
+                            <div id="virtual_assistant_helpful" class="box has-background-white has-text-warning mt-2 mb-2 p-4 is-size-6 is-hidden">
+                                Was the Virtual Assistant helpful on this exercise?
+                                <i id="thumbs_up" class="far fa-thumbs-up ml-2" onclick="updateThumbStatus(true);toggleThumbs();saveHelpfulness('virtual_assistant');" style="cursor: pointer;"></i>
+                                <i id="thumbs_down" class="far fa-thumbs-down ml-2" onclick="updateThumbStatus(false);toggleThumbs();saveHelpfulness('virtual_assistant');" style="cursor: pointer;"></i>
+                            </div>
+                        </div>
+                    {% end %}
+                </div>
+
+                <div class="columns is-mobile is-multiline">
+                    <div class="column">
+                        <div class="buttons">
+                            <a class="button is-medium is-dark" id='submit_button'>Submit</a>
+
+                            {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] and assignment_details["show_run_button"] %}
+                                <a class="button is-medium is-white" onclick='run_code(true)' id='run_button'>Run</a>
+                            {% end %}
+
+                            {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                                <button id="time_remaining_button" class="button is-medium is-hidden is-warning is-light has-text-weight-semibold mr-2" type="button" style="cursor: default;"></button>
+
+                                <button id="timer_button" class="button is-medium is-rounded is-outlined is-warning" type="button" style="cursor: pointer;">End assignment</button>
+                            {% end %}
+
+                            {% if support_questions %}
+                                <a class="button is-medium is-white" id="qa_button" onclick="toggleQA()">
+                                    Q & A
+                                    {% if len(qa) > 0 %}
+                                        ({{ len(qa) }})
+                                    {% end %}
+                                </a>
+                            {% end %}
+
+                            <span id="help_icon" class="icon mb-2 ml-1">
+                                {% if exercise_details["allow_any_response"] %}
+                                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="After you have entered your response, click on 'Submit'." />
+                                {% else %}
+                                    <p class="is-primary has-tooltip-multiline has-tooltip-right" data-tooltip="When you are ready to test your solution, click on 'Submit'. If you would like to see the output of your solution without submitting it, click on 'Run' (if it is available). If you highlight a block of code and hit the Tab button, it will indent all lines of code in the block. If you hit Shift-Tab, it will reduce the indentation. If you highlight a block of code, you can comment the code (if it is not currently commented) or uncomment the code (if it is currently commented); to do this, press Ctrl + / (Windows or Linux) or Command + / (Mac)." />
+                                {% end %}
+
+                                <i class="far fa-question-circle"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                   <div class="column is-narrow">
+                        <div class="">
+                            <span id="saved_div" class="is-italic"></span>
+                        </div>
+                    </div>
+
+                    <div class="column is-narrow">
+                        <div class="is-pulled-right">
+                            {{ exercise_basics["title"] }}
+
+                            <span id="solution_length_message"></span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="max_submissions_message"></div>
+            {% end %}
+
+            <p id="test_outputs"></p>
+
+            <p id="result_message"></p>
+
+            <p id="submissions"></p>
+
+            {% if len(exercise_details["credit"]) > 0 %}
+                <div class="front-row-container">
+                    <p style="padding-right: 5px;"><em>Credit: </em></p>
+                    <p><em>{{ exercise_details["credit"] }}</em></p>
+                </div>
+            {% end %}
+
+            <div class="buttons">
+                {% if is_administrator or is_instructor or is_assistant %}
+                    <a class="button is-dark" href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">Edit exercise</a>
+                {% end %}
+
+                {% if prev_exercise %}
+                    <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">Previous exercise</a>
+                {% end %}
+
+                {% if next_exercise %}
+                    <a class="button is-outlined" href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">Next exercise</a>
+                {% end %}
+
+                <a class="button is-outlined" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Assignment home</a>
+
+                <a class="button is-outlined" href='/course/{{ course_basics['id'] }}'>Course home</a>
+            </div>
+
+            <script>
+                function get_user_solution() {
+                    return {
+                        code: editor.getValue().trim().replace("\r", "") || "", selected_answer_indices: ""
+                    };
+                }
+
+                function openUploadDialog() {
+                    const uploadInput = document.getElementById("upload_file_input");
+
+                    if (uploadInput) {
+                        uploadInput.click();
+                    }
+                }
+
+                function isLikelyTextFile(file) {
+                    return new Promise((resolve) => {
+                        const sampleReader = new FileReader();
+                        const sampleBlob = file.slice(0, 8192);
+
+                        sampleReader.onload = function(loadEvent) {
+                            const bytes = new Uint8Array(loadEvent.target.result || new ArrayBuffer(0));
+
+                            if (bytes.length == 0) {
+                                resolve(true);
+                                return;
+                            }
+
+                            let suspiciousCount = 0;
+
+                            for (let i = 0; i < bytes.length; i++) {
+                                const byte = bytes[i];
+
+                                if (byte == 0) {
+                                    resolve(false);
+                                    return;
+                                }
+
+                                const isPrintableAscii = byte >= 32 && byte <= 126;
+                                const isCommonWhitespace = byte == 9 || byte == 10 || byte == 13;
+                                const isExtendedUtf8Byte = byte >= 128;
+
+                                if (!isPrintableAscii && !isCommonWhitespace && !isExtendedUtf8Byte) {
+                                    suspiciousCount += 1;
+                                }
+                            }
+
+                            resolve((suspiciousCount / bytes.length) < 0.3);
+                        };
+
+                        sampleReader.onerror = function() {
+                            resolve(false);
+                        };
+
+                        sampleReader.readAsArrayBuffer(sampleBlob);
+                    });
+                }
+
+                async function loadUploadedCode(event) {
+                    const fileInput = event.target;
+                    const file = fileInput.files && fileInput.files[0];
+
+                    if (!file) {
+                        return;
+                    }
+
+                    const isTextFile = await isLikelyTextFile(file);
+
+                    if (!isTextFile) {
+                        alert("Please choose a text-based file.");
+                        fileInput.value = "";
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(loadEvent) {
+                        const uploadedText = String(loadEvent.target.result || "");
+                        if (!editor.getReadOnly()) {
+                            editor.focus();
+                        }
+                        editor.setValue(uploadedText, 1);
+                        setTimeout(function() {
+                            var uploadBtn = document.getElementById("upload_button");
+                            if (uploadBtn) {
+                                uploadBtn.blur();
+                            }
+                        }, 0);
+                    };
+                    reader.onerror = function() {
+                        alert("Sorry, this file could not be read.");
+                    };
+                    reader.readAsText(file);
+
+                    // Reset so the same file can be selected again.
+                    fileInput.value = "";
+                }
+
+                function update_solution_length() {
+                    {% if exercise_details["min_solution_length"] > 1 or exercise_details["max_solution_length"] < 10000 %}
+                        const solution_length = (get_user_solution().code || "").length;
+
+                        if (solution_length == 0) {
+                            $("#solution_length_message")[0].innerHTML = "";
+                        }
+                        else {
+                            if (solution_length < {{ exercise_details["min_solution_length"] }} || solution_length > {{ exercise_details["max_solution_length"] }}) {
+                                hide_submit_button();
+                            }
+                            else {
+                                show_submit_button();
+                            }
+
+                            var length_message = ` (${solution_length} character`;
+
+                            if (solution_length > 1) {
+                                length_message += "s";
+                            }
+
+                            {% if exercise_details["min_solution_length"] > 1 %}
+                                length_message += "; minimum = {{ exercise_details["min_solution_length"] }}";
+                            {% end %}
+
+                            {% if exercise_details["max_solution_length"] < 10000 %}
+                                length_message += "; maximum = {{ exercise_details["max_solution_length"] }}";
+                            {% end %}
+
+                            length_message += ")";
+
+                            $("#solution_length_message")[0].innerHTML = length_message;
+                        }
+                    {% end %}
+                }
+
+                {% if use_virtual_assistant %}
+                    let left_column = document.getElementById("left_column");
+                    let right_column = document.getElementById("right_column");
+                    right_column.style.height = `${left_column.offsetHeight}px`;
+
+                    let virtual_assistant_interactions = JSON.parse("{{ virtual_assistant_interactions }}");
+                    let max_questions_per_exercise = {{ virtual_assistant_max_per_exercise }};
+
+                    let input_element = document.getElementById("virtual_assistant_input");
+                    let output_element = document.getElementById("virtual_assistant_output");
+                    let message_element = document.getElementById("virtual_assistant_message");
+                    let button_element = document.getElementById("virtual_assistant_button");
+                    let helpful_element = document.getElementById("virtual_assistant_helpful");
+
+                    let allowed_panel_element = document.getElementById("virtual_assistant_allowed_panel")
+                    let allowed_element = document.getElementById("virtual_assistant_questions_allowed");
+                    let allowed_prefix_element = document.getElementById("virtual_assistant_questions_allowed_prefix");
+                    let allowed_suffix_element = document.getElementById("virtual_assistant_questions_allowed_suffix");
+
+                    function askVirtualAssistant() {
+                        let input = input_element.value;
+
+                        if (input.trim().length == 0)
+                            return;
+
+                        output_element.classList.remove("is-hidden");
+
+                        let response_element = createVirtualAssistantResponse("Please wait...");
+                        addVirtualAssistantEcho(input);
+                        response_element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                        let data = {"question": input, "student_code": editor.getValue()};
+
+                        $.ajax({
+                            type: 'POST',
+                            url: "/ask_virtual_assistant/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}",
+                            data: data,
+                            async: true,
+                        }).done(function(result) {
+                            let result_dict = JSON.parse(result);
+
+                            if (result_dict.success) {
+                                response_element.classList.add('has-text-primary');
+
+                                if (max_questions_per_exercise > 0) {
+                                    allowed_element.innerHTML = allowed_element.innerHTML - 1;
+
+                                    checkMaxVirtualAssistantQuestionsAsked();
+                                }
+
+                                data["response"] = result_dict["message"];
+                                virtual_assistant_interactions.push(data);
+                            } else {
+                                response_element.classList.add('has-text-danger');
+                            }
+
+                            response_element.innerHTML = `<em>VA</em>: ${result_dict.message}`;
+
+                            helpful_element.classList.remove("is-hidden");
+                        })
+                        .fail(function(result) {
+                            console.log(result);
+                            response_element.classList.add('has-text-danger');
+                            response_element.innerHTML = result;
+                        });
+                    }
+
+                    function closeVirtualAssistant() {
+                        save_presubmission();
+                        window.location.href = `${window.location.pathname}?hide_va=true`;
+                    }
+
+                    function addVirtualAssistantEcho(input) {
+                        var echo_element = document.createElement('div');
+                        echo_element.classList.add('has-text-dark', 'has-background-light', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
+                        echo_element.innerHTML += `<em>You asked</em>: ${input}`;
+
+                        // output_element.insertBefore(echo_element, output_element.firstChild);
+                        output_element.insertBefore(echo_element, output_element.lastChild);
+                    }
+
+                    function createVirtualAssistantResponse(message) {
+                        var response_element = document.createElement('div');
+                        response_element.classList.add('has-background-light', 'has-text-primary', 'is-bordered', 'm-2', 'pl-2', 'pr-2', 'pt-1', 'pb-1');
+                        response_element.innerHTML = `<em>VA</em>: ${message}`;
+
+                        // output_element.insertBefore(response_element, output_element.firstChild);
+                        const lastChild = output_element.lastChild;
+                        output_element.insertBefore(response_element, lastChild.nextSibling);
+
+                        return response_element;
+                    }
+
+                    function checkMaxVirtualAssistantQuestionsAsked() {
+                        if (allowed_element.innerHTML <= 0) {
+                            message_element.classList.add("has-text-grey-lighter");
+                            input_element.disabled = true;
+                            button_element.disabled = true;
+                        }
+
+                        let question_text = allowed_element.innerHTML == 1 ? "question" : "questions"; 
+
+                        if (virtual_assistant_interactions.length == 0) {
+                            allowed_prefix_element.innerHTML = "Up to ";
+                            allowed_suffix_element.innerHTML = `${question_text} allowed`;
+                        }
+                        else {
+                            allowed_prefix_element.innerHTML = "";
+                            allowed_suffix_element.innerHTML = `more ${question_text} allowed`;
+                        }
+
+                        allowed_panel_element.classList.remove("is-hidden");
+                    }
+
+                    if (max_questions_per_exercise > 0) {
+                        allowed_element.innerHTML = Math.max(0, max_questions_per_exercise - virtual_assistant_interactions.length);
+
+                        checkMaxVirtualAssistantQuestionsAsked();
+                    }
+
+                    if (virtual_assistant_interactions.length > 0) {
+                        output_element.classList.remove("is-hidden");
+
+                        for (let interaction of virtual_assistant_interactions) {
+                            let response_element = createVirtualAssistantResponse(interaction.response);
+                            response_element.classList.add('has-text-primary');
+
+                            addVirtualAssistantEcho(interaction.question);
+                        }
+
+                        helpful_element.classList.remove("is-hidden");
+                    }
+                {% end %}
+
+                ace.require("ace/ext/language_tools");
+
+                var editor = ace.edit("user_code", {
+                    theme: "ace/theme/{{ user_info['ace_theme'] }}",
+                    autoScrollEditorIntoView: false,
+                    minLines: 20,
+                    fontSize: "12pt"
+                });
+
+                editor.setHighlightActiveLine(false);
+                editor.setShowPrintMargin(false);
+                editor.session.setOption('newLineMode', 'unix');
+
+                {% if user_info['enable_vim'] %}
+                   editor.setKeyboardHandler("ace/keyboard/vim");
+                {% end %}
+
+                {% if exercise_details["back_end"] == "not_code" %}
+                    editor.session.setUseWrapMode(true);
+                {% else %}
+                    {% if user_info["use_auto_complete"] %}
+                        editor.setOptions({
+                            enableBasicAutocompletion: false,
+                            enableSnippets: true,
+                            enableLiveAutocompletion: true
+                        });
+                    {% end %}
+                {% end %}
+
+                editor.getSession().setMode("{{ code_completion_path }}");
+
+                {% if exercise_details["show_upload_button"] %}
+                (function() {
+                    editor.setReadOnly(true);
+                    editor.setOptions({
+                        enableBasicAutocompletion: false,
+                        enableSnippets: false,
+                        enableLiveAutocompletion: false
+                    });
+                    var bg = "#f0f0f0";
+                    var gutterBg = "#e6e6e6";
+                    editor.container.style.backgroundColor = bg;
+                    if (editor.renderer.scroller) {
+                        editor.renderer.scroller.style.backgroundColor = bg;
+                    }
+                    var gutterEl = editor.container.querySelector(".ace_gutter");
+                    if (gutterEl) {
+                        gutterEl.style.backgroundColor = gutterBg;
+                    }
+                })();
+                {% else %}
+                editor.focus();
+                {% end %}
+
+                submitButton = document.getElementById("submit_button");
+
+                if (submitButton != null) {
+                    submitButton.onclick = function() {
+                        {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or (assignment_details["allow_late"] and assignment_details["late_percent"] > 0) %}
+                            {% if exercise_details["enable_pair_programming"] %}
+                                showSubmitModal();
+                            {% else %}
+                                submit();
+                            {% end %}
+                        {% else %}
+                            alert("Sorry, the due date for this assignment has passed.");
+                        {% end %}
+                    }
+                }
+
+                {% if assignment_details["has_timer"] and not is_administrator and not is_instructor and not is_assistant %}
+                    updateTimerStatus("{{ timer_status }}");
+
+                    if ("{{ timer_status }}" == "timer_in_progress") {
+                        if (updateTimeRemaining() <= 0) {
+                            gotoAssignmentPage();
+                        }
+                    }
+                    else {
+                        gotoAssignmentPage();
+                    }
+                {% end %}
+
+                var data_files = {{ jsonify(exercise_details["data_files"]) }};
+                const tests = {{ jsonify(tests) }};
+                var submissions = {{ jsonify(submissions) }};
+                var presubmission = {{ jsonify(presubmission) }};
+
+                show_past_submissions();
+
+                if (submissions.length == 0) {
+                    showTestOutputs(null, false);
+
+                    if (presubmission != "") {
+                        {% if not exercise_details["show_upload_button"] %}
+                        editor.focus();
+                        {% end %}
+                        editor.setValue(presubmission, 1);
+                    }
+                }
+                else {
+                    var latest_submission = submissions[submissions.length - 1];
+
+                    // Set editor value to presubmission if the presubmission is different than the latest submission code.
+                    if (presubmission != "" && presubmission != latest_submission.code) {
+                        {% if not exercise_details["show_upload_button"] %}
+                        editor.focus();
+                        {% end %}
+                        editor.setValue(presubmission, 1);
+                    }
+                    else {
+                        get_code_submission(latest_submission.id, false, true);
+                    }
+                }
+
+                moveEditorCaretToEndIfTypable();
+
+                let codeChanged = false;
+                window.wasUserChange = true;
+
+                // editor.session.on('change', function(delta) {
+                editor.on('change', function() {
+                    if (window.wasUserChange){
+                        codeChanged = true;
+
+                        // Use fa-2x if you want the icon to be larger.
+                        saved_div.innerHTML = `
+                            <i class="far fa-save fa-2x" style="cursor: pointer;"  onclick="save_presubmission(); if (!editor.getReadOnly()) { editor.focus(); }"></i>`;
+
+                        update_solution_length();
+                    }
+                });
+
+                update_solution_length();
+
+                // Autosave if code has changed
+                setInterval(function() {
+                    if (codeChanged) {
+                        save_presubmission();
+                    }
+                }, 10000);
+
+                setInterval(function() {
+                    reloadIfRestricted(true);
+                }, 60000);
+            </script>
+        {% else %}
+            <p>This exercise does not exist.</p>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
+{% else %}
+    <p>This course does not exist.</p>
+{% end %}<script>
+    var thumb_status = {{ thumb_status }};
+
+    toggleThumbs();
+
+    function updateThumbStatus(is_up) {
+        if (thumb_status == -1) {
+            if (is_up) {
+                thumb_status = 1;
+            }
+            else {
+                thumb_status = 0;
+            }
+        }
+        else {
+            if (thumb_status == 0) {
+                if (is_up) {
+                    thumb_status = 1;
+                }
+                else {
+                    thumb_status = -1;
+                }
+            }
+            else { // thumb_status == 1
+                if (is_up) {
+                    thumb_status = -1;
+                }
+                else {
+                    thumb_status = 0;
+                }
+            }
+        }
+    }
+
+    function toggleThumbs() {
+        // Default settings: neither thumb selected.
+        $("#thumbs_up").addClass("far");
+        $("#thumbs_up").removeClass("fas");
+        $("#thumbs_down").addClass("far");
+        $("#thumbs_down").removeClass("fas");
+
+        if (thumb_status == 0) {
+            $("#thumbs_down").removeClass("far");
+            $("#thumbs_down").addClass("fas");
+        }
+        else {
+            if (thumb_status == 1) {
+                $("#thumbs_up").removeClass("far");
+                $("#thumbs_up").addClass("fas");
+            }
+        }
+    }
+
+    function saveHelpfulness(item_description) {
+        $.ajax({
+            type: 'GET',
+            url: "/save_thumb_status/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/" + item_description + "/" + thumb_status,
+            async: true,
+            timeout: 10000  // 10 second timeout
+        }).done(function(result) {
+            if (result == "") {
+                console.log("Saved thumb status");
+            }
+            else {
+                console.log("An error occurred when attempting to save thumb status.");
+                console.log(result);
+            }
+        })
+        .fail(function(result) {
+            console.log("An error occurred when attempting to save thumb status.");
+            console.log(result);
+        });
+    }
+</script>    </div>
+</div>                <div class="columns is-gapless has-text-centered is-size-6 pt-4 pb-4">
+                    <div class="column">
+                        <a href="/static/about.html">About</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+                    </div>
+                    <div class="column">
+                        <a href="/static/contact_us.html">Contact Us</a>
+                    </div>
+                </div>
+        </div>
+    </body>
+</html>

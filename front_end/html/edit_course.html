@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="/static/bulma.0.9.3.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="/static/font-awesome.5.3.1.all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>-->
+        <script
+            src="/static/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+        <!--<script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>-->
+
+        <title>CodeBuddy</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
+
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
+
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+            <div>
+<script>
+    const toggleBurger = () => {
+        let burgerIcon = document.getElementById('burger');
+        let dropMenu = document.getElementById('the_menu');
+        burgerIcon.classList.toggle('is-active');
+        dropMenu.classList.toggle('is-active');
+    };
+
+    // $(document).ready(function() {
+    //     // Function to check if the navbar contents are wider than the available space
+    //     function isNavbarOverflowed() {
+    //         return $('.navbar-menu').prop('scrollWidth') > $('.navbar-menu').width();
+    //     }
+
+    //     // Function to toggle the burger icon and menu based on screen width and contents
+    //     function toggleNavbar() {
+    //         if ($(window).width() > 1224 && isNavbarOverflowed()) {
+    //             $('.navbar-burger').show();
+    //             $('.navbar-menu').hide();
+    //         } else {
+    //             $('.navbar-burger').hide();
+    //             $('.navbar-menu').show();
+    //         }
+    //     }
+
+    //     // Initial toggle when the page loads
+    //     toggleNavbar();
+
+    //     $(window).resize(function() {
+    //         toggleNavbar();
+    //     });
+
+    //     // Toggle the navbar when the burger icon is clicked
+    //     $('.navbar-burger').click(function() {
+    //         $('.navbar-menu').toggle();
+    //     });
+    // });
+    
+    function toggleDropdown(div_id) {
+        var element = document.getElementById(div_id);
+        element.classList.toggle('is-active');
+    }
+
+    window.addEventListener('click', function(e) {
+        for (menu of ["course", "assignment", "exercise", "menu"]) {
+            var dropdown = document.getElementById(`${menu}_dropdown`);
+
+            if (dropdown == null)
+                continue;
+
+            if (!dropdown.contains(e.target) && dropdown.classList.contains("is-active"))
+                dropdown.classList.remove("is-active");
+        }
+    });
+</script>
+
+<nav id="navbar" class="navbar is-spaced has-shadow" role="navigation" aria-label="main navigation" style="border-radius: 0px; padding: 1px; box-shadow: 3px 3px 6px lightgray;">
+    <div class="navbar-brand" style="padding: 3px 0px 0px 0px;">
+        <a href="/" id="navbar-start">CodeBuddy <i class="fa fa-home" style="padding: 0 .3em; width:auto;" aria-hidden="true"></i></a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" id="burger" onclick="toggleBurger()">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+    <div class="navbar-menu is-size-5" id="the_menu">
+        <div class="navbar-start">            {% if len(courses) > 1 and "course_basics" in globals() and course_basics["exists"] %}
+                <div id="course_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('course_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        Courses
+
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+                    </div>
+
+                    <div id="moreDropdown" class="navbar-dropdown">
+                        {% for course in courses %}
+                            {% if course[0] == course_basics['id'] %}
+                                <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                            {% else %}
+                                <a class="navbar-item" style="white-space: nowrap;"
+                            {% end %}
+
+                            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                href="/edit_course/{{ course[0] }}"
+                            {% else %}
+                                href="/course/{{ course[0] }}"
+                            {% end %}
+                            
+                            >
+                            
+                            {{ course[1]["title"] }}
+                        
+                            </a>
+                        {% end %}
+                    </div>
+                </div>
+            {% end %}{% if "assignment_statuses" in globals() and len(assignment_statuses) > 1 and "assignment_basics" in globals() and assignment_basics["exists"] %}
+    <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Assignments
+
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
+
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% set prev_assignment_group = None %}
+            {% set non_other_assignment_group = False %}
+
+            {% for assignment in assignment_statuses %}
+                {% set current_assignment_group = assignment[1] %}
+
+                {% if current_assignment_group != "" %}
+                    {% set non_other_assignment_group = True %}
+                {% end %}
+
+                {% if current_assignment_group != prev_assignment_group and non_other_assignment_group %}
+                    <div class="navbar-item has-text-weight-bold" style="padding-top: 10px; padding-bottom: 5px;">
+                        {% if current_assignment_group == "" %}
+                            Other
+                        {% else %}
+                            {{ current_assignment_group }}
+                        {% end %}                        
+                    </div>
+
+                    {% set prev_assignment_group = current_assignment_group %}
+                {% end %}
+
+                {% if assignment[0] == assignment_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+
+                {% if "is_edit_page" in globals() and is_edit_page == True %}
+                    href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% else %}
+                    href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% end %}
+                >
+
+                {% if assignment[2]["completed"] %}
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["in_progress"] %}
+                    <i class="far fa-hourglass"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["timer_has_ended"] %}
+                    <!-- <i class="far fa-clock"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i> -->
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% else %}
+                    <i class="far fa-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% end %}
+                
+                &nbsp;
+                
+                {{ assignment[2]["title"] }}
+            
+                </a>
+            {% end %}
+        </div>
+    </div>
+{% end %}            </div>
+            <div class="navbar-end">
+                <div id="menu_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('menu_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        {{ user_info["given_name"] }}
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </div>
+
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/">Courses</a>
+
+                        <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
+
+                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+
+                        {% if is_administrator %}
+                            <hr class="navbar-divider">
+
+                            <a class="navbar-item" href="/edit_course/">Create course</a>
+
+                            <a class="navbar-item" href="/manage_admins">Manage admins</a>
+
+                            <a class="navbar-item" href="/manage_users">Manage users</a>
+
+                            <a class="navbar-item" href="/summarize_logs">View logs</a>
+
+                            <a class="navbar-item" href="/clean_up_courses">Clean up courses</a>
+                        {% end %}
+
+                        <hr class="navbar-divider">
+
+                        <a class="navbar-item" href="/logout">Log out</a>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+</nav><div class="has-background-light container-padding">
+    <div class="content is-medium"><form method="post" action="/edit_course/{{ course_basics['id'] }}" id="courseForm">
+
+{% if course_basics["exists"] %}
+<div class="row-container">
+    <h4>Edit course</h4>
+    <p>
+        <input type="submit" class="button is-dark" value="Save" />
+        <button class="button is-white" onclick="location.href='/course/{{ course_basics["id"] }}'; return false;">Course home</button>
+    </p>
+</div>
+{% else %}
+    <h4>Create course</h4>
+{% end %}
+
+{% if result %}
+    {% if result.startswith("Error:") %}
+        <p><div class="notification is-danger"><strong>{{ result }}</strong></div></p>
+    {% else %}
+        <p><div class="notification is-primary"><strong>{{ result }}</strong></div></p>
+    {% end %}
+{% end %}
+
+<div class="shadow-box">
+    <div class="row-container">
+        <div class="a-title-container">
+            <p><strong>Title*: </strong></p>
+            <p><textarea name="title" class="textarea is-grey is-medium monospace" placeholder="Please specify a descriptive title for this course." rows="1" autofocus>{{ course_basics["title"] }}</textarea></p>
+        </div>
+
+        <div class="a-visible top-space">
+            <p><strong>Visible to students: </strong>
+                <div class="select is-grey">
+                    <select name="is_visible" class="edit-select">
+                    {% if course_basics["visible"] %}
+                        <option value="Yes" selected>Yes</option>
+                        <option value="No">No</option>
+                    {% else %}
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    {% end %}
+                    </select>
+                </div>
+            </p>
+        </div>
+    </div>
+
+    <div class="top-space">
+        <p><strong>Introduction*: </strong></p>
+        <p><textarea class="textarea" name="introduction" rows=10 placeholder="Please provide an introduction for this course.">{{ course_details["introduction"] }}</textarea></p>
+    </div>
+</div>
+
+<div class="shadow-box">
+    <div class="a-visible">
+        <p>
+            <strong>Highlight this course on the registration page?</strong>
+            
+            <br />
+            
+            This option can only be enabled by users with administrator privileges.
+        </p>
+
+        <div class="select is-grey">
+            <select name="highlighted" class="edit-select">
+                {% if course_details["highlighted"] %}
+                    <option value="Yes" selected>Yes</option>
+                    <option value="No">No</option>
+                {% else %}
+                    <option value="Yes">Yes</option>
+                    <option value="No" selected>No</option>
+                {% end %}
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="shadow-box">
+    <div class="a-visible">
+        <p>
+            <strong>Support email address:</strong>
+            
+            <br />
+            
+            If you would like, you can provide an email address. If question-answering is supported for any assignment in the course, students' questions will be sent to the specified email address. You will then be able to review the questions and respond to them via a Web interface. This option also requires that an SMTP server be specified in the app's settings file.
+        </p>
+
+        <div>
+            <input class="input"
+                type="text"
+                name="email_address"
+                value="{{ course_details['email_address'] if course_details['email_address'] else '' }}"
+                placeholder="Please enter a valid email address." />
+        </div>
+    </div>
+</div>
+
+<div class="shadow-box">
+    <div class="a-visible top-space">
+        <p><strong>Allow students to download their code for this course?</strong>
+        <br />With this option, students are allowed to download their code for all assignments and exercises in this course as a single HTML file. The file includes their <i>latest, passing</i> submission for each exercise. To provide context, assignment introductions and exercise instructions are provided. Timed assignments, hidden assignments, and non-code exercises are excluded.</p>
+            <div class="select is-grey">
+                <select name="allow_students_download_submissions" class="edit-select">
+                {% if course_details["allow_students_download_submissions"] %}
+                    <option value="Yes" selected>Yes</option>
+                    <option value="No">No</option>
+                {% else %}
+                    <option value="Yes">Yes</option>
+                    <option value="No" selected>No</option>
+                {% end %}
+                </select>
+            </div>
+        </p>
+    </div>
+</div>
+
+<div class="shadow-box">
+    <p><strong>Passcode (optional): </strong><br/>Students are required to enter this code in order to register for the course.</p>
+    <p><textarea name="passcode" class="textarea is-grey is-medium is-fullwidth monospace" rows="1">{% if course_details["passcode"] %}{{ course_details["passcode"] }}{% end %}</textarea></p>
+</div>
+
+<div class="shadow-box">
+    <p><strong>Virtual Assistant configuration (optional): </strong><br/>This feature is currently <em>experimental</em>. The goal is to automate the process of helping students when they are stuck on programming exercises. It uses the <em>Chat Completions</em> endpoint of <a href="https://platform.openai.com/docs/guides/gpt/chat-completions-api" target="_blank">OpenAI's API</a> (similar to what is used by ChatGPT). To enable this feature, you must specify configuration information in YAML format, as shown in <a href="https://github.com/srp33/CodeBuddy/blob/master/examples/openai_example.yaml" target="_blank">this example</a>. Then you must indicate whether this feature is enabled in the settings for <em>each assignment</em>.
+
+    <p><textarea name="virtual_assistant_config" class="textarea is-grey is-medium is-fullwidth monospace" rows="5">{% if course_details["virtual_assistant_config"] %}{{ course_details["virtual_assistant_config"] }}{% end %}</textarea></p>
+</div>
+
+<p class="buttons">
+    <input type="submit" class="button is-dark is-half-width" value="Save" />
+
+    {% if course_basics["exists"] %}
+        <a class="button is-white" href="/course/{{ course_basics['id'] }}">Course home</a>
+    {% end %}
+</p>
+
+</form>    </div>
+</div>                <div class="columns is-gapless has-text-centered is-size-6 pt-4 pb-4">
+                    <div class="column">
+                        <a href="/static/about.html">About</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+                    </div>
+                    <div class="column">
+                        <a href="/static/contact_us.html">Contact Us</a>
+                    </div>
+                </div>
+        </div>
+    </body>
+</html>

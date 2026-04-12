@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="/static/bulma.0.9.3.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="/static/font-awesome.5.3.1.all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>-->
+        <script
+            src="/static/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+        <!--<script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>-->
+
+        <title>CodeBuddy</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
+
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
+
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+            <div>
+<script>
+    const toggleBurger = () => {
+        let burgerIcon = document.getElementById('burger');
+        let dropMenu = document.getElementById('the_menu');
+        burgerIcon.classList.toggle('is-active');
+        dropMenu.classList.toggle('is-active');
+    };
+
+    // $(document).ready(function() {
+    //     // Function to check if the navbar contents are wider than the available space
+    //     function isNavbarOverflowed() {
+    //         return $('.navbar-menu').prop('scrollWidth') > $('.navbar-menu').width();
+    //     }
+
+    //     // Function to toggle the burger icon and menu based on screen width and contents
+    //     function toggleNavbar() {
+    //         if ($(window).width() > 1224 && isNavbarOverflowed()) {
+    //             $('.navbar-burger').show();
+    //             $('.navbar-menu').hide();
+    //         } else {
+    //             $('.navbar-burger').hide();
+    //             $('.navbar-menu').show();
+    //         }
+    //     }
+
+    //     // Initial toggle when the page loads
+    //     toggleNavbar();
+
+    //     $(window).resize(function() {
+    //         toggleNavbar();
+    //     });
+
+    //     // Toggle the navbar when the burger icon is clicked
+    //     $('.navbar-burger').click(function() {
+    //         $('.navbar-menu').toggle();
+    //     });
+    // });
+    
+    function toggleDropdown(div_id) {
+        var element = document.getElementById(div_id);
+        element.classList.toggle('is-active');
+    }
+
+    window.addEventListener('click', function(e) {
+        for (menu of ["course", "assignment", "exercise", "menu"]) {
+            var dropdown = document.getElementById(`${menu}_dropdown`);
+
+            if (dropdown == null)
+                continue;
+
+            if (!dropdown.contains(e.target) && dropdown.classList.contains("is-active"))
+                dropdown.classList.remove("is-active");
+        }
+    });
+</script>
+
+<nav id="navbar" class="navbar is-spaced has-shadow" role="navigation" aria-label="main navigation" style="border-radius: 0px; padding: 1px; box-shadow: 3px 3px 6px lightgray;">
+    <div class="navbar-brand" style="padding: 3px 0px 0px 0px;">
+        <a href="/" id="navbar-start">CodeBuddy <i class="fa fa-home" style="padding: 0 .3em; width:auto;" aria-hidden="true"></i></a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" id="burger" onclick="toggleBurger()">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+    <div class="navbar-menu is-size-5" id="the_menu">
+        <div class="navbar-start">            {% if len(courses) > 1 and "course_basics" in globals() and course_basics["exists"] %}
+                <div id="course_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('course_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        Courses
+
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+                    </div>
+
+                    <div id="moreDropdown" class="navbar-dropdown">
+                        {% for course in courses %}
+                            {% if course[0] == course_basics['id'] %}
+                                <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                            {% else %}
+                                <a class="navbar-item" style="white-space: nowrap;"
+                            {% end %}
+
+                            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                                href="/edit_course/{{ course[0] }}"
+                            {% else %}
+                                href="/course/{{ course[0] }}"
+                            {% end %}
+                            
+                            >
+                            
+                            {{ course[1]["title"] }}
+                        
+                            </a>
+                        {% end %}
+                    </div>
+                </div>
+            {% end %}{% if "assignment_statuses" in globals() and len(assignment_statuses) > 1 and "assignment_basics" in globals() and assignment_basics["exists"] %}
+    <div id="assignment_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('assignment_dropdown')">
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Assignments
+
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
+
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% set prev_assignment_group = None %}
+            {% set non_other_assignment_group = False %}
+
+            {% for assignment in assignment_statuses %}
+                {% set current_assignment_group = assignment[1] %}
+
+                {% if current_assignment_group != "" %}
+                    {% set non_other_assignment_group = True %}
+                {% end %}
+
+                {% if current_assignment_group != prev_assignment_group and non_other_assignment_group %}
+                    <div class="navbar-item has-text-weight-bold" style="padding-top: 10px; padding-bottom: 5px;">
+                        {% if current_assignment_group == "" %}
+                            Other
+                        {% else %}
+                            {{ current_assignment_group }}
+                        {% end %}                        
+                    </div>
+
+                    {% set prev_assignment_group = current_assignment_group %}
+                {% end %}
+
+                {% if assignment[0] == assignment_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+
+                {% if "is_edit_page" in globals() and is_edit_page == True %}
+                    href="/edit_assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% else %}
+                    href="/assignment/{{ course_basics['id'] }}/{{ assignment[0] }}"
+                {% end %}
+                >
+
+                {% if assignment[2]["completed"] %}
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["in_progress"] %}
+                    <i class="far fa-hourglass"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% elif assignment[2]["timer_has_ended"] %}
+                    <!-- <i class="far fa-clock"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i> -->
+                    <i class="far fa-check-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% else %}
+                    <i class="far fa-circle"
+                    
+                    {% if assignment[0] == assignment_basics['id'] %}
+                        style="color: white;"
+                    {% end %}
+
+                    ></i>
+                {% end %}
+                
+                &nbsp;
+                
+                {{ assignment[2]["title"] }}
+            
+                </a>
+            {% end %}
+        </div>
+    </div>
+{% end %}{% if "exercise_statuses" in globals() and len(exercise_statuses) > 1 and "exercise_basics" in globals() and exercise_basics["exists"] %}
+    <div id="exercise_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('exercise_dropdown')">
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            Exercises
+
+            <i class="fas fa-chevron-down" style="margin-left: 10px;margin-right: 10px;"></i>
+        </div>
+
+        <div id="moreDropdown" class="navbar-dropdown">
+            {% for exercise in exercise_statuses %}
+                {% if exercise[0] == exercise_basics['id'] %}
+                    <a class="navbar-item" style="background-color: #003DA5; color: white; white-space: nowrap;"
+                {% else %}
+                    <a class="navbar-item" style="white-space: nowrap;"
+                {% end %}
+                
+                    {% if "is_edit_page" in globals() and is_edit_page == True %}
+                        href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                    {% else %}
+                        href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}"
+                    {% end %}
+                    >
+
+                    {% if exercise[1]["completed"] %}
+                        <i class="far fa-check-circle"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% elif exercise[1]["in_progress"] %}
+                        <i class="far fa-hourglass"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% else %}
+                        <i class="far fa-circle"
+                        
+                        {% if exercise[0] == exercise_basics['id'] %}
+                            style="color: white;"
+                        {% end %}
+
+                        ></i>&nbsp;
+                    {% end %}
+
+                    {{ exercise[1]["title"] }}
+
+                    {% if exercise[1]["enable_pair_programming"] %}
+                        <label style="margin-left: 5px;" class="has-tooltip-multiline has-tooltip-left" data-tooltip="Pair programming is enabled for this exercise"><i class="fab fa-product-hunt"></i></label>
+                    {% end %}
+                </a>
+            {% end %}
+        </div>
+    </div>
+
+    {% if "prev_exercise" in globals() and prev_exercise %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% else %}
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ prev_exercise['id'] }}">
+            {% end %}
+
+                <i class="fas fa-arrow-left" style="margin-left: 5px;margin-right: 1px;"></i>
+            </a>
+        </div>
+    {% end %}
+
+    {% if "next_exercise" in globals() and next_exercise %}
+        <div class="navbar-item is-arrowless" style="cursor: pointer;">
+            {% if "is_edit_page" in globals() and is_edit_page == True %}
+                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% else %}
+                <a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ next_exercise['id'] }}">
+            {% end %}
+
+                <i class="fas fa-arrow-right" style="margin-left: 1px;margin-right: 5px;"></i>
+            </a>
+        </div>
+    {% end %}
+{% end %}
+            </div>
+            <div class="navbar-end">
+                <div id="menu_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('menu_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        {{ user_info["given_name"] }}
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </div>
+
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/">Courses</a>
+
+                        <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
+
+                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+
+                        {% if is_administrator %}
+                            <hr class="navbar-divider">
+
+                            <a class="navbar-item" href="/edit_course/">Create course</a>
+
+                            <a class="navbar-item" href="/manage_admins">Manage admins</a>
+
+                            <a class="navbar-item" href="/manage_users">Manage users</a>
+
+                            <a class="navbar-item" href="/summarize_logs">View logs</a>
+
+                            <a class="navbar-item" href="/clean_up_courses">Clean up courses</a>
+                        {% end %}
+
+                        <hr class="navbar-divider">
+
+                        <a class="navbar-item" href="/logout">Log out</a>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+</nav><div class="has-background-light container-padding">
+    <div class="content is-medium">{% if course_basics["exists"] %}
+    <h4>{{ assignment_basics["title"] }}</h4>
+
+    {% if assignment_basics["exists"] %}
+        <p>
+            {{ assignment_details["introduction"] }}
+        </p>
+
+        {% if assignment_details["allowed_external_urls"] != "" %}
+            <p>
+                Students can access these external pages while completing this assignment:
+            </p>
+
+            <ul>
+                {% for url, encoded_url in assignment_details["allowed_external_urls_dict"].items() %}
+                    <li><a href="/external/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/{{ encoded_url }}" target="_blank">{{ url }}</a></li>
+                {% end %}
+            </ul>
+        {% end %}
+
+        <link rel="stylesheet" href="/static/css/modal.css">
+
+        <script>
+            function delete_exercise_submissions_build_body(data_obj, messageElement) {
+                pElement = document.createElement("p");
+                pElement.innerHTML = "Are you sure you want to purge submissions (and scores) for this exercise?";
+                messageElement.appendChild(pElement);
+            }
+
+            function delete_exercise_submissions_get_post_url(data_obj) {
+                return `/delete_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${data_obj.exercise_id}`;
+            }
+
+            function copy_exercise_build_body(data_obj, messageElement) {
+                var previous_title = "";
+                for (let exercise of {{ jsonify(exercises) }}) {
+                    if (exercise[0] == data_obj.exercise_id) {
+                        previous_title = exercise[1]["title"];
+                        break;
+                    }
+                }
+
+                pElement = document.createElement("p");
+                pElement.innerHTML = "New title:";
+
+                inputElement = document.createElement("input");
+                inputElement.setAttribute("class", "input is-medium is-primary");
+                inputElement.setAttribute("type", "text");
+                inputElement.setAttribute("id", "copy_exercise_new_title");
+                inputElement.setAttribute("value", `${previous_title} - 2`);
+
+                messageElement.appendChild(pElement);
+                messageElement.appendChild(document.createElement("br"));
+                messageElement.appendChild(inputElement);
+                inputElement.focus();
+                inputElement.selectionStart = inputElement.selectionEnd = inputElement.value.length;
+            }
+
+            function copy_exercise_get_post_url(data_obj) {
+                return `/copy_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${data_obj.exercise_id}`;
+            }
+
+            function copy_exercise_get_post_data() {
+                return {"new_title": document.getElementById("copy_exercise_new_title").value};
+            }
+
+            function move_exercise_build_body(data_obj, messageElement) {
+                var html = "<p>New assignment:</p><br />";
+                html += `<div class="select">`;
+                html += `<select id="exercise_new_assignment_id">`;
+                {% for assignment in assignment_statuses %}
+                    {% if assignment[0] != assignment_basics["id"] %}
+                        html += `<option value="{{ assignment[0] }}">{{ assignment[2]["title"] }}</option>`;
+                    {% end %}
+                {% end %}
+                html += `</select>`;
+                html += `</div>`;
+
+                divElement = document.createElement("div");
+                divElement.innerHTML = html;
+                messageElement.appendChild(divElement);
+            }
+
+            function move_exercise_get_post_url(data_obj) {
+                return `/move_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${data_obj.exercise_id}`;
+            }
+
+            function move_exercise_get_post_data() {
+                return {"new_assignment_id": document.getElementById("exercise_new_assignment_id").value};
+            }
+
+            function delete_exercise_build_body(data_obj, messageElement) {
+                pElement = document.createElement("p");
+                pElement.innerHTML = "Are you sure you want to delete this exercise?";
+                messageElement.appendChild(pElement);
+            }
+
+            function delete_exercise_get_post_url(data_obj) {
+                return `/delete_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${data_obj.exercise_id}`;
+            }
+
+            function new_video_build_body(data_obj, messageElement) {
+                var html = `<p class="is-size-6">Use this option to create an exercise that displays a video and asks the user to submit a response. <a href="https://youtube.com" target="_blank">YouTube</a> and <a href="https://panopto.com" target="_blank">Panopto</a> are currently supported.</p>`;
+
+                html += `<p style='margin-top: 0.95em;margin-bottom: 0.35em' class='is-size-6'><strong>Title*</strong>:</p><p><input class="input is-primary is-size-6" type="text" id="video_title" name="video_title" /></p>`;
+
+                html += "<p style='margin-top: 0.95em; margin-bottom: 0.35em' class='is-size-6'><strong>Instructions:</strong></p> <p><textarea class='textarea is-primary is-size-6' rows=5 id='video_instructions'>Please watch this video and then enter the requested response in the box below.</textarea></p>";
+
+                html += `<p style="margin-top: 0.95em;" class="is-size-6"><strong>Video URL:</strong></p><p  style="margin-top: 0.25em; margin-bottom: 0.45em" class="is-size-6">For YouTube, paste a standard URL (<a href="https://www.youtube.com/watch?v=PLOPygVcaVE" target="_blank">example</a>) For Panopto, paste a Viewer URL (<a href="https://byu.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=e60fd535-e5db-4d13-b86c-aebc01586257", target="_blank">example</a>). The URL will be shortened and stored in the exercise instructions.</p><p><input class="input is-primary is-size-6" type="text" id="video_url" name="video_url"/></p>`;
+
+                messageElement.innerHTML = html;
+
+                document.getElementById('video_title').focus();
+            }
+
+            function new_video_get_post_url(data_obj) {
+                return "/create_video_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}";
+            }
+
+            function new_video_get_post_data() {
+                var title = document.getElementById("video_title").value.trim();
+                var instructions = document.getElementById("video_instructions").value.trim();
+                var url = document.getElementById("video_url").value.trim();
+
+                if (title.length == 0 || instructions.length == 0 || url == 0) 
+                    return {"error": "All inputs must be specified."};
+
+                if (url.includes("youtube") || url.includes("youtu.be")) {
+                    var video_id = url.replace("https://youtu.be/", "").replace("https://www.youtube.com/watch?v=", "").replace("&feature=youtu.be", "");
+
+                    return {"title": title, "instructions": instructions + "\n\nyoutube:" + video_id};
+                }
+                else {
+                    if (url.includes("panopto.com")) {
+                        var url_parts = url.replace("https://", "").split("/Panopto/Pages/Viewer.aspx?id=");
+                        var video_id = url_parts[0] + "/" + url_parts[1];
+                        
+                        return {"title": title, "instructions": instructions + "\n\npanopto:" + video_id};
+                    }
+                    else {
+                        return {"error": "The video URL is invalid."};
+                    }
+                }
+            }
+        </script>
+
+        {% if len(exercises) > 0 %}
+            <div class="table-container">
+                <table class="table is-striped" id="assignment_table">
+                    <thead>
+                        <tr>
+                            <th>Exercise</th>
+                            <th style="text-align: center;">Visibility</th>
+                            <th style="text-align: center;"># Completed</th>
+                            <th style="text-align: center;">Avg. Score</th>
+                            {% if has_non_default_weight %}
+                                <th style="text-align: center;">Weight*</th>
+                            {% end %}
+                            <th style="text-align: center;">Edit</th>
+
+                            {% if not is_assistant %}
+                                <th style="text-align: center;">Copy</th>
+                                <th style="text-align: center;">Move</th>
+                                <th style="text-align: center;">Purge</th>
+                                <th style="text-align: center;">Delete</th>
+                            {% end %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for exercise in exercise_statuses %}
+                        <tr>
+                            <td><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise[1]["title"] }}</a>
+                            {% if exercise[1]["enable_pair_programming"] %}
+                                <label class="has-tooltip-multiline has-tooltip-right" data-tooltip="Pair programming is enabled for this exercise."><i class="fab fa-product-hunt"></i></label>
+                            {% end %}
+                            </td>
+
+                            {% if exercise[1]["visible"] == 0 %}
+                                <td style="text-align: center;">Hidden</td>
+                                <td> </td>
+                                <td> </td>
+                            {% else %}
+                                <td style="text-align: center;">Visible</td>
+                                <td style="text-align: center;">
+
+                                    <a href="/exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ exercise_summary_scores[exercise[0]]["num_students_completed"] }} / {{ exercise_summary_scores[exercise[0]]["num_students"] }}</a>
+                                </td>
+                                <td style="text-align: center;">
+                                    <a href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">{{ round(exercise_summary_scores[exercise[0]]["score"], 1) }}%</a>
+                                </td>
+                                {% if has_non_default_weight %}
+                                    <td style="text-align: center;">{{ exercise[1]['weight'] }}</td>
+                                {% end %}
+                            {% end %}
+                            <td style="text-align: center;">
+                                <a href="/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise[0] }}">
+                                    <i class="far fa-edit"></i>
+                                </a>
+                            </td>
+                            {% if not is_assistant %}
+                                <td style="text-align: center;">
+                                    <a onclick="showPostModal('copy_exercise', 'Copy exercise within the same assignment:', {'exercise_id': '{{ exercise[0] }}'}, '')">
+                                        <i class="far fa-copy"></i>
+                                    </a>
+                                </td>
+
+                                <td style="text-align: center;">
+                                    <a onclick="showPostModal('move_exercise', 'Move this exercise to a different assignment:', {'exercise_id': '{{ exercise[0] }}'}, '')">
+                                        <i class="far fa-arrow-alt-circle-right"></i>
+                                    </a>
+                                </td>
+                                <td style="text-align: center;">
+                                    <a onclick="showPostModal('delete_exercise_submissions', 'Purge exercise submissions', {'exercise_id': '{{ exercise[0] }}'}, '', ' while exercise submissions are purged and the page refreshes\u2026')"><i class="far fa-times-circle"></i></a>
+                                </td>
+                                <td style="text-align: center;">
+                                    <a onclick="showPostModal('delete_exercise', 'Delete exercise', {'exercise_id': '{{ exercise[0] }}'}, '', ' while this exercise is deleted and the page refreshes\u2026')">
+                                        <i class="far fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            {% end %}
+                        </tr>
+                    {% end %}  
+                    </tbody>
+                </table>
+
+                {% if has_non_default_weight %}
+                    <p>* Exercises with relatively high weights count more toward the overall assignment score than exercises with relatively low weights.</p>
+                {% end %}
+            </div>
+        {% else %}
+            <p><strong>No exercises have been created for this assignment.</strong></p>
+        {% end %}
+
+        {% if is_administrator or is_instructor or is_assistant %}
+            <div class="buttons">
+                <a class="button is-dark" href='/edit_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/'>Create exercise</a>
+                
+                <button class="button has-background-primary-light" onclick="showPostModal('new_video', 'Create video exercise', {}, '')">Create video exercise</button>
+
+                <a class="button has-background-primary-light" href="/edit_mc_exercise/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}/">Create multiple-choice exercise</a>
+
+                <a class="button has-background-primary-light" href='/edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Edit assignment</a>
+
+                <a class="button" href='/export_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}' download="{{ course_basics['title'] }}__{{ assignment_basics['title'] }}.json">Export assignment</a>
+
+                <a class="button" href='/resave_exercises/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Re-save exercises</a>
+
+                <a class="button" href='/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>View scores</a>
+
+                {% if previous_assignment_id %}
+                    <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ previous_assignment_id }}'>Previous assignment</a>
+                {% end %}
+
+                {% if next_assignment_id %}
+                    <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
+                {% end %}
+
+                <a class="button" href='/course/{{ course_basics['id'] }}'>Course home</a>
+            </div>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
+{% else %}
+    <p>This course does not exist.</p>
+{% end %}<script>
+    function showPostModal(action, title, data_obj, reload_url, wait_detail_text) {
+        var waitDefaultDetail = " while this task completes and the page refreshes\u2026";
+        var waitDetail = (wait_detail_text !== undefined && wait_detail_text !== null && wait_detail_text !== "")
+            ? wait_detail_text
+            : waitDefaultDetail;
+
+        // Build the modal
+        var modalElement = document.createElement("div");
+        modalElement.setAttribute("class", "modal");
+        modalElement.style.display = "block";
+
+        var backgroundElement = document.createElement("div");
+        backgroundElement.setAttribute("class", "modal-background");
+
+        var cardElement = document.createElement("div");
+        cardElement.setAttribute("class", "modal-card");
+
+        var headerElement = document.createElement("header");
+        headerElement.setAttribute("class", "modal-card-head");
+
+        var titleElement = document.createElement("p");
+        titleElement.setAttribute("class", "modal-card-title");
+        titleElement.innerHTML = `<strong>${title}</strong>`;
+
+        var sectionElement = document.createElement("section");
+        sectionElement.setAttribute("class", "modal-card-body is-large");
+        messageElement = document.createElement("div");
+        messageElement.setAttribute("style", "font-size: 24px;");
+
+        var errorElement = document.createElement("div");
+
+        var waitElement = document.createElement("div");
+        waitElement.style.display = "none";
+
+        function setWaiting(isWaiting) {
+            if (isWaiting) {
+                waitElement.style.display = "block";
+                waitElement.innerHTML = `<div class="notification is-info is-light mt-4 mb-0">
+                    <div class="is-flex is-align-items-flex-start">
+                        <span class="icon is-large has-text-info mr-3 mt-1" style="flex-shrink: 0;">
+                            <i class="fas fa-spinner fa-pulse" aria-hidden="true"></i>
+                        </span>
+                        <p class="is-size-5 mb-0">
+                            <strong class="has-text-info">Please wait</strong>
+                            <span class="has-text-grey-dark">${waitDetail}</span>
+                        </p>
+                    </div>
+                </div>`;
+                actionButton.style.pointerEvents = "none";
+                actionButton.style.opacity = "0.5";
+                cancelButton.style.pointerEvents = "none";
+                cancelButton.style.opacity = "0.5";
+            }
+            else {
+                waitElement.style.display = "none";
+                waitElement.innerHTML = "";
+                actionButton.style.pointerEvents = "";
+                actionButton.style.opacity = "";
+                cancelButton.style.pointerEvents = "";
+                cancelButton.style.opacity = "";
+            }
+        }
+
+        function updateErrorMessage(message) {
+            if (message == "")
+                errorElement.innerHTML = message;
+            else
+                errorElement.innerHTML = `<hr /><p><font color='red'>${message}</p>`;
+                errorElement.scrollIntoView();
+        }
+
+        var footerElement = document.createElement("footer");
+        footerElement.setAttribute("class", "modal-card-foot");
+
+        var actionButton = document.createElement("a");
+        actionButton.setAttribute("class", "modal-button button is-dark");
+        actionButton.innerHTML = "Continue";
+
+        var cancelButton = document.createElement("a");
+        cancelButton.setAttribute("class", "modal-button button");
+        cancelButton.innerHTML = "Cancel";
+
+        // Nest everything within the modal
+        modalElement.appendChild(backgroundElement);
+
+        headerElement.appendChild(titleElement);
+        sectionElement.appendChild(messageElement);
+        sectionElement.appendChild(errorElement);
+        sectionElement.appendChild(waitElement);
+        footerElement.appendChild(actionButton);
+        footerElement.appendChild(cancelButton);
+
+        cardElement.appendChild(headerElement);
+        cardElement.appendChild(sectionElement);
+        cardElement.appendChild(footerElement);
+
+        modalElement.appendChild(cardElement);
+        document.body.appendChild(modalElement);
+
+        var build_body_function = window[`${action}_build_body`];
+        if (build_body_function)
+            build_body_function(data_obj, messageElement);
+
+        actionButton.onclick = function() {
+            // This sets it back to the original value if they get an error and then click the action button again.
+            updateErrorMessage("");
+
+            var postData = {};
+            var get_post_data_function = window[`${action}_get_post_data`];
+            if (get_post_data_function)
+                postData = get_post_data_function();
+
+            if ("error" in postData && postData.error != "") {
+                updateErrorMessage(postData.error);
+                return;
+            }
+
+            setWaiting(true);
+
+            $.ajax({
+                type: 'POST',
+                url: window[`${action}_get_post_url`](data_obj),
+                data: postData,
+                async: true,
+                success: function(result) {
+                    if (result == "") {
+                        modalElement.style.display = "none";
+
+                        if (reload_url == "") {
+                            //window.scrollTo(0, 0);
+                            location.reload();
+                        }
+                        else {
+                            location.href = reload_url;
+                        }
+                    }
+                    else {
+                        setWaiting(false);
+                        updateErrorMessage(result);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown)
+                {
+                    setWaiting(false);
+                    updateErrorMessage(`Error: ${errorThrown}`);
+                }
+            });
+        }
+
+        cancelButton.onclick = function() {
+            modalElement.style.display = "none";
+        }
+
+        // window.onclick = function(event) {
+        //     if (event.target == modalElement)
+        //         modalElement.style.display = "none";
+        // }
+    }
+
+    // https://www.w3docs.com/snippets/javascript/how-to-sort-javascript-object-by-key.html
+    // https://fuzzytolerance.info/blog/2019/07/19/The-better-way-to-do-natural-sort-in-JavaScript/
+    function sortObj(obj) {
+        return Object.keys(obj).sort((a, b) => a.localeCompare(b, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true})).reduce(function (result, key) {
+            result[key] = obj[key];
+            return result;
+        }, {});
+    }
+
+    function parseDateText(text) {
+        if (text == "None")
+             return "No submissions";
+
+        var the_date = new Date(text);
+        // var the_date_mod = the_date.getTime() - (the_date.getTimezoneOffset() * 60000);
+        // the_date.setTime(the_date_mod);
+
+        return the_date.toLocaleString();
+    }
+
+    function addPasteEventListener(textarea_id) {
+        let textarea = document.getElementById(textarea_id);
+
+        textarea.addEventListener('paste', function(event) {
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        const base64Image = event.target.result;
+                        const imgTag = `<img src="${base64Image}" alt="An image illustrating something from the instructions." />`;
+                        insertTextAtCursor(textarea, imgTag);
+                    };
+
+                    reader.readAsDataURL(blob);
+
+                    // Prevent the default paste behavior
+                    event.preventDefault();
+                    break;
+                }
+            }
+        });
+    }
+
+    function insertTextAtCursor(textarea, text) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = textarea.value.substring(0, start);
+        const after = textarea.value.substring(end, textarea.value.length);
+
+        textarea.value = before + text + after;
+        textarea.selectionStart = textarea.selectionEnd = start + text.length;
+
+        textarea.focus();
+    }
+
+    function showFiles() {
+        if (Object.keys(exercise_details_obj["data_files"]).length == 0) {
+            $("#files_table").addClass("is-hidden");
+            return;
+        }
+
+        var html = "<table class='table is-striped'>";
+        html += "<thead><tr><th>Name</th><th>Size (characters)</th><th>View</th><th>Delete</th></thead>";
+        html += "<tbody>";
+
+        for (const file_name in sortObj(exercise_details_obj["data_files"])) {
+            html += "<tr>";
+            html += `  <td>${file_name}</td>`;
+            html += `  <td>${exercise_details_obj["data_files"][file_name].length}</td>`;
+            html += `  <td>
+                            <a onclick="viewFile('${file_name}')">
+                                <i class="fas fa-file-alt"></i>
+                            </a>
+                        </td>`;
+            html += `  <td>
+                            <a onclick="removeFile('${file_name}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>`;
+            html += "</tr>";
+        }
+
+        html += "</tbody>";
+        html += "</table>";
+
+        $("#files_table")[0].innerHTML = html;
+        $("#files_table").removeClass("is-hidden");
+
+        // This clears the memory for this control so we can re-upload a file after removing it.
+        $("#upload_file_control").val(null);
+    }
+
+    function viewFile(file_name) {
+        $("#view_file_modal_header")[0].innerHTML = file_name;
+        view_file_editor.setValue(exercise_details_obj["data_files"][file_name], -1);
+        $("#view_file_modal").addClass("is-active");
+    }
+
+    function removeFile(file_name) {
+        delete exercise_details_obj["data_files"][file_name];
+        showFiles();
+    }
+
+    function dataFilesTooLarge() {
+        var total_file_size = 0;
+
+        for (let file_name of Object.keys(exercise_details_obj["data_files"]))
+            total_file_size += exercise_details_obj["data_files"][file_name].length;
+
+        let file_size_limit = 10 * 1000 * 1000;
+
+        return (total_file_size > file_size_limit);
+    }
+</script>
+    </div>
+</div>                <div class="columns is-gapless has-text-centered is-size-6 pt-4 pb-4">
+                    <div class="column">
+                        <a href="/static/about.html">About</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+                    </div>
+                    <div class="column">
+                        <a href="/static/contact_us.html">Contact Us</a>
+                    </div>
+                </div>
+        </div>
+    </body>
+</html>

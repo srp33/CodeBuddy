@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="/static/bulma.0.9.3.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="/static/font-awesome.5.3.1.all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>-->
+        <script
+            src="/static/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+        <!--<script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>-->
+
+        <title>CodeBuddy</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
+
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
+
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+            <div>
+<script>
+    const toggleBurger = () => {
+        let burgerIcon = document.getElementById('burger');
+        let dropMenu = document.getElementById('the_menu');
+        burgerIcon.classList.toggle('is-active');
+        dropMenu.classList.toggle('is-active');
+    };
+
+    // $(document).ready(function() {
+    //     // Function to check if the navbar contents are wider than the available space
+    //     function isNavbarOverflowed() {
+    //         return $('.navbar-menu').prop('scrollWidth') > $('.navbar-menu').width();
+    //     }
+
+    //     // Function to toggle the burger icon and menu based on screen width and contents
+    //     function toggleNavbar() {
+    //         if ($(window).width() > 1224 && isNavbarOverflowed()) {
+    //             $('.navbar-burger').show();
+    //             $('.navbar-menu').hide();
+    //         } else {
+    //             $('.navbar-burger').hide();
+    //             $('.navbar-menu').show();
+    //         }
+    //     }
+
+    //     // Initial toggle when the page loads
+    //     toggleNavbar();
+
+    //     $(window).resize(function() {
+    //         toggleNavbar();
+    //     });
+
+    //     // Toggle the navbar when the burger icon is clicked
+    //     $('.navbar-burger').click(function() {
+    //         $('.navbar-menu').toggle();
+    //     });
+    // });
+    
+    function toggleDropdown(div_id) {
+        var element = document.getElementById(div_id);
+        element.classList.toggle('is-active');
+    }
+
+    window.addEventListener('click', function(e) {
+        for (menu of ["course", "assignment", "exercise", "menu"]) {
+            var dropdown = document.getElementById(`${menu}_dropdown`);
+
+            if (dropdown == null)
+                continue;
+
+            if (!dropdown.contains(e.target) && dropdown.classList.contains("is-active"))
+                dropdown.classList.remove("is-active");
+        }
+    });
+</script>
+
+<nav id="navbar" class="navbar is-spaced has-shadow" role="navigation" aria-label="main navigation" style="border-radius: 0px; padding: 1px; box-shadow: 3px 3px 6px lightgray;">
+    <div class="navbar-brand" style="padding: 3px 0px 0px 0px;">
+        <a href="/" id="navbar-start">CodeBuddy <i class="fa fa-home" style="padding: 0 .3em; width:auto;" aria-hidden="true"></i></a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" id="burger" onclick="toggleBurger()">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+    <div class="navbar-menu is-size-5" id="the_menu">
+        <div class="navbar-start">            </div>
+            <div class="navbar-end">
+                <div id="menu_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('menu_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        {{ user_info["given_name"] }}
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </div>
+
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/">Courses</a>
+
+                        <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
+
+                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+
+                        {% if is_administrator %}
+                            <hr class="navbar-divider">
+
+                            <a class="navbar-item" href="/edit_course/">Create course</a>
+
+                            <a class="navbar-item" href="/manage_admins">Manage admins</a>
+
+                            <a class="navbar-item" href="/manage_users">Manage users</a>
+
+                            <a class="navbar-item" href="/summarize_logs">View logs</a>
+
+                            <a class="navbar-item" href="/clean_up_courses">Clean up courses</a>
+                        {% end %}
+
+                        <hr class="navbar-divider">
+
+                        <a class="navbar-item" href="/logout">Log out</a>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+</nav><div class="has-background-light container-padding">
+    <div class="content is-medium"><h4>Manage users</h4>
+
+<p>Search for existing user(s) based on their name or login ID.</p>
+
+<p>
+    <input id="search_input" class="input is-medium is-primary" type="text" placeholder="Enter a pattern that matches a user's name or login ID." oninput="showMatchingUsers()" autofocus />
+</p>
+
+<div class="table-container is-hidden" id="the_table"></div>
+
+<div class="is-hidden" id="explanation"><em>* Some features are experimental. Instructors can configure CodeBuddy to behave differently, according to the research cohort to which each student is randomly assigned.</em></div>
+
+<div id="result_message" class="is-hidden">
+</div>
+
+<script>
+    function showMatchingUsers() {
+        $("#result_message").addClass("is-hidden");
+        $("#the_table")[0].innerHTML = "";
+        $("#explanation").addClass("is-hidden");
+
+        let pattern = $("#search_input")[0].value;
+
+        if (pattern.length <= 1)
+            return;
+
+        $.ajax({
+            type: 'POST',
+            url: `/manage_users`,
+            data: pattern,
+            async: true
+            })
+            .done(function(result) {
+                let result_obj = JSON.parse(result);
+
+                if (result_obj["message"] == "") {
+                    if (result_obj["users"].length > 0) {
+                        renderTable(result_obj["users"]);
+                    }
+                    else {
+                        $("#result_message")[0].innerHTML = "There are no matches.";
+                        $("#result_message").removeClass("is-hidden");
+                    }
+                }
+                else {
+                    $("#result_message")[0].innerHTML = `<pre>${result_obj["message"]}</pre>`;
+                    $("#result_message").removeClass("is-hidden");
+                }
+            })
+            .fail(function(result) {
+                $("#result_message")[0].innerHTML = "<pre>An error occurred when connecting to the server.</pre>";
+                $("#result_message").removeClass("is-hidden");
+                console.log(result);
+            });
+    }
+
+    function renderTable(users) {
+        const table_container = document.getElementById('the_table');
+        table_container.innerHTML = "";
+
+        const table = document.createElement('table');
+
+        const header_row = document.createElement('tr');
+        const header_items = ["User ID", "Name", "Research Cohort*", ""]
+        header_items.forEach((text) => {
+                const cell = document.createElement('th');
+                cell.textContent = text;
+                header_row.appendChild(cell);
+            });
+
+        table.appendChild(header_row);
+
+        users.forEach((table_row) => {
+            const row = document.createElement('tr');
+
+            // User ID
+            var cell = document.createElement('td');
+            cell.textContent = table_row["user_id"];
+            row.appendChild(cell);
+
+            // Name
+            cell = document.createElement('td');
+            cell.textContent = table_row["name"];
+            row.appendChild(cell);
+
+            // Research cohort
+            cell = document.createElement('td');
+            cell.textContent = table_row["research_cohort"];
+            row.appendChild(cell);
+
+            // Delete button
+            cell = document.createElement('td');
+            cell.innerHTML = `<a class='button is-dark' href='/delete_user/${table_row["user_id"]}'>Delete account</a>`;
+            row.appendChild(cell);
+            
+            table.appendChild(row);
+        });
+
+        table.classList.add("table");
+        // This doesn't seem to work
+        table.classList.add("is-striped");
+        table.classList.add("is-hoverable");
+
+        table_container.appendChild(table);
+
+        $("#the_table").removeClass("is-hidden");
+        $("#explanation").removeClass("is-hidden");
+    }
+
+    showMatchingUsers();
+</script>    </div>
+</div>                <div class="columns is-gapless has-text-centered is-size-6 pt-4 pb-4">
+                    <div class="column">
+                        <a href="/static/about.html">About</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+                    </div>
+                    <div class="column">
+                        <a href="/static/contact_us.html">Contact Us</a>
+                    </div>
+                </div>
+        </div>
+    </body>
+</html>

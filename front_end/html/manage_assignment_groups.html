@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="CodeBuddy">
+        <meta http-equiv="Content-Script-Type" content="text/javascript">
+        <link rel="stylesheet" href="/static/bulma.0.9.3.min.css">
+        <link rel="stylesheet" href="/static/css/mystyles.css">
+        <link rel="stylesheet" href="/static/css/bulma-tooltip.css">
+        <link rel="stylesheet" href="/static/css/styles.css">
+        <script src="/static/font-awesome.5.3.1.all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.1/js/all.min.js"
+            integrity="sha512-IJcmeopmq+pfSnTIIqxay7uUBlIYP+f9wnqhfCMnfS5VOb2X9WDToczDCsbgXthcZZTNGbJyF+TvKSYGWeBpdQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" data-observe-mutations></script>-->
+        <script
+            src="/static/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+        <!--<script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>-->
+
+        <title>CodeBuddy</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap"
+            rel="stylesheet">
+
+        <style type="text/css" media="screen">
+            .ace_editor {
+                border: 1px solid lightgray;
+                margin: auto;
+                height: 500px;
+                width: 100%;
+            }
+
+            .scrollmargin {
+                height: 80px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+            <div>
+<script>
+    const toggleBurger = () => {
+        let burgerIcon = document.getElementById('burger');
+        let dropMenu = document.getElementById('the_menu');
+        burgerIcon.classList.toggle('is-active');
+        dropMenu.classList.toggle('is-active');
+    };
+
+    // $(document).ready(function() {
+    //     // Function to check if the navbar contents are wider than the available space
+    //     function isNavbarOverflowed() {
+    //         return $('.navbar-menu').prop('scrollWidth') > $('.navbar-menu').width();
+    //     }
+
+    //     // Function to toggle the burger icon and menu based on screen width and contents
+    //     function toggleNavbar() {
+    //         if ($(window).width() > 1224 && isNavbarOverflowed()) {
+    //             $('.navbar-burger').show();
+    //             $('.navbar-menu').hide();
+    //         } else {
+    //             $('.navbar-burger').hide();
+    //             $('.navbar-menu').show();
+    //         }
+    //     }
+
+    //     // Initial toggle when the page loads
+    //     toggleNavbar();
+
+    //     $(window).resize(function() {
+    //         toggleNavbar();
+    //     });
+
+    //     // Toggle the navbar when the burger icon is clicked
+    //     $('.navbar-burger').click(function() {
+    //         $('.navbar-menu').toggle();
+    //     });
+    // });
+    
+    function toggleDropdown(div_id) {
+        var element = document.getElementById(div_id);
+        element.classList.toggle('is-active');
+    }
+
+    window.addEventListener('click', function(e) {
+        for (menu of ["course", "assignment", "exercise", "menu"]) {
+            var dropdown = document.getElementById(`${menu}_dropdown`);
+
+            if (dropdown == null)
+                continue;
+
+            if (!dropdown.contains(e.target) && dropdown.classList.contains("is-active"))
+                dropdown.classList.remove("is-active");
+        }
+    });
+</script>
+
+<nav id="navbar" class="navbar is-spaced has-shadow" role="navigation" aria-label="main navigation" style="border-radius: 0px; padding: 1px; box-shadow: 3px 3px 6px lightgray;">
+    <div class="navbar-brand" style="padding: 3px 0px 0px 0px;">
+        <a href="/" id="navbar-start">CodeBuddy <i class="fa fa-home" style="padding: 0 .3em; width:auto;" aria-hidden="true"></i></a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" id="burger" onclick="toggleBurger()">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+    <div class="navbar-menu is-size-5" id="the_menu">
+        <div class="navbar-start">            </div>
+            <div class="navbar-end">
+                <div id="menu_dropdown" class="navbar-item has-dropdown" onclick="toggleDropdown('menu_dropdown')">
+                    <div class="navbar-item is-arrowless" style="cursor: pointer;">
+                        {{ user_info["given_name"] }}
+                        <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                    </div>
+
+                    <div class="navbar-dropdown is-size-5 is-right">
+                        <a class="navbar-item" href="/">Courses</a>
+
+                        <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
+
+                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+
+                        {% if is_administrator %}
+                            <hr class="navbar-divider">
+
+                            <a class="navbar-item" href="/edit_course/">Create course</a>
+
+                            <a class="navbar-item" href="/manage_admins">Manage admins</a>
+
+                            <a class="navbar-item" href="/manage_users">Manage users</a>
+
+                            <a class="navbar-item" href="/summarize_logs">View logs</a>
+
+                            <a class="navbar-item" href="/clean_up_courses">Clean up courses</a>
+                        {% end %}
+
+                        <hr class="navbar-divider">
+
+                        <a class="navbar-item" href="/logout">Log out</a>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+</nav><div class="has-background-light container-padding">
+    <div class="content is-medium"><link rel="stylesheet" href="/static/css/modal.css">
+        
+<div id="remove_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <p>Are you sure you want to remove this assignment group?</p>
+
+        <article  id="remove_error_message" class="message is-danger invisible">
+        </article>
+
+        <p class="buttons">
+            <a id="remove_cancel_button" class="modal-button button is-light">Cancel</a>
+            <button type="button" id="remove_button" class="modal-button button is-dark">Remove</button>
+        </p>
+    </div>
+</div>
+
+<div id="add_modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <h4>Add an assignment_group:</h4>
+
+        <article  id="add_error_message" class="message is-danger invisible">
+        </article>
+
+        <input class="input is-medium is-primary" type="text" id="new_assignment_group_title" placeholder="Enter an assignment group name." />
+        
+        <p class="buttons">
+            <a id="add_cancel_button" class="modal-button button is-light">Cancel</a>
+
+            <button type="button" id="add_button" class="modal-button button is-dark">Add</button>
+        </p>
+    </div>
+</div>
+
+<h4>Manage assignment groups for {{ course_basics['title'] }}:</h4>
+
+{% if len(assignment_groups) > 0 %}
+    <ul>
+    {% for assignment_group in assignment_groups %}
+        {% if assignment_group[1] != -1 %}
+            <li>
+                {{ assignment_group[0] }}
+
+                <a onclick="showRemoveModal('{{ assignment_group[1] }}')">
+                    <i class="far fa-trash-alt is-size-6 ml-2"></i>
+                </a>
+            </li>
+        {% end %}
+    {% end %}
+    </ul>
+{% end %}
+
+<div>
+    Click on the "Add" button to create assignment groups. Then in the settings for each assignment, you will be able to specify an assignment group for that assignment.
+</div>
+
+<div class="buttons mt-4">
+    <a class="button is-dark" onclick="showAddModal()">Add</a>
+    <a class="button" href="/course/{{ course_basics['id'] }}">Go to course home</a>
+</div>
+
+<script>
+    function showAddModal() {
+        var modal = document.getElementById("add_modal");
+        var span = document.getElementsByClassName("close")[1];
+        modal.style.display = "block";
+
+        var newInput = document.getElementById("new_assignment_group_title");
+
+        var cancelButton = document.getElementById("add_cancel_button");
+        var addButton = document.getElementById("add_button");
+
+        newInput.focus();
+        newInput.addEventListener("keyup", function(event) {
+            // Check if Enter key is pressed
+            if (event.keyCode === 13) {
+                addButton.click();
+            }
+        });
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        addButton.onclick = function() {
+            var new_assignment_group_title_value = encodeURIComponent(document.getElementById("new_assignment_group_title").value);
+
+            //TODO: Do we need to check for special characters?
+
+            $.ajax({
+                type: 'GET',
+                url: "/add_assignment_group/{{ course_basics['id'] }}/" + encodeURI(new_assignment_group_title_value),
+                async: true})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        $("#add_error_message").removeClass("invisible");
+                        $("#add_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                    }
+                    else {
+                        modal.style.display = "none";
+                        window.location.href = window.location.href;
+                    }
+                })
+                .fail(function(error) {
+                    console.log(error);
+                    $("#add_error_message").removeClass("invisible");
+                    $("#add_error_message")[0].innerHTML = `<div class="message-body">An error occurred when attempting to connect to the server.</div>`;
+                });
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+
+    function showRemoveModal(assignment_group_id) {
+        var modal = document.getElementById("remove_modal");
+        var span = document.getElementsByClassName("close")[0];
+        modal.style.display = "block";
+
+        var cancelButton = document.getElementById("remove_cancel_button");
+        var removeButton = document.getElementById("remove_button");
+
+        cancelButton.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        removeButton.onclick = function() {
+            $.ajax({
+                type: 'GET',
+                url: "/remove_assignment_group/{{ course_basics['id'] }}/" + assignment_group_id,
+                async: true})
+                .done(function(message) {
+                    if (message.startsWith("Error:")) {
+                        $("#remove_error_message").removeClass("invisible");
+                        $("#remove_error_message")[0].innerHTML = `<div class="message-body">${message}</div>`;
+                    }
+                    else {
+                        modal.style.display = "none";
+                        window.location.href = window.location.href;
+                    }
+                })
+                .fail(function(error) {
+                    console.log(error);
+                    $("#remove_error_message").removeClass("invisible");
+                    $("#remove_error_message")[0].innerHTML = `<div class="message-body">An error occurred when attempting to connect to the server.</div>`;
+                });
+        }
+
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+    }
+</script>    </div>
+</div>                <div class="columns is-gapless has-text-centered is-size-6 pt-4 pb-4">
+                    <div class="column">
+                        <a href="/static/about.html">About</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://privacy.byu.edu" target="_blank">Privacy Notice</a>
+                    </div>
+                    <div class="column">
+                        <a href="https://infosec.byu.edu/cookie-prefs" target="_blank">Cookie Preferences</a>
+                    </div>
+                    <div class="column">
+                        <a href="/static/contact_us.html">Contact Us</a>
+                    </div>
+                </div>
+        </div>
+    </body>
+</html>
