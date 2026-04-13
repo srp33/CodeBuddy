@@ -976,9 +976,9 @@ SELECT
   visible,
   enable_pair_programming,
   MAX(num_submissions) AS num_submissions,
-  completed,
-  in_progress,
-  score,
+  MAX(completed) AS completed,
+  MAX(in_progress) AS in_progress,
+  MAX(score) AS score,
   weight,
   is_multiple_choice
 FROM (

@@ -1,9 +1,9 @@
 WITH
   variables AS (
     SELECT
-      51 AS course_id,
+      56 AS course_id,
       -- NULL AS assignment_id,
-      2653 AS assignment_id,
+      3074 AS assignment_id,
       NULL AS exercise_id,
       -- 24495 AS exercise_id,
       NULL AS user_id
@@ -279,20 +279,54 @@ WITH
   )
 
 SELECT
-  sts.assignment_id,
-  u.user_id AS id,
-  u.name,
-  IFNULL(scr.score, 0) AS score,
-  sts.num_completed,
-  ane.num_exercises,
-  sts.last_submission_timestamp,
-  sts.num_times_pair_programmed
-FROM assignment_statuses sts
-INNER JOIN assignment_scores scr
-  ON sts.assignment_id = scr.assignment_id
-  AND sts.user_id = scr.user_id
-INNER JOIN valid_users u
-  ON sts.user_id = u.user_id
-INNER JOIN assignments_num_exercises ane
-  ON sts.assignment_id = ane.assignment_id
-ORDER BY u.name
+  user_id,
+  id,
+  title,
+  visible,
+  enable_pair_programming,
+  MAX(num_submissions) AS num_submissions,
+  num_submissions,
+  completed,
+  in_progress,
+  score,
+  weight,
+  is_multiple_choice
+FROM (
+  SELECT
+    es.user_id,
+    es.exercise_id as id,
+    e.title,
+    e.visible,
+    e.enable_pair_programming,
+    es.num_submissions,
+    es.completed,
+    es.in_progress,
+    esw.score,
+    e.weight,
+    e.is_multiple_choice
+  FROM exercise_statuses es
+  INNER JOIN exercise_scores_weights esw
+    ON es.assignment_id = esw.assignment_id
+    AND es.exercise_id = esw.exercise_id
+    AND es.user_id = esw.user_id
+  INNER JOIN valid_exercises e
+    ON es.assignment_id = e.assignment_id
+    AND es.exercise_id = e.exercise_id
+
+  UNION
+
+  SELECT
+    NULL AS user_id,
+    exercise_id AS id,
+    title,
+    visible,
+    enable_pair_programming,
+    0 AS num_submissions,
+    0 AS completed,
+    0 AS in_progress,
+    0 AS score,
+    weight,
+    is_multiple_choice
+  FROM valid_exercises
+)
+GROUP by id
