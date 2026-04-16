@@ -37,6 +37,11 @@ Here are some of CodeBuddy's features:
 * [June 30, 2025] For assignments that are timed, students do not know whether they have answered multiple-choice questions correctly until after the assignment has ended. This helps to reduce student anxiety on quizzes and exams.
 * [July 21, 2025] Instructors can allow individual students to access and submit an assignment early (if it has a start date) or late (if it has a due date).
 * [July 28, 2025] Instructors can specify minimum and maximum limits for the length of students' responses (# of characters).
+* [April 16, 2026] Administrators can visit a page that displays the last date when either a student made a submission or the course was edited. They can use this page to inform course deletion.
+* [April 16, 2026] Instructors can specify templates in the course settings. Placeholders for these templates can then be specified in assignment or exercise instructions. This is useful when the same text is repeated multiple times in instructions.
+* [April 16, 2026] Instructors can specify that students must upload their solution as a text file, rather than enter text directly in a code box. Instructors can use this feature to require that students write code in an external editor (and thus gain experience with such editors).
+* [April 16, 2026] Added buttons on assignment pages to navigation to the next or previous assignment.
+* [April 16, 2026] When viewing assignment scores, it is possible to select students and send an email to the selected students. One way this feature can be used is to send encouragement, congratulations, or advice to students after completing an assignment or exam.
 
 # How to run a CodeBuddy instance
 
