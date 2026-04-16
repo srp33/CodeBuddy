@@ -360,6 +360,8 @@ def get_client_ip_address(request):
            request.remote_ip
 
 def format_exercise_details(exercise_details, course_basics, assignment_basics, user_info, content, next_prev_exercises=None, format_tests=True, format_data=False):
+    exercise_details["instructions"] = content.replace_templates_in_text(course_basics["id"], exercise_details["instructions"])
+
     exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
 
     if exercise_details["back_end"] != "multiple_choice":

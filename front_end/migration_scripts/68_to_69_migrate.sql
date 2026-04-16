@@ -1,0 +1,2 @@
+ALTER TABLE courses
+ADD COLUMN templates TEXT DEFAULT NULL;

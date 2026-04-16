@@ -114,6 +114,7 @@ class BaseUserHandler(BaseRequestHandler):
         # assignment_details = self.update_cached_variable(str(course_id), f"assignment_details_{course_id}_{assignment_id}", self.content.get_assignment_details, course_basics, assignment_id)
 
         assignment_details = self.content.get_assignment_details(course_basics, assignment_id)
+        assignment_details["introduction"] = self.content.replace_templates_in_text(course_basics["id"], assignment_details["introduction"])
 
         if format_output:
             assignment_details["introduction"] = convert_markdown_to_html(assignment_details["introduction"])

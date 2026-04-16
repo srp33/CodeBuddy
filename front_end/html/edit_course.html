@@ -285,7 +285,7 @@
     <h4>Edit course</h4>
     <p>
         <input type="submit" class="button is-dark" value="Save" />
-        <button class="button is-white" onclick="location.href='/course/{{ course_basics["id"] }}'; return false;">Course home</button>
+        <a class="button is-white" href="/course/{{ course_basics['id'] }}">Course home</a>
     </p>
 </div>
 {% else %}
@@ -402,6 +402,316 @@
     <p><strong>Virtual Assistant configuration (optional): </strong><br/>This feature is currently <em>experimental</em>. The goal is to automate the process of helping students when they are stuck on programming exercises. It uses the <em>Chat Completions</em> endpoint of <a href="https://platform.openai.com/docs/guides/gpt/chat-completions-api" target="_blank">OpenAI's API</a> (similar to what is used by ChatGPT). To enable this feature, you must specify configuration information in YAML format, as shown in <a href="https://github.com/srp33/CodeBuddy/blob/master/examples/openai_example.yaml" target="_blank">this example</a>. Then you must indicate whether this feature is enabled in the settings for <em>each assignment</em>.
 
     <p><textarea name="virtual_assistant_config" class="textarea is-grey is-medium is-fullwidth monospace" rows="5">{% if course_details["virtual_assistant_config"] %}{{ course_details["virtual_assistant_config"] }}{% end %}</textarea></p>
+</div>
+
+<div class="shadow-box">
+    <p><strong>Templates</strong></p>
+    <p>Here you can create, edit, and delete template text, each associated with a name. Then within your assignment and introductions, you can specify the template name (surrounded by squiggly brackets) to use the template text.</p>
+    <link rel="stylesheet" href="/static/css/modal.css">
+
+    <div id="templates-bootstrap" data-b64="{{ course_templates_b64 }}" style="display:none"></div>
+
+    <div class="table-container" style="margin-bottom: 0;">
+        <table class="table is-striped" id="templates_table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Text</th>
+                    <th style="text-align: center;">Edit</th>
+                    <th style="text-align: center;">Delete</th>
+                </tr>
+            </thead>
+            <tbody id="templates_table_body"></tbody>
+        </table>
+        <p id="no_templates_message" class="is-hidden"><em>No templates have been created.</em></p>
+    </div>
+
+    <p class="top-space" id="add_template_button_row">
+        <button type="button" class="button is-light" id="add-template-button">Add template</button>
+    </p>
+
+    <input type="hidden" name="templates_json" id="templates_json" value="{}" />
+
+    <div id="template_modal" class="modal" style="padding-top: 0;">
+        <div class="modal-content" style="margin: 0 auto; width: 90%; max-width: 800px;">
+            <span class="close" id="template_modal_close">&times;</span>
+            <h4 id="template_modal_title">Add template</h4>
+
+            <div class="field">
+                <label class="label">Name</label>
+                <input class="input monospace" type="text" id="template_modal_name" placeholder="e.g. disclaimer" />
+            </div>
+
+            <div class="field">
+                <label class="label">Text</label>
+                <textarea class="textarea monospace" id="template_modal_text" rows="8" placeholder="Template content"></textarea>
+            </div>
+
+            <div id="template_modal_error" class="notification is-danger is-hidden"></div>
+
+            <p class="buttons">
+                <button type="button" class="modal-button button is-dark" id="template_save_button">Save</button>
+                <button type="button" class="modal-button button is-light" id="template_cancel_button">Cancel</button>
+            </p>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var templatesObj = {};
+        var hiddenJson = document.getElementById("templates_json");
+        var boot = document.getElementById("templates-bootstrap");
+        var templatesTableBody = document.getElementById("templates_table_body");
+        var noTemplatesMessage = document.getElementById("no_templates_message");
+        var addTemplateButtonRow = document.getElementById("add_template_button_row");
+
+        var modal = document.getElementById("template_modal");
+        var closeBtn = document.getElementById("template_modal_close");
+        var cancelBtn = document.getElementById("template_cancel_button");
+        var saveBtn = document.getElementById("template_save_button");
+
+        var modalTitle = document.getElementById("template_modal_title");
+        var nameInput = document.getElementById("template_modal_name");
+        var textInput = document.getElementById("template_modal_text");
+        var errorEl = document.getElementById("template_modal_error");
+
+        var addButton = document.getElementById("add-template-button");
+        var currentEditingName = null;
+        var templateNameRegex = /^[A-Za-z][A-Za-z0-9_]*$/;
+
+        function syncHiddenJson() {
+            hiddenJson.value = JSON.stringify(templatesObj);
+        }
+
+        function setModalError(message) {
+            if (!errorEl) return;
+            errorEl.innerHTML = message;
+            errorEl.classList.remove("is-hidden");
+        }
+
+        function clearModalError() {
+            if (!errorEl) return;
+            errorEl.innerHTML = "";
+            errorEl.classList.add("is-hidden");
+        }
+
+        function validateTemplateName() {
+            var nm = nameInput.value.trim();
+            if (nm === "") {
+                return { ok: false, message: "Please provide a template name." };
+            }
+            if (!templateNameRegex.test(nm)) {
+                return { ok: false, message: "Template names must start with a letter and contain only letters, digits, and underscores." };
+            }
+            var nameBelongsToAnotherTemplate = templatesObj.hasOwnProperty(nm) && (currentEditingName === null || nm !== currentEditingName);
+            if (nameBelongsToAnotherTemplate) {
+                return { ok: false, message: "A template with that name already exists. Please choose a different name for the template you are adding or editing." };
+            }
+            return { ok: true, name: nm };
+        }
+
+        function validateTemplateText() {
+            var txt = (textInput.value || "").trim();
+            if (txt === "") {
+                return { ok: false, message: "Please provide template text." };
+            }
+            if (txt.indexOf("{") !== -1 || txt.indexOf("}") !== -1) {
+                return { ok: false, message: "Template text cannot contain squiggly brackets." };
+            }
+            return { ok: true };
+        }
+
+        function previewText(text) {
+            var t = (text === undefined || text === null) ? "" : String(text);
+            // Show only the first 20 words (no scrolling), and append an ellipsis if truncated.
+            var words = t.trim().split(/\s+/).filter(function (w) { return w.length > 0; });
+            if (words.length <= 20) return t;
+            return words.slice(0, 20).join(" ") + "…";
+        }
+
+        function renderTemplatesTable() {
+            if (!templatesTableBody) return;
+
+            templatesTableBody.innerHTML = "";
+
+            var keys = Object.keys(templatesObj || {});
+            keys.sort();
+
+            var hasAny = keys.length > 0;
+            if (noTemplatesMessage) {
+                if (hasAny) noTemplatesMessage.classList.add("is-hidden");
+                else noTemplatesMessage.classList.remove("is-hidden");
+            }
+            if (addTemplateButtonRow) {
+                addTemplateButtonRow.style.marginTop = hasAny ? "15px" : "25px";
+            }
+
+            for (var i = 0; i < keys.length; i++) {
+                (function () {
+                    var name = keys[i];
+                    var text = templatesObj[name];
+
+                    var tr = document.createElement("tr");
+
+                    var tdName = document.createElement("td");
+                    tdName.textContent = name;
+                    tr.appendChild(tdName);
+
+                    var tdText = document.createElement("td");
+                    tdText.textContent = previewText(text);
+                    tdText.title = (text === undefined || text === null) ? "" : String(text);
+                    tr.appendChild(tdText);
+
+                    var tdEdit = document.createElement("td");
+                    tdEdit.style.textAlign = "center";
+                    var editLink = document.createElement("a");
+                    editLink.href = "#";
+                    editLink.title = "Edit template";
+                    editLink.innerHTML = "<i class=\"far fa-edit\"></i>";
+                    editLink.onclick = function (e) {
+                        e.preventDefault();
+                        openEditModal(name);
+                    };
+                    tdEdit.appendChild(editLink);
+                    tr.appendChild(tdEdit);
+
+                    var tdDelete = document.createElement("td");
+                    tdDelete.style.textAlign = "center";
+                    var deleteLink = document.createElement("a");
+                    deleteLink.href = "#";
+                    deleteLink.title = "Delete template";
+                    deleteLink.innerHTML = "<i class=\"far fa-trash-alt\"></i>";
+                    deleteLink.onclick = function (e) {
+                        e.preventDefault();
+                        delete templatesObj[name];
+                        syncHiddenJson();
+                        renderTemplatesTable();
+                    };
+                    tdDelete.appendChild(deleteLink);
+                    tr.appendChild(tdDelete);
+
+                    templatesTableBody.appendChild(tr);
+                })();
+            }
+        }
+
+        function closeModal() {
+            if (!modal) return;
+            modal.style.display = "none";
+            currentEditingName = null;
+            clearModalError();
+            if (nameInput) nameInput.classList.remove("is-danger");
+        }
+
+        function openModalAndCenter() {
+            // Ensure consistent vertical centering regardless of first-open/layout changes.
+            modal.style.display = "flex";
+            modal.style.alignItems = "center";
+            modal.style.justifyContent = "center";
+        }
+
+        function openAddModal() {
+            currentEditingName = null;
+            modalTitle.textContent = "Add template";
+            nameInput.value = "";
+            textInput.value = "";
+            clearModalError();
+            nameInput.classList.remove("is-danger");
+            openModalAndCenter();
+            setTimeout(function () {
+                nameInput.focus();
+            }, 0);
+        }
+
+        function openEditModal(name) {
+            currentEditingName = name;
+            modalTitle.textContent = "Edit template";
+            nameInput.value = name;
+            textInput.value = templatesObj[name] || "";
+            clearModalError();
+            nameInput.classList.remove("is-danger");
+            openModalAndCenter();
+            setTimeout(function () {
+                nameInput.focus();
+                nameInput.selectionStart = nameInput.selectionEnd = nameInput.value.length;
+            }, 0);
+        }
+
+        addButton.onclick = openAddModal;
+        closeBtn.onclick = closeModal;
+        cancelBtn.onclick = closeModal;
+        window.addEventListener("click", function (event) {
+            if (event.target === modal) closeModal();
+        });
+
+        nameInput.addEventListener("input", function () {
+            var trimmed = nameInput.value.trim();
+            if (trimmed === "") {
+                clearModalError();
+                nameInput.classList.remove("is-danger");
+                return;
+            }
+
+            var validation = validateTemplateName();
+            if (!validation.ok) {
+                setModalError(validation.message);
+                nameInput.classList.add("is-danger");
+                return;
+            }
+
+            clearModalError();
+            nameInput.classList.remove("is-danger");
+        });
+
+        saveBtn.onclick = function () {
+            var validation = validateTemplateName();
+            if (!validation.ok) {
+                setModalError(validation.message);
+                nameInput.classList.add("is-danger");
+                return;
+            }
+
+            var textValidation = validateTemplateText();
+            if (!textValidation.ok) {
+                setModalError(textValidation.message);
+                nameInput.classList.remove("is-danger");
+                return;
+            }
+
+            nameInput.classList.remove("is-danger");
+            clearModalError();
+
+            var newName = validation.name;
+            var newText = textInput.value || "";
+
+            if (currentEditingName !== null && newName !== currentEditingName) {
+                delete templatesObj[currentEditingName];
+            }
+
+            templatesObj[newName] = newText;
+            syncHiddenJson();
+            renderTemplatesTable();
+            closeModal();
+        };
+
+        // Keep templates_json synced even if the user never opens the modal again.
+        var courseForm = document.getElementById("courseForm");
+        courseForm.addEventListener("submit", function () {
+            syncHiddenJson();
+        });
+
+        if (boot && boot.dataset && boot.dataset.b64) {
+            try {
+                templatesObj = JSON.parse(atob(boot.dataset.b64)) || {};
+            } catch (e) {
+                templatesObj = {};
+            }
+        }
+
+        renderTemplatesTable();
+        syncHiddenJson();
+    })();
+    </script>
 </div>
 
 <p class="buttons">
