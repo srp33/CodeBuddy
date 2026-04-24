@@ -32,6 +32,7 @@ def make_app(settings_dict):
             url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
             url(r"/available", AvailableCoursesHandler, name="available"),
             url(r"/caslogin", CASLoginHandler, name="caslogin"),
+            url(r"/clean_up_courses", CleanUpCoursesHandler, name="clean_up_courses"),
             url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
             url(r"/copy_assignment/([^/]+)/([^/]+)?", CopyAssignmentHandler, name="copy_assignment"),
             url(r"/copy_course/([^/]+)", CopyCourseHandler, name="copy_course"),
