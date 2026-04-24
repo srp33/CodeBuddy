@@ -17,7 +17,18 @@
 
                         <a class="navbar-item" href="/my_profile/{{ user_info['user_id'] }}">My profile</a>
 
-                        <a class="navbar-item" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+                        <a class="navbar-item" id="nav_preferences_link" href="/preferences/{{ user_info['user_id'] }}">Preferences</a>
+                        <script>
+                        (function () {
+                            var el = document.getElementById("nav_preferences_link");
+                            if (!el) return;
+                            var base = el.getAttribute("href").split("?")[0];
+                            var here = window.location.pathname + window.location.search;
+                            if (here.indexOf("/preferences/") !== 0) {
+                                el.setAttribute("href", base + "?next=" + encodeURIComponent(here));
+                            }
+                        })();
+                        </script>
 
                         {% if is_administrator %}
                             <hr class="navbar-divider">

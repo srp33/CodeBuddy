@@ -87,6 +87,8 @@
 </div>
 
 <script>
+    var preferencesReturnUrl = {{ jsonify(return_url) }};
+
     ace.require("ace/ext/language_tools");
     var preview_editor = ace.edit("preview", {
         theme: "ace/theme/{{ user_info['ace_theme'] }}",
@@ -151,6 +153,10 @@
                 else {
                     $("#result_message").removeClass("is-danger");
                     $("#result_message").addClass("is-primary");
+                    if (preferencesReturnUrl) {
+                        window.location.assign(preferencesReturnUrl);
+                        return;
+                    }
                 }
 
                 $("#result_message")[0].innerHTML = `<div class="message-body">${message}</div>`;

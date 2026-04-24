@@ -4,14 +4,28 @@
 #   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # </copyright_statement>
 
+from urllib.parse import urlparse
+
 from BaseUserHandler import *
+
+def safe_preferences_return_url(next_param):
+    if not next_param or not isinstance(next_param, str):
+        return None
+    s = next_param.strip()
+    if len(s) > 2048 or not s.startswith("/"):
+        return None
+    parsed = urlparse(s)
+    if parsed.scheme or parsed.netloc:
+        return None
+    return s
 
 class PreferencesHandler(BaseUserHandler):
     async def get(self, user_id):
         try:
             ace_themes = ["ambiance", "chaos", "chrome", "clouds", "cobalt", "dracula", "github", "kr_theme", "monokai", "sqlserver", "terminal", "tomorrow", "xcode"]
 
-            self.render("preferences.html", ace_themes=ace_themes, user_info=self.user_info, is_administrator=self.is_administrator)
+            return_url = safe_preferences_return_url(self.get_argument("next", default=""))
+            self.render("preferences.html", ace_themes=ace_themes, user_info=self.user_info, is_administrator=self.is_administrator, return_url=return_url)
         except Exception as inst:
             render_error(self, traceback.format_exc())
 

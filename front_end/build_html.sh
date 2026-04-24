@@ -101,8 +101,6 @@ cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html unavailable_course.html container_bottom.html /tmp/footer.html > "$OUTPUT/unavailable_course.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html unavailable_question.html container_bottom.html /tmp/footer.html > "$OUTPUT/unavailable_question.html"
 
-cat spa_header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_exercise.html navbar_menu.html navbar_bottom.html spa.html /tmp/footer.html > "$OUTPUT/spa.html"
-
 for f in "$OUTPUT"/*.html
 do
   python3 ../../misc/remove_copyright_statement.py $f "<!--" "-->"
