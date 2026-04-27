@@ -11,7 +11,7 @@
     </div>
 {% elif already_granted %}
     <div class="notification is-primary">
-        <strong>{{ student_info["name"] }}</strong> already had a late-submission exception for <strong>{{ assignment_basics["title"] }}</strong>. No changes were made.
+        <strong>{{ student_info["name"] }}</strong> already had a {{ accommodation_label }} for <strong>{{ assignment_basics["title"] }}</strong>. No changes were made.
     </div>
     <div class="buttons mt-4">
         <a class="button" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment</a>
@@ -20,11 +20,11 @@
 {% else %}
     {% if email_sent %}
         <div class="notification is-primary">
-            The late-submission exception for <strong>{{ student_info["name"] }}</strong> on <strong>{{ assignment_basics["title"] }}</strong> has been approved, and a confirmation email was sent to them.
+            The {{ accommodation_label }} for <strong>{{ student_info["name"] }}</strong> on <strong>{{ assignment_basics["title"] }}</strong> has been approved, and a confirmation email was sent to them.
         </div>
     {% else %}
         <div class="notification is-primary">
-            The late-submission exception for <strong>{{ student_info["name"] }}</strong> on <strong>{{ assignment_basics["title"] }}</strong> has been approved. Note: the confirmation email could not be sent, so you may want to notify them directly.
+            The {{ accommodation_label }} for <strong>{{ student_info["name"] }}</strong> on <strong>{{ assignment_basics["title"] }}</strong> has been approved. Note: the confirmation email could not be sent, so you may want to notify them directly.
         </div>
     {% end %}
     <div class="buttons mt-4">

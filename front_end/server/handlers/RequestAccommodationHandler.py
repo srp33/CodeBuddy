@@ -9,6 +9,11 @@ import traceback
 
 from BaseUserHandler import *
 
+REQUEST_TYPES = {
+    "late_submission": "Submit this assignment late",
+    "extended_time": "Time and a half on the time limit",
+}
+
 
 class RequestAccommodationHandler(BaseUserHandler):
     async def user_may_access_course(self, course_id):
@@ -29,16 +34,26 @@ class RequestAccommodationHandler(BaseUserHandler):
         form_error=None,
         submit_success=False,
         last_comment="",
+        last_request_type="late_submission",
     ):
         course_id = course_basics["id"]
-        if course_basics["exists"]:
+        if course_basics["exists"] and assignment_basics["exists"]:
             assignment_statuses = await self.get_assignment_statuses(course_basics)
+            assignment_details = self.content.get_assignment_details(course_basics, assignment_basics["id"])
+            course_details = await self.get_course_details(course_id)
+            email_configured = is_email_configured(self.settings_dict, course_details)
+            is_instr = await self.is_instructor_for_course(course_id)
+            is_asst = await self.is_assistant_for_course(course_id)
+        elif course_basics["exists"]:
+            assignment_statuses = await self.get_assignment_statuses(course_basics)
+            assignment_details = {"has_timer": False}
             course_details = await self.get_course_details(course_id)
             email_configured = is_email_configured(self.settings_dict, course_details)
             is_instr = await self.is_instructor_for_course(course_id)
             is_asst = await self.is_assistant_for_course(course_id)
         else:
             assignment_statuses = []
+            assignment_details = {"has_timer": False}
             email_configured = False
             is_instr = False
             is_asst = False
@@ -48,11 +63,14 @@ class RequestAccommodationHandler(BaseUserHandler):
             courses=self.courses,
             course_basics=course_basics,
             assignment_basics=assignment_basics,
+            assignment_details=assignment_details,
             assignment_statuses=assignment_statuses,
+            request_types=REQUEST_TYPES,
             email_configured=email_configured,
             form_error=form_error,
             submit_success=submit_success,
             last_comment=last_comment,
+            last_request_type=last_request_type,
             accommodation_request_message=(self.settings_dict.get("accommodation_request_message") or "").strip(),
             user_info=self.user_info,
             is_administrator=self.is_administrator,
@@ -93,7 +111,17 @@ class RequestAccommodationHandler(BaseUserHandler):
                 self.render("permissions.html")
                 return
 
+            request_type = self.get_body_argument("request_type", default="")
             comments = self.get_body_argument("comments", default="")
+
+            if request_type not in REQUEST_TYPES:
+                await self.render_form(
+                    course_basics,
+                    assignment_basics,
+                    form_error="Please select a valid accommodation type.",
+                    last_comment=comments,
+                )
+                return
 
             if not comments or not str(comments).strip():
                 await self.render_form(
@@ -101,6 +129,7 @@ class RequestAccommodationHandler(BaseUserHandler):
                     assignment_basics,
                     form_error="Please enter comments explaining your request.",
                     last_comment=comments or "",
+                    last_request_type=request_type,
                 )
                 return
 
@@ -111,6 +140,7 @@ class RequestAccommodationHandler(BaseUserHandler):
                     assignment_basics,
                     form_error="This page cannot send email right now. Please contact your instructor or teaching assistant.",
                     last_comment=comments,
+                    last_request_type=request_type,
                 )
                 return
 
@@ -121,6 +151,7 @@ class RequestAccommodationHandler(BaseUserHandler):
                     assignment_basics,
                     form_error="Your account does not have a valid email address. Update your profile, then try again.",
                     last_comment=comments,
+                    last_request_type=request_type,
                 )
                 return
 
@@ -128,15 +159,17 @@ class RequestAccommodationHandler(BaseUserHandler):
             comments_stripped = comments.strip()
             student_name = self.user_info.get("name") or ""
             student_id = self.user_info.get("user_id") or ""
+            request_label = REQUEST_TYPES[request_type]
 
             domain = (self.settings_dict.get("domain") or "").strip()
-            approval_url = f"https://{domain}/reply_request_accommodation/{course_id}/{assignment_id}/{student_id}"
+            approval_url = f"https://{domain}/reply_request_accommodation/{course_id}/{assignment_id}/{student_id}/{request_type}"
 
             course_title_escaped = html.escape(course_basics['title'])
             assignment_title_escaped = html.escape(assignment_basics['title'])
             student_name_escaped = html.escape(student_name)
             student_id_escaped = html.escape(student_id)
             comments_escaped = html.escape(comments_stripped)
+            request_label_escaped = html.escape(request_label)
             approval_url_escaped = html.escape(approval_url)
 
             body = f"""
@@ -145,12 +178,13 @@ class RequestAccommodationHandler(BaseUserHandler):
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Course:</td><td style="padding:4px 0;">{course_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Assignment:</td><td style="padding:4px 0;">{assignment_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Student:</td><td style="padding:4px 0;">{student_name_escaped} ({student_id_escaped})</td></tr>
+  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Request type:</td><td style="padding:4px 0;">{request_label_escaped}</td></tr>
 </table>
 <p><strong>Justification:</strong></p>
 <p style="white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:4px;">{comments_escaped}</p>
 <hr>
 <p>
-  <strong>To approve this request</strong> and grant the student a late-submission exception, click the link below:<br>
+  <strong>To approve this request</strong>, click the link below:<br>
   <a href="{approval_url_escaped}">{approval_url_escaped}</a>
 </p>
 <p>
@@ -180,6 +214,7 @@ class RequestAccommodationHandler(BaseUserHandler):
                     assignment_basics,
                     form_error="The message could not be sent. Please try again later or contact your instructor directly.",
                     last_comment=comments,
+                    last_request_type=request_type,
                 )
                 return
 

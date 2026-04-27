@@ -2107,6 +2107,19 @@ ORDER BY student_name
                         VALUES (?, ?, ?)''', (course_id, assignment_id, user_id))
         self.update_when_content_updated(str(course_id))
 
+    def student_has_timer_exception(self, course_id, assignment_id, user_id):
+        sql = '''SELECT COUNT(*) > 0 AS has_exception
+                FROM assignment_timer_exceptions
+                WHERE course_id = ?
+                  AND assignment_id = ?
+                  AND user_id = ?'''
+        return self.fetchone(sql, (course_id, assignment_id, user_id))["has_exception"]
+
+    def add_student_timer_exception(self, course_id, assignment_id, user_id, hour_timer, minute_timer):
+        self.execute('''INSERT OR REPLACE INTO assignment_timer_exceptions (course_id, assignment_id, user_id, hour_timer, minute_timer)
+                        VALUES (?, ?, ?, ?, ?)''', (course_id, assignment_id, user_id, hour_timer, minute_timer))
+        self.update_when_content_updated(str(course_id))
+
     def get_student_timer_exceptions(self, has_timer, course_id, assignment_id):
         exceptions = {}
 

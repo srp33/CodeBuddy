@@ -33,13 +33,30 @@
             {% if not submit_success %}
                 <form id="accommodation_form" method="post" action="/request_accommodation/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
 
-                    <p class="is-size-5 mt-2">Students can request an accommodation for an assignment that they anticipate they will not be able to complete by the deadline. {{ accommodation_request_message }} Please provide a brief justification for this request.</p>
+                    <p class="is-size-5 mt-2">Students can request an accommodation for an assignment. {{ accommodation_request_message }} Please select the type of accommodation and provide a brief justification for this request.</p>
 
                     <div class="field">
+                        <label class="label">Accommodation type:</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="request_type" name="request_type">
+                                    <option value="late_submission" {% if last_request_type == "late_submission" %}selected{% end %}>Submit this assignment late</option>
+                                    {% if assignment_details["has_timer"] %}
+                                        <option value="extended_time" {% if last_request_type == "extended_time" %}selected{% end %}>Time and a half on the time limit</option>
+                                    {% end %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Comments:</label>
                         <div class="control">
                             <textarea id="comments" name="comments" class="textarea" rows="8" placeholder="Enter a brief justification for this request." autofocus>{{ last_comment }}</textarea>
                         </div>
                     </div>
+
+                    <p class="is-size-5 mt-2 is-italic">Comments are required.</p>
 
                     <div class="field">
                         <div class="control">

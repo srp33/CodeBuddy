@@ -5,17 +5,44 @@
 # </copyright_statement>
 
 import html
+import math
 import traceback
 
 from BaseUserHandler import *
 
+ACCOMMODATION_LABELS = {
+    "late_submission": "late-submission exception",
+    "extended_time": "time-and-a-half time limit",
+}
+
 
 class ReplyRequestAccommodationHandler(BaseUserHandler):
-    async def get(self, course_id, assignment_id, student_id):
+    async def get(self, course_id, assignment_id, student_id, request_type):
         try:
             if not (self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id)):
                 self.render("permissions.html")
                 return
+
+            if request_type not in ACCOMMODATION_LABELS:
+                self.render("reply_request_accommodation.html",
+                    courses=self.courses,
+                    course_basics={"id": course_id, "title": "", "exists": True},
+                    assignment_basics={"id": assignment_id, "title": "", "exists": True},
+                    student_info=None,
+                    already_granted=False,
+                    email_sent=False,
+                    request_type=request_type,
+                    accommodation_label="",
+                    error="Invalid accommodation type.",
+                    assignment_statuses=[],
+                    user_info=self.user_info,
+                    is_administrator=self.is_administrator,
+                    is_instructor=await self.is_instructor_for_course(course_id),
+                    is_assistant=await self.is_assistant_for_course(course_id),
+                )
+                return
+
+            accommodation_label = ACCOMMODATION_LABELS[request_type]
 
             course_basics = await self.get_course_basics(course_id)
             if not course_basics["exists"]:
@@ -26,6 +53,8 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                     student_info=None,
                     already_granted=False,
                     email_sent=False,
+                    request_type=request_type,
+                    accommodation_label=accommodation_label,
                     error="This course does not exist.",
                     assignment_statuses=[],
                     user_info=self.user_info,
@@ -44,6 +73,8 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                     student_info=None,
                     already_granted=False,
                     email_sent=False,
+                    request_type=request_type,
+                    accommodation_label=accommodation_label,
                     error="This assignment does not exist.",
                     assignment_statuses=await self.get_assignment_statuses(course_basics),
                     user_info=self.user_info,
@@ -54,28 +85,46 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                 return
 
             student_info = self.content.get_user_info(student_id)
-            already_granted = self.content.student_has_late_exception(course_id, assignment_id, student_id)
+
+            if request_type == "late_submission":
+                already_granted = self.content.student_has_late_exception(course_id, assignment_id, student_id)
+            else:
+                already_granted = self.content.student_has_timer_exception(course_id, assignment_id, student_id)
+
             email_sent = False
 
             if not already_granted:
-                self.content.add_student_late_exception(course_id, assignment_id, student_id)
+                if request_type == "late_submission":
+                    self.content.add_student_late_exception(course_id, assignment_id, student_id)
+                else:
+                    assignment_details = self.content.get_assignment_details(course_basics, assignment_id)
+                    total_minutes = assignment_details["hour_timer"] * 60 + assignment_details["minute_timer"]
+                    extended_minutes = math.ceil(total_minutes * 1.5)
+                    new_hours = extended_minutes // 60
+                    new_minutes = extended_minutes % 60
+                    self.content.add_student_timer_exception(course_id, assignment_id, student_id, new_hours, new_minutes)
 
                 course_details = await self.get_course_details(course_id)
-                student_email = (student_info.get("email_address") or "").strip()
+                student_name = student_info.get("name") or student_id
+                # TODO: replace with student_email once testing is complete
+                student_email = (course_details.get("email_address") or "").strip()
 
                 if is_email_configured(self.settings_dict, course_details):
                     from_address = (course_details.get("email_address") or "").strip()
                     from_name = course_basics.get("title") or "Your instructor"
-                    student_name = student_info.get("name") or student_id
-                    # TODO: replace with student_email once testing is complete
-                    student_email = from_address
 
                     course_title_escaped = html.escape(course_basics["title"])
                     assignment_title_escaped = html.escape(assignment_basics["title"])
                     student_name_escaped = html.escape(student_name)
                     student_id_escaped = html.escape(student_id)
+                    accommodation_label_escaped = html.escape(accommodation_label)
                     assignment_url = f"https://{(self.settings_dict.get('domain') or '').strip()}/assignment/{course_id}/{assignment_id}"
                     assignment_url_escaped = html.escape(assignment_url)
+
+                    if request_type == "late_submission":
+                        action_line = f'<p>You may now submit <a href="{assignment_url_escaped}">{assignment_title_escaped}</a> after the original deadline.</p>'
+                    else:
+                        action_line = f'<p>Your time limit for <a href="{assignment_url_escaped}">{assignment_title_escaped}</a> has been extended to time and a half.</p>'
 
                     body = f"""
 <p>Your accommodation request has been <strong>approved</strong>.</p>
@@ -83,8 +132,9 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Course:</td><td style="padding:4px 0;">{course_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Assignment:</td><td style="padding:4px 0;">{assignment_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Student:</td><td style="padding:4px 0;">{student_name_escaped} ({student_id_escaped})</td></tr>
+  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Accommodation:</td><td style="padding:4px 0;">{accommodation_label_escaped}</td></tr>
 </table>
-<p>You may now submit <a href="{assignment_url_escaped}">{assignment_title_escaped}</a> late.</p>
+{action_line}
 <p>Contact the instructor if you have questions.</p>
 """
                     subject = f"[{course_basics['title']}] Accommodation Request Approved: {assignment_basics['title']}"
@@ -99,6 +149,8 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                 student_info=student_info,
                 already_granted=already_granted,
                 email_sent=email_sent,
+                request_type=request_type,
+                accommodation_label=accommodation_label,
                 error=None,
                 assignment_statuses=await self.get_assignment_statuses(course_basics),
                 user_info=self.user_info,

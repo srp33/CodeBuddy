@@ -88,7 +88,7 @@ def make_app(settings_dict):
             url(r"/remove_assignment_group/([^/]+)/([^/]+)", RemoveAssignmentGroupHandler, name="remove_assignment_group"),
             url(r"/remove_assistant/([^/]+)/([^/]+)", RemoveAssistantHandler, name="remove_assistant"),
             url(r"/remove_instructor/([^/]+)/([^/]+)", RemoveInstructorHandler, name="remove_instructor"),
-            url(r"/reply_request_accommodation/([^/]+)/([^/]+)/([^/]+)", ReplyRequestAccommodationHandler, name="reply_request_accommodation"),
+            url(r"/reply_request_accommodation/([^/]+)/([^/]+)/([^/]+)/([^/]+)", ReplyRequestAccommodationHandler, name="reply_request_accommodation"),
             url(r"/request_accommodation/([^/]+)/([^/]+)", RequestAccommodationHandler, name="request_accommodation"),
             url(r"/resave_exercises/([^/]+)/([^/]+)", ResaveExercisesHandler, name="resave_exercises"),
             url(r"/reset_timer/([^/]+)/([^/]+)/([^/]+)", ResetTimerHandler, name="reset_timer"),
