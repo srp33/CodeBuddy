@@ -141,7 +141,7 @@
                 <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
             {% end %}
 
-            {% if email_configured and not assignment_is_complete %}
+            {% if email_configured and not assignment_is_complete and assignment_details["due_date"] %}
                 <a class="button" href='/request_accommodation/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Request an accommodation</a>
             {% end %}
 

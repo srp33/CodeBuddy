@@ -85,7 +85,7 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Student:</td><td style="padding:4px 0;">{student_name_escaped} ({student_id_escaped})</td></tr>
 </table>
 <p>You may now submit <a href="{assignment_url_escaped}">{assignment_title_escaped}</a> late.</p>
-<p>Please do not reply directly to this email. Contact your instructor or teaching assistant if you have questions.</p>
+<p>Contact the instructor if you have questions.</p>
 """
                     subject = f"[{course_basics['title']}] Accommodation Request Approved: {assignment_basics['title']}"
                     smtp_server = (self.settings_dict.get("smtp_server") or "").strip()

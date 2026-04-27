@@ -158,7 +158,7 @@ class RequestAccommodationHandler(BaseUserHandler):
 </p>
 """
 
-            subject = f"[{course_basics['title']}] Accommodation Request for {assignment_basics['title']}]"
+            subject = f"[{course_basics['title']}] Accommodation Request for {assignment_basics['title']}"
 
             smtp_server = (self.settings_dict.get("smtp_server") or "").strip()
             smtp_port = int(str(self.settings_dict.get("smtp_port") or "0"))
