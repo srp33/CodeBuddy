@@ -1,0 +1,228 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+<h4>LTI registrations and deployments</h4>
+
+{% if message != "" %}
+<article class="message {% if is_error %}is-danger{% else %}is-primary{% end %}">
+    <div class="message-body">{{ message }}</div>
+</article>
+{% end %}
+
+<div class="box">
+    <h5>Add LTI registration</h5>
+    <form method="post" action="/manage_lti">
+        <input type="hidden" name="action" value="add_registration" />
+
+        <div class="field">
+            <label class="label">Platform name</label>
+            <div class="control">
+                <input class="input" type="text" name="platform_name" placeholder="Canvas production" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Issuer</label>
+            <div class="control">
+                <input class="input" type="text" name="issuer" placeholder="https://canvas.instructure.com" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Client ID</label>
+            <div class="control">
+                <input class="input" type="text" name="client_id" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Auth login URL</label>
+            <div class="control">
+                <input class="input" type="text" name="auth_login_url" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Auth token URL</label>
+            <div class="control">
+                <input class="input" type="text" name="auth_token_url" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">JWKS URL</label>
+            <div class="control">
+                <input class="input" type="text" name="key_set_url" required />
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="button is-dark" type="submit">Add registration</button>
+        </div>
+    </form>
+</div>
+
+<div class="box">
+    <h5>Add deployment</h5>
+    <form method="post" action="/manage_lti">
+        <input type="hidden" name="action" value="add_deployment" />
+
+        <div class="field">
+            <label class="label">Registration ID</label>
+            <div class="control">
+                <input class="input" type="number" min="1" name="registration_id" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Deployment ID</label>
+            <div class="control">
+                <input class="input" type="text" name="deployment_id" required />
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="button is-dark" type="submit">Add deployment</button>
+        </div>
+    </form>
+</div>
+
+<div class="box">
+    <h5>Add resource link mapping</h5>
+    <form method="post" action="/manage_lti">
+        <input type="hidden" name="action" value="add_resource_link" />
+
+        <div class="field">
+            <label class="label">Deployment ID</label>
+            <div class="control">
+                <input class="input" type="text" name="deployment_id" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Context ID (LMS course context)</label>
+            <div class="control">
+                <input class="input" type="text" name="context_id" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Resource link ID</label>
+            <div class="control">
+                <input class="input" type="text" name="resource_link_id" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">CodeBuddy course_id</label>
+            <div class="control">
+                <input class="input" type="number" min="1" name="course_id" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">CodeBuddy assignment_id</label>
+            <div class="control">
+                <input class="input" type="number" min="1" name="assignment_id" required />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Lineitem URL (optional)</label>
+            <div class="control">
+                <input class="input" type="text" name="lineitem_url" />
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="button is-dark" type="submit">Save mapping</button>
+        </div>
+    </form>
+</div>
+
+<h5>Current registrations</h5>
+
+{% if len(registrations) == 0 %}
+<p>No LTI registrations have been configured yet.</p>
+{% else %}
+    {% for registration in registrations %}
+    <div class="box">
+        <p><strong>ID:</strong> {{ registration["registration_id"] }}</p>
+        <p><strong>Platform:</strong> {{ registration["platform_name"] }}</p>
+        <p><strong>Issuer:</strong> {{ registration["issuer"] }}</p>
+        <p><strong>Client ID:</strong> {{ registration["client_id"] }}</p>
+        <p><strong>Auth login URL:</strong> {{ registration["auth_login_url"] }}</p>
+        <p><strong>Auth token URL:</strong> {{ registration["auth_token_url"] }}</p>
+        <p><strong>JWKS URL:</strong> {{ registration["key_set_url"] }}</p>
+
+        <p class="mt-3"><strong>Deployments:</strong></p>
+        {% if len(registration["deployments"]) == 0 %}
+        <p>None</p>
+        {% else %}
+        <table class="table is-fullwidth is-striped">
+            <thead>
+                <tr>
+                    <th>Deployment ID</th>
+                    <th>Status</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for deployment in registration["deployments"] %}
+                <tr>
+                    <td>{{ deployment["deployment_id"] }}</td>
+                    <td>{% if deployment["is_active"] %}Active{% else %}Inactive{% end %}</td>
+                    <td>
+                        <form method="post" action="/manage_lti">
+                            <input type="hidden" name="action" value="toggle_deployment" />
+                            <input type="hidden" name="deployment_id" value="{{ deployment['deployment_id'] }}" />
+                            {% if deployment["is_active"] %}
+                                <input type="hidden" name="is_active" value="0" />
+                                <button class="button is-small" type="submit">Deactivate</button>
+                            {% else %}
+                                <input type="hidden" name="is_active" value="1" />
+                                <button class="button is-small is-dark" type="submit">Activate</button>
+                            {% end %}
+                        </form>
+                    </td>
+                </tr>
+            {% end %}
+            </tbody>
+        </table>
+        {% end %}
+    </div>
+    {% end %}
+{% end %}
+
+<h5 class="mt-5">Current resource link mappings</h5>
+{% if len(resource_links) == 0 %}
+<p>No resource link mappings have been configured yet.</p>
+{% else %}
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <tr>
+            <th>Deployment ID</th>
+            <th>Context ID</th>
+            <th>Resource Link ID</th>
+            <th>Course ID</th>
+            <th>Assignment ID</th>
+            <th>Lineitem URL</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for mapping in resource_links %}
+        <tr>
+            <td>{{ mapping["deployment_id"] }}</td>
+            <td>{{ mapping["context_id"] }}</td>
+            <td>{{ mapping["resource_link_id"] }}</td>
+            <td>{{ mapping["course_id"] }}</td>
+            <td>{{ mapping["assignment_id"] }}</td>
+            <td>{{ mapping["lineitem_url"] if mapping["lineitem_url"] else "" }}</td>
+        </tr>
+    {% end %}
+    </tbody>
+</table>
+{% end %}

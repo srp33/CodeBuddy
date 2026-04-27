@@ -452,6 +452,122 @@ class Content:
 
         self.execute(sql, (course_id, assignment_id, user_id))
 
+    def get_lti_registration(self, issuer, client_id):
+        sql = '''SELECT registration_id, platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url
+                 FROM lti_registrations
+                 WHERE issuer = ?
+                   AND client_id = ?'''
+        return self.fetchone(sql, (issuer, client_id))
+
+    def get_lti_registration_by_id(self, registration_id):
+        sql = '''SELECT registration_id, platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url
+                 FROM lti_registrations
+                 WHERE registration_id = ?'''
+        return self.fetchone(sql, (registration_id,))
+
+    def lti_deployment_exists(self, registration_id, deployment_id):
+        sql = '''SELECT 1
+                 FROM lti_deployments
+                 WHERE registration_id = ?
+                   AND deployment_id = ?
+                   AND is_active = 1'''
+        return self.fetchone(sql, (registration_id, deployment_id)) is not None
+
+    def create_lti_launch_state(self, state, nonce, registration_id, target_link_uri, expires_at):
+        sql = '''INSERT INTO lti_launch_state (state, nonce, registration_id, target_link_uri, expires_at)
+                 VALUES (?, ?, ?, ?, ?)'''
+        self.execute(sql, (state, nonce, registration_id, target_link_uri, expires_at))
+
+    def consume_lti_launch_state(self, state):
+        sql = '''SELECT state, nonce, registration_id, target_link_uri, expires_at, used_at
+                 FROM lti_launch_state
+                 WHERE state = ?'''
+        row = self.fetchone(sql, (state,))
+
+        if not row:
+            return None
+
+        if row["used_at"] is not None:
+            return None
+
+        sql = '''UPDATE lti_launch_state
+                 SET used_at = datetime('now')
+                 WHERE state = ?'''
+        self.execute(sql, (state,))
+
+        return row
+
+    def get_lti_user_link(self, deployment_id, lti_sub):
+        sql = '''SELECT user_id
+                 FROM lti_user_links
+                 WHERE deployment_id = ?
+                   AND lti_sub = ?'''
+        row = self.fetchone(sql, (deployment_id, lti_sub))
+        if row:
+            return row["user_id"]
+        return None
+
+    def upsert_lti_user_link(self, deployment_id, lti_sub, user_id):
+        sql = '''INSERT INTO lti_user_links (deployment_id, lti_sub, user_id)
+                 VALUES (?, ?, ?)
+                 ON CONFLICT(deployment_id, lti_sub)
+                 DO UPDATE SET user_id = excluded.user_id,
+                               updated_at = CURRENT_TIMESTAMP'''
+        self.execute(sql, (deployment_id, lti_sub, user_id))
+
+    def get_lti_registrations(self):
+        sql = '''SELECT registration_id, platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url, created_at, updated_at
+                 FROM lti_registrations
+                 ORDER BY platform_name, registration_id'''
+        return self.fetchall(sql)
+
+    def get_lti_deployments_by_registration(self, registration_id):
+        sql = '''SELECT deployment_id, registration_id, is_active, created_at
+                 FROM lti_deployments
+                 WHERE registration_id = ?
+                 ORDER BY deployment_id'''
+        return self.fetchall(sql, (registration_id,))
+
+    def add_lti_registration(self, platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url):
+        sql = '''INSERT INTO lti_registrations (platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url)
+                 VALUES (?, ?, ?, ?, ?, ?)'''
+        return self.execute(sql, (platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url))
+
+    def add_lti_deployment(self, registration_id, deployment_id):
+        sql = '''INSERT INTO lti_deployments (deployment_id, registration_id, is_active)
+                 VALUES (?, ?, 1)'''
+        self.execute(sql, (deployment_id, registration_id))
+
+    def set_lti_deployment_active(self, deployment_id, is_active):
+        sql = '''UPDATE lti_deployments
+                 SET is_active = ?
+                 WHERE deployment_id = ?'''
+        self.execute(sql, (is_active, deployment_id))
+
+    def get_lti_resource_links(self):
+        sql = '''SELECT deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url, created_at, updated_at
+                 FROM lti_resource_links
+                 ORDER BY deployment_id, context_id, resource_link_id'''
+        return self.fetchall(sql)
+
+    def get_lti_resource_link(self, deployment_id, context_id, resource_link_id):
+        sql = '''SELECT deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url, created_at, updated_at
+                 FROM lti_resource_links
+                 WHERE deployment_id = ?
+                   AND context_id = ?
+                   AND resource_link_id = ?'''
+        return self.fetchone(sql, (deployment_id, context_id, resource_link_id))
+
+    def upsert_lti_resource_link(self, deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url):
+        sql = '''INSERT INTO lti_resource_links (deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url)
+                 VALUES (?, ?, ?, ?, ?, ?)
+                 ON CONFLICT(deployment_id, context_id, resource_link_id)
+                 DO UPDATE SET course_id = excluded.course_id,
+                               assignment_id = excluded.assignment_id,
+                               lineitem_url = excluded.lineitem_url,
+                               updated_at = CURRENT_TIMESTAMP'''
+        self.execute(sql, (deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url))
+
     def user_exists(self, user_id):
         sql = '''SELECT user_id
                  FROM users

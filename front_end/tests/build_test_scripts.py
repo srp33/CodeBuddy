@@ -46,7 +46,17 @@ other_script_file_paths = ["server/content.py", "server/helper.py", "server/imgc
 base_handler_file_paths = ["server/handlers/BaseRequestHandler.py", "server/handlers/BaseOtherHandler.py", "server/handlers/BaseUserHandler.py"]
 
 handler_file_paths = sorted(glob.glob("server/handlers/*Handler.py"))
-handler_file_paths = [x for x in handler_file_paths if not os.path.basename(x).startswith("Base") and not os.path.basename(x).startswith("GoogleLogin") and not os.path.basename(x).startswith("CASLogin")]
+excluded_handler_prefixes = [
+    "Base",
+    "GoogleLogin",
+    "CASLogin",
+    "LtiLogin",
+    "LtiLaunch"
+]
+handler_file_paths = [
+    x for x in handler_file_paths
+    if not any(os.path.basename(x).startswith(prefix) for prefix in excluded_handler_prefixes)
+]
 
 handler_class_names = []
 import_statements = set()
