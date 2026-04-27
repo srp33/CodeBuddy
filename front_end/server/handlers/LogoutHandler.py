@@ -11,16 +11,12 @@ from helper import *
 class LogoutHandler(BaseOtherHandler):
     def get(self):
         try:
-            for cookie in self.request.cookies:
-                self.clear_cookie(cookie)
-
+            self.clear_cookie("user_id")
             self.redirect("/")
         except Exception as inst:
-            print(f"Error occurred when attempting to log out. {traceback.format_exc()}")
-            pass
-            # try:
-            #     render_error(self, traceback.format_exc())
-            # except:
-            #     self.redirect("/")
+            try:
+                render_error(self, traceback.format_exc())
+            except:
+                self.redirect("/")
 
 # See https://quanttype.net/posts/2020-02-05-request-id-logging.html
