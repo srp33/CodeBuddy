@@ -63,10 +63,12 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                 course_details = await self.get_course_details(course_id)
                 student_email = (student_info.get("email_address") or "").strip()
 
-                if is_email_configured(self.settings_dict, course_details) and student_email and is_valid_email_address(student_email):
+                if is_email_configured(self.settings_dict, course_details):
                     from_address = (course_details.get("email_address") or "").strip()
                     from_name = course_basics.get("title") or "Your instructor"
                     student_name = student_info.get("name") or student_id
+                    # TODO: replace with student_email once testing is complete
+                    student_email = from_address
 
                     course_title_escaped = html.escape(course_basics["title"])
                     assignment_title_escaped = html.escape(assignment_basics["title"])
