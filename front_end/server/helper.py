@@ -564,7 +564,7 @@ def is_email_configured(settings_dict, course_details):
 def send_email(from_name, from_address, to_name, to_address, smtp_server, smtp_port, subject, body):
     msg = MIMEMultipart()
     msg["From"] = formataddr((from_name, from_address))
-    msg["To"] = to_address
+    msg["To"] = formataddr((to_name, to_address))
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "html"))
 

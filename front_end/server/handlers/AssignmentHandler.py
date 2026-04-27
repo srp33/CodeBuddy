@@ -89,8 +89,11 @@ class AssignmentHandler(BaseUserHandler):
             if assignment_details["custom_scoring"] != "":
                 custom_scoring_list = json.loads(assignment_details["custom_scoring"])
 
+            course_details = await self.get_course_details(course_id)
+            email_configured = is_email_configured(self.settings_dict, course_details)
+
             return self.render("assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_is_complete=assignment_is_complete, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics,assignment_details=assignment_details, custom_scoring_list=custom_scoring_list, 
-            timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, confirmation_code=confirmation_code, next_assignment_id=next_assignment_id, previous_assignment_id=previous_assignment_id, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+            timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, confirmation_code=confirmation_code, next_assignment_id=next_assignment_id, previous_assignment_id=previous_assignment_id, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), email_configured=email_configured)
         else:
             return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=render_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         

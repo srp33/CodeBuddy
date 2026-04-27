@@ -1,0 +1,83 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        {% if not email_configured %}
+            <div class="notification is-warning">
+                Accommodation requests cannot be submitted from this page right now. Please contact your instructor.
+            </div>
+
+            <div class="buttons mt-4">
+                <a class="button" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment</a>
+                <a class="button" href="/course/{{ course_basics['id'] }}">Course home</a>
+            </div>
+        {% else %}
+            <h4>Request an accommodation</h4>
+
+            <p><strong>Assignment:</strong> {{ assignment_basics["title"] }}</p>
+
+            {% if submit_success %}
+                <div class="notification is-success">
+                    Your request has been emailed to the instructor.
+                </div>
+            {% end %}
+
+            {% if form_error %}
+                <div class="notification is-warning">{{ form_error }}</div>
+            {% end %}
+
+            {% if not submit_success %}
+                <form id="accommodation_form" method="post" action="/request_accommodation/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">
+
+                    <p class="is-size-5 mt-2">Students can request an accommodation for an assignment that they anticipate they will not be able to complete by the deadline. {{ accommodation_request_message }} Please provide a brief justification for this request.</p>
+
+                    <div class="field">
+                        <div class="control">
+                            <textarea id="comments" name="comments" class="textarea" rows="8" placeholder="Enter a brief justification for this request." autofocus>{{ last_comment }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="control">
+                            <button type="submit" id="accommodation_submit" class="button is-primary">Submit</button>
+                        </div>
+                    </div>
+                </form>
+
+                <script>
+                    (function() {
+                        var ta = document.getElementById("comments");
+                        var btn = document.getElementById("accommodation_submit");
+                        if (ta && btn) {
+                            function sync() {
+                                btn.disabled = !ta.value || !ta.value.trim();
+                            }
+                            ta.addEventListener("input", sync);
+                            ta.addEventListener("change", sync);
+                            sync();
+                        }
+                    })();
+                </script>
+            {% end %}
+
+            <div class="buttons mt-4">
+                <a class="button" href="/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">Back to assignment</a>
+                <a class="button" href="/course/{{ course_basics['id'] }}">Course home</a>
+            </div>
+        {% end %}
+    {% else %}
+        <p>This assignment does not exist.</p>
+        <div class="buttons mt-4">
+            <a class="button" href="/course/{{ course_basics['id'] }}">Course home</a>
+        </div>
+    {% end %}
+{% else %}
+    <p>This course does not exist.</p>
+    <div class="buttons mt-4">
+        <a class="button" href="/courses">Courses</a>
+    </div>
+{% end %}

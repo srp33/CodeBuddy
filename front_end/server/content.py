@@ -2102,6 +2102,11 @@ ORDER BY student_name
 
         return self.fetchone(sql, (course_id, assignment_id, user_id))["has_exception"]
 
+    def add_student_late_exception(self, course_id, assignment_id, user_id):
+        self.execute('''INSERT OR IGNORE INTO assignment_late_exceptions (course_id, assignment_id, user_id)
+                        VALUES (?, ?, ?)''', (course_id, assignment_id, user_id))
+        self.update_when_content_updated(str(course_id))
+
     def get_student_timer_exceptions(self, has_timer, course_id, assignment_id):
         exceptions = {}
 

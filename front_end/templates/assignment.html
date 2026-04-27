@@ -141,6 +141,10 @@
                 <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ next_assignment_id }}'>Next assignment</a>
             {% end %}
 
+            {% if email_configured %}
+                <a class="button" href='/request_accommodation/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Request an accommodation</a>
+            {% end %}
+
             <a class="button" href='/course/{{ course_basics['id'] }}'>Course home</a>
         </div>
     {% else %}
