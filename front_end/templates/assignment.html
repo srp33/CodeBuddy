@@ -7,7 +7,7 @@
 {% if course_basics["exists"] %}
     <h4>{{ assignment_basics["title"] }}</h4>
 
-    {% if assignment_basics["exists"] and len(exercise_statuses) > 0 %}
+    {% if assignment_basics["exists"] and (len(exercise_statuses) > 0 or needs_security_code) %}
         <link rel="stylesheet" href="/static/css/modal.css">
 
         <p>
