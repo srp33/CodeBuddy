@@ -101,8 +101,7 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
 
                 course_details = await self.get_course_details(course_id)
                 student_name = student_info.get("name") or student_id
-                # TODO: replace with student_email once testing is complete
-                student_email = (course_details.get("email_address") or "").strip()
+                student_email = (student_info.get("email_address") or "").strip()
 
                 if is_email_configured(self.settings_dict, course_details):
                     from_address = (course_details.get("email_address") or "").strip()
