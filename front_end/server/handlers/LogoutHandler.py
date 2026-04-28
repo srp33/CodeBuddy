@@ -11,7 +11,8 @@ from helper import *
 class LogoutHandler(BaseOtherHandler):
     def get(self):
         try:
-            self.clear_cookie("user_id")
+            for cookie in ("user_id", "redirect_path", "user", "user_info", "is_administrator", "courses"):
+                self.clear_cookie(cookie)
             self.redirect("/")
         except Exception as inst:
             try:
