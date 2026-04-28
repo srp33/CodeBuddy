@@ -88,4 +88,18 @@
             </a>
         </div>
     {% end %}
+
+    {% if "exercise_basics" in globals() and exercise_basics.get("enable_pair_programming") and "users" in globals() and users %}
+        <div class="navbar-item is-arrowless">
+            <i class="fab fa-product-hunt" style="margin-right: 6px;"></i>
+            <input type="text" id="partner_name_inline" placeholder="Select a partner..." autocomplete="off"
+                   style="font-size:1em;font-family:inherit;border:1px solid #dbdbdb;border-radius:4px;padding:3px 8px;background:transparent;outline:none;min-width:180px;">
+            <div id="partner_dropdown" style="display:none;background:white;border:1px solid #dbdbdb;border-radius:4px;max-height:220px;overflow-y:auto;z-index:9999;box-shadow:0 2px 6px rgba(0,0,0,0.15);font-family:inherit;font-size:1em;">
+                {% for user_name in users %}
+                    <div class="partner-option" data-name="{{ user_name }}"
+                         style="padding:6px 12px;cursor:pointer;white-space:nowrap;">{{ user_name }}</div>
+                {% end %}
+            </div>
+        </div>
+    {% end %}
 {% end %}

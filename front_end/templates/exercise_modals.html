@@ -15,15 +15,19 @@
         <div id="submit_exercise_modal_message"></div>
 
         <div id="partner_selection">
-            <p>Select your pair programming partner here. If you are working on the exercise without a partner, leave this field blank.</p>
+            <p>Select your pair programming partner here. If you worked on the exercise without a partner, leave this field blank.</p>
 
             {% if users %}
-                <input class="space_div input is-primary" list="users_list" id="partner_name" placeholder="Enter partner's name here...">
-                <datalist id="users_list">
-                    {% for user_name in users %}
-                        <option value="{{ user_name }}"></option>
-                    {% end %}
-                </datalist>
+                <div>
+                    <input type="text" class="space_div input is-primary" id="partner_name"
+                           placeholder="Enter partner's name here..." autocomplete="off">
+                    <div id="partner_name_dropdown" style="display:none;background:white;border:1px solid #dbdbdb;border-radius:4px;max-height:280px;overflow-y:auto;z-index:9999;box-shadow:0 2px 6px rgba(0,0,0,0.15);font-family:inherit;font-size:1em;">
+                        {% for user_name in users %}
+                            <div class="partner-option" data-name="{{ user_name }}"
+                                 style="padding:6px 12px;cursor:pointer;white-space:nowrap;">{{ user_name }}</div>
+                        {% end %}
+                    </div>
+                </div>
             {% else %}
                 <p>There are no other registered students in this course, so your only option is to leave this field blank.</p>
             {% end %}
@@ -32,11 +36,123 @@
         </div>
 
         <p class="buttons">
-            <a id="modal_submit_button" class="modal-button button is-dark">Submit</a>
-            <a id="submit_cancel_button" class="modal-button button is-light">Cancel</a>
+            <a id="modal_submit_button" class="modal-button button is-dark" style="font-size:1em;">Submit</a>
+            <a id="submit_cancel_button" class="modal-button button is-light" style="font-size:1em;">Cancel</a>
         </p>
     </div>
 </div>
+
+<script>
+    window.makePartnerCombobox = function(input, dropdown, syncTarget) {
+        if (!input || !dropdown) return;
+        var options = dropdown.querySelectorAll(".partner-option");
+        var highlightedIndex = -1;
+
+        function getVisible() {
+            return Array.from(options).filter(function(o) { return o.style.display !== "none"; });
+        }
+
+        function setHighlight(idx) {
+            var visible = getVisible();
+            visible.forEach(function(o) { o.style.backgroundColor = ""; });
+            if (idx >= 0 && idx < visible.length) {
+                visible[idx].style.backgroundColor = "#f0f0f0";
+                visible[idx].scrollIntoView({ block: "nearest" });
+            }
+            highlightedIndex = idx;
+        }
+
+        function openDropdown() {
+            input.select();
+            options.forEach(function(o) { o.style.display = "block"; });
+            var rect = input.getBoundingClientRect();
+            dropdown.style.position = "fixed";
+            dropdown.style.top    = rect.bottom + "px";
+            dropdown.style.left   = rect.left + "px";
+            dropdown.style.width  = Math.max(rect.width, 220) + "px";
+            dropdown.style.display = "block";
+        }
+
+        function filterAndShow(query) {
+            var count = 0;
+            options.forEach(function(o) {
+                var show = query === "" || o.getAttribute("data-name").toLowerCase().indexOf(query.toLowerCase()) !== -1;
+                o.style.display = show ? "block" : "none";
+                if (show) count++;
+            });
+            dropdown.style.display = count > 0 ? "block" : "none";
+        }
+
+        function syncValue(val) {
+            if (syncTarget) syncTarget.value = val;
+        }
+
+        options.forEach(function(opt) {
+            opt.addEventListener("mouseenter", function() {
+                setHighlight(getVisible().indexOf(this));
+            });
+            opt.addEventListener("mouseleave", function() {
+                this.style.backgroundColor = "";
+                highlightedIndex = -1;
+            });
+            opt.addEventListener("mousedown", function(e) {
+                e.preventDefault();
+                var name = this.getAttribute("data-name");
+                input.value = name;
+                syncValue(name);
+                dropdown.style.display = "none";
+                highlightedIndex = -1;
+            });
+        });
+
+        input.addEventListener("focus", openDropdown);
+        input.addEventListener("click", openDropdown);
+        input.addEventListener("input", function() {
+            highlightedIndex = -1;
+            filterAndShow(this.value);
+            syncValue(this.value);
+        });
+        input.addEventListener("keydown", function(e) {
+            var visible = getVisible();
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                if (dropdown.style.display === "none") openDropdown();
+                setHighlight(Math.min(highlightedIndex + 1, visible.length - 1));
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setHighlight(Math.max(highlightedIndex - 1, 0));
+            } else if (e.key === "Enter" && highlightedIndex >= 0) {
+                e.preventDefault();
+                var name = visible[highlightedIndex].getAttribute("data-name");
+                input.value = name;
+                syncValue(name);
+                dropdown.style.display = "none";
+                highlightedIndex = -1;
+            } else if (e.key === "Escape") {
+                dropdown.style.display = "none";
+                highlightedIndex = -1;
+            }
+        });
+        input.addEventListener("blur", function() {
+            setTimeout(function() { dropdown.style.display = "none"; highlightedIndex = -1; }, 150);
+            syncValue(input.value);
+        });
+        document.addEventListener("click", function(e) {
+            if (e.target !== input && !dropdown.contains(e.target))
+                dropdown.style.display = "none";
+        });
+    };
+
+    // Initialize the modal combobox.
+    var modalInput    = document.getElementById("partner_name");
+    var modalDropdown = document.getElementById("partner_name_dropdown");
+    window.makePartnerCombobox(modalInput, modalDropdown, null);
+
+    // Initialize the navbar combobox, syncing selections back to the modal input.
+    var navbarInput    = document.getElementById("partner_name_inline");
+    var navbarDropdown = document.getElementById("partner_dropdown");
+    window.makePartnerCombobox(navbarInput, navbarDropdown, modalInput);
+</script>
 
 {% if support_questions %}
     <style>

@@ -653,6 +653,9 @@
         var modal = document.getElementById("submit_exercise_modal");
         modal.style.display = "block";
 
+        var partnerInput = document.getElementById("partner_name");
+        if (partnerInput) setTimeout(function() { partnerInput.focus(); }, 50);
+
         var cancelButton = document.getElementById("submit_cancel_button");
         var modalSubmitButton = document.getElementById("modal_submit_button");
         modalSubmitButton.onclick = function() {
