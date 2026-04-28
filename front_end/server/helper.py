@@ -146,9 +146,15 @@ async def exec_code(settings_dict, code, verification_code, exercise_details, ad
     else:
         timeout = back_end_config["timeout_seconds"]
 
+    output_keys = {"txt_output", "txt_output_formatted", "jpg_output", "diff_output"}
+    tests_for_request = {
+        title: {k: v for k, v in test.items() if k not in output_keys}
+        for title, test in exercise_details["tests"].items()
+    }
+
     data_dict = {"image_name": f"codebuddy/{exercise_details['back_end']}_{settings_dict['mode']}",
                  "code": code.strip(),
-                 "tests": exercise_details["tests"],
+                 "tests": tests_for_request,
                  "verification_code": verification_code,
                  "data_files": exercise_details["data_files"],
                  "output_type": exercise_details["output_type"],
@@ -166,7 +172,7 @@ async def exec_code(settings_dict, code, verification_code, exercise_details, ad
         m_host = settings_dict["m_host"]
 
     #TODO: Move try/except block here for ReadTimeout?
-    response = requests.post(f"http://{m_host}:{settings_dict['m_port']}/exec/", json.dumps(data_dict, default=str), timeout=request_timeout)
+    response = requests.post(f"http://{m_host}:{settings_dict['m_port']}/exec/", json=data_dict, timeout=request_timeout)
 
     response = ujson.loads(response.content)
 
