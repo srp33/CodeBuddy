@@ -38,15 +38,17 @@
                     <div class="field">
                         <label class="label is-size-5">Accommodation type:</label>
                         <div class="control">
-                            <div class="select is-size-5">
-                                <select id="request_type" name="request_type" class="is-size-6">
-                                    <option value="late_submission" {% if last_request_type == "late_submission" %}selected{% end %}>Submit the assignment late without a penalty</option>
-
-                                    {% if assignment_details["has_timer"] %}
-                                        <option value="extended_time" {% if last_request_type == "extended_time" %}selected{% end %}>Increase the time limit to time and a half</option>
-                                    {% end %}
-                                </select>
-                            </div>
+                            <label class="radio is-size-5">
+                                <input type="radio" name="request_type" value="late_submission" {% if last_request_type == "late_submission" %}checked{% end %}>
+                                Submit the assignment late without a penalty
+                            </label>
+                            {% if assignment_details["has_timer"] %}
+                                <br>
+                                <label class="radio is-size-5 mt-2">
+                                    <input type="radio" name="request_type" value="extended_time" {% if last_request_type == "extended_time" %}checked{% end %}>
+                                    Increase the time limit to time and a half
+                                </label>
+                            {% end %}
                         </div>
                     </div>
 
