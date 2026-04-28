@@ -178,7 +178,7 @@ class RequestAccommodationHandler(BaseUserHandler):
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Course:</td><td style="padding:4px 0;">{course_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Assignment:</td><td style="padding:4px 0;">{assignment_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Student:</td><td style="padding:4px 0;">{student_name_escaped} ({student_id_escaped})</td></tr>
-  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Request type:</td><td style="padding:4px 0;">{request_label_escaped}</td></tr>
+  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Accommodation type:</td><td style="padding:4px 0;">{request_label_escaped}</td></tr>
 </table>
 <p><strong>Justification:</strong></p>
 <p style="white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:4px;">{comments_escaped}</p>

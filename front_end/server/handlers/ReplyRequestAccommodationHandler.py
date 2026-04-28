@@ -9,11 +9,7 @@ import math
 import traceback
 
 from BaseUserHandler import *
-
-ACCOMMODATION_LABELS = {
-    "late_submission": "late-submission exception",
-    "extended_time": "time-and-a-half time limit",
-}
+from RequestAccommodationHandler import REQUEST_TYPES
 
 
 class ReplyRequestAccommodationHandler(BaseUserHandler):
@@ -23,7 +19,7 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                 self.render("permissions.html")
                 return
 
-            if request_type not in ACCOMMODATION_LABELS:
+            if request_type not in REQUEST_TYPES:
                 self.render("reply_request_accommodation.html",
                     courses=self.courses,
                     course_basics={"id": course_id, "title": "", "exists": True},
@@ -42,7 +38,7 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                 )
                 return
 
-            accommodation_label = ACCOMMODATION_LABELS[request_type]
+            accommodation_label = REQUEST_TYPES[request_type]
 
             course_basics = await self.get_course_basics(course_id)
             if not course_basics["exists"]:
@@ -132,7 +128,7 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Course:</td><td style="padding:4px 0;">{course_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Assignment:</td><td style="padding:4px 0;">{assignment_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Student:</td><td style="padding:4px 0;">{student_name_escaped} ({student_id_escaped})</td></tr>
-  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Accommodation:</td><td style="padding:4px 0;">{accommodation_label_escaped}</td></tr>
+  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Accommodation type:</td><td style="padding:4px 0;">{accommodation_label_escaped}</td></tr>
 </table>
 {action_line}
 <p>Contact the instructor if you have questions.</p>
