@@ -1,0 +1,78 @@
+<div class="notification is-warning">
+    This assignment requires a security code. Please enter that below.
+</div>
+
+<div class="notification is-danger is-hidden" id="result_message"></div>
+
+<div class="has-background-white p-4 mt-4">
+    <p>Enter your 12-digit code:</p>
+    <p>
+        <input id="security_code_1" class="input is-grey is-medium monospace mr-4" style="width: 120px" maxlength="4" autofocus />
+
+        <input id="security_code_2" class="input is-grey is-medium monospace mr-4" style="width: 120px" maxlength="4" />
+
+        <input id="security_code_3" class="input is-grey is-medium monospace" style="width: 120px" maxlength="4" />
+    </p>
+</div>
+
+<div class="has-background-white p-4 mt-4">
+    <button class="button is-primary" onclick="verify();">Verify</button>
+</div>
+
+<script>
+    function verify() {
+        const security_code = getValue("security_code_1").trim() + getValue("security_code_2").trim() + getValue("security_code_3").trim();
+
+        if (security_code.length != 12) {
+            return(showResultMessage("<b>The security code must be 12 characters in length.</b>", "danger"));
+        }
+
+        const regex = /^[A-Z0-9]+$/;
+        if (!regex.test(security_code)) {
+            return(showResultMessage("<b>The security code must contain only numbers and upper-case letters.</b>", "danger"));
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: "/verify_security_code/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+            data: security_code,
+            success: function(status) {
+                if (status == "verified" || status == "previously_verified") {
+                    window.location.href = `/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}`;
+                }
+                else {
+                    if (status == "could_not_verify") {
+                        showResultMessage("<b>The security code was NOT verified. Please enter a valid code.</b>", "danger");
+                    }
+                    else {
+                        showResultMessage(`<b>The following error occurred:<pre>${status}</pre>.</b>`, "danger");
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                showResultMessage("<p>An error occurred when connecting to the server.</p>", "danger");
+                console.error("Error: " + error);
+            }
+        });
+    }
+
+    function getValue(id) {
+        return $(`#${id}`)[0].value;
+    }
+
+    function showResultMessage(messageHTML, messageType) {
+        $("#result_message").removeClass("is-primary is-warning is-danger");
+        $("#result_message").addClass(`is-${messageType}`);
+        $("#result_message").removeClass("is-hidden");
+        $("#result_message")[0].innerHTML = messageHTML;
+        window.scrollTo(0, 0);
+    }
+
+    function handleEnterKeyPress(event) {
+        if (event.key === 'Enter') {
+            verify();
+        }
+    }
+
+    document.getElementById('security_code_3').addEventListener('keydown', handleEnterKeyPress);
+</script>

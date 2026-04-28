@@ -44,6 +44,10 @@
             <button id="timer_button" class="button is-medium is-rounded mb-5 is-outlined" type="button" style="cursor: pointer;"></button>
         {% end %}
 
+        {% if needs_security_code %}
+            {% include "verify_security_code_form.html" %}
+        {% else %}
+
         {% if assignment_details["require_security_codes"] == 2 and confirmation_code %}
             <div class="notification has-background-grey-darker has-text-white" id="confirmation_code">Below is your confirmation code.<pre class='mt-4 pl-4 pt-0 pr-0 pb-0 is-size-4'>{{ confirmation_code }}</pre></div>
         {% end %}
@@ -130,6 +134,8 @@
                     {% end %}
                 </ul>
             </div>
+        {% end %}
+
         {% end %}
 
         <div class="buttons">

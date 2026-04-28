@@ -90,6 +90,7 @@ cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_co
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html clean_up_courses.html other_functions.html container_bottom.html /tmp/footer.html > "$OUTPUT/clean_up_courses.html"
 cat header.html navbar_top.html navbar_menu.html navbar_bottom.html container_color.html delete_user.html container_bottom.html /tmp/footer.html > "$OUTPUT/delete_user.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html generate_security_codes.html container_bottom.html /tmp/footer.html > "$OUTPUT/generate_security_codes.html"
+cp verify_security_code_form.html "$OUTPUT/verify_security_code_form.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html verify_security_code.html container_bottom.html /tmp/footer.html > "$OUTPUT/verify_security_code.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html view_security_codes.html container_bottom.html /tmp/footer.html > "$OUTPUT/view_security_codes.html"
 cat header.html navbar_top.html navbar_course.html navbar_assignment.html navbar_menu.html navbar_bottom.html container_color.html answer_question.html container_bottom.html /tmp/footer.html > "$OUTPUT/answer_question.html"
