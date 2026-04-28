@@ -531,7 +531,7 @@ def get_assignment_status(handler, course_id, assignment_id, assignment_details,
 async def execute_and_save_exercise(settings_dict, content, exercise_basics, exercise_details):
     exec_response = await exec_code(settings_dict, exercise_details["solution_code"], "", exercise_details, True)
 
-    if exec_response["message"] == "":
+    if exec_response.get("message", "") == "":
         has_non_empty_output = False
 
         for test_title in exec_response["test_outputs"]:
@@ -550,7 +550,7 @@ async def execute_and_save_exercise(settings_dict, content, exercise_basics, exe
         else:
             return "No output was produced for any test.", False
     else:
-        return exec_response["message"], False
+        return exec_response.get("message", "An unknown error occurred."), False
 
 def is_valid_email_address(email_address):
     pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
