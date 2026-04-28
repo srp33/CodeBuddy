@@ -9,7 +9,6 @@ import math
 import traceback
 
 from BaseUserHandler import *
-from RequestAccommodationHandler import REQUEST_TYPES
 
 
 class ReplyRequestAccommodationHandler(BaseUserHandler):
@@ -19,7 +18,7 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                 self.render("permissions.html")
                 return
 
-            if request_type not in REQUEST_TYPES:
+            if request_type not in ACCOMMODATION_REQUEST_TYPES:
                 self.render("reply_request_accommodation.html",
                     courses=self.courses,
                     course_basics={"id": course_id, "title": "", "exists": True},
@@ -38,7 +37,7 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                 )
                 return
 
-            accommodation_label = REQUEST_TYPES[request_type]
+            accommodation_label = ACCOMMODATION_REQUEST_TYPES[request_type]
 
             course_basics = await self.get_course_basics(course_id)
             if not course_basics["exists"]:

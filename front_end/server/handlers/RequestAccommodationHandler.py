@@ -9,11 +9,6 @@ import traceback
 
 from BaseUserHandler import *
 
-REQUEST_TYPES = {
-    "late_submission": "Submit this assignment late",
-    "extended_time": "Time and a half on the time limit",
-}
-
 
 class RequestAccommodationHandler(BaseUserHandler):
     async def user_may_access_course(self, course_id):
@@ -65,7 +60,7 @@ class RequestAccommodationHandler(BaseUserHandler):
             assignment_basics=assignment_basics,
             assignment_details=assignment_details,
             assignment_statuses=assignment_statuses,
-            request_types=REQUEST_TYPES,
+            request_types=ACCOMMODATION_REQUEST_TYPES,
             email_configured=email_configured,
             form_error=form_error,
             submit_success=submit_success,
@@ -114,7 +109,7 @@ class RequestAccommodationHandler(BaseUserHandler):
             request_type = self.get_body_argument("request_type", default="")
             comments = self.get_body_argument("comments", default="")
 
-            if request_type not in REQUEST_TYPES:
+            if request_type not in ACCOMMODATION_REQUEST_TYPES:
                 await self.render_form(
                     course_basics,
                     assignment_basics,
@@ -159,7 +154,7 @@ class RequestAccommodationHandler(BaseUserHandler):
             comments_stripped = comments.strip()
             student_name = self.user_info.get("name") or ""
             student_id = self.user_info.get("user_id") or ""
-            request_label = REQUEST_TYPES[request_type]
+            request_label = ACCOMMODATION_REQUEST_TYPES[request_type]
 
             domain = (self.settings_dict.get("domain") or "").strip()
             approval_url = f"https://{domain}/reply_request_accommodation/{course_id}/{assignment_id}/{student_id}/{request_type}"

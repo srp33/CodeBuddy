@@ -561,6 +561,11 @@ def is_email_configured(settings_dict, course_details):
     course_email = (course_details.get("email_address") or "").strip()
     return bool(smtp_server and smtp_port_str and course_email and is_valid_email_address(course_email))
 
+ACCOMMODATION_REQUEST_TYPES = {
+    "late_submission": "Submit this assignment late",
+    "extended_time": "Time and a half on the time limit",
+}
+
 def send_email(from_name, from_address, to_name, to_address, smtp_server, smtp_port, subject, body):
     msg = MIMEMultipart()
     msg["From"] = formataddr((from_name, from_address))
