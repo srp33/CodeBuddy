@@ -177,8 +177,10 @@ async def exec_code(settings_dict, code, verification_code, exercise_details, ad
     else:
         # We are using this for debugging. If something goes awry on the
         # back end, this will help us see what happened.
+        error_message = response.get("message", str(response))
+        response["test_outputs"] = {}
         for test_title in exercise_details["tests"]:
-            response["test_outputs"][test_title] = {"txt_output": response["message"], "jpg_output": "", "txt_output_formatted": "", "diff_output": ""}
+            response["test_outputs"][test_title] = {"txt_output": error_message, "jpg_output": "", "txt_output_formatted": format_output_as_html(error_message), "diff_output": ""}
 
     response["all_passed"] = False # This is our default assumption.
     return response
