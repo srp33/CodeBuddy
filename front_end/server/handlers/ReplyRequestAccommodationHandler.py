@@ -89,10 +89,11 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
             email_sent = False
 
             if not already_granted:
+                assignment_details = self.content.get_assignment_details(course_basics, assignment_id)
+
                 if request_type == "late_submission":
                     self.content.add_student_late_exception(course_id, assignment_id, student_id)
                 else:
-                    assignment_details = self.content.get_assignment_details(course_basics, assignment_id)
                     total_minutes = assignment_details["hour_timer"] * 60 + assignment_details["minute_timer"]
                     extended_minutes = math.ceil(total_minutes * 1.5)
                     new_hours = extended_minutes // 60
@@ -120,6 +121,13 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                     else:
                         action_line = f'<p>Your time limit for <a href="{assignment_url_escaped}">{assignment_title_escaped}</a> has been extended to time and a half.</p>'
 
+                    security_code_row = ""
+                    if request_type == "late_submission" and assignment_details.get("require_security_codes", 0) != 0:
+                        student_security_code = self.content.get_student_security_code(course_id, assignment_id, student_id)
+                        if student_security_code:
+                            security_code_escaped = html.escape(student_security_code)
+                            security_code_row = f'  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Security code:</td><td style="padding:4px 0;font-family:monospace;">{security_code_escaped}</td></tr>\n'
+
                     body = f"""
 <p>Your accommodation request has been <strong>approved</strong>.</p>
 <table style="border-collapse:collapse;margin-bottom:1em;">
@@ -127,7 +135,7 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Assignment:</td><td style="padding:4px 0;">{assignment_title_escaped}</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Student:</td><td style="padding:4px 0;">{student_name_escaped} ({student_id_escaped})</td></tr>
   <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Accommodation type:</td><td style="padding:4px 0;">{accommodation_label_escaped}</td></tr>
-</table>
+{security_code_row}</table>
 {action_line}
 <p>Contact the instructor if you have questions.</p>
 """

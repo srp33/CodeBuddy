@@ -1831,6 +1831,18 @@ ORDER BY student_name
         
         return results
 
+    def get_student_security_code(self, course_id, assignment_id, student_id):
+        sql = '''SELECT security_code
+                 FROM security_codes
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND student_id = ?'''
+
+        result = self.fetchone(sql, (course_id, assignment_id, student_id))
+        if result:
+            return split_str_by_positions(result["security_code"], 4, "-")
+        return None
+
     def get_assignment_basics(self, course_basics, assignment_id):
         if not assignment_id:
             return {"id": "", "title": "", "visible": True, "exists": False, "course": course_basics}
