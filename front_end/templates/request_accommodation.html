@@ -36,13 +36,14 @@
                     <p class="is-size-5 mt-2">Students can request an accommodation for an assignment. {{ accommodation_request_message }} Please select the type of accommodation and provide a brief justification for this request.</p>
 
                     <div class="field">
-                        <label class="label">Accommodation type:</label>
+                        <label class="label is-size-5">Accommodation type:</label>
                         <div class="control">
-                            <div class="select">
-                                <select id="request_type" name="request_type">
-                                    <option value="late_submission" {% if last_request_type == "late_submission" %}selected{% end %}>Submit this assignment late</option>
+                            <div class="select is-size-5">
+                                <select id="request_type" name="request_type" class="is-size-6">
+                                    <option value="late_submission" {% if last_request_type == "late_submission" %}selected{% end %}>Submit the assignment late without a penalty</option>
+
                                     {% if assignment_details["has_timer"] %}
-                                        <option value="extended_time" {% if last_request_type == "extended_time" %}selected{% end %}>Time and a half on the time limit</option>
+                                        <option value="extended_time" {% if last_request_type == "extended_time" %}selected{% end %}>Increase the time limit to time and a half</option>
                                     {% end %}
                                 </select>
                             </div>
@@ -50,13 +51,11 @@
                     </div>
 
                     <div class="field">
-                        <label class="label">Comments:</label>
-                        <div class="control">
+                        <label class="label is-size-5">Comments:</label>
+                        <div class="control is-size-5">
                             <textarea id="comments" name="comments" class="textarea" rows="8" placeholder="Enter a brief justification for this request." autofocus>{{ last_comment }}</textarea>
                         </div>
                     </div>
-
-                    <p class="is-size-5 mt-2 is-italic">Comments are required.</p>
 
                     <div class="field">
                         <div class="control">
