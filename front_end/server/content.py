@@ -1840,7 +1840,20 @@ ORDER BY student_name
 
         result = self.fetchone(sql, (course_id, assignment_id, student_id))
         if result:
-            return split_str_by_positions(result["security_code"], 4, "-")
+            return split_str_by_positions(result["security_code"], 4, " ")
+
+        # Fall back to a uniform code (same for all students, none yet claimed).
+        sql_all = '''SELECT security_code
+                     FROM security_codes
+                     WHERE course_id = ?
+                       AND assignment_id = ?'''
+
+        rows = self.fetchall(sql_all, (course_id, assignment_id))
+        if rows:
+            codes = {row["security_code"] for row in rows}
+            if len(codes) == 1:
+                return split_str_by_positions(rows[0]["security_code"], 4, " ")
+
         return None
 
     def get_assignment_basics(self, course_basics, assignment_id):

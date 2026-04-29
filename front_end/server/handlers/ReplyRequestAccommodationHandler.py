@@ -122,11 +122,11 @@ class ReplyRequestAccommodationHandler(BaseUserHandler):
                         action_line = f'<p>Your time limit for <a href="{assignment_url_escaped}">{assignment_title_escaped}</a> has been extended to time and a half.</p>'
 
                     security_code_row = ""
-                    if request_type == "late_submission" and assignment_details.get("require_security_codes", 0) != 0:
+                    if request_type == "late_submission" and assignment_details.get("require_security_codes", 0) == 1:
                         student_security_code = self.content.get_student_security_code(course_id, assignment_id, student_id)
                         if student_security_code:
                             security_code_escaped = html.escape(student_security_code)
-                            security_code_row = f'  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Security code:</td><td style="padding:4px 0;font-family:monospace;">{security_code_escaped}</td></tr>\n'
+                            security_code_row = f'  <tr><td style="padding:4px 12px 4px 0;font-weight:bold;">Security code:</td><td style="padding:4px 0;font-family:monospace;color:#cc0000;">{security_code_escaped}</td></tr>\n'
 
                     body = f"""
 <p>Your accommodation request has been <strong>approved</strong>.</p>
