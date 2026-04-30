@@ -2385,6 +2385,79 @@ ORDER BY student_name
 
         return exercise_basics["id"]
 
+    def get_exercise_bulk_edit_data(self, course_id, assignment_id):
+        sql = '''SELECT exercise_id, min_solution_length, max_solution_length, max_submissions
+                 FROM exercises
+                 WHERE course_id = ?
+                   AND assignment_id = ?'''
+
+        result = {}
+        for row in self.fetchall(sql, (course_id, assignment_id)):
+            result[row["exercise_id"]] = {
+                "min_solution_length": row["min_solution_length"],
+                "max_solution_length": row["max_solution_length"],
+                "max_submissions": row["max_submissions"],
+            }
+        return result
+
+    def update_exercise_field(self, course_id, assignment_id, exercise_id, field_name, value):
+        field_map = {
+            "title": "title",
+            "pair_programming": "enable_pair_programming",
+            "weight": "weight",
+            "min_length": "min_solution_length",
+            "max_length": "max_solution_length",
+            "max_submissions": "max_submissions",
+        }
+
+        if field_name not in field_map:
+            raise Exception(f"Field '{field_name}' is not supported for bulk update.")
+
+        db_column = field_map[field_name]
+        current_time = format_datetime_for_db(get_current_datetime())
+
+        sql = f"UPDATE exercises SET {db_column} = ?, date_updated = ? WHERE course_id = ? AND assignment_id = ? AND exercise_id = ?"
+        self.execute(sql, (value, current_time, course_id, assignment_id, exercise_id))
+
+        self.update_when_content_updated(course_id)
+
+    def get_assignment_bulk_edit_data(self, course_id):
+        sql = '''SELECT assignment_id, require_security_codes, show_run_button, support_questions
+                 FROM assignments
+                 WHERE course_id = ?'''
+
+        result = {}
+        for row in self.fetchall(sql, (course_id,)):
+            result[row["assignment_id"]] = {
+                "require_security_codes": row["require_security_codes"],
+                "show_run_button": bool(row["show_run_button"]),
+                "support_questions": bool(row["support_questions"]),
+            }
+        return result
+
+    def update_assignment_field(self, course_id, assignment_id, field_name, value):
+        current_time = format_datetime_for_db(get_current_datetime())
+
+        if field_name == "dates":
+            sql = "UPDATE assignments SET start_date = ?, due_date = ?, date_updated = ? WHERE course_id = ? AND assignment_id = ?"
+            self.execute(sql, (value["start_date"], value["due_date"], current_time, course_id, assignment_id))
+        else:
+            field_map = {
+                "title": "title",
+                "require_security_codes": "require_security_codes",
+                "show_run_button": "show_run_button",
+                "support_questions": "support_questions",
+            }
+
+            if field_name not in field_map:
+                raise Exception(f"Field '{field_name}' is not supported for bulk update.")
+
+            db_column = field_map[field_name]
+            sql = f"UPDATE assignments SET {db_column} = ?, date_updated = ? WHERE course_id = ? AND assignment_id = ?"
+            self.execute(sql, (value, current_time, course_id, assignment_id))
+
+        self.update_when_content_updated(course_id)
+
     def save_presubmission(self, course_id, assignment_id, exercise_id, user_id, presubmission):
         sql = '''INSERT OR REPLACE INTO presubmissions (course_id, assignment_id, exercise_id, user_id, presubmission)
                  VALUES (?, ?, ?, ?, ?)'''

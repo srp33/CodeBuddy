@@ -1,0 +1,217 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <h4>Bulk edit assignments - {{ course_basics["title"] }}</h4>
+
+    <div class="notification is-danger is-hidden" id="bulk_edit_message"></div>
+
+    {% if len(all_assignments) > 0 %}
+        <div class="field" style="margin-bottom: 1.25em;">
+            <div class="control">
+                <div class="select is-medium">
+                    <select id="field_selector" onchange="renderBulkEditTable()">
+                        <option value="title" selected>Title</option>
+                        <option value="dates">Start &amp; due dates</option>
+                        <option value="require_security_codes">Require security codes</option>
+                        <option value="show_run_button">Show Run button</option>
+                        <option value="support_questions">Support questions and answers</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table is-striped" id="bulk_edit_table" style="width:100%;">
+                <thead>
+                    <tr id="bulk_edit_thead_row"></tr>
+                </thead>
+                <tbody id="bulk_edit_tbody"></tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No assignments have been created for this course.</p>
+    {% end %}
+
+    <div class="buttons" style="margin-top: 1em;">
+        {% if len(all_assignments) > 0 %}
+            <button class="button is-primary" onclick="saveBulkEdit()">Save</button>
+        {% end %}
+        <a class="button" href='/course/{{ course_basics['id'] }}'>Course home</a>
+    </div>
+
+    <script>
+        const bulkEditAssignments = {{ jsonify(all_assignments) }};
+
+        const bulkEditFieldHeaders = {
+            "title":                  "Title",
+            "dates":                  "Start & due dates",
+            "require_security_codes": "Require security codes",
+            "show_run_button":        "Show Run button",
+            "support_questions":      "Support questions and answers"
+        };
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function createControlHTML(field, asgn) {
+            if (field === "title") {
+                return `<input type="text" class="input is-grey" style="min-width:300px;" value="${escapeHtml(asgn.title)}">`;
+            }
+            if (field === "require_security_codes") {
+                const val = asgn.require_security_codes;
+                const options = [
+                    [0, "No"],
+                    [1, "Yes - Security codes only"],
+                    [2, "Yes - Security and confirmation codes"]
+                ];
+                const opts = options.map(([v, label]) =>
+                    `<option value="${v}"${v === val ? " selected" : ""}>${label}</option>`
+                ).join("");
+                return `<div class="select is-grey"><select>${opts}</select></div>`;
+            }
+            if (field === "show_run_button") {
+                const val = asgn.show_run_button ? "Yes" : "No";
+                const opts = ["No", "Yes"].map(v =>
+                    `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
+                ).join("");
+                return `<div class="select is-grey"><select>${opts}</select></div>`;
+            }
+            if (field === "support_questions") {
+                const val = asgn.support_questions ? "Yes" : "No";
+                const opts = ["No", "Yes"].map(v =>
+                    `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
+                ).join("");
+                return `<div class="select is-grey"><select>${opts}</select></div>`;
+            }
+        }
+
+        function renderBulkEditTable() {
+            const field = document.getElementById("field_selector").value;
+            document.getElementById("bulk_edit_message").classList.add("is-hidden");
+
+            // Update header
+            const theadRow = document.getElementById("bulk_edit_thead_row");
+            if (field === "dates") {
+                theadRow.innerHTML = `<th style="width:400px; text-align:left;">Title</th>` +
+                    `<th style="text-align:left;">Start date</th>` +
+                    `<th style="text-align:left;">Due date</th>`;
+            } else {
+                theadRow.innerHTML = `<th style="width:600px; text-align:left;">Title</th>` +
+                    `<th style="text-align:left;">${bulkEditFieldHeaders[field]}</th>`;
+            }
+
+            // Build rows
+            const titleWidth = field === "dates" ? "width:400px;" : "width:600px;";
+            let html = "";
+            for (const asgn of bulkEditAssignments) {
+                html += `<tr data-assignment-id="${asgn.id}">`;
+                html += `<td style="vertical-align:middle; text-align:left; ${titleWidth}"><a href="/assignment/{{ course_basics['id'] }}/${asgn.id}">${escapeHtml(asgn.title)}</a></td>`;
+                if (field === "dates") {
+                    const startVal = asgn.start_date ? escapeHtml(String(asgn.start_date)) : "";
+                    const dueVal = asgn.due_date ? escapeHtml(String(asgn.due_date)) : "";
+                    html += `<td style="vertical-align:middle; text-align:left;"><input type="text" class="input start-date-picker" style="width:220px;" data-date="${startVal}"></td>`;
+                    html += `<td style="vertical-align:middle; text-align:left;"><input type="text" class="input due-date-picker" style="width:220px;" data-date="${dueVal}"></td>`;
+                } else {
+                    html += `<td style="vertical-align:middle; text-align:left;">${createControlHTML(field, asgn)}</td>`;
+                }
+                html += `</tr>`;
+            }
+            document.getElementById("bulk_edit_tbody").innerHTML = html;
+
+            if (field === "dates") {
+                document.querySelectorAll(".start-date-picker, .due-date-picker").forEach(input => {
+                    const dateVal = input.getAttribute("data-date");
+                    flatpickr(input, {
+                        enableTime: true,
+                        dateFormat: "Z",
+                        altInput: true,
+                        altFormat: "Y-m-d G:i K",
+                        defaultDate: dateVal || null,
+                        allowInput: true
+                    });
+                });
+            }
+        }
+
+        function showBulkEditMessage(messageHTML, messageType) {
+            const el = document.getElementById("bulk_edit_message");
+            el.className = `notification is-${messageType}`;
+            el.innerHTML = messageHTML;
+            el.classList.remove("is-hidden");
+            window.scrollTo(0, 0);
+        }
+
+        function saveBulkEdit() {
+            const field = document.getElementById("field_selector").value;
+            const rows = document.querySelectorAll("#bulk_edit_tbody tr");
+            const updatesForServer = [];
+            const updatesForMemory = [];
+
+            for (const row of rows) {
+                const assignment_id = parseInt(row.dataset.assignmentId);
+                if (field === "dates") {
+                    const startInput = row.querySelector(".start-date-picker");
+                    const dueInput = row.querySelector(".due-date-picker");
+                    const startIso = startInput.value;
+                    const dueIso = dueInput.value;
+                    const startUtc = startIso ? new Date(startIso).toUTCString() : "";
+                    const dueUtc = dueIso ? new Date(dueIso).toUTCString() : "";
+                    updatesForServer.push({ assignment_id, value: JSON.stringify({ start_date: startUtc, due_date: dueUtc }) });
+                    updatesForMemory.push({ assignment_id, start_date: startIso || null, due_date: dueIso || null });
+                } else {
+                    const control = row.querySelector("input, select");
+                    updatesForServer.push({ assignment_id, value: control.value });
+                    updatesForMemory.push({ assignment_id, value: control.value });
+                }
+            }
+
+            showBulkEditMessage("<b>Please wait...</b>", "warning");
+
+            $.ajax({
+                type: "POST",
+                url: "/bulk_edit_course/{{ course_basics['id'] }}",
+                data: JSON.stringify({ field: field, updates: updatesForServer }),
+                async: true
+            }).done(function(data) {
+                const json_data = JSON.parse(data);
+                if (json_data["message"] === "") {
+                    for (const update of updatesForMemory) {
+                        const asgn = bulkEditAssignments.find(a => a.id === update.assignment_id);
+                        if (!asgn) continue;
+                        if (field === "title") asgn.title = update.value.trim();
+                        else if (field === "dates") { asgn.start_date = update.start_date; asgn.due_date = update.due_date; }
+                        else if (field === "require_security_codes") asgn.require_security_codes = parseInt(update.value);
+                        else if (field === "show_run_button") asgn.show_run_button = (update.value === "Yes");
+                        else if (field === "support_questions") asgn.support_questions = (update.value === "Yes");
+                    }
+                    if (field === "title") {
+                        bulkEditAssignments.sort((a, b) => a.title.localeCompare(b.title, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true}));
+                    }
+                    renderBulkEditTable();
+                    showBulkEditMessage(`<b>${bulkEditFieldHeaders[field]} saved successfully.</b>`, "primary");
+                } else {
+                    showBulkEditMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, "danger");
+                }
+            }).fail(function() {
+                showBulkEditMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
+            });
+        }
+
+        renderBulkEditTable();
+    </script>
+{% else %}
+    <p>This course does not exist.</p>
+{% end %}

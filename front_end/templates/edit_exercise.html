@@ -723,8 +723,12 @@
                 return(showResultMessage("The minimum response length cannot be zero.", "danger"));
             if (min_solution_length > 10000)
                 return(showResultMessage("The minimum response length cannot be larger than 10000.", "danger"));
+            if (max_solution_length < 1)
+                return(showResultMessage("The maximum response length must be at least 1.", "danger"));
             if (max_solution_length > 10000)
                 return(showResultMessage("The maximum response length must be 10000 or smaller.", "danger"));
+            if (parseInt(max_solution_length) < parseInt(min_solution_length))
+                return(showResultMessage("The maximum response length cannot be less than the minimum response length.", "danger"));
 
             // Make sure total file size is not too large across all files.
             if (dataFilesTooLarge()) {

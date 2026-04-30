@@ -31,6 +31,8 @@ def make_app(settings_dict):
             url(r"/ask_virtual_assistant/([^/]+)/([^/]+)/([^/]+)", AskVirtualAssistantHandler, name="ask_virtual_assistant"),
             url(r"/assignment/([^/]+)/([^/]+)", AssignmentHandler, name="assignment"),
             url(r"/available", AvailableCoursesHandler, name="available"),
+            url(r"/bulk_edit_assignment/([^/]+)/([^/]+)", BulkEditAssignmentHandler, name="bulk_edit_assignment"),
+            url(r"/bulk_edit_course/([^/]+)", BulkEditCourseHandler, name="bulk_edit_course"),
             url(r"/caslogin", CASLoginHandler, name="caslogin"),
             url(r"/clean_up_courses", CleanUpCoursesHandler, name="clean_up_courses"),
             url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),

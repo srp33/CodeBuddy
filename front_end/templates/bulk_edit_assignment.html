@@ -1,0 +1,192 @@
+<!-- <copyright_statement>-->
+<!--   CodeBuddy: A programming assignment management system for short-form exercises-->
+<!--   Copyright (C) 2024 Stephen Piccolo-->
+<!--   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+<!-- </copyright_statement>-->
+
+{% if course_basics["exists"] %}
+    {% if assignment_basics["exists"] %}
+        <h4>Bulk edit exercises - {{ assignment_basics["title"] }}</h4>
+
+        <div class="notification is-danger is-hidden" id="bulk_edit_message"></div>
+
+        {% if len(visible_exercises) > 0 %}
+            <div class="field" style="margin-bottom: 1.25em;">
+                <div class="control">
+                    <div class="select is-medium">
+                        <select id="field_selector" onchange="renderBulkEditTable()">
+                            <option value="title" selected>Title</option>
+                            <option value="pair_programming">Pair programming</option>
+                            <option value="weight">Weight</option>
+                            <option value="min_length">Minimum response length (# characters)</option>
+                            <option value="max_length">Maximum response length (# characters)</option>
+                            <option value="max_submissions">Maximum # of submissions</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table is-striped" id="bulk_edit_table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width:600px; text-align:left;">Title</th>
+                            <th id="bulk_edit_value_header" style="text-align:left;">Title</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bulk_edit_tbody"></tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No visible exercises in this assignment.</p>
+        {% end %}
+
+        <div class="buttons" style="margin-top: 1em;">
+            {% if len(visible_exercises) > 0 %}
+                <button class="button is-primary" onclick="saveBulkEdit()">Save</button>
+            {% end %}
+            <a class="button" href='/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Assignment home</a>
+        </div>
+
+        <script>
+            const bulkEditExercises = {{ jsonify(visible_exercises) }};
+
+            const bulkEditFieldHeaders = {
+                "title":           "Title",
+                "pair_programming": "Pair programming",
+                "weight":           "Weight",
+                "min_length":       "Minimum response length (# characters)",
+                "max_length":       "Maximum response length (# characters)",
+                "max_submissions":  "Maximum # of submissions"
+            };
+
+            function escapeHtml(str) {
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function createControlHTML(field, ex) {
+                if (field === "title") {
+                    return `<input type="text" class="input is-grey" style="min-width:300px;" value="${escapeHtml(ex.title)}">`;
+                }
+                if (field === "pair_programming") {
+                    const val = ex.enable_pair_programming ? "Yes" : "No";
+                    const opts = ["No", "Yes"].map(v =>
+                        `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
+                    ).join("");
+                    return `<div class="select is-grey"><select>${opts}</select></div>`;
+                }
+                if (field === "weight") {
+                    return `<input type="text" class="input" style="width:70px;" value="${escapeHtml(ex.weight)}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\\..*)\\./g,'$1');">`;
+                }
+                if (field === "min_length") {
+                    return `<input type="text" class="input" style="width:100px;" value="${escapeHtml(ex.min_solution_length)}" oninput="this.value=this.value.replace(/[^0-9]/g,'');">`;
+                }
+                if (field === "max_length") {
+                    return `<input type="text" class="input" style="width:100px;" value="${escapeHtml(ex.max_solution_length)}" oninput="this.value=this.value.replace(/[^0-9]/g,'');">`;
+                }
+                if (field === "max_submissions") {
+                    const opts = [0, 1, 2, 3, 4, 5, 10, 20, 50, 100].map(v =>
+                        `<option value="${v}"${v === ex.max_submissions ? " selected" : ""}>${v === 0 ? "Unlimited" : v}</option>`
+                    ).join("");
+                    return `<div class="select is-grey"><select>${opts}</select></div>`;
+                }
+            }
+
+            function renderBulkEditTable() {
+                const field = document.getElementById("field_selector").value;
+                document.getElementById("bulk_edit_message").classList.add("is-hidden");
+                document.getElementById("bulk_edit_value_header").textContent = bulkEditFieldHeaders[field];
+
+                let html = "";
+                for (const ex of bulkEditExercises) {
+                    html += `<tr data-exercise-id="${ex.id}">`;
+                    html += `<td style="vertical-align:middle; text-align:left; width:600px;"><a href="/exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/${ex.id}">${escapeHtml(ex.title)}</a></td>`;
+                    html += `<td style="vertical-align:middle; text-align:left;">${createControlHTML(field, ex)}</td>`;
+                    html += `</tr>`;
+                }
+                document.getElementById("bulk_edit_tbody").innerHTML = html;
+            }
+
+            function showBulkEditMessage(messageHTML, messageType) {
+                const el = document.getElementById("bulk_edit_message");
+                el.className = `notification is-${messageType}`;
+                el.innerHTML = messageHTML;
+                el.classList.remove("is-hidden");
+                window.scrollTo(0, 0);
+            }
+
+            function saveBulkEdit() {
+                const field = document.getElementById("field_selector").value;
+                const rows = document.querySelectorAll("#bulk_edit_tbody tr");
+                const updates = [];
+
+                for (const row of rows) {
+                    const control = row.querySelector("input, select");
+                    updates.push({ exercise_id: parseInt(row.dataset.exerciseId), value: control.value });
+                }
+
+                if (field === "max_length" || field === "min_length") {
+                    for (const update of updates) {
+                        const val = parseInt(update.value);
+                        const ex = bulkEditExercises.find(e => e.id === update.exercise_id);
+                        if (val < 1) {
+                            showBulkEditMessage(`The ${field === "max_length" ? "maximum" : "minimum"} response length must be at least 1.`, "danger");
+                            return;
+                        }
+                        if (ex && field === "max_length" && val < ex.min_solution_length) {
+                            showBulkEditMessage(`The maximum response length for "<b>${escapeHtml(ex.title)}</b>" cannot be less than its minimum response length (${ex.min_solution_length}).`, "danger");
+                            return;
+                        }
+                        if (ex && field === "min_length" && val > ex.max_solution_length) {
+                            showBulkEditMessage(`The minimum response length for "<b>${escapeHtml(ex.title)}</b>" cannot be greater than its maximum response length (${ex.max_solution_length}).`, "danger");
+                            return;
+                        }
+                    }
+                }
+
+                showBulkEditMessage("<b>Please wait...</b>", "warning");
+
+                $.ajax({
+                    type: "POST",
+                    url: "/bulk_edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                    data: JSON.stringify({ field: field, updates: updates }),
+                    async: true
+                }).done(function(data) {
+                    const json_data = JSON.parse(data);
+                    if (json_data["message"] === "") {
+                        for (const update of updates) {
+                            const ex = bulkEditExercises.find(e => e.id === update.exercise_id);
+                            if (!ex) continue;
+                            if (field === "title") ex.title = update.value.trim();
+                            else if (field === "pair_programming") ex.enable_pair_programming = (update.value === "Yes");
+                            else if (field === "weight") ex.weight = parseFloat(update.value);
+                            else if (field === "min_length") ex.min_solution_length = parseInt(update.value);
+                            else if (field === "max_length") ex.max_solution_length = parseInt(update.value);
+                            else if (field === "max_submissions") ex.max_submissions = parseInt(update.value);
+                        }
+                        if (field === "title") {
+                            bulkEditExercises.sort((a, b) => a.title.localeCompare(b.title, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true}));
+                        }
+                        renderBulkEditTable();
+                        showBulkEditMessage(`<b>${bulkEditFieldHeaders[field]} saved successfully.</b>`, "primary");
+                    } else {
+                        showBulkEditMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, "danger");
+                    }
+                }).fail(function() {
+                    showBulkEditMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
+                });
+            }
+
+            renderBulkEditTable();
+        </script>
+    {% else %}
+        <p>This assignment does not exist.</p>
+    {% end %}
+{% else %}
+    <p>This course does not exist.</p>
+{% end %}
