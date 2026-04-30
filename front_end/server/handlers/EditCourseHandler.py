@@ -88,8 +88,6 @@ class EditCourseHandler(BaseUserHandler):
                 else:
                     course_details["highlighted"] = new_highlighted
 
-                    course_details["allow_students_download_submissions"] = self.get_body_argument("allow_students_download_submissions") == "Yes"
-
                     virtual_assistant_config = self.get_body_argument("virtual_assistant_config")
                     if virtual_assistant_config.strip() == "":
                         virtual_assistant_config = None
@@ -131,7 +129,7 @@ class EditCourseHandler(BaseUserHandler):
                                         pass
 
                                     if virtual_assistant_config is None or (type(va_dict) is dict and "api_key" in va_dict and "model" in va_dict and "temperature" in va_dict and "timeout" in va_dict and "max_per_exercise" in va_dict and type(va_dict["max_per_exercise"]) is int):
-                                        self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["email_address"], course_details["highlighted"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], course_details["templates"], None, get_current_datetime())
+                                        self.content.specify_course_details(course_details, course_details["introduction"], course_details["passcode"], course_details["email_address"], course_details["highlighted"], course_details["virtual_assistant_config"], course_details["templates"], None, get_current_datetime())
 
                                         course_id = self.content.save_course(course_basics, course_details)
                                     else:

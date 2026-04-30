@@ -42,6 +42,7 @@ Here are some of CodeBuddy's features:
 * [April 16, 2026] Instructors can specify that students must upload their solution as a text file, rather than enter text directly in a code box. Instructors can use this feature to require that students write code in an external editor (and thus gain experience with such editors).
 * [April 16, 2026] Added buttons on assignment pages to navigation to the next or previous assignment.
 * [April 16, 2026] When viewing assignment scores, it is possible to select students and send an email to the selected students. One way this feature can be used is to send encouragement, congratulations, or advice to students after completing an assignment or exam.
+* [Apr]
 
 # How to run a CodeBuddy instance
 

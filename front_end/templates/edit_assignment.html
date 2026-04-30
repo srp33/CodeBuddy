@@ -472,6 +472,19 @@
         </p>
     </div>
 
+    <div class="shadow-box">
+        <label for="allow_students_view_submissions"><strong>Allow students to download their submissions for this assignment?</strong><br/>When enabled, students who have completed at least one exercise in this assignment will see a "Download submission(s)" button on the assignment page. Clicking it generates an HTML document containing their latest <i>passing</i> submission for each exercise. Exercise instructions are included for context.</label>
+
+        <p>
+            <div class="select is-grey">
+                <select id="allow_students_view_submissions" class="edit-select">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+        </p>
+    </div>
+
     <p class="buttons">
         <button class="button is-dark" onclick="save()">Save</button>
 
@@ -1043,11 +1056,13 @@ function setStudentEarlyExceptions() {
         let require_security_codes = parseInt(getValue("require_security_codes"));
         var support_questions = getValue("support_questions") == "Yes";
         let use_virtual_assistant = getValue("use_virtual_assistant");
+        let allow_students_view_submissions = getValue("allow_students_view_submissions") == "Yes";
 
         var submission_obj = {
             "title": title,
             "visible": visible,
             "allow_late": allow_late,
+            "allow_students_view_submissions": allow_students_view_submissions,
             "allowed_external_urls": allowed_external_urls,
             "allowed_ip_addresses": allowed_ip_addresses,
             "assignment_group_id": assignment_group_id,
@@ -1238,4 +1253,5 @@ function setStudentEarlyExceptions() {
     setValue("require_security_codes", assignment_details_obj["require_security_codes"]);
     setValue("support_questions", assignment_details_obj["support_questions"] ? "Yes" : "No");
     setValue("use_virtual_assistant", assignment_details_obj["use_virtual_assistant"]);
+    setValue("allow_students_view_submissions", assignment_details_obj["allow_students_view_submissions"] ? "Yes" : "No");
 </script>

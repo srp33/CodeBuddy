@@ -1645,12 +1645,11 @@ ORDER BY student_name
         course_basics["title"] = title
         course_basics["visible"] = visible
 
-    def specify_course_details(self, course_details, introduction, passcode, email_address, highlighted, allow_students_download_submissions, virtual_assistant_config, templates, date_created, date_updated):
+    def specify_course_details(self, course_details, introduction, passcode, email_address, highlighted, virtual_assistant_config, templates, date_created, date_updated):
         course_details["introduction"] = introduction
         course_details["passcode"] = passcode
         course_details["email_address"] = email_address
         course_details["highlighted"] = highlighted
-        course_details["allow_students_download_submissions"] = allow_students_download_submissions
         course_details["virtual_assistant_config"] = virtual_assistant_config
         course_details["templates"] = templates
         course_details["date_updated"] = date_updated
@@ -1924,12 +1923,12 @@ ORDER BY student_name
     #     return row["code"] if row else None
 
     def get_course_details(self, course_id):
-        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "email_address": "", "highlighted": False, "allow_students_download_submissions": False, "virtual_assistant_config": None, "templates": {}}
+        null_course = {"introduction": "", "passcode": None, "date_created": None, "date_updated": None, "email_address": "", "highlighted": False, "virtual_assistant_config": None, "templates": {}}
 
         if not course_id:
             return null_course
 
-        sql = '''SELECT introduction, passcode, date_created, date_updated, email_address, highlighted, allow_students_download_submissions, virtual_assistant_config, templates
+        sql = '''SELECT introduction, passcode, date_created, date_updated, email_address, highlighted, virtual_assistant_config, templates
                  FROM courses
                  WHERE course_id = ?'''
 
@@ -1938,7 +1937,7 @@ ORDER BY student_name
         if not row:
             return null_course
 
-        course_details = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "email_address": row["email_address"], "highlighted": row["highlighted"], "allow_students_download_submissions": row["allow_students_download_submissions"], "virtual_assistant_config": row["virtual_assistant_config"]}
+        course_details = {"introduction": row["introduction"], "passcode": row["passcode"], "date_created": row["date_created"], "date_updated": row["date_updated"], "email_address": row["email_address"], "highlighted": row["highlighted"], "virtual_assistant_config": row["virtual_assistant_config"]}
 
         templates_raw = row["templates"]
         if templates_raw:
@@ -1977,12 +1976,12 @@ ORDER BY student_name
         return out
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": "", "show_run_button": True, "custom_scoring": "", "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_early_exceptions": [], "student_late_exceptions": [], "student_timer_exceptions": {}, "support_questions": False, "use_virtual_assistant": 0, "assignment_group_id": None}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": "", "show_run_button": True, "custom_scoring": "", "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_early_exceptions": [], "student_late_exceptions": [], "student_timer_exceptions": {}, "support_questions": False, "use_virtual_assistant": 0, "assignment_group_id": None, "allow_students_view_submissions": False}
 
         if not assignment_id:
             return null_assignment
 
-        sql = '''SELECT a.introduction, a.date_created, a.date_updated, a.start_date, a.due_date, a.allow_late, a.late_percent, a.view_answer_late, a.allowed_ip_addresses, a.allowed_external_urls, a.show_run_button, a.custom_scoring, a.require_security_codes, a.support_questions, a.use_virtual_assistant, a.has_timer, a.hour_timer, a.minute_timer, a.restrict_other_assignments, ag.assignment_group_id
+        sql = '''SELECT a.introduction, a.date_created, a.date_updated, a.start_date, a.due_date, a.allow_late, a.late_percent, a.view_answer_late, a.allowed_ip_addresses, a.allowed_external_urls, a.show_run_button, a.custom_scoring, a.require_security_codes, a.support_questions, a.use_virtual_assistant, a.has_timer, a.hour_timer, a.minute_timer, a.restrict_other_assignments, a.allow_students_view_submissions, ag.assignment_group_id
                  FROM assignments a
                  LEFT JOIN assignment_groups ag
                    ON a.course_id = ag.course_id
@@ -1995,7 +1994,7 @@ ORDER BY student_name
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  localize_datetime(row["start_date"]), "due_date":  localize_datetime(row["due_date"]), "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_early_exceptions": self.get_student_early_exceptions(course_basics['id'], assignment_id), "student_late_exceptions": self.get_student_late_exceptions(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "support_questions": row["support_questions"], "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "assignment_group_id": row["assignment_group_id"]}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  localize_datetime(row["start_date"]), "due_date":  localize_datetime(row["due_date"]), "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_early_exceptions": self.get_student_early_exceptions(course_basics['id'], assignment_id), "student_late_exceptions": self.get_student_late_exceptions(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "support_questions": row["support_questions"], "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "assignment_group_id": row["assignment_group_id"], "allow_students_view_submissions": bool(row["allow_students_view_submissions"])}
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")
@@ -2212,17 +2211,17 @@ ORDER BY student_name
 
         if course_basics["exists"]:
             sql = '''UPDATE courses
-                     SET title = ?, visible = ?, introduction = ?, passcode = ?, email_address = ?, highlighted = ?,  allow_students_download_submissions = ?, virtual_assistant_config = ?, templates = ?, date_updated = ?
+                     SET title = ?, visible = ?, introduction = ?, passcode = ?, email_address = ?, highlighted = ?, virtual_assistant_config = ?, templates = ?, date_updated = ?
                      WHERE course_id = ?'''
 
-            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["email_address"], course_details["highlighted"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], templates_value, course_details["date_updated"], course_basics["id"]])
+            self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["email_address"], course_details["highlighted"], course_details["virtual_assistant_config"], templates_value, course_details["date_updated"], course_basics["id"]])
 
             self.update_when_content_updated(course_basics["id"])
         else:
-            sql = '''INSERT INTO courses (title, visible, introduction, passcode, email_address, highlighted, allow_students_download_submissions, virtual_assistant_config, templates, date_created, date_updated)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO courses (title, visible, introduction, passcode, email_address, highlighted, virtual_assistant_config, templates, date_created, date_updated)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            course_basics["id"] = self.execute(sql, (course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["email_address"], course_details["highlighted"], course_details["allow_students_download_submissions"], course_details["virtual_assistant_config"], templates_value, course_details["date_created"], course_details["date_updated"], ))
+            course_basics["id"] = self.execute(sql, (course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["email_address"], course_details["highlighted"], course_details["virtual_assistant_config"], templates_value, course_details["date_created"], course_details["date_updated"], ))
             course_basics["exists"] = True
 
             self.update_when_content_updated("user")
@@ -2234,16 +2233,16 @@ ORDER BY student_name
         if assignment_basics["exists"]:
             sql = '''UPDATE assignments
                      SET title = ?, visible = ?, introduction = ?, date_updated = ?, start_date = ?, due_date = ?, allow_late = ?, late_percent = ?, view_answer_late = ?, has_timer = ?, hour_timer = ?, minute_timer = ?, restrict_other_assignments = ?, allowed_ip_addresses = ?, allowed_external_urls = ?, show_run_button = ?, custom_scoring = ?, require_security_codes = ?, support_questions = ?,  use_virtual_assistant = ?,
-                     assignment_group_id = ?
+                     assignment_group_id = ?, allow_students_view_submissions = ?
                      WHERE course_id = ?
                        AND assignment_id = ?'''
 
-            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["support_questions"],   assignment_details["use_virtual_assistant"], assignment_details["assignment_group_id"], assignment_basics["course"]["id"], assignment_basics["id"]])
+            self.execute(sql, [assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["support_questions"],   assignment_details["use_virtual_assistant"], assignment_details["assignment_group_id"], assignment_details["allow_students_view_submissions"], assignment_basics["course"]["id"], assignment_basics["id"]])
         else:
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, support_questions,  use_virtual_assistant, assignment_group_id)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, support_questions,  use_virtual_assistant, assignment_group_id, allow_students_view_submissions)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["support_questions"],  assignment_details["use_virtual_assistant"], assignment_details["assignment_group_id"]])
+            assignment_basics["id"] = self.execute(sql, [assignment_basics["course"]["id"], assignment_basics["title"], assignment_basics["visible"], assignment_details["introduction"], assignment_details["date_created"], assignment_details["date_updated"], assignment_details["start_date"], assignment_details["due_date"], assignment_details["allow_late"], assignment_details["late_percent"], assignment_details["view_answer_late"], assignment_details["has_timer"], assignment_details["hour_timer"], assignment_details["minute_timer"], assignment_details["restrict_other_assignments"], assignment_details["allowed_ip_addresses"], assignment_details["allowed_external_urls"], assignment_details["show_run_button"], assignment_details["custom_scoring"], assignment_details["require_security_codes"], assignment_details["support_questions"],  assignment_details["use_virtual_assistant"], assignment_details["assignment_group_id"], assignment_details["allow_students_view_submissions"]])
             assignment_basics["exists"] = True
 
         sql_statements = ['''DELETE FROM prerequisite_assignments
@@ -2422,13 +2421,15 @@ ORDER BY student_name
         self.update_when_content_updated(course_id)
 
     def get_assignment_bulk_edit_data(self, course_id):
-        sql = '''SELECT assignment_id, require_security_codes, show_run_button, support_questions
+        sql = '''SELECT assignment_id, has_timer, allow_students_view_submissions, require_security_codes, show_run_button, support_questions
                  FROM assignments
                  WHERE course_id = ?'''
 
         result = {}
         for row in self.fetchall(sql, (course_id,)):
             result[row["assignment_id"]] = {
+                "has_timer": bool(row["has_timer"]),
+                "allow_students_view_submissions": bool(row["allow_students_view_submissions"]),
                 "require_security_codes": row["require_security_codes"],
                 "show_run_button": bool(row["show_run_button"]),
                 "support_questions": bool(row["support_questions"]),
@@ -2444,6 +2445,7 @@ ORDER BY student_name
         else:
             field_map = {
                 "title": "title",
+                "allow_students_view_submissions": "allow_students_view_submissions",
                 "require_security_codes": "require_security_codes",
                 "show_run_button": "show_run_button",
                 "support_questions": "support_questions",
@@ -2559,8 +2561,8 @@ ORDER BY student_name
 
     async def copy_course(self, existing_course_basics, new_course_title):
         # Copy the high-level course info and get a new course ID.
-        sql = '''INSERT INTO courses (title, introduction, visible, passcode, email_address, highlighted, allow_students_download_submissions, virtual_assistant_config, templates, date_created, date_updated)
-                 SELECT ?, introduction, visible, passcode, email_address, highlighted, allow_students_download_submissions, virtual_assistant_config, templates, date_created, date_updated
+        sql = '''INSERT INTO courses (title, introduction, visible, passcode, email_address, highlighted, virtual_assistant_config, templates, date_created, date_updated)
+                 SELECT ?, introduction, visible, passcode, email_address, highlighted, virtual_assistant_config, templates, date_created, date_updated
                  FROM courses
                  WHERE course_id = ?'''
 
@@ -2577,8 +2579,8 @@ ORDER BY student_name
 
         # Copy each assignment and get new assignment IDs.
         for assignment_basics in self.get_assignments(existing_course_basics):
-            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, support_questions,  use_virtual_assistant, assignment_group_id)
-                     SELECT ?, a.title, a.visible, a.introduction, a.date_created, a.date_updated, a.start_date, a.due_date, a.allow_late, a.late_percent, a.view_answer_late, a.has_timer, a.hour_timer, a.minute_timer, a.restrict_other_assignments, a.allowed_ip_addresses, a.allowed_external_urls, a.show_run_button, a.custom_scoring, a.require_security_codes, a.support_questions, a.use_virtual_assistant, (SELECT ag2.assignment_group_id FROM assignment_groups ag2 WHERE ag2.course_id = ? AND ag2.title = ag.title)
+            sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring, require_security_codes, support_questions,  use_virtual_assistant, assignment_group_id, allow_students_view_submissions)
+                     SELECT ?, a.title, a.visible, a.introduction, a.date_created, a.date_updated, a.start_date, a.due_date, a.allow_late, a.late_percent, a.view_answer_late, a.has_timer, a.hour_timer, a.minute_timer, a.restrict_other_assignments, a.allowed_ip_addresses, a.allowed_external_urls, a.show_run_button, a.custom_scoring, a.require_security_codes, a.support_questions, a.use_virtual_assistant, (SELECT ag2.assignment_group_id FROM assignment_groups ag2 WHERE ag2.course_id = ? AND ag2.title = ag.title), a.allow_students_view_submissions
                      FROM assignments a
                      LEFT JOIN assignment_groups ag
                        ON a.course_id = ag.course_id AND a.assignment_group_id = ag.assignment_group_id
@@ -2660,8 +2662,8 @@ ORDER BY student_name
         self.update_when_content_updated(new_course_id)
 
     def copy_assignment(self, course_id, assignment_id, new_title):
-        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring,  require_security_codes, support_questions, use_virtual_assistant, assignment_group_id)
-                 SELECT course_id, ?, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring,  require_security_codes, support_questions, use_virtual_assistant, assignment_group_id
+        sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring,  require_security_codes, support_questions, use_virtual_assistant, assignment_group_id, allow_students_view_submissions)
+                 SELECT course_id, ?, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring,  require_security_codes, support_questions, use_virtual_assistant, assignment_group_id, allow_students_view_submissions
                  FROM assignments
                  WHERE course_id = ?
                    AND assignment_id = ?'''
@@ -3258,7 +3260,39 @@ ORDER BY student_name
             submissions.append(submission)
 
         return sort_list_of_dicts_nicely(submissions, ["assignment_title", "exercise_title"])
-    
+
+    def get_submissions_student_for_assignment(self, course_id, assignment_id, student_id):
+        sql = '''SELECT e.title AS exercise_title,
+                        e.instructions AS exercise_instructions,
+                        e.back_end,
+                        e.solution_code,
+                        s.code,
+                        max(s.date)
+                 FROM submissions s
+                 INNER JOIN exercises e
+                   ON s.exercise_id = e.exercise_id
+                 INNER JOIN assignments a
+                   ON s.assignment_id = a.assignment_id
+                 WHERE s.course_id = ?
+                   AND s.assignment_id = ?
+                   AND s.user_id = ?
+                   AND (s.passed = 1 OR e.back_end = 'multiple_choice')
+                   AND e.visible = 1
+                   AND a.visible = 1
+                 GROUP BY e.exercise_id'''
+
+        submissions = []
+        for row in self.fetchall(sql, (course_id, assignment_id, student_id,)):
+            submission = {}
+            for x in ["exercise_title", "exercise_instructions", "back_end", "solution_code", "code"]:
+                submission[x] = row[x]
+
+            submission["exercise_instructions"] = self.replace_templates_in_text(course_id, submission["exercise_instructions"])
+
+            submissions.append(submission)
+
+        return sort_list_of_dicts_nicely(submissions, ["exercise_title"])
+
     def get_at_risk_students(self, course_id, num_hours_diff):
         sql = """
             SELECT DISTINCT cr.user_id, u.name, u.email_address, s.assignment_id, a.title AS assignment_title, s.exercise_id, e.title AS exercise_title, MAX(s.date) AS last_submission_date

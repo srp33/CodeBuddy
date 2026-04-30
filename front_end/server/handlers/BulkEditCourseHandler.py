@@ -22,6 +22,8 @@ class BulkEditCourseHandler(BaseUserHandler):
                         "title": assignment["title"],
                         "start_date": assignment["start_date"],
                         "due_date": assignment["due_date"],
+                        "has_timer": bool(extra.get("has_timer", False)),
+                        "allow_students_view_submissions": bool(extra.get("allow_students_view_submissions", False)),
                         "require_security_codes": extra.get("require_security_codes", 0),
                         "show_run_button": extra.get("show_run_button", True),
                         "support_questions": extra.get("support_questions", False),
@@ -41,7 +43,7 @@ class BulkEditCourseHandler(BaseUserHandler):
                 field = body["field"]
                 updates = body["updates"]
 
-                valid_fields = {"title", "dates", "require_security_codes", "show_run_button", "support_questions"}
+                valid_fields = {"title", "dates", "allow_students_view_submissions", "require_security_codes", "show_run_button", "support_questions"}
                 if field not in valid_fields:
                     return self.write(json.dumps({"message": f"Error: Invalid field '{field}'."}))
 
@@ -101,7 +103,7 @@ class BulkEditCourseHandler(BaseUserHandler):
                             errors.append("Invalid value for require security codes.")
                             continue
 
-                    elif field in ("show_run_button", "support_questions"):
+                    elif field in ("allow_students_view_submissions", "show_run_button", "support_questions"):
                         value = True if value == "Yes" else False
 
                     validated_updates.append({"assignment_id": assignment_id, "value": value})

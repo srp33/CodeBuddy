@@ -151,6 +151,10 @@
                 <a class="button" href='/request_accommodation/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}'>Request an accommodation</a>
             {% end %}
 
+            {% if assignment_details["allow_students_view_submissions"] and any([e[1]["completed"] for e in exercise_statuses]) %}
+                <a class="button" href='/view_assignment_submissions/{{ course_basics["id"] }}/{{ assignment_basics["id"] }}' target="_blank">Download submission(s)</a>
+            {% end %}
+
             <a class="button" href='/course/{{ course_basics['id'] }}'>Course home</a>
         </div>
     {% else %}

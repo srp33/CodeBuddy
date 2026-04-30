@@ -22,6 +22,7 @@
                         <option value="require_security_codes">Require security codes</option>
                         <option value="show_run_button">Show Run button</option>
                         <option value="support_questions">Support questions and answers</option>
+                        <option value="allow_students_view_submissions">Allow students to download submission(s)</option>
                     </select>
                 </div>
             </div>
@@ -50,11 +51,12 @@
         const bulkEditAssignments = {{ jsonify(all_assignments) }};
 
         const bulkEditFieldHeaders = {
-            "title":                  "Title",
-            "dates":                  "Start & due dates",
-            "require_security_codes": "Require security codes",
-            "show_run_button":        "Show Run button",
-            "support_questions":      "Support questions and answers"
+            "title":                           "Title",
+            "dates":                           "Start & due dates",
+            "allow_students_view_submissions":  "Allow students to download submission(s)",
+            "require_security_codes":          "Require security codes",
+            "show_run_button":                 "Show Run button",
+            "support_questions":               "Support questions and answers"
         };
 
         function escapeHtml(str) {
@@ -79,6 +81,13 @@
                 ];
                 const opts = options.map(([v, label]) =>
                     `<option value="${v}"${v === val ? " selected" : ""}>${label}</option>`
+                ).join("");
+                return `<div class="select is-grey"><select>${opts}</select></div>`;
+            }
+            if (field === "allow_students_view_submissions") {
+                const val = asgn.allow_students_view_submissions ? "Yes" : "No";
+                const opts = ["No", "Yes"].map(v =>
+                    `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
                 ).join("");
                 return `<div class="select is-grey"><select>${opts}</select></div>`;
             }
@@ -193,6 +202,7 @@
                         if (!asgn) continue;
                         if (field === "title") asgn.title = update.value.trim();
                         else if (field === "dates") { asgn.start_date = update.start_date; asgn.due_date = update.due_date; }
+                        else if (field === "allow_students_view_submissions") asgn.allow_students_view_submissions = (update.value === "Yes");
                         else if (field === "require_security_codes") asgn.require_security_codes = parseInt(update.value);
                         else if (field === "show_run_button") asgn.show_run_button = (update.value === "Yes");
                         else if (field === "support_questions") asgn.support_questions = (update.value === "Yes");
