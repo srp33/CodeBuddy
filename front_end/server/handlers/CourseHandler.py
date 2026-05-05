@@ -30,7 +30,20 @@ class CourseHandler(BaseUserHandler):
 
                     has_any_custom_scoring = len([x for x in assignment_statuses if x[2]["custom_scoring"] != ""]) > 0
 
-                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_groups=assignment_groups,has_any_custom_scoring=has_any_custom_scoring, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=get_current_datetime(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                    group_statuses = {}
+                    for group in assignment_groups:
+                        group_title = group[0]
+                        group_assignments = [a for a in assignment_statuses if a[1] == group_title]
+                        if len(group_assignments) == 0:
+                            group_statuses[group_title] = "not_started"
+                        elif all(a[2]["completed"] or a[2]["timer_has_ended"] for a in group_assignments):
+                            group_statuses[group_title] = "completed"
+                        elif all(not a[2]["completed"] and not a[2]["timer_has_ended"] and not a[2]["in_progress"] and a[2]["num_completed"] == 0 for a in group_assignments):
+                            group_statuses[group_title] = "not_started"
+                        else:
+                            group_statuses[group_title] = "in_progress"
+
+                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_groups=assignment_groups, has_any_custom_scoring=has_any_custom_scoring, group_statuses=group_statuses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=get_current_datetime(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
                 else:
                     self.render("unavailable_course.html", courses=self.courses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         except Exception as inst:

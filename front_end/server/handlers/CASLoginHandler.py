@@ -6,7 +6,6 @@
 
 from BaseOtherHandler import *
 from tornado.web import *
-from tornado.auth import GoogleOAuth2Mixin
 from content import *
 
 # https://github.com/apereo/cas-sample-python-webapp/blob/master/app.py

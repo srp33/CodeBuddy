@@ -11,20 +11,53 @@
 
     {% if len(assignment_statuses) > 0 %}
         <script src="/static/shared.js" type="text/javascript" charset="utf-8"></script>
+        <script>
+            function toggleAssignmentGroup(header) {
+                var box = header.closest('.box');
+                var content = box.querySelector('.group-content');
+                var chevron = header.querySelector('.group-chevron');
+                if (content.style.display === 'none') {
+                    content.style.display = '';
+                    chevron.classList.replace('fa-chevron-right', 'fa-chevron-down');
+                    header.classList.add('pb-4');
+                } else {
+                    content.style.display = 'none';
+                    chevron.classList.replace('fa-chevron-down', 'fa-chevron-right');
+                    header.classList.remove('pb-4');
+                }
+            }
+        </script>
 
         {% for assignment_group in assignment_groups %}
             {% if len(assignment_groups) > 1 %}
-                <div class="box has-background-dark has-text-white p-4">
-                    {% if assignment_group[0] == "" %}
-                        <div class="is-size-5 has-text-weight-bold pb-4">Other</div>
-                    {% else %}
-                        <div class="is-size-5 has-text-weight-bold pb-4">
-                            {{ assignment_group[0] }}
+                <div class="box has-background-white p-4" style="border: 2px solid #000;">
+                    <div class="is-flex is-justify-content-space-between is-align-items-center {% if group_statuses.get(assignment_group[0]) != "completed" %}pb-4{% end %}" style="cursor: pointer;" onclick="toggleAssignmentGroup(this)">
+                        <div class="is-size-5 has-text-weight-bold">
+                            {% if assignment_group[0] == "" %}
+                                Other
+                            {% else %}
+                                {{ assignment_group[0] }}
+                            {% end %}
                         </div>
-                    {% end %}
+                        <div class="is-flex is-align-items-center" style="gap: 0.75rem;">
+                            <div>
+                                {% if group_statuses.get(assignment_group[0]) == "completed" %}
+                                    <i class="far fa-check-circle has-text-primary"></i>
+                                    <span class="has-text-primary">Completed</span>
+                                {% elif group_statuses.get(assignment_group[0]) == "in_progress" %}
+                                    <i class="far fa-hourglass has-text-warning-dark"></i>
+                                    <span class="has-text-warning-dark">In progress</span>
+                                {% else %}
+                                    <i class="far fa-circle has-text-black"></i>
+                                    <span class="has-text-black">Not started</span>
+                                {% end %}
+                            </div>
+                            <i class="fas {% if group_statuses.get(assignment_group[0]) == "completed" %}fa-chevron-right{% else %}fa-chevron-down{% end %} group-chevron has-text-grey"></i>
+                        </div>
+                    </div>
             {% end %}
 
-            <div class="table-container">
+            <div class="table-container group-content" {% if len(assignment_groups) > 1 and group_statuses.get(assignment_group[0]) == "completed" %}style="display:none;"{% end %}>
                 <table class="table is-striped" id="assignment_table">
                     <thead>
                         <tr>
