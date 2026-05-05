@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    <h4>Bulk edit assignments - {{ course_basics["title"] }}</h4>
+    <h4>Batch edit assignments - {{ course_basics["title"] }}</h4>
 
     <div class="notification is-danger is-hidden" id="bulk_edit_message"></div>
 
@@ -191,7 +191,7 @@
 
             $.ajax({
                 type: "POST",
-                url: "/bulk_edit_course/{{ course_basics['id'] }}",
+                url: "/batch_edit_course/{{ course_basics['id'] }}",
                 data: JSON.stringify({ field: field, updates: updatesForServer }),
                 async: true
             }).done(function(data) {

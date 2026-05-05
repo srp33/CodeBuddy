@@ -6,7 +6,7 @@
 
 {% if course_basics["exists"] %}
     {% if assignment_basics["exists"] %}
-        <h4>Bulk edit exercises - {{ assignment_basics["title"] }}</h4>
+        <h4>Batch edit exercises - {{ assignment_basics["title"] }}</h4>
 
         <div class="notification is-danger is-hidden" id="bulk_edit_message"></div>
 
@@ -153,7 +153,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/bulk_edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                    url: "/batch_edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
                     data: JSON.stringify({ field: field, updates: updates }),
                     async: true
                 }).done(function(data) {

@@ -6,7 +6,7 @@
 
 from BaseUserHandler import *
 
-class BulkEditAssignmentHandler(BaseUserHandler):
+class BatchEditAssignmentHandler(BaseUserHandler):
     async def get(self, course_id, assignment_id):
         try:
             if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
@@ -30,7 +30,7 @@ class BulkEditAssignmentHandler(BaseUserHandler):
                         "max_submissions": ex_data.get("max_submissions", 0),
                     })
 
-                self.render("bulk_edit_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, visible_exercises=visible_exercises, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                self.render("batch_edit_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, visible_exercises=visible_exercises, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             else:
                 self.render("permissions.html")
         except Exception as inst:
