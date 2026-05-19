@@ -94,7 +94,10 @@ class OktaLoginHandler(RequestHandler):
     async def get(self):
         try:
             print("OktaLoginHandler.get()")
-            return
+            self.write("OktaLoginHandler.get()")
+            self.finish()
+            # return
+
             # Secrets from the server config (not checked into git).
             cfg = self.settings.get("okta_oauth") or {}
             issuer = (cfg.get("issuer") or "").rstrip("/")
@@ -220,7 +223,7 @@ class OktaLoginHandler(RequestHandler):
         except Exception as inst:
             render_error(self, traceback.format_exc())
 
-    def finish(self) -> None:
+    def finish(self, chunk=None):
         # Close the database handle opened in prepare().
         self.content.close()
-        super().finish()
+        super().finish(chunk)
