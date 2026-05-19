@@ -77,12 +77,15 @@ This will create a directory called CodeBuddy in your current working directory.
 
 1. At the terminal, execute the following command to install the Python packages: `pip install -r front_end/requirements.txt`.
 2. Modify Settings.yaml according to your preferences. The default settings should work in most cases.
-3. Create a text file in `front_end/secrets/front_end.yaml`. It should contain three key/value pairs, as illustrated below. The first is a password for encrypting cookies (use a strong password). The second and third are a client ID and secret that enable CodeBuddy to perform Google authentication. You can obtain these from [here](https://console.developers.google.com).
+3. Create a text file in `front_end/secrets/front_end.yaml`. It should contain key/value pairs, as illustrated below. The first is a password for encrypting cookies (use a strong password). The second and third are a client ID and secret that enable CodeBuddy to perform Google authentication. You can obtain these from [here](https://console.developers.google.com). The `okta` keys make it possible to perform authentication using Okta.
 
 ```
 cookie: "abcdefg"
 google_oauth_key: "123456789012-abc123a12aa12aaaa1aaaaa1aaaa1aa.apps.googleusercontent.com"
 google_oauth_secret: "ABCDEFGHIJKLMNOP"
+okta_oauth_issuer: "https://login.myinstitution.com/oauth2/default"
+okta_oauth_client_id: "def"
+okta_oauth_client_secret: "ghi"
 ```
 
 [Optional] If you would like to contribute to developing CodeBuddy, complete these additional steps. Otherwise, you can skip these steps.

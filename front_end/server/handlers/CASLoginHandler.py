@@ -4,64 +4,62 @@
 #   This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # </copyright_statement>
 
-from BaseOtherHandler import *
-from tornado.web import *
-from content import *
+# from BaseOtherHandler import *
+# from tornado.web import *
+# from content import *
 
-# https://github.com/apereo/cas-sample-python-webapp/blob/master/app.py
-# See https://djangocas.dev/blog/python-cas-flask-example/
-class CASLoginHandler(BaseOtherHandler):
-    async def get(self):
-        try:
-            if self.in_production_mode():
-                service_url = f"https://{self.settings_dict['domain']}/caslogin?next=%2Fcourses"
-            else:
-                raise Exception("You cannot authenticate with CAS in development mode")
-                #service_url="http://codebuddy.ls.byu.edu:8008/login?next=%2Flogin"
+# class CASLoginHandler(BaseOtherHandler):
+#     async def get(self):
+#         try:
+#             if self.in_production_mode():
+#                 service_url = f"https://{self.settings_dict['domain']}/caslogin?next=%2Fcourses"
+#             else:
+#                 raise Exception("You cannot authenticate with CAS in development mode")
+#                 #service_url="http://codebuddy.ls.byu.edu:8008/login?next=%2Flogin"
 
-            server_url = "https://cas.byu.edu/cas/"
+#             server_url = "https://cas.byu.edu/cas/"
 
-            # Moved this here so we can run it locally without having CAS installed.
-            from cas import CASClient
-            cas_client = CASClient(version=3, service_url=service_url, server_url=server_url)
+#             # Moved this here so we can run it locally without having CAS installed.
+#             from cas import CASClient
+#             cas_client = CASClient(version=3, service_url=service_url, server_url=server_url)
 
-            ticket = self.get_argument('ticket', False)
-            if not ticket:
-                cas_login_url = cas_client.get_login_url()
-                self.redirect(cas_login_url)
+#             ticket = self.get_argument('ticket', False)
+#             if not ticket:
+#                 cas_login_url = cas_client.get_login_url()
+#                 self.redirect(cas_login_url)
 
-            user_id, attributes, pgtiou = cas_client.verify_ticket(ticket)
+#             user_id, attributes, pgtiou = cas_client.verify_ticket(ticket)
 
-            if not user_id:
-                return
+#             if not user_id:
+#                 return
             
-            # with open("/tmp/test.txt", "w") as tmp_file:
-            #     tmp_file.write(ujson.dumps(attributes))
+#             # with open("/tmp/test.txt", "w") as tmp_file:
+#             #     tmp_file.write(ujson.dumps(attributes))
 
-            if attributes["idCardPrimaryRole"] == "Student":
-                email_address = f"{attributes['netId']}@student.byu.edu"
-            else:
-                email_address = attributes["emailAddress"]
+#             if attributes["idCardPrimaryRole"] == "Student":
+#                 email_address = f"{attributes['netId']}@student.byu.edu"
+#             else:
+#                 email_address = attributes["emailAddress"]
 
-            user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": email_address}
+#             user_dict = {"name": attributes["preferredFirstName"] + " " + attributes["preferredSurname"], "given_name": attributes["preferredFirstName"], "family_name": attributes["preferredSurname"], "locale": "en", "email_address": email_address}
 
-            if self.content.user_exists(user_id):
-                # Update user with current information when they already exist.
-                self.content.update_user(user_id, user_dict)
-            else:
-                # Store current user information when they do not already exist.
-                self.content.add_user(user_id, user_dict)
+#             if self.content.user_exists(user_id):
+#                 # Update user with current information when they already exist.
+#                 self.content.update_user(user_id, user_dict)
+#             else:
+#                 # Store current user information when they do not already exist.
+#                 self.content.add_user(user_id, user_dict)
 
-            self.set_secure_cookie("user_id", user_id, expires_days=30)
+#             self.set_secure_cookie("user_id", user_id, expires_days=30)
 
-            redirect_path = self.get_secure_cookie("redirect_path")
-            self.clear_cookie("redirect_path")
-            if not redirect_path:
-                redirect_path = "/"
-            self.redirect(redirect_path)
-        except Exception as inst:
-            user_id_cookie = self.get_secure_cookie("user_id")
-            if user_id_cookie:
-                self.clear_cookie("user_id")
+#             redirect_path = self.get_secure_cookie("redirect_path")
+#             self.clear_cookie("redirect_path")
+#             if not redirect_path:
+#                 redirect_path = "/"
+#             self.redirect(redirect_path)
+#         except Exception as inst:
+#             user_id_cookie = self.get_secure_cookie("user_id")
+#             if user_id_cookie:
+#                 self.clear_cookie("user_id")
 
-            render_error(self, traceback.format_exc())
+#             render_error(self, traceback.format_exc())

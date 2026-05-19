@@ -49,11 +49,7 @@
 
 <script>
     function showLoginButtons() {
-        {% if byu_authentication == True %}
-            $("#privacy_statement").addClass("is-hidden");
-            $("#login_buttons").removeClass("is-hidden");
-        {% else %}
-            window.location.href = "/googlelogin";
-        {% end %}
+        $("#privacy_statement").addClass("is-hidden");
+        $("#login_buttons").removeClass("is-hidden");
     }
 </script>

@@ -33,7 +33,7 @@ def make_app(settings_dict):
             url(r"/available", AvailableCoursesHandler, name="available"),
             url(r"/batch_edit_assignment/([^/]+)/([^/]+)", BatchEditAssignmentHandler, name="batch_edit_assignment"),
             url(r"/batch_edit_course/([^/]+)", BatchEditCourseHandler, name="batch_edit_course"),
-            url(r"/caslogin", CASLoginHandler, name="caslogin"),
+            # url(r"/caslogin", CASLoginHandler, name="caslogin"),
             url(r"/clean_up_courses", CleanUpCoursesHandler, name="clean_up_courses"),
             url(r"/create_video_exercise/([^/]+)/([^/]+)", CreateVideoExerciseHandler, name="create_video_exercise"),
             url(r"/copy_assignment/([^/]+)/([^/]+)?", CopyAssignmentHandler, name="copy_assignment"),
@@ -84,6 +84,7 @@ def make_app(settings_dict):
             url(r"/move_assignment/([^/]+)/([^/]+)", MoveAssignmentHandler, name="move_assignment"),
             url(r"/move_exercise/([^/]+)/([^/]+)/([^/]+)?", MoveExerciseHandler, name="move_exercise"),
             url(r"/my_profile/([^/]+)", MyProfileHandler, name="my_profile"),
+            url(r"/oktalogin", OktaLoginHandler, name="oktalogin"),
             url(r"/preferences/([^/]+)", PreferencesHandler, name="preferences"),
             url(r"/register/([^/]+)/([^/]+)/([^/]+)", RegisterHandler, name="register"),
             url(r"/remove_admin", RemoveAdminHandler, name="remove_admin"),
@@ -224,15 +225,23 @@ if __name__ == "__main__":
             })
 
         secrets_dict = load_yaml_dict(read_file("secrets/front_end.yaml"))
+
         application.settings["cookie_secret"] = secrets_dict["cookie"]
+
         application.settings["google_oauth"] = {
            "key": secrets_dict["google_oauth_key"],
            "secret": secrets_dict["google_oauth_secret"]
         }
 
-        application.settings["byu_authentication"] = False
-        if "byu_authentication" in secrets_dict:
-            application.settings["byu_authentication"] = secrets_dict["byu_authentication"]    
+        application.settings["okta_oauth"] = {
+            "issuer": secrets_dict.get("okta_oauth_issuer", "").rstrip("/"),
+            "client_id": secrets_dict.get("okta_oauth_client_id", ""),
+            "client_secret": secrets_dict.get("okta_oauth_client_secret", ""),
+        }
+
+        # application.settings["byu_authentication"] = False
+        # if "byu_authentication" in secrets_dict:
+        #     application.settings["byu_authentication"] = secrets_dict["byu_authentication"]    
 
         server.bind(int(settings_dict["f_port"]))
         server.start(int(settings_dict["f_num_processes"]))
