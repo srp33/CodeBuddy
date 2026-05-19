@@ -194,22 +194,22 @@ class OktaLoginHandler(RequestHandler):
                 self.write(claims)
                 render_error(self, "Okta account information test.")
                 
-                email = claims.get("email") or claims.get("preferred_username") or ""
-                if "@" not in email:
+                preferred_username = claims.get("preferred_username") or ""
+                if "@" not in preferred_username:
                     render_error(
                         self,
-                        "Okta did not return an email address; cannot create a user ID.",
+                        "Okta did not return an email addres as the preferred username; cannot create a user ID.",
                     )
                     return
 
                 # Same idea as Google login: use the part before @ as the CodeBuddy user id.
-                user_id = email.split("@")[0]
+                user_id = preferred_username.split("@")[0]
                 user_dict = {
                     "name": claims.get("name") or "",
                     "given_name": claims.get("given_name") or "",
                     "family_name": claims.get("family_name") or "",
                     "locale": claims.get("locale") or "en",
-                    "email_address": email,
+                    "email_address": claims.get("byuInternalEmail") or preferred_username,
                 }
 
                 # Create the row on first visit; refresh name/email on later visits.
