@@ -191,6 +191,7 @@ class OktaLoginHandler(RequestHandler):
                     return
 
                 claims = ujson.loads(userinfo_resp.body.decode("utf-8"))
+                self.write(claims)
                 
                 email = claims.get("email") or claims.get("preferred_username") or ""
                 if "@" not in email:
