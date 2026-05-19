@@ -93,6 +93,8 @@ class OktaLoginHandler(RequestHandler):
 
     async def get(self):
         try:
+            print("OktaLoginHandler.get()")
+            return
             # Secrets from the server config (not checked into git).
             cfg = self.settings.get("okta_oauth") or {}
             issuer = (cfg.get("issuer") or "").rstrip("/")
