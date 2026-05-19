@@ -191,8 +191,6 @@ class OktaLoginHandler(RequestHandler):
                     return
 
                 claims = ujson.loads(userinfo_resp.body.decode("utf-8"))
-                self.write(claims)
-                render_error(self, "Okta account information test.")
                 
                 preferred_username = claims.get("preferred_username") or ""
                 if "@" not in preferred_username:
