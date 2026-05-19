@@ -93,9 +93,7 @@ class OktaLoginHandler(RequestHandler):
 
     async def get(self):
         try:
-            print("OktaLoginHandler.get()")
             self.write("OktaLoginHandler.get()")
-            self.finish()
             # return
 
             # Secrets from the server config (not checked into git).
