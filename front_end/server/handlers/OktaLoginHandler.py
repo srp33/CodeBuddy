@@ -10,6 +10,7 @@ import secrets
 import tempfile
 import time
 import urllib.parse
+import base64
 
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from tornado.web import *
@@ -19,6 +20,17 @@ from content import *
 
 # How long to reuse the downloaded Okta "where to log in" file before fetching again.
 _DISCOVERY_CACHE_MAX_AGE_SEC = 24 * 60 * 60
+
+
+def _new_pkce_verifier():
+    # Random string we keep secret until we exchange the auth code for tokens.
+    return secrets.token_urlsafe(32)
+
+
+def _pkce_challenge_s256(verifier):
+    # Sent on the first redirect; Okta checks it matches when we send the raw verifier later.
+    digest = hashlib.sha256(verifier.encode("ascii")).digest()
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
 
 
 class OktaLoginHandler(RequestHandler):
@@ -93,9 +105,6 @@ class OktaLoginHandler(RequestHandler):
 
     async def get(self):
         try:
-            self.write("OktaLoginHandler.get()")
-            # return
-
             # Secrets from the server config (not checked into git).
             cfg = self.settings.get("okta_oauth") or {}
             issuer = (cfg.get("issuer") or "").rstrip("/")
@@ -115,6 +124,8 @@ class OktaLoginHandler(RequestHandler):
 
             # Okta sends the user back here with an error message instead of a code.
             if self.get_argument("error", False):
+                self.clear_cookie("okta_oauth_state")
+                self.clear_cookie("okta_pkce_verifier")
                 desc = self.get_argument("error_description", "")
                 err = self.get_argument("error", "")
                 render_error(self, f"Okta authentication error: {err} {desc}".strip())
@@ -130,8 +141,19 @@ class OktaLoginHandler(RequestHandler):
                     not cookie_state
                     or cookie_state.decode("utf-8") != self.get_argument("state", "")
                 ):
+                    self.clear_cookie("okta_pkce_verifier")
                     render_error(self, "Okta authentication failed: invalid OAuth state.")
                     return
+
+                pkce_verifier_cookie = self.get_secure_cookie("okta_pkce_verifier")
+                self.clear_cookie("okta_pkce_verifier")
+                if not pkce_verifier_cookie:
+                    render_error(
+                        self,
+                        "Okta authentication failed: missing PKCE verifier (try logging in again).",
+                    )
+                    return
+                code_verifier = pkce_verifier_cookie.decode("utf-8")
 
                 # Trade the code for tokens Okta can use to prove who this user is.
                 token_body = urllib.parse.urlencode(
@@ -141,6 +163,7 @@ class OktaLoginHandler(RequestHandler):
                         "redirect_uri": redirect_uri,
                         "client_id": client_id,
                         "client_secret": client_secret,
+                        "code_verifier": code_verifier,
                     }
                 )
                 token_resp = await self._post_form(discovery["token_endpoint"], token_body)
@@ -158,6 +181,7 @@ class OktaLoginHandler(RequestHandler):
                 userinfo_resp = await self._get_userinfo(
                     discovery["userinfo_endpoint"], access_token
                 )
+
                 if userinfo_resp.code != 200:
                     # Avoid leaving an old login active if this step fails.
                     user_id_cookie = self.get_secure_cookie("user_id")
@@ -167,7 +191,7 @@ class OktaLoginHandler(RequestHandler):
                     return
 
                 claims = ujson.loads(userinfo_resp.body.decode("utf-8"))
-                # Prefer a real email; some setups only expose a username-style value.
+                
                 email = claims.get("email") or claims.get("preferred_username") or ""
                 if "@" not in email:
                     render_error(
@@ -207,6 +231,10 @@ class OktaLoginHandler(RequestHandler):
             state = secrets.token_urlsafe(32)
             self.set_secure_cookie("okta_oauth_state", state, expires_days=1)
 
+            code_verifier = _new_pkce_verifier()
+            code_challenge = _pkce_challenge_s256(code_verifier)
+            self.set_secure_cookie("okta_pkce_verifier", code_verifier, expires_days=1)
+
             auth_params = urllib.parse.urlencode(
                 {
                     "client_id": client_id,
@@ -214,6 +242,8 @@ class OktaLoginHandler(RequestHandler):
                     "response_type": "code",
                     "scope": "openid profile email",
                     "state": state,
+                    "code_challenge": code_challenge,
+                    "code_challenge_method": "S256",
                 }
             )
             authorize_url = f"{discovery['authorization_endpoint']}?{auth_params}"
