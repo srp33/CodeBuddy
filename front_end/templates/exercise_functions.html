@@ -202,7 +202,7 @@
 
         var result = "<div class='notification success-message' style='color:white'><p><strong>" + message + "</strong></p>";
 
-        {% if exercise_details["show_instructor_solution"] and (exercise_details["solution_code"] != "" or exercise_details["solution_description"] != "") %}
+        {% if exercise_details["show_instructor_solution"] and (exercise_details["solution_code"].strip() != "" or exercise_details["solution_description"].strip() != "") %}
             result += "<p><a class='grey-text' href='/view_instructor_solution/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}'>View</a> the instructor's solution.</p>";
         {% end %}
 

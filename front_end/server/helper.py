@@ -446,7 +446,7 @@ def modify_what_students_see(exercise_details, user_info):
     exercise_details["show_instructor_solution"] = False
     exercise_details["show_peer_solution"] = False
 
-    if exercise_details["back_end"] != "not_code":
+    if exercise_details["back_end"] != "not_code" or exercise_details["allow_any_response"]:
         what_students_see = exercise_details["what_students_see_after_success"]
 
         if what_students_see in (1, 3) or (what_students_see == 4 and user_info["research_cohort"] == "A") or (what_students_see == 6 and user_info["research_cohort"] == "B") or (what_students_see == 8 and user_info["research_cohort"] == "A") or (what_students_see == 9 and user_info["research_cohort"] == "B"):

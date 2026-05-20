@@ -9,8 +9,8 @@
         {% if user_code == "" and not is_administrator and not is_instructor and not is_assistant and not assignment_details["view_answer_late"] and exercise_details["back_end"] != "multiple_choice" %}
             <p>You must submit a passing solution before you can view this page.</p>
         {% else %}
-            {% if exercise_details["solution_code"] == "" %}
-                <p>There is no instructor's solution for this exercise.</p><!--This happens when any response is allowed.-->
+            {% if exercise_details["solution_code"].strip() == "" and exercise_details["solution_description"].strip() == "" %}
+                <p>There is no instructor's solution for this exercise.</p>
             {% else %}
                 <div>
                     <div class="notification has-text-warning has-background-white">Please do not share the information on this page with students who do not have access to it.</div>
@@ -20,10 +20,12 @@
                         <pre class="student-content">{{ user_code }}</pre>
                     {% end %}
 
-                    <h4>Instructor's solution:</h4>
-                    <pre class="instructor-content">{{ instructor_solution }}</pre>
+                    {% if instructor_solution.strip() != "" %}
+                        <h4>Instructor's solution:</h4>
+                        <pre class="instructor-content">{{ instructor_solution }}</pre>
+                    {% end %}
 
-                    {% if exercise_details["solution_description"] != "" %}
+                    {% if exercise_details["solution_description"].strip() != "" %}
                         <h4>Instructor's comments:</h4>
                         <div class="notification is-info is-light has-text-dark" style="border: 2px solid black;">
                             {{ exercise_details["solution_description"] }}
