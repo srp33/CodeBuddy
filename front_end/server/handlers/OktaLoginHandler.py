@@ -21,7 +21,6 @@ from content import *
 # How long to reuse the downloaded Okta "where to log in" file before fetching again.
 _DISCOVERY_CACHE_MAX_AGE_SEC = 24 * 60 * 60
 
-
 def _new_pkce_verifier():
     # Random string we keep secret until we exchange the auth code for tokens.
     return secrets.token_urlsafe(32)
