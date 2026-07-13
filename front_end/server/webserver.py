@@ -76,8 +76,7 @@ def make_app(settings_dict):
             url(r"/manage_admins", ManageAdminsHandler, name="manage_admins"),
             url(r"/manage_assignment_groups/([^/]+)", ManageAssignmentGroupsHandler, name="manage_assignment_groups"),
             url(r"/manage_assistants/([^/]+)", ManageAssistantsHandler, name="manage_assistants"),
-            url(r"/manage_instructors/([^/]+)", ManageInstructorsHandler, 
-            name="manage_instructors"),
+            url(r"/manage_instructors/([^/]+)", ManageInstructorsHandler, name="manage_instructors"),
             url(r"/manage_lti", ManageLtiHandler, name="manage_lti"),
             url(r"/manage_questions/([^/]+)", ManageQuestionsHandler, name="manage_questions"),
             url(r"/manage_users", ManageUsersHandler, name="manage_users"),
@@ -131,6 +130,12 @@ def make_app(settings_dict):
 class StaticFileHandler(RequestHandler):
     async def get(self, file_name):
         if file_name.endswith(".html"):
+            # SECURITY: ensure the requested template resolves inside the html/
+            # template directory and cannot climb out via `..` path traversal.
+            template_root = self.settings["template_path"]
+            if resolve_within_root(template_root, file_name) is None:
+                render_error(self, "Error: Static file not found or not authorized.")
+
             try:
                 self.render(file_name)
             except Exception as inst:
@@ -153,10 +158,38 @@ class StaticFileHandler(RequestHandler):
             elif file_name.endswith(".webmanifest"):
                 content_type = "application/json"
 
+            # SECURITY: ensure the requested file resolves inside the static/
+            # directory. This blocks path-traversal requests such as
+            # /static/../../etc/passwd from escaping the static root.
+            if resolve_within_root("static", file_name) is None:
+                render_error(self, "Error: Static file not found or not authorized.")
+
             file_contents = read_file("static/{}".format(file_name), mode=read_mode)
 
             self.set_header('Content-type', content_type)
             self.write(file_contents)
+
+def resolve_within_root(root_dir, relative_name):
+    """Safely resolve `relative_name` beneath `root_dir`.
+
+    Returns the fully-resolved absolute path if (and only if) it stays inside
+    `root_dir` after all `..` segments and symlinks are collapsed. Returns None
+    if the request would escape the directory (i.e. a path-traversal attempt).
+
+    This is the correct defense against path traversal: rather than trying to
+    blacklist `..` / encoded variants (which is bypassable), we canonicalize the
+    final path and verify containment.
+    """
+    root_abs = os.path.realpath(root_dir)
+    target_abs = os.path.realpath(os.path.join(root_abs, relative_name))
+    try:
+        if os.path.commonpath([root_abs, target_abs]) != root_abs:
+            return None
+    except ValueError:
+        # Raised when the two paths live on different drives / are otherwise
+        # incomparable -> by definition outside the root.
+        return None
+    return target_abs
 
 # Define the function you want to run on server exit
 def on_exit():
@@ -241,7 +274,7 @@ if __name__ == "__main__":
 
         # application.settings["byu_authentication"] = False
         # if "byu_authentication" in secrets_dict:
-        #     application.settings["byu_authentication"] = secrets_dict["byu_authentication"]    
+        #     application.settings["byu_authentication"] = secrets_dict["byu_authentication"]
 
         server.bind(int(settings_dict["f_port"]))
         server.start(int(settings_dict["f_num_processes"]))
