@@ -4,7 +4,7 @@ fastapi==0.109.1
 gunicorn==23.0.0
 markdown2[all]==2.4.8
 openai==0.27.8
-Pillow==12.2.0
+Pillow==12.3.0
 PyJWT==2.13.0
 pylti1p3==2.0.0
 pydantic==1.10.13
