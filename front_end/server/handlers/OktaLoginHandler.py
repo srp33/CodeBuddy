@@ -195,7 +195,7 @@ class OktaLoginHandler(RequestHandler):
                 if "@" not in preferred_username:
                     render_error(
                         self,
-                        "Okta did not return an email addres as the preferred username; cannot create a user ID.",
+                        "Okta did not return an email address as the preferred username; cannot create a user ID.",
                     )
                     return
 

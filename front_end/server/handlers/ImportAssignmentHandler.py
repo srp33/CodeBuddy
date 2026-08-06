@@ -25,7 +25,8 @@ class ImportAssignmentHandler(BaseUserHandler):
                     return self.write(f"Error: The contents of the uploaded file are invalid ({x} is missing at level 1).")
 
             assignment_basics = assignment_dict["basics"]
-            assignment_details = assignment_dict["details"]
+            # Fill missing keys from older exports with current defaults.
+            assignment_details = {**self.content.get_assignment_details(course_basics, None), **assignment_dict["details"]}
 
             # Make sure assignment with that title doesn't already exist.
             current_titles = [x[2]["title"] for x in self.content.get_assignments(course_basics)]
@@ -50,7 +51,7 @@ class ImportAssignmentHandler(BaseUserHandler):
 
             for exercise_title in assignment_dict["exercises"]:
                 exercise_basics = assignment_dict["exercises"][exercise_title]["basics"]
-                exercise_details = assignment_dict["exercises"][exercise_title]["details"]
+                exercise_details = {**self.content.get_exercise_details(course_basics, assignment_basics, None), **assignment_dict["exercises"][exercise_title]["details"]}
                 exercise_basics["exists"] = False
                 exercise_basics["assignment"] = assignment_basics
 
