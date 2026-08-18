@@ -84,12 +84,12 @@ def exec(info: ExecInfo):
 
         if info.timeout_seconds <= 0:
             # This is used for debugging in development mode.
-            docker_command = f"docker run --rm --workdir /sandbox -v {tmp_dir_path}:/sandbox -v /tmp:/tmp {info.image_name}:latest {do_verification} {info.output_type}"
+            docker_command = ["docker", "run", "--rm", "--workdir", "/sandbox", "-v", f"{tmp_dir_path}:/sandbox", "-v", "/tmp:/tmp", f"{info.image_name}:latest", str(do_verification), info.output_type]
         else:
             # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-            docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --network=none --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
+            docker_command = ["timeout", "-s", "9", f"{info.timeout_seconds}s", "docker", "run", "--rm", f"--user={os.getuid()}:{os.getgid()}", "--ulimit", f"cpu={info.timeout_seconds}", "--cpus", str(cpus), f"--memory={info.memory_allowed_mb}m", "--cap-drop=ALL", "--network=none", "--log-driver=none", "--workdir", "/sandbox", "-v", f"{tmp_dir_path}/:/sandbox/", f"{info.image_name}:latest", str(do_verification), info.output_type]
 
-        result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        result = subprocess.run(docker_command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
         stdout = result.stdout.decode().replace(docker_warning, "")
 
