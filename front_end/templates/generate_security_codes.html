@@ -88,16 +88,25 @@
                 return $(`#${id}`)[0].value;
             }
 
+            function getAssignmentCheckboxes() {
+                return document.querySelectorAll('input[name="selected_assignment"]');
+            }
+
             function getSelectedAssignments() {
-                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
                 const selectedCheckboxes = [];
-                checkboxes.forEach(checkbox => {
+                getAssignmentCheckboxes().forEach(checkbox => {
                     if (checkbox.checked) {
                         selectedCheckboxes.push(parseInt(checkbox.id));
                     }
                 });
 
                 return(selectedCheckboxes);
+            }
+
+            function setAllAssignmentsSelected(selected) {
+                getAssignmentCheckboxes().forEach(checkbox => {
+                    checkbox.checked = selected;
+                });
             }
 
             function showResultMessage(messageHTML, messageType) {
@@ -142,11 +151,16 @@
                 Here you may select assignment(s) for which to generate security codes. If you select multiple assignments, a separate page will be generated for each assignment and student. A security code is not tied to any particular student (until a student uses it), so you can hand out the pages in any order.
             </p>
 
+            <div class="buttons">
+                <button type="button" class="button is-info is-outlined has-background-white has-text-info" onclick="setAllAssignmentsSelected(true);">Select All</button>
+                <button type="button" class="button is-info is-outlined has-background-white has-text-info" onclick="setAllAssignmentsSelected(false);">Deselect All</button>
+            </div>
+
             <p>
                 {% for assignment_title in sorted(secure_assignments) %}
                     <div class="field">
                         <label class="checkbox">
-                            <input type="checkbox" id="{{ secure_assignments[assignment_title]['id'] }}" value="{{ secure_assignments[assignment_title]['id'] }}"{% if preselect_assignment_id == secure_assignments[assignment_title]['id'] %} checked{% end %}>
+                            <input type="checkbox" name="selected_assignment" id="{{ secure_assignments[assignment_title]['id'] }}" value="{{ secure_assignments[assignment_title]['id'] }}"{% if preselect_assignment_id == secure_assignments[assignment_title]['id'] %} checked{% end %}>
                             {{ assignment_title }}
                         </label>
                     </div>
