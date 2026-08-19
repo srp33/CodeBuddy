@@ -11,10 +11,15 @@ import getpass
 import os
 from pathlib import Path
 from pydantic import BaseModel
+import re
 import shutil
 import subprocess
 import tempfile
 import traceback
+
+ALLOWED_OUTPUT_TYPES = {"txt", "jpg"}
+# Matches front-end construction: codebuddy/{back_end}_{mode}
+IMAGE_NAME_RE = re.compile(r"^codebuddy/[a-zA-Z0-9_]+_(development|production)$")
 
 class ExecInfo(BaseModel):
     image_name: str
@@ -32,6 +37,49 @@ app = FastAPI()
 def hello():
     return "world"
 
+def validate_exec_params(info: ExecInfo):
+    if not IMAGE_NAME_RE.fullmatch(info.image_name):
+        raise ValueError(f"Invalid image_name: {info.image_name!r}")
+    if info.output_type not in ALLOWED_OUTPUT_TYPES:
+        raise ValueError(f"Invalid output_type: {info.output_type!r}")
+    if info.memory_allowed_mb <= 0:
+        raise ValueError(f"Invalid memory_allowed_mb: {info.memory_allowed_mb}")
+
+def build_docker_command(info: ExecInfo, tmp_dir_path: str, do_verification: bool, cpus: int):
+    """Build a docker argv list (never pass through a shell)."""
+    image = f"{info.image_name}:latest"
+    verification_arg = "True" if do_verification else "False"
+
+    if info.timeout_seconds <= 0:
+        # Used for debugging in development mode.
+        return [
+            "docker", "run", "--rm",
+            "--workdir", "/sandbox",
+            "-v", f"{tmp_dir_path}:/sandbox",
+            "-v", "/tmp:/tmp",
+            image,
+            verification_arg,
+            info.output_type,
+        ]
+
+    # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
+    return [
+        "timeout", "-s", "9", f"{info.timeout_seconds}s",
+        "docker", "run", "--rm",
+        "--user", f"{os.getuid()}:{os.getgid()}",
+        "--ulimit", f"cpu={info.timeout_seconds}",
+        "--cpus", str(cpus),
+        f"--memory={info.memory_allowed_mb}m",
+        "--cap-drop=ALL",
+        "--network=none",
+        "--log-driver=none",
+        "--workdir", "/sandbox",
+        "-v", f"{tmp_dir_path}/:/sandbox/",
+        image,
+        verification_arg,
+        info.output_type,
+    ]
+
 @app.post("/exec/")
 def exec(info: ExecInfo):
     base_tmp_dir_path = os.path.join(tempfile.gettempdir(), f"codebuddy_backend")
@@ -45,6 +93,8 @@ def exec(info: ExecInfo):
     MAX_OUTPUT_LENGTH_JPG = 1000 * 1024
 
     try:
+        validate_exec_params(info)
+
         # This is meant to identify any old temp directories that inadvertently were not deleted.
         # This is not the best design, but it is simple.
         # It means we don't need to configure a separate process to run in the background.
@@ -82,14 +132,9 @@ def exec(info: ExecInfo):
                     with open(os.path.join(info.tests[test_title]['dir_path'], file_name), "w") as data_file:
                         data_file.write(contents)
 
-        if info.timeout_seconds <= 0:
-            # This is used for debugging in development mode.
-            docker_command = f"docker run --rm --workdir /sandbox -v {tmp_dir_path}:/sandbox -v /tmp:/tmp {info.image_name}:latest {do_verification} {info.output_type}"
-        else:
-            # About --cap-drop: https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick
-            docker_command = f"timeout -s 9 {info.timeout_seconds}s docker run --rm --user $(id -u):$(id -g) --ulimit cpu={info.timeout_seconds} --cpus {cpus} --memory={info.memory_allowed_mb}m --cap-drop=ALL --network=none --log-driver=none --workdir /sandbox -v {tmp_dir_path}/:/sandbox/ {info.image_name}:latest {do_verification} {info.output_type}"
+        docker_command = build_docker_command(info, tmp_dir_path, do_verification, cpus)
 
-        result = subprocess.run(docker_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        result = subprocess.run(docker_command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         docker_warning = "WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap."
         stdout = result.stdout.decode().replace(docker_warning, "")
 
