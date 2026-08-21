@@ -757,7 +757,7 @@ def get_next_prev_assignments(assignment_statuses, assignment_id):
     next_assignment_id = None
     previous_assignment_id = None
 
-    if len(assignment_statuses) == 0:
+    if len(assignment_statuses) < 2 or not assignment_id:
         return next_assignment_id, previous_assignment_id
 
     if assignment_statuses[0][0] == assignment_id: # This is the first assignment.
