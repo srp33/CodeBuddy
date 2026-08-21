@@ -184,6 +184,19 @@
         return the_date.toLocaleString();
     }
 
+    function formatDateTimeMedium(text) {
+        var the_date = new Date(text);
+        return the_date.toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true
+        });
+    }
+
     function addPasteEventListener(textarea_id) {
         let textarea = document.getElementById(textarea_id);
 

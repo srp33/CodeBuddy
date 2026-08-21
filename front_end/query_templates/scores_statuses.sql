@@ -144,6 +144,7 @@ WITH
       es.exercise_id,
       es.user_id,
       IFNULL(s.score, 0) AS score,
+      s.date_updated AS score_date_updated,
       e.weight
     FROM exercise_statuses es
     INNER JOIN exercises e

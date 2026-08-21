@@ -46,6 +46,11 @@ class ExerciseHandler(BaseUserHandler):
 
             presubmission, submissions, has_passed = self.content.get_submissions(course_id, assignment_id, exercise_id, self.get_current_user(), exercise_details)
 
+            exercise_comment_info = self.content.get_exercise_comment(course_id, assignment_id, exercise_id, self.get_current_user())
+            exercise_comment = exercise_comment_info["comment"]
+            exercise_comment_html = format_output_as_html(exercise_comment) if exercise_comment else ""
+            exercise_comment_date = exercise_comment_info["date_updated"]
+
             format_exercise_details(exercise_details, course_basics, assignment_basics, self.user_info, self.content, next_prev_exercises, format_tests=True, format_data=True)
 
             support_questions = self.settings_dict["smtp_server"] != "" and self.settings_dict["smtp_port"] != "" and course_details["email_address"] != "" and assignment_details["support_questions"]
@@ -83,7 +88,10 @@ class ExerciseHandler(BaseUserHandler):
                     "timer_hours": None,
                     "timer_minutes": None,
                     "has_passed": has_passed, "support_questions": support_questions,
-                    "qa": qa
+                    "qa": qa,
+                    "exercise_comment": exercise_comment,
+                    "exercise_comment_html": exercise_comment_html,
+                    "exercise_comment_date": exercise_comment_date
             }
 
             if exercise_details["back_end"] == "multiple_choice":

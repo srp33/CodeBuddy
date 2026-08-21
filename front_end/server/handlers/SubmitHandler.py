@@ -84,12 +84,20 @@ class SubmitHandler(BaseUserHandler):
             if out_dict["message"] == "":
                 out_dict["score"] = self.calc_exercise_score(course_basics, assignment_basics, assignment_details, user_id, out_dict["passed"])
 
+                # Manual-grading allow-any: accept the response (passed) but leave score at 0 for grading.
+                # After save, report the student's current (max) exercise score so the UI stays accurate.
+                if exercise_details["allow_any_response"] == 2:
+                    out_dict["score"] = 0
+
                 out_dict["submission_id"] = await self.content.save_submission(course_id, assignment_id, exercise_id, user_id, code, out_dict["passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], partner_id)
+
+                if exercise_details["allow_any_response"] == 2:
+                    out_dict["score"] = self.content.get_student_exercise_score(course_id, assignment_id, exercise_id, user_id)
 
                 if partner_id:
                     out_dict["partner_name"] = partner_name
 
-                    await self.content.save_submission(course_id, assignment_id, exercise_id, partner_id, code, out_dict["passed"], date, exercise_details, out_dict["test_outputs"], out_dict["score"], user_id)
+                    await self.content.save_submission(course_id, assignment_id, exercise_id, partner_id, code, out_dict["passed"], date, exercise_details, out_dict["test_outputs"], 0 if exercise_details["allow_any_response"] == 2 else out_dict["score"], user_id)
 
                 sanitize_test_outputs(exercise_details, out_dict["test_outputs"])
         except ConnectionError as inst:

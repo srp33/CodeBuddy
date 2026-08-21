@@ -1,0 +1,1 @@
+ALTER TABLE scores ADD COLUMN date_updated TIMESTAMP;

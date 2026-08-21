@@ -151,6 +151,18 @@
 
             <div class="mt-2 mb-2" id="result_message"></div>
 
+            {% if exercise_comment %}
+                <div class="exercise-comment-box mt-3 mb-3 p-4">
+                    <p class="has-text-weight-bold mb-2">Comment(s) from instructor/TA (<span id="exercise_comment_date"></span>):</p>
+                    <div>{{ exercise_comment_html }}</div>
+                </div>
+                {% if exercise_comment_date %}
+                    <script>
+                        document.getElementById("exercise_comment_date").innerHTML = formatDateTimeMedium("{{ exercise_comment_date }}");
+                    </script>
+                {% end %}
+            {% end %}
+
             <!-- This does not apply to multiple-choice questions. It's just here for compatibility with programming questions.-->
             <div id="test_outputs" class="is-hidden"></div>
 

@@ -101,6 +101,7 @@ def make_app(settings_dict):
             url(r"/save_question/([^/]+)/([^/]+)/([^/]+)/([^/]+)", SaveQuestionHandler, name="save_question"),
             url(r"/static/(.+)", StaticFileHandler, name="static_file"),
             url(r"/student_exercise/([^/]+)/([^/]+)/([^/]+)/([^/]+)", StudentExerciseHandler, name="student_exercise"),
+            url(r"/student_exercise_comment/([^/]+)/([^/]+)/([^/]+)/([^/]+)", StudentExerciseCommentHandler, name="student_exercise_comment"),
             url(r"/student_score/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)", StudentScoreHandler, name="student_score"),
             url(r"/submit/([^/]+)/([^/]+)/([^/]+)", SubmitHandler, name="submit"),
             url(r"/summarize_logs", SummarizeLogsHandler, name="summarize_logs"),

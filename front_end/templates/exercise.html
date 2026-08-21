@@ -129,6 +129,18 @@
                     <p class="mt-3 mb-0" id="user_code_area">
                         <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code">{% if exercise_details["starter_code"] and len(submissions) == 0 %}{{ exercise_details["starter_code"] }}{% end %}</textarea>
                     </p>
+
+                    {% if exercise_comment %}
+                        <div class="exercise-comment-box mt-3 mb-3 p-4">
+                            <p class="has-text-weight-bold mb-2">Comment(s) from instructor/TA (<span id="exercise_comment_date"></span>):</p>
+                            <div>{{ exercise_comment_html }}</div>
+                        </div>
+                        {% if exercise_comment_date %}
+                            <script>
+                                document.getElementById("exercise_comment_date").innerHTML = formatDateTimeMedium("{{ exercise_comment_date }}");
+                            </script>
+                        {% end %}
+                    {% end %}
                 </div>
 
                 {% if not assignment_details["due_date"] or not assignment_details["due_date_passed"] or (assignment_details["allow_late"] and assignment_details["late_percent"] > 0) %}

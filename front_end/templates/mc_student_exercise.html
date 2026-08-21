@@ -62,6 +62,40 @@
             {% end %}
 
             <div class="mt-2" id="result_message"></div>
+
+            <div class="has-background-white p-4 mb-4 mt-4">
+                <p><strong>Leave a comment:</strong></p>
+                <textarea id="exercise_comment" class="textarea" rows="4" placeholder="Leave feedback for this student.">{{ exercise_comment }}</textarea>
+                <button type="button" class="button is-info is-outlined has-background-white has-text-info mt-2" onclick="saveExerciseComment();">Leave a comment</button>
+                <div id="exercise_comment_message"></div>
+            </div>
+
+            <script>
+                function saveExerciseComment() {
+                    const comment = $("#exercise_comment")[0].value;
+
+                    $.ajax({
+                        type: 'POST',
+                        url: "/student_exercise_comment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}",
+                        data: comment,
+                        contentType: "text/plain; charset=UTF-8",
+                        async: true})
+                        .done(function(message) {
+                            showExerciseCommentMessage(message, message.startsWith("Error:"));
+                            if (!message.startsWith("Error:")) {
+                                updateSubmittedSinceCommentBanner(message.indexOf("cleared") !== -1);
+                            }
+                        })
+                        .fail(function() {
+                            showExerciseCommentMessage("An unexpected error occurred when attempting to connect to the server.", true);
+                        });
+                }
+
+                function showExerciseCommentMessage(message, isError) {
+                    const boxClass = isError ? "not-passing" : "success-message";
+                    $("#exercise_comment_message")[0].innerHTML = `<div class='notification ${boxClass} mt-2' style='color:white'><p>${message}</p></div>`;
+                }
+            </script>
         {% else %}
             <p>This exercise does not exist.</p>
         {% end %}

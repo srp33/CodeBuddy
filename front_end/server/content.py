@@ -1336,19 +1336,36 @@ SELECT
   sts.num_submissions,
   scr.score,
   sts.last_submission_timestamp,
-  sts.pair_programmed
+  sts.pair_programmed,
+  CASE
+    WHEN sts.num_submissions > 0
+     AND datetime(sts.last_submission_timestamp) > datetime(IFNULL(ec.date_updated, '1970-01-01'))
+     AND datetime(sts.last_submission_timestamp) > datetime(IFNULL(scr.score_date_updated, '1970-01-01')) THEN 1
+    ELSE 0
+  END AS submitted_since_comment,
+  CASE
+    WHEN ec.comment IS NOT NULL AND TRIM(ec.comment) != '' THEN 1
+    ELSE 0
+  END AS has_comment
 FROM exercise_statuses sts
 INNER JOIN exercise_scores_weights scr
   ON sts.assignment_id = scr.assignment_id
   AND sts.user_id = scr.user_id
 INNER JOIN valid_users u
   ON sts.user_id = u.user_id
+LEFT JOIN exercise_comments ec
+  ON ec.course_id = (SELECT course_id FROM variables)
+  AND ec.assignment_id = sts.assignment_id
+  AND ec.exercise_id = sts.exercise_id
+  AND ec.user_id = sts.user_id
 ORDER BY u.name
 '''
 
         for row in self.fetchall(sql, (course_id, assignment_id, exercise_id, None, )):
             data = dict(row)
             data["last_submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["last_submission_timestamp"]))
+            data["submitted_since_comment"] = bool(data.get("submitted_since_comment"))
+            data["has_comment"] = bool(data.get("has_comment"))
             scores.append([row["user_id"], data])
 
         return scores
@@ -1365,8 +1382,59 @@ FROM exercise_scores_weights scr
           return result["score"]
         return 0
 
-    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, score):
-        # We only update the score if it's higher than what was there previously. We also account for the scenario where it is their first submission.
+    def get_exercise_comment(self, course_id, assignment_id, exercise_id, user_id):
+        sql = '''SELECT comment, commenter_id, date_updated
+                 FROM exercise_comments
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND exercise_id = ?
+                   AND user_id = ?'''
+
+        row = self.fetchone(sql, (course_id, assignment_id, exercise_id, user_id,))
+        if not row or not row["comment"]:
+            return {"comment": "", "date_updated": None}
+
+        date_updated = row["date_updated"]
+        date_updated_iso = None
+        if date_updated:
+            date_updated_iso = str(date_updated).split(".")[0].replace(" ", "T")
+            if not date_updated_iso.endswith("Z"):
+                date_updated_iso += "Z"
+
+        return {"comment": row["comment"], "date_updated": date_updated_iso}
+
+    def save_exercise_comment(self, course_id, assignment_id, exercise_id, user_id, commenter_id, comment):
+        comment = (comment or "").strip()
+
+        if comment == "":
+            self.execute('''DELETE FROM exercise_comments
+                            WHERE course_id = ?
+                              AND assignment_id = ?
+                              AND exercise_id = ?
+                              AND user_id = ?''', (course_id, assignment_id, exercise_id, user_id,))
+            return ""
+
+        sql = '''INSERT INTO exercise_comments (course_id, assignment_id, exercise_id, user_id, comment, commenter_id, date_updated)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)
+                 ON CONFLICT(course_id, assignment_id, exercise_id, user_id)
+                 DO UPDATE SET comment = excluded.comment,
+                               commenter_id = excluded.commenter_id,
+                               date_updated = excluded.date_updated'''
+
+        self.execute(sql, (course_id, assignment_id, exercise_id, user_id, comment, commenter_id, format_datetime_for_db(get_current_datetime()),))
+        return comment
+
+    def save_exercise_score(self, course_id, assignment_id, exercise_id, user_id, score, instructor_review=False):
+        if instructor_review:
+            sql = '''INSERT INTO scores (course_id, assignment_id, exercise_id, user_id, score, date_updated)
+                     VALUES (?, ?, ?, ?, ?, ?)
+                     ON CONFLICT(course_id, assignment_id, exercise_id, user_id)
+                     DO UPDATE SET score = excluded.score,
+                                   date_updated = excluded.date_updated'''
+            self.execute(sql, (course_id, assignment_id, exercise_id, user_id, score, format_datetime_for_db(get_current_datetime()),))
+            return
+
+        # Student submissions only raise the stored score and must not touch date_updated.
         sql = '''WITH user_scores AS (
                    SELECT score
 		               FROM scores
@@ -1380,11 +1448,24 @@ FROM exercise_scores_weights scr
 		               SELECT 0
                  )
 
-                 INSERT OR REPLACE INTO scores (course_id, assignment_id, exercise_id, user_id, score)
+                 INSERT INTO scores (course_id, assignment_id, exercise_id, user_id, score)
                  SELECT ?, ?, ?, ?, ?
-                 WHERE ? >= (SELECT MAX(score) FROM user_scores)'''
+                 WHERE ? >= (SELECT MAX(score) FROM user_scores)
+                 ON CONFLICT(course_id, assignment_id, exercise_id, user_id)
+                 DO UPDATE SET score = excluded.score'''
 
         self.execute(sql, (course_id, assignment_id, exercise_id, user_id, course_id, assignment_id, exercise_id, user_id, score, score))
+
+    def get_exercise_score_date_updated(self, course_id, assignment_id, exercise_id, user_id):
+        row = self.fetchone('''SELECT date_updated
+                               FROM scores
+                               WHERE course_id = ?
+                                 AND assignment_id = ?
+                                 AND exercise_id = ?
+                                 AND user_id = ?''', (course_id, assignment_id, exercise_id, user_id,))
+        if row:
+            return row["date_updated"]
+        return None
 
     def get_submissions(self, course_id, assignment_id, exercise_id, user_id, exercise_details):
         sql = '''
@@ -1608,7 +1689,18 @@ SELECT
   s.partner_id,
   u2.name AS partner_name,
   esw.score,
-  sts.completed
+  sts.completed,
+  sts.num_submissions,
+  CASE
+    WHEN sts.num_submissions > 0
+     AND datetime(s.submission_timestamp) > datetime(IFNULL(ec.date_updated, '1970-01-01'))
+     AND datetime(s.submission_timestamp) > datetime(IFNULL(esw.score_date_updated, '1970-01-01')) THEN 1
+    ELSE 0
+  END AS submitted_since_comment,
+  CASE
+    WHEN ec.comment IS NOT NULL AND TRIM(ec.comment) != '' THEN 1
+    ELSE 0
+  END AS has_comment
 FROM latest_submissions s
 INNER JOIN exercise_statuses sts
   ON s.exercise_id = sts.exercise_id
@@ -1620,6 +1712,11 @@ INNER JOIN valid_users u
   ON s.user_id = u.user_id
 LEFT JOIN valid_users u2
   ON u2.user_id = s.partner_id
+LEFT JOIN exercise_comments ec
+  ON ec.course_id = (SELECT course_id FROM variables)
+  AND ec.assignment_id = s.assignment_id
+  AND ec.exercise_id = s.exercise_id
+  AND ec.user_id = s.user_id
 ORDER BY student_name
 '''
 
@@ -1631,6 +1728,8 @@ ORDER BY student_name
             data = dict(row)
 
             data["submission_timestamp"] = localize_datetime(convert_string_to_datetime(data["submission_timestamp"]))
+            data["submitted_since_comment"] = bool(data.get("submitted_since_comment"))
+            data["has_comment"] = bool(data.get("has_comment"))
 
             # data["may_be_ai_generated"] = False
             # if exercise_details != "not_code":
@@ -2002,7 +2101,7 @@ ORDER BY student_name
         return assignment_dict
 
     def get_exercise_details(self, course_basics, assignment_basics, exercise_id):
-        null_exercise = {"instructions": "", "back_end": "python", "output_type": "txt", "allow_any_response": False, "solution_code": "", "solution_description": "", "hint": "", "max_submissions": 0, "starter_code": "", "credit": "", "data_files": {}, "what_students_see_after_success": 1, "date_created": None, "date_updated": None, "enable_pair_programming": False, "show_upload_button": False, "verification_code": "", "weight": 1.0, "min_solution_length": 1, "max_solution_length": 10000, "tests": {}}
+        null_exercise = {"instructions": "", "back_end": "python", "output_type": "txt", "allow_any_response": 0, "solution_code": "", "solution_description": "", "hint": "", "max_submissions": 0, "starter_code": "", "credit": "", "data_files": {}, "what_students_see_after_success": 1, "date_created": None, "date_updated": None, "enable_pair_programming": False, "show_upload_button": False, "verification_code": "", "weight": 1.0, "min_solution_length": 1, "max_solution_length": 10000, "tests": {}}
 
         if not exercise_id:
             return null_exercise
@@ -2024,7 +2123,7 @@ ORDER BY student_name
         else:
             data_files = ujson.loads(row["data_files"])
 
-        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "allow_any_response": row["allow_any_response"], "solution_code": row["solution_code"], "solution_description": row["solution_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "credit": row["credit"], "data_files": data_files, "what_students_see_after_success": row["what_students_see_after_success"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"], "show_upload_button": row["show_upload_button"], "verification_code": row["verification_code"], "weight": row["weight"], "min_solution_length": row["min_solution_length"], "max_solution_length": row["max_solution_length"], "tests": {}}
+        exercise_dict = {"instructions": row["instructions"], "back_end": row["back_end"], "output_type": row["output_type"], "allow_any_response": int(row["allow_any_response"] or 0), "solution_code": row["solution_code"], "solution_description": row["solution_description"], "hint": row["hint"], "max_submissions": row["max_submissions"], "starter_code": row["starter_code"], "credit": row["credit"], "data_files": data_files, "what_students_see_after_success": row["what_students_see_after_success"], "date_created": row["date_created"], "date_updated": row["date_updated"], "enable_pair_programming": row["enable_pair_programming"], "show_upload_button": row["show_upload_button"], "verification_code": row["verification_code"], "weight": row["weight"], "min_solution_length": row["min_solution_length"], "max_solution_length": row["max_solution_length"], "tests": {}}
 
         # For multiple-choice questions, we store the sandbox back end in this field.
         if exercise_dict["back_end"] == "multiple_choice" and exercise_dict["starter_code"] == "None":
@@ -2849,6 +2948,11 @@ ORDER BY student_name
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
+        self.execute('''DELETE FROM exercise_comments
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
         self.execute('''DELETE FROM exercises
                         WHERE course_id = ?
                           AND assignment_id = ?
@@ -2908,6 +3012,10 @@ ORDER BY student_name
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
         self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
+        self.execute('''DELETE FROM exercise_comments
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
@@ -2974,6 +3082,9 @@ ORDER BY student_name
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?''', (course_id, ))
 
+        self.execute('''DELETE FROM exercise_comments
+                        WHERE course_id = ?''', (course_id, ))
+
         self.execute('''DELETE FROM exercises
                         WHERE course_id = ?''', (course_id, ))
 
@@ -3031,6 +3142,9 @@ ORDER BY student_name
         self.execute('''DELETE FROM scores
                         WHERE course_id = ?''', (course_id, ))
 
+        self.execute('''DELETE FROM exercise_comments
+                        WHERE course_id = ?''', (course_id, ))
+
         self.execute('''DELETE FROM presubmissions
                         WHERE course_id = ?''', (course_id, ))
 
@@ -3061,6 +3175,10 @@ ORDER BY student_name
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
         self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+
+        self.execute('''DELETE FROM exercise_comments
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
@@ -3098,6 +3216,11 @@ ORDER BY student_name
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
 
         self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))
+
+        self.execute('''DELETE FROM exercise_comments
                         WHERE course_id = ?
                           AND assignment_id = ?
                           AND exercise_id = ?''', (course_id, assignment_id, exercise_id, ))

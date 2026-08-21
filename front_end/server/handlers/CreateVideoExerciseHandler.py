@@ -21,7 +21,7 @@ class CreateVideoExerciseHandler(BaseUserHandler):
                 exercise_basics["title"] = self.get_body_argument("title")
                 exercise_details["instructions"] = self.get_body_argument("instructions")
                 exercise_details["back_end"] = "not_code"
-                exercise_details["allow_any_response"] = True
+                exercise_details["allow_any_response"] = 1
                 created_date = get_current_datetime()
                 exercise_details["date_updated"] = created_date
                 exercise_details["date_created"] = created_date

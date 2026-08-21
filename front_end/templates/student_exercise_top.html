@@ -46,6 +46,16 @@
     </div>
 </div>
 
+{% if exercise_details["allow_any_response"] == 2 %}
+    <div id="submitted_since_comment_banner" class="notification is-warning is-light has-text-dark mb-4{% if not submitted_since_comment %} is-hidden{% end %}" style="border: 2px solid black;">
+        {% if exercise_comment %}
+            Needs attention - student resubmitted.
+        {% else %}
+            This student has submitted, and you have not left a comment yet.
+        {% end %}
+    </div>
+{% end %}
+
 {% if len(submissions) > 0 %}
     <script>
         document.getElementById("last_submission_date").innerHTML = new Date("{{ submissions[-1]['submission_timestamp'] }}").toLocaleString();
@@ -71,6 +81,7 @@
                 }
                 else {
                     updateScoreMessage(message, false);
+                    updateSubmittedSinceCommentBanner(false);
                 }
             })
             .fail(function(error) {
@@ -105,4 +116,21 @@
             updateScore();
         }
     });
+
+    function updateSubmittedSinceCommentBanner(commentCleared) {
+        const banner = document.getElementById("submitted_since_comment_banner");
+        if (!banner) {
+            return;
+        }
+
+        if (commentCleared) {
+            if ({{ num_submissions }} > 0) {
+                banner.innerHTML = "This student has submitted, and you have not left a comment yet.";
+                banner.classList.remove("is-hidden");
+            }
+        }
+        else {
+            banner.classList.add("is-hidden");
+        }
+    }
 </script>

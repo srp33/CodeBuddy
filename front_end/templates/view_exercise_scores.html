@@ -16,6 +16,9 @@
                     <th># Submissions</th>
                     <th>Last Submission</th>
                     <th>Score</th>
+                    {% if exercise_details["allow_any_response"] == 2 %}
+                        <th>Comment</th>
+                    {% end %}
                 </tr>
             </thead>
             <tbody>
@@ -34,6 +37,17 @@
                         <td>
                             {{ round(float(student[1]["score"]), 1) }}%
                         </td>
+                        {% if exercise_details["allow_any_response"] == 2 %}
+                            <td class="has-text-left">
+                                {% if student[1]["submitted_since_comment"] %}
+                                    {% if student[1]["has_comment"] %}
+                                        Needs attention - student resubmitted
+                                    {% else %}
+                                        No comment
+                                    {% end %}
+                                {% end %}
+                            </td>
+                        {% end %}
 
                     </tr>
                 {% end %}  

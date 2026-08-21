@@ -660,6 +660,30 @@ def localize_datetime(dtime):
 
     return dtime
 
+def parse_db_datetime(value):
+    if not value:
+        return None
+
+    if isinstance(value, datetime):
+        if value.tzinfo is None:
+            return localize_datetime(value)
+        return value
+
+    text = str(value).split(".")[0].replace("T", " ").replace("Z", "").strip()
+    return localize_datetime(convert_string_to_datetime(text))
+
+def has_submitted_since_comment(last_submission_timestamp, comment_date_updated, score_date_updated=None):
+    last_ts = parse_db_datetime(last_submission_timestamp)
+    if not last_ts:
+        return False
+
+    review_times = [parse_db_datetime(comment_date_updated), parse_db_datetime(score_date_updated)]
+    review_times = [t for t in review_times if t is not None]
+    if not review_times:
+        return True
+
+    return last_ts > max(review_times)
+
 def get_student_timer_status(content, course_id, assignment_id, assignment_details, student_id, user_start_time=None, user_ended_early=None):
     if user_start_time == None:
         user_start_time, user_ended_early = content.get_user_assignment_timer_status(course_id, assignment_id, student_id)

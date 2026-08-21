@@ -6,13 +6,18 @@
 
 from BaseUserHandler import *
 
-class StudentScoreHandler(BaseUserHandler):
-    async def get(self, course_id, assignment_id, exercise_id, student_id, score):
+class StudentExerciseCommentHandler(BaseUserHandler):
+    async def post(self, course_id, assignment_id, exercise_id, student_id):
         try:
             if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
-                self.content.save_exercise_score(course_id, assignment_id, exercise_id, student_id, score, instructor_review=True)
-                self.write(f"The score was successfully updated to {score}.")
+                comment = self.request.body.decode("utf-8")
+                saved_comment = self.content.save_exercise_comment(course_id, assignment_id, exercise_id, student_id, self.get_current_user(), comment)
+
+                if saved_comment == "":
+                    self.write("The comment was cleared.")
+                else:
+                    self.write("The comment was saved successfully.")
             else:
-                self.write("Error: You do not have permission to modify scores for this course.")
+                self.write("Error: You do not have permission to leave comments for this course.")
         except:
-            self.write(f"Error: An error occurred when attempting to update the score, so it has not been updated. {traceback.format_exc()}")
+            self.write(f"Error: An error occurred when attempting to save the comment. {traceback.format_exc()}")

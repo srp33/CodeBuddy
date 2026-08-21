@@ -179,7 +179,26 @@
     }
 
     function showSuccessMessage(submission) {
-        {% if exercise_details["allow_any_response"] %}
+        {% if exercise_details["allow_any_response"] == 2 %}
+            let score = Number(submission.score);
+            if (isNaN(score)) {
+                score = 0;
+            }
+            // Prefer the highest known score across submissions (scores table keeps the max).
+            if (typeof submissions !== "undefined") {
+                for (let s of submissions) {
+                    let s_score = Number(s.score);
+                    if (!isNaN(s_score) && s_score > score) {
+                        score = s_score;
+                    }
+                }
+            }
+
+            let message = `Thank you for your submission. Your current score is ${score}%.`;
+            if (score == 0) {
+                message += " Your response will be graded. If you do not receive full points, it is possible to resubmit.";
+            }
+        {% elif exercise_details["allow_any_response"] %}
             let message = "Thank you for your submission.";
         {% else %}
             // let share_message = "<button class='button is-pulled-right' onclick='showLinkModal()'>Share your success!&nbsp;&nbsp;&nbsp;<span class='icon'><i class='fas fa-share'></i></span></button>";

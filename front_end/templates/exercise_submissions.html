@@ -23,7 +23,7 @@
         <div class="grid">
             {% for student_i, student in enumerate(exercise_submissions) %}
                 <div class="cell">
-                    <div id="student_name_{{ student_i }}" class="notification is-fullwidth is-size-5 mt-2 mb-2 p-4
+                    <div id="student_name_{{ student_i }}" class="notification is-fullwidth is-size-5 is-flex is-align-items-center is-flex-wrap-wrap mt-2 mb-2 p-4
                         {% if student[1]["completed"] %}
                             is-primary
                         {% else %}
@@ -34,11 +34,8 @@
                             {% end %}
                         {% end %}
 
-                        " style="cursor: pointer;" onclick="toggleSubmission('{{ student_i }}', -1);">{{ student[1]["student_name"] }}
-
-                        {% if student[1]["partner_name"] %}
-                            paired with {{student[1]["partner_name"]}}
-                        {% end %}
+                        " style="cursor: pointer;" onclick="toggleSubmission('{{ student_i }}', -1);">
+                        <span>{{ student[1]["student_name"] }}{% if student[1]["num_submissions"] > 0 %} ({{ student[1]["num_submissions"] }} submissions){% end %}{% if student[1]["partner_name"] %} paired with {{student[1]["partner_name"]}}{% end %}</span>{% if exercise_details["allow_any_response"] == 2 and student[1]["submitted_since_comment"] %}<span class="submitted-since-comment-label">{% if student[1]["has_comment"] %}Needs attention - student resubmitted{% else %}No comment{% end %}</span>{% end %}
                     </div>
 
                     <div id="submission_{{ student_i }}" class="notification

@@ -73,10 +73,19 @@
 
             <div class="a-visible">
                 <p><strong>Allow any response: </strong>
+                    <span class="html-tooltip">
+                        <i class="far fa-question-circle"></i>
+                        <span class="html-tooltip-content">
+                            <span class="html-tooltip-line"><strong>No:</strong> the student's response is graded automatically against the expected output.</span>
+                            <span class="html-tooltip-line"><strong>Yes:</strong> any response is accepted, the exercise is marked complete, and the student receives full credit (subject to late policies).</span>
+                            <span class="html-tooltip-line"><strong>Yes - require manual grading:</strong> any response is accepted and the exercise is marked complete, but the score starts at 0 until a score is assigned.</span>
+                        </span>
+                    </span>
                     <div class="select is-grey">
                         <select id="allow_any_response" class="edit-select">
-                            <option value="No">No</option>
-                            <option value="Yes">Yes</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                            <option value="2">Yes - require manual grading</option>
                         </select>
                     </div>
                 </p>
@@ -460,7 +469,7 @@
 
         function showOutput(update, scroll) {
             if (update) {
-                if (getValue("allow_any_response") == "No") {
+                if (getValue("allow_any_response") == "0") {
                     var html = `<h4>Test output:</h4><div class='shadow-box'>`;
 
                     for (const test_title in sortObj(exercise_details_obj["tests"])) {
@@ -677,7 +686,9 @@
             for (let id of ["back_end", "output_type", "instructions", "credit", "hint", "solution_description", "max_submissions", "what_students_see_after_success"])
                 setValue(id, exercise_details_obj[id]);
 
-            for (let id of ["allow_any_response", "enable_pair_programming", "show_upload_button"])
+            setValue("allow_any_response", String(Number(exercise_details_obj["allow_any_response"]) || 0));
+
+            for (let id of ["enable_pair_programming", "show_upload_button"])
                 setValue(id, exercise_details_obj[id] ? "Yes" : "No");
 
             if (String(exercise_details_obj["weight"]) == String(parseInt(exercise_details_obj["weight"])))
@@ -702,7 +713,8 @@
         function save() {
             const title = getValue("title").trim();
             const instructions = getValue("instructions");
-            const allow_any_response = getValue("allow_any_response") == "Yes";
+            const allow_any_response = parseInt(getValue("allow_any_response"));
+            const allow_any = allow_any_response != 0;
             const solution_code = solution_code_editor.getValue();
             const weight = getValue("weight");
             const min_solution_length = getValue("min_solution_length");
@@ -715,7 +727,7 @@
                 return(showResultMessage("The title cannot exceed 100 characters in length.", "danger"));
             if (instructions == "")
                 return(showResultMessage("Please provide instructions.", "danger"));
-            if (!allow_any_response && solution_code == "")
+            if (!allow_any && solution_code == "")
                 return(showResultMessage("Except when any response is allowed, you must provide a solution.", "danger"));
             if (isNaN(weight))
                 return(showResultMessage("The specified weight is not a number.", "danger"));
@@ -736,7 +748,7 @@
             }
 
             if (Object.keys(exercise_details_obj["tests"]).length == 0) {
-                if (!allow_any_response || back_end != "not_code") {
+                if (!allow_any || back_end != "not_code") {
                     // If no tests were created, create a default one.
                     exercise_details_obj["tests"] = {"Default test": {
                         "test_id": -1,
