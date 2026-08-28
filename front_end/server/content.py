@@ -604,7 +604,7 @@ class Content:
         return [row["user_id"] for row in rows]        
 
     def get_users_to_manage(self, pattern):
-        sql = '''SELECT DISTINCT u.user_id, u.name, u.research_cohort
+        sql = '''SELECT DISTINCT u.user_id, u.name, u.research_cohort_1, u.research_cohort_2
                  FROM users u
                  LEFT JOIN permissions p
                    ON u.user_id = p.user_id
@@ -613,7 +613,7 @@ class Content:
                  ORDER BY u.name'''
 
         rows = self.fetchall(sql, (pattern, pattern,))
-        return [{"user_id": row["user_id"], "name": row["name"], "research_cohort": row["research_cohort"]} for row in rows]
+        return [{"user_id": row["user_id"], "name": row["name"], "research_cohort_1": row["research_cohort_1"], "research_cohort_2": row["research_cohort_2"]} for row in rows]
 
     def set_user_dict_defaults(self, user_dict):
         if "name" not in user_dict:
@@ -628,10 +628,10 @@ class Content:
     def add_user(self, user_id, user_dict):
         self.set_user_dict_defaults(user_dict)
 
-        sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme, email_address, research_cohort)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT CASE WHEN RANDOM() >= 0.5 THEN "A" ELSE "B" END))'''
+        sql = '''INSERT INTO users (user_id, name, given_name, family_name, locale, ace_theme, email_address, research_cohort_1, research_cohort_2)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
 
-        self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow", user_dict["email_address"]))
+        self.execute(sql, (user_id, user_dict["name"], user_dict["given_name"], user_dict["family_name"], user_dict["locale"], "tomorrow", user_dict["email_address"], random_research_cohort(1), random_research_cohort(2)))
 
         self.update_when_content_updated("user")
 
@@ -688,7 +688,7 @@ class Content:
         return False
 
     def get_user_info(self, user_id):
-        null_user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "locale": None, "email_address": None, "ace_theme": None, "use_auto_complete": True, "use_studio_mode": False, "enable_vim": False, "research_cohort": "None"}
+        null_user_info = {"user_id": None, "name": None, "given_name": None, "family_name": None, "locale": None, "email_address": None, "ace_theme": None, "use_auto_complete": True, "use_studio_mode": False, "enable_vim": False, "research_cohort_1": "None", "research_cohort_2": "None"}
 
         sql = '''SELECT *
                  FROM users
@@ -699,7 +699,7 @@ class Content:
         if not user:
             return null_user_info
 
-        return {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "email_address": user["email_address"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "use_studio_mode": user["use_studio_mode"], "enable_vim": user["enable_vim"], "research_cohort": user["research_cohort"]}
+        return {"user_id": user_id, "name": user["name"], "given_name": user["given_name"], "family_name": user["family_name"], "locale": user["locale"], "email_address": user["email_address"], "ace_theme": user["ace_theme"], "use_auto_complete": user["use_auto_complete"], "use_studio_mode": user["use_studio_mode"], "enable_vim": user["enable_vim"], "research_cohort_1": user["research_cohort_1"], "research_cohort_2": user["research_cohort_2"]}
 
     def add_permissions(self, course_id, user_id, role):
         sql = '''SELECT role

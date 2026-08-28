@@ -449,10 +449,10 @@ def modify_what_students_see(exercise_details, user_info):
     if exercise_details["back_end"] != "not_code" or exercise_details["allow_any_response"]:
         what_students_see = exercise_details["what_students_see_after_success"]
 
-        if what_students_see in (1, 3) or (what_students_see == 4 and user_info["research_cohort"] == "A") or (what_students_see == 6 and user_info["research_cohort"] == "B") or (what_students_see == 8 and user_info["research_cohort"] == "A") or (what_students_see == 9 and user_info["research_cohort"] == "B"):
+        if what_students_see in (1, 3) or (what_students_see == 4 and user_info["research_cohort_1"] == "A") or (what_students_see == 6 and user_info["research_cohort_1"] == "B") or (what_students_see == 8 and user_info["research_cohort_1"] == "A") or (what_students_see == 9 and user_info["research_cohort_1"] == "B"):
             exercise_details["show_instructor_solution"] = True
 
-        if what_students_see in (2, 3) or (what_students_see == 5 and user_info["research_cohort"] == "A") or (what_students_see == 7 and user_info["research_cohort"] == "B") or (what_students_see == 8 and user_info["research_cohort"] == "A") or (what_students_see == 9 and user_info["research_cohort"] == "B"):
+        if what_students_see in (2, 3) or (what_students_see == 5 and user_info["research_cohort_1"] == "A") or (what_students_see == 7 and user_info["research_cohort_1"] == "B") or (what_students_see == 8 and user_info["research_cohort_1"] == "A") or (what_students_see == 9 and user_info["research_cohort_1"] == "B"):
             exercise_details["show_peer_solution"] = True
 
     for test_title in exercise_details["tests"]:
@@ -639,7 +639,7 @@ async def should_use_virtual_assistant(handler, course_id, course_details, assig
     if has_special_permission and (assignment_details["use_virtual_assistant"] == 2 or ["use_virtual_assistant"] == 3):
         return True
 
-    return (assignment_details["use_virtual_assistant"] == 2 and user_info["research_cohort"] == "A") or (assignment_details["use_virtual_assistant"] == 3 and user_info["research_cohort"] == "B")
+    return (assignment_details["use_virtual_assistant"] == 2 and user_info["research_cohort_1"] == "A") or (assignment_details["use_virtual_assistant"] == 3 and user_info["research_cohort_1"] == "B")
 
 def get_current_datetime():
     return datetime.now(timezone.utc)
@@ -671,6 +671,16 @@ def parse_db_datetime(value):
 
     text = str(value).split(".")[0].replace("T", " ").replace("Z", "").strip()
     return localize_datetime(convert_string_to_datetime(text))
+
+def random_research_cohort(cohort_number):
+    """Randomly assign a user to research cohort A or B.
+
+    Each cohort_number uses a distinct seed stream so assignments for
+    Research Cohort 1 and Research Cohort 2 are independent.
+    """
+    rng = random.Random()
+    rng.seed(secrets.randbits(64) ^ (int(cohort_number) * 0x9E3779B97F4A7C15))
+    return "A" if rng.random() < 0.5 else "B"
 
 def has_submitted_since_comment(last_submission_timestamp, comment_date_updated, score_date_updated=None):
     last_ts = parse_db_datetime(last_submission_timestamp)

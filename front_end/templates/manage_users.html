@@ -14,7 +14,7 @@
 
 <div class="table-container is-hidden" id="the_table"></div>
 
-<div class="is-hidden" id="explanation"><em>* Some features are experimental. Instructors can configure CodeBuddy to behave differently, according to the research cohort to which each student is randomly assigned.</em></div>
+<div class="is-hidden" id="explanation"><em>* Some features are experimental. Instructors can configure CodeBuddy to behave differently, according to Research Cohort 1, to which each student is randomly assigned. Research Cohort 2 is an independent random A/B assignment.</em></div>
 
 <div id="result_message" class="is-hidden">
 </div>
@@ -67,7 +67,7 @@
         const table = document.createElement('table');
 
         const header_row = document.createElement('tr');
-        const header_items = ["User ID", "Name", "Research Cohort*", ""]
+        const header_items = ["User ID", "Name", "Research Cohort 1*", "Research Cohort 2*", ""]
         header_items.forEach((text) => {
                 const cell = document.createElement('th');
                 cell.textContent = text;
@@ -89,9 +89,14 @@
             cell.textContent = table_row["name"];
             row.appendChild(cell);
 
-            // Research cohort
+            // Research cohort 1
             cell = document.createElement('td');
-            cell.textContent = table_row["research_cohort"];
+            cell.textContent = table_row["research_cohort_1"];
+            row.appendChild(cell);
+
+            // Research cohort 2
+            cell = document.createElement('td');
+            cell.textContent = table_row["research_cohort_2"];
             row.appendChild(cell);
 
             // Delete button
