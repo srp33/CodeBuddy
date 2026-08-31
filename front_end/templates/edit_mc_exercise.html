@@ -53,7 +53,8 @@
             
             <ul>
                 <li>Add a link to the previous exercise by placing <code>[previous_exercise_link]</code> in the instructions. When students see the instructions, this text will be replaced with a link to the previous exercise.</li>
-                <li>You can add video(s) to the instructions. To add a YouTube video, specify <code>youtube:id</code>, replacing "id" with the unique identifier for a particular video. For example, for <a href="https://www.youtube.com/watch?v=PLOPygVcaVE" target="_blank">this video</a>, you would use "youtube:PLOPygVcaVE".</li>
+                <li>You can add video(s) to the instructions. To add a YouTube video, specify <code>youtube:id</code>, replacing "id" with the unique identifier for a particular video. For example, for <a href="https://www.youtube.com/watch?v=PLOPygVcaVE" target="_blank">this video</a>, you would use "youtube:PLOPygVcaVE". To show different videos to Research Cohort 1 groups A and B, specify two IDs separated by a vertical bar, such as <code>youtube:idA|idB</code>. If you specify only one ID, everyone sees the same video.</li>
+                <li>To add a Panopto video, specify <code>panopto:host/id</code>, replacing "host" with the Panopto hostname and "id" with the video identifier. For example, for <a href="https://byu.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=e60fd535-e5db-4d13-b86c-aebc01586257" target="_blank">this video</a>, you would use "panopto:byu.hosted.panopto.com/e60fd535-e5db-4d13-b86c-aebc01586257". To show different videos to Research Cohort 1 groups A and B, specify two IDs separated by a vertical bar, such as <code>panopto:host/idA|idB</code>. If you specify only one ID, everyone sees the same video.</li>
             </ul>
 
             <p><textarea id="instructions" class="textarea" rows=10 placeholder="Please provide instructions for this assignment."></textarea></p>

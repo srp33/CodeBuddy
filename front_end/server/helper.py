@@ -63,9 +63,29 @@ def read_file(file_path, mode="r"):
     with open(file_path, mode) as the_file:
         return the_file.read()
 
-def convert_markdown_to_html(text):
+def convert_markdown_to_html(text, user_info=None):
     if not text or len(text) == 0:
         return ""
+
+    # youtube:id — everyone sees the same video.
+    # youtube:idA|idB — research_cohort_1 A sees idA, B sees idB.
+    def _youtube_id_for_cohort(match):
+        id_a, id_b = match.group(1), match.group(2)
+        cohort = user_info.get("research_cohort_1") if user_info else None
+        chosen = id_b if cohort == "B" else id_a
+        return f"youtube:{chosen}"
+
+    text = re.sub(r"youtube:([-_a-zA-Z0-9]+)\|([-_a-zA-Z0-9]+)", _youtube_id_for_cohort, text)
+
+    # panopto:host/id — everyone sees the same video.
+    # panopto:host/idA|idB — research_cohort_1 A sees idA, B sees idB.
+    def _panopto_id_for_cohort(match):
+        host, id_a, id_b = match.group(1), match.group(2), match.group(3)
+        cohort = user_info.get("research_cohort_1") if user_info else None
+        chosen = id_b if cohort == "B" else id_a
+        return f"panopto:{host}/{chosen}"
+
+    text = re.sub(r"panopto:([a-zA-Z0-9\.]+.panopto.com)/([-_a-z0-9]+)\|([-_a-z0-9]+)", _panopto_id_for_cohort, text)
 
     html = re.sub(r"youtube:([-_a-zA-Z0-9]+)", r"<iframe width='800' height='550' src='https://www.youtube.com/embed/\1?controls=1' title='Embedded video content'></iframe>\n", text)
     html = re.sub(r"panopto:([a-zA-Z0-9\.]+.panopto.com)\/([-_a-z0-9]+)", r"<p style='text-align: left;'>\n<iframe id='panopto_iframe' style='border: 1px solid #464646;' title='Embedded video content' src='https://\1/Panopto/Pages/Embed.aspx?id=\2&amp;autoplay=false&amp;offerviewer=true&amp;showtitle=false&amp;showbrand=false&amp;captions=false&amp;interactivity=none' width='100%' height='450' allowfullscreen='allowfullscreen' allow='autoplay'></iframe>\n</p>\n", html)
@@ -370,12 +390,12 @@ def get_client_ip_address(request):
 def format_exercise_details(exercise_details, course_basics, assignment_basics, user_info, content, next_prev_exercises=None, format_tests=True, format_data=False):
     exercise_details["instructions"] = content.replace_templates_in_text(course_basics["id"], exercise_details["instructions"])
 
-    exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"])
+    exercise_details["credit"] = convert_markdown_to_html(exercise_details["credit"], user_info)
 
     if exercise_details["back_end"] != "multiple_choice":
-        exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"])
+        exercise_details["solution_description"] = convert_markdown_to_html(exercise_details["solution_description"], user_info)
 
-    exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"])
+    exercise_details["hint"] =  convert_markdown_to_html(exercise_details["hint"], user_info)
 
     modify_what_students_see(exercise_details, user_info)
 
@@ -387,7 +407,7 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
 
             exercise_details["tests"][test_title]["txt_output_formatted"] = format_output_as_html(exercise_details["tests"][test_title]["txt_output"])
 
-        exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"])
+        exercise_details["tests"][test_title]["instructions"] = convert_markdown_to_html(exercise_details["tests"][test_title]["instructions"], user_info)
 
     if "[reflection_prompt]" in exercise_details["instructions"]:
         if not next_prev_exercises or not next_prev_exercises["previous"]:
@@ -431,7 +451,7 @@ def format_exercise_details(exercise_details, course_basics, assignment_basics, 
 
     exercise_details["instructions"] = exercise_details["instructions"].replace("[previous_exercise_link]", "").replace("[copy_previous]", "") # This is just in case they added it when it is the first exercise.
 
-    exercise_details["instructions"] = convert_markdown_to_html(exercise_details["instructions"])
+    exercise_details["instructions"] = convert_markdown_to_html(exercise_details["instructions"], user_info)
 
     for file_name in exercise_details["data_files"]:
         if file_name.endswith(".hide"):
