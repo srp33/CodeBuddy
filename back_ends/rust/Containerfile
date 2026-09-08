@@ -15,7 +15,7 @@ COPY Cargo.toml /app/myapp/
 # Pre-fetch the dependencies
 RUN cargo fetch
 
-RUN apt-get update \
+RUN apt-get -o Acquire::Check-Valid-Until=false update \
  && apt-get install python3 -y
 
 ADD *.py /

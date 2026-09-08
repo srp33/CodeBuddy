@@ -1,4 +1,4 @@
-FROM python:3.13.6-slim-bullseye as builder
+FROM python:3.13.6-slim-bookworm as builder
 
 RUN mkdir -p /build/front_end
 
@@ -14,7 +14,7 @@ RUN bash build_html.sh html
 ########################################################
 ########################################################
 ########################################################
-FROM python:3.13.6-slim-bullseye
+FROM python:3.13.6-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1
 
