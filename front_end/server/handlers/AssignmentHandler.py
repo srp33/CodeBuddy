@@ -73,6 +73,9 @@ class AssignmentHandler(BaseUserHandler):
             if len(prerequisite_assignments_not_completed) > 0:
                 return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_not_completed", prerequisite_assignments_not_completed=prerequisite_assignments_not_completed, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
+            if assignment_details.get("secure_access_code") and not self.content.student_has_secure_assignment_access(course_id, assignment_id, self.get_current_user()):
+                return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="secured_assignment", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+
             confirmation_code = None
             needs_security_code = False
 

@@ -1,4 +1,4 @@
-FROM rust:1.68.1-slim-bullseye as builder
+FROM rust:1.83-slim-bookworm AS builder
 
 WORKDIR /app
 
@@ -15,8 +15,9 @@ COPY Cargo.toml /app/myapp/
 # Pre-fetch the dependencies
 RUN cargo fetch
 
-RUN apt-get -o Acquire::Check-Valid-Until=false update \
- && apt-get install python3 -y
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 \
+ && rm -rf /var/lib/apt/lists/*
 
 ADD *.py /
 ADD *.sh /

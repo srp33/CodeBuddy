@@ -70,7 +70,6 @@
                 });
 
                 $("#time_remaining_button").addClass("is-hidden");
-                $("#confirmation_code").addClass("is-hidden");
 
                 for (let i = 0; i < num_exercises; i++) {
                     $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
@@ -84,10 +83,6 @@
                 $("#timer_button").addClass("is-hidden");
                 $("#time_remaining_button").addClass("is-hidden");
 
-                {% if assignment_details["require_security_codes"] == 2 %}
-                    $("#confirmation_code").removeClass("is-hidden");
-                {% end %}
-
                 for (let i = 0; i < num_exercises; i++) {
                     $(`#exercise_title_${i}_no_link`).removeClass("is-hidden");
                     $(`#exercise_title_${i}_link`).addClass("is-hidden");
@@ -97,16 +92,10 @@
             if (timer_status == "timer_in_progress") {
                 message = "The timer has started. Click on the \"End assignment\" button when you have completed the assignment (or wish to end it early).";
 
-                {% if assignment_details["require_security_codes"] == 2 %}
-                    message += " You will receive a confirmation code when you end the assignment.";
-                {% end %}
-
                 $("#timer_button")[0].innerText = "End assignment";
                 $("#timer_button").removeClass("is-primary");
                 $("#timer_button").addClass("is-warning");
                 $("#timer_button").removeClass("is-hidden");
-
-                $("#confirmation_code").addClass("is-hidden");
 
                 $("#time_remaining_button").removeClass("is-hidden");                        
                 $("#timer_button").click(function() {

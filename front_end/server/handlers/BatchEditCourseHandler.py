@@ -94,14 +94,7 @@ class BatchEditCourseHandler(BaseUserHandler):
                             continue
 
                     elif field == "require_security_codes":
-                        try:
-                            value = int(value)
-                            if value not in [0, 1, 2]:
-                                errors.append("Invalid value for require security codes.")
-                                continue
-                        except (ValueError, TypeError):
-                            errors.append("Invalid value for require security codes.")
-                            continue
+                        value = True if value == "Yes" else False
 
                     elif field in ("allow_students_view_submissions", "show_run_button", "support_questions"):
                         value = True if value == "Yes" else False

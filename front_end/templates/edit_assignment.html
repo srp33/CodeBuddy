@@ -6,6 +6,7 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="/static/qrcode.min.js"></script>
 
 <div class="row-container is-hidden" id="edit_header">
     <h4>Edit assignment</h4>
@@ -391,20 +392,79 @@
         </div>
     </div>
 
+    <div id="remove_secure_assignment_modal" class="modal is-clipped">
+        <div class="modal-background">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <span class="modal-card-title is-size-5 has-text-centered has-text-weight-bold">Remove QR / short-link security</span>
+                    <button class="delete" aria-label="close" id="remove_secure_assignment_modal_close"></button>
+                </header>
+
+                <section class="modal-card-body">
+                    <p>Remove secure access for this assignment? Students who previously unlocked it will need to unlock it again if you re-enable security later.</p>
+                </section>
+
+                <footer class="modal-card-foot">
+                    <button class="button is-warning" id="remove_secure_assignment_modal_confirm">Remove security</button>
+                    <button class="button" id="remove_secure_assignment_modal_cancel">Cancel</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
     <div class="shadow-box">
         <p>
-            <strong>Require security codes to access this assignment: </strong><br />You can require that each student provide a security code before they access the assignment. Typically, this option is used when you want to ensure students complete an assignment in a particular physical location (often used for exams or quizzes). Additionally, when they complete the assignment, a confirmation code can be provided. You can require that students provide this code as they leave the physical location where they completed the assignment (exam/quiz). After an assignment is created, you can <strong><a href="/generate_security_codes/{{ course_basics['id'] }}{% if assignment_basics['exists'] and assignment_basics['id'] %}?assignment_id={{ assignment_basics['id'] }}{% end %}">generate security codes</a></strong> or <strong><a href="/view_security_codes/{{ course_basics['id'] }}/{% if assignment_basics['exists'] and assignment_basics['id'] %}{{ assignment_basics['id'] }}{% else %}null{% end %}">view students' security codes</a></strong>.
+            You can use <em>either</em> security/confirmation codes <em>or</em> a QR code / short link, or neither. Do not enable both for the same assignment; they are alternative ways to control access in a proctored setting.
+        </p>
+
+        <p class="mt-5">
+            <strong>Require security and confirmation codes: </strong><br />
+            When enabled, each student must enter a unique security code before accessing the assignment. If the assignment is also timed, a confirmation code is shown only after the student ends the assignment (or the timer expires); they can give that code to a proctor when leaving. On assignments without a timer, confirmation codes are not shown. After saving the assignment, <strong><a href="/generate_security_codes/{{ course_basics['id'] }}{% if assignment_basics['exists'] and assignment_basics['id'] %}?assignment_id={{ assignment_basics['id'] }}{% end %}">generate security codes</a></strong> or <strong><a href="/view_security_codes/{{ course_basics['id'] }}/{% if assignment_basics['exists'] and assignment_basics['id'] %}{{ assignment_basics['id'] }}{% else %}null{% end %}">view students' security codes</a></strong>. Use this <em>or</em> the QR / short-link option below, not both.
         </p>
 
         <p>
             <div class="select is-grey">
                 <select id="require_security_codes" class="edit-select">
-                    <option value="0">No</option>
-                    <option value="1">Yes - Security codes only</option>
-                    <option value="2">Yes - Security and confirmation codes</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
                 </select>
             </div>
         </p>
+
+        <p class="mt-5">
+            <strong>Secure this assignment with a QR code or short link: </strong><br />
+            When enabled, students must unlock the assignment by scanning a QR code or opening a short secure link before they can access it. After unlocking once, they can use any device on which they are logged in.
+            {% if not assignment_basics["exists"] %}
+                <br /><em>Save the assignment first to enable this option.</em>
+            {% end %}
+        </p>
+
+        <div id="secure_assignment_enable_wrap" class="mt-3">
+            <button type="button" class="button is-primary is-outlined" id="secure_assignment_enable_button" {% if not assignment_basics["exists"] %}disabled{% end %}>Require a QR code or secure link</button>
+        </div>
+
+        <div id="secure_assignment_enabled_panel" class="secure-assignment-enabled-panel is-hidden mt-3">
+            <div class="columns is-mobile is-multiline is-variable is-5">
+                <div class="column is-narrow">
+                    <div id="secure_assignment_qr" class="secure-assignment-qr" aria-label="Secure access QR code"></div>
+                    <p class="mt-2 mb-0">
+                        <button type="button" class="button" id="secure_assignment_copy_qr_button">Copy QR code</button>
+                    </p>
+                </div>
+                <div class="column">
+                    <a id="secure_assignment_url" class="secure-assignment-url" href="#" target="_blank" rel="noopener noreferrer"></a>
+                    <p class="mt-2 mb-0">
+                        <button type="button" class="button" id="secure_assignment_copy_link_button">Copy URL</button>
+                    </p>
+                </div>
+            </div>
+
+            <p class="mt-4 mb-0">
+                <button type="button" class="button is-warning is-outlined" id="secure_assignment_disable_button">Remove QR / short-link security</button>
+            </p>
+        </div>
+
+        <div id="secure_assignment_status" class="secure-assignment-toast is-hidden" role="status" aria-live="polite"></div>
 
         <p class="mt-5"><strong>Restrict access to the following IP addresses: </strong><br />If you would like to use this feature, specify one IP address per line. If left blank, the assignment will not be restricted by IP address.</p>
 
@@ -1053,7 +1113,7 @@ function setStudentEarlyExceptions() {
         let allowed_ip_addresses = getValue("allowed_ip_addresses");
         let allowed_external_urls = getValue("allowed_external_urls");
         let show_run_button = getValue("show_run_button") == "Yes";
-        let require_security_codes = parseInt(getValue("require_security_codes"));
+        let require_security_codes = getValue("require_security_codes") == "Yes";
         var support_questions = getValue("support_questions") == "Yes";
         let use_virtual_assistant = getValue("use_virtual_assistant");
         let allow_students_view_submissions = getValue("allow_students_view_submissions") == "Yes";
@@ -1250,8 +1310,188 @@ function setStudentEarlyExceptions() {
     setValue("show_run_button", assignment_details_obj["show_run_button"] ? "Yes" : "No");
 
     showCustomScoringRangesTable();
-    setValue("require_security_codes", assignment_details_obj["require_security_codes"]);
+    setValue("require_security_codes", assignment_details_obj["require_security_codes"] ? "Yes" : "No");
     setValue("support_questions", assignment_details_obj["support_questions"] ? "Yes" : "No");
     setValue("use_virtual_assistant", assignment_details_obj["use_virtual_assistant"]);
     setValue("allow_students_view_submissions", assignment_details_obj["allow_students_view_submissions"] ? "Yes" : "No");
+
+    function getSecureAccessUrl(code) {
+        return window.location.origin + "/s/" + code;
+    }
+
+    let secureAssignmentStatusTimeout = null;
+
+    function positionSecureAssignmentStatus(el, anchorEl) {
+        if (!anchorEl || !anchorEl.getBoundingClientRect) {
+            el.style.left = "";
+            el.style.top = "";
+            return;
+        }
+
+        const rect = anchorEl.getBoundingClientRect();
+        const gap = 6;
+        let left = rect.right + gap;
+        let top = rect.top - 4;
+
+        const elWidth = el.offsetWidth;
+        const elHeight = el.offsetHeight;
+
+        if (left + elWidth > window.innerWidth - 8) {
+            left = Math.max(8, rect.left - elWidth - gap);
+        }
+        if (top < 8) {
+            top = 8;
+        }
+        if (top + elHeight > window.innerHeight - 8) {
+            top = Math.max(8, window.innerHeight - elHeight - 8);
+        }
+
+        el.style.left = left + "px";
+        el.style.top = top + "px";
+    }
+
+    function showSecureAssignmentStatus(message, isError, variant, anchorEl) {
+        const el = document.getElementById("secure_assignment_status");
+        el.classList.remove("is-hidden", "is-error", "is-primary", "is-warning", "is-default", "is-fading");
+        if (isError) {
+            el.classList.add("is-error");
+        } else {
+            el.classList.add(variant || "is-default");
+        }
+        el.textContent = message;
+        positionSecureAssignmentStatus(el, anchorEl);
+
+        if (secureAssignmentStatusTimeout) {
+            clearTimeout(secureAssignmentStatusTimeout);
+        }
+
+        secureAssignmentStatusTimeout = setTimeout(function() {
+            el.classList.add("is-fading");
+            setTimeout(function() {
+                el.classList.add("is-hidden");
+                el.classList.remove("is-fading");
+                el.style.left = "";
+                el.style.top = "";
+            }, 300);
+        }, 3000);
+    }
+
+    function hideSecureAssignmentStatus() {
+        const el = document.getElementById("secure_assignment_status");
+        if (secureAssignmentStatusTimeout) {
+            clearTimeout(secureAssignmentStatusTimeout);
+            secureAssignmentStatusTimeout = null;
+        }
+        el.classList.add("is-hidden");
+        el.classList.remove("is-fading");
+        el.style.left = "";
+        el.style.top = "";
+    }
+
+    let secureAssignmentAccessUrl = null;
+
+    function renderSecureAssignmentQr(url) {
+        const container = document.getElementById("secure_assignment_qr");
+        container.innerHTML = "";
+        new QRCode(container, {
+            text: url,
+            width: 120,
+            height: 120,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+
+    function setSecureAssignmentUi(code, url) {
+        const enableWrap = document.getElementById("secure_assignment_enable_wrap");
+        const enabledPanel = document.getElementById("secure_assignment_enabled_panel");
+        const urlEl = document.getElementById("secure_assignment_url");
+
+        if (!code) {
+            enableWrap.classList.remove("is-hidden");
+            enabledPanel.classList.add("is-hidden");
+            secureAssignmentAccessUrl = null;
+            document.getElementById("secure_assignment_qr").innerHTML = "";
+            urlEl.textContent = "";
+            urlEl.removeAttribute("href");
+            return;
+        }
+
+        secureAssignmentAccessUrl = url || getSecureAccessUrl(code);
+        enableWrap.classList.add("is-hidden");
+        enabledPanel.classList.remove("is-hidden");
+        urlEl.textContent = secureAssignmentAccessUrl;
+        urlEl.setAttribute("href", secureAssignmentAccessUrl);
+        renderSecureAssignmentQr(secureAssignmentAccessUrl);
+    }
+
+    function postSecureAssignmentAction(action) {
+        {% if assignment_basics["exists"] and assignment_basics["id"] %}
+        $.ajax({
+            type: "POST",
+            url: "/secure_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+            data: JSON.stringify({action: action}),
+            contentType: "application/json",
+            async: true
+        }).done(function(data) {
+            const json_data = typeof data === "string" ? JSON.parse(data) : data;
+            if (json_data["message"]) {
+                return;
+            }
+            assignment_details_obj["secure_access_code"] = json_data["secure_access_code"];
+            setSecureAssignmentUi(json_data["secure_access_code"], json_data["secure_access_url"]);
+        });
+        {% end %}
+    }
+
+    $("#secure_assignment_enable_button").click(function() {
+        postSecureAssignmentAction("enable");
+    });
+
+    function closeRemoveSecureAssignmentModal() {
+        $("#remove_secure_assignment_modal").removeClass("is-active");
+    }
+
+    $("#secure_assignment_disable_button").click(function() {
+        $("#remove_secure_assignment_modal").addClass("is-active");
+    });
+
+    $("#remove_secure_assignment_modal_cancel").click(closeRemoveSecureAssignmentModal);
+    $("#remove_secure_assignment_modal_close").click(closeRemoveSecureAssignmentModal);
+
+    $("#remove_secure_assignment_modal_confirm").click(function() {
+        closeRemoveSecureAssignmentModal();
+        postSecureAssignmentAction("disable");
+    });
+
+    $("#secure_assignment_copy_link_button").click(async function() {
+        if (!secureAssignmentAccessUrl) {
+            showSecureAssignmentStatus("The URL is not ready yet.", true, "is-default", this);
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(secureAssignmentAccessUrl);
+            showSecureAssignmentStatus("URL copied to the clipboard.", false, "is-default", this);
+        } catch (e) {
+            showSecureAssignmentStatus("Unable to copy the URL automatically. Please try again.", true, "is-default", this);
+        }
+    });
+
+    $("#secure_assignment_copy_qr_button").click(async function() {
+        const canvas = document.querySelector("#secure_assignment_qr canvas");
+        if (!canvas) {
+            showSecureAssignmentStatus("The QR code is not ready yet.", true, "is-default", this);
+            return;
+        }
+        try {
+            const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+            await navigator.clipboard.write([new ClipboardItem({"image/png": blob})]);
+            showSecureAssignmentStatus("QR code image copied to the clipboard.", false, "is-default", this);
+        } catch (e) {
+            showSecureAssignmentStatus("Unable to copy the QR code image. Try copying the short link instead.", true, "is-default", this);
+        }
+    });
+
+    if (assignment_details_obj["secure_access_code"]) {
+        setSecureAssignmentUi(assignment_details_obj["secure_access_code"]);
+    }
 </script>

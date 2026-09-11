@@ -238,11 +238,16 @@ class BaseUserHandler(BaseRequestHandler):
             self.render("unavailable_assignment.html", courses=courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_uncompleted", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
 
             return False
-        
+
+        if assignment_details.get("secure_access_code"):
+            user_id = self.get_current_user()
+            if not self.content.student_has_secure_assignment_access(course_id, assignment_id, user_id):
+                self.render("unavailable_assignment.html", courses=courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="secured_assignment", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                return False
+
         if assignment_details["require_security_codes"]:
             if not self.content.has_verified_security_code(course_id, assignment_id, self.get_current_user()):
                 self.render("verify_security_code.html", courses=self.courses, course_basics=course_basics, assignment_basics=assignment_basics, assignments=assignment_statuses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
-
                 return False
 
         if assignment_details["has_timer"]:

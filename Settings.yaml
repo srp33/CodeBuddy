@@ -29,8 +29,8 @@ db_journal_mode: "OFF"
 # Indicate the hour of the day in 24-hour time (examples: 00 or 01 or 02 ... or 23) when the database should be backed up. On this hour, the log files are also summarized. Backups only occur when db_journal_mode is set to OFF.
 backup_hour: 04
 # Provide the name of an SMTP server that accepts requests to send outgoing email. Use an empty string if you do not plan to send emails.
-smtp_server: ""
+smtp_server: "test.university.edu"
 # Provide the port number for the SMTP server (if one is provided).
-smtp_port: ""
+smtp_port: "587"
 # Indicate the message that will be displayed to students about accommodation requests.
 accommodation_request_message: "In most cases, these requests are made by students who have met with the University Accessibility Center (UAC) to discuss their accessibility needs and then have submitted a formal request to the instructor regarding these needs. However, other students may also request an accommodation for other reasons, such as an illness, travel for a university-sponsored event, etc."

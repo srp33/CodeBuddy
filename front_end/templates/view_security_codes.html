@@ -9,7 +9,7 @@
         <h4>View security codes for {{ course_basics["title"] }}</h4>
 
         <p>
-            Use this page to view security codes that you have already generated for a particular assignment. You can also verify confirmation codes for students who have submitted them. If you have not yet generated security codes for an assignment, you do that <a href="/generate_security_codes/{{ course_basics['id'] }}">here</a>.
+            Use this page to view security codes that you have already generated for a particular assignment and to check students' confirmation codes. Confirmation codes are only shown to students on timed assignments after they end the assignment (or the timer expires). If you have not yet generated security codes for an assignment, do that <a href="/generate_security_codes/{{ course_basics['id'] }}">here</a>. Generating codes again replaces any existing codes for that assignment.
         </p>
 
         <div class="notification is-danger is-hidden" id="result_message"></div>

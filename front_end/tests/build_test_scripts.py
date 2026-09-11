@@ -50,8 +50,6 @@ excluded_handler_prefixes = [
     "Base",
     "GoogleLogin",
     "CASLogin",
-    "LtiLogin",
-    "LtiLaunch"
 ]
 handler_file_paths = [
     x for x in handler_file_paths

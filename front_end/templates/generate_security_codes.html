@@ -18,8 +18,6 @@
                 const small_header = getValue("small_header").trim();
                 const top_message = getValue("top_message").trim();
                 const bottom_message = getValue("bottom_message").trim();
-                const make_distinct = getValue("make_distinct") == "Yes";
-                const overwrite_existing = getValue("overwrite_existing") == "Yes";
 
                 if (selected_assignments_ids.length == 0) {
                     return(showResultMessage("You must select at least one assignment.", "danger"));
@@ -50,9 +48,7 @@
                     "large_header": large_header,
                     "small_header": small_header,
                     "top_message": top_message,
-                    "bottom_message": bottom_message,
-                    "make_distinct": make_distinct,
-                    "overwrite_existing": overwrite_existing
+                    "bottom_message": bottom_message
                 }
 
                 $.ajax({
@@ -137,7 +133,7 @@
         <div class="notification is-danger is-hidden" id="result_message"></div>
 
         <p>
-            Use this page to generate a PDF file that has security codes and explains to students how to use them. Each security code will be displayed on a separate page within the PDF. When applicable, each page will include boxes for a student to enter their confirmation code.
+            Use this page to generate a PDF of unique security codes for students. Each page includes one security code and blank boxes for a confirmation code. Confirmation codes are only shown to students when the assignment is timed and they have ended it (or the timer has expired); otherwise they are ignored. Generating codes for an assignment replaces any codes previously generated for that assignment.
         </p>
 
         <p>
@@ -148,7 +144,7 @@
             <p><strong>Select assignment(s): </strong></p>
 
             <p>
-                Here you may select assignment(s) for which to generate security codes. If you select multiple assignments, a separate page will be generated for each assignment and student. A security code is not tied to any particular student (until a student uses it), so you can hand out the pages in any order.
+                Select one or more assignments that require security codes. If you select multiple assignments, the PDF includes a separate page for each assignment and each registered student. A security code is not tied to a particular student until they use it, so you can hand out the pages in any order.
             </p>
 
             <div class="buttons">
@@ -169,41 +165,17 @@
         </div>
 
         <div class="has-background-white p-4 mb-4">
-            <p><strong>Large header: </strong><br />Any text specified here will be shown in large, bold font at the top of each page. This header is optional. It has a maximum length of 50 characters.</p>
+            <p><strong>Large header: </strong><br />Optional text shown in large, bold font at the top of each page (maximum = 50 characters).</p>
             <p><textarea id="large_header" class="textarea is-grey is-medium monospace" placeholder="The header text goes here." rows="1"></textarea></p>
 
-            <p><strong>Small header: </strong><br />Each page of the PDF will have a header that uses a regular-sized, bold font. The first part of the header will be the assignment name. You can append text to the end of this header (maximum = 50 characters).</p>
+            <p><strong>Small header: </strong><br />Each page includes a regular-sized bold header that starts with the assignment name. You can append additional text (maximum = 50 characters).</p>
             <p><textarea id="small_header" class="textarea is-grey is-medium monospace" placeholder="The header text goes here." rows="1"></textarea></p>
 
-            <p><strong>Top message*: </strong><br />Text specified here will be shown in a regular-sized font below the small header and above the security code. Use this section to explain how students should use the security code. This message is required (maximum = 500 characters).</p>
+            <p><strong>Top message*: </strong><br />Required text shown below the small header and above the security code. Use this to explain how students should enter the security code (maximum = 1000 characters).</p>
             <p><textarea id="top_message" class="textarea is-grey is-medium monospace" placeholder="The message goes here." rows="6">When you begin the assignment, you will be asked to enter this security code. All letters are upper case.</textarea></p>
 
-            <p><strong>Bottom message: </strong><br />This message is used only when confirmation codes are required. Any text specified here will be shown in a regular-sized font below the security code and above the empty boxes for the confirmation code. You can use this section to explain how the confirmation codes are used. This message is optional (maximum = 500 characters).</p>
-            <p><textarea id="bottom_message" class="textarea is-grey is-medium monospace" placeholder="The message goes here." rows="6">After ending the assignment, you will be given a 4-digit confirmation code. Write that code in the boxes below. Then give the printed form to the proctor.</textarea></p>
-        </div>
-
-        <div class="has-background-white p-4 mt-4">
-            <p><strong>Make codes distinct for each student: </strong><br />By default, a unique code is generated for each student for each specified assignment. Here you can indicate that only a single code per assignment is generated (the code will be the same for all students). This option is sometimes used for in-class quizzes. (If you use confirmation codes, they will always be distinct for each student.)</p>
-
-            <div class="select is-grey">
-                <select id="make_distinct" class="edit-select">
-                    <option value="No">No</option>
-                    <option value="Yes" selected>Yes</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="has-background-white p-4 mt-4">
-            <p>
-                <strong>Overwrite existing codes: </strong><br />If you previously generated security codes for the selected assignment(s), new codes can be generated to overwrite those existing codes (the old ones will be valid). Select "Yes" if you would like to overwrite any existing codes.
-            </p>
-
-            <div class="select is-grey">
-                <select id="overwrite_existing" class="edit-select">
-                    <option value="No">No</option>
-                    <option value="Yes" selected>Yes</option>
-                </select>
-            </div>
+            <p><strong>Bottom message: </strong><br />Optional text shown below the security code and above the confirmation-code boxes. Use this for timed assignments where students write their confirmation code after the timer ends (maximum = 500 characters).</p>
+            <p><textarea id="bottom_message" class="textarea is-grey is-medium monospace" placeholder="The message goes here." rows="6">After the timed assignment ends, you will be given a 4-digit confirmation code. Write that code in the boxes below. Then give the printed form to the proctor.</textarea></p>
         </div>
 
         <div class="has-background-white p-4 mt-4">

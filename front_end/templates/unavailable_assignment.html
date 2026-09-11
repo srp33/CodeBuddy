@@ -49,6 +49,10 @@
                 <div class="notification is-danger">This assignment can only be completed from computers that have an allowed IP address. The IP address for this computer does not match any of the allowed addresses. Please consult the instructor for additional instructions.</div>
             {% elif error == "not_registered_for_course" %}
                 <div class="notification is-danger">This assignment can only be viewed by students enrolled in the course.</div>
+            {% elif error == "secured_assignment" %}
+                <div class="notification is-warning is-light">
+                    This assignment is secured. Your instructor will provide instructions for how to unlock it (for example, by scanning a QR code or opening a short secure link). Once you have unlocked it, you will be able to access the assignment from any device.
+                </div>
             {% elif error == "prerequisite_assignments_not_completed" %}
                 <div class="notification is-danger">
                     The following assignment(s) must be fully completed be you can start this assignment:

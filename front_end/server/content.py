@@ -452,121 +452,79 @@ class Content:
 
         self.execute(sql, (course_id, assignment_id, user_id))
 
-    def get_lti_registration(self, issuer, client_id):
-        sql = '''SELECT registration_id, platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url
-                 FROM lti_registrations
-                 WHERE issuer = ?
-                   AND client_id = ?'''
-        return self.fetchone(sql, (issuer, client_id))
+    def generate_secure_access_code(self):
+        # Avoid characters that are easy to confuse: 0/O, 1/I/L.
+        characters = [c for c in string.ascii_uppercase if c not in {"I", "L", "O"}]
+        characters.extend([str(i) for i in range(2, 10)])
 
-    def get_lti_registration_by_id(self, registration_id):
-        sql = '''SELECT registration_id, platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url
-                 FROM lti_registrations
-                 WHERE registration_id = ?'''
-        return self.fetchone(sql, (registration_id,))
+        for _ in range(100):
+            code = "".join(secrets.choice(characters) for _ in range(4))
+            existing = self.fetchone(
+                '''SELECT 1 FROM assignments WHERE secure_access_code = ?''',
+                (code,),
+            )
+            if not existing:
+                return code
 
-    def lti_deployment_exists(self, registration_id, deployment_id):
+        raise Exception("Unable to generate a unique secure access code.")
+
+    def enable_assignment_secure_access(self, course_id, assignment_id):
+        existing = self.fetchone(
+            '''SELECT secure_access_code
+               FROM assignments
+               WHERE course_id = ?
+                 AND assignment_id = ?''',
+            (course_id, assignment_id),
+        )
+        if existing and existing["secure_access_code"]:
+            return existing["secure_access_code"]
+
+        code = self.generate_secure_access_code()
+        self.execute(
+            '''UPDATE assignments
+               SET secure_access_code = ?, date_updated = ?
+               WHERE course_id = ?
+                 AND assignment_id = ?''',
+            (code, format_datetime_for_db(get_current_datetime()), course_id, assignment_id),
+        )
+        self.update_when_content_updated(course_id)
+        return code
+
+    def disable_assignment_secure_access(self, course_id, assignment_id):
+        self.execute(
+            '''UPDATE assignments
+               SET secure_access_code = NULL, date_updated = ?
+               WHERE course_id = ?
+                 AND assignment_id = ?''',
+            (format_datetime_for_db(get_current_datetime()), course_id, assignment_id),
+        )
+        self.execute(
+            '''DELETE FROM assignment_secure_authorizations
+               WHERE course_id = ?
+                 AND assignment_id = ?''',
+            (course_id, assignment_id),
+        )
+        self.update_when_content_updated(course_id)
+
+    def get_assignment_by_secure_access_code(self, code):
+        sql = '''SELECT course_id, assignment_id, title, secure_access_code
+                 FROM assignments
+                 WHERE secure_access_code = ?'''
+        return self.fetchone(sql, (code,))
+
+    def student_has_secure_assignment_access(self, course_id, assignment_id, user_id):
         sql = '''SELECT 1
-                 FROM lti_deployments
-                 WHERE registration_id = ?
-                   AND deployment_id = ?
-                   AND is_active = 1'''
-        return self.fetchone(sql, (registration_id, deployment_id)) is not None
+                 FROM assignment_secure_authorizations
+                 WHERE course_id = ?
+                   AND assignment_id = ?
+                   AND user_id = ?'''
+        return self.fetchone(sql, (course_id, assignment_id, user_id)) is not None
 
-    def create_lti_launch_state(self, state, nonce, registration_id, target_link_uri, expires_at):
-        sql = '''INSERT INTO lti_launch_state (state, nonce, registration_id, target_link_uri, expires_at)
-                 VALUES (?, ?, ?, ?, ?)'''
-        self.execute(sql, (state, nonce, registration_id, target_link_uri, expires_at))
-
-    def consume_lti_launch_state(self, state):
-        sql = '''SELECT state, nonce, registration_id, target_link_uri, expires_at, used_at
-                 FROM lti_launch_state
-                 WHERE state = ?'''
-        row = self.fetchone(sql, (state,))
-
-        if not row:
-            return None
-
-        if row["used_at"] is not None:
-            return None
-
-        sql = '''UPDATE lti_launch_state
-                 SET used_at = datetime('now')
-                 WHERE state = ?'''
-        self.execute(sql, (state,))
-
-        return row
-
-    def get_lti_user_link(self, deployment_id, lti_sub):
-        sql = '''SELECT user_id
-                 FROM lti_user_links
-                 WHERE deployment_id = ?
-                   AND lti_sub = ?'''
-        row = self.fetchone(sql, (deployment_id, lti_sub))
-        if row:
-            return row["user_id"]
-        return None
-
-    def upsert_lti_user_link(self, deployment_id, lti_sub, user_id):
-        sql = '''INSERT INTO lti_user_links (deployment_id, lti_sub, user_id)
+    def authorize_secure_assignment_access(self, course_id, assignment_id, user_id):
+        sql = '''INSERT INTO assignment_secure_authorizations (course_id, assignment_id, user_id)
                  VALUES (?, ?, ?)
-                 ON CONFLICT(deployment_id, lti_sub)
-                 DO UPDATE SET user_id = excluded.user_id,
-                               updated_at = CURRENT_TIMESTAMP'''
-        self.execute(sql, (deployment_id, lti_sub, user_id))
-
-    def get_lti_registrations(self):
-        sql = '''SELECT registration_id, platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url, created_at, updated_at
-                 FROM lti_registrations
-                 ORDER BY platform_name, registration_id'''
-        return self.fetchall(sql)
-
-    def get_lti_deployments_by_registration(self, registration_id):
-        sql = '''SELECT deployment_id, registration_id, is_active, created_at
-                 FROM lti_deployments
-                 WHERE registration_id = ?
-                 ORDER BY deployment_id'''
-        return self.fetchall(sql, (registration_id,))
-
-    def add_lti_registration(self, platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url):
-        sql = '''INSERT INTO lti_registrations (platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url)
-                 VALUES (?, ?, ?, ?, ?, ?)'''
-        return self.execute(sql, (platform_name, issuer, client_id, auth_login_url, auth_token_url, key_set_url))
-
-    def add_lti_deployment(self, registration_id, deployment_id):
-        sql = '''INSERT INTO lti_deployments (deployment_id, registration_id, is_active)
-                 VALUES (?, ?, 1)'''
-        self.execute(sql, (deployment_id, registration_id))
-
-    def set_lti_deployment_active(self, deployment_id, is_active):
-        sql = '''UPDATE lti_deployments
-                 SET is_active = ?
-                 WHERE deployment_id = ?'''
-        self.execute(sql, (is_active, deployment_id))
-
-    def get_lti_resource_links(self):
-        sql = '''SELECT deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url, created_at, updated_at
-                 FROM lti_resource_links
-                 ORDER BY deployment_id, context_id, resource_link_id'''
-        return self.fetchall(sql)
-
-    def get_lti_resource_link(self, deployment_id, context_id, resource_link_id):
-        sql = '''SELECT deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url, created_at, updated_at
-                 FROM lti_resource_links
-                 WHERE deployment_id = ?
-                   AND context_id = ?
-                   AND resource_link_id = ?'''
-        return self.fetchone(sql, (deployment_id, context_id, resource_link_id))
-
-    def upsert_lti_resource_link(self, deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url):
-        sql = '''INSERT INTO lti_resource_links (deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url)
-                 VALUES (?, ?, ?, ?, ?, ?)
-                 ON CONFLICT(deployment_id, context_id, resource_link_id)
-                 DO UPDATE SET course_id = excluded.course_id,
-                               assignment_id = excluded.assignment_id,
-                               lineitem_url = excluded.lineitem_url,
-                               updated_at = CURRENT_TIMESTAMP'''
-        self.execute(sql, (deployment_id, context_id, resource_link_id, course_id, assignment_id, lineitem_url))
+                 ON CONFLICT(course_id, assignment_id, user_id) DO NOTHING'''
+        self.execute(sql, (course_id, assignment_id, user_id))
 
     def user_exists(self, user_id):
         sql = '''SELECT user_id
@@ -1801,7 +1759,7 @@ ORDER BY student_name
             assignments2.append([assignment["id"], assignment["assignment_group_title"], assignment])
 
         return assignments2
-    
+
     def get_secure_assignments(self, course_id, candidate_assignment_ids=None):
         sql = '''SELECT assignment_id, title, require_security_codes
                  FROM assignments a
@@ -1818,14 +1776,14 @@ ORDER BY student_name
               assignments_dict[row["title"]] = {"id": assignment_id, "require_security_codes": row["require_security_codes"]}
 
         return assignments_dict
-    
-    def save_security_codes(self, course_id, selected_assignment_ids, overwrite_existing, student_count, make_distinct):
+
+    def save_security_codes(self, course_id, selected_assignment_ids, student_count):
         characters_per_segment = 4
         num_segments = 3
         delimiter = " "
 
-        # This will be used when make_distinct is True.
-        security_code = generate_unique_id(characters_per_segment, num_segments, delimiter)
+        if student_count < 1:
+            raise Exception("At least one student must be registered before generating security codes.")
 
         sql_statements = []
         param_lists = []
@@ -1841,64 +1799,81 @@ ORDER BY student_name
         for assignment_id in selected_assignment_ids:
             assignment_security_code_dict[assignment_id] = []
 
-            existing_security_codes = self.get_security_codes(course_id, assignment_id)
+            sql_statements.append(sql_delete)
+            param_lists.append([course_id, assignment_id])
 
-            if len(existing_security_codes) == 0 or overwrite_existing:
-                sql_statements.append(sql_delete)
-                param_lists.append([course_id, assignment_id])
+            used_security_codes = set()
+            used_confirmation_codes = set()
 
-                security_code = generate_unique_id(characters_per_segment, num_segments, delimiter)
+            for _ in range(student_count):
+                security_code = None
+                for _attempt in range(100):
+                    candidate = generate_unique_id(characters_per_segment, num_segments, delimiter)
+                    normalized = candidate.replace(delimiter, "")
+                    if normalized not in used_security_codes:
+                        security_code = candidate
+                        used_security_codes.add(normalized)
+                        break
+                if security_code is None:
+                    raise Exception("Unable to generate a unique security code.")
 
-                for i in range(student_count):
-                    if make_distinct:
-                        security_code = generate_unique_id(characters_per_segment, num_segments, delimiter)
-                    
-                    confirmation_code = generate_unique_id(4, 1)
+                confirmation_code = None
+                for _attempt in range(100):
+                    candidate = generate_unique_id(4, 1)
+                    if candidate not in used_confirmation_codes:
+                        confirmation_code = candidate
+                        used_confirmation_codes.add(candidate)
+                        break
+                if confirmation_code is None:
+                    raise Exception("Unable to generate a unique confirmation code.")
 
-                    sql_statements.append(sql_insert)
-                    param_lists.append([course_id, assignment_id, security_code.replace(delimiter, ""), confirmation_code])
-
-                    assignment_security_code_dict[assignment_id].append([security_code, confirmation_code])
-            else:
-                for x in existing_security_codes:
-                  assignment_security_code_dict[assignment_id].append([split_str_by_positions(x["security_code"], characters_per_segment, delimiter), x["confirmation_code"]])
+                sql_statements.append(sql_insert)
+                param_lists.append([course_id, assignment_id, security_code.replace(delimiter, ""), confirmation_code])
+                assignment_security_code_dict[assignment_id].append([security_code, confirmation_code])
 
         self.execute_multiple(sql_statements, param_lists)
 
         return assignment_security_code_dict
 
+    def _normalize_security_code(self, security_code):
+        if security_code is None:
+            return ""
+        return "".join(str(security_code).split()).upper()
+
     def verify_security_code(self, course_id, assignment_id, security_code, student_id):
-        # 1. Make sure the user has not already verified.
-        # 2. Get the rowid associated with the row to insert. The instructor can specify that the same security code is used for all students, so we have to do it this way.
-        # 3. Update the identified row.
-        # 4. Because these are executed in 2 separate steps, it is possible that the row could be updated for a different user between the two steps, so we need to check that.
+        # Claim an unused row that matches the security code. Retry once in case of a rare race.
 
         if self.has_verified_security_code(course_id, assignment_id, student_id):
             return -1
 
-        sql = '''
-            WITH RowToUpdate AS (
-                SELECT rowid
-                FROM security_codes
-                WHERE course_id = ?
-                  AND assignment_id = ?
-                  AND security_code = ?
-                AND student_id IS NULL
-                LIMIT 1
-            )
+        security_code = self._normalize_security_code(security_code)
+        if not security_code:
+            return False
 
-            UPDATE security_codes
-            SET student_id = ?
-            WHERE rowid = (SELECT rowid FROM RowToUpdate)
-              AND student_id IS NULL'''
-
-        self.execute(sql, (course_id, assignment_id, security_code, student_id))
-
-        if not self.has_verified_security_code(course_id, assignment_id, student_id):
+        def claim_unused_slot():
+            sql = '''
+                WITH RowToUpdate AS (
+                    SELECT rowid
+                    FROM security_codes
+                    WHERE course_id = ?
+                      AND assignment_id = ?
+                      AND security_code = ?
+                      AND student_id IS NULL
+                    LIMIT 1
+                )
+                UPDATE security_codes
+                SET student_id = ?
+                WHERE rowid = (SELECT rowid FROM RowToUpdate)
+                  AND student_id IS NULL'''
             self.execute(sql, (course_id, assignment_id, security_code, student_id))
 
+        claim_unused_slot()
+        if self.has_verified_security_code(course_id, assignment_id, student_id):
+            return True
+
+        claim_unused_slot()
         return self.has_verified_security_code(course_id, assignment_id, student_id) is not None
-    
+
     def has_verified_security_code(self, course_id, assignment_id, student_id):
         sql = '''SELECT confirmation_code
                  FROM security_codes
@@ -1939,18 +1914,6 @@ ORDER BY student_name
         result = self.fetchone(sql, (course_id, assignment_id, student_id))
         if result:
             return split_str_by_positions(result["security_code"], 4, " ")
-
-        # Fall back to a uniform code (same for all students, none yet claimed).
-        sql_all = '''SELECT security_code
-                     FROM security_codes
-                     WHERE course_id = ?
-                       AND assignment_id = ?'''
-
-        rows = self.fetchall(sql_all, (course_id, assignment_id))
-        if rows:
-            codes = {row["security_code"] for row in rows}
-            if len(codes) == 1:
-                return split_str_by_positions(rows[0]["security_code"], 4, " ")
 
         return None
 
@@ -2075,12 +2038,12 @@ ORDER BY student_name
         return out
 
     def get_assignment_details(self, course_basics, assignment_id):
-        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": "", "show_run_button": True, "custom_scoring": "", "require_security_codes": 0, "prerequisite_assignment_ids": [], "student_early_exceptions": [], "student_late_exceptions": [], "student_timer_exceptions": {}, "support_questions": False, "use_virtual_assistant": 0, "assignment_group_id": None, "allow_students_view_submissions": False}
+        null_assignment = {"introduction": "", "date_created": None, "date_updated": None, "start_date": None, "due_date": None, "allow_late": False, "late_percent": None, "view_answer_late": False, "has_timer": 0, "hour_timer": None, "minute_timer": None, "restrict_other_assignments": False, "allowed_ip_addresses": None, "allowed_external_urls": "", "show_run_button": True, "custom_scoring": "", "prerequisite_assignment_ids": [], "student_early_exceptions": [], "student_late_exceptions": [], "student_timer_exceptions": {}, "support_questions": False, "use_virtual_assistant": 0, "assignment_group_id": None, "allow_students_view_submissions": False, "require_security_codes": 0, "secure_access_code": None}
 
         if not assignment_id:
             return null_assignment
 
-        sql = '''SELECT a.introduction, a.date_created, a.date_updated, a.start_date, a.due_date, a.allow_late, a.late_percent, a.view_answer_late, a.allowed_ip_addresses, a.allowed_external_urls, a.show_run_button, a.custom_scoring, a.require_security_codes, a.support_questions, a.use_virtual_assistant, a.has_timer, a.hour_timer, a.minute_timer, a.restrict_other_assignments, a.allow_students_view_submissions, ag.assignment_group_id
+        sql = '''SELECT a.introduction, a.date_created, a.date_updated, a.start_date, a.due_date, a.allow_late, a.late_percent, a.view_answer_late, a.allowed_ip_addresses, a.allowed_external_urls, a.show_run_button, a.custom_scoring, a.support_questions, a.use_virtual_assistant, a.has_timer, a.hour_timer, a.minute_timer, a.restrict_other_assignments, a.require_security_codes, a.allow_students_view_submissions, a.secure_access_code, ag.assignment_group_id
                  FROM assignments a
                  LEFT JOIN assignment_groups ag
                    ON a.course_id = ag.course_id
@@ -2093,7 +2056,7 @@ ORDER BY student_name
         if not row:
             return null_assignment
 
-        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  localize_datetime(row["start_date"]), "due_date":  localize_datetime(row["due_date"]), "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "require_security_codes": row["require_security_codes"], "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_early_exceptions": self.get_student_early_exceptions(course_basics['id'], assignment_id), "student_late_exceptions": self.get_student_late_exceptions(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "support_questions": row["support_questions"], "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "assignment_group_id": row["assignment_group_id"], "allow_students_view_submissions": bool(row["allow_students_view_submissions"])}
+        assignment_dict = {"introduction": row["introduction"], "date_created": row["date_created"], "date_updated": row["date_updated"], "start_date":  localize_datetime(row["start_date"]), "due_date":  localize_datetime(row["due_date"]), "allow_late": row["allow_late"], "late_percent": row["late_percent"], "view_answer_late": row["view_answer_late"], "allowed_ip_addresses": row["allowed_ip_addresses"], "allowed_external_urls": row["allowed_external_urls"], "show_run_button": row["show_run_button"], "custom_scoring": row["custom_scoring"] if row["custom_scoring"] else "", "prerequisite_assignment_ids": self.get_prerequisite_assignment_ids(course_basics['id'], assignment_id), "student_early_exceptions": self.get_student_early_exceptions(course_basics['id'], assignment_id), "student_late_exceptions": self.get_student_late_exceptions(course_basics['id'], assignment_id), "student_timer_exceptions": self.get_student_timer_exceptions(row["has_timer"], course_basics['id'], assignment_id), "support_questions": row["support_questions"], "use_virtual_assistant": row["use_virtual_assistant"], "has_timer": row["has_timer"], "hour_timer": row["hour_timer"], "minute_timer": row["minute_timer"], "restrict_other_assignments": row["restrict_other_assignments"], "assignment_group_id": row["assignment_group_id"], "allow_students_view_submissions": bool(row["allow_students_view_submissions"]), "require_security_codes": row["require_security_codes"], "secure_access_code": row["secure_access_code"]}
 
         if assignment_dict["allowed_ip_addresses"]:
             assignment_dict["allowed_ip_addresses_list"] = assignment_dict["allowed_ip_addresses"].split("\n")
@@ -3039,8 +3002,11 @@ ORDER BY student_name
         self.execute('''DELETE FROM assignment_timer_exceptions
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
-        
+
         self.execute('''DELETE FROM security_codes
+                        WHERE course_id = ?
+                          AND assignment_id = ?''', (course_id, assignment_id, ))
+        self.execute('''DELETE FROM assignment_secure_authorizations
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
         
@@ -3120,8 +3086,10 @@ ORDER BY student_name
 
         self.execute('''DELETE FROM assignment_timer_exceptions
                         WHERE course_id = ?''', (course_id, ))
-        
+
         self.execute('''DELETE FROM security_codes
+                        WHERE course_id = ?''', (course_id, ))
+        self.execute('''DELETE FROM assignment_secure_authorizations
                         WHERE course_id = ?''', (course_id, ))
         
         self.execute('''DELETE FROM virtual_assistant_interactions
@@ -3159,7 +3127,6 @@ ORDER BY student_name
         
         self.execute('''DELETE FROM security_codes
                         WHERE course_id = ?''', (course_id, ))
-        
         self.execute('''DELETE FROM virtual_assistant_interactions
                         WHERE course_id = ?''', (course_id, ))
         
@@ -3200,7 +3167,6 @@ ORDER BY student_name
         self.execute('''DELETE FROM security_codes
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
-        
         self.execute('''DELETE FROM virtual_assistant_interactions
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
