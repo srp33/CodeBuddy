@@ -440,8 +440,10 @@ module {
 .secure-assignment-qr canvas,
 .secure-assignment-qr img {
   display: block;
-  width: 120px;
-  height: 120px;
+  width: 180px;
+  height: 180px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .secure-assignment-url {
