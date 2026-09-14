@@ -3,12 +3,11 @@ FROM python:3.12.3-slim-bookworm
 RUN apt-get update \
  && apt-get install git -y \
  && pip install --upgrade pip \
- && pip install seaborn==0.12.2 \
- && pip install sympy==1.12 \
- && pip install scipy==1.13.1 \
- && pip install imageio==2.34.1 \
- && pip install scikit-learn==1.5.1 \
- && pip install requests==2.34.2 \
+ && pip install seaborn==0.13.2 \
+ && pip install sympy==1.14.0 \
+ && pip install scipy==1.18.1 \
+ && pip install imageio==2.37.4 \
+ && pip install scikit-learn==1.9.1 \
  && git clone https://github.com/mwaskom/seaborn-data.git \
  && chmod 777 /seaborn-data -R
 
