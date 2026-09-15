@@ -43,9 +43,9 @@
             </div>
 
             {% if len(submissions) == 0 %}
-                <div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">The student has not yet submitted.</div>
+                <div id="user_code_area" class="notification is-warning is-light has-text-dark" style="border: 2px solid black;" tabindex="-1">The student has not yet submitted.</div>
             {% else %}
-                <div class="notification is-warning is-light has-text-dark" style="border: 2px solid black;">The student provided the following answer(s):<br /><br />{{ submissions[0]["code"] }}</div>
+                <div id="user_code_area" class="notification is-warning is-light has-text-dark" style="border: 2px solid black;" tabindex="-1">The student provided the following answer(s):<br /><br />{{ submissions[0]["code"] }}</div>
             {% end %}
 
             {% if presubmission != "" %}

@@ -63,7 +63,7 @@
 
             <p class="top-space" id="user_code_area">
                 {% if exercise_details["back_end"] == "not_code" %}
-                    <div id="user_code" class="student-response-text"></div>
+                    <div id="user_code" class="student-response-text" tabindex="-1"></div>
                 {% else %}
                     <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code"></textarea>
                 {% end %}
@@ -126,7 +126,9 @@
                         getReadOnly: function() {
                             return true;
                         },
-                        focus: function() {},
+                        focus: function() {
+                            display.focus();
+                        },
                         clearSelection: function() {},
                         navigateFileEnd: function() {},
                         setOptions: function() {},
@@ -184,6 +186,16 @@
                 else {
                     get_code_submission(submissions[submissions.length - 1].id, false, true);
                 }
+
+                function focusStudentResponse() {
+                    const area = document.getElementById("user_code_area");
+                    if (area) {
+                        area.scrollIntoView({block: "start"});
+                    }
+                    editor.focus();
+                }
+
+                focusStudentResponse();
 
                 function saveExerciseComment() {
                     const comment = $("#exercise_comment")[0].value;

@@ -100,9 +100,18 @@
     });
 
     (function() {
-        const scoreInput = $("#score")[0];
-        scoreInput.focus();
-        scoreInput.select();
+        if (typeof focusStudentResponse === "function") {
+            focusStudentResponse();
+        } else {
+            const area = document.getElementById("user_code_area");
+            if (area) {
+                area.scrollIntoView({block: "start"});
+                if (!area.hasAttribute("tabindex")) {
+                    area.setAttribute("tabindex", "-1");
+                }
+                area.focus();
+            }
+        }
     })();
 
     (function() {
