@@ -62,7 +62,11 @@
             {% end %}
 
             <p class="top-space" id="user_code_area">
-                <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code"></textarea>
+                {% if exercise_details["back_end"] == "not_code" %}
+                    <div id="user_code" class="student-response-text"></div>
+                {% else %}
+                    <textarea class="textarea is-fullwidth monospace" rows="15" id="user_code"></textarea>
+                {% end %}
             </p>
 
             <div class="has-background-white p-4 mb-4">
@@ -92,6 +96,33 @@
                     };
                 }
 
+                {% if exercise_details["back_end"] == "not_code" %}
+                var editor = (function() {
+                    const display = document.getElementById("user_code");
+                    return {
+                        getValue: function() {
+                            return display.textContent || "";
+                        },
+                        setValue: function(code) {
+                            display.textContent = code == null ? "" : String(code);
+                        },
+                        getReadOnly: function() {
+                            return true;
+                        },
+                        focus: function() {},
+                        clearSelection: function() {},
+                        navigateFileEnd: function() {},
+                        setOptions: function() {},
+                        setKeyboardHandler: function() {},
+                        getSession: function() {
+                            return { setMode: function() {} };
+                        },
+                        session: {
+                            setUseWrapMode: function() {}
+                        }
+                    };
+                })();
+                {% else %}
                 ace.require("ace/ext/language_tools");
                 var editor = ace.edit("user_code", {
                     theme: "ace/theme/{{ user_info['ace_theme'] }}",
@@ -99,13 +130,12 @@
                     minLines: 20,
                     fontSize: "12pt"
                 });
-                let codeChanged = false
 
                 {% if user_info['enable_vim'] %}
                    editor.setKeyboardHandler("ace/keyboard/vim");
                 {% end %}
 
-                {% if user_info["use_auto_complete"] and exercise_details["back_end"] != "not_code" %}
+                {% if user_info["use_auto_complete"] %}
                     editor.setOptions({
                         enableBasicAutocompletion: false,
                         enableSnippets: true,
@@ -115,6 +145,7 @@
 
                 editor.focus();
                 editor.getSession().setMode("{{ code_completion_path }}");
+                {% end %}
 
                 var data_files = {{ jsonify(exercise_details["data_files"]) }};
                 const tests = {{ jsonify(tests) }};

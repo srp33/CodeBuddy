@@ -135,6 +135,24 @@ pre {
   padding: 14px;
   background-color: white;
 }
+
+.student-response-text {
+  border: 2px solid #003DA5;
+  width: 100%;
+  border-left: 12px solid #003DA5;
+  border-radius: 5px;
+  padding: 14px;
+  background-color: white;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-family: inherit;
+  font-size: 1em;
+  line-height: 1.5;
+  color: #363636;
+  box-sizing: border-box;
+}
+
 .instructor-content {
   border: 2px solid #363636;
   width: 100%;
