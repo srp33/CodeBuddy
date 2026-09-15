@@ -69,12 +69,15 @@
                 {% end %}
             </p>
 
+            {% set latest_response = submissions[-1]["code"] if len(submissions) > 0 else "" %}
+            {% if latest_response and str(latest_response).strip() %}
             <div class="has-background-white p-4 mb-4">
                 <p><strong>Leave a comment:</strong></p>
                 <textarea id="exercise_comment" class="textarea" rows="4" placeholder="Leave feedback for this student.">{{ exercise_comment }}</textarea>
                 <button type="button" class="button is-info is-outlined has-background-white has-text-info mt-2" onclick="saveExerciseComment();">Leave a comment</button>
                 <div id="exercise_comment_message"></div>
             </div>
+            {% end %}
 
             <div class="buttons">
                 {% if exercise_details["back_end"] != "not_code" and not exercise_details["allow_any_response"] %}
@@ -99,12 +102,26 @@
                 {% if exercise_details["back_end"] == "not_code" %}
                 var editor = (function() {
                     const display = document.getElementById("user_code");
+                    const emptyMessage = "This student has not submitted a response yet.";
+                    let currentCode = "";
+
+                    function render() {
+                        if (currentCode.trim() === "") {
+                            display.textContent = emptyMessage;
+                            display.classList.add("is-empty");
+                        } else {
+                            display.textContent = currentCode;
+                            display.classList.remove("is-empty");
+                        }
+                    }
+
                     return {
                         getValue: function() {
-                            return display.textContent || "";
+                            return currentCode;
                         },
                         setValue: function(code) {
-                            display.textContent = code == null ? "" : String(code);
+                            currentCode = code == null ? "" : String(code);
+                            render();
                         },
                         getReadOnly: function() {
                             return true;
@@ -160,6 +177,8 @@
 
                     if (presubmission != "") {
                         editor.setValue(presubmission, 1);
+                    } else {
+                        editor.setValue("");
                     }
                 }
                 else {

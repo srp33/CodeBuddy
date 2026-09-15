@@ -153,6 +153,12 @@ pre {
   box-sizing: border-box;
 }
 
+.student-response-text.is-empty {
+  color: #7a7a7a;
+  font-style: italic;
+  white-space: normal;
+}
+
 .instructor-content {
   border: 2px solid #363636;
   width: 100%;
