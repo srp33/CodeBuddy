@@ -162,7 +162,6 @@
                     });
                 {% end %}
 
-                editor.focus();
                 editor.getSession().setMode("{{ code_completion_path }}");
                 {% end %}
 
@@ -187,15 +186,14 @@
                     get_code_submission(submissions[submissions.length - 1].id, false, true);
                 }
 
-                function focusStudentResponse() {
+                function scrollToStudentResponse() {
                     const area = document.getElementById("user_code_area");
                     if (area) {
                         area.scrollIntoView({block: "start"});
                     }
-                    editor.focus();
                 }
 
-                focusStudentResponse();
+                scrollToStudentResponse();
 
                 function saveExerciseComment() {
                     const comment = $("#exercise_comment")[0].value;

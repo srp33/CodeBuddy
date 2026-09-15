@@ -100,18 +100,18 @@
     });
 
     (function() {
-        if (typeof focusStudentResponse === "function") {
-            focusStudentResponse();
+        if (typeof scrollToStudentResponse === "function") {
+            scrollToStudentResponse();
         } else {
             const area = document.getElementById("user_code_area");
             if (area) {
                 area.scrollIntoView({block: "start"});
-                if (!area.hasAttribute("tabindex")) {
-                    area.setAttribute("tabindex", "-1");
-                }
-                area.focus();
             }
         }
+
+        const scoreInput = $("#score")[0];
+        scoreInput.focus({preventScroll: true});
+        scoreInput.select();
     })();
 
     (function() {
