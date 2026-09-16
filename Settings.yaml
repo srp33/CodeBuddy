@@ -34,3 +34,7 @@ smtp_server: "test.university.edu"
 smtp_port: "587"
 # Indicate the message that will be displayed to students about accommodation requests.
 accommodation_request_message: "In most cases, these requests are made by students who have met with the University Accessibility Center (UAC) to discuss their accessibility needs and then have submitted a formal request to the instructor regarding these needs. However, other students may also request an accommodation for other reasons, such as an illness, travel for a university-sponsored event, etc."
+# Host patterns allowed for Canvas API base URLs when pushing grades (exact host or *.suffix).
+canvas:
+  allowed_hosts:
+    - "*.instructure.com"

@@ -140,6 +140,10 @@
 
             <a class="button" href="/download_course_scores/{{ course_basics['id'] }}">Download scores</a>
 
+            {% if is_administrator or is_instructor %}
+                <button type="button" class="button" id="open_canvas_grades_btn">Push scores to Canvas (experimental)</button>
+            {% end %}
+
             <a class="button" href="/manage_instructors/{{ course_basics['id'] }}">Manage instructors</a>
 
             <a class="button" href="/manage_assistants/{{ course_basics['id'] }}">Manage assistants</a>
@@ -316,6 +320,25 @@
                 return `/delete_course/{{ course_basics['id'] }}`;
         }
     </script>
+
+    {% if is_administrator or is_instructor %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (!window.CanvasGradeWizard) {
+                return;
+            }
+            const wizard = new window.CanvasGradeWizard({
+                codebuddyCourseId: "{{ course_basics['id'] }}"
+            });
+            const openBtn = document.getElementById("open_canvas_grades_btn");
+            if (openBtn) {
+                openBtn.addEventListener("click", function () {
+                    wizard.open();
+                });
+            }
+        });
+    </script>
+    {% end %}
 {% else %}
     <h4>This course does not exist.</h4>
 {% end %}

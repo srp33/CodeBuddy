@@ -1253,6 +1253,64 @@ ORDER BY u.name
 
         return scores_dict_list, total_times_pair_programmed
 
+    def get_course_gradebook_for_canvas(self, course_basics):
+        """Assemble course students, assignments, and scores for Canvas grade push.
+
+        Uses existing helpers only; does not change score SQL.
+        """
+        students = []
+        for user_id, info in self.get_registered_students(course_basics["id"]):
+            students.append({
+                "user_id": user_id,
+                "name": info.get("name") or "",
+                "email": info.get("email") or "",
+            })
+
+        assignments = []
+        for assignment_id, group_title, details in self.get_assignments(course_basics, show_hidden=True):
+            assignments.append({
+                "id": assignment_id,
+                "title": details.get("title") or "",
+                "assignment_group_id": details.get("assignment_group_id") or "",
+                "assignment_group_title": details.get("assignment_group_title") or group_title or "",
+                "visible": bool(details.get("visible")),
+            })
+
+        scores_list, _ = self.get_assignment_scores(course_basics)
+        scores_by_assignment = {}
+        last_submission_by_assignment = {}
+        for user_id, row in scores_list:
+            aid = row["assignment_id"]
+            if aid not in scores_by_assignment:
+                scores_by_assignment[aid] = {}
+            try:
+                score_value = float(row["score"]) if row["score"] is not None else 0.0
+            except (TypeError, ValueError):
+                score_value = 0.0
+            scores_by_assignment[aid][str(user_id)] = score_value
+
+            ts = row.get("last_submission_timestamp") or ""
+            if ts:
+                ts_text = str(ts)
+                prev = last_submission_by_assignment.get(aid)
+                if not prev or ts_text > prev:
+                    last_submission_by_assignment[aid] = ts_text
+
+        for assignment in assignments:
+            aid = assignment["id"]
+            assignment["last_submission_timestamp"] = last_submission_by_assignment.get(aid) or ""
+            assignment["has_submissions"] = bool(assignment["last_submission_timestamp"])
+
+        scores_out = {}
+        for aid, user_scores in scores_by_assignment.items():
+            scores_out[str(aid)] = user_scores
+
+        return {
+            "students": students,
+            "assignments": assignments,
+            "scores": scores_out,
+        }
+
     # Get score for each assignment for a particular student.
     def get_student_assignment_scores(self, course_id, user_id):
         sql = self.scores_statuses_temp_tables_sql + '''

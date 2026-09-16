@@ -1,0 +1,149 @@
+.canvas-modal .canvas-modal-content {
+  margin: 2rem auto;
+  width: 95%;
+  max-width: 960px;
+  max-height: calc(100vh - 4rem);
+  overflow: auto;
+  color: #363636;
+  font-size: 1.25rem;
+}
+
+.canvas-modal #canvas_modal_title {
+  color: #363636;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.canvas-modal .close {
+  color: #363636;
+}
+
+.canvas-modal p,
+.canvas-modal .label,
+.canvas-modal .help,
+.canvas-modal .checkbox,
+.canvas-modal .notification,
+.canvas-modal .table,
+.canvas-modal td,
+.canvas-modal th,
+.canvas-modal strong,
+.canvas-modal em,
+.canvas-modal code,
+.canvas-modal .canvas-push-status,
+.canvas-modal .canvas-step-pill,
+.canvas-modal .button,
+.canvas-modal .button.is-small,
+.canvas-modal .button.is-normal,
+.canvas-modal .input,
+.canvas-modal .select,
+.canvas-modal .select select,
+.canvas-modal select {
+  font-size: 1.25rem;
+}
+
+.canvas-modal p,
+.canvas-modal .label,
+.canvas-modal .help,
+.canvas-modal .checkbox,
+.canvas-modal .checkbox:hover,
+.canvas-modal [disabled].checkbox,
+.canvas-modal .checkbox input[disabled],
+.canvas-modal .table,
+.canvas-modal td,
+.canvas-modal th,
+.canvas-modal strong,
+.canvas-modal em,
+.canvas-modal code,
+.canvas-modal .has-text-grey {
+  color: #363636;
+}
+
+.canvas-modal .help {
+  margin-top: 0.25rem;
+}
+
+.canvas-step-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.canvas-step-pill {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: #efefef;
+  color: #363636;
+  font-weight: 600;
+}
+
+.canvas-step-pill.is-active {
+  background: #003DA5;
+  color: #fff;
+}
+
+.canvas-step-pill.is-done {
+  background: #dbe7ff;
+  color: #003DA5;
+}
+
+.canvas-step-pill.is-clickable {
+  cursor: pointer;
+}
+
+.canvas-table-wrap {
+  max-height: 30rem;
+  overflow: auto;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+}
+
+#canvas_scores_sections {
+  max-height: 30rem;
+  overflow: auto;
+}
+
+.canvas-score-section {
+  margin-bottom: 1.25rem;
+}
+
+.canvas-modal .canvas-select-checkbox {
+  width: 1.15em;
+  height: 1.15em;
+}
+
+.canvas-score-section .canvas-table-wrap {
+  max-height: none;
+}
+
+.canvas-spinner {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-left: 0.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: canvas-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+
+.button:not(.is-primary) .canvas-spinner {
+  border-color: rgba(0, 0, 0, 0.15);
+  border-top-color: #363636;
+}
+
+@keyframes canvas-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.canvas-push-status.is-success {
+  color: #257942;
+}
+
+.canvas-push-status.is-error {
+  color: #cc0f35;
+}

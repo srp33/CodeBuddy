@@ -1,0 +1,125 @@
+<link rel="stylesheet" href="/static/css/canvas-modal.css">
+
+<div id="canvas_modal" class="modal canvas-modal" style="padding-top: 0;">
+    <div class="modal-content canvas-modal-content">
+        <span class="close" id="canvas_modal_close">&times;</span>
+        <h4 id="canvas_modal_title">Push scores to Canvas</h4>
+        <p class="mb-3">Canvas credentials are stored in an encrypted cookie on this browser only. The access token is never shown to JavaScript after it is saved.</p>
+
+        <div class="canvas-step-pills mb-4">
+            <span id="canvas_step_pill_1" class="canvas-step-pill is-active">1. Credentials</span>
+            <span id="canvas_step_pill_2" class="canvas-step-pill">2. Align students</span>
+            <span id="canvas_step_pill_3" class="canvas-step-pill">3. Select assignments</span>
+            <span id="canvas_step_pill_4" class="canvas-step-pill">4. Push Scores</span>
+        </div>
+
+        <div id="canvas_modal_error" class="notification is-danger is-hidden"></div>
+        <div id="canvas_modal_status" class="notification is-hidden"></div>
+
+        <div id="canvas_step_1" class="canvas-step">
+            <p class="mb-3">Enter your Canvas details to verify access and load course assignments and students.</p>
+            <p id="canvas_saved_creds_note" class="notification is-success is-light is-hidden mb-3">
+                Saved credentials loaded from this browser.
+                <button type="button" class="button is-small is-text" id="canvas_clear_saved_btn">Clear saved</button>
+            </p>
+            <div class="field">
+                <label class="label" for="canvas_base_url">Canvas base URL</label>
+                <div class="control">
+                    <input class="input" type="text" id="canvas_base_url" placeholder="https://byu.instructure.com" autocomplete="off" />
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="canvas_course_id">Canvas course ID</label>
+                <div class="control">
+                    <input class="input" type="text" id="canvas_course_id" placeholder="e.g. 12345" inputmode="numeric" autocomplete="off" />
+                </div>
+                <p class="help">Open the course in Canvas and copy the number after <code>/courses/</code> in the URL.</p>
+            </div>
+            <div class="field">
+                <label class="label" for="canvas_access_token">Access token</label>
+                <div class="control">
+                    <input class="input" type="password" id="canvas_access_token" placeholder="Canvas API access token" autocomplete="new-password" />
+                </div>
+                <p class="help">Create a token in Canvas: Account → Settings → New Access Token.</p>
+            </div>
+        </div>
+
+        <div id="canvas_step_2" class="canvas-step is-hidden">
+            <p class="mb-3">Match Canvas students to CodeBuddy students using an identity field.</p>
+            <div class="field">
+                <label class="label" for="canvas_match_field">Align by Canvas field</label>
+                <div class="control">
+                    <div class="select">
+                        <select id="canvas_match_field">
+                            <option value="login_id">login_id</option>
+                            <option value="sis_user_id">sis_user_id</option>
+                            <option value="email">email</option>
+                            <option value="integration_id">integration_id</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <p id="canvas_align_summary" class="mb-2 has-text-weight-semibold"></p>
+            <div class="table-container canvas-table-wrap">
+                <table class="table is-striped is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Canvas student</th>
+                            <th id="canvas_align_field_header">Canvas login_id</th>
+                            <th>CodeBuddy student</th>
+                        </tr>
+                    </thead>
+                    <tbody id="canvas_align_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="canvas_step_3" class="canvas-step is-hidden">
+            <p class="mb-3">Assignments are grouped as in CodeBuddy and matched to Canvas by name. Select one or more assignments, then continue to review scores and push them to Canvas.</p>
+            <p id="canvas_push_summary" class="mb-2 has-text-weight-semibold"></p>
+            <div class="buttons mb-2">
+                <button type="button" class="button" id="canvas_select_all_btn">Select all</button>
+                <button type="button" class="button" id="canvas_select_none_btn">Deselect all</button>
+            </div>
+            <div class="table-container canvas-table-wrap">
+                <table class="table is-striped is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Assignment</th>
+                            <th>Last CodeBuddy submission</th>
+                            <th>Canvas match</th>
+                            <th>Select</th>
+                        </tr>
+                    </thead>
+                    <tbody id="canvas_assignments_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="canvas_step_4" class="canvas-step is-hidden">
+            <p class="mb-3">Review each student’s CodeBuddy and Canvas scores for the selected assignments, then push them to Canvas. Assignments are uploaded one at a time.</p>
+            <p id="canvas_scores_summary" class="mb-2 has-text-weight-semibold"></p>
+            <div id="canvas_scores_sections"></div>
+            <div class="field mt-3 mb-2">
+                <label class="checkbox" id="canvas_include_zero_scores_label">
+                    <input type="checkbox" id="canvas_include_zero_scores" checked />
+                    Include scores of zero points
+                </label>
+            </div>
+            <div class="buttons mt-3 mb-0">
+                <button type="button" class="button is-warning" id="canvas_push_scores_btn">Push to Canvas</button>
+            </div>
+        </div>
+
+        <div class="buttons mt-4 mb-0">
+            <button type="button" class="button" id="canvas_modal_back_btn">Back</button>
+            <button type="button" class="button is-primary" id="canvas_modal_next_btn">
+                <span id="canvas_modal_next_label">Continue</span>
+                <span id="canvas_modal_spinner" class="canvas-spinner is-hidden"></span>
+            </button>
+            <button type="button" class="button is-light" id="canvas_modal_cancel_btn">Close</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/canvas-grades.js"></script>
