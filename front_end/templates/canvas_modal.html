@@ -19,8 +19,8 @@
         <div id="canvas_step_1" class="canvas-step">
             <p class="mb-3">Enter your Canvas details to verify access and load course assignments and students.</p>
             <p id="canvas_saved_creds_note" class="notification is-success is-light is-hidden mb-3">
-                Saved credentials loaded from this browser.
-                <button type="button" class="button is-small is-text" id="canvas_clear_saved_btn">Clear saved</button>
+                Saved credentials loaded from this browser
+                (<a href="#" id="canvas_clear_saved_btn">clear</a>).
             </p>
             <div class="field">
                 <label class="label" for="canvas_base_url">Canvas base URL</label>
@@ -77,10 +77,6 @@
         <div id="canvas_step_3" class="canvas-step is-hidden">
             <p class="mb-3">Assignments are grouped as in CodeBuddy and matched to Canvas by name. Select one or more assignments, then continue to review scores and push them to Canvas.</p>
             <p id="canvas_push_summary" class="mb-2 has-text-weight-semibold"></p>
-            <div class="buttons mb-2">
-                <button type="button" class="button" id="canvas_select_all_btn">Select all</button>
-                <button type="button" class="button" id="canvas_select_none_btn">Deselect all</button>
-            </div>
             <div class="table-container canvas-table-wrap">
                 <table class="table is-striped is-fullwidth">
                     <thead>

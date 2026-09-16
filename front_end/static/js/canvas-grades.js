@@ -110,19 +110,16 @@
       document.getElementById("canvas_modal_cancel_btn")?.addEventListener("click", () => this.close());
       this.backBtn?.addEventListener("click", () => this._back());
       this.nextBtn?.addEventListener("click", () => this._next());
-      document.getElementById("canvas_clear_saved_btn")?.addEventListener("click", () => this._clearSavedCredentials());
+      document.getElementById("canvas_clear_saved_btn")?.addEventListener("click", (event) => {
+        event.preventDefault();
+        this._clearSavedCredentials();
+      });
       this.matchFieldEl?.addEventListener("change", () => {
         this.state.matchField = this.matchFieldEl.value;
         this._renderAlignTable();
       });
       document.getElementById("canvas_push_scores_btn")?.addEventListener("click", () => {
         this._pushSelectedAssignments();
-      });
-      document.getElementById("canvas_select_all_btn")?.addEventListener("click", () => {
-        this._setSelectableAssignments(true);
-      });
-      document.getElementById("canvas_select_none_btn")?.addEventListener("click", () => {
-        this._setSelectableAssignments(false);
       });
       for (let i = 1; i <= 4; i++) {
         document.getElementById(`canvas_step_pill_${i}`)?.addEventListener("click", () => {
@@ -204,14 +201,13 @@
       if (this.backBtn) this.backBtn.disabled = loading || this.state.pushing;
       const pushBtn = document.getElementById("canvas_push_scores_btn");
       const includeZeros = document.getElementById("canvas_include_zero_scores");
-      const selectAllBtn = document.getElementById("canvas_select_all_btn");
-      const selectNoneBtn = document.getElementById("canvas_select_none_btn");
       if (pushBtn) pushBtn.disabled = loading || this.state.pushing;
       if (includeZeros) includeZeros.disabled = loading || this.state.pushing;
-      if (selectAllBtn) selectAllBtn.disabled = loading || this.state.pushing;
-      if (selectNoneBtn) selectNoneBtn.disabled = loading || this.state.pushing;
       document.querySelectorAll(".canvas-select-checkbox").forEach((box) => {
         box.disabled = loading || this.state.pushing;
+      });
+      document.querySelectorAll(".canvas-group-select").forEach((button) => {
+        button.disabled = loading || this.state.pushing;
       });
     }
 
@@ -580,9 +576,12 @@
         .filter(Boolean);
     }
 
-    _setSelectableAssignments(checked) {
+    _setSelectableAssignments(checked, groupIndex) {
       if (this.state.pushing) return;
-      document.querySelectorAll(".canvas-select-checkbox[data-selectable='1']").forEach((box) => {
+      const selector = groupIndex == null
+        ? ".canvas-select-checkbox[data-selectable='1']"
+        : `.canvas-select-checkbox[data-selectable='1'][data-group='${groupIndex}']`;
+      document.querySelectorAll(selector).forEach((box) => {
         box.checked = !!checked;
         this._syncAssignmentCheckbox(box);
       });
@@ -700,69 +699,90 @@
       const byName = this._canvasAssignmentByName();
       const assignments = this._groupedAssignments();
       let matched = 0;
-      let currentGroup = null;
       const html = [];
-
+      const groups = [];
       assignments.forEach((assignment) => {
         const groupTitle = assignment.assignment_group_title || "Ungrouped";
-        if (groupTitle !== currentGroup) {
-          currentGroup = groupTitle;
-          html.push(`
-            <tr class="canvas-group-row">
-              <td colspan="4"><strong>${esc(groupTitle)}</strong></td>
-            </tr>
-          `);
+        const last = groups[groups.length - 1];
+        if (!last || last.title !== groupTitle) {
+          groups.push({ title: groupTitle, items: [] });
         }
+        groups[groups.length - 1].items.push(assignment);
+      });
 
-        const key = normalizeAssignmentName(assignment.title);
-        const matches = byName.get(key) || [];
-        let matchLabel = "No matching Canvas assignment";
-        let canPush = false;
-        let canvasAssignmentId = null;
-
-        const hasSubmissions = !!assignment.has_submissions;
-        let pointsPossible = null;
-        if (matches.length === 1) {
-          matched += 1;
-          canvasAssignmentId = matches[0].id;
-          matchLabel = matches[0].name || "Matched";
-          canPush = hasSubmissions;
-          pointsPossible = matches[0].points_possible;
-        } else if (matches.length > 1) {
-          matchLabel = `Ambiguous (${matches.length} Canvas matches)`;
-        }
-
-        const lastSubmission = hasSubmissions
-          ? formatCanvasSubmissionTimestamp(assignment.last_submission_timestamp)
-          : "No submissions yet";
-        const note = this.state.pushNotes[String(assignment.id)] || "";
-        const isSelected = !!this.state.selectedAssignments[String(assignment.id)];
-        const checkbox = canPush
-          ? `<label class="checkbox">
-                <input type="checkbox"
-                  class="canvas-select-checkbox"
-                  data-selectable="1"
-                  data-codebuddy-assignment-id="${esc(assignment.id)}"
-                  data-canvas-assignment-id="${esc(canvasAssignmentId)}"
-                  data-points-possible="${esc(pointsPossible == null ? "" : pointsPossible)}"
-                  ${isSelected ? "checked" : ""}
-                  ${this.state.pushing ? "disabled" : ""} />
-              </label>`
+      groups.forEach((group, groupIndex) => {
+        const prepared = group.items.map((assignment) => {
+          const key = normalizeAssignmentName(assignment.title);
+          const matches = byName.get(key) || [];
+          let matchLabel = "No matching Canvas assignment";
+          let canPush = false;
+          let canvasAssignmentId = null;
+          const hasSubmissions = !!assignment.has_submissions;
+          let pointsPossible = null;
+          if (matches.length === 1) {
+            matched += 1;
+            canvasAssignmentId = matches[0].id;
+            matchLabel = matches[0].name || "Matched";
+            canPush = hasSubmissions;
+            pointsPossible = matches[0].points_possible;
+          } else if (matches.length > 1) {
+            matchLabel = `Ambiguous (${matches.length} Canvas matches)`;
+          }
+          return { assignment, matchLabel, canPush, canvasAssignmentId, hasSubmissions, pointsPossible };
+        });
+        const hasSelectable = prepared.some((item) => item.canPush);
+        const groupButtons = hasSelectable
+          ? `<div class="buttons mb-0">
+                <button type="button" class="button canvas-group-select" data-group="${groupIndex}" data-checked="1" ${this.state.pushing ? "disabled" : ""}>Select all</button>
+                <button type="button" class="button canvas-group-select" data-group="${groupIndex}" data-checked="0" ${this.state.pushing ? "disabled" : ""}>Deselect all</button>
+              </div>`
           : "";
 
         html.push(`
-          <tr data-assignment-id="${esc(assignment.id)}">
-            <td>${esc(assignment.title || "")}</td>
-            <td>${esc(lastSubmission)}</td>
-            <td>${esc(matchLabel)}</td>
-            <td>
-              ${checkbox}
-              <div class="canvas-push-status ${note.ok === false ? "is-error" : (note.ok ? "is-success" : "")}" data-note-for="${esc(assignment.id)}">
-                ${esc(note.message || "")}
+          <tr class="canvas-group-row">
+            <td colspan="4">
+              <div class="canvas-group-heading">
+                <strong>${esc(group.title)}</strong>
+                ${groupButtons}
               </div>
             </td>
           </tr>
         `);
+
+        prepared.forEach((item) => {
+          const lastSubmission = item.hasSubmissions
+            ? formatCanvasSubmissionTimestamp(item.assignment.last_submission_timestamp)
+            : "No submissions yet";
+          const note = this.state.pushNotes[String(item.assignment.id)] || "";
+          const isSelected = !!this.state.selectedAssignments[String(item.assignment.id)];
+          const checkbox = item.canPush
+            ? `<label class="checkbox">
+                  <input type="checkbox"
+                    class="canvas-select-checkbox"
+                    data-selectable="1"
+                    data-group="${groupIndex}"
+                    data-codebuddy-assignment-id="${esc(item.assignment.id)}"
+                    data-canvas-assignment-id="${esc(item.canvasAssignmentId)}"
+                    data-points-possible="${esc(item.pointsPossible == null ? "" : item.pointsPossible)}"
+                    ${isSelected ? "checked" : ""}
+                    ${this.state.pushing ? "disabled" : ""} />
+                </label>`
+            : "";
+
+          html.push(`
+            <tr data-assignment-id="${esc(item.assignment.id)}">
+              <td>${esc(item.assignment.title || "")}</td>
+              <td>${esc(lastSubmission)}</td>
+              <td>${esc(item.matchLabel)}</td>
+              <td>
+                ${checkbox}
+                <div class="canvas-push-status ${note.ok === false ? "is-error" : (note.ok ? "is-success" : "")}" data-note-for="${esc(item.assignment.id)}">
+                  ${esc(note.message || "")}
+                </div>
+              </td>
+            </tr>
+          `);
+        });
       });
 
       tbody.innerHTML = html.join("") || `<tr><td colspan="4"><em>No CodeBuddy assignments found.</em></td></tr>`;
@@ -772,6 +792,13 @@
         box.addEventListener("change", () => {
           this._syncAssignmentCheckbox(box);
           this._updateAssignmentSummary();
+        });
+      });
+      tbody.querySelectorAll(".canvas-group-select").forEach((button) => {
+        button.addEventListener("click", () => {
+          const groupIndex = button.getAttribute("data-group");
+          const checked = button.getAttribute("data-checked") === "1";
+          this._setSelectableAssignments(checked, groupIndex);
         });
       });
     }

@@ -19,6 +19,11 @@
   color: #363636;
 }
 
+.canvas-modal #canvas_saved_creds_note a {
+  color: inherit;
+  font-size: inherit;
+}
+
 .canvas-modal p,
 .canvas-modal .label,
 .canvas-modal .help,
@@ -106,6 +111,23 @@
 
 .canvas-score-section {
   margin-bottom: 1.25rem;
+}
+
+.canvas-group-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.canvas-group-heading .buttons {
+  margin: 0 0 0 auto;
+  align-items: center;
+}
+
+.canvas-group-heading .buttons .button {
+  margin-bottom: 0;
 }
 
 .canvas-modal .canvas-select-checkbox {
