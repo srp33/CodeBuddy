@@ -27,6 +27,7 @@ class BatchEditCourseHandler(BaseUserHandler):
                         "require_security_codes": extra.get("require_security_codes", 0),
                         "show_run_button": extra.get("show_run_button", True),
                         "support_questions": extra.get("support_questions", False),
+                        "secure_access_code": extra.get("secure_access_code"),
                     })
 
                 self.render("batch_edit_course.html", courses=self.courses, course_basics=course_basics, all_assignments=all_assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
@@ -43,7 +44,7 @@ class BatchEditCourseHandler(BaseUserHandler):
                 field = body["field"]
                 updates = body["updates"]
 
-                valid_fields = {"title", "dates", "allow_students_view_submissions", "require_security_codes", "show_run_button", "support_questions"}
+                valid_fields = {"title", "dates", "allow_students_view_submissions", "require_security_codes", "require_secure_access", "show_run_button", "support_questions"}
                 if field not in valid_fields:
                     return self.write(json.dumps({"message": f"Error: Invalid field '{field}'."}))
 
@@ -93,10 +94,7 @@ class BatchEditCourseHandler(BaseUserHandler):
                             errors.append(f"Invalid date value: {e}")
                             continue
 
-                    elif field == "require_security_codes":
-                        value = True if value == "Yes" else False
-
-                    elif field in ("allow_students_view_submissions", "show_run_button", "support_questions"):
+                    elif field in ("require_security_codes", "require_secure_access", "allow_students_view_submissions", "show_run_button", "support_questions"):
                         value = True if value == "Yes" else False
 
                     validated_updates.append({"assignment_id": assignment_id, "value": value})
@@ -104,10 +102,19 @@ class BatchEditCourseHandler(BaseUserHandler):
                 if errors:
                     return self.write(json.dumps({"message": "\n".join(errors)}))
 
+                results = []
                 for update in validated_updates:
-                    self.content.update_assignment_field(course_id, update["assignment_id"], field, update["value"])
+                    if field == "require_secure_access":
+                        if update["value"]:
+                            code = self.content.enable_assignment_secure_access(course_id, update["assignment_id"])
+                        else:
+                            self.content.disable_assignment_secure_access(course_id, update["assignment_id"])
+                            code = None
+                        results.append({"assignment_id": update["assignment_id"], "secure_access_code": code})
+                    else:
+                        self.content.update_assignment_field(course_id, update["assignment_id"], field, update["value"])
 
-                return self.write(json.dumps({"message": ""}))
+                return self.write(json.dumps({"message": "", "results": results}))
             else:
                 return self.write(json.dumps({"message": "Error: You do not have permission to edit assignments for this course."}))
         except Exception as inst:

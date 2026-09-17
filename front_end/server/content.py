@@ -453,9 +453,9 @@ class Content:
         self.execute(sql, (course_id, assignment_id, user_id))
 
     def generate_secure_access_code(self):
-        # Avoid characters that are easy to confuse: 0/O, 1/I/L.
+        # Letters without I/L/O; digits without 0/1 (they look like O/I).
         characters = [c for c in string.ascii_uppercase if c not in {"I", "L", "O"}]
-        characters.extend([str(i) for i in range(2, 10)])
+        characters.extend(str(i) for i in range(2, 10))
 
         for _ in range(100):
             code = "".join(secrets.choice(characters) for _ in range(4))
@@ -2541,7 +2541,7 @@ ORDER BY student_name
         self.update_when_content_updated(course_id)
 
     def get_assignment_bulk_edit_data(self, course_id):
-        sql = '''SELECT assignment_id, has_timer, allow_students_view_submissions, require_security_codes, show_run_button, support_questions
+        sql = '''SELECT assignment_id, has_timer, allow_students_view_submissions, require_security_codes, show_run_button, support_questions, secure_access_code
                  FROM assignments
                  WHERE course_id = ?'''
 
@@ -2553,6 +2553,7 @@ ORDER BY student_name
                 "require_security_codes": row["require_security_codes"],
                 "show_run_button": bool(row["show_run_button"]),
                 "support_questions": bool(row["support_questions"]),
+                "secure_access_code": row["secure_access_code"],
             }
         return result
 

@@ -483,6 +483,24 @@ module {
   color: #003DA5;
 }
 
+.bulk-secure-assignment {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.bulk-secure-assignment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bulk-secure-assignment .secure-assignment-enabled-panel {
+  max-width: none;
+}
+
 .secure-assignment-toast {
   position: fixed;
   z-index: 40;

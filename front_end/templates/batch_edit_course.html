@@ -7,10 +7,31 @@
 {% if course_basics["exists"] %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="/static/qrcode.min.js"></script>
 
     <h4>Batch edit assignments - {{ course_basics["title"] }}</h4>
 
     <div class="notification is-danger is-hidden" id="bulk_edit_message"></div>
+
+    <div id="remove_secure_assignment_modal" class="modal is-clipped">
+        <div class="modal-background">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <span class="modal-card-title is-size-5 has-text-centered has-text-weight-bold">Remove QR / short-link security</span>
+                    <button class="delete" aria-label="close" id="remove_secure_assignment_modal_close"></button>
+                </header>
+
+                <section class="modal-card-body">
+                    <p>Remove secure access for this assignment? Students who previously unlocked it will need to unlock it again if you re-enable security later.</p>
+                </section>
+
+                <footer class="modal-card-foot">
+                    <button class="button is-warning" id="remove_secure_assignment_modal_confirm">Remove security</button>
+                    <button class="button" id="remove_secure_assignment_modal_cancel">Cancel</button>
+                </footer>
+            </div>
+        </div>
+    </div>
 
     {% if len(all_assignments) > 0 %}
         <div class="field" style="margin-bottom: 1.25em;">
@@ -20,6 +41,7 @@
                         <option value="title" selected>Title</option>
                         <option value="dates">Start &amp; due dates</option>
                         <option value="require_security_codes">Require security and confirmation codes</option>
+                        <option value="require_secure_access">Require QR code or secure link</option>
                         <option value="show_run_button">Show Run button</option>
                         <option value="support_questions">Support questions and answers</option>
                         <option value="allow_students_view_submissions">Allow students to download submission(s)</option>
@@ -36,6 +58,7 @@
                 <tbody id="bulk_edit_tbody"></tbody>
             </table>
         </div>
+        <div id="secure_assignment_status" class="secure-assignment-toast is-hidden" role="status" aria-live="polite"></div>
     {% else %}
         <p>No assignments have been created for this course.</p>
     {% end %}
@@ -49,12 +72,16 @@
 
     <script>
         const bulkEditAssignments = {{ jsonify(all_assignments) }};
+        const bulkEditTbody = document.getElementById("bulk_edit_tbody");
+        let pendingSecureAccessDisable = null;
+        let secureAssignmentStatusTimeout = null;
 
         const bulkEditFieldHeaders = {
             "title":                           "Title",
             "dates":                           "Start & due dates",
             "allow_students_view_submissions":  "Allow students to download submission(s)",
             "require_security_codes":          "Require security and confirmation codes",
+            "require_secure_access":           "Require QR code or secure link",
             "show_run_button":                 "Show Run button",
             "support_questions":               "Support questions and answers"
         };
@@ -68,72 +95,231 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function yesNoSelectHTML(currentYes, extraClass) {
+            const val = currentYes ? "Yes" : "No";
+            const classAttr = extraClass ? ` class="${extraClass}"` : "";
+            const opts = ["No", "Yes"].map(v =>
+                `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
+            ).join("");
+            return `<div class="select is-grey"><select${classAttr}>${opts}</select></div>`;
+        }
+
         function createControlHTML(field, asgn) {
             if (field === "title") {
                 return `<input type="text" class="input is-grey" style="min-width:300px;" value="${escapeHtml(asgn.title)}">`;
             }
             if (field === "require_security_codes") {
-                const val = asgn.require_security_codes ? "Yes" : "No";
-                const opts = ["No", "Yes"].map(v =>
-                    `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
-                ).join("");
-                return `<div class="select is-grey"><select>${opts}</select></div>`;
+                return yesNoSelectHTML(asgn.require_security_codes);
+            }
+            if (field === "require_secure_access") {
+                const hasCode = Boolean(asgn.secure_access_code);
+                const hidden = hasCode ? "" : " is-hidden";
+                return `<div class="bulk-secure-assignment">
+                    ${yesNoSelectHTML(hasCode, "bulk-secure-access-select")}
+                    <div class="secure-assignment-enabled-panel${hidden}">
+                        <div class="bulk-secure-assignment-actions">
+                            <button type="button" class="button bulk-secure-copy-qr">Copy QR code</button>
+                            <button type="button" class="button bulk-secure-copy-url">Copy secure link</button>
+                        </div>
+                    </div>
+                </div>`;
             }
             if (field === "allow_students_view_submissions") {
-                const val = asgn.allow_students_view_submissions ? "Yes" : "No";
-                const opts = ["No", "Yes"].map(v =>
-                    `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
-                ).join("");
-                return `<div class="select is-grey"><select>${opts}</select></div>`;
+                return yesNoSelectHTML(asgn.allow_students_view_submissions);
             }
             if (field === "show_run_button") {
-                const val = asgn.show_run_button ? "Yes" : "No";
-                const opts = ["No", "Yes"].map(v =>
-                    `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
-                ).join("");
-                return `<div class="select is-grey"><select>${opts}</select></div>`;
+                return yesNoSelectHTML(asgn.show_run_button);
             }
             if (field === "support_questions") {
-                const val = asgn.support_questions ? "Yes" : "No";
-                const opts = ["No", "Yes"].map(v =>
-                    `<option value="${v}"${v === val ? " selected" : ""}>${v}</option>`
-                ).join("");
-                return `<div class="select is-grey"><select>${opts}</select></div>`;
+                return yesNoSelectHTML(asgn.support_questions);
             }
         }
 
+        function getSecureAccessUrl(code) {
+            return window.location.origin + "/s/" + code;
+        }
+
+        function findAssignment(id) {
+            const n = Number(id);
+            return bulkEditAssignments.find(a => Number(a.id) === n);
+        }
+
+        function renderSecureAccessRow(row, code) {
+            const panel = row.querySelector(".secure-assignment-enabled-panel");
+            if (!panel) {
+                return;
+            }
+
+            if (!code) {
+                panel.classList.add("is-hidden");
+                row.dataset.secureAccessCode = "";
+                return;
+            }
+
+            row.dataset.secureAccessCode = code;
+            panel.classList.remove("is-hidden");
+        }
+
+        function renderAllSecureAccessRows() {
+            const rows = bulkEditTbody.querySelectorAll("tr");
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const asgn = bulkEditAssignments[i] || findAssignment(row.dataset.assignmentId);
+                const code = (asgn && asgn.secure_access_code) || row.dataset.secureAccessCode || "";
+                renderSecureAccessRow(row, code || null);
+            }
+        }
+
+        function persistSecureAccess(assignmentId, action, select) {
+            select.disabled = true;
+            $.ajax({
+                type: "POST",
+                url: `/secure_assignment/{{ course_basics['id'] }}/${assignmentId}`,
+                data: JSON.stringify({action: action}),
+                contentType: "application/json",
+                async: true
+            }).done(function(data) {
+                const json_data = typeof data === "string" ? JSON.parse(data) : data;
+                select.disabled = false;
+                if (json_data["message"]) {
+                    select.value = action === "enable" ? "No" : "Yes";
+                    showBulkEditMessage(`<p>An error occurred.</p><pre>${json_data["message"]}</pre>`, "danger");
+                    return;
+                }
+                const asgn = findAssignment(assignmentId);
+                if (asgn) {
+                    asgn.secure_access_code = json_data["secure_access_code"] || null;
+                }
+                renderSecureAccessRow(select.closest("tr"), asgn ? asgn.secure_access_code : null);
+                document.getElementById("bulk_edit_message").classList.add("is-hidden");
+            }).fail(function() {
+                select.disabled = false;
+                select.value = action === "enable" ? "No" : "Yes";
+                showBulkEditMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
+            });
+        }
+
+        function closeRemoveSecureAssignmentModal() {
+            pendingSecureAccessDisable = null;
+            document.getElementById("remove_secure_assignment_modal").classList.remove("is-active");
+        }
+
+        function onSecureAccessSelectChange(select) {
+            const row = select.closest("tr");
+            const assignmentId = parseInt(row.dataset.assignmentId);
+            const asgn = findAssignment(assignmentId);
+            const wantYes = select.value === "Yes";
+            const currentlyYes = Boolean(asgn && asgn.secure_access_code);
+
+            if (wantYes === currentlyYes) {
+                return;
+            }
+
+            if (!wantYes) {
+                select.value = "Yes";
+                pendingSecureAccessDisable = { assignmentId, select };
+                document.getElementById("remove_secure_assignment_modal").classList.add("is-active");
+                return;
+            }
+
+            persistSecureAccess(assignmentId, "enable", select);
+        }
+
+        function positionSecureAssignmentStatus(el, anchorEl) {
+            if (!anchorEl || !anchorEl.getBoundingClientRect) {
+                el.style.left = "";
+                el.style.top = "";
+                return;
+            }
+
+            const rect = anchorEl.getBoundingClientRect();
+            const gap = 6;
+            let left = rect.right + gap;
+            let top = rect.top - 4;
+
+            const elWidth = el.offsetWidth;
+            const elHeight = el.offsetHeight;
+
+            if (left + elWidth > window.innerWidth - 8) {
+                left = Math.max(8, rect.left - elWidth - gap);
+            }
+            if (top < 8) {
+                top = 8;
+            }
+            if (top + elHeight > window.innerHeight - 8) {
+                top = Math.max(8, window.innerHeight - elHeight - 8);
+            }
+
+            el.style.left = left + "px";
+            el.style.top = top + "px";
+        }
+
+        function showSecureAssignmentStatus(message, isError, variant, anchorEl) {
+            const el = document.getElementById("secure_assignment_status");
+            if (!el) {
+                return;
+            }
+            el.classList.remove("is-hidden", "is-error", "is-primary", "is-warning", "is-default", "is-fading");
+            if (isError) {
+                el.classList.add("is-error");
+            } else {
+                el.classList.add(variant || "is-default");
+            }
+            el.textContent = message;
+            positionSecureAssignmentStatus(el, anchorEl);
+
+            if (secureAssignmentStatusTimeout) {
+                clearTimeout(secureAssignmentStatusTimeout);
+            }
+
+            secureAssignmentStatusTimeout = setTimeout(function() {
+                el.classList.add("is-fading");
+                setTimeout(function() {
+                    el.classList.add("is-hidden");
+                    el.classList.remove("is-fading");
+                    el.style.left = "";
+                    el.style.top = "";
+                }, 300);
+            }, 3000);
+        }
+
         function renderBulkEditTable() {
+            if (!bulkEditTbody) {
+                return;
+            }
             const field = document.getElementById("field_selector").value;
             document.getElementById("bulk_edit_message").classList.add("is-hidden");
 
-            // Update header
             const theadRow = document.getElementById("bulk_edit_thead_row");
             if (field === "dates") {
                 theadRow.innerHTML = `<th style="width:400px; text-align:left;">Title</th>` +
                     `<th style="text-align:left;">Start date</th>` +
                     `<th style="text-align:left;">Due date</th>`;
+            } else if (field === "require_secure_access") {
+                theadRow.innerHTML = `<th style="width:400px; text-align:left;">Title</th>` +
+                    `<th style="text-align:left;">${bulkEditFieldHeaders[field]}</th>`;
             } else {
                 theadRow.innerHTML = `<th style="width:600px; text-align:left;">Title</th>` +
                     `<th style="text-align:left;">${bulkEditFieldHeaders[field]}</th>`;
             }
 
-            // Build rows
-            const titleWidth = field === "dates" ? "width:400px;" : "width:600px;";
+            const titleWidth = field === "dates" ? "width:400px;" : (field === "require_secure_access" ? "width:400px;" : "width:600px;");
+            const vAlign = "middle";
             let html = "";
             for (const asgn of bulkEditAssignments) {
-                html += `<tr data-assignment-id="${asgn.id}">`;
-                html += `<td style="vertical-align:middle; text-align:left; ${titleWidth}"><a href="/assignment/{{ course_basics['id'] }}/${asgn.id}">${escapeHtml(asgn.title)}</a></td>`;
+                html += `<tr data-assignment-id="${asgn.id}" data-secure-access-code="${escapeHtml(asgn.secure_access_code || "")}">`;
+                html += `<td style="vertical-align:${vAlign}; text-align:left; ${titleWidth}"><a href="/assignment/{{ course_basics['id'] }}/${asgn.id}">${escapeHtml(asgn.title)}</a></td>`;
                 if (field === "dates") {
                     const startVal = asgn.start_date ? escapeHtml(String(asgn.start_date)) : "";
                     const dueVal = asgn.due_date ? escapeHtml(String(asgn.due_date)) : "";
                     html += `<td style="vertical-align:middle; text-align:left;"><input type="text" class="input start-date-picker" style="width:220px;" data-date="${startVal}"></td>`;
                     html += `<td style="vertical-align:middle; text-align:left;"><input type="text" class="input due-date-picker" style="width:220px;" data-date="${dueVal}"></td>`;
                 } else {
-                    html += `<td style="vertical-align:middle; text-align:left;">${createControlHTML(field, asgn)}</td>`;
+                    html += `<td style="vertical-align:${vAlign}; text-align:left;">${createControlHTML(field, asgn)}</td>`;
                 }
                 html += `</tr>`;
             }
-            document.getElementById("bulk_edit_tbody").innerHTML = html;
+            bulkEditTbody.innerHTML = html;
 
             if (field === "dates") {
                 document.querySelectorAll(".start-date-picker, .due-date-picker").forEach(input => {
@@ -147,6 +333,10 @@
                         allowInput: true
                     });
                 });
+            }
+
+            if (field === "require_secure_access") {
+                requestAnimationFrame(renderAllSecureAccessRows);
             }
         }
 
@@ -192,8 +382,16 @@
             }).done(function(data) {
                 const json_data = JSON.parse(data);
                 if (json_data["message"] === "") {
+                    if (field === "require_secure_access" && json_data["results"]) {
+                        for (const result of json_data["results"]) {
+                            const asgn = findAssignment(result.assignment_id);
+                            if (asgn) {
+                                asgn.secure_access_code = result.secure_access_code;
+                            }
+                        }
+                    }
                     for (const update of updatesForMemory) {
-                        const asgn = bulkEditAssignments.find(a => a.id === update.assignment_id);
+                        const asgn = findAssignment(update.assignment_id);
                         if (!asgn) continue;
                         if (field === "title") asgn.title = update.value.trim();
                         else if (field === "dates") { asgn.start_date = update.start_date; asgn.due_date = update.due_date; }
@@ -214,6 +412,81 @@
                 showBulkEditMessage("<p>An error occurred when connecting to the server. It may be down.</p>", "danger");
             });
         }
+
+        if (bulkEditTbody) {
+            bulkEditTbody.addEventListener("change", function(event) {
+                const select = event.target.closest(".bulk-secure-access-select");
+                if (select) {
+                    onSecureAccessSelectChange(select);
+                }
+            });
+
+            bulkEditTbody.addEventListener("click", async function(event) {
+                const copyQrButton = event.target.closest(".bulk-secure-copy-qr");
+                const copyUrlButton = event.target.closest(".bulk-secure-copy-url");
+                if (!copyQrButton && !copyUrlButton) {
+                    return;
+                }
+
+                const row = event.target.closest("tr");
+                const code = row.dataset.secureAccessCode;
+                const url = code ? getSecureAccessUrl(code) : "";
+                if (copyUrlButton) {
+                    if (!url) {
+                        showSecureAssignmentStatus("The secure link is not ready yet.", true, "is-default", copyUrlButton);
+                        return;
+                    }
+                    try {
+                        await navigator.clipboard.writeText(url);
+                        showSecureAssignmentStatus("Secure link copied to the clipboard.", false, "is-default", copyUrlButton);
+                    } catch (e) {
+                        showSecureAssignmentStatus("Unable to copy the secure link automatically. Please try again.", true, "is-default", copyUrlButton);
+                    }
+                    return;
+                }
+
+                if (!url) {
+                    showSecureAssignmentStatus("The QR code is not ready yet.", true, "is-default", copyQrButton);
+                    return;
+                }
+                const temp = document.createElement("div");
+                temp.style.position = "absolute";
+                temp.style.left = "-9999px";
+                document.body.appendChild(temp);
+                try {
+                    new QRCode(temp, {
+                        text: url,
+                        width: 1024,
+                        height: 1024,
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                    const canvas = temp.querySelector("canvas");
+                    if (!canvas) {
+                        showSecureAssignmentStatus("The QR code is not ready yet.", true, "is-default", copyQrButton);
+                        return;
+                    }
+                    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+                    await navigator.clipboard.write([new ClipboardItem({"image/png": blob})]);
+                    showSecureAssignmentStatus("QR code image copied to the clipboard.", false, "is-default", copyQrButton);
+                } catch (e) {
+                    showSecureAssignmentStatus("Unable to copy the QR code image. Try copying the secure link instead.", true, "is-default", copyQrButton);
+                } finally {
+                    temp.remove();
+                }
+            });
+        }
+
+        document.getElementById("remove_secure_assignment_modal_cancel").addEventListener("click", closeRemoveSecureAssignmentModal);
+        document.getElementById("remove_secure_assignment_modal_close").addEventListener("click", closeRemoveSecureAssignmentModal);
+        document.getElementById("remove_secure_assignment_modal_confirm").addEventListener("click", function() {
+            const pending = pendingSecureAccessDisable;
+            closeRemoveSecureAssignmentModal();
+            if (!pending) {
+                return;
+            }
+            pending.select.value = "No";
+            persistSecureAccess(pending.assignmentId, "disable", pending.select);
+        });
 
         renderBulkEditTable();
     </script>
