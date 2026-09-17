@@ -33,7 +33,7 @@ class CanvasSavedCredentialsHandler(BaseUserHandler, CanvasHandlersMixin):
             if not await self.require_canvas_course_access(course_id):
                 return
 
-            saved = read_canvas_creds_cookie(self)
+            saved = read_canvas_creds_cookie(self, course_id)
             if not saved:
                 return write_json(self, {
                     "base_url": "",
@@ -53,7 +53,7 @@ class CanvasSavedCredentialsHandler(BaseUserHandler, CanvasHandlersMixin):
             course_id = self.get_argument("codebuddy_course_id", None)
             if not await self.require_canvas_course_access(course_id):
                 return
-            clear_canvas_creds_cookie(self)
+            clear_canvas_creds_cookie(self, course_id)
             return write_json(self, {"message": "Saved Canvas credentials cleared"})
         except Exception:
             return write_json(self, {"error": traceback.format_exc()}, 500)
@@ -78,7 +78,7 @@ class CanvasAssignmentsHandler(BaseUserHandler, CanvasHandlersMixin):
             )
             rows, err, status = canvas_get_paginated(url, headers)
             if err:
-                return write_json(self, {"error": err}, status, clear_cookie=(status == 401))
+                return write_json(self, {"error": err}, status, clear_cookie=(status == 401), codebuddy_course_id=course_id)
 
             assignments = []
             for row in rows:
@@ -99,6 +99,7 @@ class CanvasAssignmentsHandler(BaseUserHandler, CanvasHandlersMixin):
                 "assignments": assignments,
                 "saved": True,
             }, save_creds={
+                "codebuddy_course_id": course_id,
                 "base_url": base_url,
                 "course_id": canvas_course_id,
                 "access_token": token,
@@ -126,7 +127,7 @@ class CanvasStudentsHandler(BaseUserHandler, CanvasHandlersMixin):
             )
             rows, err, status = canvas_get_paginated(url, headers)
             if err:
-                return write_json(self, {"error": err}, status, clear_cookie=(status == 401))
+                return write_json(self, {"error": err}, status, clear_cookie=(status == 401), codebuddy_course_id=course_id)
 
             students = []
             for row in rows:
@@ -148,6 +149,7 @@ class CanvasStudentsHandler(BaseUserHandler, CanvasHandlersMixin):
                 "students": students,
                 "saved": True,
             }, save_creds={
+                "codebuddy_course_id": course_id,
                 "base_url": base_url,
                 "course_id": canvas_course_id,
                 "access_token": token,
@@ -178,7 +180,7 @@ class CanvasGradesHandler(BaseUserHandler, CanvasHandlersMixin):
 
             result, err, status = post_canvas_grades(base_url, canvas_course_id, token, assignment_id, grades)
             if err:
-                return write_json(self, {"error": err}, status, clear_cookie=(status == 401))
+                return write_json(self, {"error": err}, status, clear_cookie=(status == 401), codebuddy_course_id=course_id)
 
             return write_json(self, {
                 "base_url": base_url,
@@ -188,6 +190,7 @@ class CanvasGradesHandler(BaseUserHandler, CanvasHandlersMixin):
                 "progress": result.get("progress"),
                 "saved": True,
             }, save_creds={
+                "codebuddy_course_id": course_id,
                 "base_url": base_url,
                 "course_id": canvas_course_id,
                 "access_token": token,
@@ -218,7 +221,7 @@ class CanvasSubmissionsHandler(BaseUserHandler, CanvasHandlersMixin):
                 base_url, canvas_course_id, token, assignment_ids
             )
             if err:
-                return write_json(self, {"error": err}, status, clear_cookie=(status == 401))
+                return write_json(self, {"error": err}, status, clear_cookie=(status == 401), codebuddy_course_id=course_id)
 
             return write_json(self, {
                 "base_url": base_url,
@@ -226,6 +229,7 @@ class CanvasSubmissionsHandler(BaseUserHandler, CanvasHandlersMixin):
                 "scores": result.get("scores") or {},
                 "saved": True,
             }, save_creds={
+                "codebuddy_course_id": course_id,
                 "base_url": base_url,
                 "course_id": canvas_course_id,
                 "access_token": token,

@@ -60,19 +60,37 @@ def normalize_canvas_base_url(raw, settings_dict):
     return urlunparse((parsed.scheme, parsed.netloc, "", "", "", "")), None
 
 
-def read_canvas_creds_cookie(handler):
+def _normalize_codebuddy_course_id(raw):
+    text = str(raw or "").strip()
+    return text or None
+
+
+def _read_all_canvas_course_creds(handler):
     raw = handler.get_secure_cookie(CANVAS_CREDS_COOKIE)
     if not raw:
-        return None
+        return {}
     try:
         data = json.loads(raw.decode("utf-8"))
     except Exception:
-        return None
+        return {}
     if not isinstance(data, dict):
+        return {}
+    courses = data.get("courses")
+    if isinstance(courses, dict):
+        return courses
+    return {}
+
+
+def read_canvas_creds_cookie(handler, codebuddy_course_id):
+    key = _normalize_codebuddy_course_id(codebuddy_course_id)
+    if not key:
         return None
-    base_url = (data.get("base_url") or "").strip()
-    course_id = str(data.get("course_id") or "").strip()
-    token = (data.get("access_token") or "").strip()
+    entry = _read_all_canvas_course_creds(handler).get(key)
+    if not isinstance(entry, dict):
+        return None
+    base_url = (entry.get("base_url") or "").strip()
+    course_id = str(entry.get("course_id") or "").strip()
+    token = (entry.get("access_token") or "").strip()
     if not base_url or not course_id or not token:
         return None
     return {
@@ -82,12 +100,17 @@ def read_canvas_creds_cookie(handler):
     }
 
 
-def apply_canvas_creds_cookie(handler, base_url, course_id, token):
-    payload = json.dumps({
+def apply_canvas_creds_cookie(handler, codebuddy_course_id, base_url, course_id, token):
+    key = _normalize_codebuddy_course_id(codebuddy_course_id)
+    if not key:
+        return
+    courses = _read_all_canvas_course_creds(handler)
+    courses[key] = {
         "base_url": base_url,
         "course_id": course_id,
         "access_token": token,
-    })
+    }
+    payload = json.dumps({"courses": courses})
     handler.set_secure_cookie(
         CANVAS_CREDS_COOKIE,
         payload,
@@ -97,12 +120,31 @@ def apply_canvas_creds_cookie(handler, base_url, course_id, token):
     )
 
 
-def clear_canvas_creds_cookie(handler):
-    handler.clear_cookie(CANVAS_CREDS_COOKIE)
+def clear_canvas_creds_cookie(handler, codebuddy_course_id=None):
+    key = _normalize_codebuddy_course_id(codebuddy_course_id)
+    if not key:
+        handler.clear_cookie(CANVAS_CREDS_COOKIE)
+        return
+    courses = _read_all_canvas_course_creds(handler)
+    if key not in courses:
+        return
+    courses.pop(key, None)
+    if not courses:
+        handler.clear_cookie(CANVAS_CREDS_COOKIE)
+        return
+    payload = json.dumps({"courses": courses})
+    handler.set_secure_cookie(
+        CANVAS_CREDS_COOKIE,
+        payload,
+        expires_days=CANVAS_CREDS_EXPIRES_DAYS,
+        httponly=True,
+        samesite="Lax",
+    )
 
 
 def parse_canvas_credentials(handler, data):
-    saved = read_canvas_creds_cookie(handler) or {}
+    codebuddy_course_id = str((data or {}).get("codebuddy_course_id") or "").strip()
+    saved = read_canvas_creds_cookie(handler, codebuddy_course_id) or {}
     raw_base = (data or {}).get("base_url")
     if raw_base is None or str(raw_base).strip() == "":
         raw_base = saved.get("base_url")
@@ -164,14 +206,18 @@ def canvas_login_id(raw):
     return login
 
 
-def write_json(handler, payload, status=200, *, clear_cookie=False, save_creds=None):
+def write_json(handler, payload, status=200, *, clear_cookie=False, save_creds=None, codebuddy_course_id=None):
     handler.set_status(status)
     handler.set_header("Content-Type", "application/json; charset=UTF-8")
+    cb_id = codebuddy_course_id
+    if save_creds and save_creds.get("codebuddy_course_id"):
+        cb_id = save_creds.get("codebuddy_course_id")
     if clear_cookie:
-        clear_canvas_creds_cookie(handler)
+        clear_canvas_creds_cookie(handler, cb_id)
     elif save_creds:
         apply_canvas_creds_cookie(
             handler,
+            cb_id,
             save_creds["base_url"],
             save_creds["course_id"],
             save_creds["access_token"],
