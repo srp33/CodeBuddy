@@ -131,7 +131,7 @@
                 async: true,
                 success: function(result) {
                     if (result == "") {
-                        modalElement.style.display = "none";
+                        modalElement.remove();
 
                         if (reload_url == "") {
                             //window.scrollTo(0, 0);
@@ -155,7 +155,7 @@
         }
 
         cancelButton.onclick = function() {
-            modalElement.style.display = "none";
+            modalElement.remove();
         }
 
         // window.onclick = function(event) {
