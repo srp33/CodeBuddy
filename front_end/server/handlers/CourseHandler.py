@@ -30,7 +30,10 @@ class CourseHandler(BaseUserHandler):
 
                     has_any_custom_scoring = len([x for x in assignment_statuses if x[2]["custom_scoring"] != ""]) > 0
 
+                    curr_datetime = get_current_datetime()
+
                     group_statuses = {}
+                    group_collapsed = {}
                     for group in assignment_groups:
                         group_title = group[0]
                         group_assignments = [a for a in assignment_statuses if a[1] == group_title]
@@ -43,7 +46,14 @@ class CourseHandler(BaseUserHandler):
                         else:
                             group_statuses[group_title] = "in_progress"
 
-                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_groups=assignment_groups, has_any_custom_scoring=has_any_custom_scoring, group_statuses=group_statuses, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=get_current_datetime(), user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                        # Undated assignments are ignored unless no assignment in the group has a due date.
+                        dated_assignments = [a for a in group_assignments if parse_db_datetime(a[2].get("due_date"))]
+                        if len(dated_assignments) == 0:
+                            group_collapsed[group_title] = group_statuses[group_title] == "completed"
+                        else:
+                            group_collapsed[group_title] = all(a[2]["completed"] or a[2]["timer_has_ended"] or parse_db_datetime(a[2]["due_date"]) < curr_datetime for a in dated_assignments)
+
+                    self.render("course.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_groups=assignment_groups, has_any_custom_scoring=has_any_custom_scoring, group_statuses=group_statuses, group_collapsed=group_collapsed, course_basics=course_basics, course_details=await self.get_course_details(course_id, True), curr_datetime=curr_datetime, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
                 else:
                     self.render("unavailable_course.html", courses=self.courses, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
         except Exception as inst:

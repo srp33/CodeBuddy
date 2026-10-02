@@ -31,7 +31,7 @@
         {% for assignment_group in assignment_groups %}
             {% if len(assignment_groups) > 1 %}
                 <div class="box has-background-white p-4" style="border: 2px solid #000;">
-                    <div class="is-flex is-justify-content-space-between is-align-items-center {% if group_statuses.get(assignment_group[0]) != "completed" %}pb-4{% end %}" style="cursor: pointer;" onclick="toggleAssignmentGroup(this)">
+                    <div class="is-flex is-justify-content-space-between is-align-items-center {% if not group_collapsed.get(assignment_group[0]) %}pb-4{% end %}" style="cursor: pointer;" onclick="toggleAssignmentGroup(this)">
                         <div class="is-size-5 has-text-weight-bold">
                             {% if assignment_group[0] == "" %}
                                 Other
@@ -52,12 +52,12 @@
                                     <span class="has-text-black">Not started</span>
                                 {% end %}
                             </div>
-                            <i class="fas {% if group_statuses.get(assignment_group[0]) == "completed" %}fa-chevron-right{% else %}fa-chevron-down{% end %} group-chevron has-text-grey"></i>
+                            <i class="fas {% if group_collapsed.get(assignment_group[0]) %}fa-chevron-right{% else %}fa-chevron-down{% end %} group-chevron has-text-grey"></i>
                         </div>
                     </div>
             {% end %}
 
-            <div class="table-container group-content" {% if len(assignment_groups) > 1 and group_statuses.get(assignment_group[0]) == "completed" %}style="display:none;"{% end %}>
+            <div class="table-container group-content" {% if len(assignment_groups) > 1 and group_collapsed.get(assignment_group[0]) %}style="display:none;"{% end %}>
                 <table class="table is-striped" id="assignment_table">
                     <thead>
                         <tr>

@@ -17,3 +17,30 @@ class CleanUpCoursesHandler(BaseUserHandler):
                 self.render("permissions.html")
         except Exception as inst:
             render_error(self, traceback.format_exc())
+
+    async def post(self):
+        try:
+            if not self.is_administrator:
+                return self.write("Error: You do not have permission to perform this task.")
+
+            course_ids_raw = self.get_body_argument("course_ids", default="").strip()
+            if not course_ids_raw:
+                return self.write("Error: Please select at least one course.")
+
+            course_ids = []
+            for part in course_ids_raw.split(","):
+                part = part.strip()
+                if not part:
+                    continue
+                try:
+                    course_ids.append(int(part))
+                except ValueError:
+                    return self.write("Error: Invalid course id.")
+
+            if len(course_ids) == 0:
+                return self.write("Error: Please select at least one course.")
+
+            for course_id in course_ids:
+                self.content.delete_course(course_id)
+        except Exception as inst:
+            return self.write(f"Error: {traceback.format_exc()}")

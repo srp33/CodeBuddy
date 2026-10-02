@@ -18,7 +18,7 @@
                     <th>Course</th>
                     <th style="text-align: center;">Visibility</th>
                     <th>Last update</th>
-                    <th style="text-align: center;">Delete</th>
+                    <th style="text-align: center;">Select</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,27 +38,84 @@
                         {% end %}
                     </td>
                     <td style="text-align: center;">
-                        <a onclick="showPostModal('delete_course', 'Delete course', {'course_id': '{{ course[0] }}'}, '/clean_up_courses')">
-                            <i class="far fa-trash-alt"></i>
-                        </a>
+                        <input type="checkbox" name="selected_course" value="{{ course[0] }}" data-title="{{ course[1]['title'] }}" aria-label="Select {{ course[1]['title'] }}">
                     </td>
                 </tr>
                 {% end %}
             </tbody>
         </table>
     </div>
+
+    <div class="buttons">
+        <button type="button" class="button is-dark" id="delete_selected_btn" disabled onclick="confirmDeleteCourses();">Delete</button>
+    </div>
 {% else %}
     <p><strong>There are no courses.</strong></p>
 {% end %}
 
 <script>
-    function delete_course_build_body(data_obj, messageElement) {
-        pElement = document.createElement("p");
-        pElement.innerHTML = "Are you sure you want to delete this course?";
-        messageElement.appendChild(pElement);
+    function getSelectedCourses() {
+        var selected = [];
+        document.querySelectorAll("input[name='selected_course']:checked").forEach(function(checkbox) {
+            selected.push({
+                id: checkbox.value,
+                title: checkbox.getAttribute("data-title") || checkbox.value
+            });
+        });
+        return selected;
     }
 
-    function delete_course_get_post_url(data_obj) {
-        return `/delete_course/${data_obj.course_id}`;
+    function updateDeleteButton() {
+        var btn = document.getElementById("delete_selected_btn");
+        if (btn) {
+            btn.disabled = getSelectedCourses().length === 0;
+        }
     }
+
+    function confirmDeleteCourses() {
+        var selected = getSelectedCourses();
+        if (selected.length === 0) {
+            return;
+        }
+
+        showPostModal("delete_courses", "Delete courses", {courses: selected}, "/clean_up_courses", " while the selected courses are deleted and the page refreshes\u2026");
+    }
+
+    function delete_courses_build_body(data_obj, messageElement) {
+        var pElement = document.createElement("p");
+        if (data_obj.courses.length === 1) {
+            pElement.textContent = "Are you sure you want to delete this course?";
+        } else {
+            pElement.textContent = "Are you sure you want to delete these courses?";
+        }
+        messageElement.appendChild(pElement);
+
+        var listElement = document.createElement("ul");
+        data_obj.courses.forEach(function(course) {
+            var itemElement = document.createElement("li");
+            itemElement.textContent = course.title;
+            listElement.appendChild(itemElement);
+        });
+        messageElement.appendChild(listElement);
+    }
+
+    function delete_courses_get_post_data() {
+        var selected = getSelectedCourses();
+        if (selected.length === 0) {
+            return {error: "Please select at least one course."};
+        }
+
+        return {
+            course_ids: selected.map(function(course) { return course.id; }).join(",")
+        };
+    }
+
+    function delete_courses_get_post_url(data_obj) {
+        return "/clean_up_courses";
+    }
+
+    document.querySelectorAll("input[name='selected_course']").forEach(function(checkbox) {
+        checkbox.addEventListener("change", updateDeleteButton);
+    });
+    updateDeleteButton();
 </script>

@@ -311,12 +311,12 @@ class Content:
         return updated_dict
     
     def update_when_content_updated(self, scope):
-        sql = '''UPDATE when_content_updated
-                 SET when_updated = datetime('now')
-                 WHERE scope = ?'''
+        sql = '''INSERT INTO when_content_updated (scope, when_updated)
+                 VALUES (?, datetime('now'))
+                 ON CONFLICT(scope) DO UPDATE SET when_updated = datetime('now')'''
 
         try:
-            self.execute(sql, (scope, ))
+            self.execute(sql, (str(scope), ))
         except:
             print(traceback.format_exc())
 
@@ -2337,6 +2337,7 @@ ORDER BY student_name
             self.execute(sql, [course_basics["title"], course_basics["visible"], course_details["introduction"], course_details["passcode"], course_details["email_address"], course_details["highlighted"], course_details["virtual_assistant_config"], templates_value, course_details["date_updated"], course_basics["id"]])
 
             self.update_when_content_updated(course_basics["id"])
+            self.update_when_content_updated("user")
         else:
             sql = '''INSERT INTO courses (title, visible, introduction, passcode, email_address, highlighted, virtual_assistant_config, templates, date_created, date_updated)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -2781,6 +2782,7 @@ ORDER BY student_name
         self.execute(sql, (new_course_id, existing_course_basics['id'],))
 
         self.update_when_content_updated(new_course_id)
+        self.update_when_content_updated("user")
 
     def copy_assignment(self, course_id, assignment_id, new_title):
         sql = '''INSERT INTO assignments (course_id, title, visible, introduction, date_created, date_updated, start_date, due_date, allow_late, late_percent, view_answer_late, has_timer, hour_timer, minute_timer, restrict_other_assignments, allowed_ip_addresses, allowed_external_urls, show_run_button, custom_scoring,  require_security_codes, support_questions, use_virtual_assistant, assignment_group_id, allow_students_view_submissions)
@@ -3161,6 +3163,7 @@ ORDER BY student_name
                         WHERE course_id = ?''', (course_id, ))
         
         self.delete_content_updated(course_id)
+        self.update_when_content_updated("user")
 
     def delete_course_submissions(self, course_id):
         self.execute('''DELETE FROM submissions
