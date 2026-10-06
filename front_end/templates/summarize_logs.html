@@ -107,6 +107,7 @@
             type: 'POST',
             url: `/summarize_logs`,
             data: JSON.stringify(query_details),
+            contentType: "application/json",
             async: true
             })
             .done(function(data) {

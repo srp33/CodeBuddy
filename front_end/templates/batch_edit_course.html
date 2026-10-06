@@ -378,6 +378,7 @@
                 type: "POST",
                 url: "/batch_edit_course/{{ course_basics['id'] }}",
                 data: JSON.stringify({ field: field, updates: updatesForServer }),
+                contentType: "application/json",
                 async: true
             }).done(function(data) {
                 const json_data = JSON.parse(data);

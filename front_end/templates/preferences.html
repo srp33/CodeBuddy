@@ -144,6 +144,7 @@
             type: 'POST',
             url: "/preferences/{{ user_info['user_id'] }}",
             data: JSON.stringify(data_obj),
+            contentType: "application/json",
             async: true})
             .done(function(message) {
                 if (message.startsWith("Error:")) {

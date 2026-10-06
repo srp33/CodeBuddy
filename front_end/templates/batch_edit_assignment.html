@@ -155,6 +155,7 @@
                     type: "POST",
                     url: "/batch_edit_assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
                     data: JSON.stringify({ field: field, updates: updates }),
+                    contentType: "application/json",
                     async: true
                 }).done(function(data) {
                     const json_data = JSON.parse(data);

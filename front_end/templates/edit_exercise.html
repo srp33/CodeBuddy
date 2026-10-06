@@ -795,6 +795,7 @@
                 type: 'POST',
                 url: "/edit_exercise/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/" + exercise_basics_obj['id'],
                 data: JSON.stringify(submission_obj),
+                contentType: "application/json",
                 async: true})
                 .done(function(data) {
                     var json_data = JSON.parse(data);
