@@ -71,10 +71,10 @@ class AssignmentHandler(BaseUserHandler):
             prerequisite_assignments_not_completed = await self.get_prerequisite_assignments_not_completed(course_id, assignment_details, self.get_current_user())
 
             if len(prerequisite_assignments_not_completed) > 0:
-                return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="prerequisite_assignments_not_completed", prerequisite_assignments_not_completed=prerequisite_assignments_not_completed, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                return await self.render_unavailable_assignment(self.courses, assignment_statuses, course_basics, assignment_basics, assignment_details, "prerequisite_assignments_not_completed", prerequisite_assignments_not_completed=prerequisite_assignments_not_completed)
 
             if assignment_details.get("secure_access_code") and not self.content.student_has_secure_assignment_access(course_id, assignment_id, self.get_current_user()):
-                return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error="secured_assignment", user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+                return await self.render_unavailable_assignment(self.courses, assignment_statuses, course_basics, assignment_basics, assignment_details, "secured_assignment")
 
             confirmation_code = None
             needs_security_code = False
@@ -101,7 +101,7 @@ class AssignmentHandler(BaseUserHandler):
             return self.render("assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, assignment_is_complete=assignment_is_complete, exercise_statuses=exercise_statuses, has_non_default_weight=has_non_default_weight, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, custom_scoring_list=custom_scoring_list,
             timer_status=timer_status, timer_start_time=timer_start_time, timer_hours=timer_hours, timer_minutes=timer_minutes, timer_deadline=timer_deadline, confirmation_code=confirmation_code, needs_security_code=needs_security_code, next_assignment_id=next_assignment_id, previous_assignment_id=previous_assignment_id, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id), email_configured=email_configured)
         else:
-            return self.render("unavailable_assignment.html", courses=self.courses, assignment_statuses=assignment_statuses, course_basics=course_basics, assignment_basics=assignment_basics, assignment_details=assignment_details, error=render_status, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id))
+            return await self.render_unavailable_assignment(self.courses, assignment_statuses, course_basics, assignment_basics, assignment_details, render_status)
         
     def add_external_url_dict(self, assignment_details):
         if assignment_details["allowed_external_urls"] != "":
