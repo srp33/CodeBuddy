@@ -8,6 +8,7 @@
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
             <link rel="stylesheet" href="/static/css/modal.css">
+            {% include "prevent_history_swipe.html" %}
 
             {% if assignment_details["due_date"] and assignment_details["due_date_passed"] %}
                 <div class='notification is-warning is-light'>

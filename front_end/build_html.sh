@@ -95,6 +95,7 @@ cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_botto
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html generate_security_codes.html container_bottom.html /tmp/footer.html > "$OUTPUT/generate_security_codes.html"
 cp verify_security_code_form.html "$OUTPUT/verify_security_code_form.html"
 cp assignment_buttons.html "$OUTPUT/assignment_buttons.html"
+cp prevent_history_swipe.html "$OUTPUT/prevent_history_swipe.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html verify_security_code.html container_bottom.html /tmp/footer.html > "$OUTPUT/verify_security_code.html"
 cat header.html navbar_top.html navbar_course.html navbar_menu.html navbar_bottom.html container_color.html view_security_codes.html container_bottom.html /tmp/footer.html > "$OUTPUT/view_security_codes.html"
 

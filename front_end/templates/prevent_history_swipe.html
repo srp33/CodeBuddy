@@ -1,0 +1,40 @@
+<style>
+    html, body {
+        overscroll-behavior-x: none;
+    }
+</style>
+<script>
+    (function () {
+        function elementCanConsumeHorizontalScroll(startNode, deltaX) {
+            var node = startNode && startNode.nodeType === 1 ? startNode : (startNode ? startNode.parentElement : null);
+
+            while (node && node !== document.documentElement) {
+                var overflowX = window.getComputedStyle(node).overflowX;
+                if ((overflowX === "auto" || overflowX === "scroll" || overflowX === "overlay") && node.scrollWidth > node.clientWidth + 1) {
+                    if (deltaX < 0 && node.scrollLeft > 0) {
+                        return true;
+                    }
+                    if (deltaX > 0 && node.scrollLeft + node.clientWidth < node.scrollWidth - 1) {
+                        return true;
+                    }
+                }
+                node = node.parentElement;
+            }
+
+            return false;
+        }
+
+        // A horizontal trackpad swipe is a wheel event. Cancelling it stops Chrome, Edge,
+        // and Firefox from treating the swipe as Back/Forward. The listener is on <html>
+        // rather than window/document/body so Safari can still honor preventDefault.
+        document.documentElement.addEventListener("wheel", function (event) {
+            if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) {
+                return;
+            }
+            if (elementCanConsumeHorizontalScroll(event.target, event.deltaX)) {
+                return;
+            }
+            event.preventDefault();
+        }, {passive: false, capture: true});
+    })();
+</script>

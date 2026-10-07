@@ -8,6 +8,7 @@
     {% if assignment_basics["exists"] %}
         {% if exercise_basics["exists"] %}
             <link rel="stylesheet" href="/static/css/modal.css">
+            {% include "prevent_history_swipe.html" %}
 
             <div class="columns is-vcentered">
                 {% if use_virtual_assistant %}
