@@ -94,6 +94,9 @@ class ExerciseHandler(BaseUserHandler):
                     "exercise_comment_date": exercise_comment_date
             }
 
+            if assignment_details["has_timer"] and not show:
+                self.set_header("Cache-Control", "no-store")
+
             if exercise_details["back_end"] == "multiple_choice":
                 args["selected_answer_indices"] = []
                 answer_dict = json.loads(exercise_details["solution_code"])

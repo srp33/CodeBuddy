@@ -12,6 +12,14 @@ class AskVirtualAssistantHandler(BaseUserHandler):
         out_dict = {"message": "", "success": False}
 
         try:
+            course_basics = await self.get_course_basics(course_id)
+            assignment_details = await self.get_assignment_details(course_basics, assignment_id)
+
+            if await self.timer_blocks_student_access(course_id, assignment_id, assignment_details):
+                out_dict["message"] = "This timed assignment has ended."
+                self.write(json.dumps(out_dict, default=str))
+                return
+
             course_details = await self.get_course_details(course_id)
 
             virtual_assistant_max_per_exercise = course_details["virtual_assistant_config"]["max_per_exercise"]

@@ -9,6 +9,13 @@ from BaseUserHandler import *
 class SavePresubmissionHandler(BaseUserHandler):
     async def post(self, course_id, assignment_id, exercise_id):
         try:
+            course_basics = await self.get_course_basics(course_id)
+            assignment_details = await self.get_assignment_details(course_basics, assignment_id)
+
+            if await self.timer_blocks_student_access(course_id, assignment_id, assignment_details):
+                self.write("This timed assignment has ended.")
+                return
+
             user_id = self.get_current_user()
             presubmission = self.request.body.decode("utf-8")
 

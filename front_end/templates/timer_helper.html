@@ -204,5 +204,18 @@
         {% end %}
 
         var has_shown_timer_warning = false;
+
+        // The assignment page defines num_exercises. Exercise pages do not.
+        // Check inside pageshow so that script has already run. Restoring an
+        // exercise from the back-forward cache skips the server timer check,
+        // so reload so an ended assignment redirects away.
+        window.addEventListener("pageshow", function (event) {
+            if (typeof num_exercises !== "undefined") {
+                return;
+            }
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
     </script>
 {% end %}

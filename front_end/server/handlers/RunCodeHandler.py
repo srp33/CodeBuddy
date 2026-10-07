@@ -15,7 +15,13 @@ class RunCodeHandler(BaseUserHandler):
 
             course_basics = await self.get_course_basics(course_id)
             assignment_basics = await self.get_assignment_basics(course_basics, assignment_id)
+            assignment_details = await self.get_assignment_details(course_basics, assignment_id)
             exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
+
+            if await self.timer_blocks_student_access(course_id, assignment_id, assignment_details):
+                out_dict["message"] = "This timed assignment has ended."
+                self.write(json.dumps(out_dict, default=str))
+                return
 
             single_test = self.get_query_argument('test', None)
             if single_test is not None and single_test in exercise_details["tests"]:

@@ -25,6 +25,10 @@ class SubmitHandler(BaseUserHandler):
             exercise_details = await self.get_exercise_details(course_basics, assignment_basics, exercise_id)
 
             set_assignment_due_date_passed(assignment_details)
+
+            if await self.timer_blocks_student_access(course_id, assignment_id, assignment_details):
+                return self.record_error(out_dict, "ineligible: This timed assignment has ended.")
+
             if assignment_details["due_date_passed"] and not assignment_details["allow_late"]:
                 return self.record_error(out_dict, "ineligible: The due date has passed for this assignment.")
 

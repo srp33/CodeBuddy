@@ -294,6 +294,16 @@ class BaseUserHandler(BaseRequestHandler):
 
         return True
 
+    async def timer_blocks_student_access(self, course_id, assignment_id, assignment_details):
+        if not assignment_details["has_timer"]:
+            return False
+
+        if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
+            return False
+
+        timer_status, __, __, __, __ = get_student_timer_status(self.content, course_id, assignment_id, assignment_details, self.user_info["user_id"])
+        return timer_status != "timer_in_progress"
+
     async def get_prerequisite_assignments_not_completed(self, course_id, assignment_details, student_id):
         prerequisite_assignments_not_completed = []
 
