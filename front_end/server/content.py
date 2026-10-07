@@ -3237,6 +3237,96 @@ ORDER BY student_name
                         WHERE course_id = ?
                           AND assignment_id = ?''', (course_id, assignment_id, ))
 
+    def delete_student_assignment_submissions(self, course_id, assignment_id, user_id):
+        self.execute('''DELETE FROM test_outputs
+                        WHERE submission_id IN (
+                          SELECT submission_id
+                          FROM submissions
+                          WHERE course_id = ?
+                            AND assignment_id = ?
+                            AND user_id = ?)''', (course_id, assignment_id, user_id, ))
+
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, user_id, ))
+
+        self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, user_id, ))
+
+        self.execute('''DELETE FROM exercise_comments
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, user_id, ))
+
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, user_id, ))
+
+        self.execute('''DELETE FROM user_assignment_starts
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, user_id, ))
+
+        self.execute('''DELETE FROM virtual_assistant_interactions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, user_id, ))
+
+        self.execute('''DELETE FROM thumbs
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, user_id, ))
+
+    def delete_student_exercise_submissions(self, course_id, assignment_id, exercise_id, user_id):
+        self.execute('''DELETE FROM test_outputs
+                        WHERE submission_id IN (
+                          SELECT submission_id
+                          FROM submissions
+                          WHERE course_id = ?
+                            AND assignment_id = ?
+                            AND exercise_id = ?
+                            AND user_id = ?)''', (course_id, assignment_id, exercise_id, user_id, ))
+
+        self.execute('''DELETE FROM submissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, exercise_id, user_id, ))
+
+        self.execute('''DELETE FROM scores
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, exercise_id, user_id, ))
+
+        self.execute('''DELETE FROM exercise_comments
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, exercise_id, user_id, ))
+
+        self.execute('''DELETE FROM presubmissions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, exercise_id, user_id, ))
+
+        self.execute('''DELETE FROM virtual_assistant_interactions
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, exercise_id, user_id, ))
+
+        self.execute('''DELETE FROM thumbs
+                        WHERE course_id = ?
+                          AND assignment_id = ?
+                          AND exercise_id = ?
+                          AND user_id = ?''', (course_id, assignment_id, exercise_id, user_id, ))
+
     async def delete_exercise_submissions(self, course_id, assignment_id, exercise_id):
         self.execute('''DELETE FROM submissions
                         WHERE course_id = ?

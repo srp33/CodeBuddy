@@ -39,12 +39,25 @@
     <p class="mt-4 mb-0">
         <a class="button" href="/view_exercise_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}">View exercise scores</a>
         <a class="button" href="/view_assignment_scores/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}">View assignment scores</a>
+        <a class="button" onclick="showPostModal('delete_student_exercise_submissions', 'Purge student\'s submissions', {}, '', ' while this student\'s submissions are purged and the page refreshes\u2026')">Purge student's submissions</a>
     </p>
 </div>
+
+<link rel="stylesheet" href="/static/css/modal.css">
 
 <p class="mt-3 mb-0 is-size-6 has-text-grey" id="student_nav_shortcut_help"></p>
 
 <script>
+    function delete_student_exercise_submissions_build_body(data_obj, messageElement) {
+        pElement = document.createElement("p");
+        pElement.innerHTML = "Are you sure you want to purge all submissions and the score for <strong>{{ student_info['name'] }} ({{ student_id }})</strong> on this exercise?";
+        messageElement.appendChild(pElement);
+    }
+
+    function delete_student_exercise_submissions_get_post_url(data_obj) {
+        return `/delete_student_exercise_submissions/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}/{{ exercise_basics['id'] }}/{{ student_id }}`;
+    }
+
     function updateScore() {
         let score = $("#score")[0].value;
 

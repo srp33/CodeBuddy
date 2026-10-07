@@ -54,6 +54,8 @@ def make_app(settings_dict):
             url(r"/delete_course_submissions/([^/]+)?", DeleteCourseSubmissionsHandler, name="delete_course_submissions"),
             url(r"/delete_exercise/([^/]+)/([^/]+)/([^/]+)?", DeleteExerciseHandler, name="delete_exercise"),
             url(r"/delete_exercise_submissions/([^/]+)/([^/]+)/([^/]+)?", DeleteExerciseSubmissionsHandler, name="delete_exercise_submissions"),
+            url(r"/delete_student_assignment_submissions/([^/]+)/([^/]+)/([^/]+)", DeleteStudentAssignmentSubmissionsHandler, name="delete_student_assignment_submissions"),
+            url(r"/delete_student_exercise_submissions/([^/]+)/([^/]+)/([^/]+)/([^/]+)", DeleteStudentExerciseSubmissionsHandler, name="delete_student_exercise_submissions"),
             url(r"/delete_question/([^/]+)", DeleteQuestionHandler, name="delete_question"),
             url(r"/devlogin", DevelopmentLoginHandler, name="devlogin"),
             url(r"/diff", DiffHandler, name="diff"),
