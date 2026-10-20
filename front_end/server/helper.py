@@ -36,8 +36,6 @@ import traceback
 import ujson
 import urllib.parse
 import yaml
-from yaml import load
-from yaml import Loader
 
 def run_command(command):
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -310,7 +308,7 @@ def convert_dict_to_yaml(the_dict):
     return yaml.dump(the_dict)
 
 def load_yaml_dict(yaml_text):
-    return load(yaml_text, Loader=Loader)
+    return yaml.safe_load(yaml_text)
 
 def escape_json_string(json_string):
     chars = ["\\","\'","\""]

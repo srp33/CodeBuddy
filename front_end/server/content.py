@@ -14,7 +14,6 @@ import math
 import re
 import sqlite3
 import traceback
-from yaml import load
 #import zipfile
 
 # IMPORTANT: When creating/modifying queries that include any user input,
