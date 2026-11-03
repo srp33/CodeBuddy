@@ -143,15 +143,10 @@
         });
     };
 
-    // Initialize the modal combobox.
+    // Initialize the submit-modal partner combobox.
     var modalInput    = document.getElementById("partner_name");
     var modalDropdown = document.getElementById("partner_name_dropdown");
     window.makePartnerCombobox(modalInput, modalDropdown, null);
-
-    // Initialize the navbar combobox, syncing selections back to the modal input.
-    var navbarInput    = document.getElementById("partner_name_inline");
-    var navbarDropdown = document.getElementById("partner_dropdown");
-    window.makePartnerCombobox(navbarInput, navbarDropdown, modalInput);
 </script>
 
 {% if support_questions %}
