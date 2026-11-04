@@ -31,7 +31,8 @@ class ViewInstructorSolutionHandler(BaseUserHandler):
 
             user_code = self.content.get_most_recent_submission_code(course_id, assignment_id, exercise_id, user_info["user_id"], exercise_details["back_end"] != "multiple_choice")
 
-            should_show = await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignment_statuses, self.courses, assignment_basics, course_basics, self.content.is_taking_timed_assignment(self.get_current_user(), assignment_id)[1])
+            __, is_taking_restricted_assignment, restricted_assignment_title = self.content.is_taking_timed_assignment(self.get_current_user(), assignment_id)
+            should_show = await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignment_statuses, self.courses, assignment_basics, course_basics, is_taking_restricted_assignment, restricted_assignment_title)
 
             if should_show:
                 next_prev_exercises = self.content.get_next_prev_exercises(course_id, assignment_id, exercise_id, exercise_statuses)

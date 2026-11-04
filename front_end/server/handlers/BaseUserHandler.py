@@ -234,8 +234,18 @@ class BaseUserHandler(BaseRequestHandler):
             "exercise_statuses": exercise_statuses,
         }
 
+    def add_external_url_dict(self, assignment_details):
+        if assignment_details.get("allowed_external_urls"):
+            assignment_details["allowed_external_urls_dict"] = {}
+            for url in assignment_details["allowed_external_urls"].split("\n"):
+                url = url.strip()
+                if url:
+                    assignment_details["allowed_external_urls_dict"][url] = urllib.parse.quote(url)
+
     async def render_unavailable_assignment(self, courses, assignment_statuses, course_basics, assignment_basics, assignment_details, error, **extra):
         navigation_args = await self.get_assignment_navigation_args(course_basics, assignment_basics, assignment_statuses)
+        extra.setdefault("restricted_assignment_title", None)
+        self.add_external_url_dict(assignment_details)
 
         self.render(
             "unavailable_assignment.html",
@@ -252,7 +262,7 @@ class BaseUserHandler(BaseRequestHandler):
             **extra,
         )
 
-    async def check_whether_should_show_exercise(self, course_id, assignment_id, assignment_details, assignment_statuses, courses, assignment_basics, course_basics, is_taking_restricted_assignment):
+    async def check_whether_should_show_exercise(self, course_id, assignment_id, assignment_details, assignment_statuses, courses, assignment_basics, course_basics, is_taking_restricted_assignment, restricted_assignment_title=None):
         if self.is_administrator or await self.is_instructor_for_course(course_id) or await self.is_assistant_for_course(course_id):
             return True
         
@@ -264,7 +274,7 @@ class BaseUserHandler(BaseRequestHandler):
             return False
 
         if is_taking_restricted_assignment:
-            await self.render_unavailable_assignment(courses, assignment_statuses, course_basics, assignment_basics, assignment_details, "restrict_other_assignments")
+            await self.render_unavailable_assignment(courses, assignment_statuses, course_basics, assignment_basics, assignment_details, "restrict_other_assignments", restricted_assignment_title=restricted_assignment_title)
 
             return False
 

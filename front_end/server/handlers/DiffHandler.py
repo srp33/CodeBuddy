@@ -28,7 +28,8 @@ class DiffHandler(BaseUserHandler):
             assignment_statuses = await self.get_assignment_statuses(course_basics)
             assignment_details = await self.get_assignment_details(course_basics, assignment_id)
 
-            if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignment_statuses, self.courses, assignment_basics, course_basics, self.content.is_taking_timed_assignment(self.get_current_user(), assignment_id)[1]):
+            __, is_taking_restricted_assignment, restricted_assignment_title = self.content.is_taking_timed_assignment(self.get_current_user(), assignment_id)
+            if not await self.check_whether_should_show_exercise(course_id, assignment_id, assignment_details, assignment_statuses, self.courses, assignment_basics, course_basics, is_taking_restricted_assignment, restricted_assignment_title):
                 return
 
             args = {"expected": expected_output, "actual": actual_output, "diff": diff_output}

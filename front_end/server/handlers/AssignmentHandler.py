@@ -103,11 +103,3 @@ class AssignmentHandler(BaseUserHandler):
         else:
             return await self.render_unavailable_assignment(self.courses, assignment_statuses, course_basics, assignment_basics, assignment_details, render_status)
         
-    def add_external_url_dict(self, assignment_details):
-        if assignment_details["allowed_external_urls"] != "":
-            assignment_details["allowed_external_urls_dict"] = {}
-            
-            if assignment_details["allowed_external_urls"]:
-                for url in assignment_details["allowed_external_urls"].split("\n"):
-                    url = url.strip()
-                    assignment_details["allowed_external_urls_dict"][url] = urllib.parse.quote(url)
