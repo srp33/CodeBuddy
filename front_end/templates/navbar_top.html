@@ -45,6 +45,16 @@
     function toggleDropdown(div_id) {
         var element = document.getElementById(div_id);
         element.classList.toggle('is-active');
+        if (element.classList.contains('is-active')) {
+            var menu = element.querySelector('.navbar-dropdown');
+            var current = menu && menu.querySelector('.navbar-item.is-current');
+            if (current) {
+                // Defer until the menu is visible so scroll metrics are correct.
+                requestAnimationFrame(function() {
+                    current.scrollIntoView({ block: 'nearest' });
+                });
+            }
+        }
     }
 
     window.addEventListener('click', function(e) {

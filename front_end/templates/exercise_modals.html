@@ -105,7 +105,8 @@
             });
         });
 
-        input.addEventListener("focus", openDropdown);
+        // Open on click/typing/ArrowDown only — not on focus — so the Submit
+        // modal can autofocus the field without immediately showing all names.
         input.addEventListener("click", openDropdown);
         input.addEventListener("input", function() {
             highlightedIndex = -1;
