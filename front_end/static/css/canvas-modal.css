@@ -111,6 +111,44 @@
 
 .canvas-score-section {
   margin-bottom: 1.25rem;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+}
+
+.canvas-score-summary {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+}
+
+.canvas-score-summary::-webkit-details-marker {
+  display: none;
+}
+
+.canvas-score-summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1em;
+  color: #363636;
+  font-weight: 700;
+}
+
+.canvas-score-section[open] > .canvas-score-summary::before {
+  content: "▾";
+}
+
+.canvas-score-summary-title {
+  flex: 1 1 auto;
+}
+
+.canvas-score-summary .canvas-push-status {
+  flex: 1 1 12rem;
+  font-weight: 500;
 }
 
 .canvas-group-heading {
@@ -137,6 +175,7 @@
 
 .canvas-score-section .canvas-table-wrap {
   max-height: none;
+  margin-top: 0.75rem;
 }
 
 .canvas-spinner {

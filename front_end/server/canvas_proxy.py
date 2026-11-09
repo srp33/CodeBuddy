@@ -238,8 +238,9 @@ def post_canvas_grades(base_url, course_id, token, assignment_id, grades):
             score = float(row.get("score"))
         except (TypeError, ValueError):
             return None, f"Invalid score for Canvas user {uid}", 400
-        if score < 0 or score > 100:
-            return None, f"Score for Canvas user {uid} must be between 0 and 100", 400
+        # Canvas allows percentages above 100% for extra credit; only reject negatives.
+        if score < 0:
+            return None, f"Score for Canvas user {uid} must be at least 0", 400
         form[f"grade_data[{uid}][posted_grade]"] = f"{score:g}%"
         uploaded += 1
 

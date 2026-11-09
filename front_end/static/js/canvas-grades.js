@@ -635,6 +635,12 @@
         return;
       }
 
+      const openIds = new Set(
+        Array.from(root.querySelectorAll(".canvas-score-section[open]"))
+          .map((el) => el.getAttribute("data-assignment-id"))
+          .filter(Boolean)
+      );
+
       root.innerHTML = selected.map((item) => {
         const title = this._assignmentTitle(item.codebuddyId);
         const note = this.state.pushNotes[String(item.codebuddyId)] || "";
@@ -649,10 +655,13 @@
             `).join("")
           : `<tr><td colspan="3"><em>No aligned students.</em></td></tr>`;
         const noteClass = note.ok === false ? "is-error" : (note.ok ? "is-success" : "");
+        const isOpen = openIds.has(String(item.codebuddyId));
         return `
-          <section class="canvas-score-section" data-assignment-id="${esc(item.codebuddyId)}">
-            <p class="mb-1 has-text-weight-semibold">${esc(title)}</p>
-            <div class="canvas-push-status ${noteClass} mb-2">${esc(note.message || "")}</div>
+          <details class="canvas-score-section" data-assignment-id="${esc(item.codebuddyId)}"${isOpen ? " open" : ""}>
+            <summary class="canvas-score-summary">
+              <span class="canvas-score-summary-title">${esc(title)}</span>
+              <span class="canvas-push-status ${noteClass}">${esc(note.message || "")}</span>
+            </summary>
             <div class="table-container canvas-table-wrap">
               <table class="table is-striped is-fullwidth">
                 <thead>
@@ -665,7 +674,7 @@
                 <tbody>${body}</tbody>
               </table>
             </div>
-          </section>
+          </details>
         `;
       }).join("");
 
