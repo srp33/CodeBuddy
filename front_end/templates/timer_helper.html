@@ -11,6 +11,11 @@
 
             <p>Please make sure you have submitted all exercises that you wish to submit before ending this assignment. <span class="has-text-weight-bold">Are you sure you want to end the assignment?</span></p>
 
+            <div id="stop_timer_unsubmitted" class="mt-3 mb-3" style="display:none;">
+                <p class="has-text-weight-semibold mb-2">You have not completed the following exercise(s):</p>
+                <ul id="stop_timer_unsubmitted_list"></ul>
+            </div>
+
             <p class="buttons">
                 <a id="stop_timer_button" class="modal-button button is-dark">End assignment</a>
                 <button type="button" id="stop_timer_cancel_button" class="modal-button button is-light">Cancel</button>
@@ -163,14 +168,59 @@
                 });
         }
 
+        function populateUnsubmittedExercises(titles) {
+            var container = document.getElementById("stop_timer_unsubmitted");
+            var list = document.getElementById("stop_timer_unsubmitted_list");
+            if (!container || !list) return;
+
+            list.innerHTML = "";
+            if (!titles || !titles.length) {
+                container.style.display = "none";
+                return;
+            }
+
+            titles.forEach(function(title) {
+                var item = document.createElement("li");
+                item.textContent = title;
+                list.appendChild(item);
+            });
+            container.style.display = "block";
+        }
+
         function showStopTimerModal() {
             var modal = document.getElementById("stop_timer_modal");
-            var span = document.getElementsByClassName("close")[0];
-            modal.style.display = "block";
-
+            var span = document.getElementById("stop_timer_close");
             var cancelButton = document.getElementById("stop_timer_cancel_button");
             var stopTimerButton = document.getElementById("stop_timer_button");
-            $("#stop_timer_error_message").addClass("invisible");
+            var container = document.getElementById("stop_timer_unsubmitted");
+            var list = document.getElementById("stop_timer_unsubmitted_list");
+
+            if (container) container.style.display = "none";
+            if (list) list.innerHTML = "<li><em>Checking for incomplete exercises…</em></li>";
+            if (container) container.style.display = "block";
+            modal.style.display = "block";
+
+            $.ajax({
+                type: "POST",
+                url: "/assignment/{{ course_basics['id'] }}/{{ assignment_basics['id'] }}",
+                data: "list_unsubmitted_exercises",
+                async: true
+            })
+            .done(function(response_message) {
+                var titles = [];
+                try {
+                    titles = typeof response_message === "string"
+                        ? JSON.parse(response_message)
+                        : response_message;
+                    if (!Array.isArray(titles)) titles = [];
+                } catch (e) {
+                    titles = [];
+                }
+                populateUnsubmittedExercises(titles);
+            })
+            .fail(function() {
+                populateUnsubmittedExercises([]);
+            });
 
             stopTimerButton.onclick = function() {
                 post_timer_change("stop_timer");
@@ -181,8 +231,10 @@
                 modal.style.display = "none";
             }
 
-            span.onclick = function() {
-                modal.style.display = "none";
+            if (span) {
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
             }
 
             window.onclick = function(event) {

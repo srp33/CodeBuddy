@@ -45,6 +45,14 @@ class AssignmentHandler(BaseUserHandler):
             elif task == "stop_timer":
                 self.content.end_timed_assignment_early(course_id, assignment_id, self.user_info["user_id"])
                 self.write("Success")
+            elif task == "list_unsubmitted_exercises":
+                statuses = self.content.get_exercise_statuses(course_id, assignment_id, self.get_current_user())
+                unsubmitted = [
+                    status["title"]
+                    for __, status in statuses
+                    if not status.get("completed")
+                ]
+                self.write(json.dumps(unsubmitted, default=str))
         except Exception as inst:
             self.write(f"Error: {traceback.format_exc()}")
 
