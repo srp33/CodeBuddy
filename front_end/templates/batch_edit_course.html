@@ -39,6 +39,7 @@
                 <div class="select is-medium">
                     <select id="field_selector" onchange="renderBulkEditTable()">
                         <option value="title" selected>Title</option>
+                        <option value="assignment_group">Assignment group</option>
                         <option value="dates">Start &amp; due dates</option>
                         <option value="require_security_codes">Require security and confirmation codes</option>
                         <option value="require_secure_access">Require QR code or secure link</option>
@@ -48,6 +49,9 @@
                     </select>
                 </div>
             </div>
+            <p id="assignment_group_help" class="help is-hidden mt-2">
+                <a href="/manage_assignment_groups/{{ course_basics['id'] }}" target="_blank">Manage assignment groups</a>
+            </p>
         </div>
 
         <div class="table-container">
@@ -72,12 +76,14 @@
 
     <script>
         const bulkEditAssignments = {{ jsonify(all_assignments) }};
+        const bulkEditAssignmentGroups = {{ jsonify(assignment_groups) }};
         const bulkEditTbody = document.getElementById("bulk_edit_tbody");
         let pendingSecureAccessDisable = null;
         let secureAssignmentStatusTimeout = null;
 
         const bulkEditFieldHeaders = {
             "title":                           "Title",
+            "assignment_group":                "Assignment group",
             "dates":                           "Start & due dates",
             "allow_students_view_submissions":  "Allow students to download submission(s)",
             "require_security_codes":          "Require security and confirmation codes",
@@ -107,6 +113,17 @@
         function createControlHTML(field, asgn) {
             if (field === "title") {
                 return `<input type="text" class="input is-grey" style="min-width:300px;" value="${escapeHtml(asgn.title)}">`;
+            }
+            if (field === "assignment_group") {
+                const current = (asgn.assignment_group_id == null || asgn.assignment_group_id === "")
+                    ? "-1"
+                    : String(asgn.assignment_group_id);
+                let opts = `<option value="-1"${current === "-1" ? " selected" : ""}>[None]</option>`;
+                for (const group of bulkEditAssignmentGroups) {
+                    const groupId = String(group[1]);
+                    opts += `<option value="${escapeHtml(groupId)}"${groupId === current ? " selected" : ""}>${escapeHtml(group[0])}</option>`;
+                }
+                return `<div class="select is-grey"><select>${opts}</select></div>`;
             }
             if (field === "require_security_codes") {
                 return yesNoSelectHTML(asgn.require_security_codes);
@@ -289,6 +306,10 @@
             }
             const field = document.getElementById("field_selector").value;
             document.getElementById("bulk_edit_message").classList.add("is-hidden");
+            const groupHelp = document.getElementById("assignment_group_help");
+            if (groupHelp) {
+                groupHelp.classList.toggle("is-hidden", field !== "assignment_group");
+            }
 
             const theadRow = document.getElementById("bulk_edit_thead_row");
             if (field === "dates") {
@@ -396,6 +417,11 @@
                         if (!asgn) continue;
                         if (field === "title") asgn.title = update.value.trim();
                         else if (field === "dates") { asgn.start_date = update.start_date; asgn.due_date = update.due_date; }
+                        else if (field === "assignment_group") {
+                            asgn.assignment_group_id = (update.value === "-1" || update.value === "")
+                                ? null
+                                : Number(update.value);
+                        }
                         else if (field === "allow_students_view_submissions") asgn.allow_students_view_submissions = (update.value === "Yes");
                         else if (field === "require_security_codes") asgn.require_security_codes = (update.value === "Yes");
                         else if (field === "show_run_button") asgn.show_run_button = (update.value === "Yes");

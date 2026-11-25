@@ -13,10 +13,14 @@ class BatchEditCourseHandler(BaseUserHandler):
                 course_basics = await self.get_course_basics(course_id)
                 all_assignments_raw = self.content.get_assignments(course_basics, show_hidden=True)
                 bulk_data = self.content.get_assignment_bulk_edit_data(course_id)
+                assignment_groups = self.content.get_assignment_groups(course_id)
 
                 all_assignments = []
                 for assignment_id, _, assignment in all_assignments_raw:
                     extra = bulk_data.get(assignment_id, {})
+                    group_id = assignment.get("assignment_group_id")
+                    if group_id == "" or group_id is None:
+                        group_id = None
                     all_assignments.append({
                         "id": assignment_id,
                         "title": assignment["title"],
@@ -28,9 +32,10 @@ class BatchEditCourseHandler(BaseUserHandler):
                         "show_run_button": extra.get("show_run_button", True),
                         "support_questions": extra.get("support_questions", False),
                         "secure_access_code": extra.get("secure_access_code"),
+                        "assignment_group_id": group_id,
                     })
 
-                self.render("batch_edit_course.html", courses=self.courses, course_basics=course_basics, all_assignments=all_assignments, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
+                self.render("batch_edit_course.html", courses=self.courses, course_basics=course_basics, all_assignments=all_assignments, assignment_groups=assignment_groups, user_info=self.user_info, is_administrator=self.is_administrator, is_instructor=await self.is_instructor_for_course(course_id), is_assistant=await self.is_assistant_for_course(course_id))
             else:
                 self.render("permissions.html")
         except Exception as inst:
@@ -44,11 +49,12 @@ class BatchEditCourseHandler(BaseUserHandler):
                 field = body["field"]
                 updates = body["updates"]
 
-                valid_fields = {"title", "dates", "allow_students_view_submissions", "require_security_codes", "require_secure_access", "show_run_button", "support_questions"}
+                valid_fields = {"title", "dates", "allow_students_view_submissions", "require_security_codes", "require_secure_access", "show_run_button", "support_questions", "assignment_group"}
                 if field not in valid_fields:
                     return self.write(json.dumps({"message": f"Error: Invalid field '{field}'."}))
 
                 existing_assignments = self.content.get_assignments(course_basics, show_hidden=True)
+                valid_group_ids = {group[1] for group in self.content.get_assignment_groups(course_id)}
 
                 errors = []
                 validated_updates = []
@@ -93,6 +99,20 @@ class BatchEditCourseHandler(BaseUserHandler):
                         except (ValueError, TypeError) as e:
                             errors.append(f"Invalid date value: {e}")
                             continue
+
+                    elif field == "assignment_group":
+                        if value in ("", "-1", None):
+                            value = None
+                        else:
+                            try:
+                                value = int(value)
+                            except (TypeError, ValueError):
+                                errors.append(f"Invalid assignment group for assignment ID {assignment_id}.")
+                                continue
+                            if value not in valid_group_ids:
+                                asgn_title = next((x[2]["title"] for x in existing_assignments if x[0] == assignment_id), f"ID {assignment_id}")
+                                errors.append(f"Invalid assignment group for \"{asgn_title}\".")
+                                continue
 
                     elif field in ("require_security_codes", "require_secure_access", "allow_students_view_submissions", "show_run_button", "support_questions"):
                         value = True if value == "Yes" else False

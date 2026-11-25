@@ -2567,6 +2567,7 @@ ORDER BY student_name
                 "require_security_codes": "require_security_codes",
                 "show_run_button": "show_run_button",
                 "support_questions": "support_questions",
+                "assignment_group": "assignment_group_id",
             }
 
             if field_name not in field_map:
